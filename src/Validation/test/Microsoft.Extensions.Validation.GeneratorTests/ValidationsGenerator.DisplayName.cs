@@ -1,5 +1,3 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -10,7 +8,6 @@ namespace Microsoft.Extensions.Validation.GeneratorTests;
 public class ValidationsGeneratorDisplayNameTests : ValidationsGeneratorTestBase
 {
     private const string Preamble = """
-        #pragma warning disable ASP0029
         using System;
         using System.Collections.Generic;
         using System.ComponentModel;
@@ -89,6 +86,59 @@ public class ValidationsGeneratorDisplayNameTests : ValidationsGeneratorTestBase
             var kvp = Assert.Single(problemDetails.Errors);
             Assert.Equal("Value", kvp.Key);
             Assert.Equal("Name:Localized Value Name", kvp.Value.Single());
+        });
+    }
+
+    [Fact]
+    public async Task PropertyDisplayName_WithResourceType_OnHiddenGenericProperty()
+    {
+        var source = Preamble + """
+        app.MapPost("/property-resource-display-name-hidden-generic", (DerivedQueryOptions<int> model) => Results.Ok("Passed"!));
+
+        app.Run();
+
+        public class QueryOptions
+        {
+            [Display(Name = "BaseIfMatchDisplayName", ResourceType = typeof(QueryOptionsResources))]
+            public virtual ETag? IfMatch { get; set; }
+        }
+
+        public class DerivedQueryOptions<T> : QueryOptions
+        {
+            [Required(ErrorMessage = "Name:{0}")]
+            [Display(Name = "DerivedIfMatchDisplayName", ResourceType = typeof(QueryOptionsResources))]
+            public new ETag<T>? IfMatch
+            {
+                get => base.IfMatch as ETag<T>;
+                set => base.IfMatch = value;
+            }
+        }
+
+        public class ETag
+        {
+        }
+
+        public class ETag<T> : ETag
+        {
+        }
+
+        public class QueryOptionsResources
+        {
+            public static string BaseIfMatchDisplayName => "Base IfMatch";
+            public static string DerivedIfMatchDisplayName => "Derived IfMatch";
+        }
+        """;
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/property-resource-display-name-hidden-generic", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{ }""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("IfMatch", kvp.Key);
+            Assert.Equal("Name:Derived IfMatch", kvp.Value.Single());
         });
     }
 

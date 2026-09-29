@@ -121,10 +121,14 @@ async def fetch_release_file(session, mirror, suite, keyring):
         await download_file(session, release_gpg_url, release_gpg_file.name)
 
         print("Verifying signature of Release with Release.gpg.")
-        verify_command = ["gpg"]
+        # Use gpgv rather than gpg for verification. gpgv verifies a detached
+        # signature against a fixed keyring without involving gpg-agent or
+        # keyboxd, which makes it robust on hosts running GnuPG 2.4+ (e.g. Azure
+        # Linux) where "gpg --keyring" routes through keyboxd and can fail.
+        verify_command = ["gpgv"]
         if keyring:
             verify_command += ["--keyring", keyring]
-        verify_command += ["--verify", release_gpg_file.name, release_file.name]
+        verify_command += [release_gpg_file.name, release_file.name]
         result = subprocess.run(verify_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if result.returncode != 0:
@@ -328,7 +332,18 @@ def extract_deb_file(deb_file, tmp_dir, extract_dir, ar_tool):
             raise ValueError(f"Unsupported compression format: {file_extension}")
 
         with tarfile.open(tar_file_path, mode) as tar:
-            tar.extractall(path=extract_dir, filter='tar')
+            tar.extractall(path=extract_dir, filter=_rootfs_extraction_filter)
+
+def _rootfs_extraction_filter(member, dest_path):
+    """Tarfile extraction filter based on the 'data' filter that additionally
+    rewrites absolute-target symlinks/hardlinks into rootfs-relative paths.
+    """
+    if (member.issym() or member.islnk()) and os.path.isabs(member.linkname):
+        link_dir = os.path.dirname(member.name)
+        new_linkname = os.path.relpath(member.linkname.lstrip('/'),
+                                       start=link_dir or '.')
+        member = member.replace(linkname=new_linkname, deep=False)
+    return tarfile.data_filter(member, dest_path)
 
 def finalize_setup(rootfsdir):
     lib_dir = os.path.join(rootfsdir, 'lib')

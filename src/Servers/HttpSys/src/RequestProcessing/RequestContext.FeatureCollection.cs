@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections.Features;
@@ -384,6 +385,38 @@ internal partial class RequestContext :
     internal ITlsHandshakeFeature? GetTlsHandshakeFeature()
     {
         return Request.IsHttps ? this : null;
+    }
+
+    bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+    {
+        channelBindingToken = default;
+
+        // http.sys's HTTP_REQUEST_CHANNEL_BIND_STATUS only reports the endpoint binding
+        // (tls-server-end-point per RFC 5929). Other kinds are unsupported.
+        if (kind != ChannelBindingKind.Endpoint)
+        {
+            return false;
+        }
+
+        if (!Request.IsHttps)
+        {
+            return false;
+        }
+
+        // disabled via settings
+        if (Server.Options.HttpAuthenticationHardeningLevel == HttpAuthenticationHardeningLevel.Legacy)
+        {
+            return false;
+        }
+
+        var bytes = GetChannelBindingToken();
+        if (bytes is not null)
+        {
+            channelBindingToken = bytes;
+            return true;
+        }
+
+        return false;
     }
 
     internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()

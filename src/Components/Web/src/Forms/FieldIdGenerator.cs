@@ -35,7 +35,7 @@ internal static class FieldIdGenerator
         }
 
         // Fast path: check if sanitization is needed
-        if (fieldName.AsSpan().IndexOfAny(InvalidIdChars) < 0)
+        if (!fieldName.ContainsAny(InvalidIdChars))
         {
             return fieldName;
         }

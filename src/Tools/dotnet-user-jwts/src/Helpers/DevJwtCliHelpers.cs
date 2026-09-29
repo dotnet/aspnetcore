@@ -19,29 +19,87 @@ internal static class DevJwtCliHelpers
         var id = resolver.Resolve(projectFilePath, configuration: null);
         if (string.IsNullOrEmpty(id))
         {
+            if (ProjectIdResolver.IsFileBasedApp(projectFilePath))
+            {
+                return null;
+            }
+
             return UserSecretsCreator.CreateUserSecretsId(NullReporter.Singleton, projectFilePath, projectFilePath);
         }
         return id;
     }
 
-    public static bool GetProjectAndSecretsId(string projectPath, IReporter reporter, out string project, out string userSecretsId)
+    public static bool GetProjectAndSecretsId(string projectPath, bool isFileBasedApp, IReporter reporter, out string project, out string userSecretsId)
     {
-        var finder = new MsBuildProjectFinder(Directory.GetCurrentDirectory());
-        project = finder.FindMsBuildProject(projectPath);
         userSecretsId = null;
-        if (project == null)
+        if (!TryResolveProjectOrFile(projectPath, isFileBasedApp, reporter, out project))
         {
-            reporter.Error(Resources.ProjectOption_ProjectNotFound);
             return false;
         }
 
         userSecretsId = GetOrSetUserSecretsId(project);
-        if (userSecretsId == null)
+        if (userSecretsId is null)
         {
             reporter.Error(Resources.ProjectOption_SercretIdNotFound);
             return false;
         }
         return true;
+    }
+
+    public static bool TryResolveProjectOrFile(string projectPath, bool isFileBasedApp, IReporter reporter, out string project)
+    {
+        project = isFileBasedApp
+            ? ResolveFileBasedApp(projectPath, reporter)
+            : ResolveProject(projectPath, reporter);
+
+        if (project is null)
+        {
+            return false;
+        }
+
+        if (!isFileBasedApp && ProjectIdResolver.IsFileBasedApp(project))
+        {
+            reporter.Error(Resources.ProjectOption_FileBasedAppNotSupported);
+            return false;
+        }
+
+        return true;
+
+        static string ResolveProject(string projectPath, IReporter reporter)
+        {
+            var finder = new MsBuildProjectFinder(Directory.GetCurrentDirectory());
+            var project = finder.FindMsBuildProject(projectPath);
+            if (project is null)
+            {
+                reporter.Error(Resources.ProjectOption_ProjectNotFound);
+            }
+
+            return project;
+        }
+
+        static string ResolveFileBasedApp(string filePath, IReporter reporter)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                reporter.Error(Resources.FileOption_FileNotFound);
+                return null;
+            }
+
+            var fullPath = Path.GetFullPath(filePath);
+            if (!string.Equals(Path.GetExtension(fullPath), ".cs", StringComparison.OrdinalIgnoreCase))
+            {
+                reporter.Error(Resources.FileOption_InvalidExtension);
+                return null;
+            }
+
+            if (!File.Exists(fullPath))
+            {
+                reporter.Error(Resources.FileOption_FileNotFound);
+                return null;
+            }
+
+            return fullPath;
+        }
     }
 
     public static bool GetAppSettingsFile(string projectPath, string appsettingsFileOption, IReporter reporter, out string appsettingsFile)
@@ -72,35 +130,57 @@ internal static class DevJwtCliHelpers
             return new List<string>();
         }
 
-        var launchSettingsFilePath = Path.Combine(Path.GetDirectoryName(project)!, "Properties", "launchSettings.json");
+        var projectDirectory = Path.GetDirectoryName(project)!;
         var applicationUrls = new HashSet<string>();
-        if (File.Exists(launchSettingsFilePath))
+
+        if (ProjectIdResolver.IsFileBasedApp(project))
         {
-            using var launchSettingsFileStream = new FileStream(launchSettingsFilePath, FileMode.Open, FileAccess.Read);
-            if (launchSettingsFileStream.Length > 0)
+            var fileBasedAppLaunchSettingsFilePath = Path.Combine(projectDirectory, Path.GetFileNameWithoutExtension(project) + ".run.json");
+            if (File.Exists(fileBasedAppLaunchSettingsFilePath))
             {
-                var launchSettingsJson = JsonDocument.Parse(launchSettingsFileStream);
-
-                if (ExtractIISExpressUrlFromProfile(launchSettingsJson.RootElement) is { } iisUrls)
-                {
-                    applicationUrls.UnionWith(iisUrls);
-                }
-
-                if (launchSettingsJson.RootElement.TryGetProperty("profiles", out var profiles))
-                {
-                    var profilesEnumerator = profiles.EnumerateObject();
-                    foreach (var profile in profilesEnumerator)
-                    {
-                        if (ExtractKestrelUrlsFromProfile(profile) is { } kestrelUrls)
-                        {
-                            applicationUrls.UnionWith(kestrelUrls);
-                        }
-                    }
-                }
+                applicationUrls.UnionWith(ExtractApplicationUrlsFromLaunchSettings(fileBasedAppLaunchSettingsFilePath));
+                return applicationUrls.ToList();
             }
         }
 
+        var launchSettingsFilePath = Path.Combine(projectDirectory, "Properties", "launchSettings.json");
+        if (File.Exists(launchSettingsFilePath))
+        {
+            applicationUrls.UnionWith(ExtractApplicationUrlsFromLaunchSettings(launchSettingsFilePath));
+        }
+
         return applicationUrls.ToList();
+
+        static IEnumerable<string> ExtractApplicationUrlsFromLaunchSettings(string launchSettingsFilePath)
+        {
+            using var launchSettingsFileStream = new FileStream(launchSettingsFilePath, FileMode.Open, FileAccess.Read);
+            if (launchSettingsFileStream.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var applicationUrls = new HashSet<string>();
+            var launchSettingsJson = JsonDocument.Parse(launchSettingsFileStream);
+
+            if (ExtractIISExpressUrlFromProfile(launchSettingsJson.RootElement) is { } iisUrls)
+            {
+                applicationUrls.UnionWith(iisUrls);
+            }
+
+            if (launchSettingsJson.RootElement.TryGetProperty("profiles", out var profiles))
+            {
+                var profilesEnumerator = profiles.EnumerateObject();
+                foreach (var profile in profilesEnumerator)
+                {
+                    if (ExtractKestrelUrlsFromProfile(profile) is { } kestrelUrls)
+                    {
+                        applicationUrls.UnionWith(kestrelUrls);
+                    }
+                }
+            }
+
+            return applicationUrls;
+        }
 
         static List<string> ExtractIISExpressUrlFromProfile(JsonElement rootElement)
         {
@@ -164,7 +244,7 @@ internal static class DevJwtCliHelpers
 
         static void PrintJwtJson(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)
         {
-            reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerOptions.Default));
+            reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerContext.Default.Jwt));
         }
 
         static void PrintJwtDefault(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)

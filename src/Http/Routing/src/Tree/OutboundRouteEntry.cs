@@ -51,7 +51,7 @@ public class OutboundRouteEntry
     public string RouteName { get; set; }
 
     /// <summary>
-    /// Gets or sets the set of values that must be present for link genration.
+    /// Gets or sets the set of values that must be present for link generation.
     /// </summary>
     public RouteValueDictionary RequiredLinkValues { get; set; }
 

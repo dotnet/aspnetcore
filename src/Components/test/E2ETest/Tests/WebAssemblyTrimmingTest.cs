@@ -56,6 +56,9 @@ public class WebAssemblyTrimmingTest : ServerTestBase<BlazorWasmTestAppFixture<P
 
         var appElement = Browser.MountTestComponent<MetricsTrimmingCheck>();
 
+        // Verify that System.Diagnostics.Metrics.Meter.IsSupported is false
+        Browser.Equal("false", () => appElement.FindElement(By.Id("is-supported")).Text);
+
         // There is trimmed empty type ComponentsMetrics
         Browser.Equal("true", () => appElement.FindElement(By.Id("metrics-found")).Text);
 

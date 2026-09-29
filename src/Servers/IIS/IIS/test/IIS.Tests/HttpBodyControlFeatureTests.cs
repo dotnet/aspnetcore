@@ -14,10 +14,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 public class HttpBodyControlFeatureTests : StrictTestServerTests
 {
     [ConditionalFact]
-    public async Task ThrowsOnSyncReadOrWrite()
+    public async Task ThrowsOnSyncReadWriteOrFlush()
     {
         Exception writeException = null;
         Exception readException = null;
+        Exception flushException = null;
         using (var testServer = await TestServer.Create(
             ctx =>
             {
@@ -42,6 +43,15 @@ public class HttpBodyControlFeatureTests : StrictTestServerTests
                     readException = ex;
                 }
 
+                try
+                {
+                    ctx.Response.Body.Flush();
+                }
+                catch (Exception ex)
+                {
+                    flushException = ex;
+                }
+
                 return Task.CompletedTask;
             }, LoggerFactory))
         {
@@ -50,5 +60,25 @@ public class HttpBodyControlFeatureTests : StrictTestServerTests
 
         Assert.IsType<InvalidOperationException>(readException);
         Assert.IsType<InvalidOperationException>(writeException);
+        Assert.IsType<InvalidOperationException>(flushException);
+    }
+
+    [ConditionalFact]
+    public async Task AllowsSyncFlushWhenEnabled()
+    {
+        using (var testServer = await TestServer.Create(
+            ctx =>
+            {
+                var bodyControl = ctx.Features.Get<IHttpBodyControlFeature>();
+                Assert.False(bodyControl.AllowSynchronousIO);
+                bodyControl.AllowSynchronousIO = true;
+
+                ctx.Response.Body.Flush();
+
+                return Task.CompletedTask;
+            }, LoggerFactory))
+        {
+            await testServer.HttpClient.GetStringAsync("/");
+        }
     }
 }

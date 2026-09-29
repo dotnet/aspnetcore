@@ -8,7 +8,7 @@ import { ValidationContext, ValidationResult, Validator, pass, fail } from '../V
 // Throws if neither bound is defined (rule has no effect).
 export const stringLengthValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
-  if (!params.min && !params.max) {
+  if (params.min === undefined && params.max === undefined) {
     throw new Error('length/minlength/maxlength validator requires at least one of "min" or "max" parameters.');
   }
 
@@ -16,15 +16,15 @@ export const stringLengthValidator: Validator = (context: ValidationContext): Va
     return pass();
   }
 
-  if (params.min) {
-    const min = parseInt(params['min'], 10);
+  if (params.min !== undefined) {
+    const min = parseInt(params.min, 10);
     if (value.length < min) {
       return fail();
     }
   }
 
-  if (params.max) {
-    const max = parseInt(params['max'], 10);
+  if (params.max !== undefined) {
+    const max = parseInt(params.max, 10);
     if (value.length > max) {
       return fail();
     }

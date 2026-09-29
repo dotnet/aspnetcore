@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
-using AngleSharp.Dom.Html;
+using AngleSharp.Html.Dom;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account;
 
@@ -73,7 +73,7 @@ public class Login : DefaultUIPage
             Context.WithAuthenticatedUser().WithPasswordLogin());
     }
 
-    public async Task LoginWrongPasswordAsync(string userName, string password)
+    public async Task LoginFailsAsync(string userName, string password)
     {
         var failedLogin = await SendLoginForm(userName, password);
 

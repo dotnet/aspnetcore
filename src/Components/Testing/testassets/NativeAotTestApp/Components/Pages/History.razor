@@ -1,0 +1,22 @@
+@page "/history"
+@rendermode InteractiveServer
+
+<NativeAotStatus />
+<h1>Enhanced navigation history</h1>
+
+<p id="history-count">@Count</p>
+<p id="history-enabled">@Enabled</p>
+<p id="history-clicks">@_clicks</p>
+
+<a id="history-next" href="/history?count=11&enabled=false">Next query</a>
+<button id="history-increment" @onclick="() => _clicks++">Increment</button>
+
+@code {
+    private int _clicks;
+
+    [Parameter, SupplyParameterFromQuery]
+    public int Count { get; set; }
+
+    [Parameter, SupplyParameterFromQuery]
+    public bool Enabled { get; set; }
+}

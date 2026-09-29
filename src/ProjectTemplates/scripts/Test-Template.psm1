@@ -4,127 +4,219 @@
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
+function Invoke-DotNet {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]] $Arguments
+    )
+
+    dotnet @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet $($Arguments -join ' ') failed with exit code $LASTEXITCODE."
+    }
+}
+
 function Test-Template {
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true)]
         [string] $TemplateName,
+        [Parameter(Mandatory = $true)]
         [string[]] $TemplateArguments,
         [string] $TemplatePackagePath = "Microsoft.DotNet.Web.ProjectTemplates.*-dev.nupkg",
+        [string] $TemplateProjectPath = "Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj",
         [string] $PackagePattern = "(?<PackageId>([A-Za-z]+(\.[A-Za-z]+)*))\.(?<Version>\d+\.\d)\.(?<Suffix>.*)",
         [string] $MainProjectRelativePath = $null,
         [ValidateSet("Debug", "Release")]
         [string] $Configuration = "Release",
         [ValidatePattern("net\d+\.\d+")]
-        [string] $TargetFramework = "net11.0"
+        [string] $TargetFramework = "net11.0",
+        [switch] $NoRestore,
+        [string[]] $PublishArguments = @()
     )
 
-    if(-not (Test-Path "$PSScriptRoot/.dotnet")){
-        $dotnetFolder = Get-Command dotnet | Select-Object -ExpandProperty Source | Split-Path -Parent;
-        Write-Verbose "Copying dotnet folder from $dotnetFolder to $PSScriptRoot/.dotnet";
-        Copy-Item -Path $dotnetFolder -Destination "$PSScriptRoot/.dotnet" -Recurse;
+    $isWindows = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
+    if (-not $isWindows -or [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne [System.Runtime.InteropServices.Architecture]::X64) {
+        throw "The local template scripts currently require Windows x64."
     }
 
-    Write-Verbose "Patching Microsoft.AspNetCore.App";
-    $builtRuntime = Resolve-Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/aspnetcore-runtime-*-dev-win-x64.zip" | Where-Object { $_ -match "aspnetcore-runtime-[0-9.]+-dev-win-x64.zip" };
-    Write-Verbose "Patching Microsoft.AspNetCore.App from $builtRuntime";
-    Remove-Item "$PSScriptRoot/.runtime" -Recurse -ErrorAction Ignore;
-    Expand-Archive -Path $builtRuntime -DestinationPath "$PSScriptRoot/.runtime" -Force;
-    Remove-Item "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/*-dev" -Recurse -ErrorAction Ignore;
-    Write-Verbose "Copying $PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App to $PSScriptRoot/.dotnet/shared";
-    Copy-Item -Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" -Destination "$PSScriptRoot/.dotnet/shared" -Recurse -Force;
+    $repoRoot = (Resolve-Path "$PSScriptRoot/../../..").Path
+    $projectTemplatesRoot = (Resolve-Path "$PSScriptRoot/..").Path
+    $shippingPackagesPath = "$repoRoot/artifacts/packages/$Configuration/Shipping"
+    $nonShippingPackagesPath = "$repoRoot/artifacts/packages/$Configuration/NonShipping"
+    $testTemplatesPath = "$projectTemplatesRoot/test/Templates.Tests/bin/$Configuration/$TargetFramework/TestTemplates"
+    $templateProject = "$projectTemplatesRoot/$TemplateProjectPath"
+    $tmpDir = "$PSScriptRoot/$TemplateName"
 
-    $env:DOTNET_ROOT = "$PSScriptRoot/.dotnet";
-    $env:DOTNET_ROOT_X86 = "$PSScriptRoot/.dotnet";
-    $env:Path = "$PSScriptRoot/.dotnet;$env:Path";
-    $tmpDir = "$PSScriptRoot/$templateName";
-    Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore;
-    Push-Location ..;
-    try {
-        dotnet pack
-    }
-    finally {
-        Pop-Location;
+    Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
+
+    $dotnetCommand = Get-Command dotnet
+    $repoDotNetRoot = (Resolve-Path "$repoRoot/.dotnet").Path
+    $isolatedDotNetRoot = "$PSScriptRoot/.dotnet"
+    $usesRepoSdk = $dotnetCommand.Source.StartsWith($repoDotNetRoot, [System.StringComparison]::OrdinalIgnoreCase)
+    $usesIsolatedSdk = $dotnetCommand.Source.StartsWith($isolatedDotNetRoot, [System.StringComparison]::OrdinalIgnoreCase)
+    if (-not $usesRepoSdk -and -not $usesIsolatedSdk) {
+        throw "Activate the repository SDK with '. ./activate.ps1' before running this script."
     }
 
-    $PackagePath = Resolve-Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/$TemplatePackagePath";
+    $builtRuntimes = @(Get-ChildItem -Path $shippingPackagesPath -Filter "aspnetcore-runtime-*-dev-win-x64.zip" -File -ErrorAction Ignore)
+    if ($builtRuntimes.Count -ne 1) {
+        throw "Expected exactly one locally built ASP.NET Core runtime archive in '$shippingPackagesPath', but found $($builtRuntimes.Count). Run the full product build described in src/ProjectTemplates/README.md."
+    }
 
-    $PackageName = (Get-Item $PackagePath).Name;
+    foreach ($requiredPath in @(
+        $nonShippingPackagesPath,
+        "$testTemplatesPath/Directory.Build.props",
+        "$testTemplatesPath/Directory.Build.targets",
+        $templateProject
+    )) {
+        if (-not (Test-Path $requiredPath)) {
+            throw "Required local template artifact '$requiredPath' is missing. Run its producer build described in src/ProjectTemplates/README.md."
+        }
+    }
 
-    if (-not (Test-Path "$($env:USERPROFILE)/.templateengine/packages/$PackageName")) {
-        Write-Verbose "Installing package from $PackagePath";
-        dotnet new install $PackagePath;
+    $packArguments = @(
+        "pack",
+        $templateProject,
+        "--no-dependencies",
+        "--configuration",
+        $Configuration
+    )
+    if ($NoRestore) {
+        $packArguments += "--no-restore"
+    }
+    Invoke-DotNet -Arguments $packArguments
+
+    $templatePackages = @(Get-ChildItem -Path $shippingPackagesPath -Filter $TemplatePackagePath -File)
+    if ($templatePackages.Count -ne 1) {
+        throw "Expected exactly one template package matching '$TemplatePackagePath' in '$shippingPackagesPath', but found $($templatePackages.Count)."
+    }
+
+    if (-not (Test-Path $isolatedDotNetRoot)) {
+        Write-Verbose "Copying the repository SDK from $repoDotNetRoot to $isolatedDotNetRoot"
+        Copy-Item -Path $repoDotNetRoot -Destination $isolatedDotNetRoot -Recurse
+    }
+
+    $builtRuntime = $builtRuntimes[0].FullName
+    Write-Verbose "Patching Microsoft.AspNetCore.App from $builtRuntime"
+    Remove-Item "$PSScriptRoot/.runtime" -Recurse -ErrorAction Ignore
+    Expand-Archive -Path $builtRuntime -DestinationPath "$PSScriptRoot/.runtime" -Force
+    Remove-Item "$isolatedDotNetRoot/shared/Microsoft.AspNetCore.App/*-dev" -Recurse -ErrorAction Ignore
+    Copy-Item -Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" -Destination "$isolatedDotNetRoot/shared" -Recurse -Force
+
+    $env:DOTNET_ROOT = $isolatedDotNetRoot
+    $env:DOTNET_ROOT_X86 = $isolatedDotNetRoot
+    if (-not $env:Path.StartsWith("$isolatedDotNetRoot;", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $env:Path = "$isolatedDotNetRoot;$env:Path"
+    }
+
+    $packagePath = $templatePackages[0].FullName
+    $packageName = $templatePackages[0].Name
+
+    if (-not (Test-Path "$($env:USERPROFILE)/.templateengine/packages/$packageName")) {
+        Write-Verbose "Installing package from $packagePath"
+        Invoke-DotNet -Arguments @("new", "install", $packagePath)
     }
     else {
-        Write-Verbose "Uninstalling package from $PackagePath";
-        if (-not ($PackageName -match $PackagePattern)) {
-            Write-Error "$PackageName did not match $PackagePattern";
+        if (-not ($packageName -match $PackagePattern)) {
+            throw "$packageName did not match $PackagePattern."
         }
-        $PackageId = $Matches["PackageId"];
-        $PackageVersion = $Matches["Version"];
-        Write-Verbose "Uninstalling existing package $PackageId.$PackageVersion";
-        dotnet new uninstall "$PackageId.$PackageVersion";
 
-        Write-Verbose "Installing package from $PackagePath";
-        dotnet new install $PackagePath;
+        $packageId = $Matches["PackageId"]
+        $packageVersion = $Matches["Version"]
+        Write-Verbose "Uninstalling existing package $packageId.$packageVersion"
+        Invoke-DotNet -Arguments @("new", "uninstall", "$packageId.$packageVersion")
+
+        Write-Verbose "Installing package from $packagePath"
+        Invoke-DotNet -Arguments @("new", "install", $packagePath)
     }
 
-
     Write-Verbose "Creating directory $tmpDir"
-    New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory | Out-Null;
-    Push-Location $tmpDir -StackName TemplateFolder;
+    New-Item -Path $tmpDir -ItemType Directory | Out-Null
+    Push-Location $tmpDir -StackName TemplateFolder
     try {
-        $TemplateArguments = , "new" + $TemplateArguments + , "--no-restore";
-        Write-Verbose "Running dotnet command with arguments: $TemplateArguments";
-        dotnet @TemplateArguments;
+        $newArguments = @("new") + $TemplateArguments + @("--no-restore")
+        Write-Verbose "Running dotnet command with arguments: $newArguments"
+        Invoke-DotNet -Arguments $newArguments
 
-        $proj = Get-ChildItem $tmpDir -Recurse -File -Filter '*.csproj' -Depth 3;
-        if ($proj.Length -eq 0) {
-            $proj = Get-ChildItem $tmpDir -Recurse -File -Filter '*.fsproj' -Depth 3;
+        $projects = @(Get-ChildItem $tmpDir -Recurse -File -Filter '*.csproj')
+        if ($projects.Count -eq 0) {
+            $projects = @(Get-ChildItem $tmpDir -Recurse -File -Filter '*.fsproj')
+        }
+        if ($projects.Count -eq 0) {
+            throw "The template did not create a project beneath '$tmpDir'."
         }
 
-        $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/$Configuration/$TargetFramework/TestTemplates";
-        # Define the XML string literals
-        [xml]$importPropsXml = "<Import Project='$importPath/Directory.Build.props' />";
-        [xml]$importTargetsXml = "<Import Project='$importPath/Directory.Build.targets' />";
+        [xml]$importPropsXml = "<Import Project='$testTemplatesPath/Directory.Build.props' />"
+        [xml]$importTargetsXml = "<Import Project='$testTemplatesPath/Directory.Build.targets' />"
         [xml]$propertyGroupXml = @"
 <PropertyGroup>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
 </PropertyGroup>
-"@;
+"@
 
-        foreach ($projPath in $proj) {
-            Write-Verbose "Updating project file '$projPath'";
-            # Read the XML content from the file
-            [xml]$xmlContent = Get-Content -Path $projPath;
+        foreach ($project in $projects) {
+            $projectPath = $project.FullName
+            Write-Verbose "Updating project file '$projectPath'"
+            [xml]$xmlContent = Get-Content -Path $projectPath
 
-            # Find the Project element and add the new elements
-            $projectElement = $xmlContent.Project;
-            $projectElement.PrependChild($xmlContent.ImportNode($propertyGroupXml.PropertyGroup, $true)) | Out-Null;
-            $projectElement.PrependChild($xmlContent.ImportNode($importTargetsXml.Import, $true)) | Out-Null;
-            $projectElement.PrependChild($xmlContent.ImportNode($importPropsXml.Import, $true)) | Out-Null;
+            $projectElement = $xmlContent.Project
+            $projectElement.PrependChild($xmlContent.ImportNode($propertyGroupXml.PropertyGroup, $true)) | Out-Null
+            $projectElement.PrependChild($xmlContent.ImportNode($importTargetsXml.Import, $true)) | Out-Null
+            $projectElement.PrependChild($xmlContent.ImportNode($importPropsXml.Import, $true)) | Out-Null
 
-            # Save the modified XML content back to the file
-            $xmlContent.Save($projPath);
+            $xmlContent.Save($projectPath)
         }
 
+        $mainProjectDirectory = $tmpDir
         if ($null -ne $MainProjectRelativePath) {
-            Push-Location $MainProjectRelativePath;
+            $mainProjectDirectory = Join-Path $tmpDir $MainProjectRelativePath
         }
 
+        $mainProjects = @(Get-ChildItem $mainProjectDirectory -File -Filter '*.csproj')
+        if ($mainProjects.Count -eq 0) {
+            $mainProjects = @(Get-ChildItem $mainProjectDirectory -File -Filter '*.fsproj')
+        }
+        if ($mainProjects.Count -ne 1) {
+            throw "Expected exactly one main project in '$mainProjectDirectory', but found $($mainProjects.Count)."
+        }
+
+        $mainProject = $mainProjects[0].FullName
         if ('--auth' -in $TemplateArguments -and 'Individual' -in $TemplateArguments) {
+            Invoke-DotNet -Arguments @("restore", $mainProject)
             Write-Verbose "Running dotnet ef migrations"
-            dotnet.exe ef migrations add Initial;
+            Invoke-DotNet -Arguments @(
+                "ef",
+                "migrations",
+                "add",
+                "Initial",
+                "--project",
+                $mainProject,
+                "--startup-project",
+                $mainProject
+            )
         }
 
-        $publishOutputDir = "./.publish";
-        Write-Verbose "Running dotnet publish --configuration $Configuration --output $publishOutputDir";
-        dotnet.exe publish --configuration $Configuration --output $publishOutputDir;
+        $publishOutputDir = Join-Path $mainProjectDirectory ".publish"
+        $dotnetPublishArguments = @(
+            "publish",
+            $mainProject,
+            "--configuration",
+            $Configuration,
+            "--output",
+            $publishOutputDir
+        )
+        $dotnetPublishArguments += $PublishArguments
+        Invoke-DotNet -Arguments $dotnetPublishArguments
+
+        Write-Host "Published $TemplateName to $publishOutputDir"
+        Write-Host "Run the generated application with the isolated SDK under $isolatedDotNetRoot."
     }
     finally {
-        Pop-Location -StackName TemplateFolder;
+        Pop-Location -StackName TemplateFolder
     }
 }
 
-Export-ModuleMember Test-Template;
+Export-ModuleMember Test-Template

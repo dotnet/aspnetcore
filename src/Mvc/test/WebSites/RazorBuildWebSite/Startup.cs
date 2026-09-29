@@ -12,8 +12,10 @@ public class Startup
         var fileProvider = new UpdateableFileProvider();
         services.AddSingleton(fileProvider);
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         services.AddMvc()
             .AddRazorRuntimeCompilation(options => options.FileProviders.Add(fileProvider));
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     }
 
     public void Configure(IApplicationBuilder app)
