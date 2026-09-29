@@ -238,6 +238,9 @@ updates:
   labels:
   - area-infrastructure
   package-ecosystem: gitsubmodule
+  # Keep fork merge commits eligible instead of selecting older upstream commits.
+  cooldown:
+    default-days: 0
   schedule:
     day: friday
     interval: weekly
@@ -252,6 +255,8 @@ updates:
   labels:
   - area-infrastructure
   package-ecosystem: gitsubmodule
+  cooldown:
+    default-days: 0
   schedule:
     interval: monthly
   target-branch: release/2.3
@@ -264,6 +269,8 @@ updates:
   labels:
   - area-infrastructure
   package-ecosystem: gitsubmodule
+  cooldown:
+    default-days: 0
   schedule:
     interval: monthly
   target-branch: release/8.0
@@ -276,6 +283,8 @@ updates:
   labels:
   - area-infrastructure
   package-ecosystem: gitsubmodule
+  cooldown:
+    default-days: 0
   schedule:
     interval: monthly
   target-branch: release/9.0
@@ -288,6 +297,8 @@ updates:
   labels:
   - area-infrastructure
   package-ecosystem: gitsubmodule
+  cooldown:
+    default-days: 0
   schedule:
     interval: monthly
   target-branch: release/10.0
