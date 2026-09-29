@@ -64,7 +64,7 @@ public abstract partial class DiagnosticVerifier
     protected void VerifyMultipleCSharpDiagnostic(string source, params DiagnosticResult[] expected)
     {
         var mappedDiagnostics = GetMappedDiagnostics(GetMultipleCSharpDiagnosticAnalyzers());
-        var mappedResults = GetMappedResults(expected);
+        var mappedResults = GetMappedResults(expected, mappedDiagnostics);
         foreach (var diagnostic in mappedDiagnostics)
         {
             if (mappedResults.TryGetValue(diagnostic.Key, out var results))
@@ -347,12 +347,17 @@ public abstract partial class DiagnosticVerifier
     /// Helper method to map diagnostic results to their corresponding diagnostic IDs.
     /// </summary>
     /// <param name="expected">The diagnostic results to be mapped</param>
+    /// <param name="mappedDiagnostics">The mapped diagnostics</param>
     /// <returns>A dictionary mapping diagnostic IDs to their corresponding diagnostic results</returns>
-    private Dictionary<string, DiagnosticResult[]> GetMappedResults(DiagnosticResult[] expected)
+    private Dictionary<string, DiagnosticResult[]> GetMappedResults(DiagnosticResult[] expected, Dictionary<string, DiagnosticAnalyzer> mappedDiagnostics)
     {
         var mappedResults = new Dictionary<string, List<DiagnosticResult>>();
         foreach (var result in expected)
         {
+            if (!mappedDiagnostics.ContainsKey(result.Id))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Unexpected diagnostic with id {0}. Make sure the diagnostic is provided by one of the specified analyzers in `GetMultipleCSharpDiagnosticAnalyzers`.", result.Id));
+            }
             if (!mappedResults.ContainsKey(result.Id))
             {
                 mappedResults.Add(result.Id, new List<DiagnosticResult>());
