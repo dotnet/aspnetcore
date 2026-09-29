@@ -72,6 +72,9 @@
     <!-- Grab all shipping packages. -->
     <HelixContent Include="$(ArtifactsShippingPackagesDir)*$(SharedFxVersion).nupkg"
         Condition=" $(TestDependsOnAspNetPackages) "/>
+    <!-- Template packages are nonshipping but are still required by template tests. -->
+    <HelixContent Include="$(ArtifactsNonShippingPackagesDir)*Templates*$(SharedFxVersion).nupkg"
+        Condition=" $(TestDependsOnAspNetPackages) "/>
     <!-- Grab just the App.Ref and App.Runtime packages. -->
     <HelixContent Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.App.*$(SharedFxVersion).nupkg"
         Condition=" $(TestDependsOnAspNetAppPackages) "/>

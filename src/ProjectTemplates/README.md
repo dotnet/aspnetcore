@@ -50,7 +50,7 @@ Use the ProjectTemplates area build when only template generation and package co
 .\src\ProjectTemplates\build.cmd -pack -configuration Release
 ```
 
-This produces the four template packages under `artifacts\packages\Release\Shipping`. It does not produce the
+This produces the four template packages under `artifacts\packages\Release\NonShipping`. It does not produce the
 complete local package graph, runtime archive, or `Templates.Tests` imports needed to restore, publish, and run a
 generated application.
 
@@ -122,7 +122,7 @@ To validate template installation and generation without modifying the default t
 
 ```powershell
 $packages = @(Get-ChildItem `
-    ".\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.*-dev.nupkg")
+    ".\artifacts\packages\Release\NonShipping\Microsoft.DotNet.Web.ProjectTemplates.*-dev.nupkg")
 if ($packages.Count -ne 1) {
     throw "Expected exactly one locally built web project-template package, but found $($packages.Count)."
 }
