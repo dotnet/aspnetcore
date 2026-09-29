@@ -117,7 +117,7 @@ jobs:
     steps:
       - name: Freeze the triggering pull request head
         id: get_head
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
@@ -163,7 +163,7 @@ jobs:
           merge-multiple: true
           path: ${{ runner.temp }}/review-publication-gate
       - name: Reject incomplete or partial publication sets
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           script: |
             const fs = require('fs');
@@ -177,14 +177,16 @@ jobs:
             const count = type => output.items.filter(item => item.type === type).length;
             const comments = count('create_pull_request_review_comment');
             const reviews = count('submit_pull_request_review');
+            const noop = count('noop');
             const incomplete = ['report_incomplete', 'missing_data', 'missing_tool']
               .some(type => count(type) > 0);
-            if ((incomplete && (comments || reviews)) || (comments > 0 && reviews !== 1) ||
+            if ((noop > 0 && (comments || reviews || incomplete)) ||
+                (incomplete && (comments || reviews)) || (comments > 0 && reviews !== 1) ||
                 (reviews > 0 && (comments < 1 || comments > 5))) {
               core.setFailed('Incomplete or partial review output cannot be published.');
             }
       - name: Reject a moved pull request before safe outputs
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |

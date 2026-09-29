@@ -292,11 +292,12 @@ for (const area of ['Components', 'JSInterop'])
             '# Components\n## Creating E2E Tests\n- Validate the behavior.\n');
         const manifest = await prepare(f.options, f.dependencies);
         assert.deepEqual(manifest.guides.map(guide => guide.path),
-            ['docs/CrossCuttingGuidance.md', 'docs/BlazorComponentsGuidance.md']);
+            area === 'Components'
+                ? ['docs/CrossCuttingGuidance.md', 'docs/BlazorComponentsGuidance.md']
+                : ['docs/CrossCuttingGuidance.md']);
         assert.deepEqual(manifest.policies.map(policy => policy.anchor),
             area === 'Components' ? ['creating-e2e-tests'] : []);
-        assert.deepEqual(manifest.skippedLinks.map(link => link.anchor),
-            area === 'JSInterop' ? ['creating-e2e-tests'] : []);
+        assert.deepEqual(manifest.skippedLinks.map(link => link.anchor), []);
         assert.equal((await prepare({ ...f.options, check: true }, f.dependencies)).ready, true);
         const filename = path.join(f.options.output, 'files.json');
         const changed = JSON.parse(await fs.readFile(filename, 'utf8'));
@@ -305,7 +306,14 @@ for (const area of ['Components', 'JSInterop'])
         await fs.writeFile(filename, bytes);
         manifest.artifacts['files.json'] = createHash('sha256').update(bytes).digest('hex');
         await fs.writeFile(path.join(f.options.output, 'manifest.json'), JSON.stringify(manifest));
-        await assert.rejects(prepare({ ...f.options, check: true }, f.dependencies), /guide routing is incomplete/);
+        if (area === 'Components')
+        {
+            await assert.rejects(prepare({ ...f.options, check: true }, f.dependencies), /guide routing is incomplete/);
+        }
+        else
+        {
+            assert.equal((await prepare({ ...f.options, check: true }, f.dependencies)).ready, true);
+        }
     });
 }
 
