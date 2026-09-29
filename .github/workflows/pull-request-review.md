@@ -117,7 +117,7 @@ jobs:
     steps:
       - name: Freeze the triggering pull request head
         id: get_head
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
@@ -163,7 +163,7 @@ jobs:
           merge-multiple: true
           path: ${{ runner.temp }}/review-publication-gate
       - name: Reject incomplete or partial publication sets
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           script: |
             const fs = require('fs');
@@ -184,7 +184,7 @@ jobs:
               core.setFailed('Incomplete or partial review output cannot be published.');
             }
       - name: Reject a moved pull request before safe outputs
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |

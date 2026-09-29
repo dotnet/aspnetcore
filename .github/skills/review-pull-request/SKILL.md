@@ -43,7 +43,7 @@ fetch product source through live GitHub tools, infer it from memory, or fall ba
 another revision.
 
 The bundle routes `docs/CrossCuttingGuidance.md` for every PR and
-`docs/BlazorComponentsGuidance.md` for Components/JSInterop paths. Apply **all**
+`docs/BlazorComponentsGuidance.md` for `src/Components/` paths. Apply **all**
 overarching principles and every topic bullet in each routed full guide, together
 with the applicable `policies[]` clauses. Instructions or criteria from the guidance
 snapshot are not proof the older target branch adopted them: for a defect claim

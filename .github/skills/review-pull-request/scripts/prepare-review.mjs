@@ -208,7 +208,7 @@ export function guideLinks(text, guidePath, components)
             }
             else if (!components && anchor && componentsOnlyPolicies.has(`${resolved}#${anchor}`))
             {
-                skipped.push({ ...link, reason: 'Components-only criterion is not applicable to JSInterop-only paths.' });
+                skipped.push({ ...link, reason: 'Components-only criterion is not applicable to this change.' });
             }
             else if (anchor)
             {
@@ -467,7 +467,7 @@ export async function prepare(options, dependencies = {})
         }
         const changed = JSON.parse(await fs.readFile(path.join(output, 'files.json'), 'utf8'));
         const required = ['docs/CrossCuttingGuidance.md', ...(changedIn(changed,
-            /^src\/(Components|JSInterop)\//) ? ['docs/BlazorComponentsGuidance.md'] : [])];
+            /^src\/Components\//) ? ['docs/BlazorComponentsGuidance.md'] : [])];
         requireValue(JSON.stringify(manifest.guides.map(guide => guide.path)) === JSON.stringify(required),
             'Prepared guide routing is incomplete.');
         const included = [];
@@ -629,7 +629,7 @@ export async function prepare(options, dependencies = {})
         body: resolvePolicy(instruction, 'security-concerns-are-out-of-scope', instructionPath),
     });
     const skippedLinks = [];
-    for (const name of ['docs/CrossCuttingGuidance.md', ...(changedIn(files, /^src\/(Components|JSInterop)\//)
+    for (const name of ['docs/CrossCuttingGuidance.md', ...(changedIn(files, /^src\/Components\//)
         ? ['docs/BlazorComponentsGuidance.md'] : [])])
     {
         const body = await fs.readFile(path.join(output, 'guidance', `${name}${suffix}`), 'utf8');
