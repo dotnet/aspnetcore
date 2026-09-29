@@ -13,8 +13,9 @@
 
 ## Assertions and validation
 
-* Before replacing `Debug.Assert` with a runtime throw, trace supported callers and contracts to determine whether application/user-controlled input can violate the condition or only framework-controlled call-order/state can. Compare Debug and Release behavior. `internal` visibility alone does not prove an invariant framework-only; directly invoking an internal helper in a test does not prove application reachability.
-* For framework-only invariants, preserve the development-time assertion and existing Release behavior by default; do not add a throw or a test expecting one solely to enforce the invariant at runtime. If a runtime failure is intentional, explain the supported reachable scenario and why the behavior change is needed. Retain actionable runtime validation for invalid public/API arguments, configuration, external inputs, and supported application-driven states.
+* Use `Debug.Assert` to check framework-controlled invariants, such as call order and state transitions, during development; it does not replace runtime validation of application/user-controlled input. Before replacing an assertion with a throw, trace supported callers and contracts, and compare Debug and Release behavior. Neither `internal` visibility nor a test that directly invokes an internal helper proves whether the invalid state is reachable through a supported application path.
+* Validate invalid public/API arguments, configuration, and external input at the outermost supported boundary where the condition can be reliably identified and reported with an actionable exception. Do not repeat the same validation throughout internal framework layers solely to enforce a framework-owned invariant.
+* Preserve existing Release behavior for framework-only assertions by default; do not introduce a runtime throw or a test expecting one solely to make an internal invariant fail loudly. If a new runtime failure is intentional, explain the supported reachable scenario and why changing Release behavior is necessary.
 
 ## Minimal diffs
 
