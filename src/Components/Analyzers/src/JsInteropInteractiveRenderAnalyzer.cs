@@ -348,18 +348,18 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                     invocation.Syntax.GetLocation(),
                     invocation.TargetMethod.Name));
         }
-        else if (invocation.Arguments.Length > 0)
+
+        if (invocation.Instance is not null)
         {
-            // Check arguments for JSInterop invocations.
+            AnalyzeOperationsTree(invocation.Instance, state);
+        }
+
             foreach (var argument in invocation.Arguments)
             {
-                if (argument.Value is IInvocationOperation nestedInvocation)
-                {
-                    AnalyzeOperationsTree(nestedInvocation, state);
-                }
-            }
+            AnalyzeOperationsTree(argument.Value, state);
         }
-        else if (state.CurrentDepth < MaxNestedMethodDepth
+
+        if (state.CurrentDepth < MaxNestedMethodDepth
             && state.BlockContext.OwningSymbol is IMethodSymbol methodSymbol
             && ComponentFacts.IsComponentBase(methodSymbol.ContainingType, state.AvailableTypes[ComponentsApi.ComponentBase.MetadataName]))
         {

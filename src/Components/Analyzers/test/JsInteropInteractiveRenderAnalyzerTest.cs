@@ -1037,6 +1037,100 @@ namespace ConsoleApplication1
     }
 
     [Fact]
+    public void JSInvokeInMethodCallWithArgumentUsedInOnInitializedShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            await SomeOtherMethod(42);
+        }
+
+        private async Task SomeOtherMethod(int value)
+        {
+            await JS.InvokeVoidAsync(""console.log"", value);
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 19, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInConvertedArgumentUsedInOnInitializedShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSInProcessRuntime JS = default!;
+
+        protected override void OnInitialized()
+        {
+            Consume((object)JS.Invoke<double>(""getValue""));
+        }
+
+        private static void Consume(object value) { }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 13, 29) }, Id = id, Message = messageInvoke, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInReceiverMethodUsedInOnInitializedShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSInProcessRuntime JS = default!;
+
+        protected override void OnInitialized()
+        {
+            GetHelper().Run();
+        }
+
+        private Helper GetHelper()
+        {
+            JS.Invoke<double>(""getValue"");
+            return new Helper();
+        }
+
+        private sealed class Helper
+        {
+            public void Run() { }
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 18, 13) }, Id = id, Message = messageInvoke, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
     public void JSInvokeInMethodCallNotUsedInOnInitializedShouldNotThrowWarning()
     {
         var test = @"
