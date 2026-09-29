@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Reflection;
 using Xunit;
 
@@ -11,7 +12,8 @@ namespace Microsoft.AspNetCore.InternalTesting.Tracing;
 
 /// <summary>
 /// Validates that <see cref="EventSource"/>-derived classes have consistent
-/// <see cref="EventAttribute.EventId"/> values and <c>WriteEvent</c> call arguments.
+/// <see cref="EventAttribute.EventId"/> values and <c>WriteEvent</c> call arguments,
+/// and valid message format strings.
 /// This catches drift caused by bad merge resolution or missed updates that would
 /// otherwise surface only as runtime errors.
 /// </summary>
@@ -33,7 +35,8 @@ public static class EventSourceValidator
     /// on the calling method. This is the same validation the .NET runtime itself uses.
     /// </para>
     /// <para>
-    /// Additionally checks for duplicate <see cref="EventAttribute.EventId"/> values across methods.
+    /// Additionally checks for duplicate <see cref="EventAttribute.EventId"/> values across methods
+    /// and validates that message format strings reference existing parameters.
     /// </para>
     /// </summary>
     /// <param name="eventSourceType">A type that derives from <see cref="EventSource"/>.</param>
@@ -50,7 +53,6 @@ public static class EventSourceValidator
 
         var errors = new List<string>();
 
-        // Check for duplicate Event IDs across methods.
         var seenIds = new Dictionary<int, string>();
         var methods = eventSourceType.GetMethods(
             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -63,6 +65,7 @@ public static class EventSourceValidator
                 continue;
             }
 
+            // Check for duplicate Event IDs across methods.
             if (seenIds.TryGetValue(eventAttr.EventId, out var existingMethod))
             {
                 errors.Add(
@@ -71,6 +74,19 @@ public static class EventSourceValidator
             else
             {
                 seenIds[eventAttr.EventId] = method.Name;
+            }
+
+            // Check message format syntax and placeholder indices using one dummy argument per parameter.
+            if (eventAttr.Message is not null)
+            {
+                try
+                {
+                    string.Format(CultureInfo.InvariantCulture, eventAttr.Message, new object[method.GetParameters().Length]);
+                }
+                catch (FormatException ex)
+                {
+                    errors.Add($"Invalid message format for event {eventAttr.EventId} ('{method.Name}'): {ex.Message}");
+                }
             }
         }
 
@@ -99,7 +115,7 @@ public static class EventSourceValidator
         if (errors.Count > 0)
         {
             Assert.Fail(
-                $"EventSource '{eventSourceType.FullName}' has event ID validation error(s):" +
+                $"EventSource '{eventSourceType.FullName}' has validation error(s):" +
                 Environment.NewLine + string.Join(Environment.NewLine, errors));
         }
     }
