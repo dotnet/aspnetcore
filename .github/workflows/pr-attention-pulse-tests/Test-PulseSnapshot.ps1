@@ -177,8 +177,9 @@ function Invoke-SnapshotValidation
 New-Item -ItemType Directory -Path $tempRoot | Out-Null
 try
 {
+    $compiledGhAwVersion = Get-CompiledGhAwVersion -LockPath (Join-Path $testRoot "..\pr-attention-pulse.lock.yml")
     $version = (& gh aw --version 2>&1) -join "`n"
-    Assert-True ($LASTEXITCODE -eq 0 -and $version.Contains("v0.88.7")) "Snapshot coverage requires the reviewed gh-aw v0.88.7."
+    Assert-True ($LASTEXITCODE -eq 0 -and $version.Contains($compiledGhAwVersion)) "Snapshot coverage requires the gh-aw $compiledGhAwVersion installation used to compile the lock."
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
     $blazor = Invoke-RealQueueFixture -FixtureName "pull-requests.json" -Scope blazor
     $repositoryWide = Invoke-RealQueueFixture -FixtureName "pull-requests.json" -Scope repository-wide
