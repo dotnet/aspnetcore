@@ -139,13 +139,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
             if (useItemsProvider)
             {
-                Browser.Exists(By.Id("unload-list")).Click();
-                Browser.Exists(By.Id("list-not-loaded"));
                 Browser.Exists(By.Id("toggle-provider")).Click();
-                ClearRecordedSpacerCallbacks();
-                Browser.Exists(By.Id("reload-with-initial-index")).Click();
+                Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
             }
 
+            ClearRecordedSpacerCallbacks();
+            Browser.Exists(By.Id("load-list")).Click();
             Browser.Exists(By.CssSelector("#scroll-container .item"));
             Browser.True(() => GetRecordedSpacerCallbackCount() > 0);
 
@@ -3226,40 +3225,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             throw new ArgumentException($"{nameof(delay)} only applies to the ItemsProvider path; it has no effect when {nameof(useItemsProvider)} is false.", nameof(delay));
         }
 
-        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        var configuration = $"{anchorMode}|{variableHeight}|{useItemsProvider}|{useDefaultComparer}|{delay}";
+        Browser.MountTestComponent<VirtualizationAnchorMode>(configuration);
         var container = Browser.Exists(By.Id("scroll-container"));
-        Browser.True(() => GetElementCount(container, ".item") > 0);
-
-        if (useDefaultComparer)
+        Browser.True(() =>
         {
-            Browser.Exists(By.Id("toggle-comparer")).Click();
-            Browser.True(() => GetElementCount(container, ".item") > 0);
-        }
-
-        if (useItemsProvider)
-        {
-            Browser.Exists(By.Id("toggle-provider")).Click();
-            Browser.True(() => GetElementCount(container, ".item") > 0);
-
-            if (delay)
-            {
-                Browser.Exists(By.Id("toggle-delay")).Click();
-                Browser.Contains("Provider delay for Virtualize: 500ms", () => Browser.Exists(By.Id("status")).Text);
-            }
-        }
-
-        if (variableHeight)
-        {
-            Browser.Exists(By.Id("toggle-height")).Click();
-            Browser.True(() => GetElementCount(container, ".item") > 0);
-        }
-
-        var select = Browser.Exists(By.Id("anchor-mode-select"));
-        var selectElement = new SelectElement(select);
-        selectElement.SelectByValue(anchorMode);
-
-        Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
-        Browser.True(() => GetElementCount(container, ".item") > 0);
+            _ = GetItemPositionInContainer((IJavaScriptExecutor)Browser, container, ".item[data-index]");
+            return true;
+        }, TimeSpan.FromSeconds(15), "No rendered item appeared in the viewport");
     }
 
     private static void ScrollContainer(IJavaScriptExecutor js, IWebElement container, int scrollTop)
@@ -3422,10 +3395,17 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     private void ScrollMidListAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
     {
         ScrollUntil(js, container, () => ScrollContainer(js, container, 5000),
-            st => st > 4000, "scrollTop > 4000 after ScrollContainer(5000)");
+            st => st is > 4000 and < 6000, "4000 < scrollTop < 6000 after ScrollContainer(5000)");
         // Wait for Virtualize to render items at the new scroll position.
         Browser.True(() =>
         {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            if (scrollTop is <= 4000 or >= 6000)
+            {
+                ScrollContainer(js, container, 5000);
+                return false;
+            }
+
             var result = js.ExecuteScript(@"
                 var container = arguments[0];
                 var containerRect = container.getBoundingClientRect();
@@ -4804,34 +4784,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             throw new ArgumentException($"{nameof(delay)} only applies to the ItemsProvider path; it has no effect when {nameof(useItemsProvider)} is false.", nameof(delay));
         }
 
-        Browser.MountTestComponent<VirtualizationAnchorModeWindowScroll>();
+        var configuration = $"{anchorMode}|{variableHeight}|{useItemsProvider}|{delay}";
+        Browser.MountTestComponent<VirtualizationAnchorModeWindowScroll>(configuration);
         var root = Browser.Exists(By.Id("virtualize-root"));
-        Browser.True(() => GetElementCount(root, ".item") > 0);
-
-        if (useItemsProvider)
+        Browser.True(() =>
         {
-            Browser.Exists(By.Id("toggle-provider")).Click();
-            Browser.True(() => GetElementCount(root, ".item") > 0);
-
-            if (delay)
-            {
-                Browser.Exists(By.Id("toggle-delay")).Click();
-                Browser.Contains("Provider delay for Virtualize: 500ms", () => Browser.Exists(By.Id("status")).Text);
-            }
-        }
-
-        if (variableHeight)
-        {
-            Browser.Exists(By.Id("toggle-height")).Click();
-            Browser.True(() => GetElementCount(root, ".item") > 0);
-        }
-
-        var select = Browser.Exists(By.Id("anchor-mode-select"));
-        var selectElement = new SelectElement(select);
-        selectElement.SelectByValue(anchorMode);
-
-        Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
-        Browser.True(() => GetElementCount(root, ".item") > 0);
+            _ = GetItemPositionInViewport((IJavaScriptExecutor)Browser, root, ".item[data-index]");
+            return true;
+        }, TimeSpan.FromSeconds(15), "No rendered item appeared in the viewport");
     }
 
     private void WindowScrollToBottomAndWait(IJavaScriptExecutor js)
@@ -5225,18 +5185,20 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
-    /// item count, scrollTop, and first visible item identity stabilize.
+    /// item count, scroll position, and first visible item identity stabilize.
     /// Use after actions that trigger async rendering (prepend/append with ItemsProvider on Server)
     /// to ensure anchor restore has completed before making single-shot assertions.
     /// Pass <paramref name="itemSelector"/> for containers whose rows are not <c>.item[data-index]</c>.
+    /// Pass <paramref name="useWindowAsViewport"/> when the document is the scroll container.
     /// </summary>
     private void WaitForRenderToSettle(
-        IWebElement container,
+        IWebElement itemRoot,
         IJavaScriptExecutor js,
         string itemSelector = ".item[data-index]",
-        bool trackScrollHeight = false)
+        bool trackScrollHeight = false,
+        bool useWindowAsViewport = false)
     {
-        long lastScrollTop = -1;
+        long lastScrollPosition = -1;
         long lastScrollHeight = -1;
         int lastItemCount = -1;
         string lastFirstIndex = "";
@@ -5245,22 +5207,32 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() =>
         {
             var result = js.ExecuteScript(@"
-                var c = arguments[0];
+                var root = arguments[0];
                 var selector = arguments[1];
-                var items = c.querySelectorAll(selector);
-                var cr = c.getBoundingClientRect();
+                var useWindowAsViewport = arguments[2];
+                var items = root.querySelectorAll(selector);
+                var rootRect = root.getBoundingClientRect();
+                var viewportTop = useWindowAsViewport ? 1 : rootRect.top + 2;
+                var viewportBottom = useWindowAsViewport ? window.innerHeight - 1 : rootRect.bottom - 2;
                 var firstIdx = '';
                 for (var i = 0; i < items.length; i++) {
                     var r = items[i].getBoundingClientRect();
-                    if (r.bottom > cr.top + 2 && r.top < cr.bottom - 2) {
+                    if (r.bottom > viewportTop && r.top < viewportBottom) {
                         firstIdx = items[i].getAttribute('data-index') || items[i].textContent;
                         break;
                     }
                 }
-                return { scrollTop: Math.round(c.scrollTop), scrollHeight: c.scrollHeight, itemCount: items.length, firstIndex: firstIdx };
-            ", container, itemSelector) as Dictionary<string, object>;
+                var scrollPosition = useWindowAsViewport ? window.scrollY : root.scrollTop;
+                var scrollHeight = useWindowAsViewport ? document.documentElement.scrollHeight : root.scrollHeight;
+                return {
+                    scrollPosition: Math.round(scrollPosition),
+                    scrollHeight: scrollHeight,
+                    itemCount: items.length,
+                    firstIndex: firstIdx
+                };
+            ", itemRoot, itemSelector, useWindowAsViewport) as Dictionary<string, object>;
 
-            var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
+            var scrollPosition = Convert.ToInt64(result["scrollPosition"], CultureInfo.InvariantCulture);
             var scrollHeight = Convert.ToInt64(result["scrollHeight"], CultureInfo.InvariantCulture);
             var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
             var firstIndex = result["firstIndex"]?.ToString() ?? "";
@@ -5272,7 +5244,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 // item to reappear rather than reporting this moment as stable.
                 stableCount = 0;
             }
-            else if (scrollTop == lastScrollTop
+            else if (scrollPosition == lastScrollPosition
                 && (!trackScrollHeight || scrollHeight == lastScrollHeight)
                 && itemCount == lastItemCount
                 && firstIndex == lastFirstIndex)
@@ -5284,7 +5256,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 stableCount = 0;
             }
 
-            lastScrollTop = scrollTop;
+            lastScrollPosition = scrollPosition;
             lastScrollHeight = scrollHeight;
             lastItemCount = itemCount;
             lastFirstIndex = firstIndex;
@@ -5957,24 +5929,28 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationAnchorMode>();
         var container = Browser.Exists(By.Id("scroll-container"));
-        Browser.True(() => GetElementCount(container, ".item") > 0);
+        Browser.Exists(By.Id("list-not-loaded"));
 
         if (useProvider)
         {
             Browser.Exists(By.Id("toggle-provider")).Click();
-            Browser.True(() => GetElementCount(container, ".item") > 0);
+            Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
         }
 
         if (variableHeight)
         {
             Browser.Exists(By.Id("toggle-height")).Click();
-            Browser.True(() => GetElementCount(container, ".item") > 0);
+            Browser.Contains("Switched to variable heights", () => Browser.Exists(By.Id("status")).Text);
         }
 
         if (delay)
         {
             Browser.Exists(By.Id("toggle-delay")).Click();
+            Browser.Contains("Provider delay for Virtualize: 500ms", () => Browser.Exists(By.Id("status")).Text);
         }
+
+        Browser.Exists(By.Id("load-list")).Click();
+        WaitForRenderToSettle(container, (IJavaScriptExecutor)Browser);
     }
 
     private void SetScrollTargetIndex(int index) => SetNumberInputAndWaitForBind("scroll-target-index", index);
@@ -5997,9 +5973,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             Browser.MountTestComponent<VirtualizationAnchorMode>();
             var container = Browser.Exists(By.Id("scroll-container"));
             var js = (IJavaScriptExecutor)Browser;
-            Browser.True(() => GetElementCount(container, ".item") > 0);
 
-            Browser.Exists(By.Id("unload-list")).Click();
             Browser.Exists(By.Id("list-not-loaded"));
             Browser.Exists(By.Id("toggle-provider")).Click();
             Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
@@ -6188,12 +6162,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
+        Browser.Exists(By.Id("list-not-loaded"));
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2500px';");
         Browser.Exists(By.Id("set-low-max-item-count")).Click();
         Browser.Contains("MaxItemCount 20, overscan 3", () => Browser.Exists(By.Id("status")).Text);
         Browser.Exists(By.Id("toggle-provider")).Click();
-        Browser.Exists(By.Id("unload-list")).Click();
-        Browser.Exists(By.Id("list-not-loaded"));
+        Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
         SetManualInitialIndex(100);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
@@ -6216,12 +6190,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
+        Browser.Exists(By.Id("list-not-loaded"));
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
         Browser.Exists(By.Id("set-average-height-trap")).Click();
         Browser.Contains("Tall rows before index 100", () => Browser.Exists(By.Id("status")).Text);
         Browser.Exists(By.Id("toggle-provider")).Click();
-        Browser.Exists(By.Id("unload-list")).Click();
-        Browser.Exists(By.Id("list-not-loaded"));
+        Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
         SetManualInitialIndex(initialItemIndex);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
@@ -6251,7 +6225,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.MountTestComponent<VirtualizationAnchorMode>();
         Browser.SetWindowSize(1024, 2400);
         var container = Browser.Exists(By.Id("scroll-container"));
-        Browser.True(() => GetElementCount(container, ".item") > 0);
+        Browser.Exists(By.Id("list-not-loaded"));
         var js = (IJavaScriptExecutor)Browser;
 
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
@@ -6260,10 +6234,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         if (useProvider)
         {
             Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
             Browser.Exists(By.Id("toggle-delay")).Click();
+            Browser.Contains("Provider delay for Virtualize: 500ms", () => Browser.Exists(By.Id("status")).Text);
         }
-        Browser.Exists(By.Id("unload-list")).Click();
-        Browser.Exists(By.Id("list-not-loaded"));
         SetManualInitialIndex(10);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
@@ -6315,7 +6289,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.MountTestComponent<VirtualizationAnchorMode>();
         Browser.SetWindowSize(1024, 2400);
         var container = Browser.Exists(By.Id("scroll-container"));
-        Browser.True(() => GetElementCount(container, ".item") > 0);
+        Browser.Exists(By.Id("list-not-loaded"));
         var js = (IJavaScriptExecutor)Browser;
 
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
@@ -6324,10 +6298,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         if (useProvider)
         {
             Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
             Browser.Exists(By.Id("toggle-delay")).Click();
+            Browser.Contains("Provider delay for Virtualize: 500ms", () => Browser.Exists(By.Id("status")).Text);
         }
-        Browser.Exists(By.Id("unload-list")).Click();
-        Browser.Exists(By.Id("list-not-loaded"));
         SetManualInitialIndex(950);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
@@ -6350,12 +6324,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
+        Browser.Exists(By.Id("list-not-loaded"));
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '5000px';");
         Browser.Exists(By.Id("set-double-size")).Click();
         Browser.Contains("Item size 100", () => Browser.Exists(By.Id("status")).Text);
         Browser.Exists(By.Id("toggle-provider")).Click();
-        Browser.Exists(By.Id("unload-list")).Click();
-        Browser.Exists(By.Id("list-not-loaded"));
+        Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
         SetManualInitialIndex(990);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
@@ -7045,10 +7019,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationAnchorModeWindowScroll>();
         var root = Browser.Exists(By.Id("virtualize-root"));
-        Browser.True(() => GetElementCount(root, ".item") > 0);
+        Browser.Exists(By.Id("list-not-loaded"));
 
         Browser.Exists(By.Id("toggle-provider")).Click();
-        Browser.True(() => GetElementCount(root, ".item") > 0);
+        Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("load-list")).Click();
+        WaitForRenderToSettle(root, (IJavaScriptExecutor)Browser, useWindowAsViewport: true);
 
         var input = Browser.Exists(By.Id("scroll-target-index"));
         input.SendKeys(Keys.Control + "a");
