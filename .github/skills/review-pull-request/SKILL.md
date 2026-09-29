@@ -119,7 +119,10 @@ behavioral finding. Do not create a candidate that merely requests a test or a
 rationale without a concrete effect.
 
 Reject a candidate when source disproves it, with the precise called edge and full
-return path. When workers disagree, independently re-check the disputed evidence;
+return path. A discard that argues behavior is unchanged must compare the old and new
+observable effect along the candidate's exact input sequence, including same-value and
+recovery paths. A pre-existing mechanism elsewhere in that path does not rule out a
+regression. When workers disagree, independently re-check the disputed evidence;
 unless it settles the trigger and causal path, record the candidate as `UNRESOLVED`
 rather than accepting it.
 Resolve overloaded calls and value-producing expressions before accepting or
