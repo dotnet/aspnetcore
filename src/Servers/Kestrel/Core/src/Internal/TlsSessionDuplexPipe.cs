@@ -147,6 +147,14 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                         }
                         else
                         {
+                            // Accepts the peer certificate without inspecting it. Reachable only
+                            // when a caller passes no validation delegate, which Kestrel never
+                            // does - HttpsConnectionMiddleware always supplies
+                            // AcceptWithDefaultValidation, so the configured
+                            // ClientCertificateMode and ClientCertificateValidation are always
+                            // applied. It exists because the session refuses to proceed until a
+                            // verdict is recorded, and a caller that opted out of validation
+                            // still needs the handshake to finish.
                             _session.SetRemoteCertificateValidationResult(SslPolicyErrors.None);
                         }
 
@@ -367,15 +375,10 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
     /// the session make progress, which keeps the retry loops finite.
     /// </summary>
     private Span<byte> GetOutputSpan(int hint)
-    {
-        if (hint > 0)
-        {
-            return _transport.Output.GetSpan(hint);
-        }
-
-        var destination = _transport.Output.GetSpan(1);
-        return destination.Length >= MinRecordSpan ? destination : _transport.Output.GetSpan(OutputSpanHint);
-    }
+        // GetSpan returns the remainder of the current segment when it can satisfy the request,
+        // and a fresh segment otherwise - which is exactly the "use the tail if it is worth a
+        // record, else start a new segment" rule, without asking twice.
+        => _transport.Output.GetSpan(hint > 0 ? hint : MinRecordSpan);
 
     private void Encrypt(ReadOnlySpan<byte> plaintext)
     {
