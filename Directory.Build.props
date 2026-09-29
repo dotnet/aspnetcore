@@ -223,6 +223,7 @@
     <NetCoreTargetingPackRoot Condition="'$(DotNetBuild)' != 'true'">$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
   </PropertyGroup>
 
+  <!-- RepoTasks are not registered when DesignTimeBuild is true. Targets using them must skip the task invocation in that evaluation. -->
   <Import Project="eng\tools\RepoTasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
 
   <PropertyGroup>

@@ -110,27 +110,38 @@ $headers = @{
 
 Write-Host "Looking up installation for '$InstallationOwner'..."
 try {
-    $installations = @()
+    $installations = [System.Collections.Generic.List[object]]::new()
     $page = 1
     do {
-        $pageInstallations = @(Invoke-RestMethod `
+        $pageResponse = Invoke-RestMethod `
             -Uri "https://api.github.com/app/installations?per_page=100&page=$page" `
             -Headers $headers `
-            -Method Get)
-        $installations += $pageInstallations
+            -Method Get
+        $pageInstallationCount = 0
+        foreach ($installation in $pageResponse) {
+            $installations.Add($installation)
+            $pageInstallationCount++
+        }
         $page++
-    } while ($pageInstallations.Count -eq 100)
+    } while ($pageInstallationCount -eq 100)
 }
 catch {
     Write-PipelineTelemetryError -Category 'Build' -Message "Failed to list GitHub App installations: $_. The signed JWT may be invalid or the App's Client ID ('$AppClientId') may be incorrect."
     exit 1
 }
-$installation = $installations | Where-Object { $_.account.login -ieq $InstallationOwner } | Select-Object -First 1
-if (-not $installation) {
+$matchingInstallations = @($installations | Where-Object { $_.account.login -ieq $InstallationOwner })
+if ($matchingInstallations.Count -eq 0) {
     $found = ($installations | ForEach-Object { $_.account.login }) -join ', '
     Write-PipelineTelemetryError -Category 'Build' -Message "No installation found for '$InstallationOwner'. App is installed on: $found"
     exit 1
 }
+if ($matchingInstallations.Count -ne 1) {
+    $matchingIds = ($matchingInstallations | ForEach-Object { $_.id }) -join ', '
+    Write-PipelineTelemetryError -Category 'Build' -Message "Found multiple installations for '$InstallationOwner': $matchingIds"
+    exit 1
+}
+$installation = $matchingInstallations[0]
+Write-Host "Using installation $($installation.id) for '$($installation.account.login)'."
 
 try {
     $tokenResponse = Invoke-RestMethod `

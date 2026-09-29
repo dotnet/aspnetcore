@@ -291,8 +291,7 @@ internal static class JsonRequestHelpers
                 if (CanBindQueryStringVariable(serverCallContext, item.Key))
                 {
                     var pathDescriptors = GetPathDescriptors(serverCallContext, requestMessage, item.Key);
-
-                    if (pathDescriptors != null)
+                    if (pathDescriptors != null && !ConflictsWithRouteParameter(serverCallContext, pathDescriptors))
                     {
                         var value = item.Value.Count == 1 ? (object?)item.Value[0] : item.Value;
                         ServiceDescriptorHelpers.RecursiveSetValue(requestMessage, pathDescriptors, value);
@@ -362,14 +361,14 @@ internal static class JsonRequestHelpers
     private static List<FieldDescriptor>? GetPathDescriptors(JsonTranscodingServerCallContext serverCallContext, IMessage requestMessage, string path)
     {
         // Must not add null values for paths that don't resolve to a descriptor
-        var cache = serverCallContext.DescriptorInfo.PathDescriptorsCache;
-        if (cache.TryGetValue(path, out var pathDescriptors))
+        var descriptorInfo = serverCallContext.DescriptorInfo;
+        if (descriptorInfo.PathDescriptorsCache.TryGetValue(path, out var pathDescriptors))
         {
             return pathDescriptors;
         }
         if (ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, path.Split('.'), allowJsonName: true, out pathDescriptors))
         {
-            cache.TryAdd(path, pathDescriptors);
+            descriptorInfo.TryAddPathDescriptors(path, pathDescriptors);
             return pathDescriptors;
         }
         return null;
@@ -444,11 +443,37 @@ internal static class JsonRequestHelpers
             return false;
         }
 
-        // Also check JSON name aliases. Route parameter keys use proto names (e.g. "user_id"),
-        // but query parameters can use JSON names (e.g. "userId") which resolve to the same field.
-        if (serverCallContext.DescriptorInfo.RouteParameterJsonPaths.Contains(variable))
+        return true;
+    }
+
+    // A query string variable must not overwrite a value already bound from a route parameter.
+    // The variable is compared against route parameters by resolved field identity so that
+    // proto-name, JSON-name, and mixed-name spellings (e.g. "tenantScope.tenant_id") as well as
+    // ancestor paths (e.g. "timestamp_value" overwriting a route-bound "timestamp_value.seconds")
+    // are all detected.
+    private static bool ConflictsWithRouteParameter(JsonTranscodingServerCallContext serverCallContext, List<FieldDescriptor> pathDescriptors)
+    {
+        foreach (var routeParameter in serverCallContext.DescriptorInfo.RouteParameterDescriptors.Values)
         {
-            return false;
+            if (PathsOverlap(pathDescriptors, routeParameter.DescriptorsPath))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Two field paths overlap when one is equal to, or an ancestor of, the other.
+    private static bool PathsOverlap(List<FieldDescriptor> first, List<FieldDescriptor> second)
+    {
+        var count = Math.Min(first.Count, second.Count);
+        for (var i = 0; i < count; i++)
+        {
+            if (first[i] != second[i])
+            {
+                return false;
+            }
         }
 
         return true;

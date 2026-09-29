@@ -57,6 +57,7 @@
 
     <script>
         (function () {
+            myJsRootComponentInitializers.captureRendererInterop(Blazor);
             if (location.hash.indexOf('initializer') !== -1) {
                 const element = document.createElement('div');
                 element.id = 'initializers-content';

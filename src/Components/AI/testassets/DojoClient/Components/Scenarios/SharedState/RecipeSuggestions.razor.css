@@ -1,0 +1,28 @@
+.recipe-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 48px 12px;
+}
+
+.recipe-suggestions button {
+    background: #fff;
+    border: 1px solid #e5e5e8;
+    border-radius: 999px;
+    color: #111;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 7px 12px;
+}
+
+.recipe-suggestions button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+@media (max-width: 48rem) {
+    .recipe-suggestions {
+        padding: 0 16px 12px;
+    }
+}
