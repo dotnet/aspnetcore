@@ -5,11 +5,13 @@
 * Never change global.json unless explicitly asked to.
 * Never change package.json or package-lock.json files unless explicitly asked to.
 * Never change NuGet.config files unless explicitly asked to.
+* When a user explicitly requires a named skill that is not loaded, check the configured repository and user skill/plugin sources before substituting another workflow. Load the available skill and follow it; do not install arbitrary remote sources or silently approximate its workflow.
 
 ## Task Scope and Completion
 
 * Before implementing a reported issue, verify the behavior on the current default branch, inspect relevant history and documentation, and establish the smallest faithful reproduction. If the user asks only to investigate or characterize, do not change shipping code or create or update a pull request until implementation is explicitly requested.
 * Define the acceptance criteria before implementation. Do not claim completion or create or update a pull request until the requested acceptance criteria are green; identify any intentionally excluded cases or unverified boundaries.
+* Before replacing a parser, formatter, serializer, or persisted/protected payload representation, characterize valid, malformed, and legacy inputs, exceptions versus fallback, relevant OS/culture behavior, and rolling-upgrade compatibility. Agree on the intended behavior before implementing or testing a replacement.
 
 ## Minimal diffs
 
@@ -65,7 +67,10 @@
 
 ## Running tests
 
-* To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder. For example, to run the build with tests in the `src/Http` directory, run `./src/Http/build.sh -test`.
+* Read the product area's `AGENTS.md` and build wrapper before choosing a validation command. In a fresh worktree, identify the SDK, submodules, generated assets, and native tools required by the intended path. Use the area's `src\<area>\build.cmd -test` on Windows or `./src/<area>/build.sh -test` on Linux/macOS for area-level validation (for example, `src\Http\build.cmd -test` on Windows). Start with the smallest project or documented focused command that faithfully covers the change, then use the area wrapper when its broader integration coverage is relevant. If an unrelated prerequisite stops the wrapper before reaching the changed target, name that prerequisite and report the narrower validation boundary; do not equate targeted validation with the area build or bypass a prerequisite needed by the changed behavior.
+* Inspect a changed project's declared target frameworks and compile each target buildable in the current environment before opening or undrafting a pull request. A build of only the newest target does not establish compatibility with other targets; report any targets that could not be built.
+* Do not run overlapping `dotnet build` or `dotnet test` graphs concurrently when they share the repository `artifacts` tree. Use sequential invocations unless outputs are isolated or a no-build path has been verified; if `CS2012` or file-in-use/access-denied errors occur, retry the smallest affected build serially (with `/m:1` if needed) before attributing them to the change.
+* Check the observable outcome, not only the exit code: confirm that filtered tests selected a nonzero intended set and reached the relevant assertion or behavior, and that build/pack commands produced the required artifacts. A prerequisite failure before the test runs is not a test result.
 * Before claiming a bug fix is verified, confirm that the relevant test or check fails for the expected reason without the fix and passes with it. Reading the source or seeing a test pass on its own is not proof that the bug is fixed.
 * For a `[Theory]` or other parameterized test, confirm that each row fails for the expected reason without the fix and passes with it; a red test proves only that at least one row failed. `dotnet test --filter` cannot select an individual `InlineData` row by parameter value, so inspect every case in the test output instead of relying on the `Failed!` or `Passed!` summary. A row that passes because its targeted scenario or code path never ran, such as from unmet setup, a missing prerequisite, or conditional execution, does not verify the fix.
 * For behavioral review findings and bug-fix verification, use the smallest faithful test path. Include the component, service, runtime, or browser mechanism that owns or produces each disputed precondition, and observe the claimed material effect at the appropriate boundary, such as UI, protocol, persisted state, resource use, timing or performance, logging, or another contract-relevant behavior. Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
@@ -81,6 +86,20 @@
   * On Linux/Mac: `source activate.sh` (from repository root)
 * If not in the repository root, navigate there first or use the full path to the activation script.
 * This ensures that the correct version of .NET SDK is used for the repository.
+* If activation reports the repository SDK missing, run `restore.cmd` on Windows or `./restore.sh` on Linux/macOS from the repository root, wait for it to complete, then reactivate and retry. Do not restore repeatedly for an unrelated failure.
+* On Windows, if a focused build fails before product compilation because the `Microsoft.SourceLink.AzureRepos.Git.TranslateRepositoryUrls` task host cannot load, retry that build locally with `-p:EnableSourceControlManagerQueries=false -p:EnableSourceLink=false`. Record that SourceLink was disabled for this diagnostic build and rely on normal CI to validate it; do not change repository build configuration or apply these flags to unrelated failures.
+
+## Pull request maintenance
+
+* Before declaring a PR feedback pass complete, inspect conversation comments, submitted review bodies (including minimized or suppressed content), inline threads (including resolved or outdated threads), requested-changes state, and checks for the current head SHA. Evaluate feedback against the issue and current target branch rather than accepting it blindly; explain with evidence when feedback is obsolete, incorrect, or out of scope.
+* Reply within each addressed inline thread, and resolve it only after the response and any fix are pushed. Record which feedback was addressed or declined, the resulting head commit, validation, and outstanding blockers.
+* Before opening a PR from a new worktree branch, check the intended head commit and base, publish the head branch, and check for an existing PR. Verify the created PR's head and base; if creation reports an unexpected `main/main` comparison or HTTP 422, inspect the actual branch and publication state before retrying.
+
+## Azure Pipelines and Helix CI
+
+* Resolve every red Azure Pipelines aggregate to its build and timeline job, and, when present, the Helix job/work item, failure stage, exit code, test results, and relevant logs. Distinguish product/test failures from pre-Helix restore, submission, reporter, post-test, merge-conflict, and infrastructure failures; a red aggregate alone is not evidence of a product regression.
+* Correlate each failure with the PR diff and build progression. Use Build Analysis, Build Insights/known-issue evidence, and the exact target-parent build's matching job, batch, or test when attribution is unclear; treat classifications and historical rates as leads, not proof.
+* Retry only after accounting for every current failure. When GitHub rerequest is unsupported for an external Azure Pipelines check, use a scoped `/azp run <pipeline-name>` comment rather than an empty commit or a retry of an immutable Helix monitor result. Verify the bot acknowledgement, replacement build ID, PR source SHA, and terminal build plus Build Analysis/Build Insights state; do not repeatedly retry an unmatched failure.
 
 ## ASP.NET Core Components Area
 * When working on issues under the src/Components area, follow the instructions in [./instructions/components.instructions.md](./instructions/components.instructions.md).
