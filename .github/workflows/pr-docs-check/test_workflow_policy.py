@@ -3,12 +3,14 @@ from pathlib import Path
 
 
 WORKFLOW = Path(__file__).parents[1] / "pr-docs-check.md"
+COMPILED_WORKFLOW = Path(__file__).parents[1] / "pr-docs-check.lock.yml"
 
 
 class WorkflowPolicyTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
+        cls.compiled_workflow = COMPILED_WORKFLOW.read_text(encoding="utf-8")
 
     def test_directory_values_do_not_require_optional_surfaces(self):
         self.assertIn(
@@ -61,8 +63,17 @@ class WorkflowPolicyTests(unittest.TestCase):
         for command in ("install", "touch", "cp", "python3", "curl", "base64", "rm"):
             self.assertNotRegex(tools, rf"\b{command}\b")
 
-    def test_turn_cap_is_not_raised_as_the_fix(self):
+    def test_workflow_recovery_policy(self):
         self.assertIn("\nmax-turns: 100\n", self.workflow)
+
+        create_pull_request = self.workflow.split("  create-pull-request:", 1)[1].split(
+            "  push-to-pull-request-branch:", 1
+        )[0]
+
+        self.assertIn("    preserve-branch-name: true", create_pull_request)
+        self.assertIn("    recreate-ref: true", create_pull_request)
+        self.assertIn('\\"preserve_branch_name\\":true', self.compiled_workflow)
+        self.assertIn('\\"recreate_ref\\":true', self.compiled_workflow)
 
 
 if __name__ == "__main__":
