@@ -215,7 +215,42 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: GET /", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
+    }
+
+    [Fact]
+    public void MapGet_ThrowsWithImplicitFromBody_IncludesRoutePatternAndMethodName()
+    {
+        static void GetTodo(int id, Todo todo) { }
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapGet("/todos/{id}", GetTodo);
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: GET /todos/{id} => GetTodo", ex.Message);
+    }
+
+    [Fact]
+    public void MapPost_ThrowsWithMultipleInferredBodies_IncludesEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapPost("/todos", (Todo todo1, Todo todo2) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Contains("Failure to infer one or more parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: POST /todos", ex.Message);
+    }
+
+    [Fact]
+    public void MapPost_ThrowsWithFormAndJsonBodies_IncludesEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapPost("/todos", (IFormFile file, [TestFromBody] Todo todo) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Contains("An action cannot use both form and JSON body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: POST /todos", ex.Message);
     }
 
     [Fact]
@@ -226,6 +261,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: DELETE /", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
@@ -254,6 +290,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains($"Endpoint: HTTP: {method} /", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
