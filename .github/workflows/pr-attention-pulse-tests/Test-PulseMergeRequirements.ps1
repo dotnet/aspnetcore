@@ -133,7 +133,7 @@ try
                 $combined = if ($scope -ceq "blazor") { New-CombinedPulse $pulse $other } else { New-CombinedPulse $other $pulse }
                 $body = Invoke-Renderer -Pulse $combined
                 Assert-True ([regex]::Matches($body, "(?m)^## Verify discussion before merge$").Count -eq 2) "Both scopes require explicit merge verification."
-                Assert-True ([regex]::Matches($body, "(?m)^<details>$").Count -eq 2 -and -not $body.Contains("<details open>")) "Both scopes remain collapsed."
+                Assert-True ([regex]::Matches($body, "(?m)^<details>$").Count -eq 3 -and -not $body.Contains("<details open>")) "Both scopes and the snapshot identity remain collapsed."
                 Assert-True ($body.IndexOf("<strong>Blazor</strong>") -lt $body.IndexOf("<strong>Repository-wide</strong>")) "Scope order must remain exact."
                 Assert-True (-not ($body -match "\b[0-9]+d idle\b")) "Age remains days-open only."
                 $canonical = Invoke-PinnedOutputSanitizer -Content $body

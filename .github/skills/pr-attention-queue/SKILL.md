@@ -216,6 +216,11 @@ maintain a second semantic mapping.
 An incomplete repository query is an error, not a partial result. Consumers must reject output
 where `query.complete` is not `true`.
 
+When GitHub initially reports unknown mergeability, the existing bounded retry refreshes both
+`mergeable` and `mergeStateStatus` from the same response. Resolving mergeability alone is not
+merge clearance: missing or unknown state remains unqualified, and merge candidates still require
+`CLEAN` state plus the existing review and discussion gates.
+
 The root `discussion` summary and each assessed item's `discussionAssessment` are additive contract
 fields. `discussionAssessment.state == verification-needed` is not a new bucket or an inference
 that the author is next. It means the item must be opened and its surfaced evidence interpreted
