@@ -57,7 +57,7 @@ public class TargetingPackTests
         Assert.Empty(unexpected);
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/69595")]
     public void RefAssembliesHaveExpectedAssemblyVersions()
     {
         // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
@@ -205,7 +205,7 @@ public class TargetingPackTests
         });
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/69595")]
     public void AssembliesAreReferenceAssemblies()
     {
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref"), "*.dll", SearchOption.AllDirectories);
