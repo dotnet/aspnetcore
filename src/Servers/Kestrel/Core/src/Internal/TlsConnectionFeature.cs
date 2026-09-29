@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -25,6 +26,14 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     private readonly ConnectionContext _context;
     private readonly ILogger<HttpsConnectionMiddleware> _logger;
     private bool _snapshotted;
+
+    /// <summary>
+    /// Whether the negotiated values are served from cached fields rather than from a live
+    /// <see cref="SslStream"/>. When this is false there is always an SslStream to read from,
+    /// which lets the accessors below drop their null-forgiving operators.
+    /// </summary>
+    [MemberNotNullWhen(false, nameof(_sslStream))]
+    private bool Snapshotted => _snapshotted;
 
     private X509Certificate2? _clientCert;
     private Task<X509Certificate2?>? _clientCertTask;
@@ -159,9 +168,9 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     public string HostName { get; set; } = string.Empty;
 
-    public ReadOnlyMemory<byte> ApplicationProtocol => _snapshotted ? _applicationProtocol : _sslStream!.NegotiatedApplicationProtocol.Protocol;
+    public ReadOnlyMemory<byte> ApplicationProtocol => Snapshotted ? _applicationProtocol : _sslStream.NegotiatedApplicationProtocol.Protocol;
 
-    public SslProtocols Protocol => _snapshotted ? _protocol : _sslStream!.SslProtocol;
+    public SslProtocols Protocol => Snapshotted ? _protocol : _sslStream.SslProtocol;
 
     /// <summary>
     /// Only reachable on an SslStream-backed connection. A session-backed feature is never
@@ -181,25 +190,25 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     // A session-backed feature is snapshotted at construction, so the _sslStream branch of the
     // ternaries below is unreachable in that case - hence the null-forgiving operator.
 
-    public TlsCipherSuite? NegotiatedCipherSuite => _snapshotted ? _negotiatedCipherSuite : _sslStream!.NegotiatedCipherSuite;
+    public TlsCipherSuite? NegotiatedCipherSuite => Snapshotted ? _negotiatedCipherSuite : _sslStream.NegotiatedCipherSuite;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public CipherAlgorithmType CipherAlgorithm => _snapshotted ? _cipherAlgorithm : _sslStream!.CipherAlgorithm;
+    public CipherAlgorithmType CipherAlgorithm => Snapshotted ? _cipherAlgorithm : _sslStream.CipherAlgorithm;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int CipherStrength => _snapshotted ? _cipherStrength : _sslStream!.CipherStrength;
+    public int CipherStrength => Snapshotted ? _cipherStrength : _sslStream.CipherStrength;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public HashAlgorithmType HashAlgorithm => _snapshotted ? _hashAlgorithm : _sslStream!.HashAlgorithm;
+    public HashAlgorithmType HashAlgorithm => Snapshotted ? _hashAlgorithm : _sslStream.HashAlgorithm;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int HashStrength => _snapshotted ? _hashStrength : _sslStream!.HashStrength;
+    public int HashStrength => Snapshotted ? _hashStrength : _sslStream.HashStrength;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public ExchangeAlgorithmType KeyExchangeAlgorithm => _snapshotted ? _keyExchangeAlgorithm : _sslStream!.KeyExchangeAlgorithm;
+    public ExchangeAlgorithmType KeyExchangeAlgorithm => Snapshotted ? _keyExchangeAlgorithm : _sslStream.KeyExchangeAlgorithm;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int KeyExchangeStrength => _snapshotted ? _keyExchangeStrength : _sslStream!.KeyExchangeStrength;
+    public int KeyExchangeStrength => Snapshotted ? _keyExchangeStrength : _sslStream.KeyExchangeStrength;
 
     private SslApplicationProtocol NegotiatedApplicationProtocolValue
         => _session is not null
