@@ -30,9 +30,9 @@ public class QuarantinedTestAttributeTest
     public void QuarantinedTestData_AddsTraitOnlyOnSelectedOperatingSystems()
     {
         var traits = new Dictionary<string, List<string>>();
-        var currentOperatingSystem = OperatingSystem.IsWindows()
+        var currentOperatingSystem = TestPlatformHelper.IsWindows
             ? OperatingSystems.Windows
-            : OperatingSystem.IsLinux()
+            : TestPlatformHelper.IsLinux
                 ? OperatingSystems.Linux
                 : OperatingSystems.MacOSX;
 

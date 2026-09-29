@@ -50,7 +50,7 @@ public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.Conditi
     [QuarantinedTestData("No issue, used to verify operating system-specific theory data quarantine", OperatingSystems.MacOSX, OperatingSystems.MacOSX)]
     public void QuarantinedTestData_AppliesTraitToSelectedRow(OperatingSystems operatingSystem)
     {
-        Assert.True(Enum.IsDefined(operatingSystem));
+        Assert.True(Enum.IsDefined(typeof(OperatingSystems), operatingSystem));
     }
 
     [ConditionalTheory(Skip = "Skip this")]
