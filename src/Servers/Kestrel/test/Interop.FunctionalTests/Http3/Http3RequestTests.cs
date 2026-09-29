@@ -448,7 +448,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_ClientCancellationUpload_RequestAbortRaised(HttpProtocols protocol)
     {
@@ -965,7 +965,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
     {
@@ -1160,7 +1160,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalTheory]
     [MsQuicSupported]
-    [InlineData(HttpProtocols.Http3)]
+    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task ApplicationWriteWhenConnectionClosesPreservesMemory(HttpProtocols protocol)
     {
@@ -1287,7 +1287,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [InlineData(HttpProtocols.Http3)]
+    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task GET_ClientCancellationAfterResponseHeaders_RequestAbortRaised(HttpProtocols protocol)
     {

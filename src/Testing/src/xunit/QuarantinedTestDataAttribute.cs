@@ -10,7 +10,7 @@ using Xunit.Sdk;
 namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
-/// Supplies a theory data row that is quarantined on the specified operating systems.
+/// Supplies a <see cref="ConditionalTheoryAttribute"/> data row that is quarantined on the specified operating systems.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class QuarantinedTestDataAttribute : DataAttribute
@@ -18,9 +18,9 @@ public sealed class QuarantinedTestDataAttribute : DataAttribute
     private readonly object[] _data;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="QuarantinedTestDataAttribute"/> class.
+    /// Initializes a new instance of the <see cref="QuarantinedTestDataAttribute"/> class for use with <see cref="ConditionalTheoryAttribute"/>.
     /// </summary>
-    /// <param name="reason">A reason that this test data row is quarantined. Preferably a Github issue Url.</param>
+    /// <param name="reason">A reason that this test data row is quarantined. Preferably a GitHub issue URL.</param>
     /// <param name="operatingSystems">The operating systems where the test data row is quarantined.</param>
     /// <param name="data">The data values to pass to the theory.</param>
     public QuarantinedTestDataAttribute(string reason, OperatingSystems operatingSystems, params object[] data)
