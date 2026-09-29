@@ -589,10 +589,39 @@ function Get-HumanReviews {
                     State = $state
                     SubmittedAt = [datetime]$submittedAt
                     CommitOid = [string](Get-PropertyValue -Object $commit -Name "oid" -DefaultValue "")
+                    BodyKind = Get-DiscussionCommentKind `
+                        -Body ([string](Get-PropertyValue -Object $review -Name "bodyText" -DefaultValue "")) `
+                        -IsAuthor $false
+                    HasBodyText = $null -ne $review.PSObject.Properties["bodyText"]
+                    HasBody = -not [string]::IsNullOrWhiteSpace([string](Get-PropertyValue -Object $review -Name "bodyText" -DefaultValue ""))
                 }
             }
         }
     ) | Sort-Object -Property SubmittedAt -Descending
+}
+
+function Get-OutstandingReviewComments {
+    param(
+        [object[]]$HumanReviews,
+        [string]$HeadSha
+    )
+
+    $approvals = @($HumanReviews | Where-Object { $_.State -eq "APPROVED" -and $_.CommitOid })
+    foreach ($review in $HumanReviews) {
+        if ($review.State -ne "COMMENTED" -or $review.BodyKind -eq "informational") {
+            continue
+        }
+
+        # A later push must not reopen feedback already approved on the reviewed commit.
+        $subsequentApproval = $approvals | Where-Object {
+            $review.Login -and $_.Login -eq $review.Login -and
+                $_.SubmittedAt -gt $review.SubmittedAt -and
+                ($_.CommitOid -eq $HeadSha -or $_.CommitOid -eq $review.CommitOid)
+        } | Select-Object -First 1
+        if (-not $subsequentApproval) {
+            $review
+        }
+    }
 }
 
 function Get-LatestAuthorCommentAt {
@@ -687,7 +716,8 @@ function Get-DiscussionAssessment {
     param(
         [object]$PullRequest,
         [object]$AuthorInfo,
-        [string[]]$KnownBotPatterns
+        [string[]]$KnownBotPatterns,
+        [switch]$ForMerge
     )
 
     $humanReviews = @(
@@ -696,7 +726,6 @@ function Get-DiscussionAssessment {
             -KnownBotPatterns $KnownBotPatterns `
             -AuthorLogin $AuthorInfo.Login
     )
-    $latestHumanReview = if ($humanReviews.Count -gt 0) { $humanReviews[0] } else { $null }
     $discussionComments = @(
         ConvertTo-Array (Get-PropertyValue -Object $PullRequest -Name "discussionComments")
     )
@@ -784,6 +813,21 @@ function Get-DiscussionAssessment {
     }
 
     $signals = [System.Collections.Generic.List[string]]::new()
+    if ($ForMerge) {
+        $commentsComplete = $commentsComplete -and $hasDiscussionCommentData -and
+            [bool](Get-PropertyValue -Object $PullRequest -Name "discussionCommentsComplete" -DefaultValue $false)
+        $threadsComplete = $threadsComplete -and $hasDiscussionThreadData -and
+            [bool](Get-PropertyValue -Object $PullRequest -Name "discussionThreadsComplete" -DefaultValue $false)
+        if (-not [bool](Get-PropertyValue -Object $PullRequest -Name "reviewEvidenceComplete" -DefaultValue $false)) {
+            $signals.Add("review-evidence-incomplete")
+        }
+        $headSha = [string](Get-PropertyValue -Object $PullRequest -Name "headRefOid" -DefaultValue "")
+        $reviewFeedback = @(Get-OutstandingReviewComments -HumanReviews $humanReviews -HeadSha $headSha |
+            Where-Object { $_.HasBody -or -not $_.HasBodyText })
+        if ($reviewFeedback.Count -gt 0) {
+            $signals.Add("review-feedback-requires-verification")
+        }
+    }
     if (-not $commentsComplete -or -not $threadsComplete) {
         $signals.Add("discussion-incomplete")
     }
@@ -795,6 +839,15 @@ function Get-DiscussionAssessment {
         }
         elseif ($comment.Actor -notin @("author", "automation") -and
             $comment.Kind -ne "informational") {
+            if ($ForMerge) {
+                $reviewerDisposition = @($humanReviews | Where-Object { $_.Login -eq $comment.Author } | Select-Object -First 1)
+                if ($reviewerDisposition.Count -gt 0 -and
+                    $reviewerDisposition[0].State -eq "APPROVED" -and
+                    $headSha -and $reviewerDisposition[0].CommitOid -eq $headSha -and
+                    $reviewerDisposition[0].SubmittedAt -gt $comment.CreatedAt) {
+                    continue
+                }
+            }
             if ($latestAuthorActivityAt -and $comment.CreatedAt -gt $latestAuthorActivityAt) {
                 $signals.Add("non-author-discussion-after-author-response")
             }
@@ -819,7 +872,8 @@ function Get-DiscussionAssessment {
 
     return [pscustomobject]@{
         State = $state
-        Complete = $commentsComplete -and $threadsComplete
+        Complete = $commentsComplete -and $threadsComplete -and
+            (-not $ForMerge -or -not $signals.Contains("review-evidence-incomplete"))
         Signals = $uniqueSignals
         Comments = @($comments | Select-Object -First 10)
         CommentTotalCount = $commentTotalCount
@@ -1740,14 +1794,19 @@ pr$number`: pullRequest(number: $number) {
   mergeStateStatus
   reviewDecision
   reviews(last: 50) {
+    totalCount
+    pageInfo { hasPreviousPage }
     nodes {
       author { login }
       state
       submittedAt
       commit { oid }
+      bodyText
     }
   }
   reviewRequests(first: 20) {
+    totalCount
+    pageInfo { hasNextPage }
     nodes {
       requestedReviewer {
         ... on User { login }
@@ -1887,6 +1946,19 @@ pr$number`: pullRequest(number: $number) {
                 -NotePropertyValue (Get-PropertyValue -Object $detail -Name "reviewDecision" -DefaultValue "") `
                 -Force
             $pullRequest | Add-Member -NotePropertyName "latestReviews" -NotePropertyValue $reviews -Force
+            $reviewConnection = Get-PropertyValue -Object $detail -Name "reviews"
+            $requestConnection = Get-PropertyValue -Object $detail -Name "reviewRequests"
+            $reviewPage = Get-PropertyValue -Object $reviewConnection -Name "pageInfo"
+            $requestPage = Get-PropertyValue -Object $requestConnection -Name "pageInfo"
+            $reviewEvidenceComplete = $null -ne $reviewConnection -and $null -ne $requestConnection -and
+                $null -ne $reviewConnection.PSObject.Properties["nodes"] -and
+                $null -ne $requestConnection.PSObject.Properties["nodes"] -and
+                -not [bool](Get-PropertyValue -Object $reviewPage -Name "hasPreviousPage" -DefaultValue $true) -and
+                -not [bool](Get-PropertyValue -Object $requestPage -Name "hasNextPage" -DefaultValue $true) -and
+                [int](Get-PropertyValue -Object $reviewConnection -Name "totalCount" -DefaultValue -1) -eq $reviews.Count -and
+                [int](Get-PropertyValue -Object $requestConnection -Name "totalCount" -DefaultValue -1) -eq $reviewRequests.Count -and
+                @($reviewRequests | Where-Object { -not $_.requestedAt }).Count -eq 0
+            $pullRequest | Add-Member -NotePropertyName "reviewEvidenceComplete" -NotePropertyValue $reviewEvidenceComplete -Force
             $pullRequest | Add-Member -NotePropertyName "reviewRequests" -NotePropertyValue $reviewRequests -Force
             $pullRequest | Add-Member -NotePropertyName "comments" -NotePropertyValue $comments -Force
             $pullRequest | Add-Member -NotePropertyName "statusCheckRollup" -NotePropertyValue $statusCheckRollup -Force
@@ -1972,6 +2044,14 @@ pr$number`: pullRequest(number: $number) {
             )
             $commentsPageInfo = Get-PropertyValue -Object $commentsConnection -Name "pageInfo"
             $threadsPageInfo = Get-PropertyValue -Object $threadsConnection -Name "pageInfo"
+            $commentsComplete = $null -ne $commentsConnection -and
+                $null -ne $commentsConnection.PSObject.Properties["nodes"] -and
+                -not [bool](Get-PropertyValue -Object $commentsPageInfo -Name "hasPreviousPage" -DefaultValue $true) -and
+                [int](Get-PropertyValue -Object $commentsConnection -Name "totalCount" -DefaultValue -1) -eq $comments.Count
+            $threadsComplete = $null -ne $threadsConnection -and
+                $null -ne $threadsConnection.PSObject.Properties["nodes"] -and
+                -not [bool](Get-PropertyValue -Object $threadsPageInfo -Name "hasPreviousPage" -DefaultValue $true) -and
+                [int](Get-PropertyValue -Object $threadsConnection -Name "totalCount" -DefaultValue -1) -eq $threads.Count
 
             $pullRequest | Add-Member -NotePropertyName "discussionComments" -NotePropertyValue $comments -Force
             $pullRequest | Add-Member `
@@ -1980,7 +2060,7 @@ pr$number`: pullRequest(number: $number) {
                 -Force
             $pullRequest | Add-Member `
                 -NotePropertyName "discussionCommentsComplete" `
-                -NotePropertyValue (-not [bool](Get-PropertyValue -Object $commentsPageInfo -Name "hasPreviousPage" -DefaultValue $true)) `
+                -NotePropertyValue $commentsComplete `
                 -Force
             $pullRequest | Add-Member -NotePropertyName "discussionThreads" -NotePropertyValue $threads -Force
             $pullRequest | Add-Member `
@@ -1989,7 +2069,7 @@ pr$number`: pullRequest(number: $number) {
                 -Force
             $pullRequest | Add-Member `
                 -NotePropertyName "discussionThreadsComplete" `
-                -NotePropertyValue (-not [bool](Get-PropertyValue -Object $threadsPageInfo -Name "hasPreviousPage" -DefaultValue $true)) `
+                -NotePropertyValue $threadsComplete `
                 -Force
         }
     }
@@ -2006,7 +2086,8 @@ function Resolve-UnknownMergeable {
     pass classifies conflicting pull requests as though they were mergeable and
     a later run returns a different queue for unchanged data. This re-queries
     the unresolved pull requests until GitHub reports a value or the attempts
-    run out, and reports how many remain unresolved.
+    run out, refreshing the merge state from the same response so classification
+    does not retain the initial UNKNOWN state, and reports how many remain unresolved.
     #>
     [CmdletBinding()]
     param(
@@ -2055,7 +2136,7 @@ function Resolve-UnknownMergeable {
             $aliases = @(
                 foreach ($candidate in $chunk) {
                     $number = [int]$candidate.PullRequest.number
-                    "pr$number`: pullRequest(number: $number) { number mergeable }"
+                    "pr$number`: pullRequest(number: $number) { number mergeable mergeStateStatus }"
                 }
             )
             $query = 'query($owner:String!,$name:String!){repository(owner:$owner,name:$name){' +
@@ -2094,7 +2175,11 @@ function Resolve-UnknownMergeable {
 
                 $candidate.PullRequest | Add-Member `
                     -NotePropertyName "mergeable" `
-                    -NotePropertyValue (Get-PropertyValue -Object $detail -Name "mergeable" -DefaultValue "UNKNOWN") `
+                    -NotePropertyValue ((Get-PropertyValue -Object $detail -Name "mergeable" -DefaultValue "UNKNOWN") ?? "UNKNOWN") `
+                    -Force
+                $candidate.PullRequest | Add-Member `
+                    -NotePropertyName "mergeStateStatus" `
+                    -NotePropertyValue (Get-PropertyValue -Object $detail -Name "mergeStateStatus" -DefaultValue "UNKNOWN") `
                     -Force
             }
         }
@@ -2195,7 +2280,7 @@ function Get-Classification {
             -KnownBotPatterns $knownBotPatterns `
             -AuthorLogin $AuthorInfo.Login
     )
-    $latestHumanReview = if ($humanReviews.Count -gt 0) { $humanReviews[0] } else { $null }
+    $ownershipReview = if ($humanReviews.Count -gt 0) { $humanReviews[0] } else { $null }
     $latestAuthorCommentAt = Get-LatestAuthorCommentAt -PullRequest $PullRequest -AuthorLogin $AuthorInfo.Login
     $humanReviewRequests = @(Get-HumanReviewRequests -PullRequest $PullRequest -KnownBotPatterns $knownBotPatterns)
     $humanReviewRequestCount = $humanReviewRequests.Count
@@ -2211,6 +2296,13 @@ function Get-Classification {
     $updatedAt = [datetime](Get-PropertyValue -Object $PullRequest -Name "updatedAt" -DefaultValue $createdAt)
     $headSha = [string](Get-PropertyValue -Object $PullRequest -Name "headRefOid" -DefaultValue "")
     $reviewDecision = [string](Get-PropertyValue -Object $PullRequest -Name "reviewDecision" -DefaultValue "")
+    if ($reviewDecision -eq "APPROVED") {
+        $actionableFeedback = @(Get-OutstandingReviewComments -HumanReviews $humanReviews -HeadSha $headSha |
+            Where-Object { $_.BodyKind -eq "actionable" })
+        if ($actionableFeedback.Count -gt 0) {
+            $ownershipReview = $actionableFeedback[0]
+        }
+    }
     $mergeable = [string](Get-PropertyValue -Object $PullRequest -Name "mergeable" -DefaultValue "UNKNOWN")
     $mergeStateStatus = [string](Get-PropertyValue -Object $PullRequest -Name "mergeStateStatus" -DefaultValue "CLEAN")
     $isDraft = [bool](Get-PropertyValue -Object $PullRequest -Name "isDraft" -DefaultValue $false)
@@ -2222,17 +2314,36 @@ function Get-Classification {
         (Test-AnyExactMatch -Values $Labels -ExpectedValues @($Settings.blockedLabelsExact))
     $ciRerunPending = Test-AnyExactMatch -Values $Labels -ExpectedValues @($Settings.pendingCiLabels)
     $designGate = Test-AnyWildcardMatch -Values $Labels -Patterns @($Settings.designGateLabels)
-    $headChangedAfterReview = $latestHumanReview -and
-        $latestHumanReview.CommitOid -and
+    $headChangedAfterReview = $ownershipReview -and
+        $ownershipReview.CommitOid -and
         $headSha -and
-        $latestHumanReview.CommitOid -ne $headSha
-    $authorCommentedAfterReview = $latestHumanReview -and
+        $ownershipReview.CommitOid -ne $headSha
+    $authorCommentedAfterReview = $ownershipReview -and
         $latestAuthorCommentAt -and
-        $latestAuthorCommentAt -gt $latestHumanReview.SubmittedAt
+        $latestAuthorCommentAt -gt $ownershipReview.SubmittedAt
     $authorRespondedAfterReview = $headChangedAfterReview -or $authorCommentedAfterReview
-    $latestReviewerCommentIsCurrent = $latestHumanReview -and
-        $latestHumanReview.State -eq "COMMENTED" -and
-        (-not $latestReviewRequestAt -or $latestHumanReview.SubmittedAt -ge $latestReviewRequestAt)
+    $latestReviewerCommentIsCurrent = $ownershipReview -and
+        $ownershipReview.State -eq "COMMENTED" -and
+        (-not $latestReviewRequestAt -or $ownershipReview.SubmittedAt -ge $latestReviewRequestAt)
+    $approvedFeedbackNeedsAction = $ownershipReview -and
+        $ownershipReview.State -eq "COMMENTED" -and $ownershipReview.BodyKind -eq "actionable"
+    $reviewRequestedAfterReview = $ownershipReview -and $latestReviewRequestAt -and
+        $latestReviewRequestAt -gt $ownershipReview.SubmittedAt
+    if ($reviewDecision -eq "APPROVED" -and -not $reviewRequestedAfterReview) {
+        foreach ($request in $humanReviewRequests) {
+            if (-not $request.Login -or -not $request.RequestedAt) {
+                continue
+            }
+
+            $requestedReviewerReview = $humanReviews |
+                Where-Object { $_.Login -eq $request.Login } |
+                Select-Object -First 1
+            if ($requestedReviewerReview -and $request.RequestedAt -gt $requestedReviewerReview.SubmittedAt) {
+                $reviewRequestedAfterReview = $true
+                break
+            }
+        }
+    }
     $reviewerRescueAfterDays = [int]$Settings.reviewerRescueAfterDays
 
     $bucket = "ReviewNow"
@@ -2276,7 +2387,7 @@ function Get-Classification {
         $blockers.Add("The pull request is explicitly waiting for CI to be rerun.")
     }
     elseif ($reviewDecision -eq "CHANGES_REQUESTED" -or
-        ($latestHumanReview -and $latestHumanReview.State -eq "CHANGES_REQUESTED")) {
+        ($ownershipReview -and $ownershipReview.State -eq "CHANGES_REQUESTED")) {
         if ($authorRespondedAfterReview) {
             $reasonCodes.Add("author-responded")
             $reasonCodes.Add("roundtrip-waiting")
@@ -2305,12 +2416,13 @@ function Get-Classification {
             $bucket = "WaitingOnAuthor"
             $nextActor = "author"
             $reasonCodes.Add("changes-requested")
-            if ($latestHumanReview) {
-                $waitingSince = $latestHumanReview.SubmittedAt
+            if ($ownershipReview) {
+                $waitingSince = $ownershipReview.SubmittedAt
             }
         }
     }
-    elseif ($reviewDecision -eq "APPROVED") {
+    elseif ($reviewDecision -eq "APPROVED" -and
+        -not $approvedFeedbackNeedsAction -and -not $reviewRequestedAfterReview) {
         if ($checkState -eq "Failed") {
             $bucket = "WaitingOnCI"
             $nextActor = "author/CI investigation"
@@ -2350,10 +2462,11 @@ function Get-Classification {
         $reasonCodes.Add("ci-failed")
         $blockers.Add("The failure is not classified as unrelated or flaky.")
     }
-    elseif ($authorRespondedAfterReview) {
+    elseif ($authorRespondedAfterReview -and
+        ($reviewDecision -ne "APPROVED" -or $approvedFeedbackNeedsAction)) {
         $reasonCodes.Add("author-responded")
         $reasonCodes.Add("roundtrip-waiting")
-        if ($latestHumanReview.State -eq "COMMENTED") {
+        if ($ownershipReview.State -eq "COMMENTED") {
             $reasonCodes.Add("reviewer-commented")
         }
         if ($headChangedAfterReview) {
@@ -2372,11 +2485,12 @@ function Get-Classification {
             $nextActor = "human reviewer"
         }
     }
-    elseif ($latestReviewerCommentIsCurrent) {
+    elseif ($latestReviewerCommentIsCurrent -and
+        ($reviewDecision -ne "APPROVED" -or $approvedFeedbackNeedsAction)) {
         $bucket = "WaitingOnAuthor"
         $nextActor = "author"
         $reasonCodes.Add("reviewer-commented")
-        $waitingSince = $latestHumanReview.SubmittedAt
+        $waitingSince = $ownershipReview.SubmittedAt
     }
     elseif ($humanReviewRequestCount -gt 0) {
         $reasonCodes.Add("review-requested")
@@ -2415,7 +2529,7 @@ function Get-Classification {
         $bucket = "ReviewNow"
         $nextActor = "human reviewer"
         $reasonCodes.Add("review-required")
-        $waitingSince = $latestHumanReview.SubmittedAt
+        $waitingSince = $ownershipReview.SubmittedAt
     }
 
     if ($bucket -eq "ReviewNow" -and $checkState -eq "Pending") {
@@ -2603,11 +2717,29 @@ function Get-DisplayMetadata {
             }
             "discussion-verification-needed" = [pscustomobject]@{
                 label = "Discussion verification needed"
-                description = "Recent discussion requires a human to verify whether ordinary code review is the right next action."
+                description = "Recent discussion requires human interpretation before ordinary review or a merge recommendation."
             }
             "discussion-not-assessed" = [pscustomobject]@{
                 label = "Discussion not assessed"
                 description = "Bounded discussion evidence was not collected for this lower-ranked candidate, so it cannot enter the unattended digest."
+            }
+        }
+        mergeEligibility = [pscustomobject][ordered]@{
+            "eligible" = [pscustomobject]@{
+                label = "Ready to merge"
+                description = "The deterministic merge candidate has complete, clear bounded discussion evidence."
+            }
+            "verification-needed" = [pscustomobject]@{
+                label = "Verify discussion before merge"
+                description = "The merge candidate needs disposition verification; this does not establish an author blocker."
+            }
+            "not-assessed" = [pscustomobject]@{
+                label = "Merge evidence not assessed"
+                description = "The candidate was excluded from the digest or beyond its independent discussion budget."
+            }
+            "not-candidate" = [pscustomobject]@{
+                label = "Not a merge candidate"
+                description = "The deterministic classification requires a different next action."
             }
         }
         discussion = [pscustomobject][ordered]@{
@@ -2637,6 +2769,14 @@ function Get-DisplayMetadata {
                 "discussion-incomplete" = [pscustomobject]@{
                     label = "Discussion incomplete"
                     description = "The bounded comments or review threads were truncated, so the assessment cannot be complete."
+                }
+                "review-evidence-incomplete" = [pscustomobject]@{
+                    label = "Review evidence incomplete"
+                    description = "Bounded reviews or current review-request timing could not establish complete merge evidence."
+                }
+                "review-feedback-requires-verification" = [pscustomobject]@{
+                    label = "Review feedback needs interpretation"
+                    description = "The current commented review cannot be treated as explicit informational evidence."
                 }
                 "discussion-not-assessed" = [pscustomobject]@{
                     label = "Discussion not assessed"
@@ -2783,6 +2923,7 @@ function Get-InboxItemSummary {
         bucket = [string]$Item.bucket
         nextActor = [string]$Item.nextActor
         reasonCodes = @($Item.reasonCodes)
+        mergeEligibility = [string](Get-PropertyValue -Object $Item -Name "mergeEligibility" -DefaultValue "not-candidate")
         provenance = $inboxProvenance
         responseEvidence = $responseEvidence
     }
@@ -3096,9 +3237,16 @@ function Render-MarkdownTable {
         if ($item.blockers.Count -gt 0) {
             $whyParts.Add("Blocker: $($item.blockers -join ' ')")
         }
+        $mergeEligibility = [string](Get-PropertyValue -Object $item -Name "mergeEligibility" -DefaultValue "not-candidate")
+        if ($mergeEligibility -in @("eligible", "verification-needed", "not-assessed")) {
+            $whyParts.Add("Merge eligibility: $mergeEligibility")
+        }
         $discussionAssessment = Get-PropertyValue -Object $item -Name "discussionAssessment"
-        if ($discussionAssessment -and $discussionAssessment.state -eq "verification-needed") {
-            $whyParts.Add("Discussion: $($discussionAssessment.signals -join ', ')")
+        if ($discussionAssessment -and $discussionAssessment.state -in @("verification-needed", "not-assessed")) {
+            $whyParts.Add("Discussion: $($discussionAssessment.signals -join ', '); complete: $($discussionAssessment.complete); " +
+                "threads: $($discussionAssessment.threads.returnedCount)/$($discussionAssessment.threads.totalCount), " +
+                "$($discussionAssessment.threads.unresolvedCount) unresolved, " +
+                "$($discussionAssessment.threads.outdatedUnresolvedCount) outdated unresolved")
         }
         $why = Escape-MarkdownCell -Value ($whyParts -join ". ")
         $lines.Add("| [#$($item.number)]($($item.url)) | $title | ``$($item.author)`` | $($item.idleDays)d | $($item.nextActor) | $why |")
@@ -3129,6 +3277,11 @@ function Render-Markdown {
         $Result.items |
             Where-Object { $_.shownInDiscussionVerification } |
             Sort-Object discussionVerificationRank
+    )
+    $mergeVerification = @(
+        $Result.items |
+            Where-Object { $_.shownInMergeVerification } |
+            Sort-Object mergeVerificationRank
     )
     $inbox = Get-PropertyValue -Object $Result -Name "inbox" -DefaultValue ([pscustomobject]@{})
     $recentCommunity = @(Get-PropertyValue -Object $inbox -Name "recentCommunity" -DefaultValue ([pscustomobject]@{ inventory = @() }).inventory)
@@ -3167,6 +3320,15 @@ function Render-Markdown {
     $lines.Add("")
     $lines.Add((Render-MarkdownTable -Items $readyToMerge -EmptyText "No pull requests are currently ready to merge."))
     $lines.Add("")
+    $lines.Add("## Verify discussion before merge ($($mergeVerification.Count))")
+    $lines.Add("")
+    $lines.Add("Merge candidates require disposition verification, not a proven author blocker. " +
+        "$($Result.mergeDiscussion.eligibleCount) eligible; $($Result.mergeDiscussion.verificationNeededCount) need verification; " +
+        "$($Result.mergeDiscussion.unassessedCandidateCount) not assessed; $($Result.mergeDiscussion.excludedCandidateCount) excluded. " +
+        "Showing $($mergeVerification.Count) of $($Result.mergeDiscussion.verificationNeededCount + $Result.mergeDiscussion.unassessedCandidateCount) verification candidates.")
+    $lines.Add("")
+    $lines.Add((Render-MarkdownTable -Items $mergeVerification -EmptyText "No merge verification candidates are displayed."))
+    $lines.Add("")
     $lines.Add("## Recent community contributions (7-day window)")
     $lines.Add("")
     $inboxRecentCommunity = Get-PropertyValue -Object $inbox -Name "recentCommunity" -DefaultValue ([pscustomobject]@{ count = 0; preview = @(); inventory = @(); windowStart = $null; windowEnd = $null })
@@ -3182,6 +3344,7 @@ function Render-Markdown {
             idleDays = 0
             nextActor = $_.nextActor
             reasonCodes = $_.reasonCodes
+            mergeEligibility = $_.mergeEligibility
             blockers = @()
             discussionAssessment = $null
         } }) -EmptyText "No community contributions opened in the last seven days."))
@@ -3817,6 +3980,9 @@ function Invoke-PRAttentionQueue {
             discussionAssessment = $null
             shownInDiscussionVerification = $false
             discussionVerificationRank = $null
+            mergeEligibility = if ($classification.Bucket -eq "ReadyToMerge") { "not-assessed" } else { "not-candidate" }
+            shownInMergeVerification = $false
+            mergeVerificationRank = $null
             personalReviews = if ($personalCandidate) { @($personalCandidate.personalReviews) } else { @() }
             personalReviewRequests = if ($personalCandidate) { @($personalCandidate.personalReviewRequests) } else { @() }
             personalNotifications = if ($personalCandidate) { @($personalCandidate.personalNotifications) } else { @() }
@@ -3855,6 +4021,17 @@ function Invoke-PRAttentionQueue {
         $reviewNow[$index].deterministicReviewRank = $index + 1
     }
 
+    $mergeCandidates = @(
+        $matchedItems |
+            Where-Object { $_.bucket -eq "ReadyToMerge" -and $_.digestExclusionReasons.Count -eq 0 } |
+            Sort-Object `
+                @{ Expression = { $_.idleDays }; Descending = $true },
+                @{ Expression = { $_.ageDays }; Descending = $true },
+                @{ Expression = { $_.number }; Descending = $false }
+    )
+    $excludedMergeCandidateCount = @($matchedItems | Where-Object {
+        $_.bucket -eq "ReadyToMerge" -and $_.digestExclusionReasons.Count -gt 0
+    }).Count
     $discussionCandidateLimit = [int](Get-PropertyValue `
         -Object $configuration.settings `
         -Name "discussionCandidateLimit" `
@@ -3865,6 +4042,7 @@ function Invoke-PRAttentionQueue {
         -DefaultValue 3)
     $discussionStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $discussionItems = @($reviewNow | Select-Object -First $discussionCandidateLimit)
+    $mergeDiscussionItems = @($mergeCandidates | Select-Object -First $discussionCandidateLimit)
     $candidatesByNumber = @{}
     foreach ($candidate in $matchedCandidates) {
         $candidatesByNumber[[int]$candidate.PullRequest.number] = $candidate
@@ -3872,19 +4050,20 @@ function Invoke-PRAttentionQueue {
 
     if (-not $InputPath) {
         $discussionCandidates = @(
-            foreach ($item in $discussionItems) {
+            foreach ($item in @($discussionItems) + @($mergeDiscussionItems)) {
                 $candidatesByNumber[[int]$item.number]
             }
         )
         Add-DiscussionEvidenceDetails -RepositoryName $Repository -Candidates $discussionCandidates
     }
 
-    foreach ($item in $discussionItems) {
+    foreach ($item in @($discussionItems) + @($mergeDiscussionItems)) {
         $candidate = $candidatesByNumber[[int]$item.number]
         $assessment = Get-DiscussionAssessment `
             -PullRequest $candidate.PullRequest `
             -AuthorInfo $candidate.AuthorInfo `
-            -KnownBotPatterns @($configuration.settings.knownBotPatterns)
+            -KnownBotPatterns @($configuration.settings.knownBotPatterns) `
+            -ForMerge:($item.bucket -eq "ReadyToMerge")
         $item.discussionAssessment = [pscustomobject]@{
             state = $assessment.State
             complete = $assessment.Complete
@@ -3914,9 +4093,14 @@ function Invoke-PRAttentionQueue {
         if ($assessment.State -eq "verification-needed") {
             $item.digestExclusionReasons = @($item.digestExclusionReasons + "discussion-verification-needed")
         }
+        if ($item.bucket -eq "ReadyToMerge") {
+            $item.mergeEligibility = if ($assessment.State -eq "clear") { "eligible" } else { "verification-needed" }
+        }
     }
 
-    foreach ($item in $reviewNow | Select-Object -Skip $discussionCandidateLimit) {
+    $unassessedItems = @($reviewNow | Select-Object -Skip $discussionCandidateLimit) +
+        @($mergeCandidates | Select-Object -Skip $discussionCandidateLimit)
+    foreach ($item in $unassessedItems) {
         $item.discussionAssessment = [pscustomobject]@{
             state = "not-assessed"
             complete = $false
@@ -3951,6 +4135,18 @@ function Invoke-PRAttentionQueue {
     if ($unassessedDiscussionItems.Count -gt 0) {
         $warnings.Add("Discussion evidence was assessed for the first $discussionCandidateLimit Review now candidate(s). " +
             "$($unassessedDiscussionItems.Count) lower-ranked candidate(s) cannot enter the unattended digest.")
+    }
+
+    $mergeVerificationItems = @($mergeCandidates | Where-Object { $_.mergeEligibility -ne "eligible" })
+    for ($index = 0; $index -lt [Math]::Min($mergeVerificationItems.Count, $MaxReadyToMerge); $index++) {
+        $item = $mergeVerificationItems[$index]
+        $item.shownInMergeVerification = $true
+        $item.mergeVerificationRank = $index + 1
+    }
+    $unassessedMergeItems = @($mergeCandidates | Where-Object { $_.mergeEligibility -eq "not-assessed" })
+    if ($unassessedMergeItems.Count -gt 0) {
+        $warnings.Add("Discussion evidence was independently assessed for the first $discussionCandidateLimit merge candidate(s). " +
+            "$($unassessedMergeItems.Count) lower-ranked candidate(s) require verification and cannot enter Ready to merge.")
     }
 
     $discussionStopwatch.Stop()
@@ -4121,6 +4317,15 @@ function Invoke-PRAttentionQueue {
             assessedCandidateCount = $discussionItems.Count
             verificationNeededCount = $discussionVerificationItems.Count
             unassessedReviewNowCount = $unassessedDiscussionItems.Count
+        }
+        mergeDiscussion = [pscustomobject]@{
+            candidateLimit = $discussionCandidateLimit
+            assessedCandidateCount = $mergeDiscussionItems.Count
+            verificationNeededCount = @($mergeCandidates | Where-Object { $_.mergeEligibility -eq "verification-needed" }).Count
+            unassessedCandidateCount = $unassessedMergeItems.Count
+            eligibleCount = @($mergeCandidates | Where-Object { $_.mergeEligibility -eq "eligible" }).Count
+            excludedCandidateCount = $excludedMergeCandidateCount
+            verificationLimit = $MaxReadyToMerge
         }
         census = [pscustomobject]@{
             openPullRequests = $openPullRequestCount
