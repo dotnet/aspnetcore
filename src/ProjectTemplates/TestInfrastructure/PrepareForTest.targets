@@ -57,7 +57,7 @@
 
   <Target Name="PrepareForTest" BeforeTargets="GetAssemblyAttributes" Condition=" '$(DesignTimeBuild)' != 'true' ">
     <PropertyGroup>
-      <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
+      <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
       <TemplateTestDotNetRoot Condition="'$(IsHelixJob)' != 'true'">$(TestTemplateCreationFolder).dotnet\</TemplateTestDotNetRoot>
       <_DotNetHostFileName>dotnet</_DotNetHostFileName>
