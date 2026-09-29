@@ -1106,6 +1106,68 @@ namespace ConsoleApplication1
     }
 
     [Fact]
+    public void JSInvokeInUncalledLocalFunctionShouldNotThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override Task OnInitializedAsync()
+        {
+            async Task InvokeAsync()
+            {
+                await JS.InvokeVoidAsync(""console.log"", ""This should not fail!"");
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void JSInvokeInCalledLocalFunctionShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            async Task InvokeAsync()
+            {
+                await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+            }
+
+            await InvokeAsync();
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 23) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
     public void JSInvokeInMethodCallWithArgumentUsedInOnInitializedShouldThrowWarning()
     {
         var test = @"

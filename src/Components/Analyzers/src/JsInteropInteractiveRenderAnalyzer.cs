@@ -128,6 +128,10 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             // Analyze if we have JSInterop calls.
             AnalyzeInvocation(invocation, state);
         }
+        else if (operation is ILocalFunctionOperation)
+        {
+            return;
+        }
         else
         {
             // Expression statements, blocks, switch, cases etc. that have children.
@@ -378,9 +382,14 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         foreach (var syntaxRef in methodSymbol.DeclaringSyntaxReferences)
         {
             var syntaxNode = syntaxRef.GetSyntax();
-            if (syntaxNode is MethodDeclarationSyntax methodDecl)
+            var semanticModel = state.BlockContext.Compilation.GetSemanticModel(syntaxNode.SyntaxTree);
+            var methodOperation = syntaxNode switch
             {
-                var methodOperation = state.BlockContext.Compilation.GetSemanticModel(methodDecl.SyntaxTree).GetOperation(methodDecl);
+                MethodDeclarationSyntax methodDeclaration => semanticModel.GetOperation(methodDeclaration),
+                LocalFunctionStatementSyntax localFunctionDeclaration =>
+                    semanticModel.GetOperation(localFunctionDeclaration) is ILocalFunctionOperation localFunction ? localFunction.Body : null,
+                _ => null,
+            };
                 if (methodOperation is null)
                 {
                     continue;
@@ -390,7 +399,6 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                 AnalyzeOperationsTree(methodOperation, clonedState);
             }
         }
-    }
 
     private static void AnalyzeRendererForHandlers(IOperation operation, JSInteropAnalyzerState state)
     {
