@@ -16,6 +16,8 @@ public class PrepareReviewTests
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private static readonly string RepositoryRoot = Path.GetFullPath("../../../../", Path.GetDirectoryName(SourcePath())!);
     private static readonly string TestArtifacts = Path.Combine(RepositoryRoot, "artifacts", "prepare-review-tests");
+    private static readonly string ProducerSourcePath = Path.Combine(
+        RepositoryRoot, ".github/skills/review-pull-request/scripts/prepare-review.cs");
     private static readonly Dictionary<string, string> Identity = new()
     {
         ["GIT_AUTHOR_NAME"] = "Preparation test",
@@ -51,12 +53,7 @@ public class PrepareReviewTests
         Assert.Equal(fixture.Head, manifest["target"]!["head"]!.GetValue<string>());
         Assert.Equal(fixture.MergeBase, manifest["target"]!["mergeBase"]!.GetValue<string>());
         Assert.Equal(fixture.BaseTip, manifest["target"]!["baseTip"]!.GetValue<string>());
-        var legacyProducer = await File.ReadAllBytesAsync(Path.Combine(
-            RepositoryRoot, ".github/skills/review-pull-request/scripts/prepare-review.mjs"));
-        Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(legacyProducer)),
-            manifest["producer"]!.GetValue<string>());
-        Assert.NotEqual(Convert.ToHexStringLower(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(
-            RepositoryRoot, ".github/skills/review-pull-request/scripts/prepare-review.cs")))),
+        Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(await File.ReadAllBytesAsync(ProducerSourcePath))),
             manifest["producer"]!.GetValue<string>());
         Assert.NotEqual(fixture.Head, fixture.BaseTip);
         Assert.NotEqual(fixture.BaseTip, fixture.MergeBase);
@@ -380,7 +377,7 @@ public class PrepareReviewTests
     }
 
     [Fact]
-    public async Task ExistingOutputDirectoryUsesNodeCompatibleCliMessage()
+    public async Task ExistingOutputDirectoryUsesNativeCliMessage()
     {
         await using var fixture = await Fixture.CreateAsync();
         Directory.CreateDirectory(fixture.Output);
@@ -407,7 +404,7 @@ public class PrepareReviewTests
         }
         Assert.Equal(string.Empty, output.ToString());
         Assert.Equal(
-            $"BLOCKED: EEXIST: file already exists, mkdir '{Path.GetFullPath(fixture.Output)}'\n",
+            $"BLOCKED: Output directory already exists: {Path.GetFullPath(fixture.Output)}\n",
             error.ToString());
     }
 
@@ -443,7 +440,7 @@ public class PrepareReviewTests
             }
         }
         var preparation = PrepareReviewProgram.PrepareAsync(
-            fixture.Options, new PrepareReviewProgram.Dependencies(original.Api, Fetch));
+            fixture.Options, new PrepareReviewProgram.Dependencies(original.Api, Fetch, original.ProducerSourcePath));
         await firstStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
         await Task.Delay(100);
         var callsBeforeRelease = repositories.Count;
@@ -546,6 +543,17 @@ public class PrepareReviewTests
                 manifest["sources"]!["head"] = manifest["sources"]!["baseTip"]!.DeepClone(); await fixture.WriteManifestAsync(manifest); break;
         }
         await Assert.ThrowsAnyAsync<Exception>(fixture.CheckAsync);
+    }
+
+    [Fact]
+    public async Task RejectsBundleWithLegacyJavaScriptProducerHash()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var manifest = await fixture.PrepareAsync();
+        manifest["producer"] = "add2dd1e77ada0e14c7412983683ee88a6f008793f3b0a074f94da84039afda7";
+        await fixture.WriteManifestAsync(manifest);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Contains("stale, mismatched, or from a different preparation version", exception.Message);
     }
 
     [Fact]
@@ -750,7 +758,7 @@ public class PrepareReviewTests
         public Task WriteManifestAsync(JsonObject manifest) =>
             File.WriteAllTextAsync(Path.Combine(Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
 
-        public PrepareReviewProgram.Dependencies CreateDependencies() => new(ApiAsync, FetchAsync);
+        public PrepareReviewProgram.Dependencies CreateDependencies() => new(ApiAsync, FetchAsync, ProducerSourcePath);
 
         private PrepareReviewProgram.Dependencies Dependencies() => CreateDependencies();
 

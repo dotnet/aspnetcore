@@ -20,7 +20,6 @@ internal static partial class PrepareReviewProgram
     internal const string Suffix = ".source";
     private const int MaximumBlobBytes = 16 * 1024 * 1024;
     private const int MaximumProcessOutputBytes = 64 * 1024 * 1024;
-    private const string LegacyProducerHash = "add2dd1e77ada0e14c7412983683ee88a6f008793f3b0a074f94da84039afda7";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
     private static readonly HashSet<string> ComponentsOnlyPolicies = new(StringComparer.Ordinal)
     {
@@ -41,7 +40,8 @@ internal static partial class PrepareReviewProgram
 
     internal sealed record Dependencies(
         Func<string, string?, Task<JsonNode?>>? Api = null,
-        Func<string, IReadOnlyList<string>, string, Task>? Fetch = null);
+        Func<string, IReadOnlyList<string>, string, Task>? Fetch = null,
+        string? ProducerSourcePath = null);
 
     internal sealed record Link(string Path, string? Anchor, string Guide, string? Role = null, string? Reason = null);
     internal sealed record GuideLinkResult(List<Link> Included, List<Link> Context, List<Link> Skipped);
@@ -190,6 +190,35 @@ internal static partial class PrepareReviewProgram
         return Convert.ToHexStringLower(digest.GetHashAndReset());
     }
 
+    private static string ProducerHash(string? sourcePath)
+    {
+        sourcePath ??= (string?)AppContext.GetData("EntryPointFilePath");
+        if (string.IsNullOrWhiteSpace(sourcePath))
+        {
+            throw new InvalidOperationException("Cannot identify the running prepare-review.cs source file.");
+        }
+        string fullPath;
+        try
+        {
+            fullPath = Path.GetFullPath(sourcePath);
+        }
+        catch (Exception error) when (error is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            throw new InvalidOperationException($"Invalid running producer source path: {sourcePath}", error);
+        }
+        Require(Path.GetFileName(fullPath) == "prepare-review.cs",
+            $"Running producer source is not the expected prepare-review.cs file: {fullPath}");
+        Require(File.Exists(fullPath), $"Running producer source does not exist: {fullPath}");
+        try
+        {
+            return Hash(File.ReadAllBytes(fullPath));
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            throw new InvalidOperationException($"Cannot read running producer source: {fullPath}", error);
+        }
+    }
+
     internal static void CheckPaths(IEnumerable<string> names)
     {
         var files = new HashSet<string>(StringComparer.Ordinal);
@@ -244,7 +273,7 @@ internal static partial class PrepareReviewProgram
 
     private static void CreateOutputDirectory(string path)
     {
-        Require(!Directory.Exists(path) && !File.Exists(path), $"EEXIST: file already exists, mkdir '{path}'");
+        Require(!Directory.Exists(path) && !File.Exists(path), $"Output directory already exists: {path}");
         Directory.CreateDirectory(path);
     }
 
@@ -786,6 +815,7 @@ internal static partial class PrepareReviewProgram
         Require(options.Output.Length > 0, "Specify a new --output directory, or --check an existing prepared directory.");
         Require(options.Head is null || FullShaRegex().IsMatch(options.Head), "--head must be a full immutable commit.");
         Require(options.Guidance is null || options.GuidanceRoot is null, "Select either --guidance or --guidance-root.");
+        var producer = ProducerHash(dependencies.ProducerSourcePath);
         var host = options.Hostname ?? "github.com";
         Require(HostnameRegex().IsMatch(host), "Invalid GitHub hostname.");
         Run("git", GitArguments("--version"));
@@ -853,7 +883,6 @@ internal static partial class PrepareReviewProgram
             return await Freeze();
         });
         var output = Path.GetFullPath(options.Output);
-        var producer = LegacyProducerHash;
         JsonObject guidance;
         if (options.Guidance is not null)
         {
