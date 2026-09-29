@@ -156,7 +156,12 @@ internal static partial class PrepareReviewProgram
             $"{command} failed: process output exceeded 64 MiB.");
         if (process.ExitCode != 0)
         {
-            var error = errorTask.Result.Trim();
+            var stderr = errorTask.Result;
+            if (stderr.Length > 0)
+            {
+                Console.Error.Write(stderr);
+            }
+            var error = stderr.Trim();
             throw new InvalidOperationException($"{command} failed: {(error.Length > 0 ? error : $"exit code {process.ExitCode}")}");
         }
         return output.ToArray();
@@ -234,6 +239,12 @@ internal static partial class PrepareReviewProgram
     private static void CreateNewDirectory(string path)
     {
         Require(!Directory.Exists(path) && !File.Exists(path), $"Cannot create directory because it already exists: {path}");
+        Directory.CreateDirectory(path);
+    }
+
+    private static void CreateOutputDirectory(string path)
+    {
+        Require(!Directory.Exists(path) && !File.Exists(path), $"EEXIST: file already exists, mkdir '{path}'");
         Directory.CreateDirectory(path);
     }
 
@@ -863,7 +874,7 @@ internal static partial class PrepareReviewProgram
             return await CheckPreparedAsync(output, producer, frozen.Identity, guidance, Freeze);
         }
 
-        CreateNewDirectory(output);
+        CreateOutputDirectory(output);
         var store = Path.Combine(output, ".objects");
         Run("git", GitArguments("init", "--bare", "--quiet", "--object-format=sha1", store));
         Objects(store, "config", "core.hooksPath", Path.Combine(store, "disabled-hooks"));

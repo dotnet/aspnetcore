@@ -336,6 +336,82 @@ public class PrepareReviewTests
     }
 
     [Fact]
+    public async Task FailedChildStderrPrecedesBlockedCliMessage()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        await using var fixture = await Fixture.CreateAsync();
+        var fakeGh = Path.Combine(fixture.Root, "gh");
+        await File.WriteAllTextAsync(fakeGh,
+            "#!/bin/sh\nprintf 'gh: Bad credentials (HTTP 401)\\n' >&2\nexit 1\n", Utf8NoBom);
+        File.SetUnixFileMode(fakeGh,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        var originalPath = Environment.GetEnvironmentVariable("PATH");
+        var output = new StringWriter();
+        var error = new StringWriter();
+        var originalOutput = Console.Out;
+        var originalError = Console.Error;
+        try
+        {
+            Environment.SetEnvironmentVariable("PATH", $"{fixture.Root}{Path.PathSeparator}{originalPath}");
+            Console.SetOut(output);
+            Console.SetError(error);
+            var exitCode = await PrepareReviewProgram.RunAsync([
+                "--repo", "owner/product",
+                "--pr", "42",
+                "--output", fixture.Output,
+                "--guidance-root", fixture.GuidanceRoot,
+            ], fixture.CreateDependencies());
+            Assert.Equal(1, exitCode);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+            Console.SetError(originalError);
+            Environment.SetEnvironmentVariable("PATH", originalPath);
+        }
+        Assert.Equal(string.Empty, output.ToString());
+        Assert.Equal(
+            "gh: Bad credentials (HTTP 401)\n" +
+            "BLOCKED: gh failed: gh: Bad credentials (HTTP 401)\n",
+            error.ToString());
+    }
+
+    [Fact]
+    public async Task ExistingOutputDirectoryUsesNodeCompatibleCliMessage()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        Directory.CreateDirectory(fixture.Output);
+        var output = new StringWriter();
+        var error = new StringWriter();
+        var originalOutput = Console.Out;
+        var originalError = Console.Error;
+        try
+        {
+            Console.SetOut(output);
+            Console.SetError(error);
+            var exitCode = await PrepareReviewProgram.RunAsync([
+                "--repo", "owner/product",
+                "--pr", "42",
+                "--output", fixture.Output,
+                "--guidance-root", fixture.GuidanceRoot,
+            ], fixture.CreateDependencies());
+            Assert.Equal(1, exitCode);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+            Console.SetError(originalError);
+        }
+        Assert.Equal(string.Empty, output.ToString());
+        Assert.Equal(
+            $"BLOCKED: EEXIST: file already exists, mkdir '{Path.GetFullPath(fixture.Output)}'\n",
+            error.ToString());
+    }
+
+    [Fact]
     public async Task FetchesRepositoryGroupsSequentiallyInInsertionOrder()
     {
         await using var fixture = await Fixture.CreateAsync();
