@@ -125,7 +125,7 @@ jobs:
     steps:
       - name: Freeze the triggering pull request head
         id: get_head
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ github.token }}
           script: |
