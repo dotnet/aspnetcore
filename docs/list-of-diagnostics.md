@@ -89,7 +89,7 @@
 |  __`BL0017`__ | Component declares `Dispose()` but does not implement `IDisposable`  |
 |  __`BL0018`__ | Component declares `DisposeAsync()` but does not implement `IAsyncDisposable` |
 |  __`BL0019`__ | Virtualize uses an invalid spacer element |
-|  __`BL0020`__ | Code after NavigationManager.NavigateTo will still execute |
+|  __`BL0020`__ | Exception-driven navigation is enabled for this project |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 

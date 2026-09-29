@@ -184,12 +184,12 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Description)));
 
-    public static readonly DiagnosticDescriptor CodeAfterNavigateToWillExecute = new(
+    public static readonly DiagnosticDescriptor ExceptionDrivenNavigationIsEnabled = new(
         "BL0020",
-        CreateLocalizableResourceString(nameof(Resources.CodeAfterNavigateToWillExecute_Title)),
-        CreateLocalizableResourceString(nameof(Resources.CodeAfterNavigateToWillExecute_Format)),
+        CreateLocalizableResourceString(nameof(Resources.ExceptionDrivenNavigationIsEnabled_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ExceptionDrivenNavigationIsEnabled_Format)),
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: CreateLocalizableResourceString(nameof(Resources.CodeAfterNavigateToWillExecute_Description)));
+        description: CreateLocalizableResourceString(nameof(Resources.ExceptionDrivenNavigationIsEnabled_Description)));
 }

@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -13,19 +13,20 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
 /// <summary>
-/// Analyzer that warns when code follows a <c>NavigationManager.NavigateTo</c> call in the same statement list.
-/// In server-side (static SSR) contexts <c>NavigateTo</c> only signals the navigation; it no longer
-/// stops execution, so the statements after it still run. Adding a <c>return</c> makes the intent explicit.
+/// Warns once per server-side Razor Components application that still uses
+/// exception-driven navigation during static rendering.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NavigateToReturnAnalyzer : DiagnosticAnalyzer
 {
-    private const string NavigationManagerTypeName = "Microsoft.AspNetCore.Components.NavigationManager";
-    private const string NavigateToMethodName = "NavigateTo";
+    private const string RazorComponentsEndpointBuilderTypeName = "Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions";
+    private const string RazorComponentsServiceBuilderTypeName = "Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions";
+    private const string MapRazorComponentsMethodName = "MapRazorComponents";
+    private const string AddRazorComponentsMethodName = "AddRazorComponents";
     private const string DisableThrowNavigationExceptionProperty = "build_property.BlazorDisableThrowNavigationException";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(DiagnosticDescriptors.CodeAfterNavigateToWillExecute);
+        ImmutableArray.Create(DiagnosticDescriptors.ExceptionDrivenNavigationIsEnabled);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -34,83 +35,53 @@ public sealed class NavigateToReturnAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(compilationContext =>
         {
-            var navigationManagerType = compilationContext.Compilation.GetTypeByMetadataName(NavigationManagerTypeName);
-            if (navigationManagerType is null)
+            var outputKind = compilationContext.Compilation.Options.OutputKind;
+            if (outputKind != OutputKind.ConsoleApplication && outputKind != OutputKind.WindowsApplication)
             {
-                // NavigationManager is not available in this compilation.
                 return;
             }
 
+            var sourceTree = compilationContext.Compilation.SyntaxTrees.FirstOrDefault();
+            if (sourceTree is not null &&
+                compilationContext.Options.AnalyzerConfigOptionsProvider.GetOptions(sourceTree).TryGetValue(
+                DisableThrowNavigationExceptionProperty, out var propertyValue) &&
+                bool.TryParse(propertyValue, out var disableThrowNavigationException) &&
+                disableThrowNavigationException)
+            {
+                return;
+            }
+
+            var endpointBuilderType = compilationContext.Compilation.GetTypeByMetadataName(RazorComponentsEndpointBuilderTypeName);
+            var serviceBuilderType = compilationContext.Compilation.GetTypeByMetadataName(RazorComponentsServiceBuilderTypeName);
+            if (endpointBuilderType is null && serviceBuilderType is null)
+            {
+                return;
+            }
+
+            var hasServerRendering = 0;
             compilationContext.RegisterOperationAction(operationContext =>
             {
                 var invocation = (IInvocationOperation)operationContext.Operation;
-                if (invocation.TargetMethod.Name != NavigateToMethodName ||
-                    !InheritsFromOrEquals(invocation.TargetMethod.ContainingType, navigationManagerType))
+                if ((invocation.TargetMethod.Name == MapRazorComponentsMethodName &&
+                    endpointBuilderType is not null &&
+                    SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, endpointBuilderType)) ||
+                    (invocation.TargetMethod.Name == AddRazorComponentsMethodName &&
+                    serviceBuilderType is not null &&
+                    SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, serviceBuilderType)))
                 {
-                    return;
+                    Interlocked.Exchange(ref hasServerRendering, 1);
                 }
-
-                var analyzerOptions = operationContext.Options.AnalyzerConfigOptionsProvider.GetOptions(invocation.Syntax.SyntaxTree);
-                if (!analyzerOptions.TryGetValue(DisableThrowNavigationExceptionProperty, out var disableThrowNavigationException) ||
-                    !string.Equals(disableThrowNavigationException, bool.TrueString, StringComparison.OrdinalIgnoreCase))
-                {
-                    return;
-                }
-
-                // Only expression statements can be followed by unreachable-looking code in the same statement list.
-                if (invocation.Syntax is not InvocationExpressionSyntax invocationSyntax ||
-                    invocationSyntax.Parent is not ExpressionStatementSyntax statement ||
-                    !TryGetContainingStatements(statement, out var statements))
-                {
-                    return;
-                }
-
-                var index = statements.IndexOf(statement);
-                if (index < 0 || index == statements.Count - 1)
-                {
-                    // Last statement in the block: nothing runs after NavigateTo here.
-                    return;
-                }
-
-                // A trailing return/throw is the recommended pattern, so it should not be flagged.
-                if (statements[index + 1] is ReturnStatementSyntax or ThrowStatementSyntax)
-                {
-                    return;
-                }
-
-                operationContext.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.CodeAfterNavigateToWillExecute,
-                    invocationSyntax.GetLocation()));
             }, OperationKind.Invocation);
-        });
-    }
 
-    private static bool TryGetContainingStatements(ExpressionStatementSyntax statement, out SyntaxList<StatementSyntax> statements)
-    {
-        switch (statement.Parent)
-        {
-            case BlockSyntax block:
-                statements = block.Statements;
-                return true;
-            case SwitchSectionSyntax switchSection:
-                statements = switchSection.Statements;
-                return true;
-            default:
-                statements = default;
-                return false;
-        }
-    }
-
-    private static bool InheritsFromOrEquals(ITypeSymbol? type, INamedTypeSymbol baseType)
-    {
-        for (var current = type; current is not null; current = current.BaseType)
-        {
-            if (SymbolEqualityComparer.Default.Equals(current, baseType))
+            compilationContext.RegisterCompilationEndAction(compilationEndContext =>
             {
-                return true;
-            }
-        }
-
-        return false;
+                if (Volatile.Read(ref hasServerRendering) != 0)
+                {
+                    compilationEndContext.ReportDiagnostic(Diagnostic.Create(
+                        DiagnosticDescriptors.ExceptionDrivenNavigationIsEnabled,
+                        Location.None));
+                }
+            });
+        });
     }
 }
