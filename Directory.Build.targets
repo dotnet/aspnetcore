@@ -137,11 +137,13 @@
     <!-- Do not update the Microsoft.AspNetCore.App KnownFrameworkReference item unless requested. -->
     <UpdateAspNetCoreKnownFramework>false</UpdateAspNetCoreKnownFramework>
     <UpdateAspNetCoreKnownFramework Condition=" '$(UseAspNetCoreSharedRuntime)' == 'true' AND
-      ('$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true' OR
-      '$(UseLiveAspNetCoreSharedRuntime)' == 'true') ">true</UpdateAspNetCoreKnownFramework>
+      '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true' ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Update="Microsoft.AspNetCore.App"
+                        RuntimeFrameworkVersion="$(SharedFxVersion)"
+                        Condition="'$(UseLiveAspNetCoreSharedRuntime)' == 'true'" />
     <_RemovedAspNetKnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))" />
     <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />
     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
