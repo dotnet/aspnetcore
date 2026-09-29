@@ -228,14 +228,14 @@
   <data name="VirtualizeSpacerElementIsInvalid_Title" xml:space="preserve">
     <value>Virtualize uses an invalid spacer element</value>
   </data>
-  <data name="CodeAfterNavigateToWillExecute_Description" xml:space="preserve">
-    <value>In server-side (static SSR) contexts, NavigationManager.NavigateTo signals the navigation and stops rendering after the current batch, but it does not stop execution. Code placed after the NavigateTo call still runs. Add a return statement after NavigateTo if the following code should not execute.</value>
+  <data name="ExceptionDrivenNavigationIsEnabled_Description" xml:space="preserve">
+    <value>This project uses exception-driven navigation during static server-side rendering. Set BlazorDisableThrowNavigationException to true and make control flow after NavigationManager.NavigateTo explicit to ensure consistent behavior across rendering modes.</value>
   </data>
-  <data name="CodeAfterNavigateToWillExecute_Format" xml:space="preserve">
-    <value>Code after this 'NavigateTo' call will still execute because 'NavigateTo' does not stop execution. Add a 'return' statement after 'NavigateTo' if the following code should not run.</value>
+  <data name="ExceptionDrivenNavigationIsEnabled_Format" xml:space="preserve">
+    <value>This project uses exception-driven navigation during prerendering. This behavior is obsolete and differs from interactive rendering, where NavigationManager.NavigateTo returns normally. Set BlazorDisableThrowNavigationException to true and make the intended control flow after navigation explicit.</value>
   </data>
-  <data name="CodeAfterNavigateToWillExecute_Title" xml:space="preserve">
-    <value>Code after NavigationManager.NavigateTo will still execute</value>
+  <data name="ExceptionDrivenNavigationIsEnabled_Title" xml:space="preserve">
+    <value>Exception-driven navigation is enabled for this project</value>
   </data>
   <data name="UnnecessaryStateHasChangedCall_Description" xml:space="preserve">
     <value>StateHasChanged is unnecessary in synchronous component lifecycle methods or event handlers. In async lifecycle methods or event handlers, it is unnecessary before the first await and after the final await because ComponentBase already schedules renders at those points.</value>
