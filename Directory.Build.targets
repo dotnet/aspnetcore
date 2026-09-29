@@ -1,4 +1,9 @@
 <Project>
+  <!-- Expose this switch to analyzers in builds using the repo-pinned Web SDK. -->
+  <ItemGroup Condition="'$(BlazorDisableThrowNavigationException)' != ''">
+    <CompilerVisibleProperty Include="BlazorDisableThrowNavigationException" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
