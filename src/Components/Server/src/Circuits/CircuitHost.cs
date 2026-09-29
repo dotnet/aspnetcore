@@ -29,11 +29,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitMetrics _circuitMetrics;
     private readonly CircuitActivitySource _circuitActivitySource;
     private readonly HostInitializerInvoker _hostInitializerInvoker;
-    private readonly object _rootComponentUpdateLock = new();
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
-    private Task<bool>? _initializationTask;
-    private Task _rootComponentUpdateTask = Task.CompletedTask;
     private bool _initialized;
     private bool _isFirstUpdate = true;
     private bool _onConnectionUpFired;
@@ -126,7 +123,7 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.InitializationStarted(_logger);
 
-        var initializationTask = HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
+        return HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
         {
             if (_initialized)
             {
@@ -201,9 +198,6 @@ internal partial class CircuitHost : IAsyncDisposable
                 return false;
             }
         }));
-
-        _initializationTask = initializationTask;
-        return initializationTask;
     }
 
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
@@ -776,53 +770,13 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    internal Task UpdateRootComponents(
+    internal async Task UpdateRootComponents(
         RootComponentOperationBatch operationBatch,
         IClearableStore store,
         bool isRestore,
         CancellationToken cancellation)
     {
         Log.UpdateRootComponentsStarted(_logger);
-
-        lock (_rootComponentUpdateLock)
-        {
-            return _rootComponentUpdateTask = UpdateRootComponentsCore(
-                operationBatch,
-                store,
-                isRestore,
-                cancellation,
-                _rootComponentUpdateTask);
-        }
-    }
-
-    private async Task UpdateRootComponentsCore(
-        RootComponentOperationBatch operationBatch,
-        IClearableStore store,
-        bool isRestore,
-        CancellationToken cancellation,
-        Task previousUpdate)
-    {
-        await previousUpdate;
-
-        if (_initializationTask is { } initializationTask)
-        {
-            if (!await initializationTask)
-            {
-                return;
-            }
-        }
-        else
-        {
-            try
-            {
-                await _hostInitializerInvoker.InitializeBrowserAsync(cancellation);
-            }
-            catch
-            {
-                // InitializeAsync owns reporting host initialization failures when it is active.
-                return;
-            }
-        }
 
         await Renderer.Dispatcher.InvokeAsync(async () =>
         {
@@ -840,6 +794,16 @@ internal partial class CircuitHost : IAsyncDisposable
                     // the footprint for Blazor Server closer to what it was before.
                     throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
                         " been provided during circuit start up.");
+                }
+
+                try
+                {
+                    await _hostInitializerInvoker.InitializeBrowserAsync(cancellation);
+                }
+                catch
+                {
+                    // InitializeAsync owns reporting host initialization failures.
+                    return;
                 }
 
                 if (store != null)
