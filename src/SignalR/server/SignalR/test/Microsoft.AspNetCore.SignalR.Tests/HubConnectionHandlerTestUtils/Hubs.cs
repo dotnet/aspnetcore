@@ -223,6 +223,11 @@ public class MethodHub : TestHub
         return sb.ToString();
     }
 
+    public async Task<string> StreamingConcatTwoStreams(ChannelReader<string> first, ChannelReader<string> second)
+    {
+        return await StreamingConcat(first) + await StreamingConcat(second);
+    }
+
     public async Task StreamDontRead(ChannelReader<string> source)
     {
         while (await source.WaitToReadAsync())
@@ -672,6 +677,22 @@ public class InvalidHub : TestHub
 public class GenericMethodHub : Hub
 {
     public void GenericMethod<T>()
+    {
+    }
+}
+
+[Authorize(AuthenticationSchemes = "test scheme")]
+public class HubWithAuthenticationScheme : Hub
+{
+    public void Method()
+    {
+    }
+}
+
+public class HubWithMethodAuthenticationScheme : Hub
+{
+    [Authorize(AuthenticationSchemes = "test scheme")]
+    public void Method()
     {
     }
 }

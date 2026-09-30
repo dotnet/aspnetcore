@@ -82,4 +82,8 @@
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\samples\SocialSample\SocialSample.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -425,6 +425,19 @@ describe("HubConnectionBuilder", () => {
 
         expect((connection as any).connection._options._useStatefulReconnect).toBe(true);
     });
+
+    it("merges Authentication Refresh options from multiple calls", () => {
+        const connection = createConnectionBuilder()
+            .withUrl("http://example.com")
+            .withAuthenticationRefresh({ enableAutoRefresh: false })
+            .withAuthenticationRefresh({ refreshBeforeExpirationInMilliseconds: 60_000 })
+            .build();
+
+        expect((connection as any)._authenticationRefreshOptions).toEqual({
+            enableAutoRefresh: false,
+            refreshBeforeExpirationInMilliseconds: 60_000,
+        });
+    });
 });
 
 class CaptureLogger implements ILogger {

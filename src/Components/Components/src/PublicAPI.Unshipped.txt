@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Components.AcceptsAssetPathAttribute
+Microsoft.AspNetCore.Components.AcceptsAssetPathAttribute.AcceptsAssetPathAttribute(string! elementName, string! attributeName) -> void
+Microsoft.AspNetCore.Components.AcceptsAssetPathAttribute.AttributeName.get -> string!
+Microsoft.AspNetCore.Components.AcceptsAssetPathAttribute.ElementName.get -> string!
+Microsoft.AspNetCore.Components.AssetPathAttribute
+Microsoft.AspNetCore.Components.AssetPathAttribute.AssetPathAttribute() -> void
 Microsoft.AspNetCore.Components.CacheBehavior
 Microsoft.AspNetCore.Components.CacheBehavior.Rerender = 0 -> Microsoft.AspNetCore.Components.CacheBehavior
 Microsoft.AspNetCore.Components.CacheBehavior.Throw = 1 -> Microsoft.AspNetCore.Components.CacheBehavior

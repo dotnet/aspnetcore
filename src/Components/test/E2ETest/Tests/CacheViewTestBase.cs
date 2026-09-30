@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -185,5 +186,51 @@ public abstract class CacheViewTestBase : ServerTestBase<BasicTestAppServerSiteF
         Navigate(TestUrl("cache-component"));
         Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-static")).Text);
         Browser.NotEqual(streamingGuid, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".streaming-live-cached")).Text);
+    }
+
+    [Fact]
+    public async Task CacheViewServesCachedContentToHeadRequests()
+    {
+        var url = TestUrl("cache-component-head");
+
+        Navigate(url);
+        Navigate(url);
+        var cachedGuid = Browser.FindElement(By.Id("test-head")).FindElement(By.CssSelector(".head-cached-guid")).Text;
+        Browser.Equal("1", () => Browser.FindElement(By.Id("head-render-count")).Text);
+
+        await IssueHeadRequestsAsync(url, count: 3);
+
+        // Each HEAD must be served from the cache, so neither the cached content nor the render count changes.
+        Navigate(url);
+        Browser.Equal(cachedGuid, () => Browser.FindElement(By.Id("test-head")).FindElement(By.CssSelector(".head-cached-guid")).Text);
+        Browser.Equal("1", () => Browser.FindElement(By.Id("head-render-count")).Text);
+    }
+
+    [Fact]
+    public async Task CacheViewPopulatedByHeadRequest_IsServedToLaterGetRequest()
+    {
+        var url = TestUrl("cache-component-head");
+
+        await IssueHeadRequestsAsync(url, count: 1);
+
+        Navigate(url);
+        var cachedGuid = Browser.FindElement(By.Id("test-head")).FindElement(By.CssSelector(".head-cached-guid")).Text;
+
+        Navigate(url);
+        Browser.Equal("1", () => Browser.FindElement(By.Id("head-render-count")).Text);
+        Browser.Equal(cachedGuid, () => Browser.FindElement(By.Id("test-head")).FindElement(By.CssSelector(".head-cached-guid")).Text);
+    }
+
+    private async Task IssueHeadRequestsAsync(string relativeUrl, int count)
+    {
+        using var httpClient = new HttpClient();
+        var requestUri = new Uri(_serverFixture.RootUri, relativeUrl);
+
+        for (var i = 0; i < count; i++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Head, requestUri);
+            using var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+        }
     }
 }

@@ -58,7 +58,8 @@
     <PackageReference Include="Microsoft.OpenApi" Version="$(MicrosoftOpenApiVersion)" />
     <PackageReference Include="Microsoft.OpenApi.YamlReader" Version="$(MicrosoftOpenApiYamlReaderVersion)" />
     <PackageReference Include="Microsoft.Playwright" Version="$(MicrosoftPlaywrightVersion)" />
-    <PackageReference Include="Microsoft.Playwright.Xunit.v3" Version="$(MicrosoftPlaywrightXunitV3Version)" />
+    <PackageReference Include="Microsoft.Playwright.TestAdapter" Version="$(MicrosoftPlaywrightTestAdapterVersion)" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
     <PackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationVersion)" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryVersion)" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="$(MicrosoftWindowsCsWin32Version)" />
@@ -66,6 +67,7 @@
     <PackageReference Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
     <PackageReference Include="Mono.TextTemplating" Version="$(MonoTextTemplatingVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
     <PackageReference Include="NSwag.ApiDescription.Client" Version="$(NSwagApiDescriptionClientVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonVersion)" />
@@ -108,6 +110,7 @@
     <PackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
   </ItemGroup>
 
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <!-- Microsoft.Owin.* only ship a net45 asset; the default TFM above can't restore them. -->
     <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesVersion)" />
@@ -116,8 +119,15 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">
     <!-- These packages only support netcoreapp TFMs; net472 above can't restore them. -->
+    <PackageReference Include="AGUI.Abstractions" Version="$(AGUIAbstractionsVersion)" />
+    <PackageReference Include="AGUI.Client" Version="$(AGUIClientVersion)" />
+    <PackageReference Include="AGUI.Formatting" Version="$(AGUIFormattingVersion)" />
+    <PackageReference Include="AGUI.Server" Version="$(AGUIServerVersion)" />
     <PackageReference Include="Grpc.AspNetCore" Version="$(GrpcAspNetCoreVersion)" />
     <PackageReference Include="Grpc.AspNetCore.Server" Version="$(GrpcAspNetCoreServerVersion)" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIOpenAIVersion)" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="$(ModelContextProtocolAspNetCoreVersion)" />
     <PackageReference Include="Photino.NET" Version="$(PhotinoNETVersion)" />
     <PackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />

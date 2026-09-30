@@ -576,6 +576,11 @@ public class MediaTypeHeaderValue
             return 0;
         }
 
+        if (!mediaType.HasValue)
+        {
+            return mediaTypeLength;
+        }
+
         var current = startIndex + mediaTypeLength;
         current = current + HttpRuleParser.GetWhitespaceLength(input, current);
         MediaTypeHeaderValue? mediaTypeHeader;
@@ -622,7 +627,7 @@ public class MediaTypeHeaderValue
         // Parse the separator between type and subtype
         if ((current >= input.Length) || (input[current] != '/'))
         {
-            return 0;
+            return current - startIndex;
         }
         current++; // skip delimiter.
         current = current + HttpRuleParser.GetWhitespaceLength(input, current);
@@ -632,7 +637,7 @@ public class MediaTypeHeaderValue
 
         if (subtypeLength == 0)
         {
-            return 0;
+            return current - startIndex;
         }
 
         // If there is no whitespace between <type> and <subtype> in <type>/<subtype> get the media type using

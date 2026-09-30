@@ -3,7 +3,11 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -641,6 +645,122 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiSchema_HandlesNullableConstructorBoundProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ConstructorBoundPropertyModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema;
+
+            var nullableProperty = schema.Properties["value"];
+            Assert.NotNull(nullableProperty.OneOf);
+            Assert.Equal(2, nullableProperty.OneOf.Count);
+            Assert.Collection(nullableProperty.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_DoesNotMarkNonNullableGetOnlyPropertyAsNullable()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ConstructorBoundPropertyModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema;
+
+            var valuesProperty = schema.Properties["values"];
+            if (valuesProperty.OneOf is not null)
+            {
+                Assert.DoesNotContain(valuesProperty.OneOf, item => item.Type is JsonSchemaType.Null);
+                var arraySchema = Assert.Single(valuesProperty.OneOf);
+                Assert.Equal(JsonSchemaType.Array, arraySchema.Type);
+                Assert.Equal(JsonSchemaType.String, arraySchema.Items?.Type);
+            }
+            else
+            {
+                Assert.True(valuesProperty.Type?.HasFlag(JsonSchemaType.Array));
+                Assert.False(valuesProperty.Type?.HasFlag(JsonSchemaType.Null));
+                Assert.Equal(JsonSchemaType.String, valuesProperty.Items?.Type);
+            }
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_DoesNotMarkAllowNullPropertyWithIgnoredSetterAsNullable()
+    {
+        var jsonPropertyInfo = GetValueProperty<AllowNullPrivateSetterModel>();
+        Assert.Null(jsonPropertyInfo.Set);
+        await AssertAllowNullComponentProperty<AllowNullPrivateSetterModel>(expectNullable: false);
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_MarksAllowNullPropertyWithPublicSetterAsNullable()
+    {
+        var jsonPropertyInfo = GetValueProperty<AllowNullPublicSetterModel>();
+        Assert.NotNull(jsonPropertyInfo.Set);
+        await AssertAllowNullComponentProperty<AllowNullPublicSetterModel>(expectNullable: true);
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_MarksAllowNullPropertyWithJsonIncludeSetterAsNullable()
+    {
+        var jsonPropertyInfo = GetValueProperty<AllowNullJsonIncludeSetterModel>();
+        Assert.NotNull(jsonPropertyInfo.Set);
+        await AssertAllowNullComponentProperty<AllowNullJsonIncludeSetterModel>(expectNullable: true);
+    }
+
+    private static JsonPropertyInfo GetValueProperty<TModel>()
+        => Assert.Single(
+            JsonSerializerOptions.Default.GetTypeInfo(typeof(TModel)).Properties,
+            propertyInfo => propertyInfo.Name == "Value");
+
+    private static async Task AssertAllowNullComponentProperty<TModel>(bool expectNullable)
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (TModel model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var content = Assert.Single(operation.RequestBody.Content);
+            var valueProperty = content.Value.Schema.Properties["value"];
+
+            if (expectNullable)
+            {
+                Assert.NotNull(valueProperty.OneOf);
+                Assert.Equal(2, valueProperty.OneOf.Count);
+                Assert.Collection(valueProperty.OneOf,
+                    item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                    item => Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id));
+            }
+            else
+            {
+                Assert.Null(valueProperty.OneOf);
+                Assert.Equal("Todo", ((OpenApiSchemaReference)valueProperty).Reference.Id);
+            }
+        });
+    }
+
 #nullable enable
     private class NullablePropertiesTestModel
     {
@@ -656,6 +776,44 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     {
         public Todo? NullableTodo { get; set; }
         public Account? NullableAccount { get; set; }
+    }
+
+    private class ConstructorBoundPropertyModel
+    {
+        public ConstructorBoundPropertyModel(Todo? value) => Value = value;
+        public Todo? Value { get; }
+        public IEnumerable<string> Values => [];
+    }
+
+    private class AllowNullPrivateSetterModel
+    {
+        private Todo? _value;
+
+        [AllowNull]
+        public Todo Value
+        {
+            get => _value ?? new Todo(0, string.Empty, false, default);
+            private set => _value = value;
+        }
+    }
+
+    private class AllowNullPublicSetterModel
+    {
+        [AllowNull]
+        public Todo Value { get; set; } = new Todo(0, string.Empty, false, default);
+    }
+
+    private class AllowNullJsonIncludeSetterModel
+    {
+        private Todo? _value;
+
+        [AllowNull]
+        [JsonInclude]
+        public Todo Value
+        {
+            get => _value ?? new Todo(0, string.Empty, false, default);
+            private set => _value = value;
+        }
     }
 
     private class NullableCollectionPropertiesModel

@@ -182,7 +182,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         context.RequestServices.GetRequiredService<TempDataService>().Persist(context);
 
         // Emit comment containing state.
-        if (!isErrorHandlerOrReExecuted)
+        if (!isErrorHandler)
         {
             var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
             componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);

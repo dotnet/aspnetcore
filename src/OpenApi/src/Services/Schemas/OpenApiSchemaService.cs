@@ -99,7 +99,7 @@ internal sealed class OpenApiSchemaService(
                 schema = new JsonObject();
             }
             var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
-            schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
+            schema.ApplyPrimitiveFormats(context);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
             schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
             if (context.PropertyInfo is { } jsonPropertyInfo)
