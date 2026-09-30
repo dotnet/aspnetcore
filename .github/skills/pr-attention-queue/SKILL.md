@@ -64,6 +64,25 @@ later non-author feedback. A bounded query that is incomplete is surfaced for ve
 than being treated as clear. Candidates outside the configured assessment limit cannot enter the
 unattended digest and are reported through the queue warning and `discussion-not-assessed`.
 
+Apply the same discussion pass to prospective `ReadyToMerge` candidates, with an **independent**
+`discussionCandidateLimit` budget (default 20) in the existing merge-candidate order. Preserve the
+entire Review now budget. Refill the ready list only from clear candidates within that assessed
+prefix; do not fetch additional candidates to fill it. Show up to `MaxReadyToMerge` uncertain or
+unassessed candidates in **Verify discussion before merge**, independently of the ready-list cap.
+Account for the entire merge inventory through `mergeDiscussion`: eligible, verification-needed,
+unassessed, and digest-excluded counts. A truncated, missing, or uncollected assessment is not clear;
+a transport failure fails the collection rather than emitting a complete zero.
+
+Treat merge eligibility as a selection gate, not a new classification or permission to merge.
+Require `mergeEligibility == eligible` before presenting an unqualified merge recommendation.
+The bounded pass does not identify inline-thread authors or read their text, so even a bot thread
+requires verification when current and unresolved. For merge candidates only, a reviewer's later
+approval of the current head supersedes that same reviewer's earlier top-level concern. It does not
+clear another participant's concern or any current unresolved thread.
+An empty review body is not itself clearance: assess the complete bounded discussion context.
+Resolved or outdated-only threads can be clear; current unresolved threads or missing/incomplete
+evidence require verification. Do not invent an author blocker from empty text.
+
 The same queue also includes an additive community inbox that operates on the full scoped inventory,
 not just the review digest. The inbox exposes:
 
@@ -173,8 +192,8 @@ The script:
 2. Matches the resolved label/path scope.
 3. Classifies each matched PR from current GitHub facts.
 4. Ranks each actionability bucket using waiting time and neglect risk.
-5. Collects bounded discussion evidence for the leading Review now candidates, separately from
-   classification.
+5. Collects bounded discussion evidence for the leading Review now and merge candidates in
+   independently budgeted passes, separately from classification.
 6. Emits the resolved scope, census, warnings, discussion evidence, and capped digest.
 
 Use JSON when the user requests the full classified universe or when diagnosing the result:
@@ -197,10 +216,19 @@ maintain a second semantic mapping.
 An incomplete repository query is an error, not a partial result. Consumers must reject output
 where `query.complete` is not `true`.
 
+When GitHub initially reports unknown mergeability, the existing bounded retry refreshes both
+`mergeable` and `mergeStateStatus` from the same response. Resolving mergeability alone is not
+merge clearance: missing or unknown state remains unqualified, and merge candidates still require
+`CLEAN` state plus the existing review and discussion gates.
+
 The root `discussion` summary and each assessed item's `discussionAssessment` are additive contract
 fields. `discussionAssessment.state == verification-needed` is not a new bucket or an inference
 that the author is next. It means the item must be opened and its surfaced evidence interpreted
 before starting an ordinary review. Renderers must not present a `Review` action for those items.
+The additive `mergeDiscussion`, `mergeEligibility`, `shownInMergeVerification`, and
+`mergeVerificationRank` fields apply the same rule before merge. Preserve existing review-only
+counters and ranks. Consumers of older payloads lacking this entire extension must present merge
+readiness as unverified, not infer eligibility from `ReadyToMerge` alone. Reject partial extensions.
 
 ### 3. Preserve the classifications
 
@@ -210,7 +238,7 @@ The script assigns one bucket and next actor:
 |---|---|---|
 | `ReviewNow` | A reviewer can productively act now | Human reviewer |
 | `NeedsRescue` | Stale, unowned, or blocked work needs a triage decision | Maintainer/triager |
-| `ReadyToMerge` | Approved, checks are complete, and GitHub reports `mergeStateStatus == CLEAN` | Merger |
+| `ReadyToMerge` | Deterministic merge candidate; display as ready only when `mergeEligibility == eligible` | Merger |
 | `WaitingOnAuthor` | Requested changes, a reviewer comment, or conflicts require author action | Author |
 | `WaitingOnCI` | CI or automation must complete or be investigated | CI/automation |
 | `DesignDecision` | API/design ownership must resolve a gate | API/design owner |
@@ -227,8 +255,15 @@ Classification precedence is evidence-driven:
 - An approved PR whose merge state is `BEHIND` routes to author/maintainer branch-update work rather
   than CI.
 - A current non-author `COMMENTED` review routes to `WaitingOnAuthor` unless the author responded or
-  pushed afterward.
-- A newer review request after reviewer feedback returns ownership to a reviewer.
+  pushed afterward. Even with aggregate `APPROVED`, explicit actionable review-body feedback takes
+  this route; an empty or unknown review body instead requires bounded discussion interpretation.
+- A newer review request after reviewer feedback returns ownership to a reviewer. Another person's
+  later review does not satisfy a renewed request to that reviewer.
+- With aggregate `APPROVED`, keep each reviewer's outstanding feedback until that same reviewer
+  approves the feedback's commit or the current head. Another reviewer's approval or a later
+  informational review does not settle it. Use the latest outstanding actionable feedback for
+  response, push, and re-request ownership; retain other unknown feedback for merge verification.
+  Author thanks after approval and a later push do not independently reopen a settled roundtrip.
 - Author-authored review records do not count as reviewer activity.
 - Unresolved review threads alone do not determine the next actor.
 
@@ -241,8 +276,9 @@ Lead with the resolved scope and snapshot time, then present:
    this separate from Review now and show its evidence and completeness state.
 3. **Needs rescue**: zero to three PRs.
 4. **Ready to merge**: a compact list.
-5. Counts for waiting, draft, excluded, and overflow items.
-6. Any coverage or discussion-data warnings.
+5. **Verify discussion before merge**: a separate capped list, including unassessed candidates,
+   with evidence and full inventory counts; do not describe uncertainty as a proven author blocker.
+6. Counts for waiting, draft, excluded, and overflow items, plus coverage warnings.
 
 For each visible PR preserve:
 
@@ -262,6 +298,7 @@ evidence, not a quota and not a judgment about code quality.
 JSON and Markdown consumers must render visible items by `digestRank`. The full `items` array retains
 its compatibility ordering and must not be treated as the selected digest order. The
 `deterministicReviewRank` is the original Review now order before discussion evidence is applied.
+Use `discussionVerificationRank` and `mergeVerificationRank` in their respective verification views.
 
 ### 5. Be honest about incomplete data
 
