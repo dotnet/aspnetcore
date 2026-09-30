@@ -82,8 +82,8 @@ silently reviewing only a fraction.
 ## Step 2 — Route and load immutable guidance
 
 Map the changed paths to the included domain guides. Cross-cutting guidance is required for every
-change, plus Blazor Components guidance when a changed path is under `src/Components` or
-`src/JSInterop`. Never imply specialist coverage from a guide that is not included.
+change, plus Blazor Components guidance when a changed path is under `src/Components`. Never imply
+specialist coverage from a guide that is not included.
 
 Skill loading and guidance-source selection are separate prerequisites. Native skill loading is
 successful only after native invocation succeeds; a registry entry alone is not activation. An
@@ -151,7 +151,7 @@ content.
 
 | Changed paths | Guide |
 |---|---|
-| `src/Components`, `src/JSInterop` | `docs/BlazorComponentsGuidance.md` |
+| `src/Components` | `docs/BlazorComponentsGuidance.md` |
 | **every change** | `docs/CrossCuttingGuidance.md` — always |
 
 `docs/CrossCuttingGuidance.md` always applies. Other changed areas receive cross-cutting review but
