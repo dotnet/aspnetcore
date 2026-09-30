@@ -42,9 +42,10 @@ or truncated response. A missing, unreadable, malformed, or empty routed guide, 
 diff, changed-file source, frozen feedback, or required source role blocks completion.
 If a tool refuses to read a bundle file, record the tool, affected input, and exact error.
 State only the cause the error states, otherwise `unknown`; never attribute it to content
-exclusion, policy, or sandboxing unless the error says so. On Windows, Copilot CLI can
-deny bundle paths longer than 260 characters until interactive approval or
-`--allow-all-paths` grants access; when that is the error, tell the user so.
+exclusion, policy, or sandboxing unless the error says so. If a bundle read fails with
+`Permission denied and could not request permission from user`, tell the user to rerun
+interactively and approve access, or rerun with `--allow-all-paths`, which grants access
+to every path. Do not claim that this generic error proves a long-path cause.
 Never silently fetch product source through live GitHub tools, infer it from memory, or
 fall back to another revision.
 
