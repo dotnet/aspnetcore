@@ -2086,7 +2086,8 @@ function Resolve-UnknownMergeable {
     pass classifies conflicting pull requests as though they were mergeable and
     a later run returns a different queue for unchanged data. This re-queries
     the unresolved pull requests until GitHub reports a value or the attempts
-    run out, and reports how many remain unresolved.
+    run out, refreshing the merge state from the same response so classification
+    does not retain the initial UNKNOWN state, and reports how many remain unresolved.
     #>
     [CmdletBinding()]
     param(
@@ -2135,7 +2136,7 @@ function Resolve-UnknownMergeable {
             $aliases = @(
                 foreach ($candidate in $chunk) {
                     $number = [int]$candidate.PullRequest.number
-                    "pr$number`: pullRequest(number: $number) { number mergeable }"
+                    "pr$number`: pullRequest(number: $number) { number mergeable mergeStateStatus }"
                 }
             )
             $query = 'query($owner:String!,$name:String!){repository(owner:$owner,name:$name){' +
@@ -2174,7 +2175,11 @@ function Resolve-UnknownMergeable {
 
                 $candidate.PullRequest | Add-Member `
                     -NotePropertyName "mergeable" `
-                    -NotePropertyValue (Get-PropertyValue -Object $detail -Name "mergeable" -DefaultValue "UNKNOWN") `
+                    -NotePropertyValue ((Get-PropertyValue -Object $detail -Name "mergeable" -DefaultValue "UNKNOWN") ?? "UNKNOWN") `
+                    -Force
+                $candidate.PullRequest | Add-Member `
+                    -NotePropertyName "mergeStateStatus" `
+                    -NotePropertyValue (Get-PropertyValue -Object $detail -Name "mergeStateStatus" -DefaultValue "UNKNOWN") `
                     -Force
             }
         }

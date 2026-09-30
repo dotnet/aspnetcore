@@ -69,3 +69,17 @@ None in this complete inventory.
 - Warnings: None.
 
 </details>
+
+## Snapshot
+
+Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
+Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
+Capped report results, not the full queue. Authenticated ZIP artifact; retained for seven days.
+
+<details>
+<summary>Snapshot identity</summary>
+
+Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
+JSON SHA-256: `cf3de6c1b949cf89bbf0b937e0db513ab278c992022a5b9b31c8c47ec68d029c`.
+
+</details>
