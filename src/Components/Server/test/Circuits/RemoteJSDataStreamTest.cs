@@ -241,7 +241,42 @@ public class RemoteJSDataStreamTest
     }
 
     [Fact]
-    public async Task ReceiveData_WithBackpressureRetries_DoesNotTimeOut()
+    public async Task ReceiveData_WithErrorDuringBackpressure_ReportsOriginalError()
+    {
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsStreamReference = Mock.Of<IJSStreamReference>();
+        const int chunkSize = 9_488;
+        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+            jsRuntime,
+            jsStreamReference,
+            totalLength: chunkSize * 20,
+            signalRMaximumIncomingBytes: 10_000,
+            jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1),
+            cancellationToken: CancellationToken.None);
+        var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+        var acceptedChunks = 0;
+
+        while (true)
+        {
+            var result = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, acceptedChunks, new byte[chunkSize], error: null).DefaultTimeout();
+            if (result == RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure)
+            {
+                break;
+            }
+
+            acceptedChunks++;
+        }
+
+        var errorResult = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: -1, chunk: null, error: "chunk extraction failed").DefaultTimeout();
+
+        Assert.Equal(RemoteJSDataStreamResult.StreamDisposed, errorResult);
+        using var memoryStream = new MemoryStream();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => remoteJSDataStream.CopyToAsync(memoryStream).DefaultTimeout());
+        Assert.Equal("An error occurred while reading the remote stream: chunk extraction failed", exception.Message);
+    }
+
+    [Fact]
+    public async Task ReceiveData_WithBackpressureRetries_TimesOutWhenNoProgressIsMade()
     {
         var unhandledExceptionRaisedTask = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
         var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -273,11 +308,12 @@ public class RemoteJSDataStreamTest
         {
             await Task.Delay(25);
             var result = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, acceptedChunks, new byte[chunkSize], error: null).DefaultTimeout();
-            Assert.Equal(RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure, result);
+            Assert.True(result is RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure or RemoteJSDataStreamResult.StreamDisposed);
         }
 
-        Assert.False(unhandledExceptionRaisedTask.Task.IsCompleted);
-        remoteJSDataStream.Dispose();
+        Assert.True(unhandledExceptionRaisedTask.Task.IsCompleted);
+        var exception = await unhandledExceptionRaisedTask.Task.DefaultTimeout();
+        Assert.IsType<TimeoutException>(exception);
     }
 
     [Fact]

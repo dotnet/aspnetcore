@@ -483,8 +483,7 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    // ReceiveJSDataChunk is used in a fire-and-forget context, so it's responsible for its own
-    // error handling.
+    // ReceiveJSDataChunk is responsible for reporting protocol errors to the client.
     internal async Task<RemoteJSDataStreamResult> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
     {
         AssertInitialized();

@@ -538,9 +538,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._connection!.send('OnLocationChanging', callId, uri, state, intercepted);
   }
 
-  public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
+  public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number, jsInteropCallTimeoutMilliseconds: number) {
     this.changeActivity(1);
-    return sendJSDataStream(this._connection!, data, streamId, chunkSize, () => this.changeActivity(-1));
+    return sendJSDataStream(this._connection!, data, streamId, chunkSize, jsInteropCallTimeoutMilliseconds, () => this.changeActivity(-1));
   }
 
   public resolveElement(sequenceOrIdentifier: string): LogicalElement {
