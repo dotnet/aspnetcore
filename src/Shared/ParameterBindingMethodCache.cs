@@ -24,7 +24,6 @@ internal sealed class ParameterBindingMethodCache
     private static readonly MethodInfo ConvertValueTaskMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ConvertValueTaskOfNullableResultMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTaskOfNullableResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo BindAsyncMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(BindAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo UriTryCreateMethod = typeof(Uri).GetMethod(nameof(Uri.TryCreate), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(UriKind), typeof(Uri).MakeByRefType() })!;
 
     // Thread-safe singletons for ParameterBindingMethodCache
     private static readonly Lazy<ParameterBindingMethodCache> _instance = new(() => new ParameterBindingMethodCache());
@@ -117,16 +116,6 @@ internal sealed class ParameterBindingMethodCache
                         Expression.Condition(success, Expression.Convert(enumAsObject, type), Expression.Default(type))),
                     success);
                 };
-            }
-
-            if (type == typeof(Uri))
-            {
-                // UriKind.RelativeOrAbsolute is also used by UriTypeConverter which is used in MVC.
-                return (expression, formatProvider) => Expression.Call(
-                    UriTryCreateMethod,
-                    TempSourceStringExpr,
-                    Expression.Constant(UriKind.RelativeOrAbsolute),
-                    expression);
             }
 
             if (TryGetDateTimeTryParseMethod(type, out methodInfo))
