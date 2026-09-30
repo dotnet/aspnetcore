@@ -100,4 +100,66 @@ public class RenderTreeBuilderNullableTest
             frame => AssertFrame.Element(frame, "option", 2),
             frame => AssertFrame.Attribute(frame, "value", "actual-value"));
     }
+
+    [Fact]
+    public void AddAttribute_NullValueOnOptionElementInsideMultipleSelect_OnlyTracksName()
+    {
+        var builder = new RenderTreeBuilder();
+        string? nullValue = null;
+
+        builder.OpenElement(0, "select");
+        builder.AddAttribute(1, "multiple", true);
+        builder.OpenElement(2, "option");
+        builder.AddAttribute(3, "value", nullValue);
+        builder.CloseElement();
+        builder.CloseElement();
+
+        var frames = builder.GetFrames().AsEnumerable().ToArray();
+        Assert.Collection(
+            frames,
+            frame => AssertFrame.Element(frame, "select", 3),
+            frame => AssertFrame.Attribute(frame, "multiple", true),
+            frame => AssertFrame.Element(frame, "option", 1));
+    }
+
+    [Fact]
+    public void AddAttribute_NullValueOnOptionElementInsideSingleSelect_EmitsMarkerAndEmptyValueFrame()
+    {
+        var builder = new RenderTreeBuilder();
+        string? nullValue = null;
+
+        builder.OpenElement(0, "select");
+        builder.OpenElement(1, "option");
+        builder.AddAttribute(2, "value", nullValue);
+        builder.CloseElement();
+        builder.CloseElement();
+
+        var frames = builder.GetFrames().AsEnumerable().ToArray();
+        Assert.Collection(
+            frames,
+            frame => AssertFrame.Element(frame, "select", 4),
+            frame => AssertFrame.Element(frame, "option", 3),
+            frame => AssertFrame.Attribute(frame, "data-blazor-null-option", "data-blazor-null-option"),
+            frame => AssertFrame.Attribute(frame, "value", ""));
+    }
+
+    [Fact]
+    public void AddAttribute_NullValueOnOptionElementInsideDatalist_OnlyTracksName()
+    {
+        var builder = new RenderTreeBuilder();
+        string? nullValue = null;
+
+        builder.OpenElement(0, "datalist");
+        builder.OpenElement(1, "option");
+        builder.AddAttribute(2, "value", nullValue);
+        builder.CloseElement();
+        builder.CloseElement();
+
+        var frames = builder.GetFrames().AsEnumerable().ToArray();
+        Assert.Collection(
+            frames,
+            frame => AssertFrame.Element(frame, "datalist", 2),
+            frame => AssertFrame.Element(frame, "option", 1));
+    }
+
 }

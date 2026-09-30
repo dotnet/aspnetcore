@@ -829,9 +829,7 @@ public sealed class RenderTreeBuilder : IDisposable
         frame.AttributeValueField = value;
     }
 
-    // Returns true when the current open element is an <option> and the attribute
-    // being added is the "value" attribute. Used to detect the value="@null" case
-    // so we can emit a marker attribute on the <option> instead of dropping the frame.
+    // Returns true when the current open element is an <option> whose null "value" attribute should emit a marker, excluding <select multiple> and <datalist> to preserve the browser's text-content fallback.
     private bool IsOptionElementValueAttribute(string name)
     {
         if (!string.Equals(name, "value", StringComparison.Ordinal))
@@ -844,8 +842,54 @@ public sealed class RenderTreeBuilder : IDisposable
             return false;
         }
 
-        ref var parentFrame = ref _entries.Buffer[_openElementIndices.Peek()];
-        return string.Equals(parentFrame.ElementNameField, "option", StringComparison.OrdinalIgnoreCase);
+        var optionFrameIndex = _openElementIndices.Peek();
+        ref var optionFrame = ref _entries.Buffer[optionFrameIndex];
+        if (!string.Equals(optionFrame.ElementNameField, "option", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return !IsWithinDatalistOrMultipleSelectElement(optionFrameIndex);
+    }
+
+    // Determines whether the <option> frame at optionFrameIndex is a direct child of a <datalist>, or of a <select multiple>; relies on attribute frames always following an element's opening frame.
+    private bool IsWithinDatalistOrMultipleSelectElement(int optionFrameIndex)
+    {
+        if (_openElementIndices.Count < 2)
+        {
+            return false;
+        }
+
+        var indices = _openElementIndices.ToArray();
+        var parentFrameIndex = indices[1];
+        ref var parentFrame = ref _entries.Buffer[parentFrameIndex];
+
+        if (string.Equals(parentFrame.ElementNameField, "datalist", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (!string.Equals(parentFrame.ElementNameField, "select", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        for (var i = parentFrameIndex + 1; i < optionFrameIndex; i++)
+        {
+            ref var frame = ref _entries.Buffer[i];
+            if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
+            {
+                break;
+            }
+
+            if (frame.AttributeValueField is not null &&
+                string.Equals(frame.AttributeNameField, "multiple", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal void AssertTreeIsValid(IComponent component)
