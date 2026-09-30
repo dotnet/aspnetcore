@@ -11,6 +11,10 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
+  <ItemGroup>
+    <CompilerVisibleProperty Include="BlazorDisableThrowNavigationException" />
+  </ItemGroup>
+
   <!--#if (IndividualLocalAuth && !UseLocalDB) -->
   <ItemGroup>
     <None Update="Data\app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
