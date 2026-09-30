@@ -22,25 +22,35 @@ As a minor point, the current system also makes our project files somewhat less 
 * Do not use `<PackageReference>`.
 * If you need to use a new package, add it to `eng/Dependencies.props` and `eng/Versions.props`.
 * If the package comes from a partner team and needs to have versions automatically updated, also add an entry `eng/Version.Details.xml`.
+* Otherwise, add the package to [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj) so Dependabot can find and update it. See the README next to that file for details.
 * Only use `<ProjectReference>` in test projects.
 * Name the .csproj file to match the assembly name.
-* Run `eng/scripts/GenerateProjectList.ps1` (or `build.cmd /t:GenerateProjectList`) when adding new projects
+* Follow the project checklist below when adding, moving, or removing projects.
 
 ## Important files
 
 * [eng/Dependencies.props](/eng/Dependencies.props) - contains a list of all package references that might be used in the repo.
+* [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj) - restates non-Maestro-managed packages from `eng/Dependencies.props` as ordinary `<PackageReference>` items so Dependabot can find and update them. Never built.
 * [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project.
 * [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and build.
 * [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependency variables in
   [eng/Versions.props](/eng/Versions.props) and, for SDKs and `msbuild` toolsets, [global.json](global.json).
 
-## Example: adding a new project
+## Adding, moving, or removing a project
 
-Steps for adding a new project to this repo.
+Adding, moving, or removing a project changes generated repository metadata and may affect multiple solution filters.
+Complete this checklist for every structural project change:
 
-1. Create the .csproj
-2. Run `eng/scripts/GenerateProjectList.ps1`
-3. Add new project to AspNetCore.sln and any relevant `*.slnf` files
+1. Create, move, or remove the project files.
+2. Update `AspNetCore.slnx` and every `*.slnf` that references the project. A project referenced by a solution
+   filter must also exist in `AspNetCore.slnx`.
+3. Run `eng/scripts/GenerateProjectList.ps1` (or `build.cmd /t:GenerateProjectList`) and review all generated
+   `eng/*.props` changes, including ordering and grouping changes.
+4. Run project-list generation a second time and confirm that it produces no further changes.
+5. For a move or removal, run `git grep -n -- '<old-project-path>'` and resolve every remaining tracked reference
+   that is not intentionally historical documentation.
+6. Run `eng/scripts/CodeCheck.ps1`. This checks that solution filters reference only projects in
+   `AspNetCore.slnx` and reruns project-list generation to detect stale generated metadata.
 
 ## Example: adding a new dependency
 
@@ -80,6 +90,10 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
 
         The attribute value should be `"Microsoft.CodeAnalysis.Razor"` for dotnet/runtime dependencies in
         dotnet/aspnetcore-tooling.
+4. Otherwise (no Maestro automation), add `<PackageReference Include="System.Banana" Version="$(SystemBananaVersion)" />`
+   to [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj)
+   so Dependabot can find and update it. `CodeCheck.ps1` fails if this file isn't kept in sync with
+   `eng/Dependencies.props`.
 
 ## A darc cheatsheet
 

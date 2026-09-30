@@ -566,7 +566,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         IncrementRequestHeadersCount();
 
         string key = name.GetHeaderName();
-        var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector, checkForNewlineChars: false);
+        var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector, checkForNewlineChars: true);
         RequestTrailers.Append(key, valueStr);
     }
 
@@ -643,6 +643,8 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         }
     }
 
+    // This long-running method currently performs better with AggressiveOptimization, see https://github.com/dotnet/runtime/issues/133672.
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application) where TContext : notnull
     {
         while (_keepAlive)
@@ -1251,6 +1253,15 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             {
                 DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
             }
+        }
+
+        // Close the connection when rejecting an HTTP/1.1 CONNECT request.
+        // See https://www.rfc-editor.org/rfc/rfc9931#section-8.
+        if (_httpVersion == Http.HttpVersion.Http11 &&
+            Method == HttpMethod.Connect &&
+            StatusCode >= StatusCodes.Status300MultipleChoices)
+        {
+            DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
         }
 
         responseHeaders.SetReadOnly();

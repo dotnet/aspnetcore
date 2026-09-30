@@ -75,47 +75,105 @@ public class DefaultCsrfProtectionTests
     [InlineData("HEAD")]
     [InlineData("OPTIONS")]
     [InlineData("TRACE")]
+    [InlineData("QUERY")]
     [InlineData("get")]
     [InlineData("Get")]
+    [InlineData("query")]
     public async Task SafeMethods_AlwaysAllowed(string method)
     {
         var context = CreateContext(method: method, secFetchSite: "cross-site", origin: "https://evil.com");
         Assert.True((await _validator.ValidateAsync(context)).IsAllowed);
     }
 
-    // Step 2: Trusted origins (from the applicable CORS policy) allow cross-origin requests.
+    // Step 2: Trusted origins (from the applicable CORS policy) allow cross-origin requests
 
     [Fact]
-    public async Task TrustedOrigin_FromDefaultPolicy_Allowed()
+    public async Task TrustedOrigin_FromDefaultPolicy_WithCredentials_Allowed()
     {
-        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com")));
+        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com").AllowCredentials()));
         var context = CreateContext(origin: "https://trusted.com", secFetchSite: "cross-site", services: services);
         Assert.True((await _validator.ValidateAsync(context)).IsAllowed);
     }
 
     [Fact]
-    public async Task TrustedOrigin_FromNamedPolicyOnEndpoint_Allowed()
+    public async Task TrustedOrigin_FromDefaultPolicy_WithoutCredentials_Denied()
     {
-        var services = BuildCorsServices(o => o.AddPolicy("Webhook", p => p.WithOrigins("https://stripe.com")));
+        // AllowCredentials() is required, so request is not allowed
+        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com")));
+        var context = CreateContext(origin: "https://trusted.com", secFetchSite: "cross-site", services: services);
+        Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
+    }
+
+    [Fact]
+    public async Task TrustedOrigin_FromNamedPolicyOnEndpoint_WithCredentials_Allowed()
+    {
+        var services = BuildCorsServices(o => o.AddPolicy("Webhook", p => p.WithOrigins("https://stripe.com").AllowCredentials()));
         var endpoint = EndpointWithMetadata(new EnableCorsAttribute("Webhook"));
         var context = CreateContext(origin: "https://stripe.com", secFetchSite: "cross-site", services: services, endpoint: endpoint);
         Assert.True((await _validator.ValidateAsync(context)).IsAllowed);
     }
 
     [Fact]
-    public async Task TrustedOrigin_FromInlinePolicyOnEndpoint_Allowed()
+    public async Task TrustedOrigin_FromNamedPolicyOnEndpoint_WithoutCredentials_Denied()
     {
-        var policy = new CorsPolicyBuilder().WithOrigins("https://inline.example.com").Build();
+        var services = BuildCorsServices(o => o.AddPolicy("Webhook", p => p.WithOrigins("https://stripe.com")));
+        var endpoint = EndpointWithMetadata(new EnableCorsAttribute("Webhook"));
+        var context = CreateContext(origin: "https://stripe.com", secFetchSite: "cross-site", services: services, endpoint: endpoint);
+        Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
+    }
+
+    [Fact]
+    public async Task TrustedOrigin_FromInlinePolicyOnEndpoint_WithCredentials_Allowed()
+    {
+        var policy = new CorsPolicyBuilder().WithOrigins("https://inline.example.com").AllowCredentials().Build();
         var endpoint = EndpointWithMetadata(new CorsPolicyMetadata(policy));
         var context = CreateContext(origin: "https://inline.example.com", secFetchSite: "cross-site", endpoint: endpoint);
         Assert.True((await _validator.ValidateAsync(context)).IsAllowed);
     }
 
     [Fact]
+    public async Task TrustedOrigin_FromInlinePolicyOnEndpoint_WithoutCredentials_Denied()
+    {
+        var policy = new CorsPolicyBuilder().WithOrigins("https://inline.example.com").Build();
+        var endpoint = EndpointWithMetadata(new CorsPolicyMetadata(policy));
+        var context = CreateContext(origin: "https://inline.example.com", secFetchSite: "cross-site", endpoint: endpoint);
+        Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
+    }
+
+    [Fact]
+    public async Task DisallowedOrigin_WithCredentialsPolicy_Denied()
+    {
+        // Credentials are enabled, but the request Origin isn't in the allow-list at all.
+        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com").AllowCredentials()));
+        var context = CreateContext(origin: "https://evil.com", secFetchSite: "cross-site", services: services);
+        Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
+    }
+
+    [Fact]
+    public async Task CustomIsOriginAllowed_WithCredentials_Allowed()
+    {
+        var policy = new CorsPolicyBuilder().SetIsOriginAllowed(o => o == "https://dynamic.example.com").AllowCredentials().Build();
+        var endpoint = EndpointWithMetadata(new CorsPolicyMetadata(policy));
+        var context = CreateContext(origin: "https://dynamic.example.com", secFetchSite: "cross-site", endpoint: endpoint);
+        Assert.True((await _validator.ValidateAsync(context)).IsAllowed);
+    }
+
+    [Fact]
+    public async Task CustomIsOriginAllowed_WithoutCredentials_Denied()
+    {
+        // A custom SetIsOriginAllowed predicate is just another way to populate IsOriginAllowed; it must
+        // still require SupportsCredentials like the WithOrigins(...) allow-list path does.
+        var policy = new CorsPolicyBuilder().SetIsOriginAllowed(o => o == "https://dynamic.example.com").Build();
+        var endpoint = EndpointWithMetadata(new CorsPolicyMetadata(policy));
+        var context = CreateContext(origin: "https://dynamic.example.com", secFetchSite: "cross-site", endpoint: endpoint);
+        Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
+    }
+
+    [Fact]
     public async Task InlinePolicyOnEndpoint_Overrides_DefaultPolicy()
     {
-        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://app.example.com")));
-        var inlinePolicy = new CorsPolicyBuilder().WithOrigins("https://inline.example.com").Build();
+        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://app.example.com").AllowCredentials()));
+        var inlinePolicy = new CorsPolicyBuilder().WithOrigins("https://inline.example.com").AllowCredentials().Build();
         var endpoint = EndpointWithMetadata(new CorsPolicyMetadata(inlinePolicy));
 
         // Default-policy origin would be allowed app-wide, but this endpoint declared a stricter inline policy.
@@ -128,8 +186,8 @@ public class DefaultCsrfProtectionTests
     {
         var services = BuildCorsServices(o =>
         {
-            o.AddDefaultPolicy(p => p.WithOrigins("https://app.example.com"));
-            o.AddPolicy("Webhook", p => p.WithOrigins("https://stripe.com"));
+            o.AddDefaultPolicy(p => p.WithOrigins("https://app.example.com").AllowCredentials());
+            o.AddPolicy("Webhook", p => p.WithOrigins("https://stripe.com").AllowCredentials());
         });
         var endpoint = EndpointWithMetadata(new EnableCorsAttribute("Webhook"));
 
@@ -142,7 +200,7 @@ public class DefaultCsrfProtectionTests
     public async Task UnknownNamedPolicyOnEndpoint_FallsThroughToSecFetchSite()
     {
         // Endpoint references a policy name that was never registered → provider returns null → fall through.
-        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com")));
+        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com").AllowCredentials()));
         var endpoint = EndpointWithMetadata(new EnableCorsAttribute("Nonexistent"));
         var context = CreateContext(origin: "https://trusted.com", secFetchSite: "cross-site", services: services, endpoint: endpoint);
         // Even though "https://trusted.com" is in the default policy, the endpoint specified a different named policy
@@ -155,7 +213,7 @@ public class DefaultCsrfProtectionTests
     {
         // AddCors is called and a named policy is registered, but no default policy and no [EnableCors] on endpoint.
         // The provider tries default policy name, finds nothing → returns null → fall through.
-        var services = BuildCorsServices(o => o.AddPolicy("Webhook", p => p.WithOrigins("https://stripe.com")));
+        var services = BuildCorsServices(o => o.AddPolicy("Webhook", p => p.WithOrigins("https://stripe.com").AllowCredentials()));
         var context = CreateContext(origin: "https://stripe.com", secFetchSite: "cross-site", services: services);
         Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
     }
@@ -163,7 +221,7 @@ public class DefaultCsrfProtectionTests
     [Fact]
     public async Task DisableCorsOnEndpoint_SkipsCorsTrust_FallsThroughToSecFetchSite()
     {
-        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com")));
+        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com").AllowCredentials()));
         var endpoint = EndpointWithMetadata(new DisableCorsAttribute());
         var context = CreateContext(origin: "https://trusted.com", secFetchSite: "cross-site", services: services, endpoint: endpoint);
         Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
@@ -178,6 +236,19 @@ public class DefaultCsrfProtectionTests
     }
 
     [Fact]
+    public async Task AllowAnyOriginPolicy_IsIgnored_EvenWithCredentialsField_DoesNotTrustEverything()
+    {
+        // CorsPolicyBuilder.Build() itself throws if AllowAnyOrigin() and AllowCredentials() are combined,
+        // so this constructs the (invalid-for-CORS-purposes) policy object directly to prove AllowAnyOrigin
+        // is excluded unconditionally, regardless of the SupportsCredentials field's value.
+        var policy = new CorsPolicyBuilder().AllowAnyOrigin().Build();
+        policy.SupportsCredentials = true;
+        var endpoint = EndpointWithMetadata(new CorsPolicyMetadata(policy));
+        var context = CreateContext(origin: "https://evil.com", secFetchSite: "cross-site", endpoint: endpoint);
+        Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
+    }
+
+    [Fact]
     public async Task NoCorsRegistration_FallsThroughToSecFetchSite()
     {
         var context = CreateContext(origin: "https://untrusted.com", secFetchSite: "cross-site");
@@ -187,7 +258,7 @@ public class DefaultCsrfProtectionTests
     [Fact]
     public async Task UntrustedOrigin_DeniedBySecFetchSite()
     {
-        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com")));
+        var services = BuildCorsServices(o => o.AddDefaultPolicy(p => p.WithOrigins("https://trusted.com").AllowCredentials()));
         var context = CreateContext(origin: "https://untrusted.com", secFetchSite: "cross-site", services: services);
         Assert.False((await _validator.ValidateAsync(context)).IsAllowed);
     }

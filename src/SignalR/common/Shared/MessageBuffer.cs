@@ -53,7 +53,8 @@ internal sealed class MessageBuffer : IDisposable
     // Pool per connection
     private readonly Stack<LinkedBuffer> _pool = new();
 
-    private LinkedBuffer _buffer;
+    private LinkedBuffer _bufferHead;
+    private LinkedBuffer _bufferTail;
     private long _bufferedByteCount;
 
     static MessageBuffer()
@@ -73,7 +74,7 @@ internal sealed class MessageBuffer : IDisposable
         _timer = new(AckRate, _timeProvider);
 #endif
 
-        _buffer = new LinkedBuffer();
+        _bufferHead = _bufferTail = new LinkedBuffer();
 
         _writer = connection.Transport.Output;
         _protocol = protocol;
@@ -170,7 +171,7 @@ internal sealed class MessageBuffer : IDisposable
             {
                 _totalMessageCount++;
                 _bufferedByteCount += messageBytes.Length;
-                _buffer.AddMessage(messageBytes, _totalMessageCount, _pool);
+                _bufferTail = _bufferTail.AddMessage(messageBytes, _totalMessageCount, _pool);
 
                 writeTask = _writer.WriteAsync(messageBytes, cancellationToken);
             }
@@ -197,8 +198,9 @@ internal sealed class MessageBuffer : IDisposable
         await _writeLock.WaitAsync(cancellationToken: default).ConfigureAwait(false);
         try
         {
-            var item = _buffer.RemoveMessages(ackMessage.SequenceId, _pool);
-            _buffer = item.Buffer;
+            var item = _bufferHead.RemoveMessages(ackMessage.SequenceId, _pool);
+            // RemoveMessages retains the last buffer, so _bufferTail remains valid even when all messages are acknowledged.
+            _bufferHead = item.Buffer;
             _bufferedByteCount -= item.ReturnCredit;
 
             newCount = _bufferedByteCount;
@@ -271,7 +273,7 @@ internal sealed class MessageBuffer : IDisposable
 
             var isFirst = true;
             // Loop over all buffered messages and send them
-            foreach (var item in _buffer.GetMessages())
+            foreach (var item in _bufferHead.GetMessages())
             {
                 if (item.SequenceId > 0)
                 {
@@ -327,45 +329,36 @@ internal sealed class MessageBuffer : IDisposable
 
         private readonly ReadOnlyMemory<byte>[] _messages = new ReadOnlyMemory<byte>[BufferLength];
 
-        public void AddMessage(ReadOnlyMemory<byte> hubMessage, long sequenceId, Stack<LinkedBuffer> pool)
+        public LinkedBuffer AddMessage(ReadOnlyMemory<byte> hubMessage, long sequenceId, Stack<LinkedBuffer> pool)
         {
-            if (_startingSequenceId < 0)
-            {
-                Debug.Assert(_currentIndex == -1);
-                _startingSequenceId = sequenceId;
-            }
+            Debug.Assert(_next is null);
 
-            if (_currentIndex < BufferLength - 1)
-            {
-                Debug.Assert(_startingSequenceId + _currentIndex + 1 == sequenceId);
-
-                _currentIndex++;
-                _messages[_currentIndex] = hubMessage;
-            }
-            else if (_next is null)
+            var buffer = this;
+            if (_currentIndex == BufferLength - 1)
             {
                 if (pool.Count != 0)
                 {
-                    _next = pool.Pop();
+                    buffer = pool.Pop();
                 }
                 else
                 {
-                    _next = new LinkedBuffer();
+                    buffer = new LinkedBuffer();
                 }
-                _next.AddMessage(hubMessage, sequenceId, pool);
+                _next = buffer;
             }
-            else
+
+            if (buffer._startingSequenceId < 0)
             {
-                // TODO: Should we avoid this path by keeping a tail pointer?
-
-                var linkedBuffer = _next;
-                while (linkedBuffer._next is not null)
-                {
-                    linkedBuffer = linkedBuffer._next;
-                }
-
-                linkedBuffer.AddMessage(hubMessage, sequenceId, pool);
+                Debug.Assert(buffer._currentIndex == -1);
+                buffer._startingSequenceId = sequenceId;
             }
+
+            Debug.Assert(buffer._startingSequenceId + buffer._currentIndex + 1 == sequenceId);
+
+            buffer._currentIndex++;
+            buffer._messages[buffer._currentIndex] = hubMessage;
+
+            return buffer;
         }
 
         public (LinkedBuffer Buffer, int ReturnCredit) RemoveMessages(long sequenceId, Stack<LinkedBuffer> pool)

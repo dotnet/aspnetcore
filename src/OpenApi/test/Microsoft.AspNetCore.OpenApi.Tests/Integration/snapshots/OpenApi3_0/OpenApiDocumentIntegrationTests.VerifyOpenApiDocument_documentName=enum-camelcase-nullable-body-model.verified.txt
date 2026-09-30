@@ -43,10 +43,15 @@
           "status": {
             "oneOf": [
               {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
+              {
                 "$ref": "#/components/schemas/CamelCaseStatus"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -54,8 +59,7 @@
         "enum": [
           "active",
           "inactive",
-          "pending",
-          null
+          "pending"
         ]
       }
     }

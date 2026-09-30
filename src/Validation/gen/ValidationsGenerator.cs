@@ -18,21 +18,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         );
 
         // Extract types that have been marked with framework [ValidatableType].
-        var frameworkValidatableTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
+        var validatableTypesWithAttribute = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Microsoft.Extensions.Validation.ValidatableTypeAttribute",
             predicate: ShouldTransformSymbolWithAttribute,
             transform: TransformValidatableTypeWithAttribute
         );
-
-        // Extract types that have been marked with generated [ValidatableType].
-        var generatedValidatableTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "Microsoft.Extensions.Validation.Embedded.ValidatableTypeAttribute",
-            predicate: ShouldTransformSymbolWithAttribute,
-            transform: TransformValidatableTypeWithAttribute
-        );
-
-        // Combine both sources of validatable types
-        var validatableTypesWithAttribute = frameworkValidatableTypes.Concat(generatedValidatableTypes);
 
         // Extract all minimal API endpoints in the application.
         // Extract validatable types from all endpoints.

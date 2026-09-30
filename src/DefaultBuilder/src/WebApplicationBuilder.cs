@@ -29,7 +29,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string UseRoutingKey = "__UseRouting";
 
     // Note: Mvc.Testing listens for this event. This private const is a cross-assembly contract.
-    private const string HostApplicationBuilderConstructedEventName = "HostApplicationBuilderConstructed";
+    private const string WebApplicationBuilderConstructedEventName = "WebApplicationBuilderConstructed";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
@@ -217,9 +217,9 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     {
         using var diagnosticListener = new DiagnosticListener("Microsoft.Extensions.Hosting");
 
-        if (diagnosticListener.IsEnabled() && diagnosticListener.IsEnabled(HostApplicationBuilderConstructedEventName))
+        if (diagnosticListener.IsEnabled() && diagnosticListener.IsEnabled(WebApplicationBuilderConstructedEventName))
         {
-            diagnosticListener.Write(HostApplicationBuilderConstructedEventName, this);
+            diagnosticListener.Write(WebApplicationBuilderConstructedEventName, this);
         }
     }
 

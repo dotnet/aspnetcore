@@ -108,7 +108,12 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         else
         {
             // Expression statements, blocks, switch, cases etc. that have children.
+            // During source-build, we use newer version of Microsoft.CodeAnalysis which obsoletes Children and provide an alternative.
+            // However, for normal builds, we use MS.CA 3.3.1 which doesn't obsolete Children and doesn't have an alternative.
+            // We suppress the warning for source-builds for now.
+#pragma warning disable CS0618
             foreach (var childOperation in operation.Children)
+#pragma warning restore CS0618
             {
                 AnalyzeOperationsTree(childOperation, availableTypes, analyzerState);
             }
@@ -243,7 +248,12 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
             || currentOperation is IConversionOperation 
             || currentOperation is IInvocationOperation)
         {
+            // During source-build, we use newer version of Microsoft.CodeAnalysis which obsoletes Children and provide an alternative.
+            // However, for normal builds, we use MS.CA 3.3.1 which doesn't obsolete Children and doesn't have an alternative.
+            // We suppress the warning for source-builds for now.
+#pragma warning disable CS0618
             foreach (var child in currentOperation.Children)
+#pragma warning restore CS0618
             {
                 var result = FindFirstDelegateChild(child);
                 if (result is not null)

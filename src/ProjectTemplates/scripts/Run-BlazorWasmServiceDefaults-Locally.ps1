@@ -5,8 +5,8 @@
 # template to help with rapid iteration on the template content.
 [CmdletBinding(PositionalBinding = $false)]
 param(
-    [ValidateSet("net11.0")]
-    [string] $Framework = "net11.0",
+    [ValidateSet("net12.0")]
+    [string] $Framework = "net12.0",
     [Parameter(Mandatory = $false)]
     [switch] $Hosted,
     [Parameter(Mandatory = $false)]
@@ -23,6 +23,10 @@ $templateArguments = @("blazorwasm-servicedefaults");
 
 if ($Hosted) {
     $templateArguments += "--hosted"
+}
+
+if ($Args) {
+    $templateArguments += $Args
 }
 
 Import-Module -Name "$PSScriptRoot/Test-Template.psm1";

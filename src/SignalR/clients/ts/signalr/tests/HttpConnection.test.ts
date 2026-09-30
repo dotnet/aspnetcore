@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpRequest, HttpResponse } from "../src/HttpClient";
+import { AccessTokenHttpClient } from "../src/AccessTokenHttpClient";
 import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
@@ -52,6 +53,377 @@ describe("HttpConnection", () => {
         expect(() => new HttpConnection("/test", commonOptions))
             .toThrow("Cannot resolve '/test'.");
         delete (global as any).window;
+    });
+
+    it("captures initial authentication token lifetime from negotiate response", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ ...defaultNegotiateResponse, tokenLifetimeSeconds: 60 })),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                expect(connection.features.authenticationRefresh.initialTokenLifetimeInSeconds).toBe(60);
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("ignores invalid authentication token lifetimes from negotiate response", async () => {
+        for (const tokenLifetimeSeconds of [undefined, 0, -1, "invalid", Number.POSITIVE_INFINITY]) {
+            await VerifyLogger.run(async (logger) => {
+                const transport = new TestTransport();
+                const options: IHttpConnectionOptions = {
+                    ...commonOptions,
+                    httpClient: new TestHttpClient()
+                        .on("POST", () => ({ ...defaultNegotiateResponse, tokenLifetimeSeconds })),
+                    logger,
+                    transport,
+                };
+
+                const connection = new HttpConnection("http://tempuri.org", options);
+                try {
+                    await connection.start(TransferFormat.Text);
+
+                    expect(connection.features.authenticationRefresh.initialTokenLifetimeInSeconds).toBeUndefined();
+                } finally {
+                    transport.onclose!();
+                    await connection.stop();
+                }
+            });
+        }
+    });
+
+    it("clamps large authentication token lifetimes from negotiate response", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ ...defaultNegotiateResponse, tokenLifetimeSeconds: Number.MAX_SAFE_INTEGER })),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                expect(connection.features.authenticationRefresh.initialTokenLifetimeInSeconds).toBe(Math.floor(Number.MAX_SAFE_INTEGER / 1000));
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("refreshes authentication with a fresh access token", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            let accessTokenFactoryCallCount = 0;
+            let negotiateAuthorizationHeader: string | undefined;
+            let refreshAuthorizationHeader: string | undefined;
+            let refreshUrl: string | undefined;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                accessTokenFactory: () => `token${++accessTokenFactoryCallCount}`,
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, (request) => {
+                        negotiateAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                        return defaultNegotiateResponse;
+                    })
+                    .on("POST", /\/refresh/, (request) => {
+                        refreshAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                        refreshUrl = request.url;
+                        return { tokenLifetimeSeconds: 42 };
+                    }),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://tempuri.org/chat?q=value", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                const newTokenLifetimeInSeconds = await connection.features.authenticationRefresh.refreshAuthentication();
+
+                expect(newTokenLifetimeInSeconds).toBe(42);
+                expect(accessTokenFactoryCallCount).toBe(2);
+                expect(negotiateAuthorizationHeader).toBe("Bearer token1");
+                expect(refreshAuthorizationHeader).toBe("Bearer token2");
+                expect(refreshUrl).toBe("http://tempuri.org/chat/refresh?q=value&id=123abc");
+                expect((connection as any)._httpClient._accessToken).toBe("token2");
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("refreshes authentication against original endpoint with application token after negotiate redirect", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            let negotiateCount = 0;
+            let firstNegotiateAuthorizationHeader: string | undefined;
+            let redirectedNegotiateAuthorizationHeader: string | undefined;
+            let refreshAuthorizationHeader: string | undefined;
+            let refreshUrl: string | undefined;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                accessTokenFactory: () => "app-token",
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, (request) => {
+                        negotiateCount++;
+                        if (negotiateCount === 1) {
+                            firstNegotiateAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                            return {
+                                accessToken: "service-token",
+                                tokenLifetimeSeconds: 60,
+                                url: "http://redirected.example/hub",
+                            };
+                        }
+
+                        redirectedNegotiateAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                        return defaultNegotiateResponse;
+                    })
+                    .on("POST", /\/refresh/, (request) => {
+                        refreshAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                        refreshUrl = request.url;
+                        return { accessToken: "service-token2", tokenLifetimeSeconds: 42 };
+                    }),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://original.example/hub", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                expect(connection.features.authenticationRefresh.initialTokenLifetimeInSeconds).toBe(60);
+
+                const newTokenLifetimeInSeconds = await connection.features.authenticationRefresh.refreshAuthentication();
+
+                expect(newTokenLifetimeInSeconds).toBe(42);
+                expect(firstNegotiateAuthorizationHeader).toBe("Bearer app-token");
+                expect(redirectedNegotiateAuthorizationHeader).toBe("Bearer service-token");
+                expect(refreshAuthorizationHeader).toBe("Bearer app-token");
+                expect(refreshUrl).toBe("http://original.example/hub/refresh?id=123abc");
+                expect((connection as any)._httpClient._accessToken).toBe("service-token2");
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("does not replace redirected transport token with application token when refresh omits access token", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            let negotiateCount = 0;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                accessTokenFactory: () => "app-token",
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, () => {
+                        negotiateCount++;
+                        if (negotiateCount === 1) {
+                            return {
+                                accessToken: "service-token",
+                                url: "http://redirected.example/hub",
+                            };
+                        }
+
+                        return defaultNegotiateResponse;
+                    })
+                    .on("POST", /\/refresh/, () => ({ tokenLifetimeSeconds: 42 })),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://original.example/hub", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                await connection.features.authenticationRefresh.refreshAuthentication();
+
+                expect((connection as any)._httpClient._accessToken).toBe("service-token");
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("does not replace cached transport token when authentication refresh is rejected", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            let accessTokenFactoryCallCount = 0;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                accessTokenFactory: () => `token${++accessTokenFactoryCallCount}`,
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, () => defaultNegotiateResponse)
+                    .on("POST", /\/refresh/, () => new HttpResponse(403)),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://original.example/hub", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                await expect(connection.features.authenticationRefresh.refreshAuthentication())
+                    .rejects
+                    .toThrow("Unexpected status code returned from authentication refresh '403'");
+
+                expect(accessTokenFactoryCallCount).toBe(2);
+                expect((connection as any)._httpClient._accessToken).toBe("token1");
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("does not infer special access token handling from normal transport request URLs", async () => {
+        let accessTokenFactoryCallCount = 0;
+        const innerClient = new TestHttpClient()
+            .on("POST", () => new HttpResponse(200));
+        const accessTokenHttpClient = new AccessTokenHttpClient(innerClient, () => `new-token${++accessTokenFactoryCallCount}`);
+        accessTokenHttpClient.updateCachedToken("cached-token");
+
+        await accessTokenHttpClient.post("http://tempuri.org/refresh?id=123abc");
+        await accessTokenHttpClient.post("http://tempuri.org/negotiate?id=123abc");
+
+        expect(accessTokenFactoryCallCount).toBe(0);
+        expect(accessTokenHttpClient._accessToken).toBe("cached-token");
+    });
+
+    it("does not retry transport requests with application token after refresh returns access token", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            let accessTokenFactoryCallCount = 0;
+            let sendCount = 0;
+            let sendAuthorizationHeader: string | undefined;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                accessTokenFactory: () => `app-token${++accessTokenFactoryCallCount}`,
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, () => defaultNegotiateResponse)
+                    .on("POST", /\/refresh/, () => ({ accessToken: "service-token", tokenLifetimeSeconds: 42 }))
+                    .on("POST", /\/send/, (request) => {
+                        sendCount++;
+                        sendAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                        return new HttpResponse(401);
+                    }),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://original.example/hub", options);
+            try {
+                await connection.start(TransferFormat.Text);
+                await connection.features.authenticationRefresh.refreshAuthentication();
+
+                const response = await (connection as any)._httpClient.post("http://original.example/hub/send");
+
+                expect(response.statusCode).toBe(401);
+                expect(sendCount).toBe(1);
+                expect(sendAuthorizationHeader).toBe("Bearer service-token");
+                expect(accessTokenFactoryCallCount).toBe(2);
+                expect((connection as any)._httpClient._accessToken).toBe("service-token");
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("does not apply stale authentication refresh response after restart", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            const refreshResponse = new PromiseSource<object>();
+            let accessTokenFactoryCallCount = 0;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                accessTokenFactory: () => `token${++accessTokenFactoryCallCount}`,
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, () => defaultNegotiateResponse)
+                    .on("POST", /\/refresh/, () => refreshResponse.promise),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://original.example/hub", options);
+            await connection.start(TransferFormat.Text);
+
+            const refreshPromise = connection.features.authenticationRefresh.refreshAuthentication();
+            const stopPromise = connection.stop();
+            transport.onclose!();
+            await stopPromise;
+
+            await connection.start(TransferFormat.Text);
+
+            refreshResponse.resolve({ accessToken: "stale-token", tokenLifetimeSeconds: 42 });
+
+            expect(await refreshPromise).toBeUndefined();
+            expect(accessTokenFactoryCallCount).toBe(3);
+            expect((connection as any)._httpClient._accessToken).toBe("token3");
+
+            transport.onclose!();
+            await connection.stop();
+        });
+    });
+
+    it("does not use redirected transport token for authentication refresh without application token factory", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            let negotiateCount = 0;
+            let refreshAuthorizationHeader: string | undefined;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, () => {
+                        negotiateCount++;
+                        if (negotiateCount === 1) {
+                            return {
+                                accessToken: "service-token",
+                                url: "http://redirected.example/hub",
+                            };
+                        }
+
+                        return defaultNegotiateResponse;
+                    })
+                    .on("POST", /\/refresh/, (request) => {
+                        refreshAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                        return { tokenLifetimeSeconds: 42 };
+                    }),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://original.example/hub", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                await connection.features.authenticationRefresh.refreshAuthentication();
+
+                expect(refreshAuthorizationHeader).toBeUndefined();
+                expect((connection as any)._httpClient._accessToken).toBe("service-token");
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
     });
 
     it("starting connection fails if getting id fails", async () => {

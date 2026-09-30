@@ -632,6 +632,32 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
+    [Theory]
+    [InlineData(16)]
+    [InlineData(256)]
+    [InlineData(4096)]
+    public void ParseList_TokenWithoutSlashRecoversFollowingValue(int tokenLength)
+    {
+        var input = $"{new string('a', tokenLength)}, text/plain";
+
+        var result = MediaTypeHeaderValue.ParseList(new[] { input });
+
+        Assert.Equal(new[] { new MediaTypeHeaderValue("text/plain") }, result);
+    }
+
+    [Theory]
+    [InlineData(16, "")]
+    [InlineData(256, " ")]
+    [InlineData(4096, "   ")]
+    public void ParseList_MissingSubtypeRecoversFollowingValue(int tokenLength, string whitespace)
+    {
+        var input = $"{new string('a', tokenLength)}/{whitespace}, text/plain";
+
+        var result = MediaTypeHeaderValue.ParseList(new[] { input });
+
+        Assert.Equal(new[] { new MediaTypeHeaderValue("text/plain") }, result);
+    }
+
     [Fact]
     public void ParseStrictList_WithSomeInvalidValues_Throws()
     {

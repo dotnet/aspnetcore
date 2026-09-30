@@ -17,14 +17,14 @@
         <nav role="navigation">
             @if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
             {
-                <a class="go-first" href="@(CanGoBack ? GetPageUrl(0) : null)" title="Go to first page" aria-label="Go to first page" aria-disabled="@(!CanGoBack ? "true" : "false")">«</a>
-                <a class="go-previous" href="@(CanGoBack ? GetPageUrl(State.CurrentPageIndex - 1) : null)" title="Go to previous page" aria-label="Go to previous page" aria-disabled="@(!CanGoBack ? "true" : "false")">‹</a>
+                <a class="go-first" href="@GetPageUrl(0)" title="Go to first page" aria-label="Go to first page" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">«</a>
+                <a class="go-previous" href="@GetPageUrl(Math.Max(0, State.CurrentPageIndex - 1))" title="Go to previous page" aria-label="Go to previous page" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">‹</a>
                 <div class="pagination-text">
                     Page <strong>@(State.CurrentPageIndex + 1)</strong>
                     of <strong>@(State.LastPageIndex + 1)</strong>
                 </div>
-                <a class="go-next" href="@(CanGoForwards ? GetPageUrl(State.CurrentPageIndex + 1) : null)" title="Go to next page" aria-label="Go to next page" aria-disabled="@(!CanGoForwards ? "true" : "false")">›</a>
-                <a class="go-last" href="@(CanGoForwards ? GetPageUrl(State.LastPageIndex.GetValueOrDefault(0)) : null)" title="Go to last page" aria-label="Go to last page" aria-disabled="@(!CanGoForwards ? "true" : "false")">»</a>
+                <a class="go-next" href="@GetPageUrl(Math.Min(State.LastPageIndex ?? 0, State.CurrentPageIndex + 1))" title="Go to next page" aria-label="Go to next page" aria-disabled="@(!CanGoForwards ? "true" : "false")" tabindex="@(!CanGoForwards ? "-1" : null)">›</a>
+                <a class="go-last" href="@GetPageUrl(State.LastPageIndex ?? 0)" title="Go to last page" aria-label="Go to last page" aria-disabled="@(!CanGoForwards ? "true" : "false")" tabindex="@(!CanGoForwards ? "-1" : null)">»</a>
             }
             else
             {

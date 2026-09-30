@@ -27,6 +27,10 @@ if [ "$os" = "sunos" ]; then
         os="solaris"
     fi
     CPUName=$(isainfo -n)
+elif [ "$os" = "freebsd" ]; then
+    # FreeBSD's `uname -m` is the machine class ("powerpc" for every PowerPC
+    # variant); `uname -p` gives the specific processor (e.g. powerpc64le).
+    CPUName=$(uname -p)
 else
     # For the rest of the operating systems, use uname(1) to determine what the CPU is.
     CPUName=$(uname -m)
@@ -75,7 +79,7 @@ case "$CPUName" in
         arch=s390x
         ;;
 
-    ppc64le)
+    ppc64le|powerpc64le)
         arch=ppc64le
         ;;
     *)

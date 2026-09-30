@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)\AntiforgeryMetadata.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)MiddlewareInvokedKeys.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)SafeHttpMethods.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)\Components\ResourceCollectionResolver.cs" LinkBase="Infrastructure" />
   </ItemGroup>

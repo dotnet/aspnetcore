@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
@@ -188,6 +190,8 @@ WebApplication app = builder. Build();
 app.MapPost("/base", (BaseClass model) => Results.Ok(model));
 app.MapPost("/derived", (DerivedClass model) => Results.Ok(model));
 app.MapPost("/complex", (ComplexClass model) => Results.Ok(model));
+app.MapPost("/array", (BaseClass[] model) => Results.Ok(model));
+app.MapPost("/complex-array", (ComplexArrayClass model) => Results.Ok(model));
 
 app.Run();
 
@@ -211,6 +215,11 @@ public class DerivedClass : BaseClass
 public class ComplexClass
 {
     public NestedClass? NestedObject { get; set; }
+}
+
+public class ComplexArrayClass
+{
+    public NestedClass[]? NestedArray { get; set; }
 }
 
 public class NestedClass : IValidatableObject
@@ -299,6 +308,74 @@ public class NestedClass : IValidatableObject
                     error =>
                     {
                         Assert.Equal("NestedObject.Value", error.Key);
+                        Assert.Collection(error.Value,
+                            msg => Assert.Equal("Value cannot be null or empty.", msg));
+                    });
+            }
+        });
+
+        await VerifyEndpoint(compilation, "/array", async (endpoint, serviceProvider) =>
+        {
+            await ValidateArrayWithInvalidElement();
+            await ValidateArrayWithValidElement();
+            await ValidateEmptyArray();
+
+            async Task ValidateArrayWithInvalidElement()
+            {
+                var httpContext = CreateHttpContextWithPayload("""[ { "Value": "" } ]""", serviceProvider);
+
+                await endpoint.RequestDelegate(httpContext);
+
+                var problemDetails = await AssertBadRequest(httpContext);
+                Assert.Collection(problemDetails.Errors,
+                    error =>
+                    {
+                        Assert.Equal("model[0].Value", error.Key);
+                        Assert.Collection(error.Value,
+                            msg => Assert.Equal("Value cannot be null or empty.", msg));
+                    });
+            }
+
+            async Task ValidateArrayWithValidElement()
+            {
+                var httpContext = CreateHttpContextWithPayload("""[ { "Value": "valid" } ]""", serviceProvider);
+
+                await endpoint.RequestDelegate(httpContext);
+
+                Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+            }
+
+            async Task ValidateEmptyArray()
+            {
+                var httpContext = CreateHttpContextWithPayload("[]", serviceProvider);
+
+                await endpoint.RequestDelegate(httpContext);
+
+                Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+            }
+        });
+
+        await VerifyEndpoint(compilation, "/complex-array", async (endpoint, serviceProvider) =>
+        {
+            await ValidateComplexArrayWithInvalidElement();
+
+            async Task ValidateComplexArrayWithInvalidElement()
+            {
+                var httpContext = CreateHttpContextWithPayload("""
+                {
+                    "NestedArray": [
+                        { "Value": "" }
+                    ]
+                }
+                """, serviceProvider);
+
+                await endpoint.RequestDelegate(httpContext);
+
+                var problemDetails = await AssertBadRequest(httpContext);
+                Assert.Collection(problemDetails.Errors,
+                    error =>
+                    {
+                        Assert.Equal("NestedArray[0].Value", error.Key);
                         Assert.Collection(error.Value,
                             msg => Assert.Equal("Value cannot be null or empty.", msg));
                     });

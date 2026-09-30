@@ -30,4 +30,7 @@ internal class E2EAppEntryModel
 
     [DataMember(Name = "environmentVariables")]
     public Dictionary<string, string> EnvironmentVariables { get; set; } = new();
+
+    [DataMember(Name = "harnessMode")]
+    public string HarnessMode { get; set; } = "startupHook";
 }

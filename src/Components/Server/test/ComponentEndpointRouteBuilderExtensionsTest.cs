@@ -21,17 +21,47 @@ public class ComponentEndpointRouteBuilderExtensionsTest
         // Arrange
         var applicationBuilder = CreateAppBuilder();
         var called = false;
+        var authenticationRefreshEnabled = false;
 
         // Act
         var app = applicationBuilder
             .UseRouting()
             .UseEndpoints(endpoints =>
         {
-            endpoints.MapBlazorHub(dispatchOptions => called = true);
+            endpoints.MapBlazorHub(dispatchOptions =>
+            {
+                called = true;
+                authenticationRefreshEnabled = dispatchOptions.EnableAuthenticationRefresh;
+            });
         }).Build();
 
         // Assert
         Assert.True(called);
+        Assert.True(authenticationRefreshEnabled);
+    }
+
+    [Fact]
+    public void MapBlazorHub_AllowsAuthenticationRefreshToBeDisabled()
+    {
+        var applicationBuilder = CreateAppBuilder();
+        var authenticationRefreshEnabledBeforeConfiguration = false;
+        var endpointDisplayNames = new List<string>();
+
+        var app = applicationBuilder
+            .UseRouting()
+            .UseEndpoints(endpoints =>
+            {
+                endpoints.MapBlazorHub(dispatchOptions =>
+                {
+                    authenticationRefreshEnabledBeforeConfiguration = dispatchOptions.EnableAuthenticationRefresh;
+                    dispatchOptions.EnableAuthenticationRefresh = false;
+                }).Finally(builder => endpointDisplayNames.Add(builder.DisplayName));
+            }).Build();
+
+        app.Invoke(new DefaultHttpContext());
+
+        Assert.True(authenticationRefreshEnabledBeforeConfiguration);
+        Assert.DoesNotContain("/_blazor/refresh", endpointDisplayNames);
     }
 
     [Fact]
@@ -85,9 +115,10 @@ public class ComponentEndpointRouteBuilderExtensionsTest
         Assert.True(called);
         // Final conventions are applied to each of the builders
         // in the Blazor component hub
-        Assert.Equal(4, buildersAffected.Count);
+        Assert.Equal(5, buildersAffected.Count);
         Assert.Contains("/_blazor/negotiate", buildersAffected);
         Assert.Contains("/_blazor", buildersAffected);
+        Assert.Contains("/_blazor/refresh", buildersAffected);
         Assert.Contains("Blazor disconnect", buildersAffected);
         Assert.Contains("Blazor initializers", buildersAffected);
     }

@@ -35,6 +35,7 @@ internal sealed class ChangeCookieAction : UrlAction
     public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {
         var options = GetOrCreateOptions();
+        // codeql[SM02373] - By design this emits the cookie exactly as the mod_rewrite rule author specified, including their chosen Secure flag.
         context.HttpContext.Response.Cookies.Append(Name, Value ?? string.Empty, options);
     }
 
