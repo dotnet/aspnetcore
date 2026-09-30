@@ -138,6 +138,7 @@
         <option value="BasicTestApp.VirtualizationMaxItemCount_AppContext">Virtualization MaxItemCount (via AppContext)</option>
         <option value="BasicTestApp.VirtualizationTable">Virtualization HTML table</option>
         <option value="BasicTestApp.VirtualizationVariableHeightTable">Virtualization variable height table</option>
+        <option value="BasicTestApp.VirtualizationTableScrollWithAppend">Virtualization table scroll with append</option>
         <option value="BasicTestApp.VirtualizationLargeOverscan">Virtualization large overscan</option>
         <option value="BasicTestApp.VirtualizationVariableHeight">Virtualization variable height</option>
         <option value="BasicTestApp.VirtualizationVariableHeightAsync">Virtualization variable height async</option>
@@ -174,13 +175,15 @@
 </app>
 
 @code {
+    const string TestConfigurationSeparator = "?test-configuration=";
+
     [Parameter]
     public string NonJSRootParameter { get; set; } = "Initial non-JS root value";
 
     string SelectedComponentTypeName { get; set; } = "none";
 
     Type SelectedComponentType
-        => SelectedComponentTypeName == "none" ? null : Type.GetType(SelectedComponentTypeName, throwOnError: true);
+        => SelectedComponentTypeName == "none" ? null : Type.GetType(GetSelectedComponentTypeName(), throwOnError: true);
 
     protected override void OnInitialized()
     {
@@ -196,8 +199,30 @@
         if (SelectedComponentType != null)
         {
             builder.OpenComponent(0, SelectedComponentType);
+            if (GetSelectedComponentConfiguration() is { } testConfiguration)
+            {
+                builder.AddAttribute(1, "TestConfiguration", testConfiguration);
+            }
             builder.CloseComponent();
         }
+    }
+
+    string GetSelectedComponentTypeName()
+    {
+        var separatorIndex = SelectedComponentTypeName.IndexOf(TestConfigurationSeparator, StringComparison.Ordinal);
+        return separatorIndex < 0 ? SelectedComponentTypeName : SelectedComponentTypeName[..separatorIndex];
+    }
+
+    string GetSelectedComponentConfiguration()
+    {
+        var separatorIndex = SelectedComponentTypeName.IndexOf(TestConfigurationSeparator, StringComparison.Ordinal);
+        if (separatorIndex < 0)
+        {
+            return null;
+        }
+
+        var configurationStart = separatorIndex + TestConfigurationSeparator.Length;
+        return HttpUtility.UrlDecode(SelectedComponentTypeName[configurationStart..]);
     }
 
     static string GetTestServerProjectComponent(string componentName)

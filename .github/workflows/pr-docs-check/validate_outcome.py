@@ -379,13 +379,14 @@ def validate_preflight(
             raise OutcomeValidationError("draft_failed requires confidence of at least 60 and no docs PR operation.")
     elif confidence < 60:
         raise OutcomeValidationError("Drafted outcomes require confidence of at least 60.")
-    elif action == "created" and (create_count, push_count, update_count) != (1, 0, 0):
-        raise OutcomeValidationError("Creating a draft requires exactly one create_pull_request output.")
-    elif action == "updated" and (create_count, push_count, update_count) != (0, 1, 1):
-        raise OutcomeValidationError(
-            "Updating a draft requires exactly one push_to_pull_request_branch and one update_pull_request output."
-        )
+    elif action == "created":
+        if (create_count, push_count, update_count) != (1, 0, 0):
+            raise OutcomeValidationError("Creating a draft requires exactly one create_pull_request output.")
     elif action == "updated":
+        if (create_count, push_count, update_count) != (0, 1, 1):
+            raise OutcomeValidationError(
+                "Updating a draft requires exactly one push_to_pull_request_branch and one update_pull_request output."
+            )
         if expected_draft_number is None:
             raise OutcomeValidationError("The agent attempted to update a docs PR when no trusted draft was found.")
         _validate_update_targets(payload, expected_draft_number)
