@@ -182,6 +182,10 @@ public class MiddlewareTests
     [InlineData("legacy/(.*)", "/$1", "legacy//example.com")]
     [InlineData("legacy/(.*)", "/$1", "legacy///example.com")]
     [InlineData("legacy/(.*)", "/$1", @"legacy/\example.com")]
+    [InlineData("(.*)", @"\example.com", "anything")]
+    [InlineData("(.*)", @"\\example.com", "anything")]
+    [InlineData("(.*)", @"\/\example.com", "anything")]
+    [InlineData("legacy/(.*)", "/$1", @"legacy\\example.com")]
     public async Task CheckRedirect_CollapsesSchemeRelativeTarget(string pattern, string replacement, string requestUrl)
     {
         var options = new RewriteOptions().AddRedirect(pattern, replacement, statusCode: StatusCodes.Status302Found);

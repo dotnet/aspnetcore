@@ -22,7 +22,9 @@
     <div class="col-md-4">
         <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
+            <div role="alert" aria-atomic="true">
+                <ValidationSummary class="text-danger" />
+            </div>
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
                 <label for="Input.RecoveryCode" class="form-label">Recovery Code</label>
@@ -42,6 +44,9 @@
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromTempData(Name = PasskeyUpgradeManager.CreationOptionsKey)]
+    private string? PasskeyUpgradeCreationOptions { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,6 +68,16 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", userId);
+            PasskeyUpgradeCreationOptions = await PasskeyUpgradeManager.TryMakeCreationOptionsAsync(
+                UserManager,
+                SignInManager,
+                user);
+            if (PasskeyUpgradeCreationOptions is not null)
+            {
+                RedirectManager.RedirectTo("Account/PasskeyUpgrade", new() { ["returnUrl"] = ReturnUrl });
+                return;
+            }
+
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.IsLockedOut)

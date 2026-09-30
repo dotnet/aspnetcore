@@ -11,6 +11,8 @@
 <p id="items-provider-call-count">ItemsProvider calls: @ItemsProviderCallCount</p>
 <p id="total-items">Total items: 1000</p>
 <p id="data-loaded">Data loaded: @_dataLoaded</p>
+<button id="qg-vh-toggle-delay" @onclick="ToggleDelay">Provider Delay: @(_useProviderDelay ? "150ms" : "None")</button>
+<p id="qg-vh-status">@_statusMessage</p>
 
 <div id="grid-variable-height" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
     <QuickGrid ItemsProvider="@variableHeightProvider" Virtualize="true" ItemSize="50">
@@ -34,14 +36,26 @@
 
     private GridItemsProvider<VariableHeightItem> variableHeightProvider = default!;
     private bool _dataLoaded;
+    private bool _useProviderDelay;
+    private string _statusMessage = string.Empty;
 
     int ItemsProviderCallCount = 0;
+
+    private void ToggleDelay()
+    {
+        _useProviderDelay = !_useProviderDelay;
+        _statusMessage = _useProviderDelay ? "Provider delay for QuickGrid: 150ms" : "Provider delay for QuickGrid: None";
+    }
 
     protected override void OnInitialized()
     {
         variableHeightProvider = async request =>
         {
             await Task.Yield();
+            if (_useProviderDelay)
+            {
+                await Task.Delay(150);
+            }
             ItemsProviderCallCount++;
             
             var items = Enumerable.Range(request.StartIndex, request.Count ?? 1000)

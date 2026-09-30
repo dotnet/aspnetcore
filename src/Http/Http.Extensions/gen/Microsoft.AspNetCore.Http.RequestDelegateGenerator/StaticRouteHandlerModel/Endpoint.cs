@@ -26,7 +26,7 @@ internal class Endpoint
         HttpMethod = GetHttpMethod(operation);
         EmitterContext = new EmitterContext();
 
-        if (!operation.TryGetRouteHandlerMethod(semanticModel, out var method))
+        if (!operation.TryGetRouteHandlerMethod(semanticModel, needsAccurateSignature: true, out var method))
         {
             Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
             return;

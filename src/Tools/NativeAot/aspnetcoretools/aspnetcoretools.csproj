@@ -9,7 +9,7 @@
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
     <!-- Native AOT requires the CoreCLR runtime; the aggregate executable cannot be produced when building with the Mono runtime. -->
     <ExcludeFromSourceOnlyBuild Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">true</ExcludeFromSourceOnlyBuild>
-    <PublishAot>true</PublishAot>
+    <PublishAot Condition="'$(NativeAotSupported)' == 'true'">true</PublishAot>
     <NativeLib>Shared</NativeLib>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <RuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
@@ -25,6 +25,12 @@
   </PropertyGroup>
 
   <Import Project="..\AspNetCoreTools.NativeAot.props" />
+
+  <PropertyGroup Condition="'$(PublishAot)' == 'true'">
+    <!-- Dedicated native CLI shims load this aggregate as their only .NET runtime, avoiding
+         the multiple-runtime limitation in https://github.com/dotnet/runtime/issues/91762. -->
+    <_SuppressNativeLibEventSourceWarning>true</_SuppressNativeLibEventSourceWarning>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\dotnet-dev-certs\src\dotnet-dev-certs.csproj" IncludeInAggregateExecutable="true" />

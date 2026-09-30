@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.Shared;
 
@@ -21,7 +20,7 @@ public readonly struct ParsedPath
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        _segments = ParsePath(path);
+        _segments = ParsePath(PathHelpers.NormalizePath(path));
     }
 
     public string LastSegment
@@ -41,51 +40,47 @@ public readonly struct ParsedPath
 
     private static string[] ParsePath(string path)
     {
-        var strings = new List<string>();
-        var sb = new StringBuilder(path.Length);
-
-        for (var i = 0; i < path.Length; i++)
+        if (path.Length == 0)
         {
-            if (path[i] == '/')
-            {
-                if (sb.Length > 0)
-                {
-                    strings.Add(sb.ToString());
-                    sb.Length = 0;
-                }
-            }
-            else if (path[i] == '~')
-            {
-                ++i;
-                if (i >= path.Length)
-                {
-                    throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
-                }
+            return Array.Empty<string>();
+        }
 
-                if (path[i] == '0')
-                {
-                    sb.Append('~');
-                }
-                else if (path[i] == '1')
-                {
-                    sb.Append('/');
-                }
-                else
-                {
-                    throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
-                }
-            }
-            else
+        if (path[0] != '/')
+        {
+            // This shouldn't be reachable as the constructor enforces it.
+            // But added to clarify and ensure that the Slice call below is always safe.
+            throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
+        }
+
+        // When we have a path like "/a/b/c//d/e", the expectation is
+        // to have the segments be ["a", "b", "c", "", "d", "e"].
+        // So, before splitting on "/", we want to slice off the leading "/".
+        // Without this slice, we will always have an extra empty string at the beginning.
+        var referenceTokens = path.Substring(1).Split('/');
+
+        for (int i = 0; i < referenceTokens.Length; i++)
+        {
+            referenceTokens[i] = ValidateAndUnescapeReferenceToken(referenceTokens[i]);
+        }
+
+        return referenceTokens;
+    }
+
+    private static string ValidateAndUnescapeReferenceToken(string referenceToken)
+    {
+        var hasTilde = false;
+        for (int i = 0; i < referenceToken.Length; i++)
+        {
+            if (referenceToken[i] == '~')
             {
-                sb.Append(path[i]);
+                hasTilde = true;
+                if (i + 1 >= referenceToken.Length || (referenceToken[i + 1] != '0' && referenceToken[i + 1] != '1'))
+                {
+                    throw new JsonPatchException(Resources.FormatInvalidValueForPath(referenceToken), null);
+                }
             }
         }
 
-        if (sb.Length > 0)
-        {
-            strings.Add(sb.ToString());
-        }
-
-        return strings.ToArray();
+        return hasTilde ? referenceToken.Replace("~1", "/").Replace("~0", "~") : referenceToken;
     }
 }

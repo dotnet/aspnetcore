@@ -66,7 +66,11 @@ internal sealed partial class UrlGroup : IDisposable
                 : HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN,
         };
 
-        SetProperty(HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty, new IntPtr(&info), (uint)ChannelBindInfoSize, throwOnError: false);
+        SetProperty(
+            HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty,
+            new IntPtr(&info),
+            (uint)ChannelBindInfoSize,
+            throwOnError: level == HttpAuthenticationHardeningLevel.Strict);
     }
 
     internal ulong Id { get; private set; }

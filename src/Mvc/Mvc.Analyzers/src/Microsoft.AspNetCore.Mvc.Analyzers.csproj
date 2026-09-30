@@ -6,7 +6,6 @@
     <IsShippingPackage>false</IsShippingPackage>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <NuspecProperty Include="OutputBinary=$(OutputPath)$(AssemblyName).dll" />
-    <NuspecProperty Include="OutputSymbol=$(OutputPath)$(AssemblyName).pdb" />
+    <None Include="$(TargetPath)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

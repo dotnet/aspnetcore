@@ -86,7 +86,7 @@ public class RequestDecompressionMiddlewareTests
     private static async Task<byte[]> GetZstdCompressedContentWithWindowLog(byte[] uncompressedBytes, int windowLog)
     {
         Stream compressorDelegate(Stream compressedContent) =>
-            new ZstandardStream(compressedContent, new ZstandardCompressionOptions { WindowLog = windowLog });
+            new ZstandardStream(compressedContent, new ZstandardCompressionOptions { WindowLog2 = windowLog });
 
         return await GetCompressedContent(compressorDelegate, uncompressedBytes);
     }

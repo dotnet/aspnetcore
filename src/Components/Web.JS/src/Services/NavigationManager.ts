@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import '@microsoft/dotnet-js-interop';
+import '../JSInterop/Microsoft.JSInterop';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
 import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';

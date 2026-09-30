@@ -35,6 +35,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
     <Compile Include="$(SharedSourceRoot)\CommandLineUtils\Utilities\DotNetMuxer.cs" Link="Shared\DotNetMuxer.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\CultureStateProvider.cs" Link="Shared\CultureStateProvider.cs" />
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" Link="Shared\Obsoletions.cs" />
     <Content Include="build\**" Pack="true" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
