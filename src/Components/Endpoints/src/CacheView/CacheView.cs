@@ -82,6 +82,10 @@ public sealed class CacheView : IComponent, IDisposable
     /// <summary>
     /// Gets or sets whether to vary the cache by the authenticated user identity.
     /// </summary>
+    /// <remarks>
+    /// When a nonempty name identifier is present, other claims are not included in the cache key.
+    /// Use <see cref="VaryBy"/> for claims or permissions that affect the cached content.
+    /// </remarks>
     [Parameter]
     public bool VaryByUser { get; set; }
 
