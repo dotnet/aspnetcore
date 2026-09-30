@@ -108,8 +108,11 @@ function Remove-FixtureSnapshotBlock
     param([object]$Pulse, [string]$Body)
 
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
-    $suffix = "`n`n" + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse) `
-        -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -MaxSnapshotLength 65000)
+    $separator = "`n`n"
+    $snapshotStart = $Body.LastIndexOf("${separator}## Snapshot`n", [StringComparison]::Ordinal)
+    Assert-True ($snapshotStart -ge 0) "The fixture body must contain a snapshot section."
+    $suffix = $separator + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse) `
+        -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -MaxSnapshotLength (65000 - $snapshotStart - $separator.Length))
     Assert-True ($Body.EndsWith($suffix, [StringComparison]::Ordinal)) "The fixture body must end with its exact frozen snapshot."
     Assert-True ([regex]::Matches($Body, "(?m)^## Snapshot$").Count -eq 1) "Only one snapshot section is permitted."
 
