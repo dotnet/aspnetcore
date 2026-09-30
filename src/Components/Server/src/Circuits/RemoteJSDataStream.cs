@@ -21,12 +21,14 @@ internal sealed class RemoteJSDataStream : Stream
     private readonly int _chunkSize;
     private readonly TimeSpan _jsInteropDefaultCallTimeout;
     private readonly CancellationToken _streamCancellationToken;
+    private readonly CancellationTokenSource _timeoutCancellationTokenSource = new();
     private readonly Stream _pipeReaderStream;
     private readonly Pipe _pipe;
     private long _bytesRead;
     private long _expectedChunkId;
     private DateTimeOffset _lastDataReceivedTime;
     private Task<FlushResult>? _pendingFlushTask;
+    private bool _backpressureObserved;
     private bool _disposed;
 
     public static async Task<RemoteJSDataStreamResult> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
@@ -88,13 +90,13 @@ internal sealed class RemoteJSDataStream : Stream
         _streamCancellationToken = cancellationToken;
 
         _lastDataReceivedTime = DateTimeOffset.UtcNow;
-        _ = ThrowOnTimeout();
-
-        _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
         _pipe = new Pipe();
         _pipeReaderStream = _pipe.Reader.AsStream();
         PipeReader = _pipe.Reader;
+
+        _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
+        _ = MonitorForTimeoutAsync();
     }
 
     /// <summary>
@@ -106,22 +108,14 @@ internal sealed class RemoteJSDataStream : Stream
     {
         try
         {
-            if (_pendingFlushTask is not null)
-            {
-                if (!_pendingFlushTask.IsCompleted)
-                {
-                    _lastDataReceivedTime = DateTimeOffset.UtcNow;
-                    _ = ThrowOnTimeout();
-                    return RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure;
-                }
-
-                await _pendingFlushTask;
-                _pendingFlushTask = null;
-            }
-
             if (!string.IsNullOrEmpty(error))
             {
                 throw new InvalidOperationException($"An error occurred while reading the remote stream: {error}");
+            }
+
+            if (_backpressureObserved && chunkId > _expectedChunkId)
+            {
+                return RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure;
             }
 
             if (chunkId != _expectedChunkId)
@@ -129,6 +123,19 @@ internal sealed class RemoteJSDataStream : Stream
                 throw new EndOfStreamException($"Out of sequence chunk received, expected {_expectedChunkId}, but received {chunkId}.");
             }
 
+            if (_pendingFlushTask is not null)
+            {
+                if (!_pendingFlushTask.IsCompleted)
+                {
+                    _backpressureObserved = true;
+                    return RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure;
+                }
+
+                await _pendingFlushTask;
+                _pendingFlushTask = null;
+            }
+
+            _backpressureObserved = false;
             ++_expectedChunkId;
 
             if (chunk.Length == 0)
@@ -150,7 +157,6 @@ internal sealed class RemoteJSDataStream : Stream
 
             // Start timeout _after_ performing validations on data.
             _lastDataReceivedTime = DateTimeOffset.UtcNow;
-            _ = ThrowOnTimeout();
 
             chunk.CopyTo(_pipe.Writer.GetMemory(chunk.Length));
             _pipe.Writer.Advance(chunk.Length);
@@ -254,16 +260,38 @@ internal sealed class RemoteJSDataStream : Stream
         return await _pipeReaderStream.ReadAsync(buffer, linkedCts.Token);
     }
 
-    private async Task ThrowOnTimeout()
+    private async Task MonitorForTimeoutAsync()
     {
-        await Task.Delay(_jsInteropDefaultCallTimeout);
-
-        if (!_disposed && (DateTimeOffset.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
+        try
         {
-            // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
-            var timeoutException = new TimeoutException("Did not receive any data in the allotted time.");
-            await CompletePipeAndDisposeStream(timeoutException);
-            _runtime.RaiseUnhandledException(timeoutException);
+            if (_jsInteropDefaultCallTimeout == Timeout.InfiniteTimeSpan)
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, _timeoutCancellationTokenSource.Token);
+                return;
+            }
+
+            while (!_disposed)
+            {
+                var remainingTime = _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout) - DateTimeOffset.UtcNow;
+                if (remainingTime > TimeSpan.Zero)
+                {
+                    await Task.Delay(remainingTime, _timeoutCancellationTokenSource.Token);
+                    continue;
+                }
+
+                // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
+                var timeoutException = new TimeoutException("Did not receive any data in the allotted time.");
+                await CompletePipeAndDisposeStream(timeoutException);
+                _runtime.RaiseUnhandledException(timeoutException);
+                return;
+            }
+        }
+        catch (OperationCanceledException) when (_timeoutCancellationTokenSource.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            _timeoutCancellationTokenSource.Dispose();
         }
     }
 
@@ -285,12 +313,18 @@ internal sealed class RemoteJSDataStream : Stream
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        if (_disposed)
         {
-            _runtime.RemoteJSDataStreamInstances.Remove(_streamId);
+            return;
         }
 
         _disposed = true;
+
+        if (disposing)
+        {
+            _runtime.RemoteJSDataStreamInstances.Remove(_streamId);
+            _timeoutCancellationTokenSource.Cancel();
+        }
     }
 
     // A helper for creating and disposing linked CancellationTokenSources
