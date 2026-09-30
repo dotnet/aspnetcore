@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
+using Microsoft.AspNetCore.Mvc;
 
 public static class SchemasEndpointsExtensions
 {
@@ -67,6 +68,22 @@ public static class SchemasEndpointsExtensions
 
         // Additional edge cases for nullable testing
         schemas.MapPost("/nullable-array-elements", (NullableArrayModel model) => Results.Ok(model));
+
+        // Ensures that applying nullability to the elements of one array parameter does not
+        // affect the shared componentized schema referenced by the other array parameter.
+        schemas.MapGet("/nullable-and-non-nullable-array-elements", (TestEnum?[] nullableValues, TestEnum[] values) => { });
+        // Mirrors the scenario above for a reference element type. Reference types bind from
+        // query as strings (never componentized), so nullability is applied inline on the items.
+        schemas.MapGet("/nullable-and-non-nullable-reference-array-elements", ([FromQuery] string?[] nullableValues, [FromQuery] string[] values) => { });
+        // Ensures the same componentized element type is reported correctly in a response.
+        schemas.MapGet("/complex-nullable-hierarchy", () => TypedResults.Ok(new ComplexHierarchyModel
+        {
+            Id = "id",
+            RequiredNested = new NestedModel { Name = "nested" }
+        }));
+        // Mirrors the array-of-nullable-elements parameter scenario above, but as a response body.
+        schemas.MapGet("/response-array-with-nullable-element", () => TypedResults.Ok(new TestEnum?[] { TestEnum.Value1, null }));
+
         schemas.MapGet("/optional-with-default", () => TypedResults.Ok(new ModelWithDefaults()));
         schemas.MapGet("/nullable-enum-response", () => TypedResults.Ok(new EnumNullableModel
         {

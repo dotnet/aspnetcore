@@ -1108,6 +1108,24 @@ public struct BindableStructWithNullReturn
     }
 }
 
+public struct BindableStructWithSingleArgumentNullableReturn
+{
+    public BindableStructWithSingleArgumentNullableReturn(string value)
+    {
+        Value = value;
+    }
+
+    public string Value { get; }
+
+    public static ValueTask<BindableStructWithSingleArgumentNullableReturn?> BindAsync(HttpContext httpContext)
+    {
+        return ValueTask.FromResult<BindableStructWithSingleArgumentNullableReturn?>(
+            httpContext.Request.Query.TryGetValue("value", out var value)
+                ? new BindableStructWithSingleArgumentNullableReturn(value.ToString())
+                : null);
+    }
+}
+
 public struct BindableStruct
 {
     public BindableStruct(string value)

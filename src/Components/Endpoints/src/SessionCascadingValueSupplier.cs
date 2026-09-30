@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -15,13 +16,14 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class SessionCascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly IStoredDataSerializer _serializer;
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
 
-    public SessionCascadingValueSupplier(ILogger<SessionCascadingValueSupplier> logger)
+    public SessionCascadingValueSupplier(IStoredDataSerializer serializer, ILogger<SessionCascadingValueSupplier> logger)
     {
+        _serializer = serializer;
         _logger = logger;
     }
 
@@ -41,8 +43,15 @@ internal partial class SessionCascadingValueSupplier
             SessionEstablishmentHelper.TryRegisterSessionEstablishment(_httpContext);
         }
 
-        var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
+        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
         var componentType = componentState.Component.GetType();
+        var propertyType = parameterInfo.PropertyType;
+        if (propertyType != typeof(object) && !propertyType.IsAbstract && !_serializer.CanSerialize(propertyType))
+        {
+            throw new InvalidOperationException(
+                $"The property '{parameterInfo.PropertyName}' on component '{componentType}' is annotated with '[SupplyParameterFromSession]' but its type '{propertyType}' is not supported for session storage.");
+        }
+
         var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
         Func<object?> valueGetter = () => getter.GetValue(componentState.Component);
         RegisterValueCallback(sessionKey, valueGetter);
@@ -68,6 +77,7 @@ internal partial class SessionCascadingValueSupplier
 
     internal void RegisterValueCallback(string sessionKey, Func<object?> valueGetter)
     {
+        sessionKey = sessionKey.ToLowerInvariant();
         if (!_valueCallbacks.TryAdd(sessionKey, valueGetter))
         {
             throw new InvalidOperationException($"A callback is already registered for the session key '{sessionKey}'. Multiple components cannot use the same session key for multiple [SupplyParameterFromSession] attributes.");
@@ -90,24 +100,27 @@ internal partial class SessionCascadingValueSupplier
 
         foreach (var (key, valueGetter) in _valueCallbacks)
         {
-            var sessionKey = key.ToLowerInvariant();
+            object? value;
             try
             {
-                var value = valueGetter();
-                if (value is not null)
-                {
-                    var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
-                    session.SetString(sessionKey, json);
-                }
-                else
-                {
-                    session.Remove(sessionKey);
-                }
+                value = valueGetter();
             }
             catch (Exception ex)
             {
                 Log.SessionPersistFail(_logger, ex);
+                continue;
             }
+
+            if (value is null)
+            {
+                session.Remove(key);
+                continue;
+            }
+
+            var valueType = value.GetType();
+            var bytes = _serializer.SerializeValue(value, valueType);
+
+            session.Set(key, bytes);
         }
         return Task.CompletedTask;
     }
@@ -133,6 +146,7 @@ internal partial class SessionCascadingValueSupplier
     {
         private readonly SessionCascadingValueSupplier _owner;
         private readonly string _sessionKey;
+        [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)]
         private readonly Type _propertyType;
         private readonly Func<object?> _currentValueGetter;
         private bool _delivered;
@@ -140,11 +154,11 @@ internal partial class SessionCascadingValueSupplier
         public SessionSubscription(
             SessionCascadingValueSupplier owner,
             string sessionKey,
-            Type propertyType,
+            [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] Type propertyType,
             Func<object?> currentValueGetter)
         {
             _owner = owner;
-            _sessionKey = sessionKey;
+            _sessionKey = sessionKey.ToLowerInvariant();
             _propertyType = propertyType;
             _currentValueGetter = currentValueGetter;
         }
@@ -166,12 +180,14 @@ internal partial class SessionCascadingValueSupplier
 
             try
             {
-                var json = session.GetString(_sessionKey.ToLowerInvariant());
-                if (string.IsNullOrEmpty(json))
+                if (!session.TryGetValue(_sessionKey, out var bytes) || bytes.Length == 0)
                 {
                     return null;
                 }
-                return JsonSerializer.Deserialize(json, _propertyType, _jsonOptions);
+
+                // The property type is known, so the serializer deserializes straight to it and recovers
+                // the exact enum/collection type without consulting the stored token.
+                return _owner._serializer.DeserializeValue(bytes, _propertyType);
             }
             catch (Exception ex)
             {

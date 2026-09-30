@@ -3,8 +3,6 @@
 
 #nullable enable
 
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;

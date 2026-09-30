@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UserSecretsId>aspnet-Identity.DefaultUI.WebSite-80C658D8-CED7-467F-9B47-75DA3BC1A16D</UserSecretsId>
     <IdentityDefaultUIFramework>Bootstrap4</IdentityDefaultUIFramework>
+    <SuppressBootstrap4IdentityUIWarning>true</SuppressBootstrap4IdentityUIWarning>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\UI\src\StaticWebAssets.Groups.targets" />

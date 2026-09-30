@@ -47,6 +47,7 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
 
                 var hasGetAuthStateCall = false;
                 var hasAuthStateChangedSubscription = false;
+                Location? getAuthenticationStateCallLocation = null;
 
                 context.RegisterOperationAction(operationContext =>
                 {
@@ -56,6 +57,7 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
                         invocation.TargetMethod.Name == ComponentsApi.AuthenticationStateProvider.GetAuthenticationStateAsync)
                     {
                         hasGetAuthStateCall = true;
+                        getAuthenticationStateCallLocation ??= invocation.Syntax.GetLocation();
                     }
                 }, OperationKind.Invocation);
 
@@ -73,11 +75,11 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
 
                 context.RegisterSymbolEndAction(endContext =>
                 {
-                    if (hasGetAuthStateCall && !hasAuthStateChangedSubscription)
+                    if (hasGetAuthStateCall && !hasAuthStateChangedSubscription && getAuthenticationStateCallLocation is not null)
                     {
                         endContext.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.AuthenticationStateProviderCachedWithoutSubscription,
-                            namedType.Locations.FirstOrDefault(),
+                            getAuthenticationStateCallLocation,
                             namedType.Name));
                     }
                 });
