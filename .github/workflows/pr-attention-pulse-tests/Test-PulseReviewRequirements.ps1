@@ -105,8 +105,8 @@ Invoke-Control "DetectorModelPolicy" {
     $config = [regex]::Match($detector, "printf '%s\\n' '(?<config>\{.+\})' >")
     Assert-True $config.Success "The generated inline detector AWF configuration could not be read."
     $apiProxy = ($config.Groups["config"].Value | ConvertFrom-Json -Depth 50).apiProxy
-    Assert-True (@($apiProxy.allowedModels).Count -eq 1 -and ($apiProxy.allowedModels -join ",") -ceq "gpt-5.6-sol") "The inline detector must enforce the singleton gpt-5.6-sol model policy."
-    foreach ($name in @("enableTokenSteering", "maxAiCredits", "modelFallback"))
+    Assert-True ($null -eq $apiProxy.PSObject.Properties["allowedModels"]) "The inline detector model is pinned by COPILOT_MODEL rather than a duplicated API proxy allowlist."
+    foreach ($name in @("allowedModels", "enableTokenSteering", "maxAiCredits", "modelFallback"))
     {
         Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Inline detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
     }
@@ -165,7 +165,7 @@ Invoke-Control "EffectiveModelVisibleBoundary" {
             ForEach-Object { $_.Groups["command"].Value }
     )
     $expectedShellTools = @("cat", "date", "echo", "grep", "head", "ls", "printf", "pwd", "safeoutputs:*", "sort", "tail", "uniq", "wc", "yq")
-    Assert-True ([string]::Equals(($actualShellTools -join ","), ($expectedShellTools -join ","), [StringComparison]::Ordinal)) "The effective v0.88.7 shell surface changed; actual: $($actualShellTools -join ',')."
+    Assert-True ([string]::Equals(($actualShellTools -join ","), ($expectedShellTools -join ","), [StringComparison]::Ordinal)) "The effective compiled shell surface changed; actual: $($actualShellTools -join ',')."
     Assert-True (-not $toolComment.Contains("shell(jq)")) "The model must not receive jq."
     Assert-True ($agentStep.Contains("--add-dir /tmp/gh-aw/") -and $agentStep.Contains('--add-dir "${GITHUB_WORKSPACE}"')) "The regression control must account for both broad model-visible mounts."
     foreach ($path in @("/tmp/gh-aw/base", "/tmp/gh-aw/.github/agents", "/tmp/gh-aw/.github/skills"))
@@ -219,7 +219,8 @@ Invoke-Control "SnapshotPrivateContextBoundary" {
         Assert-True ([regex]::Matches($boundary, [regex]::Escape(".pr-attention-pulse/$file")).Count -eq 2) "The boundary must still list and verify '$file'."
     }
     Assert-True ([regex]::Matches($lock, 'Remove-Item \.pr-attention-pulse/pulse-snapshot-context\.json -Force').Count -eq 2) "Both pre-inference staging and final cleanup must remove the workspace context."
-    Assert-True ($lock.Contains('Remove-Item "${{ runner.temp }}/pr-attention-pulse-validator" -Recurse -Force')) "The existing private-directory cleanup must also remove frozen identity."
+    Assert-True ($lock.Contains('EXPR_RUNNER_TEMP: ${{ runner.temp }}') -and
+        $lock.Contains('Remove-Item "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator" -Recurse -Force')) "The private-directory cleanup must remove frozen identity through the compiler-generated environment binding."
 }
 
 Invoke-Control "SnapshotNonOverwritingEvidenceAndGates" {
