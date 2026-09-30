@@ -277,7 +277,7 @@ public class PrepareReviewTests
             }
             """)!;
         Assert.Equal("🟡 💡 🕵️ 🤖", value["nested"]!["emoji"]!.GetValue<string>());
-        Assert.Equal("""
+        var expected = """
             {
               "nested": {
                 "emoji": "🟡 💡 🕵️ 🤖",
@@ -293,7 +293,8 @@ public class PrepareReviewTests
               "a": 1
             }
 
-            """, PrepareReviewProgram.SerializeJson(value));
+            """.ReplaceLineEndings("\n");
+        Assert.Equal(expected, PrepareReviewProgram.SerializeJson(value));
     }
 
     [Fact]
@@ -404,8 +405,8 @@ public class PrepareReviewTests
         }
         Assert.Equal(string.Empty, output.ToString());
         Assert.Equal(
-            $"BLOCKED: Output directory already exists: {Path.GetFullPath(fixture.Output)}\n",
-            error.ToString());
+            $"BLOCKED: Output directory already exists: {Path.GetFullPath(fixture.Output)}",
+            error.ToString().TrimEnd('\r', '\n'));
     }
 
     [Fact]
@@ -832,8 +833,21 @@ public class PrepareReviewTests
 
         public ValueTask DisposeAsync()
         {
-            if (Directory.Exists(Root)) Directory.Delete(Root, recursive: true);
+            if (Directory.Exists(Root))
+            {
+                ClearReadOnlyAttributes(Root);
+                Directory.Delete(Root, recursive: true);
+            }
             return ValueTask.CompletedTask;
+        }
+
+        private static void ClearReadOnlyAttributes(string root)
+        {
+            foreach (var path in Directory.EnumerateFileSystemEntries(root, "*", SearchOption.AllDirectories))
+            {
+                File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
+            }
+            File.SetAttributes(root, File.GetAttributes(root) & ~FileAttributes.ReadOnly);
         }
     }
 }
