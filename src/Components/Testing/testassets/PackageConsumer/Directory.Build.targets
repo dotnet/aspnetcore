@@ -1,1 +1,45 @@
-<Project />
+<Project>
+  <!-- Workaround when there is no vNext SDK available; copy framework and tool pack metadata from net11.0. -->
+  <ItemGroup>
+    <KnownAppHostPack
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net11.0'))"
+      TargetFramework="$(PackageConsumerTargetFramework)"
+      Condition="'@(KnownAppHostPack->Count())' != '0' AND
+        !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(PackageConsumerTargetFramework)')))" />
+    <KnownRuntimePack
+      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net11.0'))"
+      TargetFramework="$(PackageConsumerTargetFramework)"
+      Condition="'@(KnownRuntimePack->Count())' != '0' AND
+        !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(PackageConsumerTargetFramework)')))" />
+    <KnownFrameworkReference
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net11.0'))"
+      TargetFramework="$(PackageConsumerTargetFramework)"
+      Condition="'@(KnownFrameworkReference->Count())' != '0' AND
+        !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(PackageConsumerTargetFramework)')))" />
+    <KnownILLinkPack
+      Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net11.0'))"
+      TargetFramework="$(PackageConsumerTargetFramework)"
+      Condition="'@(KnownILLinkPack->Count())' != '0' AND
+        !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '$(PackageConsumerTargetFramework)')))" />
+    <KnownILCompilerPack
+      Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net11.0'))"
+      TargetFramework="$(PackageConsumerTargetFramework)"
+      Condition="'@(KnownILCompilerPack->Count())' != '0' AND
+        !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '$(PackageConsumerTargetFramework)')))" />
+    <KnownWebAssemblySdkPack
+      Include="@(KnownWebAssemblySdkPack->WithMetadataValue('TargetFramework', 'net11.0'))"
+      TargetFramework="$(PackageConsumerTargetFramework)"
+      Condition="'@(KnownWebAssemblySdkPack->Count())' != '0' AND
+        !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '$(PackageConsumerTargetFramework)')))" />
+    <KnownAspNetCorePack
+      Include="@(KnownAspNetCorePack->WithMetadataValue('TargetFramework', 'net11.0'))"
+      TargetFramework="$(PackageConsumerTargetFramework)"
+      Condition="'@(KnownAspNetCorePack->Count())' != '0' AND
+        !(@(KnownAspNetCorePack->AnyHaveMetadataValue('TargetFramework', '$(PackageConsumerTargetFramework)')))" />
+    <KnownCrossgen2Pack
+      Include="@(KnownCrossgen2Pack->WithMetadataValue('TargetFramework', 'net11.0'))"
+      TargetFramework="$(PackageConsumerTargetFramework)"
+      Condition="'@(KnownCrossgen2Pack->Count())' != '0' AND
+        !(@(KnownCrossgen2Pack->AnyHaveMetadataValue('TargetFramework', '$(PackageConsumerTargetFramework)')))" />
+  </ItemGroup>
+</Project>
