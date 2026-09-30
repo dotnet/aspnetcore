@@ -1831,6 +1831,45 @@
         }
       }
     },
+    "/schemas-by-ref/nullable-and-non-nullable-reference-array-elements": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "nullableValues",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          },
+          {
+            "name": "values",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/schemas-by-ref/response-array-with-nullable-element": {
       "get": {
         "tags": [
@@ -2290,6 +2329,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Kitten"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/beasts": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BeastEnvelope"
                 }
               }
             }
@@ -2780,6 +2838,79 @@
         "properties": {
           "relatedLocation": {
             "$ref": "#/components/schemas/LocationDto"
+          }
+        }
+      },
+      "Beast": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/BeastLion"
+          },
+          {
+            "$ref": "#/components/schemas/BeastDachshund"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "lion": "#/components/schemas/BeastLion",
+            "dachshund": "#/components/schemas/BeastDachshund"
+          }
+        }
+      },
+      "BeastDachshund": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "dachshund"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "BeastEnvelope": {
+        "required": [
+          "beasts"
+        ],
+        "type": "object",
+        "properties": {
+          "beasts": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/OneOrManyBeast"
+              }
+            ]
+          }
+        }
+      },
+      "BeastLion": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "lion"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -3386,6 +3517,19 @@
         },
         "deprecated": true
       },
+      "OneOrManyBeast": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Beast"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Beast"
+            }
+          }
+        ]
+      },
       "ParentObject": {
         "type": "object",
         "properties": {
@@ -3975,38 +4119,52 @@
         "type": "object",
         "properties": {
           "booleanType": {
-            "type": "boolean",
-            "example": true
+            "examples": [
+              true
+            ],
+            "type": "boolean"
           },
           "integerType": {
+            "examples": [
+              42
+            ],
             "type": "integer",
-            "format": "int32",
-            "example": 42
+            "format": "int32"
           },
           "longType": {
+            "examples": [
+              1234567890123456789
+            ],
             "type": "integer",
-            "format": "int64",
-            "example": 1234567890123456789
+            "format": "int64"
           },
           "doubleType": {
+            "examples": [
+              3.14
+            ],
             "type": "number",
-            "format": "double",
-            "example": 3.14
+            "format": "double"
           },
           "floatType": {
+            "examples": [
+              3.14
+            ],
             "type": "number",
-            "format": "float",
-            "example": 3.14
+            "format": "float"
           },
           "dateTimeType": {
+            "examples": [
+              "2022-01-01T00:00:00Z"
+            ],
             "type": "string",
-            "format": "date-time",
-            "example": "2022-01-01T00:00:00Z"
+            "format": "date-time"
           },
           "dateOnlyType": {
+            "examples": [
+              "2022-01-01"
+            ],
             "type": "string",
-            "format": "date",
-            "example": "2022-01-01"
+            "format": "date"
           }
         }
       },

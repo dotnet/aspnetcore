@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)StringHelpers.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RemoteAuthenticationAntiforgery.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

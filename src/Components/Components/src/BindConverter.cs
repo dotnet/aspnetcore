@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -380,7 +381,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         if (format != null)
@@ -395,7 +396,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -466,7 +467,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         if (format != null)
@@ -481,7 +482,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -553,7 +554,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         if (format != null)
@@ -569,7 +570,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -641,7 +642,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         if (format != null)
@@ -657,7 +658,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -981,7 +982,7 @@ public static class BindConverter
             return false;
         }
 
-        if (!float.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+        if (!float.TryParse(text, NumberStyles.Number | NumberStyles.AllowExponent, culture ?? CultureInfo.CurrentCulture, out var converted))
         {
             value = default;
             return false;
@@ -1006,7 +1007,7 @@ public static class BindConverter
             return true;
         }
 
-        if (!float.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+        if (!float.TryParse(text, NumberStyles.Number | NumberStyles.AllowExponent, culture ?? CultureInfo.CurrentCulture, out var converted))
         {
             value = default;
             return false;
@@ -1058,7 +1059,7 @@ public static class BindConverter
             return false;
         }
 
-        if (!double.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+        if (!double.TryParse(text, NumberStyles.Number | NumberStyles.AllowExponent, culture ?? CultureInfo.CurrentCulture, out var converted))
         {
             value = default;
             return false;
@@ -1083,7 +1084,7 @@ public static class BindConverter
             return true;
         }
 
-        if (!double.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+        if (!double.TryParse(text, NumberStyles.Number | NumberStyles.AllowExponent, culture ?? CultureInfo.CurrentCulture, out var converted))
         {
             value = default;
             return false;
@@ -1651,6 +1652,55 @@ public static class BindConverter
         return true;
     }
 
+    internal static bool ConvertToEnumDynamicCodeSafe<T>(
+        object? obj,
+        CultureInfo? _,
+        [MaybeNullWhen(false)] out T value)
+    {
+        var text = (string?)obj;
+        if (string.IsNullOrEmpty(text))
+        {
+            value = default!;
+            return true;
+        }
+
+        if (!Enum.TryParse(typeof(T), text, out var converted)
+            || converted is null
+            || !Enum.IsDefined(typeof(T), converted))
+        {
+            value = default;
+            return false;
+        }
+
+        value = (T)converted;
+        return true;
+    }
+
+    internal static bool ConvertToNullableEnumDynamicCodeSafe<T>(
+        object? obj,
+        CultureInfo? _,
+        [MaybeNullWhen(false)] out T value)
+    {
+        var text = (string?)obj;
+        if (string.IsNullOrEmpty(text))
+        {
+            value = default!;
+            return true;
+        }
+
+        var underlyingType = Nullable.GetUnderlyingType(typeof(T))!;
+        if (!Enum.TryParse(underlyingType, text, out var converted)
+            || converted is null
+            || !Enum.IsDefined(underlyingType, converted))
+        {
+            value = default;
+            return false;
+        }
+
+        value = (T)converted;
+        return true;
+    }
+
     /// <summary>
     /// Attempts to convert a value to a value of type <typeparamref name="T"/>.
     /// </summary>
@@ -1997,15 +2047,29 @@ public static class BindConverter
                 }
                 else if (typeof(T).IsEnum)
                 {
-                    // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
-                    var method = _convertToEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    parser = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindParser<T>), target: null);
+                    if (RuntimeFeature.IsDynamicCodeSupported)
+                    {
+                        // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
+                        var method = _convertToEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        parser = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindParser<T>), target: null);
+                    }
+                    else
+                    {
+                        parser = (BindParser<T>)ConvertToEnumDynamicCodeSafe<T>;
+                    }
                 }
                 else if (Nullable.GetUnderlyingType(typeof(T)) is Type innerType && innerType.IsEnum)
                 {
-                    // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
-                    var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    parser = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindParser<T>), target: null);
+                    if (RuntimeFeature.IsDynamicCodeSupported)
+                    {
+                        // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
+                        var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        parser = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindParser<T>), target: null);
+                    }
+                    else
+                    {
+                        parser = (BindParser<T>)ConvertToNullableEnumDynamicCodeSafe<T>;
+                    }
                 }
                 else if (typeof(T).IsArray)
                 {

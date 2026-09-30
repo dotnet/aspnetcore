@@ -5,3 +5,19 @@ static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Allowed() -> Micros
 static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Denied() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!
 Microsoft.AspNetCore.Antiforgery.ICsrfProtection
 Microsoft.AspNetCore.Antiforgery.ICsrfProtection.ValidateAsync(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!>
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.AuthenticationRefreshContext() -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.ConnectionId.get -> string!
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.ConnectionId.init -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.HttpContext.init -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.NewExpiration.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.NewExpiration.init -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.NewUser.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.NewUser.init -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.PreviousUser.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.PreviousUser.init -> void
+Microsoft.AspNetCore.Connections.Features.IConnectionAuthenticationRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionAuthenticationRefreshFeature.OnAuthenticationRefresh.get -> System.Func<Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext!, System.Threading.Tasks.Task<bool>!>!
+Microsoft.AspNetCore.Connections.Features.IConnectionAuthenticationRefreshFeature.OnAuthenticationRefresh.set -> void
+Microsoft.AspNetCore.Connections.Features.IConnectionAuthenticationRefreshFeature.OnAuthenticationRefreshed(System.Action<Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext!, object?>! callback, object? state) -> System.IDisposable!

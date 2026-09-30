@@ -112,6 +112,10 @@ internal static class TypeExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(propertyInfo);
-        return nullabilityInfo.WriteState == NullabilityState.Nullable || nullabilityInfo.ReadState == NullabilityState.Nullable;
+
+        // Reflection reports a nullable write state for [AllowNull] properties whose setters
+        // System.Text.Json ignores. The type-keyword path works around the same issue in dotnet/runtime#131602.
+        return nullabilityInfo.ReadState == NullabilityState.Nullable ||
+            (jsonPropertyInfo.Set is not null && nullabilityInfo.WriteState == NullabilityState.Nullable);
     }
 }
