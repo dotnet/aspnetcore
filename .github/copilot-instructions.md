@@ -11,6 +11,14 @@
 * Before implementing a reported issue, verify the behavior on the current default branch, inspect relevant history and documentation, and establish the smallest faithful reproduction. If the user asks only to investigate or characterize, do not change shipping code or create or update a pull request until implementation is explicitly requested.
 * Define the acceptance criteria before implementation. Do not claim completion or create or update a pull request until the requested acceptance criteria are green; identify any intentionally excluded cases or unverified boundaries.
 
+## Minimal diffs
+
+* Preserve untouched code exactly as written. Do not make behavior-neutral formatting, reflow, renaming, inlining, extraction, expression, or control-flow changes while implementing a functional change.
+* When an existing statement must change, preserve its explanatory locals and surrounding branch structure unless the requested behavior requires a different shape.
+* Behavior-neutral clarification is acceptable only at the exact changed seam. For example, when adding a Boolean argument to an invocation, prefer a named argument. Do not update otherwise-untouched invocations merely to add argument names.
+* Keep optional cleanup in a separate change rather than mixing it into the functional diff.
+* Before finalizing, inspect changed existing lines specifically for edits that neither alter behavior nor directly support the requested change.
+
 ## Public API Changes
 
 * Treat any new or changed `public` or `protected` type, member, signature, default, or convention as a potential public API change.
