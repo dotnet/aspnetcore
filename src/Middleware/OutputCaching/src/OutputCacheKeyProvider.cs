@@ -16,6 +16,9 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
     private const char KeyDelimiter = '\x1e';
     // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
     private const char KeySubDelimiter = '\x1f';
+    // Use the group separator for delimiting a name from its value and representing empty values to avoid possible collisions.
+    // A literal '=' cannot be used because it can legitimately appear in decoded header/query names and values.
+    private const char KeyNameValueDelimiter = '\x1d';
 
     private readonly ObjectPool<StringBuilder> _builderPool;
     private readonly OutputCacheOptions _options;
@@ -31,10 +34,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
     // <VaryByKeyPrefix><delimiter>
     // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE<delimiter>/PATH<delimiter>
-    // H<delimiter>HeaderName=HeaderValue1<subdelimiter>HeaderValue2<delimiter>
-    // Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2<delimiter>
-    // R<delimiter>RouteName1=RouteValue1<delimiter>RouteName2=RouteValue2
-    // V<delimiter>ValueName1=Value1<delimiter>ValueName2=Value2
+    // H<delimiter>HeaderName<key-value-delimiter>HeaderValue1<subdelimiter>HeaderValue2<delimiter>
+    // Q<delimiter>QueryName<key-value-delimiter>QueryValue1<subdelimiter>QueryValue2<delimiter>
+    // R<delimiter>RouteName1<key-value-delimiter>RouteValue1<delimiter>RouteName2<key-value-delimiter>RouteValue2
+    // V<delimiter>ValueName1<key-value-delimiter>Value1<delimiter>ValueName2<key-value-delimiter>Value2
     public string CreateStorageKey(OutputCacheContext context)
     {
         ArgumentNullException.ThrowIfNull(_builderPool);
@@ -68,7 +71,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
     public static bool ContainsDelimiters(string? value)
     {
-        return !string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter);
+        return !string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter, KeyNameValueDelimiter);
     }
 
     public static bool TryAppendKeyPrefix(OutputCacheContext context, StringBuilder builder)
@@ -171,10 +174,9 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 builder
                     .Append(KeyDelimiter)
                     .Append(header)
-                    .Append('=');
+                    .Append(KeyNameValueDelimiter);
 
                 var headerValuesArray = headerValues.ToArray();
-                Array.Sort(headerValuesArray, StringComparer.Ordinal);
 
                 for (var j = 0; j < headerValuesArray.Length; j++)
                 {
@@ -183,12 +185,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                         builder.Append(KeySubDelimiter);
                     }
 
-                    if (ContainsDelimiters(headerValuesArray[j]))
+                    if (!TryAppendValue(builder, headerValuesArray[j]))
                     {
                         return false;
                     }
-
-                    builder.Append(headerValuesArray[j]);
                 }
             }
         }
@@ -218,10 +218,9 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                     builder
                         .Append(KeyDelimiter)
                         .AppendUpperInvariant(queryArray[i].Key)
-                        .Append('=');
+                        .Append(KeyNameValueDelimiter);
 
                     var queryValueArray = queryArray[i].Value.ToArray();
-                    Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                     for (var j = 0; j < queryValueArray.Length; j++)
                     {
@@ -230,12 +229,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                             builder.Append(KeySubDelimiter);
                         }
 
-                        if (ContainsDelimiters(queryValueArray[j]))
+                        if (!TryAppendValue(builder, queryValueArray[j]))
                         {
                             return false;
                         }
-
-                        builder.Append(queryValueArray[j]);
                     }
                 }
             }
@@ -252,10 +249,9 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                     builder
                         .Append(KeyDelimiter)
                         .Append(queryKey)
-                        .Append('=');
+                        .Append(KeyNameValueDelimiter);
 
                     var queryValueArray = queryKeyValues.ToArray();
-                    Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                     for (var j = 0; j < queryValueArray.Length; j++)
                     {
@@ -264,12 +260,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                             builder.Append(KeySubDelimiter);
                         }
 
-                        if (ContainsDelimiters(queryValueArray[j]))
+                        if (!TryAppendValue(builder, queryValueArray[j]))
                         {
                             return false;
                         }
-
-                        builder.Append(queryValueArray[j]);
                     }
                 }
             }
@@ -303,7 +297,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
                 builder.Append(KeyDelimiter)
                     .Append(routeValueName)
-                    .Append('=')
+                    .Append(KeyNameValueDelimiter)
                     .Append(stringRouteValue);
             }
         }
@@ -336,9 +330,28 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
                 builder.Append(KeyDelimiter)
                     .Append(key)
-                    .Append('=')
+                    .Append(KeyNameValueDelimiter)
                     .Append(value);
             }
+        }
+
+        return true;
+    }
+
+    private static bool TryAppendValue(StringBuilder builder, string? value)
+    {
+        if (ContainsDelimiters(value))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(value))
+        {
+            builder.Append(KeyNameValueDelimiter);
+        }
+        else
+        {
+            builder.Append(value);
         }
 
         return true;
