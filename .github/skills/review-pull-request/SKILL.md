@@ -40,6 +40,11 @@ anchors, `feedback.json` for deduplication, and `pull.json` for context. Read fu
 relevant source bodies in bounded ranges rather than relying on a search hit, summary,
 or truncated response. A missing, unreadable, malformed, or empty routed guide, policy,
 diff, changed-file source, frozen feedback, or required source role blocks completion.
+If a tool refuses to read a bundle file, record the tool, affected input, and exact error.
+State only the cause the error states, otherwise `unknown`; never attribute it to content
+exclusion, policy, or sandboxing unless the error says so. On Windows, Copilot CLI can
+deny bundle paths longer than 260 characters until interactive approval or
+`--allow-all-paths` grants access; when that is the error, tell the user so.
 Never silently fetch product source through live GitHub tools, infer it from memory, or
 fall back to another revision.
 
@@ -82,11 +87,17 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 
 ## Review and independent validation
 
-Prefer one fresh reviewer worker per routed guide, each receiving the **entire guide
-text**, all applicable policy clauses, frozen identities, changed-file list, diff,
-and source-root paths. A worker applies the guide's every topic, performs source-only
-review, returns *candidates rather than publishing*, and reports a guide completion
-status: `complete`, `incomplete` only for a required-input/read failure, or `excluded`
+Launch one fresh reviewer worker per routed guide as a full-capability `general-purpose`
+agent, never an explore, fast, or other lightweight agent, explicitly using
+`gpt-5.6-sol` (the evaluated configuration). If the user explicitly selected a different
+worker model, report the run as unevaluated. Record each requested agent type/model and
+any runtime-reported values; record unavailable runtime values as `unknown`, which alone
+does not make a guide incomplete. A confirmed mismatch or unavailable agent type/model
+makes that guide `incomplete`. Give each worker the **entire guide text**, all applicable
+policy clauses, frozen identities, changed-file list, diff, and source-root paths. A
+worker applies every guide topic, performs source-only review, returns *candidates rather
+than publishing*, and reports `complete`, `incomplete` only for a required-input/read
+failure or worker-configuration mismatch, or `excluded`
 with the excluded scope/reason. A guide with both excluded and in-scope checks must
 report the completed in-scope work and the exclusions separately. Workers must not call
 `rename_session`, re-invoke this skill, copy or re-export the bundle, or modify it; they
@@ -151,8 +162,9 @@ realistic narrower scenario, or `P3` for minor/edge or test/doc-only impact.
 
 Return `BLOCKED` when a required bundle input is invalid, missing, unreadable,
 mismatched, malformed, empty, or truncated. Return `INCOMPLETE` when a routed worker
-fails or does not return, or reports such a required-input failure. External-contract
-and non-code metadata gaps stay `UNRESOLVED`; they do not cause either status.
+fails or does not return, reports such a required-input failure, or ran with a confirmed
+worker-configuration mismatch. External-contract and non-code metadata gaps stay
+`UNRESOLVED`; they do not cause either status.
 `NO_FINDINGS` is allowed only after every routed guide completes and no new candidate
 survives independent validation, but it must still disclose deduplicated true positives
 and unresolved candidates. Use `FINDINGS` when at least one new finding survives.
