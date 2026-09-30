@@ -31,6 +31,7 @@ public static class IdentityBuilderExtensions
         var phoneNumberProviderType = typeof(PhoneNumberTokenProvider<>).MakeGenericType(builder.UserType);
         var emailTokenProviderType = typeof(EmailTokenProvider<>).MakeGenericType(builder.UserType);
         var authenticatorProviderType = typeof(AuthenticatorTokenProvider<>).MakeGenericType(builder.UserType);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<DataProtectionTokenProviderOptions>, PostConfigureDataProtectionTokenProviderOptions>());
         return builder.AddTokenProvider(TokenOptions.DefaultProvider, dataProtectionProviderType)
             .AddTokenProvider(TokenOptions.DefaultEmailProvider, emailTokenProviderType)
             .AddTokenProvider(TokenOptions.DefaultPhoneProvider, phoneNumberProviderType)
