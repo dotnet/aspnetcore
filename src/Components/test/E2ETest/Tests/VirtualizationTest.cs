@@ -5431,11 +5431,16 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
     }
 
-    private void MountAnchorModeForScrollToItem(bool useProvider, bool variableHeight = false, bool delay = false)
+    private void MountAnchorModeForScrollToItem(bool useProvider, bool variableHeight = false, bool delay = false, bool largeOverscan = false)
     {
         Browser.MountTestComponent<VirtualizationAnchorMode>();
         var container = Browser.Exists(By.Id("scroll-container"));
         Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        if (largeOverscan)
+        {
+            Browser.Exists(By.Id("set-large-overscan")).Click();
+        }
 
         if (useProvider)
         {
@@ -6394,6 +6399,90 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             return top >= 0 && top < 250;
         }, $"Top rendered should reflect the user scroll (< 250), but was {GetTopRenderedIndex(js)}");
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_UserSmallScrollWithinOverscanDuringProviderFetch_UserScrollWins(bool variableHeight)
+    {
+        MountAnchorModeForScrollToItem(useProvider: true, variableHeight: variableHeight, largeOverscan: true);
+        var js = (IJavaScriptExecutor)Browser;
+        var container = Browser.Exists(By.Id("scroll-container"));
+
+        SetScrollTargetIndex(500);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 500");
+        Browser.True(() => GetTopRenderedIndex(js) == 500);
+        Browser.Exists(By.CssSelector(".item[data-index='550']"));
+
+        Browser.Exists(By.Id("toggle-provider-gate")).Click();
+
+        SetScrollTargetIndex(550);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        Browser.True(() => GetProviderCallIndex(js) >= 1);
+        Browser.True(() => GetProviderEvents(js).Contains("p1-enter"));
+        Browser.True(() => GetProviderEvents(js).Contains("scroll-start"));
+
+        try
+        {
+            var scrollTopBeforeUserInput = GetScrollTop(js, container);
+            ScrollContainerWithWheelTo(js, container, checked((int)scrollTopBeforeUserInput + 100));
+            Browser.True(() => GetScrollTop(js, container) > scrollTopBeforeUserInput);
+            var userScrollTop = GetScrollTop(js, container);
+
+            Browser.True(() => AreBothSpacersOutsideObserverRoot(js, container),
+                $"Expected the small wheel movement to leave both spacers outside the observer root. {GetSpacerIntersectionState(js, container)}");
+
+            Browser.Exists(By.Id("release-provider-gate")).Click();
+            WaitForScrollStatus("Completed: 550");
+            Browser.True(() => GetProviderEvents(js).Contains("p1-return"),
+                $"Expected p1 to finish after releasing the gate. Events: {GetProviderEvents(js)}");
+            Browser.True(() => Math.Abs(GetScrollTop(js, container) - userScrollTop) < 50,
+                $"Expected the user scroll position {userScrollTop} to win, but scrollTop became {GetScrollTop(js, container)}. " +
+                $"Events: {GetProviderEvents(js)}; {GetSpacerIntersectionState(js, container)}");
+        }
+        finally
+        {
+            Browser.Exists(By.Id("release-provider-gate")).Click();
+        }
+    }
+
+    private static bool AreBothSpacersOutsideObserverRoot(IJavaScriptExecutor js, IWebElement container)
+        => (bool)js.ExecuteScript(@"
+            const container = arguments[0];
+            const state = getSpacerIntersectionState(container);
+            return !state.beforeIntersecting && !state.afterIntersecting;
+
+            function getSpacerIntersectionState(container) {
+                const rootMargin = 50;
+                const before = container.firstElementChild;
+                const after = container.lastElementChild;
+                const root = container.getBoundingClientRect();
+                const beforeRect = before.getBoundingClientRect();
+                const afterRect = after.getBoundingClientRect();
+                return {
+                    beforeIntersecting: beforeRect.bottom > root.top - rootMargin && beforeRect.top < root.bottom + rootMargin,
+                    afterIntersecting: afterRect.bottom > root.top - rootMargin && afterRect.top < root.bottom + rootMargin,
+                };
+            }", container);
+
+    private static string GetSpacerIntersectionState(IJavaScriptExecutor js, IWebElement container)
+        => (string)js.ExecuteScript(@"
+            const container = arguments[0];
+            const before = container.firstElementChild;
+            const after = container.lastElementChild;
+            const root = container.getBoundingClientRect();
+            const beforeRect = before.getBoundingClientRect();
+            const afterRect = after.getBoundingClientRect();
+            const rootMargin = 50;
+            const beforeIntersecting = beforeRect.bottom > root.top - rootMargin && beforeRect.top < root.bottom + rootMargin;
+            const afterIntersecting = afterRect.bottom > root.top - rootMargin && afterRect.top < root.bottom + rootMargin;
+            const items = [...container.querySelectorAll('.item')].map(item => item.getAttribute('data-index'));
+            return `scrollTop=${container.scrollTop}; viewport=[${root.top},${root.bottom}]; `
+                + `before=[${beforeRect.top},${beforeRect.bottom}] intersecting=${beforeIntersecting}; `
+                + `after=[${afterRect.top},${afterRect.bottom}] intersecting=${afterIntersecting}; `
+                + `items=${items.slice(0, 3).join(',')}..${items.slice(-3).join(',')}`;
+        ", container);
 
     private static long GetProviderCallIndex(IJavaScriptExecutor js)
     {

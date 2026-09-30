@@ -38,6 +38,13 @@ const ScrollSource = {
 } as const;
 type ScrollSource = typeof ScrollSource[keyof typeof ScrollSource];
 
+const ProgrammaticScrollState = {
+  None: 0,
+  PendingAlignment: 1,
+  Interrupted: 2,
+} as const;
+type ProgrammaticScrollState = typeof ProgrammaticScrollState[keyof typeof ProgrammaticScrollState];
+
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   // If we recurse up as far as body or the document root, return null so that the
   // IntersectionObserver observes intersection with the top-level scroll viewport
@@ -253,6 +260,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   let userScrollObserver: IntersectionObserver | null = null;
+  let programmaticScrollState: ProgrammaticScrollState = ProgrammaticScrollState.None;
 
   function cancelPendingUserScrollObservation(): void {
     userScrollObserver?.disconnect();
@@ -282,6 +290,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     stopConvergenceObserving();
     clearBottomFollow();
     cancelPendingUserScrollObservation();
+    programmaticScrollState = ProgrammaticScrollState.PendingAlignment;
     scrollActivity.source = ScrollSource.AlignToItem;
     pendingCallbacks.delete(spacerBefore);
     pendingCallbacks.delete(spacerAfter);
@@ -548,7 +557,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let pendingJumpToStart = false;
 
   function interruptProgrammaticScroll(): void {
-    if (scrollActivity.source !== ScrollSource.AlignToItem
+    if (programmaticScrollState !== ProgrammaticScrollState.PendingAlignment
+      && scrollActivity.source !== ScrollSource.AlignToItem
       && scrollActivity.source !== ScrollSource.RestoreSnapshot
       && !convergence.isConverging()
       && pendingAlignLocalIndex === null) {
@@ -560,6 +570,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     pendingJumpToEnd = false;
     pendingAlignLocalIndex = null;
     observeSpacersAfterUserScroll();
+    if (programmaticScrollState === ProgrammaticScrollState.PendingAlignment) {
+      programmaticScrollState = ProgrammaticScrollState.Interrupted;
+    }
   }
 
   function handleUserScrollInput(): void {
@@ -691,6 +704,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Measures the target's viewport-relative top and aligns it to containerTop.
   function alignToItemAt(localIndex: number): number | null {
+    if (programmaticScrollState === ProgrammaticScrollState.Interrupted) {
+      programmaticScrollState = ProgrammaticScrollState.None;
+      pendingAlignLocalIndex = null;
+      return ViewportFillDirection.Covered;
+    }
+
     function beginAlign(): void {
       scrollActivity.ignoreNextScroll();
       scrollActivity.source = ScrollSource.AlignToItem;
@@ -708,6 +727,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return null;
     }
     pendingAlignLocalIndex = null;
+    programmaticScrollState = ProgrammaticScrollState.None;
 
     reportRenderedContentMeasurement();
 

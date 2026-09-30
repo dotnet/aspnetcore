@@ -85,6 +85,7 @@
     <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
     <button id="set-small-count" @onclick="SetSmallCount">Set 5 Items</button>
     <button id="set-console-scenario" @onclick="SetConsoleScenario">Console scenario (40 items, overscan 100)</button>
+    <button id="set-large-overscan" @onclick="SetLargeOverscan">Overscan 100</button>
     <button id="set-low-max-item-count" @onclick="SetLowMaxItemCount">MaxItemCount 20, overscan 3</button>
     <button id="set-double-size" @onclick="SetDoubleSize">Item size 100</button>
     <button id="set-average-height-trap" @onclick="SetAverageHeightTrap">Tall rows before index 100</button>
@@ -311,6 +312,12 @@
         nextAppendIndex = 40;
         statusMessage = "Console scenario: 40 items, overscan 100";
         if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+    }
+
+    private void SetLargeOverscan()
+    {
+        overscanCount = 100;
+        statusMessage = "Overscan 100";
     }
 
     private void SetLowMaxItemCount()
