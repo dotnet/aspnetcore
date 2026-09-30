@@ -304,8 +304,9 @@ the prepared bytes, list the candidate as unresolved with the missing evidence r
 than relying on recalled behavior or changing the GitHub tool permissions. Such a gap
 does not make a guide incomplete by itself. Do not execute target code.
 
-First finish and retain the skill's structured local result, whose first line must be
-`STATUS: <value>`. Only this final adapter may use safe-output tools.
+First finish the skill's structured local result in your own reasoning/conversation, whose first
+line must be `STATUS: <value>`. Do not write it or any other review state to a file, and do not
+use any file create/edit/write tool at any point in the hosted run. Only this final adapter may use safe-output tools.
 
 ## Publish only after complete validation
 
@@ -318,7 +319,7 @@ incomplete. Findings or `NO_FINDINGS` may coexist with disclosed unresolved cand
 whose absent evidence is external to the bundle; use the normal review outputs below,
 not `report_incomplete`. If all routed guides completed but no new finding survives,
 use `noop`; existing-feedback duplicates and unresolved candidates must remain visible
-in the retained structured result. Report excluded scope separately from completed work.
+in the structured result retained in your reasoning/conversation. Report excluded scope separately from completed work.
 
 Before calling any review output, validate the entire selected finding set: at most five,
 ordered by severity then confidence, each already surviving the skill's gates. Use `P1`
