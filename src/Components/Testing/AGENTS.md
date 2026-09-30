@@ -32,7 +32,7 @@ For changes that affect packaging or build integration:
 
 ## Source generator wiring
 
-Keep the generator `ProjectReference` with `OutputItemType="Analyzer"` in the consuming project file. Do not move it into a `Directory.Build.props`, even to deduplicate the copies in `src` and `testassets`: `eng/targets/ResolveReferences.targets` rebuilds the `ProjectReference` set while resolving `Reference` items and silently drops an analyzer reference contributed from a props file. The generator then emits nothing, and the build fails with errors that do not mention generators, such as `MSTEST0030` (no `[TestClass]` found) or `CS0119`. `OutputItemType` items only materialize during a real build, so confirm the reference survives with an actual build rather than evaluation alone.
+In the source tree, the generator is applied through a `ProjectReference` with `OutputItemType="Analyzer"` in each consuming project file. If that reference is missing or stops resolving, the generator emits nothing and the build fails with errors that do not mention generators, such as `MSTEST0030` (no `[TestClass]` found) or `CS0119`. When you see those errors, check the generator reference first. `OutputItemType` items only materialize during a real build, so after changing how the reference is wired, confirm with an actual build that the generator still runs rather than relying on evaluation alone.
 
 To inspect generated code, set `EmitCompilerGeneratedFiles` and `CompilerGeneratedFilesOutputPath` in the one project under investigation, not as global `-p:` properties. Global values flow into every transitively built project, make unrelated generators re-emit their sources, cause spurious `CS0757` errors, and leave stray output folders across the tree.
 
