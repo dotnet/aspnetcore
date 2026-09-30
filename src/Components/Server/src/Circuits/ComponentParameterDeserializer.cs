@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server;
@@ -49,6 +50,23 @@ internal sealed partial class ComponentParameterDeserializer
                 Log.IncompleteParameterDefinition(_logger, definition.Name, definition.TypeName, definition.Assembly);
                 return false;
             }
+            else if (definition.TypeName == typeof(SerializedRenderFragment).FullName
+                && definition.Assembly == "Microsoft.AspNetCore.Components.Endpoints")
+            {
+                try
+                {
+                    var value = (JsonElement)parameterValues[i];
+                    var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
+                        value.GetRawText(),
+                        ServerComponentSerializationSettings.JsonSerializationOptions);
+                    parametersDictionary.Add(definition.Name, RenderFragmentSerializer.Deserialize(serialized!.Nodes, ServerComponentSerializationSettings.JsonSerializationOptions, _parametersCache));
+                }
+                catch (Exception e)
+                {
+                    Log.InvalidParameterValue(_logger, definition.Name, definition.TypeName, definition.Assembly, e);
+                    return false;
+                }
+            }
             else
             {
                 var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
@@ -59,13 +77,30 @@ internal sealed partial class ComponentParameterDeserializer
                 }
                 try
                 {
-                    // At this point we know the parameter is not null, as we don't serialize the type name or the assembly name
-                    // for null parameters.
-                    var value = (JsonElement)parameterValues[i];
-                    var parameterValue = JsonSerializer.Deserialize(
-                        value.GetRawText(),
-                        parameterType,
-                        ServerComponentSerializationSettings.JsonSerializationOptions);
+                    object? parameterValue;
+                    if (parameterValues[i] is null && IsUnion(parameterType))
+                    {
+                        // A union whose active case serializes to JSON null (for example a Union(int?, string)
+                        // holding a null int?) is still a non-null box, so the prerender protocol records its
+                        // type name like any other typed parameter. The value itself serializes to JSON null,
+                        // which materializes as a CLR null in the object-typed parameter values array rather than
+                        // as a JsonElement. Route the JSON null literal back through the union converter so the
+                        // original active case is restored instead of failing the JsonElement cast below.
+                        parameterValue = JsonSerializer.Deserialize(
+                            "null",
+                            parameterType,
+                            ServerComponentSerializationSettings.JsonSerializationOptions);
+                    }
+                    else
+                    {
+                        // At this point we know the parameter is not null, as we don't serialize the type name or the assembly name
+                        // for null parameters.
+                        var value = (JsonElement)parameterValues[i];
+                        parameterValue = JsonSerializer.Deserialize(
+                            value.GetRawText(),
+                            parameterType,
+                            ServerComponentSerializationSettings.JsonSerializationOptions);
+                    }
 
                     parametersDictionary.Add(definition.Name, parameterValue);
                 }
@@ -80,6 +115,12 @@ internal sealed partial class ComponentParameterDeserializer
         parameters = ParameterView.FromDictionary(parametersDictionary);
         return true;
     }
+
+    // A C# union is the only typed parameter whose value can legitimately serialize to JSON null while still
+    // recording a non-null type name (the box is non-null, but its active case can be a null int? or reference).
+    private static bool IsUnion(Type parameterType)
+        => ServerComponentSerializationSettings.JsonSerializationOptions
+            .GetTypeInfo(parameterType).Kind == JsonTypeInfoKind.Union;
 
     private static partial class Log
     {

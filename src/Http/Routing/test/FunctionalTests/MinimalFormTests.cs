@@ -426,7 +426,7 @@ public class MinimalFormTests
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.SendAsync(request));
-        Assert.Equal("This form is being accessed with an invalid anti-forgery token. Validate the `IAntiforgeryValidationFeature` on the request before reading from the form.", exception.Message);
+        Assert.Equal("This form is being accessed with a failed antiforgery validation. Validate the `IAntiforgeryValidationFeature` on the request before reading from the form.", exception.Message);
     }
 
     [Theory]

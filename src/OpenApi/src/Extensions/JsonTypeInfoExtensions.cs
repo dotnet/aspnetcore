@@ -114,6 +114,14 @@ internal static class JsonTypeInfoExtensions
             return type.GetGenericArguments()[0].GetSchemaReferenceId(options);
         }
 
+        // Special handling for array types whose names contain '[]', which is not
+        // valid in OpenAPI schema keys (must match ^[a-zA-Z0-9._-]+$).
+        if (type.IsArray)
+        {
+            var elementType = type.GetElementType()!;
+            return $"ArrayOf{elementType.GetSchemaReferenceId(options)}";
+        }
+
         // Special handling for generic types that are collections
         // Generic types become a concatenation of the generic type name and the type arguments
         if (type.IsGenericType)

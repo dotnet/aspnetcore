@@ -1,9 +1,24 @@
 #nullable enable
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.get -> string!
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Direction.get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Direction.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Page.get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Page.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.QueryParameterNameOptions(string! prefix = "") -> void
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Sort.get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Sort.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNameOptions.get -> Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNameOptions.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.InitialItemIndex.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.InitialItemIndex.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ScrollToItemAsync(int itemIndex, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnInitialized() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AnchorMode.get -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AnchorMode.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TGridItem>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemComparer.set -> void
 *REMOVED*override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSet() -> void

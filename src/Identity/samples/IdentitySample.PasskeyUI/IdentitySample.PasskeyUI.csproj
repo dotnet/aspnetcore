@@ -74,13 +74,21 @@
     <Compile Include="$(IdentityTestSharedSourceRoot)PocoModel\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
-  <!-- Workaround to add Blazor framework static assets without requiring a package reference -->
-  <PropertyGroup>
-    <UseBlazorFrameworkDebugAssets>true</UseBlazorFrameworkDebugAssets>
-    <BlazorFrameworkStaticWebAssetRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</BlazorFrameworkStaticWebAssetRoot>
-    <BlazorFrameworkStaticWebAssetRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</BlazorFrameworkStaticWebAssetRoot>
-  </PropertyGroup>
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <Reference Include="Microsoft.AspNetCore.App.Internal.Assets" PrivateAssets="All" />
+  </ItemGroup>
 
-  <Import Project="$(RepoRoot)\src\Assets\build\Microsoft.AspNetCore.App.Internal.Assets.targets" />
+  <Import Project="$(RepoRoot)\src\Assets\StaticWebAssets.Groups.targets" />
+
+  <!-- After ResolveReferences.targets converts Reference to ProjectReference (dropping metadata),
+       re-apply metadata at evaluation time so it is always in effect for every build phase
+       (Build, Publish, Razor, etc.). The Assets.Internal project uses CopyBuildOutputToOutputDirectory=false
+       so no DLL exists in the output directory. -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <ProjectReference Update="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj"
+      ReferenceOutputAssembly="false"
+      Private="false"
+      PrivateAssets="all" />
+  </ItemGroup>
 
 </Project>

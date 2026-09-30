@@ -12,7 +12,7 @@ public sealed class OpenApiDocumentLocalizationTests(LocalizedSampleAppFixture f
         using var client = fixture.CreateClient();
         var json = await client.GetStringAsync("/openapi/localized.json");
         var outputDirectory = SkipOnHelixAttribute.OnHelix()
-            ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
+            ? Path.Combine(AppContext.BaseDirectory, "Integration", "snapshots")
             : "snapshots";
         await Verify(json)
             .UseDirectory(outputDirectory);

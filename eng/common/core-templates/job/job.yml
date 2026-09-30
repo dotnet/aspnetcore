@@ -75,6 +75,12 @@ jobs:
   variables:
   - name: AllowPtrToDetectTestRunRetryFiles
     value: true
+  # Component Governance detection and CodeQL are not run in the public project
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: skipComponentGovernanceDetection
+      value: true
+    - name: Codeql.SkipTaskAutoInjection
+      value: true
   - ${{ if ne(parameters.enableTelemetry, 'false') }}:
     - name: DOTNET_CLI_TELEMETRY_PROFILE
       value: '$(Build.Repository.Uri)'

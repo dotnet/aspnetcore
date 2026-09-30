@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
@@ -123,6 +124,89 @@ public class HttpParserTests : LoggedTest
 
         Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    }
+
+    [Fact]
+    public void ParseRequestLine_SignalsAcceptedBareLineFeedTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: false);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.1\n"));
+        var requestHandler = new RequestHandler();
+
+        Assert.True(ParseRequestLine(parser, requestHandler, buffer, out _, out _));
+        Assert.Equal(1, requestHandler.BareLineFeedTerminatorCount);
+        Assert.False(requestHandler.BareLineFeedRejected);
+    }
+
+    [Fact]
+    public void ParseRequestLine_SignalsRejectedBareLineFeedTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.1\n"));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            ParseRequestLine(parser, requestHandler, buffer, out _, out _));
+
+        Assert.Equal(1, requestHandler.BareLineFeedTerminatorCount);
+        Assert.True(requestHandler.BareLineFeedRejected);
+    }
+
+    [Fact]
+    public void ParseRequestLine_DoesNotSignalForCrlfTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
+        var requestHandler = new RequestHandler();
+
+        Assert.True(ParseRequestLine(parser, requestHandler, buffer, out _, out _));
+        Assert.Equal(0, requestHandler.BareLineFeedTerminatorCount);
+    }
+
+    [Fact]
+    public void ParseHeaders_SignalsAcceptedBareLineFeedTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: false);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a: b\n\r\n"));
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+
+        Assert.True(parser.ParseHeaders(requestHandler, ref reader));
+        Assert.Equal(1, requestHandler.BareLineFeedTerminatorCount);
+        Assert.False(requestHandler.BareLineFeedRejected);
+    }
+
+    [Fact]
+    public void ParseHeaders_SignalsRejectedBareLineFeedTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a: b\n\r\n"));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var reader = new SequenceReader<byte>(buffer);
+            parser.ParseHeaders(requestHandler, ref reader);
+        });
+
+        Assert.Equal(1, requestHandler.BareLineFeedTerminatorCount);
+        Assert.True(requestHandler.BareLineFeedRejected);
+    }
+
+    [Fact]
+    public void ParseHeaders_DoesNotSignalForCrlfTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a: b\r\n\r\n"));
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+
+        Assert.True(parser.ParseHeaders(requestHandler, ref reader));
+        Assert.Equal(0, requestHandler.BareLineFeedTerminatorCount);
     }
 
     [Theory]
@@ -982,6 +1066,75 @@ public class HttpParserTests : LoggedTest
         Assert.True(buffer.Slice(reader.Position).IsEmpty);
     }
 
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void HttpParser_DefaultsToAcceptingBareLineFeedWhenSwitchNotSet()
+    {
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
+            var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a:b\n\r\n"));
+            var requestHandler = new RequestHandler();
+            var reader = new SequenceReader<byte>(buffer);
+
+            Assert.True(parser.ParseHeaders(requestHandler, ref reader));
+            Assert.Single(requestHandler.Headers);
+            Assert.Equal("b", requestHandler.Headers["a"]);
+        });
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void HttpParser_RejectsLineFeedTerminatorWhenSwitchSetToTrue()
+    {
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            AppContext.SetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, true);
+
+            var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
+            AssertRejectsBareLineFeedHeader(parser);
+        });
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void HttpParser_AcceptsLineFeedTerminatorWhenSwitchSetToFalse()
+    {
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            AppContext.SetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, false);
+
+            var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
+            var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a:b\n\r\n"));
+            var requestHandler = new RequestHandler();
+            var reader = new SequenceReader<byte>(buffer);
+
+            Assert.True(parser.ParseHeaders(requestHandler, ref reader));
+            Assert.Single(requestHandler.Headers);
+            Assert.Equal("b", requestHandler.Headers["a"]);
+        });
+    }
+
+    private static void AssertRejectsBareLineFeedHeader(HttpParser<RequestHandler> parser)
+    {
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a:b\n\r\n"));
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+
+        try
+        {
+            parser.ParseHeaders(requestHandler, ref reader);
+        }
+#pragma warning disable CS0618 // Type or member is obsolete
+        catch (BadHttpRequestException)
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            return;
+        }
+
+        Assert.Fail("Expected BadHttpRequestException for bare LF header terminator.");
+    }
+
     private void VerifyRawHeaders(string rawHeaders, IEnumerable<string> expectedHeaderNames, IEnumerable<string> expectedHeaderValues, bool disableHttp1LineFeedTerminators = true)
     {
         Assert.True(expectedHeaderNames.Count() == expectedHeaderValues.Count(), $"{nameof(expectedHeaderNames)} and {nameof(expectedHeaderValues)} sizes must match");
@@ -1019,7 +1172,7 @@ public class HttpParserTests : LoggedTest
 
     public static IEnumerable<object[]> RequestHeaderInvalidDataLineFeedTerminator => HttpParsingData.RequestHeaderInvalidDataLineFeedTerminator;
 
-    private class RequestHandler : IHttpRequestLineHandler, IHttpHeadersHandler
+    private class RequestHandler : IHttpRequestLineHandler, IHttpHeadersHandler, IBareLineFeedTracker
     {
         public string Method { get; set; }
 
@@ -1035,9 +1188,19 @@ public class HttpParserTests : LoggedTest
 
         public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
+        public int BareLineFeedTerminatorCount { get; private set; }
+
+        public bool? BareLineFeedRejected { get; private set; }
+
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             Headers[name.GetAsciiString()] = value.GetAsciiString();
+        }
+
+        public void OnBareLineFeedTerminator(bool rejected)
+        {
+            BareLineFeedTerminatorCount++;
+            BareLineFeedRejected = rejected;
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }

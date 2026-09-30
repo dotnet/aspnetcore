@@ -1,0 +1,40 @@
+@implements IDisposable
+
+<div class="recipe-suggestions">
+    <button disabled="@IsRunning"
+            @onclick='() => SendAsync("Create a delicious Italian pasta recipe.")'>
+        Create Italian recipe
+    </button>
+    <button disabled="@IsRunning"
+            @onclick='() => SendAsync("Make the recipe healthier with more vegetables.")'>
+        Make it healthier
+    </button>
+    <button disabled="@IsRunning"
+            @onclick='() => SendAsync("Suggest some creative variations of this recipe.")'>
+        Suggest variations
+    </button>
+</div>
+
+@code {
+    private IDisposable? _statusChangedRegistration;
+
+    [CascadingParameter]
+    public AgentContext AgentContext { get; set; } = default!;
+
+    private bool IsRunning
+        => AgentContext.Status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
+
+    protected override void OnInitialized()
+    {
+        _statusChangedRegistration = AgentContext.RegisterOnStatusChanged(OnStatusChanged);
+    }
+
+    private void OnStatusChanged(ConversationStatus status)
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private Task SendAsync(string prompt) => AgentContext.SendMessageAsync(prompt);
+
+    public void Dispose() => _statusChangedRegistration?.Dispose();
+}

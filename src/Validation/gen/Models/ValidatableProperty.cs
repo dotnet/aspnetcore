@@ -7,5 +7,6 @@ internal sealed record class ValidatableProperty(
     string ContainingTypeFQN,
     string TypeFQN,
     string Name,
-    string DisplayName
+    string? DisplayName,
+    bool HasResourceDisplayAttribute
 );

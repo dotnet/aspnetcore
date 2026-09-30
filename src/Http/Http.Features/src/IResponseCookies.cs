@@ -32,6 +32,7 @@ public interface IResponseCookies
     {
         foreach (var keyValuePair in keyValuePairs)
         {
+            // codeql[SM02373] - This default interface method only forwards the caller's CookieOptions to the concrete Append; it applies no cookie policy itself.
             Append(keyValuePair.Key, keyValuePair.Value, options);
         }
     }

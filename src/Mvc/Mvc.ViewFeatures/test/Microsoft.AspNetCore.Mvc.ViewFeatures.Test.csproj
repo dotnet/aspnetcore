@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Too large (1999 tests) to batch with other assemblies; causes hangs on macOS -->
+    <SkipHelixWorkItemBatching>true</SkipHelixWorkItemBatching>
   </PropertyGroup>
 
   <ItemGroup>

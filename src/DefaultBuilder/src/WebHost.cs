@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -272,6 +274,9 @@ public static class WebHost
             services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
+
+            // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation).
+            services.TryAddSingleton<ICsrfProtection, DefaultCsrfProtection>();
 
             // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
             // A lambda is used here because we don't want to reference AddRouting directly because of trimming.

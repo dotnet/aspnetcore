@@ -136,7 +136,7 @@ public sealed class FormMappingContext
             var (errorKey, error) = _pendingErrors[i];
             if (!errorKey.StartsWith(key, StringComparison.Ordinal))
             {
-                throw new InvalidOperationException($"'{errorKey}' does must start with '{key}'");
+                throw new InvalidOperationException($"'{errorKey}' must start with '{key}'");
             }
 
             error.Container = value;

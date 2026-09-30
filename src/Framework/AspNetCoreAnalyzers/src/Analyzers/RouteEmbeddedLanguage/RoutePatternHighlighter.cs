@@ -71,10 +71,21 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
 
     private static void HighlightSymbol(SemanticModel semanticModel, IMethodSymbol methodSymbol, IList<AspNetCoreHighlightSpan> highlightSpans, ISymbol matchingParameter, CancellationToken cancellationToken)
     {
+        // The highlighter provides Roslyn a collection of TextSpan.
+        // Those spans don't carry the document or syntax tree they are referring to.
+        // So, they are always assumed to be on the originally given document.
+        // Hence, before providing any highlight spans, we should ensure we are in the
+        // correct syntax tree, or skip the analysis otherwise.
+
         // Highlight parameter in method signature.
         // e.g. "{id}" in route highlights id in "void Foo(string id) {}"
         foreach (var item in matchingParameter.DeclaringSyntaxReferences)
         {
+            if (item.SyntaxTree != semanticModel.SyntaxTree)
+            {
+                continue;
+            }
+
             var syntaxNode = item.GetSyntax(cancellationToken);
             if (syntaxNode is ParameterSyntax parameterSyntax)
             {
@@ -86,6 +97,11 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         // e.g. "{id}" in route highlights id in "_repository.GetBy(id)"
         foreach (var item in methodSymbol.DeclaringSyntaxReferences)
         {
+            if (item.SyntaxTree != semanticModel.SyntaxTree)
+            {
+                continue;
+            }
+
             var methodSyntax = item.GetSyntax(cancellationToken);
 
             // Have to call GetSymbolInfo because it's easy to have identifiers with the same name

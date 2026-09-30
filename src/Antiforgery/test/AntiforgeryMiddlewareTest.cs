@@ -73,6 +73,43 @@ public class AntiforgeryMiddlewareTest
         Assert.True(httpContext.Items.ContainsKey("__AntiforgeryMiddlewareWithEndpointInvoked"));
     }
 
+    [Fact]
+    public async Task OverridesPriorInvalidVerdict_WhenTokenIsValid()
+    {
+        // Simulates the auto-injected CSRF middleware having recorded a denial on the feature before
+        // UseAntiforgery() runs. A valid token must override that prior verdict (documented override behavior).
+        var antiforgeryService = new Mock<IAntiforgery>();
+        antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.FromResult(true));
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var httpContext = GetHttpContext();
+        httpContext.Request.Method = "POST";
+        httpContext.Features.Set<IAntiforgeryValidationFeature>(
+            new AntiforgeryValidationFeature(false, new AntiforgeryValidationException("CSRF denied")));
+
+        await antiforgeryMiddleware.Invoke(httpContext);
+
+        Assert.True(httpContext.Features.Get<IAntiforgeryValidationFeature>()?.IsValid);
+    }
+
+    [Fact]
+    public async Task OverridesPriorValidVerdict_WhenTokenIsInvalid()
+    {
+        // The token result is authoritative: a prior valid verdict is overridden when the token is invalid.
+        var antiforgeryService = new Mock<IAntiforgery>();
+        antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>()))
+            .ThrowsAsync(new AntiforgeryValidationException("invalid token"));
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var httpContext = GetHttpContext();
+        httpContext.Request.Method = "POST";
+        httpContext.Features.Set(AntiforgeryValidationFeature.Valid);
+
+        await antiforgeryMiddleware.Invoke(httpContext);
+
+        var feature = httpContext.Features.Get<IAntiforgeryValidationFeature>();
+        Assert.NotNull(feature);
+        Assert.False(feature!.IsValid);
+    }
+
     internal static DefaultHttpContext GetHttpContext(bool hasIgnoreMetadata = false)
     {
         var httpContext = new DefaultHttpContext();

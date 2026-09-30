@@ -13,9 +13,13 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// or <see cref="DisplayNameAttribute"/> if present, or falling back to the property name.
 /// </summary>
 /// <typeparam name="TValue">The type of the field.</typeparam>
-public class DisplayName<TValue> : IComponent
+/// <remarks>
+/// The resolved names are cached per culture for the entire lifetime of the process.
+/// When switching cultures in a Web Assembly client it is recommended to reload the page
+/// to release the data for the unused culture.
+/// </remarks>
+public sealed class DisplayName<TValue> : IComponent
 {
-
     private RenderHandle _renderHandle;
     private Expression<Func<TValue>>? _previousFieldAccessor;
     private string? _displayName;

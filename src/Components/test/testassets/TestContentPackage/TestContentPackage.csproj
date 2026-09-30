@@ -6,9 +6,12 @@
     <StaticWebAssetBasePath>_content/TestContentPackage</StaticWebAssetBasePath>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
+  <PropertyGroup Condition="'$(_SkipReferencedProjectPublishAssets)' == 'true'">
+    <StaticWebAssetsGetPublishAssetsTargets>_SkipGetPublishAssetsForTrimmedBuild</StaticWebAssetsGetPublishAssetsTargets>
   </PropertyGroup>
+
+  <!-- No-op target used to prevent the Static Web Assets SDK from redundantly re-publishing this project. -->
+  <Target Name="_SkipGetPublishAssetsForTrimmedBuild" />
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />

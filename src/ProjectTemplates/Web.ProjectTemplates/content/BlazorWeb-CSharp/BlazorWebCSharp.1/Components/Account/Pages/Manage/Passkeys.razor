@@ -31,7 +31,6 @@
                             var credentialId = Base64Url.EncodeToString(passkey.CredentialId);
                         }
                         <form @formname="@($"update-passkey-{credentialId}")" @onsubmit="UpdatePasskey" method="post">
-                            <AntiforgeryToken />
                             <div>
                                 <input type="hidden" name="CredentialId" value="@credentialId" />
                                 <button type="submit" name="Action" value="rename" class="btn btn-primary" title="Rename this passkey">Rename</button>
@@ -49,13 +48,25 @@ else
     <p>No passkeys are registered.</p>
 }
 
+@if (user is not null)
+{
+    <AllAcceptedCredentialsSignal User="user" />
+}
+
+@if (!isReauthenticated)
+{
+    <ReauthenticationPrompt Purpose="Adding a passkey creates a new way to sign in to your account." />
+}
+
+@* The form stays on the page even before the confirmation so that an unconfirmed post is
+   rejected with a message rather than an error page. The prompt is a sibling because a form
+   cannot be nested inside another form. *@
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
-    <AntiforgeryToken />
     @if (currentPasskeys is { Count: >= MaxPasskeyCount })
     {
         <p class="text-danger">You have reached the maximum number of allowed passkeys. Please delete one before adding a new one.</p>
     }
-    else
+    else if (isReauthenticated)
     {
         <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
     }
@@ -68,6 +79,7 @@ else
     private string? message;
     private ApplicationUser? user;
     private IList<UserPasskeyInfo>? currentPasskeys;
+    private bool isReauthenticated;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -97,13 +109,24 @@ else
             return;
         }
         currentPasskeys = await UserManager.GetPasskeysAsync(user);
+        isReauthenticated = await PasskeyReauthentication.IsVerifiedAsync(HttpContext, UserManager, user);
     }
 
+    // Registering a passkey adds a permanent way to sign in, so it takes a confirmation with a
+    // credential the account already has.
     private async Task AddPasskey()
     {
         if (user is null)
         {
             RedirectManager.RedirectTo("Account/InvalidUser");
+            return;
+        }
+
+        // Check this before performing attestation, which throws when no attestation is underway.
+        if (!isReauthenticated)
+        {
+            IdentityStatusMessage = "Error: You must confirm your identity before adding a passkey.";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
@@ -132,6 +155,14 @@ else
         if (!attestationResult.Succeeded)
         {
             IdentityStatusMessage = $"Error: Could not add the passkey: {attestationResult.Failure.Message}";
+            RedirectManager.RedirectToCurrentPage();
+            return;
+        }
+
+        // The credential must have been created for the account that is currently signed in.
+        if (!string.Equals(attestationResult.UserEntity.Id, await UserManager.GetUserIdAsync(user), StringComparison.Ordinal))
+        {
+            IdentityStatusMessage = "Error: That passkey was created for a different account.";
             RedirectManager.RedirectToCurrentPage();
             return;
         }

@@ -36,7 +36,7 @@ public class HotReloadTest : ServerTestBase<BasicTestAppServerSiteFixture<HotRel
     [Fact]
     public async Task InvokingRender_CausesComponentToRender()
     {
-        if (_serverFixture.TestTrimmedOrMultithreadingApps)
+        if (_serverFixture.TestTrimmedApps)
         {
             // In published app, metrics are trimmed
             return;

@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
@@ -93,7 +95,7 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         // Simulate a JS spacer callback.
-        ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(10f, 50f, 100f);
+        ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(10f, 50f, 100f, SpacerVisibilityReason.ViewportFill);
 
         // Validate that the exception is dispatched through the renderer.
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await testRenderer.RenderRootComponentAsync(componentId));
@@ -123,22 +125,121 @@ public class VirtualizeTest
 
         // First callback triggers distribution calculation and re-render
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 80f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 80f, 500f, SpacerVisibilityReason.ViewportFill));
 
-        // Second callback — with items now rendered, ProcessMeasurements derives
+        // Second callback — with items now rendered, CalculateItemDistribution derives
         // item heights from spacerSeparation and _lastRenderedItemCount
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 80f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 80f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(virtualize._totalMeasuredHeight > 0);
         Assert.True(virtualize._measuredItemCount > 0);
     }
 
     [Fact]
+    public async Task InitialIndex_MeasurementDoesNotChangeSpacerUntilPositioningCompletes()
+    {
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(0, 1000).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 950);
+                builder.AddComponentParameter(4, "OverscanCount", 3);
+                builder.AddComponentParameter(5, "ChildContent", SimpleItemTemplate);
+                builder.AddComponentReferenceCapture(6, component => virtualize = (Virtualize<int>)component);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.RenderedContentMeasurement));
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var virtualizeComponentId = testRenderer.Batches
+            .SelectMany(batch => batch.ReferenceFrames)
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component
+                && ReferenceEquals(frame.Component, virtualize))
+            .ComponentId;
+        var spacerHeights = testRenderer.GetCurrentRenderTreeFrames(virtualizeComponentId)
+            .AsEnumerable()
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Attribute
+                && frame.AttributeName == "data-blazor-virtualize-reserved-height");
+
+        Assert.Equal(1253f, virtualize._totalMeasuredHeight);
+        Assert.Equal(7, virtualize._measuredItemCount);
+        Assert.Collection(
+            spacerHeights,
+            spacerBefore => Assert.Equal("47350", spacerBefore.AttributeValue),
+            spacerAfter => Assert.Equal("2300", spacerAfter.AttributeValue));
+    }
+
+    [Fact]
+    public async Task InitialIndex_ApplyingMeasuredGeometry_PreservesRunningAverage()
+    {
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(0, 7).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 5);
+                builder.AddComponentParameter(4, "OverscanCount", 3);
+                builder.AddComponentParameter(5, "ChildContent", SimpleItemTemplate);
+                builder.AddComponentReferenceCapture(6, component => virtualize = (Virtualize<int>)component);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.RenderedContentMeasurement));
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(2506f, virtualize._totalMeasuredHeight);
+        Assert.Equal(14, virtualize._measuredItemCount);
+    }
+
+    [Fact]
     public async Task Virtualize_ZeroSpacerSeparationDoesNotCorruptAverage()
     {
         // BuildVirtualizeWithContent provides Items + ChildContent so the test renderer
-        // actually renders items, incrementing _lastRenderedItemCount (needed for ProcessMeasurements).
+        // actually renders items, incrementing _lastRenderedItemCount (needed for measurement accumulation).
         Virtualize<int> virtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
@@ -158,9 +259,9 @@ public class VirtualizeTest
 
         // First callback with valid spacerSeparation establishes measurements
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var heightAfterValid = virtualize._totalMeasuredHeight;
         var countAfterValid = virtualize._measuredItemCount;
@@ -169,14 +270,14 @@ public class VirtualizeTest
         // Callback with zero spacerSeparation should not add measurements
         // (realItemHeight would be zero or negative)
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Equal(heightAfterValid, virtualize._totalMeasuredHeight);
         Assert.Equal(countAfterValid, virtualize._measuredItemCount);
     }
 
     [Fact]
-    public async Task Virtualize_OnBeforeSpacerVisible_ProcessesMeasurementsBeforeCalculation()
+    public async Task Virtualize_OnBeforeSpacerVisible_MeasuredSpacerTriggersProviderFetch()
     {
         var requests = new List<ItemsProviderRequest>();
 
@@ -195,7 +296,7 @@ public class VirtualizeTest
         var countBefore = requests.Count;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(100f, 300f, 500f));
+            callbacks.OnBeforeSpacerVisible(100f, 300f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(requests.Count > countBefore,
             "ItemsProvider should be called when before spacer becomes visible with measurements");
@@ -219,10 +320,10 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f));
+            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Contains(requests, r => r.StartIndex > 0);
     }
@@ -246,16 +347,16 @@ public class VirtualizeTest
 
         // Establish baseline
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, SpacerVisibilityReason.ViewportFill));
         var countAfterBaseline = requests.Count;
         var heightBefore = virtualize._totalMeasuredHeight;
 
         // NaN spacerSeparation should not corrupt measurements or crash
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, float.NaN, 500f));
+            callbacks.OnAfterSpacerVisible(0f, float.NaN, 500f, SpacerVisibilityReason.ViewportFill));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, float.NaN, 500f));
+            callbacks.OnBeforeSpacerVisible(50f, float.NaN, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(requests.Count > countAfterBaseline,
             "Component should still process callbacks after NaN spacerSeparation");
@@ -279,17 +380,17 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, SpacerVisibilityReason.ViewportFill));
         var heightBefore = virtualize._totalMeasuredHeight;
         var countBefore = virtualize._measuredItemCount;
 
         // Negative spacerSeparation produces negative realItemHeight — should not
         // accumulate into the running average.
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, -500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, -500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, -100f, 500f));
+            callbacks.OnBeforeSpacerVisible(50f, -100f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Measurements should not have changed from the negative inputs
         Assert.Equal(heightBefore, virtualize._totalMeasuredHeight);
@@ -314,16 +415,16 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, SpacerVisibilityReason.ViewportFill));
         var countAfterBaseline = requests.Count;
 
         // Extremely large (infinity) spacerSeparation — component should handle
         // without overflow or crash. MaxItemCount caps the visible capacity.
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, float.PositiveInfinity, 500f));
+            callbacks.OnAfterSpacerVisible(0f, float.PositiveInfinity, 500f, SpacerVisibilityReason.ViewportFill));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, float.PositiveInfinity, 500f));
+            callbacks.OnBeforeSpacerVisible(50f, float.PositiveInfinity, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(requests.Count > countAfterBaseline,
             "Component should still process callbacks after infinity spacerSeparation");
@@ -351,7 +452,7 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f));
+            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Items should be rendered directly without wrapper elements
         var hasWrapperElements = testRenderer.Batches
@@ -386,7 +487,7 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f));
+            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
@@ -421,7 +522,7 @@ public class VirtualizeTest
         for (int i = 0; i < 10; i++)
         {
             await testRenderer.Dispatcher.InvokeAsync(() =>
-                callbacks.OnAfterSpacerVisible(0f, 90f, 500f));
+                callbacks.OnAfterSpacerVisible(0f, 90f, 500f, SpacerVisibilityReason.ViewportFill));
         }
 
         // After several cycles, measurements should have accumulated
@@ -460,12 +561,12 @@ public class VirtualizeTest
         // First callback triggers items to render
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(
-                0f, 500f, 500f));
+                0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Second callback: spacerSize=0 means at the very bottom; with items rendered, should trigger scrollToBottom
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(
-                0f, 500f, 500f));
+                0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var scrollToBottomCalled = mockJs.Invocations.Any(i =>
             i.Arguments.Count > 0 &&
@@ -484,7 +585,7 @@ public class VirtualizeTest
 
         // spacerSize=5000 means many items remain after the viewport
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(5000f, 1000f, 500f));
+            callbacks.OnAfterSpacerVisible(5000f, 1000f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.False(virtualize._pendingScrollToBottom);
     }
@@ -513,7 +614,7 @@ public class VirtualizeTest
 
         // First call: real measurements at the bottom — should set pending
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(renderedVirtualize._lastRenderedItemCount > 0,
             "Items should have rendered");
@@ -522,10 +623,10 @@ public class VirtualizeTest
         // Second call: spacerSeparation=0 at the bottom — no new measurements,
         // so _pendingScrollToBottom must NOT be set
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.False(renderedVirtualize._pendingScrollToBottom,
-            "scrollToBottom should not be set when ProcessMeasurements did not apply new measurements");
+            "scrollToBottom should not be set when no new measurements were applied");
     }
 
     [Fact]
@@ -548,7 +649,7 @@ public class VirtualizeTest
         var callCountAfterMount = requests.Count;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, 500f, 500f));
+            callbacks.OnBeforeSpacerVisible(50f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Equal(callCountAfterMount + 1, requests.Count);
 
@@ -580,13 +681,13 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f));
+            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f, SpacerVisibilityReason.ViewportFill));
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(0f, 150f, 1000f));
+            callbacks.OnBeforeSpacerVisible(0f, 150f, 1000f, SpacerVisibilityReason.ViewportFill));
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f));
+            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f, SpacerVisibilityReason.ViewportFill));
 
         // After multiple callbacks, measurements should accumulate
         Assert.True(renderedVirtualize._measuredItemCount > 0);
@@ -621,11 +722,11 @@ public class VirtualizeTest
 
         // First callback triggers render with items (setting _lastRenderedItemCount)
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Second callback accumulates measurements from spacerSeparation
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(renderedVirtualize._totalMeasuredHeight > 0);
         Assert.True(renderedVirtualize._measuredItemCount > 0);
@@ -662,13 +763,13 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Single(pendingCalls);
         var firstCall = pendingCalls[0];
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 1000f));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 1000f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Equal(2, pendingCalls.Count);
         var secondCall = pendingCalls[1];
@@ -684,6 +785,69 @@ public class VirtualizeTest
         {
             call.tcs.TrySetResult(new ItemsProviderResult<int>(Array.Empty<int>(), 0));
         }
+    }
+
+    [Fact]
+    public async Task Virtualize_CanceledPrependAdjustment_DoesNotOverwriteNewerWindow()
+    {
+        var items = Enumerable.Range(0, 200).ToList();
+        var blockAdjustedRequest = false;
+        var blockedRequestStarted = new TaskCompletionSource<ItemsProviderRequest>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseBlockedRequest = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            if (blockAdjustedRequest && request.StartIndex == 120)
+            {
+                blockAdjustedRequest = false;
+                blockedRequestStarted.SetResult(request);
+                await releaseBlockedRequest.Task;
+            }
+
+            return new ItemsProviderResult<int>(
+                items.Skip(request.StartIndex).Take(request.Count).ToArray(),
+                items.Count);
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            50f,
+            items.Count,
+            provider,
+            item => builder => builder.AddContent(0, item));
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible((100 + 15) * 50f, 40 * 50f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(100, virtualize._itemsBefore);
+
+        items.InsertRange(0, Enumerable.Range(-20, 20));
+        blockAdjustedRequest = true;
+
+        Task canceledRefresh = null;
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            canceledRefresh = virtualize.RefreshDataAsync();
+        });
+
+        var blockedRequest = await blockedRequestStarted.Task;
+
+        Task newerRefresh = null;
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            virtualize._itemsBefore = 130;
+            newerRefresh = virtualize.RefreshDataAsync();
+        });
+        await newerRefresh;
+
+        Assert.True(blockedRequest.CancellationToken.IsCancellationRequested);
+        Assert.Equal(150, virtualize._itemsBefore);
+
+        releaseBlockedRequest.SetResult();
+        await canceledRefresh;
+
+        Assert.Equal(150, virtualize._itemsBefore);
     }
 
     [Fact]
@@ -717,7 +881,7 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var lastRequest = requests.Last();
         Assert.True(lastRequest.Count <= 50,
@@ -727,7 +891,8 @@ public class VirtualizeTest
     private async Task<(Virtualize<int> virtualize, TestRenderer renderer)> CreateRenderedVirtualize(
         float itemSize,
         int totalItems,
-        ItemsProviderDelegate<int> customProvider = null)
+        ItemsProviderDelegate<int> customProvider = null,
+        RenderFragment<int> childContent = null)
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -738,7 +903,7 @@ public class VirtualizeTest
 
         var rootComponent = new VirtualizeTestHostcomponent
         {
-            InnerContent = BuildVirtualize(itemSize, provider, null, virtualize => renderedVirtualize = virtualize)
+            InnerContent = BuildVirtualize(itemSize, provider, null, virtualize => renderedVirtualize = virtualize, childContent)
         };
 
         var serviceProvider = new ServiceCollection()
@@ -764,13 +929,19 @@ public class VirtualizeTest
         float itemSize,
         ItemsProviderDelegate<TItem> itemsProvider,
         ICollection<TItem> items,
-        Action<Virtualize<TItem>> captureRenderedVirtualize = null)
+        Action<Virtualize<TItem>> captureRenderedVirtualize = null,
+        RenderFragment<TItem> childContent = null)
         => builder =>
     {
         builder.OpenComponent<Virtualize<TItem>>(0);
         builder.AddComponentParameter(1, "ItemSize", itemSize);
         builder.AddComponentParameter(2, "ItemsProvider", itemsProvider);
         builder.AddComponentParameter(3, "Items", items);
+
+        if (childContent != null)
+        {
+            builder.AddComponentParameter(5, "ChildContent", childContent);
+        }
 
         if (captureRenderedVirtualize != null)
         {
@@ -785,7 +956,7 @@ public class VirtualizeTest
         ICollection<int> items,
         Action<Virtualize<int>> captureRenderedVirtualize = null,
         string spacerElement = "div",
-        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning)
+        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start)
         => builder =>
     {
         builder.OpenComponent<Virtualize<int>>(0);
@@ -902,7 +1073,7 @@ public class VirtualizeTest
 
         // Initial IO callback to set up _itemCount
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
 
         var itemsBeforeAfterInit = renderedVirtualize._itemsBefore;
 
@@ -911,7 +1082,7 @@ public class VirtualizeTest
 
         // IO-driven refresh (NOT RefreshDataAsync) — triggered by spacer becoming visible
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
 
         // _itemsBefore may change due to normal IO redistribution, but should NOT
         // have been shifted by exactly countDelta (20) which would indicate false
@@ -920,6 +1091,124 @@ public class VirtualizeTest
         Assert.True(shift != 20,
             $"IO-driven refresh should not trigger prepend detection (shift by countDelta). " +
             $"Before: {itemsBeforeAfterInit}, After: {renderedVirtualize._itemsBefore}, Shift: {shift}");
+    }
+
+    [Fact]
+    public async Task Virtualize_ItemsProvider_PrependedSinglePassEnumerable_IsNotEnumeratedMoreThanOnce()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var items = Enumerable.Range(0, 100).ToList();
+        var returnSinglePassEnumerable = false;
+        var singlePassEnumerationCount = 0;
+
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            var requestedItems = items
+                .Skip(request.StartIndex)
+                .Take(Math.Min(request.Count, items.Count - request.StartIndex))
+                .ToList();
+            var resultItems = returnSinglePassEnumerable
+                ? SinglePass(requestedItems)
+                : requestedItems;
+            return ValueTask.FromResult(new ItemsProviderResult<int>(resultItems, items.Count));
+        }
+
+        IEnumerable<int> SinglePass(IEnumerable<int> source)
+        {
+            var enumerated = false;
+            return Enumerate();
+
+            IEnumerable<int> Enumerate()
+            {
+                singlePassEnumerationCount++;
+                if (enumerated)
+                {
+                    throw new InvalidOperationException("The provider result was enumerated more than once.");
+                }
+
+                enumerated = true;
+                foreach (var item in source)
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualize(
+                50f,
+                (ItemsProviderDelegate<int>)provider,
+                null,
+                v => renderedVirtualize = v,
+                item => builder => builder.AddContent(0, item))
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
+
+        var itemsBeforePrepend = renderedVirtualize._itemsBefore;
+        items.InsertRange(0, Enumerable.Range(-20, 20));
+        returnSinglePassEnumerable = true;
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            renderedVirtualize.RefreshDataAsync());
+
+        Assert.Equal(itemsBeforePrepend + 20, renderedVirtualize._itemsBefore);
+        Assert.Equal(1, singlePassEnumerationCount);
+    }
+
+    [Theory]
+    [InlineData(false, 130)]
+    [InlineData(true, 140)]
+    public async Task Virtualize_ItemsProvider_GrowthWhileWindowMovesPastPreviousFirstItem_DistinguishesPrependFromAppend(
+        bool prepend,
+        int expectedItemsBefore)
+    {
+        var items = Enumerable.Range(0, 200).ToList();
+
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+            => ValueTask.FromResult(new ItemsProviderResult<int>(
+                items.Skip(request.StartIndex).Take(request.Count).ToArray(),
+                items.Count));
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            50f,
+            items.Count,
+            provider,
+            item => builder => builder.AddContent(0, item));
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible((100 + 15) * 50f, 40 * 50f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(100, virtualize._itemsBefore);
+
+        if (prepend)
+        {
+            items.InsertRange(0, Enumerable.Range(-10, 10));
+        }
+        else
+        {
+            items.AddRange(Enumerable.Range(200, 10));
+        }
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible((130 + 15) * 50f, 40 * 50f, 500f, SpacerVisibilityReason.UserScroll));
+
+        Assert.Equal(expectedItemsBefore, virtualize._itemsBefore);
     }
 
     [Fact]
@@ -947,7 +1236,7 @@ public class VirtualizeTest
 
         // Initial IO callback to set up _itemCount.
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
 
         var itemsBeforeAfterInit = renderedVirtualize._itemsBefore;
 
@@ -956,11 +1245,573 @@ public class VirtualizeTest
 
         // IO-driven refresh re-reads the in-memory list and observes count growth 100 -> 120.
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
 
         var shift = renderedVirtualize._itemsBefore - itemsBeforeAfterInit;
         Assert.True(shift != 20,
             $"In-memory append on value-type TItem must not trigger prepend detection (shift by countDelta). " +
             $"Before: {itemsBeforeAfterInit}, After: {renderedVirtualize._itemsBefore}, Shift: {shift}");
+    }
+
+    [Fact]
+    public void ScrollToIndexAsync_ThrowsBeforeJsInteropInitialized()
+    {
+        var virtualize = new Virtualize<int>();
+
+        var ex = Assert.Throws<InvalidOperationException>(
+            (Action)(() => { _ = virtualize.ScrollToItemAsync(0); }));
+        Assert.Contains(nameof(Virtualize<int>.ScrollToItemAsync), ex.Message);
+        Assert.Contains(nameof(Virtualize<int>.InitialItemIndex), ex.Message);
+    }
+
+    private static readonly RenderFragment<int> SimpleItemTemplate = item => b => b.AddContent(0, item);
+
+    [Fact]
+    public async Task ScrollToIndexAsync_NegativeIndexDoesNotThrow()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 100, childContent: SimpleItemTemplate);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(-5); });
+        await task;
+        Assert.True(task.IsCompletedSuccessfully);
+        // Clamp post-condition: negative index lands the window at the start.
+        Assert.Equal(0, virtualize._itemsBefore);
+    }
+
+    [Fact]
+    public async Task ScrollToIndexAsync_IndexBeyondCountDoesNotThrow()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 100, childContent: SimpleItemTemplate);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(99_999); });
+
+        await task;
+        Assert.True(task.IsCompletedSuccessfully);
+        // Clamp post-condition: out-of-range index lands the window at the end. After
+        // OnAfterSpacerVisible with container=500/itemSize=50, capacity = ceil(500/50) + 2*15 = 40,
+        // so the last full window starts at max(0, 100 - 40) = 60.
+        Assert.Equal(60, virtualize._itemsBefore);
+    }
+
+    [Fact]
+    public async Task ScrollToIndexAsync_EmptyListCompletesAsNoOp()
+    {
+        // Regression: render-commit rendezvous used to wait for _lastRenderedItemCount > 0, which never becomes true for an empty list, so the Task hung forever.
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 0);
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(0); });
+
+        await task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(task.IsCompletedSuccessfully);
+    }
+
+    [Fact]
+    public async Task ScrollToIndexAsync_AlreadyCancelledTokenProducesCancelledTask()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(10, cts.Token); });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+    }
+
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68852")]
+    public async Task ScrollToIndexAsync_CancellationCancelsProviderRequest()
+    {
+        var blockProvider = false;
+        using var cts = new CancellationTokenSource();
+        CancellationToken? providerCancellationToken = null;
+
+        async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            if (!blockProvider)
+            {
+                return new ItemsProviderResult<int>(
+                    Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
+                    100);
+            }
+
+            providerCancellationToken = request.CancellationToken;
+            // Cancel only after capturing the provider token, so no separate start-signal rendezvous is needed.
+            cts.Cancel();
+            await Task.Delay(Timeout.InfiniteTimeSpan, request.CancellationToken);
+            return default;
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 100, customProvider: provider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        blockProvider = true;
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(90, cts.Token); });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.True(providerCancellationToken is { IsCancellationRequested: true });
+    }
+
+    [Fact]
+    public async Task ScrollToIndexAsync_SecondCallDoesNotFaultFirstTask()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 1000);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        var (firstTask, secondTask) = await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var first = virtualize.ScrollToItemAsync(500);
+            var second = virtualize.ScrollToItemAsync(750);
+            return (first, second);
+        });
+
+        await firstTask;
+        Assert.True(firstTask.IsCompletedSuccessfully);
+
+        if (secondTask.IsCompleted)
+        {
+            Assert.True(secondTask.IsCompletedSuccessfully, secondTask.Exception?.ToString());
+        }
+    }
+
+    [Fact]
+    public async Task ScrollToIndexAsync_ProviderThrows_FaultsTaskInsteadOfHanging()
+    {
+        var sentinel = new InvalidOperationException("provider boom");
+        ItemsProviderDelegate<int> throwingProvider = _ => throw sentinel;
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 100, customProvider: throwingProvider);
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(50); });
+
+        var ex = await Assert.ThrowsAnyAsync<Exception>(async () => await task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.Same(sentinel, ex);
+    }
+
+    [Fact]
+    public async Task InitialIndex_ParameterRoundTrip()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(1, 100).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 42);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b =>
+                {
+                    b.OpenElement(0, "span");
+                    b.AddContent(1, item);
+                    b.CloseElement();
+                }));
+                builder.AddComponentReferenceCapture(5, c => renderedVirtualize = (Virtualize<int>)c);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+        Assert.Equal(42, renderedVirtualize.InitialItemIndex);
+    }
+
+    // Covers dotnet/aspnetcore#68114 (and #68064): a top-spacer callback classified ProgrammaticScroll
+    // (a transient during our own scroll) MUST be ignored, otherwise it snaps the window back toward index 0
+    // and the InitialItemIndex / ScrollToItem target is lost.
+    [Fact]
+    public async Task OnBeforeSpacerVisible_ProgrammaticScroll_DoesNotResetWindow()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 1000);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        // Establish measurements, then move the window away from the top via a before-spacer whose size
+        // implies many items above the viewport.
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+        var itemsBeforeAtTarget = virtualize._itemsBefore;
+        Assert.True(itemsBeforeAtTarget > 0, "Precondition: the window should have moved away from the top.");
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ProgrammaticScroll));
+
+        Assert.Equal(itemsBeforeAtTarget, virtualize._itemsBefore);
+    }
+
+    // Discrimination check: the SAME top-spacer callback, but classified UserScroll (the user really scrolled
+    // up), must be honored and move the window toward the top. Contrast with the ProgrammaticScroll case above.
+    [Fact]
+    public async Task OnBeforeSpacerVisible_UserScroll_MovesWindowTowardTop()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 1000);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+        var itemsBeforeAtTarget = virtualize._itemsBefore;
+        Assert.True(itemsBeforeAtTarget > 0, "Precondition: the window should have moved away from the top.");
+
+        // A UserScroll before-spacer with spacerSize=0 (top of the list in view) moves the window up.
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.UserScroll));
+
+        Assert.True(virtualize._itemsBefore < itemsBeforeAtTarget,
+            $"A UserScroll before-spacer callback should move the window toward the top; it stayed at {virtualize._itemsBefore}.");
+    }
+
+    // "Display an index that is already on screen": a short list that fully fits the viewport, so aligning to
+    // InitialItemIndex needs no real scroll. Verify the window is not left stuck — it renders from the top
+    // (all items visible, target on screen) and a later bottom-spacer ViewportFill is still honored.
+    [Fact]
+    public async Task InitialIndex_ShortListThatFits_TargetOnScreenWithoutScroll_DoesNotStall()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(1, 10).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 8);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item)));
+                builder.AddComponentReferenceCapture(5, c => renderedVirtualize = (Virtualize<int>)c);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+        // 10 items with a seed capacity of OverscanCount*2+1 = 31 > 10, so the window clamps to the top and
+        // item 8 is within the rendered range — it is already on screen, no scroll required.
+        Assert.Equal(0, renderedVirtualize._itemsBefore);
+
+        // No user scroll ever occurred; a bottom-spacer ViewportFill must still be processed and must not
+        // push the window off the top (everything already fits).
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(0, renderedVirtualize._itemsBefore);
+    }
+
+    [Fact]
+    public async Task InitialIndex_DefaultZeroMeansNoInitialScroll()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+        Assert.Equal(0, renderedVirtualize.InitialItemIndex);
+        // No initial-scroll request was issued; component opens at item 0.
+        Assert.Equal(0, renderedVirtualize._itemsBefore);
+    }
+
+    [Fact]
+    public async Task InitialIndex_NegativeClampsToZero()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", Enumerable.Range(1, 100).ToList() as ICollection<int>);
+                builder.AddComponentParameter(3, "InitialItemIndex", -5);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+                builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+        Assert.Equal(-5, renderedVirtualize.InitialItemIndex);
+        // Negative InitialItemIndex must clamp to 0 (no out-of-range seeding of _itemsBefore).
+        Assert.Equal(0, renderedVirtualize._itemsBefore);
+    }
+
+    [Fact]
+    public async Task InitialIndex_BeyondCountClampsToEnd()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var items = Enumerable.Range(1, 100).ToList();
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", items as ICollection<int>);
+                builder.AddComponentParameter(3, "InitialItemIndex", 99999);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+                builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+        Assert.Equal(99999, renderedVirtualize.InitialItemIndex);
+        // For a fixed Items collection, the seed clamps using the now-known count: max(0, Count - capacity).
+        // capacity = OverscanCount*2 + 1 = 31 with default OverscanCount=15, so _itemsBefore = max(0, 100 - 31) = 69.
+        Assert.Equal(69, renderedVirtualize._itemsBefore);
+    }
+
+    [Fact]
+    public async Task Virtualize_SpacersUseDataAttributeNotInlineStyle()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        // Spacer elements use data-blazor-virtualize-* attributes instead of inline style.
+        // A MutationObserver on the JS side mirrors them to element styles via CSSOM.
+        var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
+
+        var heightAttributes = referenceFrames
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute
+                     && f.AttributeName == "data-blazor-virtualize-reserved-height")
+            .ToList();
+
+        Assert.Equal(2, heightAttributes.Count);
+        Assert.Equal("0", (string)heightAttributes[0].AttributeValue);
+        Assert.True(double.TryParse((string)heightAttributes[1].AttributeValue, NumberStyles.Float, CultureInfo.InvariantCulture, out _));
+
+        var inlineStyleAttributes = referenceFrames
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute
+                     && f.AttributeName == "style")
+            .ToList();
+
+        // The only inline style is the test host's scroll container; Virtualize itself emits none.
+        var hostStyle = Assert.Single(inlineStyleAttributes);
+        Assert.Equal("overflow: auto; height: 800px;", (string)hostStyle.AttributeValue);
+    }
+
+    [Fact]
+    public async Task Virtualize_DisposedWhileInitializationPending_DoesNotUseDisposedObjectReference()
+    {
+        var jsRuntime = new GatedVirtualizeJsRuntime("Blazor._internal.Virtualize.init");
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, nameof(Virtualize<int>.Items), (ICollection<int>)Enumerable.Range(0, 500).ToArray());
+                builder.AddComponentParameter(2, nameof(Virtualize<int>.ItemSize), 30f);
+                builder.AddComponentParameter(3, nameof(Virtualize<int>.InitialItemIndex), 50);
+                builder.AddComponentParameter(4, nameof(Virtualize<int>.ChildContent),
+                    (RenderFragment<int>)(item => content => content.AddContent(0, item)));
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(jsRuntime)
+            .BuildServiceProvider();
+
+        await using var renderer = new TestRenderer(serviceProvider)
+        {
+            ShouldHandleExceptions = true,
+        };
+        var componentId = renderer.AssignRootComponentId(rootComponent);
+        var renderTask = renderer.RenderRootComponentAsync(componentId);
+
+        await jsRuntime.InvocationStarted.WaitAsync(TimeSpan.FromSeconds(5));
+        rootComponent.InnerContent = null;
+        rootComponent.TriggerRender();
+        await jsRuntime.ReferenceDisposed.WaitAsync(TimeSpan.FromSeconds(5));
+
+        jsRuntime.CompleteInvocation();
+        await jsRuntime.InvocationCompleted.WaitAsync(TimeSpan.FromSeconds(5));
+        await renderer.Dispatcher.InvokeAsync(() => { });
+        await renderTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.True(renderer.HandledExceptions.Count == 0, string.Join(Environment.NewLine, renderer.HandledExceptions));
+        Assert.False(jsRuntime.InteropAttemptedAfterDisposal);
+    }
+
+    [Fact]
+    public async Task Virtualize_DisposedWhileLaterRenderInteropPending_DoesNotUseDisposedObjectReference()
+    {
+        var anchorMode = VirtualizeAnchorMode.None;
+        var jsRuntime = new GatedVirtualizeJsRuntime("Blazor._internal.Virtualize.setAnchorMode");
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, nameof(Virtualize<int>.Items), (ICollection<int>)Enumerable.Range(0, 500).ToArray());
+                builder.AddComponentParameter(2, nameof(Virtualize<int>.ItemSize), 30f);
+                builder.AddComponentParameter(3, nameof(Virtualize<int>.AnchorMode), anchorMode);
+                builder.AddComponentParameter(4, nameof(Virtualize<int>.ChildContent),
+                    (RenderFragment<int>)(item => content => content.AddContent(0, item)));
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(jsRuntime)
+            .BuildServiceProvider();
+
+        await using var renderer = new TestRenderer(serviceProvider)
+        {
+            ShouldHandleExceptions = true,
+        };
+        var componentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        anchorMode = VirtualizeAnchorMode.Start;
+        rootComponent.TriggerRender();
+        await jsRuntime.InvocationStarted.WaitAsync(TimeSpan.FromSeconds(5));
+
+        rootComponent.InnerContent = null;
+        rootComponent.TriggerRender();
+        await jsRuntime.ReferenceDisposed.WaitAsync(TimeSpan.FromSeconds(5));
+
+        jsRuntime.CompleteInvocation();
+        await jsRuntime.InvocationCompleted.WaitAsync(TimeSpan.FromSeconds(5));
+        await renderer.Dispatcher.InvokeAsync(() => { });
+
+        Assert.True(renderer.HandledExceptions.Count == 0, string.Join(Environment.NewLine, renderer.HandledExceptions));
+        Assert.False(jsRuntime.InteropAttemptedAfterDisposal);
+    }
+
+    private sealed class GatedVirtualizeJsRuntime(string gatedIdentifier) : IJSRuntime
+    {
+        private readonly TaskCompletionSource _invocationStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _completeInvocation = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _invocationCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _referenceDisposed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task InvocationStarted => _invocationStarted.Task;
+
+        public Task InvocationCompleted => _invocationCompleted.Task;
+
+        public Task ReferenceDisposed => _referenceDisposed.Task;
+
+        public bool InteropAttemptedAfterDisposal { get; private set; }
+
+        public void CompleteInvocation()
+        {
+            _completeInvocation.TrySetResult();
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+            => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+
+        public async ValueTask<TValue> InvokeAsync<TValue>(
+            string identifier,
+            CancellationToken cancellationToken,
+            object[] args)
+        {
+            var reference = (DotNetObjectReference<VirtualizeJsInterop>)args[0];
+
+            try
+            {
+                _ = reference.Value;
+            }
+            catch (ObjectDisposedException)
+            {
+                InteropAttemptedAfterDisposal = true;
+                throw;
+            }
+
+            if (identifier == gatedIdentifier)
+            {
+                _invocationStarted.TrySetResult();
+                await _completeInvocation.Task.WaitAsync(cancellationToken);
+                _invocationCompleted.TrySetResult();
+            }
+            else if (identifier == "Blazor._internal.Virtualize.dispose")
+            {
+                reference.Dispose();
+                _referenceDisposed.TrySetResult();
+            }
+
+            return default!;
+        }
     }
 }
