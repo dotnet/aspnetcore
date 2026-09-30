@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Components.Gateway;
 /// </summary>
 public static class BlazorGateway
 {
+    private const string DotNetWatchEnvironmentVariable = "DOTNET_WATCH";
+    private const string BrowserToolsHotReloadSettingsPath = "/_framework/dotnet-browser-tools/hot-reload-settings.json";
+    private const string BrowserToolsDisabledResponse = """{ "hotReload": false }""";
+
     /// <summary>
     /// Builds a <see cref="WebApplication"/> configured as a Blazor Gateway.
     /// Reads ClientApps config section for endpoint manifests and YARP reverse proxy configuration.
@@ -115,6 +119,19 @@ public static class BlazorGateway
             {
                 app.MapGroup(appConfig.PathPrefix ?? "").MapStaticAssets(appConfig.EndpointsManifest);
             }
+        }
+
+        if (app.Environment.IsDevelopment() &&
+            !string.Equals(app.Configuration[DotNetWatchEnvironmentVariable], "1", StringComparison.Ordinal))
+        {
+            app.MapGet(
+                    BrowserToolsHotReloadSettingsPath,
+                    (HttpContext context) =>
+                    {
+                        context.Response.Headers.CacheControl = "no-store";
+                        return Results.Content(BrowserToolsDisabledResponse, "application/json");
+                    })
+                .WithOrder(int.MaxValue);
         }
 
         return app;

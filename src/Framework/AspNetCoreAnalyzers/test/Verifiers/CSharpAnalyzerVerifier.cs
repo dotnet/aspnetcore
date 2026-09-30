@@ -54,15 +54,15 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
                 AppContext.BaseDirectory,
                 "NuGet.config") :
             Path.Combine(TestData.GetRepoRoot(), "NuGet.config");
-        var net11Ref = new ReferenceAssemblies(
-            "net11.0",
+        var net12Ref = new ReferenceAssemblies(
+            "net12.0",
             new PackageIdentity(
                 "Microsoft.NETCore.App.Ref",
                 TestData.GetMicrosoftNETCoreAppRefPackageVersion()),
-            Path.Combine("ref", "net11.0"))
+            Path.Combine("ref", "net12.0"))
         .WithNuGetConfigFilePath(nugetConfigPath);
 
-        return net11Ref.AddAssemblies(ImmutableArray.Create(
+        return net12Ref.AddAssemblies(ImmutableArray.Create(
             TrimAssemblyExtension(typeof(System.IO.Pipelines.PipeReader).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Authorization.IAuthorizeData).Assembly.Location),
