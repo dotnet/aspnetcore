@@ -17,10 +17,10 @@
     Arguments that will be passed to the verification tool.
 .EXAMPLE
     PS> .\verify.ps1 *.nupkg
-    Verifies the metadata of all .nupkg files in the currect working directory.
+    Verifies the metadata of all .nupkg files in the current working directory.
 .EXAMPLE
     PS> .\verify.ps1 --help
-    Displays the help text of the downloaded verifiction tool.
+    Displays the help text of the downloaded verification tool.
 .LINK
     https://github.com/NuGet/NuGetGallery/blob/master/src/VerifyMicrosoftPackage/README.md
 #>

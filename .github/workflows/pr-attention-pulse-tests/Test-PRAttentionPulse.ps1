@@ -330,6 +330,20 @@ function Get-GhAwExtensionRoot
     throw "Could not locate the installed gh-aw extension."
 }
 
+function Get-CompiledGhAwVersion
+{
+    param([Parameter(Mandatory)][string]$LockPath)
+
+    $metadataLine = Get-Content -LiteralPath $LockPath -TotalCount 1
+    $match = [regex]::Match($metadataLine, '"compiler_version":"(?<version>v[^"]+)"')
+    if (-not $match.Success)
+    {
+        throw "The compiled gh-aw version could not be read from '$LockPath'."
+    }
+
+    return $match.Groups["version"].Value
+}
+
 function Invoke-PinnedOutputSanitizer
 {
     param([Parameter(Mandatory)][string]$Content)
@@ -1054,8 +1068,9 @@ $validatorPath = Join-Path $supportRoot "Validate-PRAttentionPulseOutput.ps1"
 $compilePath = Join-Path $supportRoot "Compile-PRAttentionPulse.ps1"
 $workflowPath = Join-Path $workflowRoot "pr-attention-pulse.md"
 $lockPath = Join-Path $workflowRoot "pr-attention-pulse.lock.yml"
+$compiledGhAwVersion = Get-CompiledGhAwVersion -LockPath $lockPath
 $ghAwVersion = (& gh aw --version 2>&1) -join "`n"
-Assert-True ($LASTEXITCODE -eq 0 -and $ghAwVersion.Contains("v0.88.7")) "Focused tests require the reviewed gh-aw v0.88.7 installation."
+Assert-True ($LASTEXITCODE -eq 0 -and $ghAwVersion.Contains($compiledGhAwVersion)) "Focused tests require the gh-aw $compiledGhAwVersion installation used to compile the lock."
 & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseReviewRequirements.ps1")
 Assert-True ($LASTEXITCODE -eq 0) "The effective generated security and presentation controls must pass."
 & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseMergeRequirements.ps1")
@@ -1536,8 +1551,8 @@ try
     Assert-True ($workflow.Contains('require(path.join(actionsDir, "sanitize_content.cjs"))')) "Trusted normalization must reuse the pinned gh-aw sanitizer."
     Assert-True ($workflow.Contains('GH_AW_SANITIZER_MODULE_PATH: ${{ runner.temp }}/gh-aw/actions/sanitize_content.cjs')) "Post-agent canonical verification must receive the same pinned sanitizer path."
     Assert-True ($workflow.Contains("-SanitizerModulePath `$env:GH_AW_SANITIZER_MODULE_PATH")) "Post-agent canonical verification must use the pinned sanitizer path."
-    Assert-True ($workflow.Contains('bash: ["cat"]')) "The requested shell surface must remain minimal even though v0.88.7 adds baseline utilities."
-    Assert-True ($workflow.Contains("gh-aw v0.88.7 retains compiler-required runtime files and a")) "The prompt must accurately distinguish bounded task data from compiler-required runtime files."
+    Assert-True ($workflow.Contains('bash: ["cat"]')) "The requested shell surface must remain minimal even though the compiler adds baseline utilities."
+    Assert-True ($workflow.Contains("The compiled workflow retains required runtime files and a baseline")) "The prompt must accurately distinguish bounded task data from compiler-required runtime files."
     Assert-True ($workflow.Contains("Although the compiler exposes baseline shell utilities")) "The prompt must not claim that the effective shell is cat-only."
     Assert-True ($workflow.Contains("two independently collected dashboards")) "The prompt must preserve both independently generated area reports."
     Assert-True ($workflow.Contains('Remove-Item .pr-attention-pulse/pulse-request.json')) "The serialized request must be removed after inference."
@@ -1582,11 +1597,12 @@ try
     foreach ($line in $awfConfigLines)
     {
         $normalizedLine = $line.Replace("\", "")
-        Assert-True ($normalizedLine.Contains('"allowedModels":["gpt-5.6-sol"]')) "Every inference stage must enforce the singleton model allowlist."
-        Assert-True ($normalizedLine.Contains("v0.28.14")) "Every inference stage must use the reviewed AWF v0.28.14 runtime."
+        Assert-True ($normalizedLine.Contains("v0.28.23")) "Every inference stage must use the reviewed AWF v0.28.23 runtime."
     }
     $mainConfigLine = $awfConfigLines[0].Replace("\", "")
     $detectorConfigLine = $awfConfigLines[1].Replace("\", "")
+    Assert-True ($mainConfigLine.Contains('"allowedModels":["gpt-5.6-sol"]')) "The main inference stage must enforce the singleton model allowlist."
+    Assert-True (-not $detectorConfigLine.Contains('"allowedModels"')) "The detector must rely on its explicit COPILOT_MODEL pin rather than duplicate the main API proxy allowlist."
     Assert-True ($mainConfigLine.Contains('"enableTokenSteering":false')) "Main-agent token steering must be explicitly disabled."
     Assert-True ($mainConfigLine.Contains('"modelFallback":{"enabled":false}')) "Main-agent model fallback must be explicitly disabled."
     Assert-True (-not $detectorConfigLine.Contains("enableTokenSteering")) "Detector token steering must be absent, which is false in AWF."
@@ -1614,7 +1630,7 @@ try
     foreach ($name in @("GH_TOKEN", "GH_AW_GITHUB_TOKEN", "GITHUB_MCP_SERVER_TOKEN", "GITHUB_TOKEN", "OTEL_EXPORTER_OTLP_HEADERS", "GH_AW_OTLP_ENDPOINTS"))
     {
         Assert-True ([regex]::Matches($agentStep, "(?<!\S)--exclude-env $([regex]::Escape($name))(?=\s|\\\\)").Count -eq 1) "The main inference command must exclude '$name' exactly once."
-        Assert-True ([regex]::Matches($agentStep, "(?m)^\s+$([regex]::Escape($name)): \$\{\{ needs\.pat_pool\.outputs\.pat_number \}\}\r?$").Count -eq 1) "The v0.88.7 compatibility adapter must bind '$name' only to the non-secret PAT slot number."
+        Assert-True ([regex]::Matches($agentStep, "(?m)^\s+$([regex]::Escape($name)): \$\{\{ needs\.pat_pool\.outputs\.pat_number \}\}\r?$").Count -eq 1) "The compiler compatibility adapter must bind '$name' only to the non-secret PAT slot number."
         Assert-True (-not ($agentStep -match "(?m)^\s+$([regex]::Escape($name)):.*secrets\.")) "The main inference step must not bind '$name' to a secret-bearing workflow value."
         Assert-True (-not ($agentStep -match "(?m)\bexport\s+$([regex]::Escape($name))=")) "The main inference command must not export '$name' into the sandbox."
     }
@@ -1655,7 +1671,8 @@ try
     Assert-True (-not ($lock -match "--mount[^\r\n]*pr-attention-pulse-validator")) "The private validator root must not be mounted into either inference sandbox."
     Assert-True ($lock.Contains('(always() && needs.agent.result != ''skipped'') && (needs.agent.result == ''success'')')) "Threat detection must require successful trusted validation."
     Assert-True ($lock.Contains('(needs.agent.result == ''success'')')) "Safe-output publication must require successful trusted validation."
-    Assert-True ($lock.Contains('daily_ai_credits_exceeded == ''true'')) && (false)')) "The conclusion job must be unreachable so detector/failure tracking cannot mutate GitHub."
+    $conclusionJob = [regex]::Match($lock, "(?ms)^  conclusion:\r?\n.*?(?=^  [A-Za-z_][A-Za-z0-9_-]*:\r?$|\z)").Value
+    Assert-True ($conclusionJob.Contains("&& (false)")) "The conclusion job must be unreachable so detector/failure tracking cannot mutate GitHub."
     Assert-True ($lock.Contains("GH_AW_VALIDATION_JSON")) "The generated lock must expose the exact collector validation contract."
     Assert-True ($lock -match '"body":\s*\{\s*"type": "string",\s*"sanitize": true,\s*"maxLength": 65000') "The generated collector must sanitize and bound the issue body."
     Assert-True ($lock -match '"operation":\s*\{\s*"type": "string",\s*"enum":\s*\[\s*"replace"') "The generated collector must preserve the replacement operation contract."

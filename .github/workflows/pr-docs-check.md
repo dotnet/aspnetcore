@@ -137,6 +137,7 @@ safe-outputs:
     allowed-branches:
       - "docs/aspnetcore-pr-*"
     preserve-branch-name: true
+    recreate-ref: true
     protected-files: blocked
   push-to-pull-request-branch:
     target: "*"
