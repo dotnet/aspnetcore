@@ -52,8 +52,24 @@ state, and withholds ambiguous items in **Verify discussion before review**.
 This is deliberately not an LLM judgment. It only reports transparent evidence:
 
 - author wording that explicitly raises close/continue disposition;
-- actionable or unknown non-author top-level discussion, including feedback after the latest author
-  response, categorized by a narrow documented text heuristic;
+- actionable or unknown non-author top-level discussion that still owns the next response,
+  categorized by a narrow documented text heuristic. For ordinary review dispatch, only a later
+  whole-response author completion or handoff form returns earlier top-level feedback to reviewer
+  follow-up. The recognized forms are a standalone `fixed`, `addressed`, `updated`, `resolved`,
+  `done`, `completed`, or `implemented`; exact `These should be all addressed`; and exact
+  `Pushed the requested changes`, with optional terminal periods or exclamation marks. Any additional
+  prose, mixed completion and outstanding-work text, quotes, refusals, future work, coordination,
+  acknowledgements, mentions, or branch-maintenance notices remain verification-needed.
+  The completion or handoff must be the chronologically latest top-level author response. A newer
+  nonqualifying author response invalidates an older qualifying handoff, so even `Thanks!` or
+  `/azp run` after `Fixed.` conservatively returns the earlier feedback to verification. When author
+  responses share the latest timestamp, all of them must qualify because their semantic order is
+  unknown. A newer qualifying response restores the handoff. Feedback posted after the latest
+  qualifying completion claim still requires verification;
+- explicit informational non-author comments and coordination-only top-level comments. The initial
+  conservative coordination allowlist contains only case-insensitive exact `/review` and `/azp run`
+  commands whose entire trimmed body is one non-empty line. Multiline comments, trailing prose,
+  other slash commands, source paths, and slash-prefixed source text remain conservative;
 - counts of resolved, unresolved, and outdated review threads. A current unresolved inline thread is
   surfaced for verification because this bounded pass does not read its comment text; and
 - whether the bounded comments or thread queries were truncated.
@@ -63,6 +79,8 @@ collected inline-comment evidence cannot be called clear. An author response alo
 later non-author feedback. A bounded query that is incomplete is surfaced for verification rather
 than being treated as clear. Candidates outside the configured assessment limit cannot enter the
 unattended digest and are reported through the queue warning and `discussion-not-assessed`.
+The recognized author response is routing evidence that asks a reviewer to verify the claimed work;
+it is not proof that the feedback was actually fixed. Unsupported wording intentionally fails closed.
 
 Apply the same discussion pass to prospective `ReadyToMerge` candidates, with an **independent**
 `discussionCandidateLimit` budget (default 20) in the existing merge-candidate order. Preserve the
@@ -79,6 +97,8 @@ The bounded pass does not identify inline-thread authors or read their text, so 
 requires verification when current and unresolved. For merge candidates only, a reviewer's later
 approval of the current head supersedes that same reviewer's earlier top-level concern. It does not
 clear another participant's concern or any current unresolved thread.
+Unlike ordinary review dispatch, an author response does not clear earlier top-level feedback for
+merge assessment; the stricter approval and discussion evidence remains required.
 An empty review body is not itself clearance: assess the complete bounded discussion context.
 Resolved or outdated-only threads can be clear; current unresolved threads or missing/incomplete
 evidence require verification. Do not invent an author blocker from empty text.
@@ -102,6 +122,10 @@ A recorded response does not mean the discussion is resolved. `no-response` is o
 bounded evidence is complete and there were zero top-level human responses. If the evidence is
 incomplete, truncated, or requires human interpretation because of unresolved inline discussion, the
 result remains `unknown` rather than `no-response`.
+A non-author human coordination command is recorded response evidence because it demonstrates
+engagement, but it does not prove resolution and does not create a discussion-verification signal by
+itself. Coordination classification applies only to top-level discussion comments, never submitted
+review bodies; a `COMMENTED` review remains formal review evidence even when its body is `/azp run`.
 
 The JSON output also includes an optional repository-wide **personal inbox** when an authenticated
 identity is available. The personal view is additive and does not replace the resolved general
