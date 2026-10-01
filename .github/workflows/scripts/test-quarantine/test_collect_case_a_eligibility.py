@@ -18,6 +18,10 @@ MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 
 TEST_NAME = "Microsoft.AspNetCore.Tests.SampleTests.ReturnsExpectedResponse"
+THEORY_TEST_NAME = (
+    "Microsoft.AspNetCore.Tests.SampleTests."
+    "ReturnsExpectedResponse(protocol: Http3)"
+)
 TEST_PATH = "src/Sample.Tests/SampleTests.cs"
 DERIVED_TEST_NAME = (
     "Microsoft.AspNetCore.Server.Tests."
@@ -61,6 +65,30 @@ public class SampleTests
 {{
     {quarantine}
     public void ReturnsExpectedResponse()
+    {{
+    }}
+}}
+"""
+
+
+def theory_source(*data_attributes, method_quarantine=""):
+    attributes = "\n".join(
+        f"    {attribute}"
+        for attribute in data_attributes
+    )
+    if method_quarantine:
+        attributes = (
+            f"    {method_quarantine}\n{attributes}"
+            if attributes
+            else f"    {method_quarantine}"
+        )
+    return f"""namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{{
+    [ConditionalTheory]
+{attributes}
+    public void ReturnsExpectedResponse(HttpProtocols protocol)
     {{
     }}
 }}
@@ -227,6 +255,202 @@ def assert_already_quarantined(result):
     assert result["status"] == "ineligible", result
     assert result["originating_case"] == "already-quarantined", result
     assert result["current_quarantine_state"] == "quarantined", result
+
+
+def test_theory_data_quarantine_support():
+    assert MODULE.split_test_name(THEORY_TEST_NAME) == (
+        TEST_NAME,
+        ("Http3",),
+    )
+    assert MODULE.data_values(
+        'HttpProtocols.Http3, 42, "value,with,commas"'
+    ) == (
+        "Http3",
+        "42",
+        '"value,with,commas"',
+    )
+    multiline_attributes = MODULE.quarantine_attributes(
+        """[QuarantinedTest(
+    "https://github.com/dotnet/aspnetcore/issues/1",
+    OperatingSystems.Linux)]
+[QuarantinedTestData(
+    "https://github.com/dotnet/aspnetcore/issues/1",
+    OperatingSystems.Linux,
+    HttpProtocols.Http3)]
+[InlineData(
+    HttpProtocols.Http2)]"""
+    )
+    assert len(multiline_attributes["method"]) == 1, multiline_attributes
+    assert multiline_attributes["data"][0]["values"] == (
+        "Http3",
+    ), multiline_attributes
+    assert multiline_attributes["inline"][0]["values"] == (
+        "Http2",
+    ), multiline_attributes
+    combined_attributes = MODULE.quarantine_attributes(
+        """[Fact, QuarantinedTest(
+    "https://github.com/dotnet/aspnetcore/issues/1",
+    OperatingSystems.Linux)]
+[ConditionalTheory, QuarantinedTestData(
+    "https://github.com/dotnet/aspnetcore/issues/1",
+    OperatingSystems.Linux,
+    HttpProtocols.Http3)]
+[Theory, InlineData(HttpProtocols.Http2)]"""
+    )
+    assert len(combined_attributes["method"]) == 1, combined_attributes
+    assert combined_attributes["data"][0]["values"] == (
+        "Http3",
+    ), combined_attributes
+    assert combined_attributes["inline"][0]["values"] == (
+        "Http2",
+    ), combined_attributes
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        file_path.write_text(
+            theory_source(
+                "[InlineData(HttpProtocols.Http2)]",
+                "[InlineData(HttpProtocols.Http3)]",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Add theory rows", "2026-08-01T00:00:00Z")
+
+        resolved = MODULE.resolve_source(root, THEORY_TEST_NAME)
+        assert resolved["status"] == "exact", resolved
+        assert resolved["matching_inline_data"]["data"] == (
+            "HttpProtocols.Http3"
+        ), resolved
+        assert resolved["data_quarantine"] is None, resolved
+
+        eligible = collect_result(
+            root,
+            evidence(test_name=THEORY_TEST_NAME),
+            test_name=THEORY_TEST_NAME,
+        )
+        assert eligible["status"] == "eligible", eligible
+        assert eligible["originating_case"] == "case-a", eligible
+        assert eligible["source_resolution"]["matching_inline_data"][
+            "data"
+        ] == "HttpProtocols.Http3", eligible
+
+        file_path.write_text(
+            theory_source(
+                "[InlineData(HttpProtocols.Http2)]",
+                '[QuarantinedTestData('
+                '"https://github.com/dotnet/aspnetcore/issues/1", '
+                'OperatingSystems.Linux, HttpProtocols.Http3)]',
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine one theory row", "2026-08-02T00:00:00Z")
+        row_quarantined = collect_result(
+            root,
+            evidence(test_name=THEORY_TEST_NAME),
+            test_name=THEORY_TEST_NAME,
+        )
+        assert_already_quarantined(row_quarantined)
+        assert row_quarantined["source_resolution"]["data_quarantine"][
+            "data"
+        ] == "HttpProtocols.Http3", row_quarantined
+
+        file_path.write_text(
+            theory_source(
+                "[InlineData(HttpProtocols.Http2)]",
+                "[InlineData(HttpProtocols.Http3)]",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Unquarantine one theory row", "2026-08-05T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+        row_case_b = collect_result(
+            root,
+            evidence(test_name=THEORY_TEST_NAME),
+            test_name=THEORY_TEST_NAME,
+        )
+        assert_case_b(row_case_b, removal_commit)
+
+        file_path.write_text(
+            theory_source(
+                "[InlineData(HttpProtocols.Http2)]",
+                "[InlineData(HttpProtocols.Http3)]",
+                method_quarantine=(
+                    '[QuarantinedTest('
+                    '"https://github.com/dotnet/aspnetcore/issues/1", '
+                    "OperatingSystems.Linux)]"
+                ),
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine theory method on Linux", "2026-08-06T00:00:00Z")
+        method_quarantined = collect_result(
+            root,
+            evidence(test_name=THEORY_TEST_NAME),
+            test_name=THEORY_TEST_NAME,
+        )
+        assert_already_quarantined(method_quarantined)
+        assert method_quarantined["source_resolution"][
+            "method_quarantined"
+        ], method_quarantined
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(
+            theory_source(
+                "[InlineData(HttpProtocols.Http3)]",
+                "[InlineData(HttpProtocols.Http3)]",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Add ambiguous theory rows", "2026-08-01T00:00:00Z")
+        ambiguous = MODULE.resolve_source(root, THEORY_TEST_NAME)
+        assert ambiguous["status"] == "ambiguous", ambiguous
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(
+            theory_source("[InlineData(HttpProtocols.Http3)]"),
+            encoding="utf-8",
+        )
+        commit(root, "Add theory row", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            theory_source(
+                '[QuarantinedTestData(\n'
+                '        "https://github.com/dotnet/aspnetcore/issues/1",\n'
+                "        OperatingSystems.Linux,\n"
+                "        Microsoft.AspNetCore.Server.Kestrel.Core."
+                "HttpProtocols.Http3)]"
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine theory row", "2026-08-02T00:00:00Z")
+        file_path.write_text(
+            theory_source("[InlineData(HttpProtocols.Http3)]"),
+            encoding="utf-8",
+        )
+        commit(root, "Unquarantine theory row", "2026-08-03T00:00:00Z")
+        file_path.write_text(
+            theory_source(
+                '[QuarantinedTestData('
+                '"https://github.com/dotnet/aspnetcore/issues/1", '
+                'OperatingSystems.Linux, HttpProtocols.Http3)]'
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Re-quarantine theory row", "2026-08-04T00:00:00Z")
+        history = MODULE.collect_requarantine_history(root, "HEAD")
+        assert history["targets"] == [{
+            "scope": "data",
+            "path": TEST_PATH,
+            "type": "Microsoft.AspNetCore.Tests.SampleTests",
+            "method": "ReturnsExpectedResponse",
+            "data": "HttpProtocols.Http3",
+            "issue": 1,
+            "status": "re-quarantined",
+        }], history
 
 
 def test_build_source_ancestry():
@@ -2957,6 +3181,7 @@ def run_output(root, *args):
 
 
 def main():
+    test_theory_data_quarantine_support()
     test_build_source_ancestry()
     test_history_cutoff_uses_first_parent_order()
     test_requarantine_history()
@@ -2994,10 +3219,18 @@ def main():
         assert eligible["status"] == "eligible", eligible
         assert eligible["originating_case"] == "case-a"
         assert eligible["eligible_failure_builds"] == [101, 102]
+        assert eligible["quarantine_operating_systems"] == [
+            "OperatingSystems.Linux",
+            "OperatingSystems.MacOSX",
+            "OperatingSystems.Windows",
+        ], eligible
 
         one_failure = record(collect(root, evidence(builds=(101,))))
         assert one_failure["status"] == "ineligible"
         assert "fewer-than-two-post-cutoff-failures" in one_failure["reasons"]
+        assert one_failure["quarantine_operating_systems"] == [
+            "OperatingSystems.Linux",
+        ], one_failure
 
         regression = record(collect(root, evidence(regression=True)))
         assert regression["status"] == "ineligible"

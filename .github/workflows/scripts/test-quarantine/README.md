@@ -18,7 +18,7 @@ issue. These correspond to Case A and Case B in
 2. A full-history trusted checkout and
    `collect_case_a_eligibility.py` produce
    `test-quarantine-case-a-eligibility.json`. Each test receipt records exact
-   source resolution, method/class/assembly quarantine state, quarantine
+   source resolution, data-row/method/class/assembly quarantine state, quarantine
    history category, regression status, raw/excluded/post-cutoff build sets,
    the conservative freshness cutoff, build-source ancestry against the
    history cutoff commit, exact evidence identity, and the `origin/main`
@@ -41,10 +41,11 @@ issue. These correspond to Case A and Case B in
    method freshness cutoff and Source B pull-request file checks, which still
    key off the resolved declaring method and inherited runner files rather than
    every partial sibling declaration.
-3. `collect_requarantine_history.py` enumerates every current method-, type-,
-   and assembly-level quarantine target from trusted source. It classifies the
-   exact first-parent history from project-wide commit/parent source snapshots
-   as `first-quarantine`, `re-quarantined`, or `ambiguous`; method and partial
+3. `collect_requarantine_history.py` enumerates every current data-row-,
+   method-, type-, and assembly-level quarantine target from trusted source. It
+   classifies the exact first-parent history from project-wide commit/parent
+   source snapshots as `first-quarantine`, `re-quarantined`, or `ambiguous`;
+   method and partial
    type moves between files preserve their logical history, and issue-URL-only
    replacements are not remove/add transitions. Automated unquarantine requires an exact
    `first-quarantine` match and fails closed otherwise.
@@ -76,11 +77,13 @@ issue. These correspond to Case A and Case B in
 Agent-provided log excerpts and URLs are for human display only. They are not
 accepted as validation evidence.
 
-Part 1 still aggregates by normalized test name, not by assembly-qualified
-identity. The collector therefore fails closed on ambiguous runner names rather
-than using the representative assembly field to choose a project. This does not
-redesign aggregation or method-level, file-based quarantine history. Unresolved
-historical inheritance is unproven, not evidence that a test was never inherited.
+Part 1 aggregates by exact test-case name, preserving theory argument lists,
+but not by assembly-qualified identity. The collector correlates those arguments
+to an unambiguous `InlineData` or `QuarantinedTestData` row when possible and
+otherwise retains method-level behavior. It fails closed on ambiguous runner or
+data-row identities rather than using representative metadata to guess.
+Unresolved historical inheritance is unproven, not evidence that a test was
+never inherited.
 
 ## Build Insights behavior
 
@@ -113,6 +116,13 @@ into a KBE.
 ## Safety properties
 
 - One exact fully qualified test per new-quarantine issue and PR.
+- Row-level quarantine changes preserve the original inline data arguments and
+  are accepted only when the deterministic receipt resolves that exact row.
+- An exact `InlineData` candidate is always row-scoped; the validator never
+  permits broadening it to a method quarantine.
+- The collector recognizes multiline quarantine/data attributes, but automated
+  row rewrites are deliberately limited to one-line attributes so patch
+  validation never has to infer unchanged argument lines from diff context.
 - The agent cannot author or override new-quarantine eligibility facts.
 - Every quarantine or unquarantine PR is mechanically bound to deterministic
   receipts before the privileged PR handler runs. An unquarantine PR may
@@ -124,6 +134,10 @@ into a KBE.
 - At least two distinct post-cutoff failures, exact current quarantine state,
   regression exclusion, and the new-quarantine category are enforced before
   KBE rendering.
+- Quarantine additions are bound to a deterministic operating-system set.
+  A subset is emitted only when every retained incident has an unambiguous
+  platform identity; otherwise the receipt requires all supported platforms.
+  Existing partially scoped targets are not automatically widened or narrowed.
 - An assembly quarantine removal is treated as a prior unquarantine only if the
   runner actually inherited or declared the test at that transition. Ambiguous
   project or historical source association fails closed as unproven.

@@ -57,6 +57,19 @@ public class SampleTests
 """
 
 
+def theory_source(data_attribute="[InlineData(HttpProtocols.Http3)]"):
+    return f"""namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{{
+    {data_attribute}
+    public void ReturnsExpectedResponse(HttpProtocols protocol)
+    {{
+    }}
+}}
+"""
+
+
 def source_two_quarantined_methods():
     return """namespace Microsoft.AspNetCore.Tests;
 
@@ -131,7 +144,7 @@ def receipts(commit, record, history_targets=None):
     return eligibility, history
 
 
-def case_a_record():
+def case_a_record(operating_systems=None):
     return {
         "status": "eligible",
         "originating_case": "case-a",
@@ -143,10 +156,15 @@ def case_a_record():
         },
         "current_quarantine_state": "not-quarantined",
         "latest_quarantine_transition": "none",
+        "quarantine_operating_systems": operating_systems or [
+            "OperatingSystems.Linux",
+            "OperatingSystems.MacOSX",
+            "OperatingSystems.Windows",
+        ],
     }
 
 
-def case_b_record(issue=1):
+def case_b_record(issue=1, operating_systems=None):
     return {
         "status": "ineligible",
         "originating_case": "case-b",
@@ -160,7 +178,25 @@ def case_b_record(issue=1):
         },
         "current_quarantine_state": "not-quarantined",
         "latest_quarantine_transition": "removed",
+        "quarantine_operating_systems": operating_systems or [
+            "OperatingSystems.Linux",
+            "OperatingSystems.MacOSX",
+            "OperatingSystems.Windows",
+        ],
     }
+
+
+def data_record(case, issue=1, operating_systems=None):
+    record = (
+        case_a_record(operating_systems)
+        if case == "case-a"
+        else case_b_record(issue, operating_systems)
+    )
+    record["source_resolution"]["matching_inline_data"] = {
+        "data": "HttpProtocols.Http3",
+        "values": ["Http3"],
+    }
+    return record
 
 
 def write_json(path, value):
@@ -296,6 +332,34 @@ def main():
         ),
         "non-quarantine change",
     )
+    for reference in ("1", "#aw_sample"):
+        assert_rejected(
+            lambda reference=reference: MODULE.changed_patch_lines(
+                "diff --git a/src/A.cs b/src/A.cs\n"
+                "--- a/src/A.cs\n"
+                "+++ b/src/A.cs\n"
+                "@@ -1 +1,4 @@\n"
+                "-[InlineData(HttpProtocols.Http3)]\n"
+                "+[QuarantinedTestData(\n"
+                f'+    "https://github.com/dotnet/aspnetcore/issues/{reference}",\n'
+                "+    OperatingSystems.Linux,\n"
+                "+    HttpProtocols.Http3)]\n"
+            ),
+            "require one-line attributes",
+        )
+    assert_rejected(
+        lambda: MODULE.changed_patch_lines(
+            "diff --git a/src/A.cs b/src/A.cs\n"
+            "--- a/src/A.cs\n"
+            "+++ b/src/A.cs\n"
+            "@@ -1 +1 @@\n"
+            "-[MemberData(nameof(Data))]\n"
+            "+[QuarantinedTestData("
+            '"https://github.com/dotnet/aspnetcore/issues/1", '
+            "OperatingSystems.Linux, 1)]\n"
+        ),
+        "non-quarantine change",
+    )
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -341,6 +405,7 @@ def main():
             TEST_PATH,
             TYPE_NAME,
             "ReturnsExpectedResponse",
+            None,
         )
         assert_rejected(
             lambda: validate(
@@ -352,6 +417,267 @@ def main():
                 transport,
             ),
             "cannot run without a validated Case A pull request",
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, commit = initialize_repository(root, theory_source())
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/data-case-a"
+        create_patch(
+            root,
+            transport,
+            branch,
+            theory_source(
+                '[QuarantinedTestData('
+                '"https://github.com/dotnet/aspnetcore/issues/#aw_sample", '
+                'OperatingSystems.Linux, HttpProtocols.Http3)]'
+            ),
+        )
+        eligibility, history = receipts(
+            commit,
+            data_record(
+                "case-a",
+                operating_systems=["OperatingSystems.Linux"],
+            ),
+        )
+        result = validate(
+            root,
+            commit,
+            eligibility,
+            history,
+            {
+                "items": [
+                    case_a_issue(),
+                    pull_request(branch),
+                ],
+            },
+            transport,
+        )
+        assert result[0]["operation"] == "case-a", result
+        wrong_operating_systems, _ = receipts(
+            commit,
+            data_record("case-a"),
+        )
+        assert_rejected(
+            lambda: validate(
+                root,
+                commit,
+                wrong_operating_systems,
+                history,
+                {
+                    "items": [
+                        case_a_issue(),
+                        pull_request(branch),
+                    ],
+                },
+                transport,
+            ),
+            "do not match deterministic failure evidence",
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, commit = initialize_repository(root, theory_source())
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/data-case-b"
+        create_patch(
+            root,
+            transport,
+            branch,
+            theory_source(
+                '[QuarantinedTestData('
+                '"https://github.com/dotnet/aspnetcore/issues/1", '
+                'OperatingSystems.Windows | OperatingSystems.Linux, '
+                'HttpProtocols.Http3)]'
+            ),
+        )
+        eligibility, history = receipts(
+            commit,
+            data_record(
+                "case-b",
+                operating_systems=[
+                    "OperatingSystems.Linux",
+                    "OperatingSystems.Windows",
+                ],
+            ),
+        )
+        result = validate(
+            root,
+            commit,
+            eligibility,
+            history,
+            {"items": [pull_request(branch)]},
+            transport,
+        )
+        assert result[0]["operation"] == "case-b", result
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        quarantined_row = (
+            '[QuarantinedTestData('
+            '"https://github.com/dotnet/aspnetcore/issues/1", '
+            'OperatingSystems.Linux, HttpProtocols.Http3)]'
+        )
+        _, commit = initialize_repository(
+            root,
+            theory_source(quarantined_row),
+        )
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/data-unquarantine"
+        create_patch(root, transport, branch, theory_source())
+        history_target = {
+            "scope": "data",
+            "path": TEST_PATH,
+            "type": TYPE_NAME,
+            "method": "ReturnsExpectedResponse",
+            "data": "HttpProtocols.Http3",
+            "issue": 1,
+            "status": "first-quarantine",
+        }
+        eligibility, history = receipts(
+            commit,
+            data_record("case-a"),
+            [history_target],
+        )
+        result = validate(
+            root,
+            commit,
+            eligibility,
+            history,
+            {"items": [pull_request(branch)]},
+            transport,
+        )
+        assert result[0]["operation"] == "unquarantine", result
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, commit = initialize_repository(root, theory_source())
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/data-mismatch"
+        create_patch(
+            root,
+            transport,
+            branch,
+            theory_source(
+                '[QuarantinedTestData('
+                '"https://github.com/dotnet/aspnetcore/issues/#aw_sample", '
+                'OperatingSystems.Linux, HttpProtocols.Http2)]'
+            ),
+        )
+        eligibility, history = receipts(
+            commit,
+            data_record(
+                "case-a",
+                operating_systems=["OperatingSystems.Linux"],
+            ),
+        )
+        assert_rejected(
+            lambda: validate(
+                root,
+                commit,
+                eligibility,
+                history,
+                {
+                    "items": [
+                        case_a_issue(),
+                        pull_request(branch),
+                    ],
+                },
+                transport,
+            ),
+            "not bound to an exact eligible test",
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        two_rows = theory_source(
+            "[InlineData(HttpProtocols.Http3)]\n"
+            "    [InlineData(HttpProtocols.Http2)]"
+        )
+        _, commit = initialize_repository(root, two_rows)
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/extra-data-row"
+        create_patch(
+            root,
+            transport,
+            branch,
+            theory_source(
+                '[QuarantinedTestData('
+                '"https://github.com/dotnet/aspnetcore/issues/#aw_sample", '
+                'OperatingSystems.Linux, HttpProtocols.Http3)]\n'
+                '    [QuarantinedTestData('
+                '"https://github.com/dotnet/aspnetcore/issues/#aw_sample", '
+                'OperatingSystems.Linux, HttpProtocols.Http2)]'
+            ),
+        )
+        eligibility, history = receipts(
+            commit,
+            data_record(
+                "case-a",
+                operating_systems=["OperatingSystems.Linux"],
+            ),
+        )
+        assert_rejected(
+            lambda: validate(
+                root,
+                commit,
+                eligibility,
+                history,
+                {
+                    "items": [
+                        case_a_issue(),
+                        pull_request(branch),
+                    ],
+                },
+                transport,
+            ),
+            "must add exactly one target",
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, commit = initialize_repository(root, theory_source())
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/invalid-operating-system"
+        create_patch(
+            root,
+            transport,
+            branch,
+            theory_source(
+                '[QuarantinedTestData('
+                '"https://github.com/dotnet/aspnetcore/issues/#aw_sample", '
+                'OperatingSystems.FreeBSD, HttpProtocols.Http3)]'
+            ),
+        )
+        eligibility, history = receipts(
+            commit,
+            data_record(
+                "case-a",
+                operating_systems=["OperatingSystems.Linux"],
+            ),
+        )
+        assert_rejected(
+            lambda: validate(
+                root,
+                commit,
+                eligibility,
+                history,
+                {
+                    "items": [
+                        case_a_issue(),
+                        pull_request(branch),
+                    ],
+                },
+                transport,
+            ),
+            "unique supported OperatingSystems flags",
         )
 
     with tempfile.TemporaryDirectory() as directory:
@@ -433,10 +759,16 @@ def main():
             branch,
             source(
                 '[QuarantinedTest('
-                '"https://github.com/dotnet/aspnetcore/issues/1")]'
+                '"https://github.com/dotnet/aspnetcore/issues/1", '
+                "OperatingSystems.Linux)]"
             ),
         )
-        eligibility, history = receipts(commit, case_b_record())
+        eligibility, history = receipts(
+            commit,
+            case_b_record(
+                operating_systems=["OperatingSystems.Linux"],
+            ),
+        )
         result = validate(
             root,
             commit,
@@ -447,7 +779,13 @@ def main():
         )
         assert result[0]["operation"] == "case-b", result
 
-        wrong_eligibility, _ = receipts(commit, case_b_record(issue=2))
+        wrong_eligibility, _ = receipts(
+            commit,
+            case_b_record(
+                issue=2,
+                operating_systems=["OperatingSystems.Linux"],
+            ),
+        )
         assert_rejected(
             lambda: validate(
                 root,
@@ -464,7 +802,8 @@ def main():
         root = pathlib.Path(directory)
         quarantined = source(
             '[QuarantinedTest('
-            '"https://github.com/dotnet/aspnetcore/issues/1")]'
+            '"https://github.com/dotnet/aspnetcore/issues/1", '
+            "OperatingSystems.Windows | OperatingSystems.MacOSX)]"
         )
         _, commit = initialize_repository(root, quarantined)
         transport = root / "transport"
@@ -505,6 +844,40 @@ def main():
                 transport,
             ),
             "not an exact first quarantine",
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        quarantined = source(
+            '[QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/1", '
+            "OperatingSystems.Linux)]"
+        )
+        _, commit = initialize_repository(root, quarantined)
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/change-operating-system"
+        create_patch(
+            root,
+            transport,
+            branch,
+            source(
+                '[QuarantinedTest('
+                '"https://github.com/dotnet/aspnetcore/issues/1", '
+                "OperatingSystems.Windows)]"
+            ),
+        )
+        eligibility, history = receipts(commit, case_a_record())
+        assert_rejected(
+            lambda: validate(
+                root,
+                commit,
+                eligibility,
+                history,
+                {"items": [pull_request(branch)]},
+                transport,
+            ),
+            "mixes quarantine additions and removals",
         )
 
     with tempfile.TemporaryDirectory() as directory:
