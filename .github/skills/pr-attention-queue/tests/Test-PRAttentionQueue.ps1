@@ -193,7 +193,7 @@ $discussionJson = & $scriptPath `
     -OutputFormat Json
 $discussionResult = $discussionJson | ConvertFrom-Json -Depth 100
 
-Assert-True ($discussionResult.census.byBucket.ReviewNow -eq 7) "Discussion assessment must not rewrite deterministic classification."
+Assert-True ($discussionResult.census.byBucket.ReviewNow -eq 10) "Discussion assessment must not rewrite deterministic classification."
 Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.state -eq "verification-needed") "An author close-or-continue response must require discussion verification."
 Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.signals -contains "author-disposition-mentioned") "Author disposition evidence must be explicit."
 Assert-True (($discussionResult.items | Where-Object number -eq 117).reasonCodes -contains "needs-first-review") "An author disposition test must not require a formal review."
@@ -215,8 +215,440 @@ Assert-True (($discussionResult.items | Where-Object number -eq 122).shownInDige
 Assert-True (($discussionResult.items | Where-Object number -eq 123).discussionAssessment.signals -contains "non-author-discussion-requires-verification") "An initial owner concern without a formal review or author response must require verification."
 Assert-True (-not (($discussionResult.items | Where-Object number -eq 123).shownInDigest)) "An initial owner concern must not enter the unattended digest."
 Assert-True (($discussionResult.items | Where-Object number -eq 123).shownInDiscussionVerification) "All five fixture verification cases must remain visible in the capped verification lane."
-Assert-True ($discussionResult.discussion.assessedCandidateCount -eq 7) "The bounded assessment count must be emitted."
+Assert-True (($discussionResult.items | Where-Object number -eq 124).discussionAssessment.state -eq "clear") "A normalized bare /review command must be coordination-only."
+Assert-True (($discussionResult.items | Where-Object number -eq 124).discussionAssessment.comments[0].kind -eq "coordination") "A normalized bare /review command must expose coordination evidence."
+Assert-True (($discussionResult.items | Where-Object number -eq 124).shownInDigest) "A bare /review command must not remove the candidate from ordinary review."
+Assert-True (($discussionResult.items | Where-Object number -eq 125).discussionAssessment.state -eq "clear") "An author response must return earlier top-level feedback to ordinary review."
+Assert-True (($discussionResult.items | Where-Object number -eq 125).shownInDigest) "Earlier owner feedback followed by an author response must remain reviewable."
+Assert-True (($discussionResult.items | Where-Object number -eq 126).discussionAssessment.state -eq "clear") "An exact /azp run command must be coordination-only."
+Assert-True (($discussionResult.items | Where-Object number -eq 126).discussionAssessment.comments[0].kind -eq "coordination") "An exact /azp run command must expose coordination evidence."
+Assert-True (($discussionResult.items | Where-Object number -eq 126).shownInDigest) "An exact /azp run command must not remove the candidate from ordinary review."
+Assert-True ($discussionResult.discussion.assessedCandidateCount -eq 10) "The bounded assessment count must be emitted."
 Assert-True ($discussionResult.discussion.verificationNeededCount -eq 5) "The assessment summary must count verification-needed candidates."
+Assert-True ($discussionResult.display.discussion.commentKinds.coordination.label -eq "Coordination") "Coordination comments must have display metadata."
+
+$coordinationCases = & (Get-Module PRAttentionQueue) {
+    function Get-TestDiscussionAssessment {
+        param([string]$Body)
+
+        $pullRequest = [pscustomobject]@{
+            author = [pscustomobject]@{ login = "author" }
+            latestReviews = @()
+            discussionComments = @([pscustomobject]@{
+                author = [pscustomobject]@{ login = "owner" }
+                authorAssociation = "MEMBER"
+                createdAt = "2026-09-02T18:00:00Z"
+                bodyText = $Body
+            })
+            discussionCommentsComplete = $true
+            discussionThreads = @()
+            discussionThreadsComplete = $true
+        }
+
+        Get-DiscussionAssessment `
+            -PullRequest $pullRequest `
+            -AuthorInfo ([pscustomobject]@{ Login = "author" }) `
+            -KnownBotPatterns @()
+    }
+
+    $newlineFeedback = Get-TestDiscussionAssessment -Body "/azp run`nPlease verify the fallback path."
+    $unknownCommand = Get-TestDiscussionAssessment -Body "/hold"
+    [pscustomobject]@{
+        BareReview = Get-DiscussionCommentKind -Body "/review" -IsAuthor $false -AllowCoordination
+        NormalizedReview = Get-DiscussionCommentKind -Body "`t/REVIEW  " -IsAuthor $false -AllowCoordination
+        AzpRun = Get-DiscussionCommentKind -Body "/azp run" -IsAuthor $false -AllowCoordination
+        NewlineFeedback = $newlineFeedback
+        ReviewWithText = Get-DiscussionCommentKind -Body "/review focus on the JS interop lifetime" -IsAuthor $false -AllowCoordination
+        CcWithText = Get-DiscussionCommentKind -Body "/cc @javiercn thoughts on the lifetime here" -IsAuthor $false -AllowCoordination
+        UnknownCommand = $unknownCommand
+        XmlDoc = Get-DiscussionCommentKind -Body "/// <summary>" -IsAuthor $false -AllowCoordination
+        SourcePath = Get-DiscussionCommentKind -Body "/src/Components/Web.JS/src/Rendering/BrowserRenderer.ts" -IsAuthor $false -AllowCoordination
+    }
+}
+Assert-True ($coordinationCases.BareReview -eq "coordination") "Exact /review must be recognized as coordination-only."
+Assert-True ($coordinationCases.NormalizedReview -eq "coordination") "Case and outer whitespace must normalize for an exact /review command."
+Assert-True ($coordinationCases.AzpRun -eq "coordination") "Exact /azp run must be recognized as coordination-only."
+Assert-True ($coordinationCases.NewlineFeedback.State -eq "verification-needed") "A coordination prefix followed by a newline and human feedback must require verification."
+Assert-True ($coordinationCases.NewlineFeedback.Comments[0].Kind -ne "coordination") "A multiline comment must not be classified as coordination."
+Assert-True ($coordinationCases.ReviewWithText -ne "coordination") "A /review command with trailing prose must remain conservative."
+Assert-True ($coordinationCases.CcWithText -ne "coordination") "A /cc comment with human feedback must remain conservative."
+Assert-True ($coordinationCases.UnknownCommand.State -eq "verification-needed") "An unknown /hold command must require verification."
+Assert-True ($coordinationCases.UnknownCommand.Comments[0].Kind -eq "unknown") "An unknown /hold command must remain unknown."
+Assert-True ($coordinationCases.XmlDoc -ne "coordination") "Slash-prefixed XML documentation must not be coordination."
+Assert-True ($coordinationCases.SourcePath -ne "coordination") "A slash-prefixed source path must not be coordination."
+
+$authorResponseCaseDefinitions = @(
+    [pscustomobject]@{ Name = "completion"; Body = "These should be all addressed."; Clears = $true },
+    [pscustomobject]@{ Name = "fixed"; Body = "Fixed."; Clears = $true },
+    [pscustomobject]@{ Name = "done"; Body = "Done."; Clears = $true },
+    [pscustomobject]@{ Name = "addressed"; Body = "Addressed."; Clears = $true },
+    [pscustomobject]@{ Name = "updated"; Body = "Updated."; Clears = $true },
+    [pscustomobject]@{ Name = "resolved"; Body = "Resolved."; Clears = $true },
+    [pscustomobject]@{ Name = "completed"; Body = "Completed."; Clears = $true },
+    [pscustomobject]@{ Name = "implemented"; Body = "Implemented."; Clears = $true },
+    [pscustomobject]@{ Name = "pushed"; Body = "Pushed the requested changes."; Clears = $true },
+    [pscustomobject]@{ Name = "automation-acknowledgement"; Body = "@dotnet-policy-service agree"; Clears = $false },
+    [pscustomobject]@{ Name = "coordination-command"; Body = "/azp run"; Clears = $false },
+    [pscustomobject]@{ Name = "review-command"; Body = "/review"; Clears = $false },
+    [pscustomobject]@{ Name = "mention-only"; Body = "@javiercn"; Clears = $false },
+    [pscustomobject]@{ Name = "acknowledgement-only"; Body = "Thanks!"; Clears = $false },
+    [pscustomobject]@{ Name = "rebase-only"; Body = "Rebased on main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-update-only"; Body = "Updated the branch from main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-update-pronoun"; Body = "I updated the branch from main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-update-latest"; Body = "Updated the branch with the latest main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-bare"; Body = "I updated the branch."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-contraction"; Body = "I've updated the branch from main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-to-main"; Body = "Updated the branch to main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-ci-suffix"; Body = "I updated the branch from main. CI is green."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-release"; Body = "Updated the branch from release/10.0."; Clears = $false },
+    [pscustomobject]@{ Name = "disposition"; Body = "This is no longer needed."; Clears = $false },
+    [pscustomobject]@{ Name = "hedge-believe"; Body = "I believe this is fixed."; Clears = $false },
+    [pscustomobject]@{ Name = "hedge-appears"; Body = "This appears to be fixed."; Clears = $false },
+    [pscustomobject]@{ Name = "separated-negation"; Body = "This does not need to be fixed."; Clears = $false },
+    [pscustomobject]@{ Name = "future-deferral"; Body = "I'll fix this next week."; Clears = $false },
+    [pscustomobject]@{ Name = "passive-future"; Body = "This will be fixed."; Clears = $false },
+    [pscustomobject]@{ Name = "in-progress"; Body = "Working on it."; Clears = $false },
+    [pscustomobject]@{ Name = "not-yet"; Body = "Not yet."; Clears = $false },
+    [pscustomobject]@{ Name = "future-update"; Body = "Will update."; Clears = $false },
+    [pscustomobject]@{ Name = "mixed-outstanding"; Body = "Fixed. I still need to update the tests."; Clears = $false },
+    [pscustomobject]@{ Name = "mixed-future"; Body = "Done, but I will address the tests later."; Clears = $false },
+    [pscustomobject]@{ Name = "mixed-refusal"; Body = "Fixed is not needed here."; Clears = $false },
+    [pscustomobject]@{ Name = "quoted-completion"; Body = "The reviewer said `"fixed`", but I disagree."; Clears = $false }
+)
+
+$authorResponseCases = & (Get-Module PRAttentionQueue) {
+    param($cases)
+
+    function Get-TestAuthorResponseAssessment {
+        param(
+            [AllowNull()][string]$Body,
+            [switch]$LaterFeedback,
+            [switch]$ForMerge
+        )
+
+        $comments = [System.Collections.Generic.List[object]]::new()
+        $comments.Add([pscustomobject]@{
+            author = [pscustomobject]@{ login = "owner" }
+            authorAssociation = "MEMBER"
+            createdAt = "2026-09-01T18:00:00Z"
+            bodyText = "Please update the test to cover the fallback path."
+        })
+        if ($null -ne $Body) {
+            $comments.Add([pscustomobject]@{
+                author = [pscustomobject]@{ login = "author" }
+                authorAssociation = "CONTRIBUTOR"
+                createdAt = "2026-09-02T18:00:00Z"
+                bodyText = $Body
+            })
+        }
+        if ($LaterFeedback) {
+            $comments.Add([pscustomobject]@{
+                author = [pscustomobject]@{ login = "owner" }
+                authorAssociation = "MEMBER"
+                createdAt = "2026-09-03T18:00:00Z"
+                bodyText = "Please also cover the error path."
+            })
+        }
+
+        $pullRequest = [pscustomobject]@{
+            author = [pscustomobject]@{ login = "author" }
+            headRefOid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            latestReviews = @()
+            reviewEvidenceComplete = $true
+            discussionComments = @($comments)
+            discussionCommentsComplete = $true
+            discussionThreads = @()
+            discussionThreadsComplete = $true
+        }
+
+        Get-DiscussionAssessment `
+            -PullRequest $pullRequest `
+            -AuthorInfo ([pscustomobject]@{ Login = "author" }) `
+            -KnownBotPatterns @() `
+            -ForMerge:$ForMerge
+    }
+
+    [pscustomobject]@{
+        Cases = @(
+            foreach ($case in $cases) {
+                [pscustomobject]@{
+                    Name = $case.Name
+                    Clears = $case.Clears
+                    Ordinary = Get-TestAuthorResponseAssessment -Body $case.Body
+                    Merge = Get-TestAuthorResponseAssessment -Body $case.Body -ForMerge
+                }
+            }
+        )
+        LaterFeedback = [pscustomobject]@{
+            Ordinary = Get-TestAuthorResponseAssessment -Body "Addressed." -LaterFeedback
+            Merge = Get-TestAuthorResponseAssessment -Body "Addressed." -LaterFeedback -ForMerge
+        }
+        NoResponse = [pscustomobject]@{
+            Ordinary = Get-TestAuthorResponseAssessment -Body $null
+            Merge = Get-TestAuthorResponseAssessment -Body $null -ForMerge
+        }
+    }
+} $authorResponseCaseDefinitions
+foreach ($case in $authorResponseCases.Cases) {
+    $expectedState = if ($case.Clears) { "clear" } else { "verification-needed" }
+    Assert-True ($case.Ordinary.State -eq $expectedState) "Author response case '$($case.Name)' must produce ordinary discussion state '$expectedState'."
+    Assert-True ($case.Merge.State -eq "verification-needed") "Author response case '$($case.Name)' must remain strict for merge assessment."
+    Assert-True ($case.Merge.Signals -contains "non-author-discussion-requires-verification") "Author response case '$($case.Name)' must retain earlier feedback for merge assessment."
+}
+Assert-True ($authorResponseCases.LaterFeedback.Ordinary.State -eq "verification-needed") "Later non-author feedback after a qualifying completion claim must require verification."
+Assert-True ($authorResponseCases.LaterFeedback.Ordinary.Signals -contains "non-author-discussion-after-author-response") "Later feedback must be identified relative to the qualifying completion claim."
+Assert-True ($authorResponseCases.LaterFeedback.Merge.State -eq "verification-needed") "Later feedback after a completion claim must remain strict for merge assessment."
+Assert-True ($authorResponseCases.NoResponse.Ordinary.State -eq "verification-needed") "Earlier feedback without an author response must require verification."
+Assert-True ($authorResponseCases.NoResponse.Ordinary.Signals -contains "non-author-discussion-requires-verification") "No-author-response feedback must retain the verification signal."
+Assert-True ($authorResponseCases.NoResponse.Merge.State -eq "verification-needed") "No-author-response feedback must remain strict for merge assessment."
+
+$authorResponseSequenceDefinitions = @(
+    [pscustomobject]@{
+        Name = "outstanding-after-completion"
+        Clears = $false
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "I still need to update the tests." },
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "acknowledgement-after-completion"
+        Clears = $false
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "Thanks!" },
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "coordination-after-completion"
+        Clears = $false
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "/azp run" },
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "completion-only"
+        Clears = $true
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "renewed-completion"
+        Clears = $true
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T17:00:00Z"; Body = "Fixed." },
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." },
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "I still need to update the tests." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "tied-latest-responses"
+        Clears = $false
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "Fixed." },
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "Thanks!" }
+        )
+    }
+)
+
+$authorResponseSequenceCases = & (Get-Module PRAttentionQueue) {
+    param($cases)
+
+    foreach ($case in $cases) {
+        $comments = [System.Collections.Generic.List[object]]::new()
+        $comments.Add([pscustomobject]@{
+            author = [pscustomobject]@{ login = "owner" }
+            authorAssociation = "MEMBER"
+            createdAt = "2026-09-01T18:00:00Z"
+            bodyText = "Please update the tests."
+        })
+        foreach ($response in $case.Responses) {
+            $comments.Add([pscustomobject]@{
+                author = [pscustomobject]@{ login = "author" }
+                authorAssociation = "CONTRIBUTOR"
+                createdAt = $response.CreatedAt
+                bodyText = $response.Body
+            })
+        }
+
+        $pullRequest = [pscustomobject]@{
+            author = [pscustomobject]@{ login = "author" }
+            headRefOid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            latestReviews = @()
+            reviewEvidenceComplete = $true
+            discussionComments = @($comments)
+            discussionCommentsComplete = $true
+            discussionThreads = @()
+            discussionThreadsComplete = $true
+        }
+
+        [pscustomobject]@{
+            Name = $case.Name
+            Clears = $case.Clears
+            Ordinary = Get-DiscussionAssessment `
+                -PullRequest $pullRequest `
+                -AuthorInfo ([pscustomobject]@{ Login = "author" }) `
+                -KnownBotPatterns @()
+            Merge = Get-DiscussionAssessment `
+                -PullRequest $pullRequest `
+                -AuthorInfo ([pscustomobject]@{ Login = "author" }) `
+                -KnownBotPatterns @() `
+                -ForMerge
+        }
+    }
+} $authorResponseSequenceDefinitions
+foreach ($case in $authorResponseSequenceCases) {
+    $expectedState = if ($case.Clears) { "clear" } else { "verification-needed" }
+    Assert-True ($case.Ordinary.State -eq $expectedState) "Author response sequence '$($case.Name)' must produce ordinary discussion state '$expectedState'."
+    if ($case.Clears) {
+        Assert-True (-not ($case.Ordinary.Signals -match "^non-author-discussion")) "Author response sequence '$($case.Name)' must clear earlier non-author discussion."
+    }
+    else {
+        Assert-True ($case.Ordinary.Signals -contains "non-author-discussion-requires-verification") "Author response sequence '$($case.Name)' must retain earlier non-author feedback."
+    }
+    Assert-True ($case.Merge.State -eq "verification-needed") "Author response sequence '$($case.Name)' must remain strict for merge assessment."
+    Assert-True ($case.Merge.Signals -contains "non-author-discussion-requires-verification") "Author response sequence '$($case.Name)' must retain earlier feedback for merge assessment."
+}
+
+$authorResponseQueueFixturePaths = [System.Collections.Generic.List[string]]::new()
+$authorResponseTemplate = @(
+    Get-Content -LiteralPath $discussionFixturePath -Raw |
+        ConvertFrom-Json -Depth 100 |
+        Where-Object number -eq 125
+)[0]
+for ($batchStart = 0; $batchStart -lt $authorResponseCaseDefinitions.Count; $batchStart += 5) {
+    $batch = @($authorResponseCaseDefinitions | Select-Object -Skip $batchStart -First 5)
+    $batchFixtures = @(
+        for ($batchIndex = 0; $batchIndex -lt $batch.Count; $batchIndex++) {
+            $case = $batch[$batchIndex]
+            $fixture = $authorResponseTemplate | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
+            $number = 1300 + $batchStart + $batchIndex
+            $authorLogin = "author-$number"
+            $fixture.number = $number
+            $fixture.title = "Author response case $($case.Name)"
+            $fixture.url = "https://github.com/dotnet/aspnetcore/pull/$number"
+            $fixture.author.login = $authorLogin
+            $fixture.headRefName = "author-response-$number"
+            $fixture.comments[1].author.login = $authorLogin
+            $fixture.comments[1].bodyText = $case.Body
+            $fixture.discussionComments[1].author.login = $authorLogin
+            $fixture.discussionComments[1].bodyText = $case.Body
+            $fixture
+        }
+    )
+    $batchFixturePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-author-response-$PID-$batchStart.json"
+    $authorResponseQueueFixturePaths.Add($batchFixturePath)
+    $batchFixtures | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $batchFixturePath
+    $batchJson = & $scriptPath `
+        -InputPath $batchFixturePath `
+        -Now $snapshot `
+        -Label area-discussion `
+        -MaxReviewNow 100 `
+        -MaxReviewNowPerAuthor 100 `
+        -OutputFormat Json
+    $batchResult = $batchJson | ConvertFrom-Json -Depth 100
+    for ($batchIndex = 0; $batchIndex -lt $batch.Count; $batchIndex++) {
+        $case = $batch[$batchIndex]
+        $number = 1300 + $batchStart + $batchIndex
+        $item = $batchResult.items | Where-Object number -eq $number
+        $expectedState = if ($case.Clears) { "clear" } else { "verification-needed" }
+        Assert-True ($item.discussionAssessment.state -eq $expectedState) "Queue case '$($case.Name)' must have discussion state '$expectedState'."
+        Assert-True ([bool]$item.shownInDigest -eq [bool]$case.Clears) "Queue case '$($case.Name)' must have the expected unattended digest routing."
+        Assert-True ([bool]$item.shownInDiscussionVerification -eq (-not [bool]$case.Clears)) "Queue case '$($case.Name)' must have the expected discussion-verification routing."
+    }
+}
+
+for ($batchStart = 0; $batchStart -lt $authorResponseSequenceDefinitions.Count; $batchStart += 5) {
+    $batch = @($authorResponseSequenceDefinitions | Select-Object -Skip $batchStart -First 5)
+    $batchFixtures = @(
+        for ($batchIndex = 0; $batchIndex -lt $batch.Count; $batchIndex++) {
+            $case = $batch[$batchIndex]
+            $fixture = $authorResponseTemplate | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
+            $number = 1400 + $batchStart + $batchIndex
+            $authorLogin = "sequence-author-$number"
+            $fixture.number = $number
+            $fixture.title = "Author response sequence $($case.Name)"
+            $fixture.url = "https://github.com/dotnet/aspnetcore/pull/$number"
+            $fixture.author.login = $authorLogin
+            $fixture.headRefName = "author-response-sequence-$number"
+            $fixture.comments = @($fixture.comments[0]) + @(
+                foreach ($response in $case.Responses) {
+                    [pscustomobject]@{
+                        author = [pscustomobject]@{ login = $authorLogin; is_bot = $false }
+                        createdAt = $response.CreatedAt
+                        bodyText = $response.Body
+                    }
+                }
+            )
+            $fixture.discussionComments = @($fixture.discussionComments[0]) + @(
+                foreach ($response in $case.Responses) {
+                    [pscustomobject]@{
+                        author = [pscustomobject]@{ login = $authorLogin }
+                        authorAssociation = "CONTRIBUTOR"
+                        createdAt = $response.CreatedAt
+                        bodyText = $response.Body
+                    }
+                }
+            )
+            $fixture
+        }
+    )
+    $batchFixturePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-author-response-sequence-$PID-$batchStart.json"
+    $authorResponseQueueFixturePaths.Add($batchFixturePath)
+    $batchFixtures | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $batchFixturePath
+    $batchJson = & $scriptPath `
+        -InputPath $batchFixturePath `
+        -Now $snapshot `
+        -Label area-discussion `
+        -MaxReviewNow 100 `
+        -MaxReviewNowPerAuthor 100 `
+        -OutputFormat Json
+    $batchResult = $batchJson | ConvertFrom-Json -Depth 100
+    for ($batchIndex = 0; $batchIndex -lt $batch.Count; $batchIndex++) {
+        $case = $batch[$batchIndex]
+        $number = 1400 + $batchStart + $batchIndex
+        $item = $batchResult.items | Where-Object number -eq $number
+        $expectedState = if ($case.Clears) { "clear" } else { "verification-needed" }
+        Assert-True ($item.discussionAssessment.state -eq $expectedState) "Queue sequence '$($case.Name)' must have discussion state '$expectedState'."
+        if ($case.Clears) {
+            Assert-True (-not ($item.discussionAssessment.signals -match "^non-author-discussion")) "Queue sequence '$($case.Name)' must clear earlier non-author discussion."
+        }
+        else {
+            Assert-True ($item.discussionAssessment.signals -contains "non-author-discussion-requires-verification") "Queue sequence '$($case.Name)' must retain earlier non-author feedback."
+        }
+        Assert-True ([bool]$item.shownInDigest -eq [bool]$case.Clears) "Queue sequence '$($case.Name)' must have the expected unattended digest routing."
+        Assert-True ([bool]$item.shownInDiscussionVerification -eq (-not [bool]$case.Clears)) "Queue sequence '$($case.Name)' must have the expected discussion-verification routing."
+    }
+}
+
+$discussionFixture = Get-Content -LiteralPath $discussionFixturePath -Raw | ConvertFrom-Json -Depth 100
+$discussionEvidence = & (Get-Module PRAttentionQueue) {
+    param($authorResponsePullRequest, $coordinationPullRequest)
+
+    $mergeAssessment = Get-DiscussionAssessment `
+        -PullRequest $authorResponsePullRequest `
+        -AuthorInfo ([pscustomobject]@{ Login = $authorResponsePullRequest.author.login }) `
+        -KnownBotPatterns @() `
+        -ForMerge
+
+    $coordinationAssessment = Get-DiscussionAssessment `
+        -PullRequest $coordinationPullRequest `
+        -AuthorInfo ([pscustomobject]@{ Login = $coordinationPullRequest.author.login }) `
+        -KnownBotPatterns @()
+
+    [pscustomobject]@{
+        MergeAssessment = $mergeAssessment
+        CoordinationResponse = Get-ResponseEvidence `
+            -DiscussionAssessment $coordinationAssessment `
+            -ItemUrl $coordinationPullRequest.url
+    }
+} ($discussionFixture | Where-Object number -eq 125) ($discussionFixture | Where-Object number -eq 126)
+Assert-True ($discussionEvidence.MergeAssessment.State -eq "verification-needed") "An author response must not clear earlier top-level feedback for merge assessment."
+Assert-True ($discussionEvidence.MergeAssessment.Signals -contains "non-author-discussion-requires-verification") "Merge assessment must retain the earlier non-author feedback signal."
+Assert-True ($discussionEvidence.CoordinationResponse.status -eq "recorded-response") "A non-author human coordination command must count as response evidence."
+Assert-True ($discussionEvidence.CoordinationResponse.recordedNonAuthorHumanResponse) "Coordination response evidence must explicitly record human engagement."
 
 $discussionMarkdown = & $scriptPath `
     -InputPath $discussionFixturePath `
@@ -685,7 +1117,7 @@ Assert-True (($hydratedEvidence.published.signals.kind -contains "review-thread-
     (($hydratedEvidence.published.signals | Where-Object kind -eq "review-thread-reply").evidenceUrl -like "*discussion_r303-reply")) "A submitted COMMENTED review and later participant reply must produce a thread signal after production hydration."
 Assert-True (-not ($hydratedEvidence.pending.signals.kind -contains "review-thread-reply")) "PENDING reviews must not produce a thread signal after production hydration."
 
-foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath)) {
+foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath) + @($authorResponseQueueFixturePaths)) {
     if (Test-Path -LiteralPath $temporaryPath) {
         Remove-Item -Force -LiteralPath $temporaryPath
     }
