@@ -378,6 +378,29 @@ public class PrepareReviewTests
     }
 
     [Fact]
+    public async Task KillsAChildWhenProcessOutputExceedsTheLimit()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        await using var fixture = await Fixture.CreateAsync();
+        var child = Path.Combine(fixture.Root, "oversized-output");
+        await File.WriteAllTextAsync(child,
+            "#!/bin/sh\nprintf '%1024s' ''\nprintf '%1024s' ''\nsleep 5\n", Utf8NoBom);
+        File.SetUnixFileMode(child,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        var stopwatch = Stopwatch.StartNew();
+        var exception = Assert.Throws<InvalidOperationException>(() => PrepareReviewProgram.Run(
+            child,
+            [],
+            maximumProcessOutputBytes: 1024));
+        stopwatch.Stop();
+        Assert.Equal($"{child} failed: process output exceeded 64 MiB.", exception.Message);
+        Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(2), $"Child was not killed promptly: {stopwatch.Elapsed}.");
+    }
+
+    [Fact]
     public async Task ExistingOutputDirectoryUsesNativeCliMessage()
     {
         await using var fixture = await Fixture.CreateAsync();
@@ -558,6 +581,58 @@ public class PrepareReviewTests
     }
 
     [Fact]
+    public async Task CheckRejectsATargetThatMovesDuringValidation()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.PrepareAsync();
+        var moveOnCall = fixture.PullRequestCalls + 2;
+        fixture.BeforePullResponse = call =>
+        {
+            if (call == moveOnCall)
+            {
+                fixture.MoveHeadToEquivalentCommit();
+            }
+        };
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Equal("The target or base branch moved during validation.", exception.Message);
+    }
+
+    [Fact]
+    public async Task RetriesOneMovedTargetFromScratch()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.BeforePullResponse = call =>
+        {
+            if (call == 2)
+            {
+                File.WriteAllText(Path.Combine(fixture.Output, "partial.marker"), "partial", Utf8NoBom);
+                fixture.MoveHeadToEquivalentCommit();
+            }
+        };
+        var manifest = await fixture.PrepareAsync();
+        Assert.Equal(4, fixture.PullRequestCalls);
+        Assert.Equal(fixture.Head, manifest["target"]!["head"]!.GetValue<string>());
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "partial.marker")));
+    }
+
+    [Fact]
+    public async Task BlocksWhenTheTargetMovesTwice()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.BeforePullResponse = call =>
+        {
+            if (call is 2 or 4)
+            {
+                fixture.MoveHeadToEquivalentCommit();
+            }
+        };
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.PrepareAsync);
+        Assert.Equal("The target or base branch moved during preparation; no ready manifest was written.", exception.Message);
+        Assert.Equal(4, fixture.PullRequestCalls);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
     public void RejectsMalformedGuideTopicsAndUnresolvedPolicyAnchors()
     {
         foreach (var guide in new[]
@@ -711,6 +786,8 @@ public class PrepareReviewTests
         public bool FailReviews { get; set; }
         public bool FailFetch { get; set; }
         public bool FailApi { get; set; }
+        public int PullRequestCalls { get; private set; }
+        public Action<int>? BeforePullResponse { get; set; }
 
         public static Task<Fixture> CreateAsync(bool components = false)
         {
@@ -759,6 +836,22 @@ public class PrepareReviewTests
         public Task WriteManifestAsync(JsonObject manifest) =>
             File.WriteAllTextAsync(Path.Combine(Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
 
+        public void MoveHeadToEquivalentCommit()
+        {
+            var arguments = new[]
+            {
+                "commit-tree",
+                Git(Repository, "rev-parse", $"{Head}^{{tree}}"),
+                "-p",
+                Head,
+                "-m",
+                "Moved head",
+            };
+            Head = Git(Repository, arguments);
+            Pull["head"]!["sha"] = Head;
+            Diff = GitBytes(Repository, "diff", "--binary", "--no-ext-diff", MergeBase, Head);
+        }
+
         public PrepareReviewProgram.Dependencies CreateDependencies() => new(ApiAsync, FetchAsync, ProducerSourcePath);
 
         private PrepareReviewProgram.Dependencies Dependencies() => CreateDependencies();
@@ -778,7 +871,12 @@ public class PrepareReviewTests
                 ["base_commit"] = new JsonObject { ["sha"] = BaseTip },
                 ["merge_base_commit"] = new JsonObject { ["sha"] = MergeBase },
             });
-            if (endpoint.EndsWith("/pulls/42", StringComparison.Ordinal)) return Node(Pull.DeepClone());
+            if (endpoint.EndsWith("/pulls/42", StringComparison.Ordinal))
+            {
+                PullRequestCalls++;
+                BeforePullResponse?.Invoke(PullRequestCalls);
+                return Node(Pull.DeepClone());
+            }
             throw new InvalidOperationException($"Unexpected API request: {endpoint}");
 
             static Task<JsonNode?> Node(JsonNode? node) => Task.FromResult(node);

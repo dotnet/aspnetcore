@@ -20,6 +20,8 @@ internal static partial class PrepareReviewProgram
     internal const string Suffix = ".source";
     private const int MaximumBlobBytes = 16 * 1024 * 1024;
     private const int MaximumProcessOutputBytes = 64 * 1024 * 1024;
+    private const string TargetMovedDuringPreparationMessage =
+        "The target or base branch moved during preparation; no ready manifest was written.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
     private static readonly HashSet<string> ComponentsOnlyPolicies = new(StringComparer.Ordinal)
     {
@@ -124,8 +126,10 @@ internal static partial class PrepareReviewProgram
     private static byte[] Objects(string directory, params string[] args) =>
         Run("git", GitArguments(["--git-dir", directory, .. args]));
 
-    private static byte[] Run(string command, IReadOnlyList<string> args, string? workingDirectory = null, byte[]? input = null)
+    internal static byte[] Run(string command, IReadOnlyList<string> args, string? workingDirectory = null, byte[]? input = null,
+        int maximumProcessOutputBytes = MaximumProcessOutputBytes)
     {
+        Require(maximumProcessOutputBytes > 0, "The maximum process output must be positive.");
         var start = new ProcessStartInfo(command)
         {
             WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory,
@@ -146,13 +150,77 @@ internal static partial class PrepareReviewProgram
             process.StandardInput.BaseStream.Write(input);
             process.StandardInput.Close();
         }
-        using var output = new MemoryStream();
-        var outputTask = process.StandardOutput.BaseStream.CopyToAsync(output);
-        var errorTask = process.StandardError.ReadToEndAsync();
+        var exceededOutputLimit = 0;
+        async Task<byte[]> ReadOutputAsync()
+        {
+            using var output = new MemoryStream();
+            var buffer = ArrayPool<byte>.Shared.Rent(81920);
+            try
+            {
+                int read;
+                while ((read = await process.StandardOutput.BaseStream.ReadAsync(buffer)) > 0)
+                {
+                    if (Volatile.Read(ref exceededOutputLimit) != 0
+                        || output.Length > maximumProcessOutputBytes - read)
+                    {
+                        KillProcess();
+                        continue;
+                    }
+                    await output.WriteAsync(buffer.AsMemory(0, read));
+                }
+                return output.ToArray();
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+        async Task<string> ReadErrorAsync()
+        {
+            var error = new StringBuilder();
+            var buffer = ArrayPool<char>.Shared.Rent(4096);
+            var bytes = 0;
+            try
+            {
+                int read;
+                while ((read = await process.StandardError.ReadAsync(buffer)) > 0)
+                {
+                    var additionalBytes = Utf8NoBom.GetByteCount(buffer, 0, read);
+                    if (Volatile.Read(ref exceededOutputLimit) != 0
+                        || bytes > maximumProcessOutputBytes - additionalBytes)
+                    {
+                        KillProcess();
+                        continue;
+                    }
+                    error.Append(buffer, 0, read);
+                    bytes += additionalBytes;
+                }
+                return error.ToString();
+            }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(buffer);
+            }
+        }
+        void KillProcess()
+        {
+            if (Interlocked.Exchange(ref exceededOutputLimit, 1) != 0)
+            {
+                return;
+            }
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException) when (process.HasExited)
+            {
+            }
+        }
+        var outputTask = ReadOutputAsync();
+        var errorTask = ReadErrorAsync();
         Task.WaitAll(outputTask, errorTask);
         process.WaitForExit();
-        Require(output.Length <= MaximumProcessOutputBytes
-            && Utf8NoBom.GetByteCount(errorTask.Result) <= MaximumProcessOutputBytes,
+        Require(exceededOutputLimit == 0,
             $"{command} failed: process output exceeded 64 MiB.");
         if (process.ExitCode != 0)
         {
@@ -164,7 +232,7 @@ internal static partial class PrepareReviewProgram
             var error = stderr.Trim();
             throw new InvalidOperationException($"{command} failed: {(error.Length > 0 ? error : $"exit code {process.ExitCode}")}");
         }
-        return output.ToArray();
+        return outputTask.Result;
     }
 
     private static void Require(bool condition, string message)
@@ -275,6 +343,20 @@ internal static partial class PrepareReviewProgram
     {
         Require(!Directory.Exists(path) && !File.Exists(path), $"Output directory already exists: {path}");
         Directory.CreateDirectory(path);
+    }
+
+    private static void DeleteOutputDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+        foreach (var name in Directory.EnumerateFileSystemEntries(path, "*", SearchOption.AllDirectories))
+        {
+            File.SetAttributes(name, File.GetAttributes(name) & ~FileAttributes.ReadOnly);
+        }
+        File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
+        Directory.Delete(path, recursive: true);
     }
 
     private static List<string> Walk(string directory, string prefix = "")
@@ -795,6 +877,19 @@ internal static partial class PrepareReviewProgram
 
     internal static async Task<JsonObject> PrepareAsync(Options options, Dependencies? dependencies = null)
     {
+        try
+        {
+            return await PrepareOnceAsync(options, dependencies);
+        }
+        catch (InvalidOperationException error) when (!options.Check && error.Message == TargetMovedDuringPreparationMessage)
+        {
+            DeleteOutputDirectory(Path.GetFullPath(options.Output));
+            return await PrepareOnceAsync(options, dependencies);
+        }
+    }
+
+    private static async Task<JsonObject> PrepareOnceAsync(Options options, Dependencies? dependencies)
+    {
         dependencies ??= new();
         var timings = new JsonObject();
         async Task<T> Timed<T>(string name, Func<Task<T>> action)
@@ -1119,8 +1214,7 @@ internal static partial class PrepareReviewProgram
                 policies.Add(item);
             }
         }
-        Require(JsonEqual((await Freeze()).Identity, frozen.Identity),
-            "The target or base branch moved during preparation; no ready manifest was written.");
+        Require(JsonEqual((await Freeze()).Identity, frozen.Identity), TargetMovedDuringPreparationMessage);
         var manifestStopwatch = Stopwatch.StartNew();
         var artifacts = new JsonObject();
         foreach (var name in new[] { "diff.patch", "files.json", "pull.json", "feedback.json" })
@@ -1248,7 +1342,8 @@ internal static partial class PrepareReviewProgram
                     (instructions + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
                 "security-concerns-are-out-of-scope", instructions),
             "Prepared exclusions do not match the trusted instruction snapshot.");
-        _ = freeze;
+        Require(JsonEqual((await freeze()).Identity, manifest["target"]),
+            "The target or base branch moved during validation.");
         return manifest;
     }
 
