@@ -35,13 +35,16 @@ public class ByteOrderMarkTest : LoggedTest
     [InlineData("Web.ProjectTemplates")]
     [InlineData("Web.ItemTemplates")]
     [InlineData("Web.Client.ItemTemplates")]
-    public void JSAndJSONInAllTemplates_ShouldNotContainBOM(string projectName)
+    public void NonRazorTemplateFiles_ShouldNotContainBOM(string projectName)
     {
         var templateDirectoryPath = GetTemplateDirectoryPath(projectName);
 
         var filesWithBOMCharactersPresent = false;
-        var files = (IEnumerable<string>)Directory.GetFiles(templateDirectoryPath, "*.json");
-        files = files.Concat(Directory.GetFiles(templateDirectoryPath, "*.js"));
+        var extensions = new[] { ".cs", ".fs", ".css", ".js", ".ts", ".tsx", ".html", ".json", ".xml", ".csproj", ".fsproj" };
+        var files = Directory.GetFiles(templateDirectoryPath, "*", SearchOption.AllDirectories)
+            .Where(f => extensions.Contains(Path.GetExtension(f)))
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}wwwroot{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}"))
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}.template.config{Path.DirectorySeparatorChar}"));
 
         foreach (var file in files)
         {
