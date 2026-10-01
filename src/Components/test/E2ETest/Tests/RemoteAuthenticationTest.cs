@@ -31,4 +31,13 @@ public class RemoteAuthenticationTest :
         var heading = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello, Jane Doe!", () => heading.Text);
     }
+
+    [Fact]
+    public void NavigateDirectlyToLoginCallbackDoesNotStayOnCompletingLogin()
+    {
+        Navigate("/subdir/authentication/login-callback");
+
+        Browser.DoesNotExist(By.XPath("//p[text()='Completing login...']"));
+        Browser.True(() => !Browser.Url.Contains("/authentication/login-callback"));
+    }
 }

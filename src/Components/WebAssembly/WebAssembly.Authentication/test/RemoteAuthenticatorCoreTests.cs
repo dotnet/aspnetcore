@@ -144,7 +144,7 @@ public class RemoteAuthenticatorCoreTests
     }
 
     [Fact]
-    public async Task AuthenticationManager_LoginCallback_DoesNothingOnOperationCompleted()
+    public async Task AuthenticationManager_LoginCallback_RedirectsToLoginOnOperationCompleted()
     {
         // Arrange
         var originalUrl = "https://www.example.com/base/authentication/login-callback?code=1234";
@@ -165,7 +165,7 @@ public class RemoteAuthenticatorCoreTests
         await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
 
         // Assert
-        Assert.Equal(originalUrl, remoteAuthenticator.Navigation.Uri);
+        Assert.Equal("https://www.example.com/base/authentication/login", remoteAuthenticator.Navigation.Uri);
     }
 
     [Fact]
