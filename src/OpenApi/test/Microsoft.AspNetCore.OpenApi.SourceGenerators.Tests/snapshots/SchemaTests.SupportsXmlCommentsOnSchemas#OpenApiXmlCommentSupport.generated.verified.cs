@@ -593,7 +593,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         public global::System.Threading.Tasks.Task TransformAsync(global::Microsoft.OpenApi.OpenApiSchema schema, global::Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext context, global::System.Threading.CancellationToken cancellationToken)
         {
             // Apply comments from the type
-            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
+            var typeToLookUp = global::System.Nullable.GetUnderlyingType(context.JsonTypeInfo.Type) ?? context.JsonTypeInfo.Type;
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(typeToLookUp.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples is { } examples && global::System.Linq.Enumerable.FirstOrDefault(examples) is { } jsonString)
