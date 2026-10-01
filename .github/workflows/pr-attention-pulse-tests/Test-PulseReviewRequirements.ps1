@@ -89,7 +89,10 @@ Invoke-Control "DetectorPoolDependencyAndEnvironment" {
 Invoke-Control "ExternalDetectorFailsClosed" {
     $detector = Get-CompiledJob "detection"
     Assert-True ($workflow -notmatch "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must be removed."
-    Assert-True ($detector.Contains('install_threat_detect_binary.sh" v0.5.2 ')) "The generated detector must install the fixed v0.5.2 release."
+    $installer = [regex]::Matches($detector, '(?m)^          bash "[^"\r\n]+/install_threat_detect_binary\.sh" v0\.5\.2 [^\r\n]+')
+    Assert-True ($installer.Count -eq 1) "The generated detector must install the fixed v0.5.2 release exactly once."
+    Assert-True ($installer[0].Value -cmatch ' --sha256-amd64 b4ecda6a8f1ee09913c40b58e5e9d3337d2173618d41b1bfdef9207e4e7959b9(?: |$)') "The detector installer must receive the reviewed v0.5.2 Linux amd64 digest."
+    Assert-True ($installer[0].Value -cmatch ' --sha256-arm64 f6260a0f9ad72bcb67c7af19c4ce262ca34e2c3d5ccbf912832a8bd277200904(?: |$)') "The detector installer must receive the reviewed v0.5.2 Linux arm64 digest."
     Assert-True ($detector.Contains("steps.threat_detect_install.outcome == 'success'")) "Detection must require successful installation."
     Assert-True ($detector.Contains("threat-detect --engine copilot --output /tmp/gh-aw/threat-detection/detection_result.json")) "The external detector must write the expected result file."
     Assert-True ($detector.Contains('conclude_threat_detection.sh" /tmp/gh-aw/threat-detection/detection_result.json')) "The generated detector must conclude using the external result file."
