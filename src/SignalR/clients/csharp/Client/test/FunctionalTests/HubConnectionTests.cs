@@ -2361,6 +2361,7 @@ public partial class HubConnectionTests : FunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50180")]
     public async Task LongPollingUsesHttp2ByDefault()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>

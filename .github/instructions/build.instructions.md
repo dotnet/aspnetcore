@@ -6,6 +6,7 @@ applyTo: "eng/**,Directory.Build.*,**/*.props,**/*.targets"
 # Build infrastructure changes
 
 - Read `docs/BuildFromSource.md` and `docs/BuildErrors.md`. Prefer the existing area or repository `build` and `restore` scripts. Before invoking `dotnet` directly, activate the repository SDK with `source activate.sh` or `. ./activate.ps1`.
+- When adding, moving, or removing a project, follow the [project relocation checklist](../../docs/ReferenceResolution.md#adding-moving-or-removing-a-project). Regenerate project metadata until a second generation pass produces no further changes, update `AspNetCore.slnx` and every affected solution filter, and check for stale paths.
 - Trace build properties through every applicable entry point. Check both wrapper scripts and bare `dotnet` or IDE evaluation; do not assume they assign the same defaults. In particular, `eng/build.sh` detects and passes the host architecture, while `eng/Common.props` currently defaults an unset `TargetArchitecture` to `x64`. Treat that fallback as behavior to investigate, not a convention to preserve.
 - Before proposing a fix, map the producer, persisted or shared intermediate state, consumer, and resulting diagnostic. Verify that state paths and cache keys distinguish every relevant configuration, OS, architecture, runtime identifier, and target framework.
 - Locate each custom task's `UsingTask` declaration or imported `.tasks` file and inspect its conditions. Ensure the task invocation is skipped in evaluations where registration is unavailable, especially `DesignTimeBuild`.

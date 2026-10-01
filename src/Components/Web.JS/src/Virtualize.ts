@@ -39,6 +39,13 @@ const ScrollSource = {
 } as const;
 type ScrollSource = typeof ScrollSource[keyof typeof ScrollSource];
 
+const ProgrammaticScrollState = {
+  None: 0,
+  PendingAlignment: 1,
+  Interrupted: 2,
+} as const;
+type ProgrammaticScrollState = typeof ProgrammaticScrollState[keyof typeof ProgrammaticScrollState];
+
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   // If we recurse up as far as body or the document root, return null so that the
   // IntersectionObserver observes intersection with the top-level scroll viewport
@@ -166,10 +173,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   mutationObserver.observe(spacerBefore, spacerObserverOptions);
   mutationObserver.observe(spacerAfter, spacerObserverOptions);
 
-  const intersectionObserver = new IntersectionObserver(intersectionCallback, {
+  const intersectionObserverOptions: IntersectionObserverInit = {
     root: scrollContainer,
     rootMargin: `${rootMargin}px`,
-  });
+  };
+  const intersectionObserver = new IntersectionObserver(intersectionCallback, intersectionObserverOptions);
 
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
@@ -265,11 +273,39 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     intersectionObserver.observe(spacerAfter);
   }
 
+  let userScrollObserver: IntersectionObserver | null = null;
+  let programmaticScrollState: ProgrammaticScrollState = ProgrammaticScrollState.None;
+
+  function cancelPendingUserScrollObservation(): void {
+    userScrollObserver?.disconnect();
+    userScrollObserver = null;
+  }
+
+  function observeSpacersAfterUserScroll(): void {
+    cancelPendingUserScrollObservation();
+    if (spacerBefore.isConnected && spacerAfter.isConnected) {
+      const observer = new IntersectionObserver((entries): void => {
+        if (userScrollObserver !== observer) {
+          return;
+        }
+        userScrollObserver = null;
+        scrollActivity.source = ScrollSource.UserScroll;
+        processIntersectionEntries(entries);
+        observer.disconnect();
+      }, intersectionObserverOptions);
+      userScrollObserver = observer;
+      observer.observe(spacerBefore);
+      observer.observe(spacerAfter);
+    }
+  }
+
   // Called by C# at the start of a programmatic ScrollToItem, before the align scroll itself.
   function beginProgrammaticScroll(): void {
     stopConvergenceObserving();
     clearTopFollow();
     clearBottomFollow();
+    cancelPendingUserScrollObservation();
+    programmaticScrollState = ProgrammaticScrollState.PendingAlignment;
     scrollActivity.source = ScrollSource.AlignToItem;
     pendingCallbacks.delete(spacerBefore);
     pendingCallbacks.delete(spacerAfter);
@@ -537,14 +573,29 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let pendingJumpToEnd = false;
   let pendingJumpToStart = false;
 
+  function interruptProgrammaticScroll(): void {
+    if (programmaticScrollState !== ProgrammaticScrollState.PendingAlignment
+      && scrollActivity.source !== ScrollSource.AlignToItem
+      && scrollActivity.source !== ScrollSource.RestoreSnapshot
+      && !convergence.isConverging()
+      && pendingAlignLocalIndex === null) {
+      return;
+    }
+
+    stopConvergenceObserving();
+    pendingJumpToStart = false;
+    pendingJumpToEnd = false;
+    pendingAlignLocalIndex = null;
+    observeSpacersAfterUserScroll();
+    if (programmaticScrollState === ProgrammaticScrollState.PendingAlignment) {
+      programmaticScrollState = ProgrammaticScrollState.Interrupted;
+    }
+  }
+
   function handleUserScrollInput(): void {
-    const selfScrollInProgress = scrollActivity.source === ScrollSource.AlignToItem
-      || scrollActivity.source === ScrollSource.RestoreSnapshot;
+    interruptProgrammaticScroll();
     scrollActivity.consumeIgnoreScroll();
     scrollActivity.source = ScrollSource.UserScroll;
-    if (selfScrollInProgress) {
-      reobserveSpacers();
-    }
   }
 
   function handleUserPointerMove(e: Event): void {
@@ -561,6 +612,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
     if (ke.key === 'End') {
+      interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
       clearTopFollow();
@@ -574,6 +626,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         startConvergenceObserving('bottom');
       }
     } else if (ke.key === 'Home') {
+      interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
       topTracking.following = true;
@@ -673,6 +726,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Measures the target's viewport-relative top and aligns it to containerTop.
   function alignToItemAt(localIndex: number): number | null {
+    if (programmaticScrollState === ProgrammaticScrollState.Interrupted) {
+      programmaticScrollState = ProgrammaticScrollState.None;
+      pendingAlignLocalIndex = null;
+      return ViewportFillDirection.Covered;
+    }
+
     function beginAlign(): void {
       scrollActivity.ignoreNextScroll();
       scrollActivity.source = ScrollSource.AlignToItem;
@@ -690,6 +749,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return null;
     }
     pendingAlignLocalIndex = null;
+    programmaticScrollState = ProgrammaticScrollState.None;
 
     reportRenderedContentMeasurement();
 
@@ -760,6 +820,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     beginProgrammaticScroll: beginProgrammaticScroll,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
+      cancelPendingUserScrollObservation();
       mutationObserver.disconnect();
       stopConvergenceObserving();
       anchoredItems.clear();

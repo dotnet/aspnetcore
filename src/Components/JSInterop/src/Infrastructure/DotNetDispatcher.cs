@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
@@ -55,7 +56,7 @@ public static class DotNetDispatcher
             targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
         }
 
-        var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson);
+        var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, out _);
         if (syncResult == null)
         {
             return null;
@@ -85,6 +86,7 @@ public static class DotNetDispatcher
         var callId = invocationInfo.CallId;
 
         object? syncResult = null;
+        Type? returnType = null;
         ExceptionDispatchInfo? syncException = null;
         IDotNetObjectReference? targetInstance = null;
         try
@@ -94,7 +96,7 @@ public static class DotNetDispatcher
                 targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
             }
 
-            syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson);
+            syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, out returnType);
         }
         catch (Exception ex)
         {
@@ -115,20 +117,20 @@ public static class DotNetDispatcher
         {
             // Returned a task - we need to continue that task and then report an exception
             // or return the value.
-            task.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
+            task.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo, returnType == typeof(Task)), TaskScheduler.Current);
 
         }
         else if (syncResult is ValueTask valueTaskResult)
         {
-            valueTaskResult.AsTask().ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
+            valueTaskResult.AsTask().ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo, returnType == typeof(ValueTask)), TaskScheduler.Current);
         }
         else if (syncResult?.GetType() is { IsGenericType: true } syncResultType
             && syncResultType.GetGenericTypeDefinition() == typeof(ValueTask<>))
         {
             // It's a ValueTask<T>. We'll coerce it to a Task so that we can attach a continuation.
-            var innerTask = GetTaskByType(syncResultType.GenericTypeArguments[0], syncResult);
+            var innerTask = GetTaskByType(syncResultType, syncResult);
 
-            innerTask!.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
+            innerTask!.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo, isNonGenericTask: false), TaskScheduler.Current);
         }
         else
         {
@@ -139,22 +141,31 @@ public static class DotNetDispatcher
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
-    private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo)
+    private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, bool isNonGenericTask)
     {
         if (task.Exception != null)
         {
             var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(task.Exception.GetBaseException());
             var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
             jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+            return;
         }
 
-        var result = TaskGenericsUtil.GetTaskResult(task);
+        if (task.IsCanceled)
+        {
+            var dispatchResult = new DotNetInvocationResult(new TaskCanceledException(task), "InvocationFailure");
+            jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+            return;
+        }
+
+        var result = isNonGenericTask ? null : TaskGenericsUtil.GetTaskResult(task);
         var resultJson = JsonSerializer.Serialize(result, jsRuntime.JsonSerializerOptions);
         jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
     }
 
-    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson)
+    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, out Type? returnType)
     {
+        returnType = null;
         var assemblyName = callInfo.AssemblyName;
         var methodIdentifier = callInfo.MethodIdentifier;
 
@@ -183,6 +194,7 @@ public static class DotNetDispatcher
             (methodInfo, parameterTypes) = GetCachedMethodInfo(objectReference, methodIdentifier);
         }
 
+        returnType = methodInfo.ReturnType;
         var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, parameterTypes);
 
         try
@@ -368,10 +380,20 @@ public static class DotNetDispatcher
         "ReflectionAnalysis",
         "IL2060:MakeGenericMethod",
         Justification = "https://github.com/mono/linker/issues/1727")]
+    [DynamicDependency(nameof(ValueTask<object>.AsTask), typeof(ValueTask<>))]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "ValueTask<T>.AsTask is preserved by DynamicDependency.")]
     private static Task GetTaskByType(Type type, object obj)
     {
-        var converterDelegate = _cachedConvertToTaskByType.GetOrAdd(type, (Type t, MethodInfo taskConverterMethodInfo) =>
-            taskConverterMethodInfo.MakeGenericMethod(t).CreateDelegate<Func<object, Task>>(), _taskConverterMethodInfo);
+        var converterDelegate = _cachedConvertToTaskByType.GetOrAdd(type, (valueTaskType, taskConverterMethodInfo) =>
+        {
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                return taskConverterMethodInfo.MakeGenericMethod(valueTaskType.GenericTypeArguments[0]).CreateDelegate<Func<object, Task>>();
+            }
+
+            var asTaskMethod = valueTaskType.GetMethod(nameof(ValueTask<object>.AsTask))!;
+            return result => (Task)asTaskMethod.Invoke(result, null)!;
+        }, _taskConverterMethodInfo);
 
         return converterDelegate.Invoke(obj);
     }
