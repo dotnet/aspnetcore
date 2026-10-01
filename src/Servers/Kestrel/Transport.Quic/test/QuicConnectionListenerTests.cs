@@ -40,6 +40,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_ClientCreatesConnection_ServerAccepts()
     {
         // Arrange
@@ -64,6 +65,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_ClientCreatesInvalidConnection_ServerContinuesToAccept()
     {
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
@@ -160,6 +162,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_NoCertificateOrApplicationProtocol_Log()
     {
         // Arrange
@@ -226,6 +229,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_ErrorFromServerCallback_CleanExitAndLog()
     {
         // Arrange
@@ -297,6 +301,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_NoApplicationProtocolsInCallback_DefaultToConnectionProtocols()
     {
         // Arrange
@@ -328,6 +333,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_Success_RemovedFromPendingConnections()
     {
         // Arrange
@@ -371,6 +377,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_NoCertificateCallback_RemovedFromPendingConnections()
     {
         // Arrange
@@ -424,6 +431,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_TlsCallback_ConnectionContextInArguments()
     {
         // Arrange
