@@ -75,7 +75,6 @@ public class Http3TlsTests : LoggedTest
     [MsQuicSupported]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2,
         SkipReason = "Windows versions newer than 20H2 do not enable TLS 1.1: https://github.com/dotnet/aspnetcore/issues/37761")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ClientCertificate_AllowOrRequire_Available_Accepted(ClientCertificateMode mode)
     {
         var builder = CreateHostBuilder(async context =>
@@ -118,7 +117,6 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.NoCertificate)]
     [InlineData(ClientCertificateMode.DelayCertificate)]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
     {
         var builder = CreateHostBuilder(async context =>
@@ -218,7 +216,6 @@ public class Http3TlsTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ClientCertificate_Allow_NotAvailable_Optional()
     {
         var builder = CreateHostBuilder(async context =>
