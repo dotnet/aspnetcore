@@ -1,38 +1,32 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
+using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
 using TestApp.E2E.Tests.Fixtures;
 using TestApp.E2E.Tests.ServiceOverrides;
-using Microsoft.AspNetCore.Components.Testing.Infrastructure;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace TestApp.E2E.Tests.Tests;
 
 // Deterministic async state control via TestLockClient.
-[Collection(nameof(E2ECollection))]
-public class AsyncStateTests : BrowserTest
+[UITest]
+public partial class AsyncStateTests : BrowserTest
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
     private ServerInstance _server = null!;
 
-    public AsyncStateTests(ServerFixture<E2ETestAssembly> fixture)
+    protected override async Task InitializeCoreAsync()
     {
-        _fixture = fixture;
-    }
-
-    public override async ValueTask InitializeAsync()
-    {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>(options =>
+        await base.InitializeCoreAsync();
+        _server = await StartServerAsync<App>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<TestOverrides>(nameof(TestOverrides.LockableWeather));
         });
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WeatherPage_ShowsLoadingThenData_WhenLockReleased()
     {
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
@@ -63,7 +57,7 @@ public class AsyncStateTests : BrowserTest
         await Expect(cloudyCell).ToBeVisibleAsync();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WeatherPage_ShowsExactRowCount_AfterLockRelease()
     {
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));

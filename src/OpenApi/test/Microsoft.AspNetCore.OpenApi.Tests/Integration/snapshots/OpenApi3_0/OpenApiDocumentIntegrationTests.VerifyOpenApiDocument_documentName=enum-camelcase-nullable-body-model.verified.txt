@@ -45,7 +45,8 @@
               {
                 "enum": [
                   null
-                ]
+                ],
+                "nullable": true
               },
               {
                 "$ref": "#/components/schemas/CamelCaseStatus"
@@ -58,8 +59,7 @@
         "enum": [
           "active",
           "inactive",
-          "pending",
-          null
+          "pending"
         ]
       }
     }

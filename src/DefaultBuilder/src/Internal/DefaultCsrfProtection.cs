@@ -44,7 +44,13 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
             // for cross-origin writes. Users who legitimately need public-read CORS + CSRF-protected writes
             // should rely on Sec-Fetch-Site (modern browsers) / Origin-vs-Host (legacy) — which still apply
             // here — or opt the endpoint out via DisableAntiforgery() if it has no cookie-based auth.
-            if (policy is not null && !policy.AllowAnyOrigin && policy.IsOriginAllowed(origin))
+            //
+            // SupportsCredentials (set via .AllowCredentials()) is also required: it's the policy author's
+            // explicit signal that this origin is trusted to call the endpoint *with* the user's ambient
+            // credentials (cookies), not just to read a response. A policy that allows a specific origin for
+            // anonymous/public access (no .AllowCredentials()) says nothing about whether that origin should
+            // be able to act on the user's behalf, so it must not expand CSRF trust either.
+            if (policy is not null && !policy.AllowAnyOrigin && policy.SupportsCredentials && policy.IsOriginAllowed(origin))
             {
                 return CsrfProtectionResult.Allowed();
             }

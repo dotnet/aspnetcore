@@ -53,7 +53,7 @@
       "src\\Identity\\test\\Identity.Test\\Microsoft.AspNetCore.Identity.Test.csproj",
       "src\\Identity\\test\\InMemory.Test\\Microsoft.AspNetCore.Identity.InMemory.Test.csproj",
       "src\\Identity\\testassets\\Identity.DefaultUI.WebSite\\Identity.DefaultUI.WebSite.csproj",
-      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
+      "src\\Components\\JSInterop\\src\\Microsoft.JSInterop.csproj",
       "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
       "src\\Localization\\Localization\\src\\Microsoft.Extensions.Localization.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",

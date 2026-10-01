@@ -24,10 +24,7 @@ beforeAll(() => {
     };
   }
 
-  // createBlazorValidation needs a carrier in the DOM to proceed; seed one, then clear.
-  document.body.appendChild(document.createElement(ClientValidationElementName));
-  service = createBlazorValidation()!;
-  document.body.innerHTML = '';
+  service = createBlazorValidation();
 });
 
 afterEach(() => {
@@ -157,5 +154,29 @@ describe('message element display toggle', () => {
     expect(service.validateField(input)).toBe(true);
     expect(message.hidden).toBe(true);
     expect(message.textContent).toBe('');
+  });
+});
+
+describe('validator registration', () => {
+  // The registry outlives any individual form, so a validator registered at startup - before any
+  // carrier exists - is resolved when a form carrying that rule is rendered later.
+  test('applies a validator registered before any carrier existed', () => {
+    service.addValidator('startswith', context => {
+      if (!context.value) {
+        return { success: true };
+      }
+      return { success: context.value.indexOf(context.params['prefix'] || '') === 0 };
+    });
+
+    const { input } = makeTestForm('Code', fieldPayload('Code', [
+      { name: 'startswith', message: 'Must start with ABC-.', params: { prefix: 'ABC-' } },
+    ]));
+
+    input.value = 'XYZ-1';
+    expect(service.validateField(input)).toBe(false);
+    expect(input.validationMessage).toBe('Must start with ABC-.');
+
+    input.value = 'ABC-1';
+    expect(service.validateField(input)).toBe(true);
   });
 });

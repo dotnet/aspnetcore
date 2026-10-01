@@ -30,16 +30,11 @@ interface ClientValidationRule {
 }
 
 /**
- * Creates the client-side validation service when the page contains the known carrier element,
- * or returns `undefined` otherwise.
+ * Creates the client-side validation service.
  * Registers built-in validators, defines the `<blazor-client-validation-data>` custom element that
  * ingests the SSR-rendered rules, and attaches the form event interceptors.
  */
-export function createBlazorValidation(): ValidationService | undefined {
-  if (!document.querySelector(ClientValidationElementName)) {
-    return undefined;
-  }
-
+export function createBlazorValidation(): ValidationService {
   const registry = new ValidatorRegistry();
   registerCoreValidators(registry);
 

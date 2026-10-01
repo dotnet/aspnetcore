@@ -157,7 +157,12 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
                 Logger.LogDebug(EventIds.SecurityStampValidationFailed, "Security stamp validation failed, rejecting cookie.");
                 context.RejectPrincipal();
                 await SignInManager.SignOutAsync();
-                await SignInManager.Context.SignOutAsync(IdentityConstants.TwoFactorRememberMeScheme);
+
+                var schemes = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+                if (await schemes.GetSchemeAsync(IdentityConstants.TwoFactorRememberMeScheme) != null)
+                {
+                    await SignInManager.Context.SignOutAsync(IdentityConstants.TwoFactorRememberMeScheme);
+                }
             }
         }
     }
@@ -185,8 +190,7 @@ public static class SecurityStampValidator
     /// </summary>
     /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>
     /// and <see cref="AuthenticationProperties"/> to validate.</param>
-    /// <returns></returns>
-
+    /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
     public static Task ValidateAsync<TValidator>(CookieValidatePrincipalContext context) where TValidator : ISecurityStampValidator
     {
         if (context.HttpContext.RequestServices == null)

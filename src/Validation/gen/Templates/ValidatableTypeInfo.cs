@@ -365,7 +365,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
             // If no member names are specified, then treat this as a top-level error
             var errorMessage = ResolveAttributeErrorMessage(
                 context,
-                memberName: Type.Name,
+                memberName: null,
                 displayName,
                 declaringType: Type,
                 attribute,

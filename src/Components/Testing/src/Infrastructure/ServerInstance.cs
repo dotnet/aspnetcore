@@ -11,14 +11,13 @@ using System.Text;
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 /// <summary>
-/// Represents a running app instance started via
-/// <see cref="ServerFixture{TTestAssembly}.StartServerAsync{TApp}"/>.
+/// Represents a running app instance started by the E2E test infrastructure.
 /// Each instance has a unique <see cref="Id"/> used for YARP proxy routing
 /// via the <c>X-Test-Backend</c> header.
 /// </summary>
 /// <remarks>
 /// Disposing a <see cref="ServerInstance"/> kills the app process and unregisters
-/// it from the proxy. Instances are typically disposed by the <see cref="ServerFixture{TTestAssembly}"/>
+/// it from the proxy. Instances are typically disposed by the <see cref="ServerFactory{TTestAssembly}"/>
 /// when the collection is torn down, but tests can also dispose them early for
 /// explicit lifecycle control.
 /// </remarks>
@@ -80,52 +79,18 @@ public class ServerInstance : IAsyncDisposable
 
         var startInfo = BuildProcessStartInfo(appEntry);
 
-        // Build unified environment: infrastructure, then manifest, then options.
-        // Each layer can override the previous one. Environment variables already
-        // set in the current process (e.g., CI variables) take precedence over
-        // defaults but can themselves be overridden by explicit option values.
-        var environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var environment = BuildProcessEnvironment(
+            appEntry,
+            options,
+            AppUrl,
+            testAssemblyLocation,
+            testAssemblyName,
+            readyUrl);
 
-        // Infrastructure variables (always set)
-        environment["ASPNETCORE_URLS"] = AppUrl;
-        environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = testAssemblyName;
-        environment["DOTNET_STARTUP_HOOKS"] = testAssemblyLocation;
-        environment["TEST_PARENT_PID"] = Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
-        environment["ASPNETCORE_ENVIRONMENT"] = "Development";
-        environment["E2E_READY_URL"] = readyUrl;
-
-        // Propagate DOTNET_ROOT so published app hosts can find the correct runtime
-        // (e.g. when building against a preview SDK that isn't globally installed).
-        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        if (!string.IsNullOrEmpty(dotnetRoot))
-        {
-            environment["DOTNET_ROOT"] = dotnetRoot;
-        }
-
-        // Service override: static method pattern (WAF-like)
-        if (options.ServiceOverrideTypeName is not null)
-        {
-            environment["E2E_TEST_SERVICES_TYPE"] = options.ServiceOverrideTypeName;
-            environment["E2E_TEST_SERVICES_METHOD"] = options.ServiceOverrideMethodName!;
-        }
-
-        // Manifest-defined environment variables
-        foreach (var (key, value) in appEntry.EnvironmentVariables)
-        {
-            environment[key] = value;
-        }
-
-        // User-specified environment variables override all previous values
-        foreach (var (key, value) in options.EnvironmentVariables)
-        {
-            environment[key] = value;
-        }
-
-        // Apply collected environment to the process
-        foreach (var (key, value) in environment)
-        {
-            startInfo.Environment[key] = value;
-        }
+        ApplyProcessEnvironment(
+            startInfo,
+            environment,
+            appEntry.HarnessMode == E2EAppEntry.CompiledHarnessMode);
 
         _process = Process.Start(startInfo)
             ?? throw new InvalidOperationException($"Failed to start process for '{AppName}'.");
@@ -175,6 +140,38 @@ public class ServerInstance : IAsyncDisposable
         _process?.Dispose();
     }
 
+    /// <summary>
+    /// Writes the captured stdout and stderr buffers to two files
+    /// (<c>{AppName}-{Id}.stdout.log</c>, <c>{AppName}-{Id}.stderr.log</c>) under
+    /// <paramref name="directory"/>. The directory is created if it does not exist.
+    /// </summary>
+    /// <param name="directory">Destination directory.</param>
+    /// <returns>The absolute paths of the stdout and stderr log files that were written.</returns>
+    internal IReadOnlyList<string> WriteCapturedOutputTo(string directory)
+    {
+        Directory.CreateDirectory(directory);
+        var stdoutPath = Path.Combine(directory, $"{AppName}-{Id}.stdout.log");
+        var stderrPath = Path.Combine(directory, $"{AppName}-{Id}.stderr.log");
+        lock (_stdoutBuffer)
+        {
+            File.WriteAllText(stdoutPath, _stdoutBuffer.ToString());
+        }
+        lock (_stderrBuffer)
+        {
+            File.WriteAllText(stderrPath, _stderrBuffer.ToString());
+        }
+        return [stdoutPath, stderrPath];
+    }
+
+    internal IReadOnlyList<string> WriteStartupFailureArtifacts(string directory, Exception exception)
+    {
+        var paths = new List<string>(WriteCapturedOutputTo(directory));
+        var startupPath = Path.Combine(directory, $"{AppName}-{Id}.startup.log");
+        File.WriteAllText(startupPath, exception.ToString());
+        paths.Insert(0, startupPath);
+        return paths;
+    }
+
     internal static string ComputeKey(string appName, ServerStartOptions options)
     {
         var sb = new StringBuilder(appName);
@@ -193,7 +190,82 @@ public class ServerInstance : IAsyncDisposable
         return sb.ToString();
     }
 
-    static ProcessStartInfo BuildProcessStartInfo(E2EAppEntry appEntry)
+    internal static IReadOnlyDictionary<string, string> BuildProcessEnvironment(
+        E2EAppEntry appEntry,
+        ServerStartOptions options,
+        string appUrl,
+        string testAssemblyLocation,
+        string testAssemblyName,
+        string readyUrl)
+    {
+        var isCompiledHarness = appEntry.HarnessMode == E2EAppEntry.CompiledHarnessMode;
+        if (!isCompiledHarness && appEntry.HarnessMode != E2EAppEntry.StartupHookHarnessMode)
+        {
+            throw new InvalidOperationException(
+                $"Unsupported E2E harness mode '{appEntry.HarnessMode}'.");
+        }
+
+        if (isCompiledHarness && options.ServiceOverrideTypeName is not null)
+        {
+            throw new InvalidOperationException(
+                "ServerStartOptions.ConfigureServices cannot be used with a compiled E2E harness. " +
+                "The override method lives in the managed test assembly and cannot be loaded by a Native AOT app.");
+        }
+
+        // Build unified environment: infrastructure, then manifest, then options.
+        // Each layer can override the previous one.
+        var environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ASPNETCORE_URLS"] = appUrl,
+            ["TEST_PARENT_PID"] = Environment.ProcessId.ToString(CultureInfo.InvariantCulture),
+            ["ASPNETCORE_ENVIRONMENT"] = "Development",
+            ["E2E_READY_URL"] = readyUrl,
+        };
+
+        if (!isCompiledHarness)
+        {
+            environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = testAssemblyName;
+            environment["DOTNET_STARTUP_HOOKS"] = testAssemblyLocation;
+        }
+
+        // Propagate DOTNET_ROOT so published app hosts can find the correct runtime
+        // (e.g. when building against a preview SDK that isn't globally installed).
+        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+        if (!string.IsNullOrEmpty(dotnetRoot))
+        {
+            environment["DOTNET_ROOT"] = dotnetRoot;
+        }
+
+        // Service override: static method pattern (WAF-like)
+        if (options.ServiceOverrideTypeName is not null)
+        {
+            environment["E2E_TEST_SERVICES_TYPE"] = options.ServiceOverrideTypeName;
+            environment["E2E_TEST_SERVICES_METHOD"] = options.ServiceOverrideMethodName!;
+        }
+
+        foreach (var (key, value) in appEntry.EnvironmentVariables)
+        {
+            environment[key] = value;
+        }
+
+        foreach (var (key, value) in options.EnvironmentVariables)
+        {
+            environment[key] = value;
+        }
+
+        if (isCompiledHarness)
+        {
+            // A compiled harness is already in the app. Never try to load the managed test assembly.
+            environment.Remove("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES");
+            environment.Remove("DOTNET_STARTUP_HOOKS");
+            environment.Remove("E2E_TEST_SERVICES_TYPE");
+            environment.Remove("E2E_TEST_SERVICES_METHOD");
+        }
+
+        return environment;
+    }
+
+    internal static ProcessStartInfo BuildProcessStartInfo(E2EAppEntry appEntry)
     {
         var executable = appEntry.Executable;
         var args = appEntry.Arguments;
@@ -224,6 +296,27 @@ public class ServerInstance : IAsyncDisposable
         }
 
         return startInfo;
+    }
+
+    internal static void ApplyProcessEnvironment(
+        ProcessStartInfo startInfo,
+        IReadOnlyDictionary<string, string> environment,
+        bool isCompiledHarness)
+    {
+        foreach (var (key, value) in environment)
+        {
+            startInfo.Environment[key] = value;
+        }
+
+        if (isCompiledHarness)
+        {
+            // ProcessStartInfo starts with a copy of the parent environment. Remove managed
+            // injection variables even when they were inherited rather than supplied by options.
+            startInfo.Environment.Remove("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES");
+            startInfo.Environment.Remove("DOTNET_STARTUP_HOOKS");
+            startInfo.Environment.Remove("E2E_TEST_SERVICES_TYPE");
+            startInfo.Environment.Remove("E2E_TEST_SERVICES_METHOD");
+        }
     }
 
     static int GetAvailablePort()

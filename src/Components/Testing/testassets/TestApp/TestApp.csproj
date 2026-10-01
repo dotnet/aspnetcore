@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <!-- This source-build app intentionally references projects whose names match shared-framework packages. -->
+    <NoWarn>$(NoWarn);NU1511</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
