@@ -86,6 +86,12 @@ safe-outputs:
     create-issue: false
   missing-data:
     create-issue: false
+  add-comment:
+    max: 1
+    target: triggering
+    issues: false
+    pull-requests: true
+    discussions: false
   threat-detection:
     model: gpt-5.6-sol
     max-ai-credits: 200
@@ -149,6 +155,28 @@ jobs:
     needs: [freeze_pr_head]
   safe_outputs:
     if: needs.verify_live_head.result == 'success'
+    pre-steps:
+      - name: Reject a moved pull request inside safe outputs
+        uses: actions/github-script@v9.0.0
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const pullNumber = Number('${{ needs.freeze_pr_head.outputs.pr_number }}');
+            const expected = '${{ needs.freeze_pr_head.outputs.head_sha }}';
+            if (!Number.isSafeInteger(pullNumber) || !/^[a-f0-9]{40}$/.test(expected)) {
+              core.setFailed('The frozen review identity is unavailable.');
+              return;
+            }
+            const { data } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullNumber,
+            });
+            if (data.number !== pullNumber || data.state !== 'open' ||
+                data.base.repo.full_name.toLowerCase() !== `${context.repo.owner}/${context.repo.repo}`.toLowerCase() ||
+                data.head.sha !== expected) {
+              core.setFailed('The PR head moved or closed after review; safe outputs are blocked.');
+            }
   verify_live_head:
     needs: [agent, freeze_pr_head]
     if: needs.agent.result == 'success'
@@ -178,10 +206,23 @@ jobs:
             const comments = count('create_pull_request_review_comment');
             const reviews = count('submit_pull_request_review');
             const noop = count('noop');
-            const incomplete = ['report_incomplete', 'missing_data', 'missing_tool']
-              .some(type => count(type) > 0);
-            if ((noop > 0 && (comments || reviews || incomplete)) ||
-                (incomplete && (comments || reviews)) || (comments > 0 && reviews !== 1) ||
+            const statusComments = output.items.filter(item => item.type === 'add_comment');
+            const incompleteItems = output.items.filter(item =>
+              ['report_incomplete', 'missing_data', 'missing_tool'].includes(item.type));
+            const incomplete = incompleteItems.length > 0;
+            const statusMatch = statusComments.length === 1 && typeof statusComments[0].body === 'string'
+              ? statusComments[0].body.match(
+                /^Review not published \((BLOCKED|INCOMPLETE)\): ([^\r\n]{1,240})\n\nNo partial findings were published\.$/)
+              : null;
+            const incompleteReason = incompleteItems.length === 1 &&
+              typeof incompleteItems[0].reason === 'string'
+              ? incompleteItems[0].reason
+              : null;
+            if ((noop > 0 && (comments || reviews || incomplete || statusComments.length)) ||
+                (incomplete && (comments || reviews || noop !== 0 || incompleteItems.length !== 1 ||
+                  !statusMatch || statusMatch[2] !== incompleteReason)) ||
+                (!incomplete && statusComments.length > 0) ||
+                (comments > 0 && reviews !== 1) ||
                 (reviews > 0 && (comments < 1 || comments > 5))) {
               core.setFailed('Incomplete or partial review output cannot be published.');
             }
@@ -310,16 +351,21 @@ use any file create/edit/write tool at any point in the hosted run. Only this fi
 
 ## Publish only after complete validation
 
-If bundle preparation or skill invocation failed, a required bundle input is missing,
-unreadable, malformed, empty, or a routed worker failed or did not return, invoke
-`report_incomplete` with the reason, or `missing_data` if `report_incomplete` is not
-exposed, and **do not emit any review output**. Both are configured not to create
+If the structured result is `BLOCKED` or `INCOMPLETE`, choose one concise, single-line
+reason of at most 240 characters. It must state only why the review could not complete,
+with no candidate, finding, file/line, or other partial review detail. Invoke `add_comment`
+exactly once with this body, substituting the structured status and the same reason:
+`Review not published (<STATUS>): <reason>\n\nNo partial findings were published.`
+Then invoke `report_incomplete` with exactly the same reason, or `missing_data` with
+exactly the same reason if `report_incomplete` is not exposed, and **do not emit any
+review output or `noop`**. Both incomplete-reporting tools are configured not to create
 issues. Do not partially publish a valid finding while a routed guide is genuinely
 incomplete. Findings or `NO_FINDINGS` may coexist with disclosed unresolved candidates
 whose absent evidence is external to the bundle; use the normal review outputs below,
-not `report_incomplete`. If all routed guides completed but no new finding survives,
-use `noop`; existing-feedback duplicates and unresolved candidates must remain visible
-in the structured result retained in your reasoning/conversation. Report excluded scope separately from completed work.
+not the status comment or `report_incomplete`. If all routed guides completed but no new
+finding survives, use `noop`; existing-feedback duplicates and unresolved candidates
+must remain visible in the structured result retained in your reasoning/conversation.
+Report excluded scope separately from completed work.
 
 Before calling any review output, validate the entire selected finding set: at most five,
 ordered by severity then confidence, each already surviving the skill's gates. Use `P1`
@@ -331,9 +377,10 @@ Deduplicate against the complete prepared feedback and list true-positive duplic
 separately with their existing comment or review reference. Feedback posted after
 preparation cannot be observed by this agent; do not claim a fresh-feedback check.
 
-The trusted `verify_live_head` gate must pass before the safe-output job begins. Its read
-is not atomic with publication; the trusted `commit-id` pins attribution to the
-reviewed SHA if a push races that check.
+The trusted `verify_live_head` gate must pass before the safe-output job begins, and a
+supported `jobs.safe_outputs.pre-steps` hook rechecks the live head inside that job before
+publication. Neither read is atomic with publication; the trusted `commit-id` pins
+attribution to the reviewed SHA if a push races the in-job check.
 
 For a valid nonempty finding set, emit one `create_pull_request_review_comment` per finding
 (maximum five), then exactly one `submit_pull_request_review` with event `COMMENT`. Use only
