@@ -53,8 +53,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         private static global::System.Collections.Generic.Dictionary<string, XmlComment> GenerateCacheEntries()
         {
             var cache = new global::System.Collections.Generic.Dictionary<string, XmlComment>();
-            cache.Add(@"M:ReferencedLibrary.TestApi.TestMethod(System.Int32)", new XmlComment(@"This method should have its XML comment merged properly.", null, null, @"A task representing the asynchronous operation.", null, false, null, [new XmlParameterComment(@"id", @"The identifier for the test.", null, false)], null));
 
+            cache.Add(@"T:NullableStruct", new XmlComment(@"A struct used as a nullable type.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:NonNullableStruct", new XmlComment(@"A struct used as a non-nullable type.", null, null, null, null, false, null, null, null));
 
             return cache;
         }
