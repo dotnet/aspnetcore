@@ -4,7 +4,7 @@
 
 This document describes how the subsystems under `src/Servers/Kestrel` compose to implement Kestrel, the cross-platform HTTP server used by default in ASP.NET Core. It explains Kestrel-owned responsibilities, dependency direction, connection and request lifetimes, protocol-specific state, transport boundaries, and validation layers.
 
-The intended audience is contributors who need to determine where Kestrel behavior belongs and how a change in one layer affects the rest of the server. The document covers Kestrel registration and configuration, endpoint binding, connection middleware, sockets and named-pipe transports, the optional DirectTls transport, QUIC integration, TLS adaptation, HTTP/1.1, HTTP/2, HTTP/3, request features, body I/O, timeouts, shutdown, pooling, diagnostics, and generated implementation surfaces.
+The intended audience is contributors who need to determine where Kestrel behavior belongs and how a change in one layer affects the rest of the server. The document covers Kestrel registration and configuration, endpoint binding, connection middleware, sockets and named-pipe transports, QUIC integration, TLS adaptation, HTTP/1.1, HTTP/2, HTTP/3, request features, body I/O, timeouts, shutdown, pooling, diagnostics, and generated implementation surfaces.
 
 Kestrel consumes contracts owned by other areas. ASP.NET Core Hosting owns application construction and the `IServer` handoff. `Connections.Abstractions` owns the general connection and listener contracts. `src/Http` owns generic `HttpContext` and HTTP feature contracts. The .NET runtime owns socket, TLS, and QUIC implementations. This document describes those systems only where they meet Kestrel.
 
@@ -14,9 +14,9 @@ This document is not an HTTP specification, an API reference, an exhaustive proj
 
 Hosting starts Kestrel through the `IServer` contract and supplies an `IHttpApplication<TContext>` adapter for the application request pipeline. Kestrel resolves configured endpoints, builds a connection middleware pipeline for each endpoint, selects a compatible listener factory, binds the listener, and starts accepting connections.
 
-Stream transports such as sockets, Unix domain sockets, file handles, named pipes, and DirectTls produce a `ConnectionContext` with a duplex pipe. The QUIC transport produces a `MultiplexedConnectionContext` whose accepted streams are individual `ConnectionContext` instances. Kestrel wraps accepted connections with server-owned lifetime, timeout, resource, and diagnostics state before running the endpoint's connection pipeline.
+Stream transports such as sockets, Unix domain sockets, file handles, and named pipes produce a `ConnectionContext` with a duplex pipe. The QUIC transport produces a `MultiplexedConnectionContext` whose accepted streams are individual `ConnectionContext` instances. Kestrel wraps accepted connections with server-owned lifetime, timeout, resource, and diagnostics state before running the endpoint's connection pipeline.
 
-For ordinary sockets and named pipes, HTTPS is connection middleware that installs TLS features, performs an `SslStream` handshake over the underlying transport, and presents decrypted application bytes to the remainder of the pipeline. DirectTls performs TLS inside the transport and publishes equivalent features before Kestrel receives the connection. QUIC performs TLS and multiplexing through `System.Net.Quic`; Kestrel supplies endpoint TLS options and implements HTTP/3 above the resulting QUIC connection and streams.
+For sockets and named pipes, HTTPS is connection middleware that installs TLS features, performs an `SslStream` handshake over the underlying transport, and presents decrypted application bytes to the remainder of the pipeline. QUIC performs TLS and multiplexing through `System.Net.Quic`; Kestrel supplies endpoint TLS options and implements HTTP/3 above the resulting QUIC connection and streams.
 
 The terminal HTTP middleware creates an `HttpConnection`, selects the protocol processor, and passes Kestrel's per-request feature collection to the Hosting-provided application adapter. HTTP/1.1 processes requests sequentially on one connection. HTTP/2 parses frames and coordinates multiple Kestrel-owned request streams on one duplex transport. HTTP/3 coordinates HTTP control and request streams above the multiplexed QUIC transport.
 
@@ -66,7 +66,6 @@ flowchart TB
     subgraph Transports["Kestrel transports"]
         Sockets["Sockets, Unix sockets,<br/>and file handles"]
         NamedPipes["Named pipes"]
-        DirectTls["Experimental DirectTls<br/>TLS inside transport"]
         Quic["QUIC multiplexed transport"]
     end
 
@@ -82,13 +81,11 @@ flowchart TB
 
     Sockets --> StreamPipeline
     NamedPipes --> StreamPipeline
-    DirectTls --> StreamPipeline
     Quic --> MultiplexedPipeline
 
     Sockets --> SocketRuntime
     NamedPipes --> PipesRuntime
     TlsMiddleware --> TlsRuntime
-    DirectTls --> TlsRuntime
     Quic --> QuicRuntime
 ```
 
@@ -101,7 +98,6 @@ flowchart TB
 | [`Connections.Abstractions`](../Connections.Abstractions) | Listener, connection, multiplexed connection, connection-pipeline, endpoint, and transport feature contracts | Shared server and SignalR infrastructure outside the Kestrel directory |
 | [`Transport.Sockets`](Transport.Sockets) | TCP, Unix domain socket, and file-handle listeners; socket send and receive loops; duplex transport pipes | Kestrel transport over `System.Net.Sockets` |
 | [`Transport.NamedPipes`](Transport.NamedPipes) | Windows named-pipe listeners, accepted connections, pipe creation policy, and duplex transport pipes | Kestrel transport over `System.IO.Pipes` |
-| [`Transport.DirectTls`](Transport.DirectTls) | Experimental Linux transport that binds explicit `DirectTlsEndpoint` instances and performs native, file-descriptor-bound TLS before handing connections to the HTTP pipeline | Kestrel transport with a runtime TLS dependency; it is not the standard HTTPS middleware path |
 | [`Transport.Quic`](Transport.Quic) | Adapts `System.Net.Quic` listeners, connections, and streams to ASP.NET Core multiplexed connection contracts | Kestrel owns the adapter; the runtime owns QUIC transport, congestion control, packet processing, and TLS implementation |
 | [`shared`](shared) | Shared source and checked-in generated feature, header, HPACK, pipe, and pooling implementation used by multiple Kestrel projects | Kestrel implementation support, not a separate runtime layer |
 | [`tools/CodeGenerator`](tools/CodeGenerator) | Generates checked-in high-performance header, feature-collection, transport-feature, and HTTP utility code | Kestrel tooling; generated files remain implementation details |
@@ -124,7 +120,7 @@ When Hosting starts the web workload, it passes its application adapter to `Kest
 
 Endpoint defaults are applied while endpoints are constructed: during `Listen` calls for code-backed endpoints, during configuration loading for configuration-backed endpoints, and while hosting addresses are converted to endpoints. Applicable `UseHttps` overloads apply HTTPS defaults at that point; overloads that accept explicit TLS options or a handshake callback intentionally bypass configured HTTPS defaults.
 
-Listener factories are considered in reverse registration order. A factory can implement `IConnectionListenerFactorySelector` to claim only compatible endpoints. This allows named pipes, DirectTls, sockets, and application-provided transports to coexist without making one factory responsible for every endpoint.
+Listener factories are considered in reverse registration order. A factory can implement `IConnectionListenerFactorySelector` to claim only compatible endpoints. This allows named pipes, sockets, and application-provided transports to coexist without making one factory responsible for every endpoint.
 
 ```mermaid
 sequenceDiagram
@@ -168,8 +164,6 @@ Kestrel owns the endpoint-specific pipelines built through `ListenOptions`. Conn
 
 The sockets and named-pipe transports translate platform I/O into paired `PipeReader` and `PipeWriter` instances. They own listener setup, accept behavior, transport exceptions, connection endpoints, send and receive loops, and disposal of their platform handles. Kestrel Core consumes the resulting duplex pipe and should not depend on transport-specific socket or pipe operations for ordinary HTTP processing.
 
-The experimental DirectTls transport is selected only for `DirectTlsEndpoint`. It performs the TLS handshake inside the transport, publishes TLS, ALPN, and socket features on the accepted connection, and supplies decrypted application data through the normal duplex pipe contract. Because `ITlsConnectionFeature` is already present, standard HTTPS middleware does not wrap the connection in a second TLS layer.
-
 The QUIC transport is structurally different. `System.Net.Quic` accepts a QUIC connection, performs TLS, and exposes bidirectional and unidirectional streams. The Kestrel adapter publishes these through `MultiplexedConnectionContext` and creates pipe-backed stream contexts. Kestrel Core owns HTTP/3 control and request semantics above those streams; it does not own QUIC packet processing, congestion control, retransmission, or the runtime's stream flow control.
 
 For every transport, `ConnectionDispatcher` registers accepted connections before scheduling their connection delegate. `KestrelConnection<T>` adds heartbeat, completion, lifetime-notification, and metrics features; runs the connection pipeline; fires connection completion callbacks; disposes the transport connection; and only then removes it from connection tracking. This ordering prevents server shutdown from observing a connection as complete before its transport is torn down.
@@ -177,8 +171,6 @@ For every transport, `ConnectionDispatcher` registers accepted connections befor
 ## TLS, SNI, ALPN, and Protocol Selection
 
 For stream transports, `HttpsConnectionMiddleware` installs TLS feature objects and performs the TLS handshake with `SslStream`. It applies endpoint certificate configuration, server-certificate selection, optional client certificates, handshake timeout, SNI-sensitive callbacks, and ALPN. After a successful handshake it replaces the connection's transport with a plaintext-facing duplex-pipe adapter for the inner pipeline. The underlying transport continues carrying TLS records and is restored before outer connection cleanup. Publishing the feature objects before authentication also preserves handshake state for timeout and failure diagnostics.
-
-DirectTls performs the corresponding handshake before the connection enters Kestrel Core. It resolves per-host TLS contexts, advertises endpoint protocols through ALPN, and publishes the negotiated result through the same feature contracts used by the standard path. Its native event-pump and descriptor ownership are transport-specific and must not leak into general HTTP processing.
 
 For HTTP/3, Kestrel converts endpoint HTTPS configuration into `TlsConnectionCallbackOptions`. `QuicConnectionListener` supplies the resulting `SslServerAuthenticationOptions` to `System.Net.Quic`, which performs the TLS 1.3 and QUIC handshake. Kestrel still owns certificate configuration policy and HTTP/3 protocol behavior, while the runtime owns the handshake and QUIC implementation.
 
@@ -352,7 +344,7 @@ Kestrel consumes runtime sockets, `SslStream`, TLS contexts, and `System.Net.Qui
 | In-memory functional tests | [`test/InMemory.FunctionalTests`](test/InMemory.FunctionalTests) | Kestrel HTTP protocol and application interaction over controlled test transports, including malformed frames, timeouts, shutdown, and request/response behavior; these tests do not establish operating-system transport or real QUIC behavior |
 | Socket binding and functional tests | [`test/Sockets.BindTests`](test/Sockets.BindTests) and [`test/Sockets.FunctionalTests`](test/Sockets.FunctionalTests) | Real socket listener, binding, transport, and shared functional behavior |
 | Interoperability tests | [`test/Interop.FunctionalTests`](test/Interop.FunctionalTests) | Behavior with real HTTP clients, HTTP/2 conformance tooling, and supported HTTP/3 runtime environments |
-| Transport-specific tests | [`Transport.NamedPipes/test`](Transport.NamedPipes/test), [`Transport.Quic/test`](Transport.Quic/test), and [`Transport.DirectTls/test`](Transport.DirectTls/test); the sockets transport is covered by the socket binding and functional test projects above rather than a transport-local test directory | Platform adapter, listener, pipe, handshake, stream, disposal, and transport-specific failure behavior |
+| Transport-specific tests | [`Transport.NamedPipes/test`](Transport.NamedPipes/test) and [`Transport.Quic/test`](Transport.Quic/test); the sockets transport is covered by the socket binding and functional test projects above rather than a transport-local test directory | Platform adapter, listener, pipe, handshake, stream, disposal, and transport-specific failure behavior |
 | Microbenchmarks | [`perf/Microbenchmarks`](perf/Microbenchmarks) | Allocation, parser, header, framing, scheduling, and in-memory throughput characteristics; not end-to-end correctness |
 | Stress application | [`stress`](stress) | Sustained concurrency, protocol combinations, cancellation, and resource behavior under load |
 | Samples | [`samples`](samples) | Illustrative compositions and manual experimentation; not compatibility or correctness proof |
@@ -378,7 +370,6 @@ No single layer proves the whole server. In-memory tests can faithfully exercise
 | Endpoint precedence, binding, reload, connection or HTTPS middleware, server limits, connection tracking, or shutdown | [`Kestrel/Core`](Core) |
 | TCP, Unix socket, or file-handle I/O | [`Transport.Sockets`](Transport.Sockets) |
 | Windows named-pipe behavior | [`Transport.NamedPipes`](Transport.NamedPipes) |
-| Experimental native DirectTls endpoint behavior | [`Transport.DirectTls`](Transport.DirectTls) |
 | QUIC listener, connection, or stream adaptation | [`Transport.Quic`](Transport.Quic) |
 | HTTP/1.1 parsing, keep-alive, chunking, upgrade, or sequential request reuse | [`Core/src/Internal/Http`](Core/src/Internal/Http) |
 | HTTP/2 frames, HPACK, flow control, streams, reset, or GOAWAY | [`Core/src/Internal/Http2`](Core/src/Internal/Http2) |
@@ -398,7 +389,7 @@ No single layer proves the whole server. In-memory tests can faithfully exercise
 
 | Term | Meaning in this document |
 | --- | --- |
-| **Stream transport** | A transport that presents one ordered duplex byte stream as a `ConnectionContext`, such as sockets, named pipes, or DirectTls |
+| **Stream transport** | A transport that presents one ordered duplex byte stream as a `ConnectionContext`, such as sockets or named pipes |
 | **Multiplexed transport** | A transport that presents a connection capable of accepting multiple streams through `MultiplexedConnectionContext`; Kestrel uses this for QUIC |
 | **Connection pipeline** | Ordered middleware that runs for a transport connection before the terminal HTTP processor |
 | **Transport connection** | The connection object and platform resources supplied by a listener |
