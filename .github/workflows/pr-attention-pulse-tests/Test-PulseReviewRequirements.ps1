@@ -73,7 +73,7 @@ Invoke-Control "DetectorUsesSelectedPatPool" {
     Assert-True ($agentCredential.Count -eq 1 -and $detectorCredential.Count -eq 1) "Each inference job must bind exactly one provider credential."
     $selectedPat = $agentCredential[0].Groups[1].Value.Trim()
     Assert-True ($selectedPat.Contains("needs.pat_pool.outputs.pat_number") -and $selectedPat.Contains("secrets.COPILOT_PAT_")) "The main agent must retain the existing PAT-pool selector."
-    Assert-True ($detectorCredential[0].Groups[1].Value.Trim() -ceq $selectedPat) "The inline detector must use the main agent's selected PAT-pool expression, not the standalone COPILOT_GITHUB_TOKEN secret."
+    Assert-True ($detectorCredential[0].Groups[1].Value.Trim() -ceq $selectedPat) "The detector must use the main agent's selected PAT-pool expression, not the standalone COPILOT_GITHUB_TOKEN secret."
 }
 
 Invoke-Control "DetectorPoolDependencyAndEnvironment" {
@@ -86,12 +86,15 @@ Invoke-Control "DetectorPoolDependencyAndEnvironment" {
     }
 }
 
-Invoke-Control "InlineDetectorFailsClosed" {
+Invoke-Control "ExternalDetectorFailsClosed" {
     $detector = Get-CompiledJob "detection"
-    Assert-True ($workflow -match "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must remain enabled."
-    Assert-True ($detector.Contains("copilot_harness.cjs") -and $detector.Contains("parse_threat_detection_results.cjs")) "The generated detector must execute and parse inline detection."
+    Assert-True ($workflow -notmatch "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must be removed."
+    Assert-True ($detector.Contains('install_threat_detect_binary.sh" v0.5.2 ')) "The generated detector must install the fixed v0.5.2 release."
+    Assert-True ($detector.Contains("steps.threat_detect_install.outcome == 'success'")) "Detection must require successful installation."
+    Assert-True ($detector.Contains("threat-detect --engine copilot --output /tmp/gh-aw/threat-detection/detection_result.json")) "The external detector must write the expected result file."
+    Assert-True ($detector.Contains('conclude_threat_detection.sh" /tmp/gh-aw/threat-detection/detection_result.json')) "The generated detector must conclude using the external result file."
     $continueOnError = [regex]::Matches($detector, '(?m)^          GH_AW_DETECTION_CONTINUE_ON_ERROR: "([^"]+)"\r?$')
-    Assert-True ($continueOnError.Count -eq 2) "Both detection setup and result parsing must declare failure handling."
+    Assert-True ($continueOnError.Count -eq 3) "Detection setup, execution, and conclusion must declare failure handling."
     foreach ($match in $continueOnError)
     {
         Assert-True ($match.Groups[1].Value -ceq "false") "Detection errors must not be accepted."
@@ -101,14 +104,14 @@ Invoke-Control "InlineDetectorFailsClosed" {
 
 Invoke-Control "DetectorModelPolicy" {
     $detector = Get-CompiledJob "detection"
-    Assert-True ($detector -match "(?m)^          COPILOT_MODEL: gpt-5\.6-sol\r?$") "Inline detection must retain the pinned model."
+    Assert-True ($detector -match "(?m)^          COPILOT_MODEL: gpt-5\.6-sol\r?$") "Detection must retain the pinned model."
     $config = [regex]::Match($detector, "printf '%s\\n' '(?<config>\{.+\})' >")
-    Assert-True $config.Success "The generated inline detector AWF configuration could not be read."
+    Assert-True $config.Success "The generated detector AWF configuration could not be read."
     $apiProxy = ($config.Groups["config"].Value | ConvertFrom-Json -Depth 50).apiProxy
-    Assert-True ($null -eq $apiProxy.PSObject.Properties["allowedModels"]) "The inline detector model is pinned by COPILOT_MODEL rather than a duplicated API proxy allowlist."
+    Assert-True ($null -eq $apiProxy.PSObject.Properties["allowedModels"]) "The detector model is pinned by COPILOT_MODEL rather than a duplicated API proxy allowlist."
     foreach ($name in @("allowedModels", "enableTokenSteering", "maxAiCredits", "modelFallback"))
     {
-        Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Inline detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
+        Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
     }
 }
 
