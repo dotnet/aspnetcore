@@ -197,7 +197,7 @@ Document generation makes several deliberate ordering choices:
 
 - Transformer lists are processed in registration order.
 - Tags are maintained with ordinal name ordering.
-- Component schemas are sorted by ordinal key after generation.
+- Component schemas are reordered by key after generation using the default string comparer (`OrderBy`), then stored in a dictionary with an ordinal key comparer.
 - Document-name service keys are normalized consistently.
 
 These choices improve repeatability, but the output is not a general canonicalizer for all extension data or application-provided collections. Contributors should preserve stable producer ordering and avoid adding nondeterministic enumeration to the generation path.
