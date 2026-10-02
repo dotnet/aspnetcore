@@ -196,7 +196,7 @@ The build-time interface does not carry a cancellation token. The external tool 
 Document generation makes several deliberate ordering choices:
 
 - Transformer lists are processed in registration order.
-- Tags are maintained with ordinal name ordering.
+- Top-level document tags are maintained with ordinal name ordering.
 - Component schemas are reordered by key after generation using the default string comparer (`OrderBy`), then stored in a dictionary with an ordinal key comparer.
 - Document-name service keys are normalized consistently.
 
