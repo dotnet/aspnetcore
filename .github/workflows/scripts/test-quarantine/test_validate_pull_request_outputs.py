@@ -454,6 +454,10 @@ def test_row_comment_ownership():
 
 
 def main():
+    test_theory_target_binding(provider="[MsQuicSupported]")
+    test_theory_target_binding(
+        supported=False, provider="[MsQuicSupported]\n    [MemberData(nameof(GetRows))]"
+    )
     for provider in (
         '[MemberData(nameof(GetRows))]',
         '[ClassData(typeof(Rows))]',

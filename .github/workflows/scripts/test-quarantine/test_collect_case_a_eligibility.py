@@ -827,6 +827,53 @@ def test_mixed_row_providers(provider='[MemberData(nameof(GetRows))]'):
             print(f"PASS mixed row providers: {row}, {provider}")
 
 
+def test_non_data_condition_rows(condition="[MsQuicSupported]"):
+    for quarantined in (False, True):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            _, file_path = initialize_repository(root)
+            row = (
+                '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+                'OperatingSystems.Linux, HttpProtocols.Http3)]'
+                if quarantined else "[InlineData(HttpProtocols.Http3)]"
+            )
+            file_path.write_text(theory_source(condition, row), encoding="utf-8")
+            commit(root, "Add conditioned row", "2026-08-01T00:00:00Z")
+            result = collect_result(
+                root, evidence(test_name=THEORY_TEST_NAME), test_name=THEORY_TEST_NAME
+            )
+            if quarantined:
+                assert_already_quarantined(result)
+            else:
+                assert result["status"] == "eligible", result
+                assert result["source_resolution"]["matching_inline_data"] is not None, result
+            file_path.write_text(
+                theory_source(condition, row, "[MemberData(nameof(GetRows))]"),
+                encoding="utf-8",
+            )
+            assert MODULE.resolve_source(root, THEORY_TEST_NAME)["status"] == "ambiguous"
+            print(f"PASS non-data condition: {condition}, quarantined={quarantined}")
+
+
+def test_kestrel_condition_rows():
+    kestrel_source = SCRIPT.parents[4] / (
+        "src/Servers/Kestrel/test/Interop.FunctionalTests/Http3/Http3RequestTests.cs"
+    )
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(kestrel_source.read_text(encoding="utf-8"), encoding="utf-8")
+        for protocol, row_key in (("Http3", "data_quarantine"), ("Http2", "matching_inline_data")):
+            result = MODULE.resolve_source(
+                root,
+                "Interop.FunctionalTests.Http3.Http3RequestTests."
+                f"POST_ClientCancellationBidirectional_RequestAbortRaised(protocol: {protocol})",
+            )
+            assert result["status"] == "exact", result
+            assert result[row_key]["data"] == f"HttpProtocols.{protocol}", result
+            print(f"PASS Kestrel source row: {protocol}")
+
+
 def test_commented_row_attributes():
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -3608,6 +3655,14 @@ def run_output(root, *args):
 
 
 def main():
+    test_kestrel_condition_rows()
+    for condition in (
+        "[MsQuicSupported]",
+        "[Microsoft.AspNetCore.InternalTesting.MsQuicSupportedAttribute()]",
+        "[global::Microsoft.AspNetCore.InternalTesting.OSSkipCondition(OperatingSystems.Windows)]",
+        "[FrameworkSkipCondition(RuntimeFrameworks.Mono)]",
+    ):
+        test_non_data_condition_rows(condition)
     for provider in (
         '[MemberData(nameof(GetRows))]',
         '[Xunit.MemberDataAttribute(nameof(GetRows))]',

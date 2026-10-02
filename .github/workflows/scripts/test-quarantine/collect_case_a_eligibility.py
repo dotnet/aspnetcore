@@ -65,6 +65,13 @@ TRAIT_PATTERN = re.compile(
     r"^\s*\[\s*(?:global::)?(?:Xunit\.)?"
     r"Trait(?:Attribute)?\s*\(.*\)\s*\]\s*$"
 )
+NON_DATA_CONDITION_PATTERN = re.compile(
+    r"^\s*\[\s*(?:global::)?(?:Microsoft\.AspNetCore\.InternalTesting\.)?"
+    r"(?:MsQuicSupported|OSSkipCondition|FrameworkSkipCondition|"
+    r"EnvironmentVariableSkipCondition|MinimumOSVersion|MaximumOSVersion|"
+    r"DockerOnly|RemoteExecutionSupported|SkipNonHelix|SkipOnHelix|SkipOnCI|SkipOnAlpine)"
+    r"(?:Attribute)?\s*(?:\(.*\))?\s*\]\s*$"
+)
 QUARANTINE_ISSUE_PATTERN = re.compile(
     r"https://github\.com/dotnet/aspnetcore/issues/(?P<issue>\d+)"
 )
@@ -604,6 +611,7 @@ def build_source_index(root):
                         DATA_QUARANTINE_PATTERN,
                         METHOD_QUARANTINE_PATTERN,
                         TRAIT_PATTERN,
+                        NON_DATA_CONDITION_PATTERN,
                     ))
                     for attribute in logical_attributes(attributes)
                 ),

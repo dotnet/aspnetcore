@@ -91,8 +91,12 @@ method-level quarantine candidate. Trailing attribute comments do not hide rows.
 Row mapping also fails closed when other method attributes could provide data:
 `MemberData`, `ClassData`, and unrecognized attributes can produce the same
 rendered arguments as an inline row. Only the recognized theory, inline/data
-quarantine, method quarantine, and xUnit trait attributes are accepted for
-automatic row mapping; unknown attributes are not assumed to be non-data metadata.
+quarantine, method quarantine, xUnit trait, and known repository non-data condition
+attributes (including `MsQuicSupported`, `OSSkipCondition`, and
+`FrameworkSkipCondition`) are accepted for automatic row mapping. The known
+conditions derive directly from `Attribute`, not `DataAttribute`; implementing
+`ITestCondition` alone is not sufficient. Unknown attributes are not assumed to
+be non-data metadata.
 Matching inline and quarantined rows with identical arguments are ambiguous too.
 Renamed row owners receive the same conservative history checks as method targets.
 Unresolved historical inheritance is unproven, not evidence that a test was
