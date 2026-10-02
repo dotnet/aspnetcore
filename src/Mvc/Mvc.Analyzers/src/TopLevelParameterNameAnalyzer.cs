@@ -89,6 +89,14 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
+        if (parameter.GetAttributes(symbolCache.FromServicesAttribute).Any())
+        {
+            // Ignore parameters injected from services. They are not model bound, so a
+            // name collision with a property of the service type cannot cause a binding
+            // ambiguity. See https://github.com/dotnet/aspnetcore/issues/63888.
+            return false;
+        }
+
         if (SpecifiesModelType(in symbolCache, parameter))
         {
             // Ignore parameters that specify a model type.
@@ -212,6 +220,7 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
             INamedTypeSymbol bindAttribute,
             INamedTypeSymbol controllerAttribute,
             INamedTypeSymbol fromBodyAttribute,
+            INamedTypeSymbol fromServicesAttribute,
             INamedTypeSymbol apiBehaviorMetadata,
             INamedTypeSymbol binderTypeProviderMetadata,
             INamedTypeSymbol modelNameProvider,
@@ -222,6 +231,7 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
             BindAttribute = bindAttribute;
             ControllerAttribute = controllerAttribute;
             FromBodyAttribute = fromBodyAttribute;
+            FromServicesAttribute = fromServicesAttribute;
             IApiBehaviorMetadata = apiBehaviorMetadata;
             IBinderTypeProviderMetadata = binderTypeProviderMetadata;
             IModelNameProvider = modelNameProvider;
@@ -245,6 +255,11 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
             }
 
             if (!TryGetType(SymbolNames.FromBodyAttribute, out var fromBodyAttribute))
+            {
+                return false;
+            }
+
+            if (!TryGetType(SymbolNames.FromServicesAttribute, out var fromServicesAttribute))
             {
                 return false;
             }
@@ -286,6 +301,7 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
                 bindAttribute,
                 controllerAttribute,
                 fromBodyAttribute,
+                fromServicesAttribute,
                 apiBehaviorMetadata,
                 iBinderTypeProviderMetadata,
                 iModelNameProvider,
@@ -305,6 +321,7 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol BindAttribute { get; }
         public INamedTypeSymbol ControllerAttribute { get; }
         public INamedTypeSymbol FromBodyAttribute { get; }
+        public INamedTypeSymbol FromServicesAttribute { get; }
         public INamedTypeSymbol IApiBehaviorMetadata { get; }
         public INamedTypeSymbol IBinderTypeProviderMetadata { get; }
         public INamedTypeSymbol IModelNameProvider { get; }
