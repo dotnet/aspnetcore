@@ -18,8 +18,7 @@
                 "$ref": "#/components/schemas/DirectionalDto"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -88,8 +87,7 @@
                 "$ref": "#/components/schemas/SerializerEnvelope"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -149,7 +147,6 @@
           {
             "name": "relativeUri",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string",
               "format": "uri"
@@ -184,7 +181,6 @@
           {
             "name": "address",
             "in": "query",
-            "required": true,
             "schema": {
               "$ref": "#/components/schemas/IPAddress"
             }
@@ -192,7 +188,6 @@
           {
             "name": "endpoint",
             "in": "query",
-            "required": true,
             "schema": {
               "$ref": "#/components/schemas/IPEndPoint"
             }

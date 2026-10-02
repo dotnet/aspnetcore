@@ -1,0 +1,532 @@
+  AnnotatedModelStage1 -> <repo-root>/artifacts/bin/AnnotatedModelStage1/Release/net11.0/AnnotatedModelStage1.dll
+  AnnotatedSchemaExporter -> <repo-root>/artifacts/bin/AnnotatedSchemaExporter/Release/net11.0/AnnotatedSchemaExporter.dll
+<repo-root>/.dotnet/sdk/11.0.100-rc.1.26420.103/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json/Corvus.Text.Json.csproj::TargetFramework=net10.0]
+<home>/.nuget/packages/endjin.recommendedpractices/2.1.18/build/Endjin.IssueGitHubWarningIfAppropriate.targets(43,9): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/JMESPath-Test-Suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/endjin.recommendedpractices/2.1.18/build/Endjin.IssueGitHubWarningIfAppropriate.targets(43,9): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/JSON-Schema-Test-Suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/endjin.recommendedpractices/2.1.18/build/Endjin.IssueGitHubWarningIfAppropriate.targets(43,9): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/Jsonata-Test-Suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/endjin.recommendedpractices/2.1.18/build/Endjin.IssueGitHubWarningIfAppropriate.targets(43,9): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/jsonpath-compliance-test-suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/endjin.recommendedpractices/2.1.18/build/Endjin.IssueGitHubWarningIfAppropriate.targets(43,9): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/slack-api-specs/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/endjin.recommendedpractices/2.1.18/build/Endjin.IssueGitHubWarningIfAppropriate.targets(43,9): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/tests/json-patch-tests/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/endjin.recommendedpractices/2.1.18/build/Endjin.IssueGitHubWarningIfAppropriate.targets(43,9): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/toon-format-spec/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/endjin.recommendedpractices/2.1.18/build/Endjin.IssueGitHubWarningIfAppropriate.targets(43,9): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/yaml-test-suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/microsoft.build.tasks.git/1.1.1/build/Microsoft.Build.Tasks.Git.targets(25,5): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/JMESPath-Test-Suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/microsoft.build.tasks.git/1.1.1/build/Microsoft.Build.Tasks.Git.targets(25,5): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/JSON-Schema-Test-Suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/microsoft.build.tasks.git/1.1.1/build/Microsoft.Build.Tasks.Git.targets(25,5): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/Jsonata-Test-Suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/microsoft.build.tasks.git/1.1.1/build/Microsoft.Build.Tasks.Git.targets(25,5): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/jsonpath-compliance-test-suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/microsoft.build.tasks.git/1.1.1/build/Microsoft.Build.Tasks.Git.targets(25,5): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/slack-api-specs/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/microsoft.build.tasks.git/1.1.1/build/Microsoft.Build.Tasks.Git.targets(25,5): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/tests/json-patch-tests/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/microsoft.build.tasks.git/1.1.1/build/Microsoft.Build.Tasks.Git.targets(25,5): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/toon-format-spec/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+<home>/.nuget/packages/microsoft.build.tasks.git/1.1.1/build/Microsoft.Build.Tasks.Git.targets(25,5): warning : Could not find file '<repo-root>/artifacts/corvus-image-source/yaml-test-suite/.git'. The source code won't be available via Source Link. [<repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/Corvus.Text.Json.Analyzers.csproj]
+  Corvus.Text.Json.Analyzers -> <repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json.Analyzers/bin/Release/netstandard2.0/Corvus.Text.Json.Analyzers.dll
+  Corvus.Text.Json -> <repo-root>/artifacts/corvus-image-source/src/Corvus.Text.Json/bin/Release/net10.0/Corvus.Text.Json.dll
+  CorvusImageProducer -> <repo-root>/artifacts/bin/CorvusImageProducer/Release/net10.0/CorvusImageProducer.dll
+  graph-identity=0E53596F56F86689286FDCA450301A7A28DC15AE79A36EE7B348DEEEEC21D8AD
+  bundle-bytes=1071
+  resource=urn:jsonschema:GeneratedSchemaInspection.FlagshipAddress;sha256=671A09E3D59D228A2F6E2F43F9598435516BC429CED584D91D3DBFC694F0EF16;bytes=285
+  resource=urn:jsonschema:GeneratedSchemaInspection.FlagshipModel;sha256=EFD501F9CF5AEF3D03F0F7526E94AA264FC93DEED80BE688299D5F7F309678EA;bytes=698
+  schema-bytes=1071
+  schema-identity=0E53596F56F86689286FDCA450301A7A28DC15AE79A36EE7B348DEEEEC21D8AD
+  image-version=6
+  image-bytes=1273
+  image-identity=24F0821589219C2A5C8554606606F5759977390F9F18BB594DBD1DC770073BE3
+  binding-identity=3EDC2C9E622A5D510971563DCDB97F3C7B035795867967BF291A6C928F2CB008
+  patterns=0
+  Microsoft.Extensions.Features -> <repo-root>/artifacts/bin/Microsoft.Extensions.Features/Release/net11.0/Microsoft.Extensions.Features.dll
+  Microsoft.Net.Http.Headers -> <repo-root>/artifacts/bin/Microsoft.Net.Http.Headers/Release/net11.0/Microsoft.Net.Http.Headers.dll
+  Microsoft.Extensions.ObjectPool -> <repo-root>/artifacts/bin/Microsoft.Extensions.ObjectPool/Release/net11.0/Microsoft.Extensions.ObjectPool.dll
+  Microsoft.AspNetCore.Http.RequestDelegateGenerator -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Http.RequestDelegateGenerator/Release/netstandard2.0/Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll
+  Microsoft.Extensions.Localization.Abstractions -> <repo-root>/artifacts/bin/Microsoft.Extensions.Localization.Abstractions/Release/net11.0/Microsoft.Extensions.Localization.Abstractions.dll
+  Microsoft.AspNetCore.Metadata -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Metadata/Release/net11.0/Microsoft.AspNetCore.Metadata.dll
+  Microsoft.AspNetCore.ResponseCaching.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.ResponseCaching.Abstractions/Release/net11.0/Microsoft.AspNetCore.ResponseCaching.Abstractions.dll
+  Microsoft.AspNetCore.OpenApi.SourceGenerators -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.OpenApi.SourceGenerators/Release/netstandard2.0/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll
+  Microsoft.Extensions.Validation.ValidationsGenerator -> <repo-root>/artifacts/bin/Microsoft.Extensions.Validation.ValidationsGenerator/Release/netstandard2.0/Microsoft.Extensions.Validation.ValidationsGenerator.dll
+  Microsoft.AspNetCore.WebUtilities -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.WebUtilities/Release/net11.0/Microsoft.AspNetCore.WebUtilities.dll
+  Microsoft.JSInterop -> <repo-root>/artifacts/bin/Microsoft.JSInterop/Release/net11.0/Microsoft.JSInterop.dll
+  Microsoft.Extensions.Validation -> <repo-root>/artifacts/bin/Microsoft.Extensions.Validation/Release/net11.0/Microsoft.Extensions.Validation.dll
+  Microsoft.AspNetCore.Authorization -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Authorization/Release/net11.0/Microsoft.AspNetCore.Authorization.dll
+  Microsoft.AspNetCore.Connections.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Connections.Abstractions/Release/net11.0/Microsoft.AspNetCore.Connections.Abstractions.dll
+  Microsoft.AspNetCore.Cryptography.Internal -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Cryptography.Internal/Release/net11.0/Microsoft.AspNetCore.Cryptography.Internal.dll
+  Microsoft.AspNetCore.DataProtection.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.DataProtection.Abstractions/Release/net11.0/Microsoft.AspNetCore.DataProtection.Abstractions.dll
+  Microsoft.AspNetCore.Html.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Html.Abstractions/Release/net11.0/Microsoft.AspNetCore.Html.Abstractions.dll
+  Microsoft.AspNetCore.Http.Features -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Http.Features/Release/net11.0/Microsoft.AspNetCore.Http.Features.dll
+  Microsoft.AspNetCore.Razor -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Razor/Release/net11.0/Microsoft.AspNetCore.Razor.dll
+  Microsoft.AspNetCore.Razor.Runtime -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Razor.Runtime/Release/net11.0/Microsoft.AspNetCore.Razor.Runtime.dll
+  Microsoft.AspNetCore.Hosting.Server.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Hosting.Server.Abstractions/Release/net11.0/Microsoft.AspNetCore.Hosting.Server.Abstractions.dll
+  Microsoft.AspNetCore.DataProtection -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.DataProtection/Release/net11.0/Microsoft.AspNetCore.DataProtection.dll
+  Microsoft.AspNetCore.Http.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Http.Abstractions/Release/net11.0/Microsoft.AspNetCore.Http.Abstractions.dll
+  Microsoft.AspNetCore.Routing.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Routing.Abstractions/Release/net11.0/Microsoft.AspNetCore.Routing.Abstractions.dll
+  Microsoft.AspNetCore.Diagnostics.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Diagnostics.Abstractions/Release/net11.0/Microsoft.AspNetCore.Diagnostics.Abstractions.dll
+  The package Microsoft.AspNetCore.App.Internal.Assets.11.0.0-dev is missing a readme. Go to https://aka.ms/nuget/authoring-best-practices/readme to learn why package readmes are important.
+  Successfully created package '<repo-root>/artifacts/packages/Debug/Shipping/Microsoft.AspNetCore.App.Internal.Assets.11.0.0-dev.nupkg'.
+  Microsoft.AspNetCore.Components -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Components/Release/net11.0/Microsoft.AspNetCore.Components.dll
+  Microsoft.AspNetCore.Authentication.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Authentication.Abstractions/Release/net11.0/Microsoft.AspNetCore.Authentication.Abstractions.dll
+  Microsoft.AspNetCore.Http.Extensions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Http.Extensions/Release/net11.0/Microsoft.AspNetCore.Http.Extensions.dll
+  Microsoft.AspNetCore.Hosting.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Hosting.Abstractions/Release/net11.0/Microsoft.AspNetCore.Hosting.Abstractions.dll
+  Microsoft.AspNetCore.Components.Forms -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Components.Forms/Release/net11.0/Microsoft.AspNetCore.Components.Forms.dll
+  Microsoft.AspNetCore.Components.Web -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Components.Web/Release/net11.0/Microsoft.AspNetCore.Components.Web.dll
+  Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets/Release/net11.0/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.dll
+  Microsoft.AspNetCore.HttpOverrides -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.HttpOverrides/Release/net11.0/Microsoft.AspNetCore.HttpOverrides.dll
+  Microsoft.AspNetCore.Localization -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Localization/Release/net11.0/Microsoft.AspNetCore.Localization.dll
+  Microsoft.AspNetCore.Server.Kestrel.Transport.Quic -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic/Release/net11.0/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.dll
+  Microsoft.AspNetCore.Http -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Http/Release/net11.0/Microsoft.AspNetCore.Http.dll
+  Microsoft.AspNetCore.Components.Authorization -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Components.Authorization/Release/net11.0/Microsoft.AspNetCore.Components.Authorization.dll
+  Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes/Release/net11.0/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.dll
+  Microsoft.AspNetCore.Antiforgery -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Antiforgery/Release/net11.0/Microsoft.AspNetCore.Antiforgery.dll
+  Microsoft.AspNetCore.HostFiltering -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.HostFiltering/Release/net11.0/Microsoft.AspNetCore.HostFiltering.dll
+  Microsoft.AspNetCore.Server.Kestrel.Core -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Server.Kestrel.Core/Release/net11.0/Microsoft.AspNetCore.Server.Kestrel.Core.dll
+  Microsoft.AspNetCore.Hosting -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Hosting/Release/net11.0/Microsoft.AspNetCore.Hosting.dll
+  Microsoft.AspNetCore.Routing -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Routing/Release/net11.0/Microsoft.AspNetCore.Routing.dll
+  Microsoft.AspNetCore.Authentication.Core -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Authentication.Core/Release/net11.0/Microsoft.AspNetCore.Authentication.Core.dll
+  Microsoft.Extensions.WebEncoders -> <repo-root>/artifacts/bin/Microsoft.Extensions.WebEncoders/Release/net11.0/Microsoft.Extensions.WebEncoders.dll
+  Microsoft.AspNetCore.OutputCaching -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.OutputCaching/Release/net11.0/Microsoft.AspNetCore.OutputCaching.dll
+  Microsoft.AspNetCore.Server.IISIntegration -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Server.IISIntegration/Release/net11.0/Microsoft.AspNetCore.Server.IISIntegration.dll
+  Microsoft.AspNetCore.Server.Kestrel -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/Release/net11.0/Microsoft.AspNetCore.Server.Kestrel.dll
+  Microsoft.AspNetCore.Cors -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Cors/Release/net11.0/Microsoft.AspNetCore.Cors.dll
+  Microsoft.AspNetCore.Diagnostics -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Diagnostics/Release/net11.0/Microsoft.AspNetCore.Diagnostics.dll
+  Microsoft.AspNetCore.Mvc.Abstractions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.Abstractions/Release/net11.0/Microsoft.AspNetCore.Mvc.Abstractions.dll
+  Microsoft.AspNetCore.Authentication -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Authentication/Release/net11.0/Microsoft.AspNetCore.Authentication.dll
+  Microsoft.AspNetCore.Server.HttpSys -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Server.HttpSys/Release/net11.0/Microsoft.AspNetCore.Server.HttpSys.dll
+  Microsoft.AspNetCore.Authorization.Policy -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Authorization.Policy/Release/net11.0/Microsoft.AspNetCore.Authorization.Policy.dll
+  Microsoft.AspNetCore.Http.Results -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Http.Results/Release/net11.0/Microsoft.AspNetCore.Http.Results.dll
+  Microsoft.AspNetCore.Mvc.Core -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.Core/Release/net11.0/Microsoft.AspNetCore.Mvc.Core.dll
+  Microsoft.AspNetCore.Mvc.Formatters.Json -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.Formatters.Json/Release/net11.0/Microsoft.AspNetCore.Mvc.Formatters.Json.dll
+  Microsoft.AspNetCore.StaticFiles -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.StaticFiles/Release/net11.0/Microsoft.AspNetCore.StaticFiles.dll
+  Microsoft.Extensions.Localization -> <repo-root>/artifacts/bin/Microsoft.Extensions.Localization/Release/net11.0/Microsoft.Extensions.Localization.dll
+  Microsoft.AspNetCore.Mvc.ApiExplorer -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.ApiExplorer/Release/net11.0/Microsoft.AspNetCore.Mvc.ApiExplorer.dll
+  Microsoft.AspNetCore.Mvc.DataAnnotations -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.DataAnnotations/Release/net11.0/Microsoft.AspNetCore.Mvc.DataAnnotations.dll
+  Microsoft.AspNetCore.Mvc.Cors -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.Cors/Release/net11.0/Microsoft.AspNetCore.Mvc.Cors.dll
+  Microsoft.AspNetCore.StaticAssets -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.StaticAssets/Release/net11.0/Microsoft.AspNetCore.StaticAssets.dll
+  Microsoft.AspNetCore.Server.IIS -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Server.IIS/Release/net11.0/Microsoft.AspNetCore.Server.IIS.dll
+  Microsoft.AspNetCore.DataProtection.Extensions -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.DataProtection.Extensions/Release/net11.0/Microsoft.AspNetCore.DataProtection.Extensions.dll
+  Microsoft.AspNetCore -> <repo-root>/artifacts/bin/Microsoft.AspNetCore/Release/net11.0/Microsoft.AspNetCore.dll
+  Microsoft.AspNetCore.Components.Endpoints -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Components.Endpoints/Release/net11.0/Microsoft.AspNetCore.Components.Endpoints.dll
+  Microsoft.AspNetCore.OpenApi -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.OpenApi/Release/net11.0/Microsoft.AspNetCore.OpenApi.dll
+  Microsoft.AspNetCore.Mvc.ViewFeatures -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.ViewFeatures/Release/net11.0/Microsoft.AspNetCore.Mvc.ViewFeatures.dll
+  Microsoft.AspNetCore.Mvc.Razor -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.Razor/Release/net11.0/Microsoft.AspNetCore.Mvc.Razor.dll
+  Microsoft.AspNetCore.Mvc.RazorPages -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.RazorPages/Release/net11.0/Microsoft.AspNetCore.Mvc.RazorPages.dll
+  Microsoft.AspNetCore.Mvc.TagHelpers -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.TagHelpers/Release/net11.0/Microsoft.AspNetCore.Mvc.TagHelpers.dll
+  Microsoft.AspNetCore.Mvc.Localization -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc.Localization/Release/net11.0/Microsoft.AspNetCore.Mvc.Localization.dll
+  Microsoft.AspNetCore.Mvc -> <repo-root>/artifacts/bin/Microsoft.AspNetCore.Mvc/Release/net11.0/Microsoft.AspNetCore.Mvc.dll
+  AnnotatedSchemaDemo -> <repo-root>/artifacts/bin/AnnotatedSchemaDemo/Release/net11.0/AnnotatedSchemaDemo.dll
+  info: Microsoft.Hosting.Lifetime[14]
+        Now listening on: http://127.0.0.1:38487
+  info: Microsoft.Hosting.Lifetime[0]
+        Application started. Press Ctrl+C to shut down.
+  info: Microsoft.Hosting.Lifetime[0]
+        Hosting environment: Production
+  info: Microsoft.Hosting.Lifetime[0]
+        Content root path: <repo-root>/docs/OpenApiInferenceProposal/evidence/generated-schema-artifacts/two-stage-annotated-demo
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - application/json 57
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+        Writing value of type 'FlagshipModel' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - 200 - application/json;+charset=utf-8 275.8374ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - application/json 120
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+        Writing value of type 'FlagshipModel' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - 200 - application/json;+charset=utf-8 8.1358ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - application/json 28
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - 400 - application/problem+json 90.9506ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - application/json 57
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - 400 - application/problem+json 1.8559ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - application/json 46
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - 400 - application/problem+json 0.6335ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - application/json 74
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - 400 - application/problem+json 1.0618ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - application/json 84
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - 400 - application/problem+json 1.0765ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - application/json 75
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/native'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/native - 400 - application/problem+json 0.8999ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - application/json 57
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+        Writing value of type 'FlagshipModel' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - 200 - application/json;+charset=utf-8 2.1050ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - application/json 120
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+        Writing value of type 'FlagshipModel' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - 200 - application/json;+charset=utf-8 0.8719ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - application/json 28
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - 400 - application/problem+json 0.8239ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - application/json 57
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - 400 - application/problem+json 0.7512ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - application/json 46
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - 400 - application/problem+json 0.7372ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - application/json 74
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - 400 - application/problem+json 0.7896ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - application/json 84
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - 400 - application/problem+json 0.5592ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - application/json 75
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus - 400 - application/problem+json 0.5708ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - application/json 57
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+        Route matched with {action = "Native", controller = "Demo"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.ActionResult`1[GeneratedSchemaInspection.FlagshipModel] Native(GeneratedSchemaInspection.FlagshipModel) on controller DemoController (AnnotatedSchemaDemo).
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+        Executing ObjectResult, writing value of type 'GeneratedSchemaInspection.FlagshipModel'.
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+        Executed action DemoController.Native (AnnotatedSchemaDemo) in 166.9245ms
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - 200 - application/json;+charset=utf-8 255.0784ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - application/json 120
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+        Route matched with {action = "Native", controller = "Demo"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.ActionResult`1[GeneratedSchemaInspection.FlagshipModel] Native(GeneratedSchemaInspection.FlagshipModel) on controller DemoController (AnnotatedSchemaDemo).
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+        Executing ObjectResult, writing value of type 'GeneratedSchemaInspection.FlagshipModel'.
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+        Executed action DemoController.Native (AnnotatedSchemaDemo) in 3.0968ms
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - 200 - application/json;+charset=utf-8 8.9383ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - application/json 28
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - 400 - application/problem+json 1.0456ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - application/json 57
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - 400 - application/problem+json 0.4482ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - application/json 46
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - 400 - application/problem+json 2.9218ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - application/json 74
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - 400 - application/problem+json 1.0898ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - application/json 84
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - 400 - application/problem+json 1.2813ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - application/json 75
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Native (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/native - 400 - application/problem+json 0.6038ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - application/json 57
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+        Route matched with {action = "Corvus", controller = "Demo"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.ActionResult`1[GeneratedSchemaInspection.FlagshipModel] Corvus(GeneratedSchemaInspection.FlagshipModel) on controller DemoController (AnnotatedSchemaDemo).
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+        Executing ObjectResult, writing value of type 'GeneratedSchemaInspection.FlagshipModel'.
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+        Executed action DemoController.Corvus (AnnotatedSchemaDemo) in 8.7105ms
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - 200 - application/json;+charset=utf-8 13.8066ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - application/json 120
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+        Route matched with {action = "Corvus", controller = "Demo"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.ActionResult`1[GeneratedSchemaInspection.FlagshipModel] Corvus(GeneratedSchemaInspection.FlagshipModel) on controller DemoController (AnnotatedSchemaDemo).
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+        Executing ObjectResult, writing value of type 'GeneratedSchemaInspection.FlagshipModel'.
+  info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+        Executed action DemoController.Corvus (AnnotatedSchemaDemo) in 0.6672ms
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - 200 - application/json;+charset=utf-8 1.6913ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - application/json 28
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - 400 - application/problem+json 0.8704ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - application/json 57
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - 400 - application/problem+json 0.7143ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - application/json 46
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - 400 - application/problem+json 0.6076ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - application/json 74
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - 400 - application/problem+json 0.5843ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - application/json 84
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - 400 - application/problem+json 0.6629ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - application/json 75
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 400.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'HttpValidationProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'DemoController.Corvus (AnnotatedSchemaDemo)'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/mvc/corvus - 400 - application/problem+json 0.6726ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 GET http://127.0.0.1:38487/minimal/corvus/invalid-response - - -
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: GET /minimal/corvus/invalid-response'
+  info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+        Writing value of type '<>f__AnonymousType0`3' as Json.
+  fail: Microsoft.AspNetCore.OpenApi.ValidatedJsonSchema[0]
+        Validated JSON response 3EDC2C9E622A5D510971563DCDB97F3C7B035795867967BF291A6C928F2CB008 was suppressed: The serialized response did not satisfy its validated JSON Schema.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: GET /minimal/corvus/invalid-response'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 GET http://127.0.0.1:38487/minimal/corvus/invalid-response - 500 0 - 32.3814ms
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+        Request starting HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus/limited - application/json;+charset=utf-8 198
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+        Executing endpoint 'HTTP: POST /minimal/corvus/limited'
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+        Setting HTTP status code 413.
+  info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+        Writing value of type 'ProblemDetails' as Json.
+  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+        Executed endpoint 'HTTP: POST /minimal/corvus/limited'
+  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+        Request finished HTTP/1.1 POST http://127.0.0.1:38487/minimal/corvus/limited - 413 - application/problem+json 8.5557ms
+  info: Microsoft.Hosting.Lifetime[0]
+        Application is shutting down...
+  verified
+HISTORICAL COLLECTIBLE-ALC EXPORTER TRANSCRIPT
+Recorded before the same-pass CanonicalOnly prototype.
+Current authority: ../../same-pass-exporter-removal.md

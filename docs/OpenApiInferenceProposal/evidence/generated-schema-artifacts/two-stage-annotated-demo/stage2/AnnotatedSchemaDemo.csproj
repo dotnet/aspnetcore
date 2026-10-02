@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <EnablePublicApiAnalyzer>false</EnablePublicApiAnalyzer>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <NoWarn>$(NoWarn);ASP0040;RS0016;RS0017;RS0037</NoWarn>
+  </PropertyGroup>
+  <Import Project="../generated/flagship.generated.props" />
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.OpenApi" />
+    <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
+    <PackageReference Include="JsonSchema.Net" Version="9.4.0" />
+    <ProjectReference Include="../stage1-native/AnnotatedModelStage1.Native.csproj"
+      AdditionalProperties="JsonSchemaGenerationPrototypePackageRoot=$(JsonSchemaGenerationPrototypePackageRoot)" />
+    <Reference Include="Microsoft.AspNetCore.OpenApi" />
+    <ProjectReference Include="$(RepoRoot)/src/OpenApi/gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(CorvusJsonSchemaSourceRoot)/src/Corvus.Text.Json/Corvus.Text.Json.csproj" />
+    <Compile Include="../generated/FlagshipCorvusProgramImage.g.cs" Link="Generated/FlagshipCorvusProgramImage.g.cs" />
+    <AdditionalFiles Include="../generated/flagship.schema.json"
+      OpenApiValidatedJsonSchema="true"
+      LogicalName="FlagshipAnnotated"
+      Dialect="Draft202012"
+      Capabilities="None"
+      SchemaIdentity="$(FlagshipSchemaIdentity)" />
+    <Content Include="../generated/flagship.bundle.json" Link="flagship.bundle.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../generated/flagship.manifest.json" Link="flagship.manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../generated/flagship.schema.json" Link="flagship.schema.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.OpenApi.Tests/$(Configuration)/net11.0/*.dll"
+      Link="%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.OpenApi.Tests/$(Configuration)/net11.0/*.json"
+      Link="%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="OpenApiValidatedJsonSchema" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LogicalName" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Dialect" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Capabilities" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SchemaIdentity" />
+  </ItemGroup>
+</Project>

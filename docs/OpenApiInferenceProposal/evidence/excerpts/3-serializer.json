@@ -9,8 +9,7 @@
               "$ref": "#/components/schemas/SerializerEnvelope"
             }
           }
-        },
-        "required": true
+        }
       },
       "responses": {
         "200": {
@@ -73,8 +72,7 @@
               "$ref": "#/components/schemas/SerializerEnvelope"
             }
           }
-        },
-        "required": true
+        }
       },
       "responses": {
         "200": {

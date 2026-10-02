@@ -1,387 +1,209 @@
-# Experimental OpenAPI inference: proposed API surface
+# Public API overview
 
-This appendix inventories the complete public API added by the prototype relative to merge base `89ab93803f3fcbb928f8ed1523945f89284f7e79`.
+The proposal is split into six independently reviewable groups. Later groups reuse named concepts
+from earlier groups but do not force approval of unrelated capabilities. Every prototype API is
+experimental under `ASP0040`.
 
-The APIs should not be reviewed as one indivisible block. They fall into five independently reviewable proposals. All prototype APIs use the existing experimental diagnostic `ASP0040`.
+The exhaustive prototype inventory is archived at
+[Full API history](archive/2026-10-prototype-design-history/api-surface.md).
 
-## API review 5: endpoint-enforced validated JSON Schema
+## Review roadmap
 
-This proposal is independent of inferred generation and the evidence-provider seam. It atomically binds exact immutable Draft 4, Draft 6, Draft 7, Draft 2019-09, or Draft 2020-12 bytes, a compiled validator with explicit dialect capabilities, directional endpoint metadata, and bounded request/response enforcement.
+| Review | Purpose | Principal APIs | Dependency | Evidence |
+| --- | --- | --- | --- | --- |
+| 1 | Opt-in inference and scalar-format policy | `OpenApiSchemaGenerationMode`, `OpenApiScalarFormatPolicy`, `OpenApiScalarFormatContext` | None | [Core inference](evidence/core-inference-details.md#focused-comparisons-and-practical-impact) |
+| 2 | Version-targeted generation and transformers | `IOpenApiVersionedDocumentProvider`, `OpenApiVersion` on transformer contexts | None | [Cross-version artifacts](evidence/core-inference-details.md#artifacts-and-normalization) |
+| 3 | Positional tuple JSON | `JsonArrayTupleConverter`, `JsonArrayTupleConverters` | None; inference recognizes it when both are selected | [Tuple/provider tests](evidence/schema-evidence-providers.md#what-is-covered) |
+| 4 | Narrow runtime-enforced evidence | `IOpenApiSchemaEvidenceProvider`, `OpenApiSchemaEvidence`, `OpenApiSchemaNumber` | Review 1 inference | [Provider safety and exact numbers](evidence/schema-evidence-providers.md) |
+| 5 | Dynamic complete-schema endpoint enforcement | Runtime evidence, validator factory/validator, registration/options | Review 4 directional purpose | [Runtime adapter and endpoint policy](evidence/validated-schema-adapters/README.md) |
+| 6 | Generated complete-schema artifacts | Artifact, static validator, binding, generic endpoint extensions | Review 5 dialect/result/options concepts | [Generated authority and bindings](evidence/generated-schema-artifacts/current-proof.md) |
 
-```diff
- namespace Microsoft.AspNetCore.OpenApi;
+## Reviews 1–3: inference, target version, and tuples
 
-+public enum OpenApiJsonSchemaDialect
-+{
-+    Draft202012 = 0,
-+    Draft4 = 1,
-+    Draft6 = 2,
-+    Draft7 = 3,
-+    Draft201909 = 4,
-+}
-+[Flags] public enum OpenApiJsonSchemaValidationCapabilities { None, FormatAssertions }
-+public sealed class OpenApiValidatedJsonSchemaEvidence : OpenApiSchemaEvidence
-+{
-+    public JsonElement Schema { get; }
-+    public OpenApiJsonSchemaDialect Dialect { get; }
-+    public string Identity { get; }
-+    public string SchemaIdentity { get; }
-+    public OpenApiJsonSchemaValidationCapabilities ValidationCapabilities { get; }
-+    public string ValidatorConfigurationIdentity { get; }
-+}
-+public sealed class OpenApiJsonSchemaValidationContext
-+{
-+    public OpenApiJsonSchemaValidationContext(
-+        OpenApiValidatedJsonSchemaEvidence evidence,
-+        OpenApiSchemaEvidencePurpose purpose);
-+    public OpenApiValidatedJsonSchemaEvidence Evidence { get; }
-+    public OpenApiSchemaEvidencePurpose Purpose { get; }
-+}
-+public sealed class OpenApiJsonSchemaValidationError
-+{
-+    public OpenApiJsonSchemaValidationError(string instanceLocation, string keyword, string message);
-+    public string InstanceLocation { get; }
-+    public string Keyword { get; }
-+    public string Message { get; }
-+}
-+public readonly struct OpenApiJsonSchemaValidationResult
-+{
-+    public OpenApiJsonSchemaValidationResult();
-+    public OpenApiJsonSchemaValidationResult(IEnumerable<OpenApiJsonSchemaValidationError> errors);
-+    public static OpenApiJsonSchemaValidationResult Valid { get; }
-+    public bool IsValid { get; }
-+    public IReadOnlyList<OpenApiJsonSchemaValidationError>? Errors { get; }
-+}
-+public interface IOpenApiJsonSchemaValidator
-+{
-+    ValueTask<OpenApiJsonSchemaValidationResult> ValidateAsync(
-+        ReadOnlyMemory<byte> utf8Json,
-+        OpenApiJsonSchemaValidationContext context,
-+        CancellationToken cancellationToken = default);
-+}
-+public interface IOpenApiJsonSchemaValidatorFactory
-+{
-+    string ConfigurationIdentity { get; }
-+    bool SupportsDialect(OpenApiJsonSchemaDialect dialect);
-+    IOpenApiJsonSchemaValidator CreateValidator(OpenApiValidatedJsonSchemaEvidence evidence);
-+}
-+public sealed class OpenApiValidatedJsonSchemaOptions
-+{
-+    public long MaxPayloadSize { get; init; }
-+    public bool AllowEmptyRequestBody { get; init; }
-+    public int? ResponseStatusCode { get; init; }
-+    public string ContentType { get; init; }
-+}
-+public sealed class OpenApiValidatedJsonSchemaRegistration
-+{
-+    public OpenApiValidatedJsonSchemaRegistration(
-+        Type type,
-+        OpenApiSchemaEvidencePurpose purpose,
-+        ReadOnlyMemory<byte> utf8Schema,
-+        OpenApiJsonSchemaDialect dialect,
-+        OpenApiJsonSchemaValidationCapabilities validationCapabilities,
-+        IOpenApiJsonSchemaValidatorFactory validatorFactory,
-+        OpenApiValidatedJsonSchemaOptions? options = null);
-+    public Type Type { get; }
-+    public OpenApiSchemaEvidencePurpose Purpose { get; }
-+    public OpenApiValidatedJsonSchemaEvidence Evidence { get; }
-+    public OpenApiValidatedJsonSchemaOptions Options { get; }
-+}
-+
- namespace Microsoft.AspNetCore.Builder;
+Review 1 adds `Legacy`/`Inferred` generation modes and policy-controlled scalar formats. The
+framework creates `OpenApiScalarFormatContext`; applications can preserve conventional formats,
+emit only formats compatible with the full accepted language, suppress optional formats, or use a
+contextual callback.
 
-+public static class OpenApiValidatedJsonSchemaEndpointConventionBuilderExtensions
-+{
-+    public static TBuilder WithValidatedJsonSchema<TBuilder>(
-+        this TBuilder builder,
-+        OpenApiValidatedJsonSchemaRegistration registration)
-+        where TBuilder : IEndpointConventionBuilder;
-+    public static TBuilder WithValidatedJsonSchema<TBuilder>(
-+        this TBuilder builder,
-+        OpenApiValidatedJsonSchemaRegistration registration,
-+        Func<ControllerActionDescriptor, bool> actionPredicate)
-+        where TBuilder : IEndpointConventionBuilder;
-+}
-```
+Review 2 adds target-version document generation and exposes the selected `OpenApiSpecVersion` to
+schema, operation, and document transformers.
 
-Every declaration above carries `Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")`.
+Review 3 supplies opt-in positional JSON converters for `Tuple` and `ValueTuple`, including closed
+converter factories for NativeAOT. Converter registration changes runtime JSON; inference merely
+recognizes that package-owned contract.
 
-`SchemaIdentity` hashes exact source bytes. `Identity` additionally covers the declared dialect,
-validation capabilities, and stable validator configuration identity, preventing caches from
-colliding across different semantics. Factories must reject unsupported dialects before
-compilation; no default dialect is inferred.
+These groups are independently useful. Version-aware transformer contexts do not require inferred
+mode. Tuple converters do not activate merely because the package or OpenAPI services are present.
+Inference remains opt-in and Legacy remains the default.
 
-The result is a value type so `default`/`Valid` is the allocation-free success representation. Error collections are created only on failure. Endpoint conventions compile validators and precompute directional selectors and validation contexts once while building the endpoint. The action-predicate overload evaluates the predicate during controller endpoint construction and attaches the same plan only to selected actions, allowing the same CLR type to use different schemas on different actions. At runtime, bounded `ArrayPool<byte>` buffers and a pooled `IHttpResponseBodyFeature` capture raw request/response bytes; synchronous successful validation and copying avoid metadata, result, and buffering allocations.
-
-## API review 1: inferred schemas and scalar formats
-
-```diff
- namespace Microsoft.AspNetCore.OpenApi;
-
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public enum OpenApiSchemaGenerationMode
-+{
-+    Legacy = 0,
-+    Inferred = 1,
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public enum OpenApiScalarFormatPolicy
-+{
-+    Conventional = 0,
-+    CompatibleOnly = 1,
-+    None = 2,
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public enum OpenApiScalarFormatLocation
-+{
-+    JsonBody = 0,
-+    JsonProperty = 1,
-+    Route = 2,
-+    Query = 3,
-+    Header = 4,
-+    Form = 5,
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public enum OpenApiScalarFormatPurpose
-+{
-+    Neutral = 0,
-+    Input = 1,
-+    Output = 2,
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public enum OpenApiScalarFormatProvenance
-+{
-+    Unknown = 0,
-+    SystemTextJsonBuiltIn = 1,
-+    FrameworkBuiltInParser = 2,
-+    CustomConverter = 3,
-+    CustomParser = 4,
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public sealed class OpenApiScalarFormatContext
-+{
-+    public Type Type { get; }
-+    public Type EffectiveType { get; }
-+    public OpenApiScalarFormatLocation Location { get; }
-+    public OpenApiScalarFormatPurpose Purpose { get; }
-+    public OpenApiSpecVersion OpenApiVersion { get; }
-+    public OpenApiScalarFormatProvenance Provenance { get; }
-+    public string? DefaultFormat { get; }
-+}
-+
- public sealed class OpenApiOptions
- {
-+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+    public OpenApiSchemaGenerationMode SchemaGenerationMode { get; set; }
-+
-+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+    public OpenApiScalarFormatPolicy ScalarFormatPolicy { get; set; }
-+
-+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+    public Func<OpenApiScalarFormatContext, string?>? CreateScalarFormat { get; set; }
- }
-```
-
-`OpenApiScalarFormatContext` has an internal constructor and is a framework-supplied input only. Legacy is the default schema-generation mode. Conventional is the default inferred scalar-format policy.
-
-## API review 2: version-targeted generation and transformers
-
-```diff
- namespace Microsoft.AspNetCore.OpenApi;
-
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public interface IOpenApiVersionedDocumentProvider : IOpenApiDocumentProvider
-+{
-+    Task<OpenApiDocument> GetOpenApiDocumentForVersionAsync(
-+        OpenApiSpecVersion openApiVersion,
-+        CancellationToken cancellationToken = default);
-+}
-
- public sealed class OpenApiDocumentTransformerContext
- {
-+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+    public OpenApiSpecVersion OpenApiVersion { get; init; }
- }
-
- public sealed class OpenApiOperationTransformerContext
- {
-+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+    public OpenApiSpecVersion OpenApiVersion { get; init; }
- }
-
- public sealed class OpenApiSchemaTransformerContext
- {
-+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+    public OpenApiSpecVersion OpenApiVersion { get; init; }
- }
-```
-
-The existing `IOpenApiDocumentProvider` surface is unchanged. The built-in provider implements and is keyed-registered as the derived interface.
-
-## API review 3: positional tuple JSON
-
-```diff
- namespace Microsoft.AspNetCore.OpenApi;
-
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public sealed class JsonArrayTupleConverter : JsonConverterFactory
-+{
-+    [RequiresDynamicCode(...)]
-+    [RequiresUnreferencedCode(...)]
-+    public JsonArrayTupleConverter();
-+
-+    public override bool CanConvert(Type typeToConvert);
-+
-+    [RequiresDynamicCode(...)]
-+    [RequiresUnreferencedCode(...)]
-+    public override JsonConverter CreateConverter(
-+        Type typeToConvert,
-+        JsonSerializerOptions options);
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public static class JsonArrayTupleConverters
-+{
-+    public static JsonConverter<ValueTuple> CreateValueTuple();
-+    public static JsonConverter<ValueTuple<T1>> CreateValueTuple<T1>();
-+    public static JsonConverter<(T1, T2)> CreateValueTuple<T1, T2>();
-+    public static JsonConverter<(T1, T2, T3)> CreateValueTuple<T1, T2, T3>();
-+    public static JsonConverter<(T1, T2, T3, T4)> CreateValueTuple<T1, T2, T3, T4>();
-+    public static JsonConverter<(T1, T2, T3, T4, T5)> CreateValueTuple<T1, T2, T3, T4, T5>();
-+    public static JsonConverter<(T1, T2, T3, T4, T5, T6)> CreateValueTuple<T1, T2, T3, T4, T5, T6>();
-+    public static JsonConverter<(T1, T2, T3, T4, T5, T6, T7)> CreateValueTuple<T1, T2, T3, T4, T5, T6, T7>();
-+    public static JsonConverter<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>
-+        CreateValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(
-+            JsonConverter<TRest> restConverter)
-+        where TRest : struct, ITuple;
-+
-+    public static JsonConverter<Tuple<T1>> CreateTuple<T1>();
-+    public static JsonConverter<Tuple<T1, T2>> CreateTuple<T1, T2>();
-+    public static JsonConverter<Tuple<T1, T2, T3>> CreateTuple<T1, T2, T3>();
-+    public static JsonConverter<Tuple<T1, T2, T3, T4>> CreateTuple<T1, T2, T3, T4>();
-+    public static JsonConverter<Tuple<T1, T2, T3, T4, T5>> CreateTuple<T1, T2, T3, T4, T5>();
-+    public static JsonConverter<Tuple<T1, T2, T3, T4, T5, T6>> CreateTuple<T1, T2, T3, T4, T5, T6>();
-+    public static JsonConverter<Tuple<T1, T2, T3, T4, T5, T6, T7>> CreateTuple<T1, T2, T3, T4, T5, T6, T7>();
-+    public static JsonConverter<Tuple<T1, T2, T3, T4, T5, T6, T7, TRest>>
-+        CreateTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(
-+            JsonConverter<TRest> restConverter)
-+        where TRest : ITuple;
-+}
-```
-
-There is no separate public RDG switch. Applications opt into positional tuple JSON through existing HTTP JSON configuration:
+## Review 4: narrow evidence
 
 ```csharp
-services.ConfigureHttpJsonOptions(options =>
-    options.SerializerOptions.Converters.Add(new JsonArrayTupleConverter()));
+public interface IOpenApiSchemaEvidenceProvider
+{
+    OpenApiSchemaEvidence? GetSchemaEvidence(OpenApiSchemaEvidenceContext context);
+}
+
+public abstract class OpenApiSchemaEvidence;
+
+public sealed class OpenApiScalarSchemaEvidence : OpenApiSchemaEvidence
+{
+    public OpenApiScalarSchemaEvidence(
+        OpenApiScalarSchemaValueKind valueKind,
+        string? format = null,
+        string? pattern = null,
+        OpenApiSchemaNumber? minimum = null,
+        OpenApiSchemaNumber? maximum = null);
+}
 ```
 
-For NativeAOT, an application registers one or more closed converters:
+`OpenApiSchemaNumber` is an immutable exact JSON number represented by normalized
+`BigInteger significand × 10^exponent`. It supports invariant parsing, formatting, equality, and
+bounded comparison without expanding enormous powers of ten. This permits fractional and
+scientific bounds without decimal/double precision loss.
+
+Evidence carries only strict scalar and fixed positional-array facts. It neither models complete
+JSON Schema nor installs endpoint validation.
+
+`OpenApiSchemaEvidenceContext` is framework-created and includes declared/effective type,
+`JsonTypeInfo`, converter, and directional purpose. This ties every provider claim to the runtime
+mechanism and request/response direction that proves it.
+
+## Review 5: runtime complete-schema validation
 
 ```csharp
-services.ConfigureHttpJsonOptions(options =>
-    options.SerializerOptions.Converters.Add(
-        JsonArrayTupleConverters.CreateValueTuple<long, bool>()));
+public interface IOpenApiJsonSchemaValidatorFactory
+{
+    string ConfigurationIdentity { get; }
+    bool SupportsDialect(OpenApiJsonSchemaDialect dialect);
+    IOpenApiJsonSchemaValidator CreateValidator(OpenApiValidatedJsonSchemaEvidence evidence);
+}
+
+public interface IOpenApiJsonSchemaValidator
+{
+    ValueTask<OpenApiJsonSchemaValidationResult> ValidateAsync(
+        ReadOnlyMemory<byte> utf8Json,
+        OpenApiJsonSchemaValidationContext context,
+        CancellationToken cancellationToken = default);
+}
+
+public sealed class OpenApiValidatedJsonSchemaRegistration
+{
+    public OpenApiValidatedJsonSchemaRegistration(
+        Type type,
+        OpenApiSchemaEvidencePurpose purpose,
+        ReadOnlyMemory<byte> utf8Schema,
+        OpenApiJsonSchemaDialect dialect,
+        OpenApiJsonSchemaValidationCapabilities validationCapabilities,
+        IOpenApiJsonSchemaValidatorFactory validatorFactory,
+        OpenApiValidatedJsonSchemaOptions? options = null);
+}
+
+public sealed class OpenApiValidatedJsonSchemaOptions
+{
+    public long MaxPayloadSize { get; init; }
+    public bool AllowEmptyRequestBody { get; init; }
+    public int? ResponseStatusCode { get; init; }
+    public string ContentType { get; init; }
+}
+
+public static TBuilder WithValidatedJsonSchema<TBuilder>(
+    this TBuilder builder,
+    OpenApiValidatedJsonSchemaRegistration registration)
+    where TBuilder : IEndpointConventionBuilder;
 ```
 
-RDG detects explicit package converter registration and adds generated closed converters only for additional statically discovered tuple contracts that are not already handled. Package presence, `AddOpenApi`, RDG, and inferred mode are inert without explicit converter registration.
+The factory is the one-time adapter/compile seam. The reusable validator is the per-payload
+execution seam. `OpenApiJsonSchemaValidationResult` and `OpenApiJsonSchemaValidationError` prevent
+native engine objects from entering framework policy.
 
-## API review 4: runtime-enforced schema evidence
+`SchemaIdentity` belongs to source authority; `ConfigurationIdentity` belongs to engine semantics;
+the registration's composite `Identity` prevents cache collisions. Options control maximum
+payload size, empty requests, output status, and content type.
 
-```diff
- namespace Microsoft.AspNetCore.OpenApi;
+The runtime schema authority is exposed as `OpenApiValidatedJsonSchemaEvidence`, which retains
+source schema, dialect, capabilities, schema identity, validator configuration identity, and
+composite identity. Despite the historical class name, this is complete validated-schema
+authority, not the narrow provider algebra.
 
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public enum OpenApiSchemaEvidencePurpose
-+{
-+    Neutral = 0,
-+    Input = 1,
-+    Output = 2,
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public enum OpenApiScalarSchemaValueKind
-+{
-+    Boolean = 0,
-+    String = 1,
-+    Integer = 2,
-+    Number = 3,
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public sealed class OpenApiSchemaEvidenceContext
-+{
-+    public Type Type { get; }
-+    public Type EffectiveType { get; }
-+    public JsonTypeInfo TypeInfo { get; }
-+    public JsonConverter Converter { get; }
-+    public OpenApiSchemaEvidencePurpose Purpose { get; }
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public interface IOpenApiSchemaEvidenceProvider
-+{
-+    OpenApiSchemaEvidence? GetSchemaEvidence(OpenApiSchemaEvidenceContext context);
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public abstract class OpenApiSchemaEvidence;
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public sealed class OpenApiScalarSchemaEvidence : OpenApiSchemaEvidence
-+{
-+    public OpenApiScalarSchemaEvidence(
-+        OpenApiScalarSchemaValueKind valueKind,
-+        string? format = null,
-+        string? pattern = null,
-+        BigInteger? minimum = null,
-+        BigInteger? maximum = null);
-+
-+    public OpenApiScalarSchemaValueKind ValueKind { get; }
-+    public string? Format { get; }
-+    public string? Pattern { get; }
-+    public BigInteger? Minimum { get; }
-+    public BigInteger? Maximum { get; }
-+}
-+
-+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+public sealed class OpenApiPositionalArraySchemaEvidence : OpenApiSchemaEvidence
-+{
-+    public OpenApiPositionalArraySchemaEvidence(IEnumerable<Type> elementTypes);
-+    public IReadOnlyList<Type> ElementTypes { get; }
-+}
-+
- public sealed class OpenApiOptions
- {
-+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-+    public OpenApiOptions AddSchemaEvidenceProvider(IOpenApiSchemaEvidenceProvider provider);
- }
+The registration overload preserves the concrete Minimal API builder type. A controller overload
+accepts `Func<ControllerActionDescriptor, bool>` and selects actions during endpoint construction.
+
+## Review 6: generated/AOT complete-schema validation
+
+```csharp
+public interface IOpenApiValidatedJsonSchemaArtifact<TSelf>
+    where TSelf : IOpenApiValidatedJsonSchemaArtifact<TSelf>
+{
+    static abstract ReadOnlyMemory<byte> SourceSchema { get; }
+    static abstract ReadOnlyMemory<byte> NormalizedSchema { get; }
+    static abstract ReadOnlyMemory<byte> LocalReferences { get; }
+    static abstract OpenApiJsonSchemaDialect Dialect { get; }
+    static abstract OpenApiJsonSchemaValidationCapabilities Capabilities { get; }
+    static abstract string SchemaIdentity { get; }
+    static abstract OpenApiSchema CreateOpenApiSchema(OpenApiSpecVersion openApiVersion);
+}
+
+public interface IOpenApiValidatedJsonSchemaValidator<TArtifact, TSelf>
+    where TArtifact : IOpenApiValidatedJsonSchemaArtifact<TArtifact>
+    where TSelf : IOpenApiValidatedJsonSchemaValidator<TArtifact, TSelf>
+{
+    static abstract string ConfigurationIdentity { get; }
+    static abstract ValueTask<OpenApiJsonSchemaValidationResult> ValidateAsync(
+        ReadOnlyMemory<byte> utf8Json,
+        OpenApiSchemaEvidencePurpose purpose,
+        CancellationToken cancellationToken = default);
+}
+
+public interface IOpenApiValidatedJsonSchemaBinding<TSelf>
+    where TSelf : IOpenApiValidatedJsonSchemaBinding<TSelf>
+{
+    static abstract Type Type { get; }
+    static abstract string SchemaIdentity { get; }
+    static abstract string Identity { get; }
+    static abstract OpenApiJsonSchemaDialect Dialect { get; }
+    static abstract OpenApiJsonSchemaValidationCapabilities Capabilities { get; }
+    static abstract OpenApiSchema CreateOpenApiSchema(OpenApiSpecVersion openApiVersion);
+    static abstract ValueTask<OpenApiJsonSchemaValidationResult> ValidateAsync(
+        ReadOnlyMemory<byte> utf8Json,
+        OpenApiSchemaEvidencePurpose purpose,
+        CancellationToken cancellationToken = default);
+}
+
+public static IEndpointConventionBuilder WithValidatedJsonSchema<TBinding>(
+    this IEndpointConventionBuilder builder,
+    OpenApiSchemaEvidencePurpose purpose)
+    where TBinding : IOpenApiValidatedJsonSchemaBinding<TBinding>;
+
+public static IEndpointConventionBuilder WithValidatedJsonSchema<TBinding>(
+    this IEndpointConventionBuilder builder,
+    OpenApiSchemaEvidencePurpose purpose,
+    OpenApiValidatedJsonSchemaOptions? options)
+    where TBinding : IOpenApiValidatedJsonSchemaBinding<TBinding>;
 ```
 
-`OpenApiSchemaEvidenceContext` has an internal constructor and is a framework-supplied provider input. This optional seam strengthens otherwise opaque contracts only when a third-party runtime mechanism enforces the returned evidence. It is not required for ordinary inferred generation. The closed algebra supports strict scalars and fixed positional arrays only; full objects, conditionals, composition, and arbitrary schema import remain unsupported and transformer-authored. Provider format values are policy-controlled annotation candidates; patterns and bounds carry enforceable lexical and range semantics.
+The artifact is portable authority, the validator is private execution, and the binding is their
+closed endpoint-facing composition. ASP.NET type-erases the binding once at startup. Generated
+paths do not parse, normalize, hash, resolve, or compile schemas while building endpoints or
+processing requests.
 
-## Existing unshipped APIs not introduced by this prototype
+Runtime and generated paths converge on the same internal registration and endpoint plan. See
+[Architecture](architecture.md#validator-seams) for ownership and lifecycle.
 
-The current `PublicAPI.Unshipped.txt` also contains these entries from the merge base:
+Generated endpoint overloads accept direction, optional `OpenApiValidatedJsonSchemaOptions`, and
+an optional controller action predicate. They return `IEndpointConventionBuilder` because only
+`TBinding` is supplied; generated convenience extensions can preserve concrete builder types.
 
-- `IAdditionalOpenApiDocumentNameResolver`;
-- `IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames`;
-- `OpenApiServiceCollectionExtensions.AddOpenApiCore`.
+## Selection summary
 
-They are not part of this proposal and should be resolved through their existing ownership process.
+| Need | Review |
+| --- | --- |
+| Better inferred OpenAPI | 1 |
+| Target-aware documents or transformers | 2 |
+| Tuple-as-array runtime JSON | 3 |
+| Narrow facts from an existing converter/parser | 4 |
+| Dynamic complete schema plus endpoint validation | 5 |
+| Build-time complete schema plus generated/AOT validation | 6 |
 
-## Review sequencing
-
-The architecture design proposal can discuss all four capabilities together because they share serializer/schema-generation boundaries. Public API approval should remain separable:
-
-1. inferred schema generation and scalar-format policy;
-2. version-targeted generation and transformer visibility;
-3. positional tuple JSON conversion and generated registration behavior;
-4. runtime-enforced schema evidence providers.
-
-Approval or rejection of one API package should not require the same outcome for the others.
+See [Design](design.md) for product behavior and
+[Integrations](integrations.md) for replaceable external examples.

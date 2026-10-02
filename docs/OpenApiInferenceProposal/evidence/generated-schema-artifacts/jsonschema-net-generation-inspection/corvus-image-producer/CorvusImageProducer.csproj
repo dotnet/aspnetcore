@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <EnablePublicApiAnalyzer>false</EnablePublicApiAnalyzer>
+    <NoWarn>$(NoWarn);RS0016;RS0017;RS0037</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(CorvusJsonSchemaSourceRoot)/src/Corvus.Text.Json/Corvus.Text.Json.csproj" />
+  </ItemGroup>
+</Project>

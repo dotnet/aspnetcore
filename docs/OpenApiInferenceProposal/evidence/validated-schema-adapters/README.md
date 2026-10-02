@@ -1,20 +1,113 @@
-# Validated JSON Schema adapter evidence
+# Runtime validated-schema adapter proof
 
-This non-shipping Minimal API evidence project exercises two adapters over immutable Draft 4, Draft 6, Draft 7, Draft 2019-09, and Draft 2020-12 schemas, an equivalent valid/invalid recursive payload corpus for request and response purposes, semantic schema identity, and concurrent reuse. Both adapters compile/build the schema once in `CreateValidator`; request validation reuses the compiled validator and never fetches HTTP or filesystem references.
+> **Active evidence landing.** Return to
+> [Architecture: runtime registration](../../architecture.md#runtime-registration),
+> [Design: outputs and runtime behavior](../../design.md#outputs-and-runtime-behavior),
+> or the [evidence index](../README.md).
 
-- `Corvus.Text.Json.Validator` 5.6.1 is Apache-2.0. The adapter explicitly selects Draft 4, 6, 7, 2019-09, or 2020-12, uses `JsonSchema.FromText`, the collector-free raw UTF-8 `Validate` fast path for success, and `AlwaysAssertFormat` when the framework capability requests format assertions. Immutable framework evidence rejects non-local and unresolved references before the adapter compiles the schema.
-- `JsonSchema.Net` 9.4.0 uses a private `SchemaRegistry`, explicitly selects Draft 6, 7, 2019-09, or 2020-12, calls `Evaluate(JsonElement)`, and honors `RequireFormatValidation`. It does not implement Draft 4, which registration rejects before compilation. No remote `Fetch` callback is installed. The source is MIT; the published binary package is governed by the Open Source Maintenance Fee EULA. Use of this evidence package was explicitly approved for this prototype and consumers must independently accept the applicable package terms.
+## Claim
 
-The shipping `Microsoft.AspNetCore.OpenApi` project references neither package. The framework-facing errors are deliberately engine-neutral and client-safe.
+ASP.NET's runtime validator factory can compile one reusable validator during
+registration, then apply an engine-neutral directional endpoint plan to request
+and response UTF-8 without making either validation engine responsible for HTTP
+policy.
 
-The executable also runs the real endpoint convention wrapper with each engine. It proves valid request/response pass-through, invalid-request 400, invalid-response suppression/500, request and response size limits, and annotation-only versus asserted `format` behavior.
+## What was exercised
 
-Each adapter caches compiled validators by semantic evidence identity. That identity covers the exact immutable source schema bytes, declared dialect, vocabulary/format capabilities, and stable adapter configuration identity, so validators with different semantics cannot collide. A repository-local trimmed publish currently cannot isolate this evidence app: `PublishTrimmed` propagates into source-generator and `net462` projects in the ASP.NET Core source reference graph and fails with `NETSDK1124` before adapter analysis. The shipping OpenAPI trimming fixture remains the applicable product check; adapter NativeAOT compatibility is therefore not claimed.
+The non-shipping evidence app registers immutable Draft 4, 6, 7, 2019-09, and
+2020-12 schemas through two private adapters:
 
-Allocation measurements and their explicit framework/engine boundary are recorded in [`allocation-results.md`](allocation-results.md).
+- Corvus validates raw UTF-8 and supports the listed dialects;
+- JsonSchema.Net validates through a private registry and supports Draft 6 and
+  later; Draft 4 is rejected before compilation.
 
-Run from the repository root after activating the repository SDK:
+The external engines demonstrate replaceability only. The shipping
+`Microsoft.AspNetCore.OpenApi` project references neither package.
+
+Each `IOpenApiJsonSchemaValidatorFactory.CreateValidator` call executes once
+during registration. The resulting thread-safe
+`IOpenApiJsonSchemaValidator` is reused concurrently. No request fetches remote
+references or recompiles schema.
+
+## Success criteria
+
+1. Both adapters agree on the equivalent valid/invalid recursive corpus for
+   supported dialects.
+2. Semantic identity separates source schema, declared dialect/capabilities,
+   and acceptance-affecting engine configuration.
+3. The real endpoint wrapper produces valid pass-through, invalid-request 400,
+   oversized-request 413, invalid-response suppression/500, and correct
+   annotation-only versus asserted-format behavior.
+4. The standalone executable proves Minimal API policy; repository MVC tests
+   separately prove that MVC uses the same neutral result and endpoint plan.
+5. Repeated and concurrent validation reuses the compiled validator.
+
+## Headline result
+
+The recorded executable met the engine and Minimal API criteria. The repository
+MVC tests met the MVC criterion. Unsupported dialects, unresolved or
+non-local references, and invalid registrations fail before validator creation.
+Framework errors remain engine-neutral and client-safe. Runtime compilation is
+one-time registration work; request/response execution uses the cached validator
+and precomputed endpoint plan.
+
+## Framework proof versus engine proof
+
+| Boundary | What the evidence demonstrates | What it does not assign to the engine |
+| --- | --- | --- |
+| Factory/validator | Dialect support, one-time compile, reusable raw-UTF8 execution, native-to-neutral result mapping | Endpoint selection, buffering, payload limits, status/content-type policy |
+| Endpoint plan | Request rewind/bind after validation, response capture/suppress, 400/413/500 behavior, Minimal/MVC parity | Native schema semantics or diagnostics wording |
+| Identity/cache | Different schema/dialect/capabilities/configuration cannot collide | OpenAPI target version does not redefine schema authority |
+
+The executable's `RunMinimalApiEvidenceAsync` method is intentionally Minimal
+API only. MVC proof comes from
+[`ValidatedJsonSchemaTests.cs`](../../../../src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/ValidatedJsonSchemaTests.cs),
+including `MvcConvention_InvalidRequestStopsBeforeInputFormattingAndReturns400`,
+`MvcConvention_ValidRequestIsRewoundForInputFormatter`,
+`MvcConvention_ResultFilterAndOutputFormatterAreValidatedBeforeWriting`,
+`MvcConvention_InvalidFormattedResponseIsSuppressedAndReturns500`,
+`MvcConvention_SelectsActualStatusCodeAndContentType`, and
+`MvcConvention_EnforcesRequestAndResponseLimits`.
+
+## Traceability
+
+| Field | Source or result |
+| --- | --- |
+| Product code under test | Factory/evidence contracts in [`OpenApiSchemaEvidence.cs`](../../../../src/OpenApi/src/Services/Schemas/OpenApiSchemaEvidence.cs) and `OpenApiValidatedJsonSchemaEndpointPlan`/`WithValidatedJsonSchema` in [`OpenApiValidatedJsonSchemaEndpointConventionBuilderExtensions.cs`](../../../../src/OpenApi/src/Extensions/OpenApiValidatedJsonSchemaEndpointConventionBuilderExtensions.cs) |
+| Producer/harness code | [`Program.cs`](Program.cs), [`CorvusValidatorFactory.cs`](CorvusValidatorFactory.cs), [`JsonSchemaNetValidatorFactory.cs`](JsonSchemaNetValidatorFactory.cs), and MVC methods in [`ValidatedJsonSchemaTests.cs`](../../../../src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/ValidatedJsonSchemaTests.cs) |
+| Exact command | `source activate.sh && dotnet run --project docs/OpenApiInferenceProposal/evidence/validated-schema-adapters/ValidatedSchemaAdapters.csproj --no-build`; repository MVC coverage runs under `source activate.sh && ./src/OpenApi/build.sh -test` |
+| Retained output | Sanitized [`adapter-execution-current.txt`](adapter-execution-current.txt) and repository [`validation-current.txt`](../validation-current.txt) |
+| Result mapping | `RunCorpusEvidence`, cache/concurrency and format checks map engine claims; `RunMinimalApiEvidenceAsync` maps 200/400/413/500; the named MVC tests map formatter, rewind, selection, limit, and suppression behavior |
+
+## Performance and allocation
+
+The [runtime allocation interpretation](allocation-results.md) separately
+defines warmed framework-wrapper, MVC, valid-engine, and invalid-diagnostic
+operations. It gives the design constraint, comparator, included/excluded work,
+method, units, acceptance criterion, result, and caveat before linking raw BDN
+reports.
+
+## Limitations
+
+- This app demonstrates runtime factory/validator integration, not generated
+  binding or build-time compilation.
+- Repository project-reference propagation prevents this app from isolating a
+  meaningful trimmed publish: `PublishTrimmed` reaches source-generator and
+  `net462` projects and fails with `NETSDK1124` before adapter analysis.
+- It therefore makes no runtime-adapter NativeAOT claim. The separate
+  [generated deployment proof](../generated-schema-artifacts/current-proof.md#deployment-and-footprint)
+  applies only to the isolated generated Corvus consumer.
+- Cross-engine equivalence is asserted at acceptance and framework-policy
+  boundaries, not identical native diagnostic text.
+
+## Reproduce
+
+From the repository root after activating the repository SDK:
 
 ```console
-dotnet run --project docs/OpenApiInferenceProposal/evidence/validated-schema-adapters/ValidatedSchemaAdapters.csproj
+source activate.sh
+dotnet run --project docs/OpenApiInferenceProposal/evidence/validated-schema-adapters/ValidatedSchemaAdapters.csproj --no-build
 ```
+
+See also the [runtime validator APIs](../../api-surface.md#review-5-runtime-complete-schema-validation)
+and [evidence index](../README.md).

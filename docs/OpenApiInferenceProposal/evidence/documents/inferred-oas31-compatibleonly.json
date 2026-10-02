@@ -18,8 +18,7 @@
                 "$ref": "#/components/schemas/DirectionalDto.Input"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -88,8 +87,7 @@
                 "$ref": "#/components/schemas/SerializerEnvelope"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -137,7 +135,6 @@
           {
             "name": "relativeUri",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -169,7 +166,6 @@
           {
             "name": "address",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -177,7 +173,6 @@
           {
             "name": "endpoint",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }

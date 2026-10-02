@@ -1,24 +1,88 @@
-# Experimental OpenAPI Schema Inference: Key Benefits
+# Experimental OpenAPI contracts: benefits from inference to enforcement
 
-## Executive Summary
+This proposal lets applications choose how much schema authority and enforcement they need,
+without changing the default behavior of existing applications.
 
-The experimental OpenAPI schema inference approach produces schemas that more accurately describe both the JSON that ASP.NET Core applications exchange and the values Minimal API parameter binding produces from HTTP text. It retains System.Text.Json as the authority for body serialization contracts, treats endpoint binding metadata and framework parsers as the authority for non-body parameter contracts, then adds an ASP.NET Core inference layer for composition, references, naming, scalar constraints, transport decisions, and OpenAPI-version policy.
+## TL;DR
 
-Compared with the existing schema-generation path, the new approach is deliberately conservative: it emits stronger structures only when serializer metadata proves they are correct. Where evidence is incomplete—particularly around custom converters, dictionary keys, collection uniqueness, or conditional business rules—it preserves a broader schema rather than inventing constraints.
+ASP.NET gains a **pluggable schema-contract pipeline**.
 
-The result is a more stable and expressive contract for client generators, validators, documentation tools, and long-lived APIs, without forcing an immediate behavioral change on existing applications. The existing behavior remains the default; applications opt into the experimental inferred mode.
+On the **contract/evidence producer side**, ordinary System.Text.Json and binder inference needs no
+schema authoring. Narrow evidence providers can reveal runtime-enforced facts hidden behind opaque
+converters or parsers. Complete-schema producers—such as the illustrative
+JsonSchema.Net.Generation/`json-everything` proof of concept—can instead produce a canonical
+artifact carrying their full constraint model.
 
-## What Changed
+On the **validation consumer side**, runtime validator factories/validators or generated validator
+bindings enforce that schema over endpoint request and response UTF-8. JsonSchema.Net and Corvus
+demonstrate interchangeable private engines over the same authoritative artifact.
 
-The existing implementation primarily translates the schema produced by System.Text.Json into OpenAPI and applies transformers. This provides broad type coverage, but it has limited knowledge of document-wide relationships and cannot always choose the most expressive or stable OpenAPI structure.
+In the **framework middle**, ASP.NET associates the contract with endpoint type and direction,
+projects version-aware OpenAPI, owns buffering, limits, and error policy, and invokes validators
+without taking an engine-specific dependency. The result is one authority for documentation and
+enforcement while contract production and validation execution remain independently replaceable.
 
-The experimental design introduces three internal responsibilities:
+```mermaid
+flowchart LR
+    Producers["STJ/binder inference | narrow enforced evidence | canonical schema producer"]
+    Framework["ASP.NET contract + identity + OpenAPI + endpoint enforcement"]
+    Validators["runtime validator | generated JsonSchema.Net binding | generated Corvus binding"]
+    Producers --> Framework --> Validators
+```
 
-1. **Immutable JSON-contract facts** capture the effective serializer contract: object properties, nullability, requiredness, collections, dictionaries, converters, extension data, inheritance, polymorphism, unions, finite enum domains, tuples, scalar provenance, and references.
-2. **Immutable transport-binding facts** separately capture non-body binding source, effective type, parser provenance, collection elements, optionality, and defaults.
-3. **Typed decisions** determine whether those facts safely justify composition, scalar constraints, transport schemas, and version-specific OpenAPI structures.
+| What this delivers | Practical benefit |
+| --- | --- |
+| Pluggable contract production | Use zero-authoring inference, add only narrow runtime-proven facts, or bring a complete canonical schema. |
+| Pluggable validation execution | Choose a runtime adapter or generated engine binding without changing ASP.NET endpoint policy. |
+| One authority for OpenAPI + runtime | Documentation and enforcement cannot silently drift into separately authored contracts. |
+| Endpoint-scoped request/response enforcement | Apply direction, type, payload limits, status, and content-type policy to each endpoint. |
+| Deterministic/AOT-friendly generation | Precompute identities, OpenAPI artifacts, and validator state instead of doing schema work per request. |
 
-Emission consumes these decisions instead of rediscovering them ad hoc. This separates serializer observation from OpenAPI policy and makes conservative rejection reasons explicit and testable.
+> **Exact seams:** narrow evidence uses `IOpenApiSchemaEvidenceProvider`; full-schema production
+> uses `IOpenApiValidatedJsonSchemaArtifact<TSelf>`; runtime validation uses
+> `IOpenApiJsonSchemaValidatorFactory` and `IOpenApiJsonSchemaValidator`; generated execution uses
+> `IOpenApiValidatedJsonSchemaValidator<TArtifact,TSelf>` and
+> `IOpenApiValidatedJsonSchemaBinding<TSelf>`.
+
+See the [validator seams](architecture.md#validator-seams), the
+[evidence-provider design](architecture.md#runtime-enforced-schema-evidence-providers), the
+[generated-artifact walkthrough](../../evidence/generated-schema-artifacts/same-pass-exporter-removal.md),
+and the [API review roadmap](api-surface.md#review-roadmap).
+
+Pluggability does not require mixed engines. An application can keep JsonSchema.Net generation and
+validation end to end for simplicity and diagnostics, or pair the same canonical authority with
+Corvus where raw UTF-8 and build-time image execution justify the added build complexity. The
+`json-everything` fork is a production-grade proof of concept, not an intended upstream
+contribution.
+
+## Benefits across the graduated paths
+
+| Path | Primary benefit | Runtime effect | Evidence |
+| --- | --- | --- | --- |
+| Ordinary inferred mode | More faithful composition, direction, naming, scalar, and transport schemas without new authoring | No validator or binding behavior is added | [Core inference evidence](../../evidence/core-inference-details.md#focused-comparisons-and-practical-impact) |
+| Evidence provider | Safely enriches opaque converter/parser contracts with typed facts | Existing converter/parser remains the enforcement mechanism | [Evidence-provider architecture](architecture.md#runtime-enforced-schema-evidence-providers) |
+| Transformer | Documents application-owned semantics and version-specific OpenAPI | No enforcement is added by the transformer | [Transformer architecture](architecture.md#schema-transformers) |
+| Validated canonical artifact | Reuses one exact contract across OpenAPI and directional endpoint validation | Minimal API and MVC share the same request/response plan | [Generated-artifact proof](../../evidence/generated-schema-artifacts/same-pass-exporter-removal.md) |
+
+The complete-artifact path adds benefits that inference alone cannot provide:
+
+- **Exact contract reuse:** validation and OpenAPI derive from the same schema authority rather
+  than separately authored documents.
+- **Endpoint-scoped direction:** input and output contracts can use different registrations,
+  payload limits, status selectors, and content types.
+- **Engine independence with private optimization:** JsonSchema.Net and Corvus use the same ASP.NET
+  seams while keeping native graphs and ProgramImages private.
+- **Deterministic and AOT-friendly artifacts:** schema identity, generated source, compatibility
+  views, and validator images are produced before requests and tested for clean-build stability.
+- **Framework/engine cost separation:** the measured warmed ASP.NET wrapper target is 0 B/op
+  incremental allocation; validator-engine allocation is reported separately.
+- **Consistent hosting:** Minimal API and MVC use one endpoint-plan model.
+- **Multi-dialect input, version-aware output:** Draft 4 through 2020-12 input can be normalized,
+  while OpenAPI 3.0 widens unsupported semantics and 3.1/3.2 preserve more JSON Schema structure.
+
+The matched generated-binding measurements cover one schema and machine; they are scoped evidence,
+not a universal engine ranking. See
+[Symmetric ASP.NET binding execution](../../evidence/generated-schema-artifacts/same-pass-exporter-removal.md#symmetric-aspnet-binding-execution).
 
 ## Benefits Over the Existing Approach
 
@@ -350,6 +414,14 @@ The approach intentionally does not promise:
 - text-parser inference for `BindAsync`;
 - a guarantee that conventional `date-time`, `time`, or other format annotations exactly describe every framework-accepted lexical form;
 - floating-point precision or decimal scale constraints not proven by the runtime contract.
+- that evidence providers are a complete JSON Schema model or install request validation;
+- zero complexity for applications choosing the complete validated-artifact tier;
+- lossless projection of Draft 2020-12 conditionals, resources, or recursion into OpenAPI 3.0;
+- identical diagnostics across validation engines;
+- removal of JsonSchema.Net transitive package closure in the current `CanonicalOnly` prototype;
+- broad annotation/custom-handler coverage in the generated-schema proof of concept;
+- universal validator benchmark ratios, startup budgets, or publish-size targets;
+- that the illustrative `json-everything` fork will be proposed upstream as-is.
 
 These boundaries are explicit, documented, and covered by compatibility tests. Applications can use closed tuple registration and version-aware transformers where they possess stronger domain knowledge.
 
@@ -361,4 +433,12 @@ Its principal value proposition is:
 
 > Generate the strongest stable OpenAPI schema justified by the application's effective serialization and parameter-binding contracts, while preserving conservative output whenever exclusivity, composition, validation, or lexical semantics cannot be proven.
 
-This framing highlights the practical benefits—better client generation, fewer misleading contracts, deterministic documents, improved composition, and a credible NativeAOT path—without suggesting that ordinary CLR structure can encode every JSON Schema invariant.
+This framing highlights the practical benefits—better client generation, fewer misleading
+contracts, deterministic documents, improved composition, and a credible NativeAOT path—without
+suggesting that ordinary CLR structure can encode every JSON Schema invariant.
+
+The complete-artifact tier should be positioned separately as **portable schema authority plus
+validator-neutral endpoint enforcement**. Its production-grade prototype is design evidence, not
+a merge proposal for the illustrative JsonSchema.Net.Generation fork. Remaining production work
+includes API review, package separation, broader semantics, scaling assessment, and externally
+reproducible packages.

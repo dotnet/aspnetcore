@@ -1,0 +1,86 @@
+Current generated deployment inspection
+=======================================
+
+Design constraint:
+  The generated validator path must publish and run under trimming and
+  NativeAOT without native JsonSchema.Net graph references or initialization.
+
+Commands (repository root after source activate.sh):
+  demo=docs/OpenApiInferenceProposal/evidence/generated-schema-artifacts/two-stage-annotated-demo
+  corvus="$PWD/artifacts/corvus-image-source"
+  deployment="$demo/deployment/CorvusImageDeployment.csproj"
+
+  dotnet publish "$deployment" -c Release -r linux-x64 --self-contained true \
+    -p:PublishTrimmed=true \
+    -p:CorvusJsonSchemaSourceRoot="$corvus" \
+    -o artifacts/bin/CorvusImageDeployment/trimmed-current
+
+  dotnet publish "$deployment" -c Release -r linux-x64 --self-contained true \
+    -p:PublishAot=true \
+    -p:CorvusJsonSchemaSourceRoot="$corvus" \
+    -o artifacts/bin/CorvusImageDeployment/aot-current
+
+  artifacts/bin/CorvusImageDeployment/trimmed-current/CorvusImageDeployment
+  artifacts/bin/CorvusImageDeployment/aot-current/CorvusImageDeployment
+
+Runtime result from both executables:
+  5F26E1108737429022275068F71A3F513D04A26E071E8EBECCE88B76CFF9A83A:
+  1992DDA660F086171EEC0093D66DDA41904971D09958FD8C1342AF34FC86A5C2
+
+Footprint commands:
+  find artifacts/bin/CorvusImageDeployment/trimmed-current -type f -printf '%s\n' |
+    awk '{s+=$1} END {print s}'
+  find artifacts/bin/CorvusImageDeployment/aot-current -type f -printf '%s\n' |
+    awk '{s+=$1} END {print s}'
+  stat -c '%n=%s' \
+    artifacts/bin/CorvusImageDeployment/aot-current/CorvusImageDeployment \
+    artifacts/bin/CorvusImageDeployment/aot-current/CorvusImageDeployment.dbg
+
+Footprint result:
+  trimmed-directory-bytes=31532218
+  aot-directory-bytes=14542108
+  NativeAOT executable-bytes=4268320
+  NativeAOT debug-file-bytes=6739688
+
+Dependency inspection:
+  grep -Ein 'JsonSchema.Net|Json.More|JsonPointer|Humanizer' \
+    artifacts/bin/CorvusImageDeployment/trimmed-current/CorvusImageDeployment.deps.json
+
+Result:
+  No matching dependency entries.
+
+Managed metadata inspection:
+  dotnet \
+    docs/OpenApiInferenceProposal/evidence/generated-schema-artifacts/two-stage-annotated-demo/deployment/InspectManagedAssembly.cs \
+    -- artifacts/bin/CorvusImageDeployment/trimmed-current/CorvusImageDeployment.dll
+
+  InspectManagedAssembly.cs uses System.Reflection.Metadata.PEReader to
+  enumerate AssemblyReference, TypeReference, TypeDefinition, MemberReference,
+  and MethodDefinition metadata.
+
+Assembly references:
+  System.Private.CoreLib
+  Corvus.Text.Json
+  System.Console
+
+Forbidden metadata matches:
+  none
+
+Binary inspection:
+  strings CorvusImageDeployment.dll |
+    grep -E 'JsonSchemaBuilder|GeneratedJsonSchemas|JsonSchema.Net'
+  nm -C CorvusImageDeployment |
+    grep -E 'JsonSchemaBuilder|GeneratedJsonSchemas|JsonSchema.Net'
+  strings CorvusImageDeployment |
+    grep -E 'JsonSchemaBuilder|GeneratedJsonSchemas|JsonSchema.Net'
+
+Result:
+  No forbidden managed strings, NativeAOT symbols, or NativeAOT strings.
+
+Environment:
+  .NET SDK 11.0.100-rc.1.26420.103
+  Ubuntu 22.04.5 LTS under WSL
+
+This proves deployability and records footprint for this bounded consumer. It
+does not measure startup speed, request latency, working set, download size, or
+other operating systems and architectures.

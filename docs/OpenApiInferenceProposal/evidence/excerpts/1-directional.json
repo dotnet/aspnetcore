@@ -9,8 +9,7 @@
               "$ref": "#/components/schemas/DirectionalDto.Input"
             }
           }
-        },
-        "required": true
+        }
       },
       "responses": {
         "200": {
@@ -86,8 +85,7 @@
               "$ref": "#/components/schemas/DirectionalDto"
             }
           }
-        },
-        "required": true
+        }
       },
       "responses": {
         "200": {

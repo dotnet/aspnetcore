@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>AnnotatedSchemaDemo.DemoBenchmarks-20260925-160915</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.0, OS=ubuntu 22.04
+13th Gen Intel Core i7-13800H, 1 CPU, 20 logical and 10 physical cores
+.NET SDK=11.0.100-rc.1.26420.103
+  [Host]   : .NET 11.0.0 (11.0.26.45408), X64 RyuJIT
+  ShortRun : .NET 11.0.0 (11.0.26.42103), X64 RyuJIT
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1
+WarmupCount=3
+</code></pre>
+
+<table>
+<thead><tr><th>              Method</th><th>  Mean</th><th>  Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>ExportSupportedBundle</td><td>124,061.8 ns</td><td>642,926.18 ns</td><td>35,240.95 ns</td><td>3.299</td><td>0.89</td><td>1.9531</td><td>-</td><td>-</td><td>95,881 B</td>
+</tr><tr><td>CompileCorvus</td><td>37,502.0 ns</td><td>10,179.78 ns</td><td>557.99 ns</td><td>1.000</td><td>0.00</td><td>1.4648</td><td>-</td><td>-</td><td>73,512 B</td>
+</tr><tr><td>LoadCorvusImage</td><td>19,601.0 ns</td><td>42,251.95 ns</td><td>2,315.97 ns</td><td>0.523</td><td>0.06</td><td>1.0986</td><td>0.0305</td><td>-</td><td>53,085 B</td>
+</tr><tr><td>JsonSchemaNetNativeValid</td><td>11,213.9 ns</td><td>4,577.32 ns</td><td>250.90 ns</td><td>0.299</td><td>0.01</td><td>0.3052</td><td>-</td><td>-</td><td>16,552 B</td>
+</tr><tr><td>JsonSchemaNetNativeInvalid</td><td>12,384.2 ns</td><td>9,680.95 ns</td><td>530.65 ns</td><td>0.330</td><td>0.01</td><td>0.3052</td><td>-</td><td>-</td><td>14,864 B</td>
+</tr><tr><td>JsonSchemaNetBundleValid</td><td>21,275.3 ns</td><td>83,532.13 ns</td><td>4,578.68 ns</td><td>0.566</td><td>0.11</td><td>0.3662</td><td>-</td><td>-</td><td>18,400 B</td>
+</tr><tr><td>JsonSchemaNetBundleInvalid</td><td>13,224.2 ns</td><td>16,085.98 ns</td><td>881.73 ns</td><td>0.353</td><td>0.03</td><td>0.3662</td><td>-</td><td>-</td><td>17,520 B</td>
+</tr><tr><td>CorvusImageValid</td><td>410.9 ns</td><td>83.13 ns</td><td>4.56 ns</td><td>0.011</td><td>0.00</td><td>0.0033</td><td>-</td><td>-</td><td>168 B</td>
+</tr><tr><td>CorvusImageInvalid</td><td>298.5 ns</td><td>293.05 ns</td><td>16.06 ns</td><td>0.008</td><td>0.00</td><td>0.0033</td><td>-</td><td>-</td><td>168 B</td>
+</tr><tr><td>CorvusBindingValid</td><td>392.0 ns</td><td>129.91 ns</td><td>7.12 ns</td><td>0.010</td><td>0.00</td><td>0.0033</td><td>-</td><td>-</td><td>168 B</td>
+</tr></tbody></table>
+</body>
+</html>

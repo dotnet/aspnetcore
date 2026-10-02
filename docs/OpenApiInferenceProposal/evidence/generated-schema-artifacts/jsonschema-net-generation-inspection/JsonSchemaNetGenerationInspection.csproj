@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <EnablePublicApiAnalyzer>false</EnablePublicApiAnalyzer>
+    <NoWarn>$(NoWarn);RS0016;RS0017;RS0037</NoWarn>
+    <DefineConstants Condition="'$(CorvusJsonSchemaSourceRoot)' != ''">$(DefineConstants);CORVUS_PROGRAM_IMAGE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="cold-baseline/**/*.cs" />
+    <Compile Remove="corvus-image-producer/**/*.cs" />
+    <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
+    <PackageReference Include="Corvus.Text.Json.Validator" Version="5.6.1" Condition="'$(CorvusJsonSchemaSourceRoot)' == ''" />
+    <PackageReference Include="JsonSchema.Net.Generation" Version="7.3.11" />
+    <ProjectReference Include="$(CorvusJsonSchemaSourceRoot)/src/Corvus.Text.Json/Corvus.Text.Json.csproj"
+                      Condition="'$(CorvusJsonSchemaSourceRoot)' != ''" />
+    <Content Include="flagship.bundle.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

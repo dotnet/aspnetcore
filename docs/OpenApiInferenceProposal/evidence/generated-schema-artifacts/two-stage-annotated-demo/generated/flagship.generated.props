@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <FlagshipSchemaIdentity>5f26e1108737429022275068f71a3f513d04a26e071e8ebecce88b76cff9a83a</FlagshipSchemaIdentity>
+    <FlagshipRootUri>urn:flagship:conditional</FlagshipRootUri>
+  </PropertyGroup>
+</Project>

@@ -1,170 +1,112 @@
-# OpenAPI inference evidence
+# Claim-to-proof evidence index
 
-This standalone Minimal API project references the prototype branch's
-`Microsoft.AspNetCore.OpenApi` project and uses public ASP.NET Core and
-Microsoft.OpenApi APIs to generate exact documents.
+This directory contains current interpretation pages, reproducible assets, and
+retained raw results. It is not the proposal entry point. Start with the
+[one-page proposal](../README.md), [product design](../design.md), or
+[architecture](../architecture.md), then use this index to test a specific
+claim.
 
-Branch commit:
+## How to read evidence
 
-```text
-7e7b647ef269dbdbf118c6052c2657f98b36626e
-```
+Active links lead to an interpretation page before any raw report. Each landing
+states the claim, setup, success condition, observed result, limitations, and
+route back to the proposal. Raw BenchmarkDotNet reports, CSV files, generated
+artifacts, and command transcripts remain unchanged behind those landings.
 
-True merge base with `main`:
+Performance evidence uses this field order:
 
-```text
-89ab93803f3fcbb928f8ed1523945f89284f7e79
-```
+0. **Design constraint / why measured**
+1. **Question/hypothesis**
+2. **Measured operation**
+3. **Baseline/comparator**
+4. **Included work**
+5. **Excluded work**
+6. **Method/environment**
+7. **Units**
+8. **Acceptance criterion/budget**
+9. **Observed result**
+10. **Interpretation/permitted conclusion**
+11. **Non-conclusion/caveat**
 
-## Reproduction
+`B/op` means managed bytes allocated per logical benchmark operation after
+setup. BenchmarkDotNet values are warmed per-operation means unless a landing
+says otherwise. Fresh-process samples, publish sizes, and deterministic hashes
+are different evidence classes and must not be compared with warmed means.
+Where no product budget exists, the landing says so rather than inventing one.
 
-The recorded run used PowerShell 7.6.2 on Ubuntu 22.04.5 LTS under WSL, the
-repository's .NET SDK `11.0.100-rc.1.26420.103`, and ASP.NET Core runtime
-`11.0.0-rc.1.26420.103`. Native Windows and macOS runs were not performed.
-See `validation/environment.txt` for the exact environment, fork checkout/build
-prerequisites, enabled public package-feed families, and disclosure boundaries.
+## Traceability convention
 
-Activate the `dotnet/aspnetcore` repository environment first (`activate.ps1`
-on Windows or `activate.sh` on Linux/macOS). Build the repository OpenAPI/HTTP
-prerequisites with the repository build before this standalone project. Then
-run the following with PowerShell 7:
+Every active landing identifies five links in one place:
 
-```powershell
-$env:AspNetCoreRepoRoot = (Resolve-Path '<path-to-aspnetcore>').Path
-Set-Location '<path-to-openapi-evidence>'
-dotnet tool restore
-dotnet build --no-restore
+| Field | Meaning |
+| --- | --- |
+| Product code under test | Shipping or proposed ASP.NET source that owns the behavior |
+| Producer/harness code | Test, demo, benchmark, or external producer that creates the observation |
+| Exact command | Repository-relative command used to reproduce the observation |
+| Retained output | Report, CSV, transcript, document, or generated artifact kept in this tree |
+| Result mapping | Stable test/method/symbol names that connect the output row or assertion to the claim |
 
-dotnet run --no-build -- Legacy 3.0
-dotnet run --no-build -- Legacy 3.1
-dotnet run --no-build -- Legacy 3.2
-dotnet run --no-build -- Inferred 3.0
-dotnet run --no-build -- Inferred 3.1
-dotnet run --no-build -- Inferred 3.2
-dotnet run --no-build -- Inferred 3.1 CompatibleOnly
-dotnet run --no-build -- Inferred 3.1 None
-dotnet run --no-build -- Inferred 3.1 Callback
+Paths are repository-relative and prose names stable symbols or methods instead of brittle line
+anchors. A landing marked **Partial** states the unavailable external input explicitly; a raw report
+without this chain is not an active proof entry point.
 
-pwsh -NoProfile -File ./extract.ps1
-pwsh -NoProfile -File ./validate.ps1
-```
+## Pipeline-stage claim coverage
 
-`OpenApiEvidence.csproj` suppresses `ASP0040` because the evidence intentionally
-exercises the branch's experimental public APIs. That suppression is local to
-this project. `AspNetCoreRepoRoot` must identify the accepted fork checkout at
-the exact commit above; this project is not meaningful against an arbitrary
-installed shared framework.
+| Pipeline stage | Claim | Proof landing | Success signal | Important limitation |
+| --- | --- | --- | --- | --- |
+| Contract inference | Opt-in inferred mode improves serializer/binder fidelity without new authoring | [Core inference proof](core-inference-details.md#focused-comparisons-and-practical-impact) | Exact documents parse; representative direction, composition, scalar, transport, tuple, and 3.0/3.1/3.2 checks pass | Conservative spot checks, not proof of every CLR/STJ contract |
+| Opaque-contract evidence | Narrow evidence appears only when a recognized converter/parser proves it | [Schema-evidence provider proof](schema-evidence-providers.md) | Converter-backed facts emit across versions; absent converter is inert; conflicts and invalid evidence fail | Documentation only; converter/parser remains enforcement |
+| Canonical schema authority | One generated canonical resource graph remains authority across consumers | [Generated-artifact proof](generated-schema-artifacts/current-proof.md#canonical-authority-and-correctness) | Native graph, canonical resources, derived image, OpenAPI, Minimal API, and MVC agree on one corpus and graph identity | One bounded annotated model and unpublished producer POC |
+| Validator binding | JsonSchema.Net and Corvus use symmetric ASP.NET validator/binding seams over one artifact | [Symmetric binding proof](generated-schema-artifacts/current-proof.md#symmetric-aspnet-binding-execution) | Same valid/invalid decisions and OpenAPI output through the same framework contracts | Engine timing/allocation informs choice; it is not a universal ranking |
+| Endpoint enforcement / OpenAPI | Runtime factories share one directional endpoint plan and neutral HTTP policy | [Runtime adapter proof](validated-schema-adapters/README.md) | Minimal API/MVC request 400, size 413, response suppression/500, and version projection behave consistently | Runtime adapter app does not claim isolated trim/NativeAOT |
+| Determinism | Clean builds produce stable artifact, configuration, binding, and image identities | [Deterministic build proof](generated-schema-artifacts/current-proof.md#deterministic-build-and-identities) | The retained verified-package run produced byte-identical generated evidence and hashes | Current replay is Partial because the exact unpublished package is unavailable; correctness/reproducibility evidence, not performance |
+| Framework/engine allocation | Enforcement can add 0 B/op in the warmed successful framework wrapper while engines retain separate costs | [Runtime allocation interpretation](validated-schema-adapters/allocation-results.md) and [generated allocation interpretation](generated-schema-artifacts/allocation-results.md) | Matching pass-through/no-op framework paths allocate equally; engine allocations are reported separately | Excludes server hosting and separates STJ/engine work according to each landing |
+| Trim/AOT | A generated Corvus-only consumer trims and NativeAOT-publishes without native JsonSchema.Net graph use in consumer IL | [Deployment interpretation](generated-schema-artifacts/current-proof.md#deployment-and-footprint) | Both publishes build/run and inspection finds no native graph initialization/reference | Bounded probe; copied package closure and absolute sizes are separate concerns |
+| Dialect projection | Canonical input projects deliberately to OpenAPI 3.0, 3.1, and 3.2 | [Projection evidence](generated-schema-artifacts/current-proof.md#canonical-authority-and-correctness) and [core documents](core-inference-details.md#artifacts-and-normalization) | Both bindings emit equal target-version output; 3.0 widens unsupported semantics | OpenAPI 3.0 is intentionally lossy |
+| Reproduction | The annotated-model proof can be rebuilt and inspected | [Hands-on demo](generated-schema-artifacts/two-stage-annotated-demo/README.md) | The documented run ends with `verified` and produces the listed artifacts | Requires the verified unpublished producer package or rebuilding the bounded POC |
 
-`Corvus.Json.Cli` 5.6.1 is a third-party validation tool pinned in
-`.config/dotnet-tools.json` and restored locally by `dotnet tool restore`; no
-global tool install is used. The restore uses the checkout's configured public
-dnceng feeds. `validation/corvus-transcript.txt` records the sanitized commands,
-expectations, rationales, outcomes, and tool output so review does not require
-executing the tool.
+## Current proof sets
 
-## Artifacts and normalization
+| Evidence set | Current role |
+| --- | --- |
+| [Core inference](core-inference-details.md) | Exact emitted documents, extraction rules, structural checks, and conservative boundaries |
+| [Narrow evidence providers](schema-evidence-providers.md) | Converter/parser provenance, exact numeric evidence, ordering, conflicts, and failure behavior |
+| [Runtime validated-schema adapters](validated-schema-adapters/README.md) | Dynamic factory/validator integration, engine-neutral endpoint policy, and runtime allocation interpretation |
+| [Generated schema artifacts](generated-schema-artifacts/README.md) | Generated authority/binding overview and navigation |
+| [Current generated-artifact proof](generated-schema-artifacts/current-proof.md) | Correctness, symmetric engines, determinism, performance interpretation, and deployment |
+| [Annotated-model reproduction](generated-schema-artifacts/two-stage-annotated-demo/README.md) | Commands for generation, validation, publish, and benchmark reproduction |
 
-Each `dotnet run` writes one complete JSON document under `documents/` and
-parses it again with `OpenApiDocument.Parse`. The nine files are exact,
-unmodified public-provider/OpenAPI-writer output. No normalization is applied
-to complete documents.
+## Traceability status
 
-`extract.ps1` creates five proposal-sized comparison files under `excerpts/`.
-It requires every selected key by exact ordinal spelling, selects the same
-property and parameter names for both sides of each scalar/transport
-comparison, copies the selected JSON values without semantic rewriting, and
-recursively orders JSON object keys ordinally for deterministic presentation.
-It intentionally omits unselected document boilerplate. These are normalized
-extracts, not complete documents or hand-authored summaries.
+| Pipeline row | Grade | Reason |
+| --- | --- | --- |
+| Contract inference | Complete | Product inference, standalone producer, exact commands, documents/excerpts, validator transcript, and result mapping are linked. |
+| Opaque-contract evidence | Complete | Resolver/types/emitter, exact repository tests, focused commands, and 16 + 34 passing cases are linked. |
+| Canonical schema authority | Partial | ASP.NET consumers, harness, commands, retained artifacts, and results are complete; the bounded external producer implementation is represented only by package hash and upstream commit because it is unpublished. |
+| Validator binding | Complete | Both private adapters, stable verification methods, shared artifact, raw matched reports, and outputs are linked. |
+| Endpoint enforcement / OpenAPI | Complete | The standalone executable is correctly scoped to Minimal API; MVC is mapped separately to named repository tests and the exact repository command. |
+| Determinism | Partial | Prior verified-package hashes are retained, but a current two-clean-build replay is blocked because the exact unpublished package hash is unavailable. |
+| Framework/engine allocation | Complete | Every active figure maps to a named benchmark method and retained Markdown/CSV or interpreted raw report with exact operation boundaries. |
+| Trim/AOT | Complete | Project/program/image source, exact publish/run/inspection commands, current footprint, dependency, metadata, symbol, and string output are linked. |
+| Dialect projection | Complete | Product importer/generator and `VerifyOpenApiProjectionAsync` map canonical input to retained 3.0/3.1/3.2 equality checks. |
+| Reproduction | Partial | All repository commands and outputs are linked, but a fresh full annotated-model run requires the unavailable exact unpublished producer package. |
 
-`validate.ps1`:
+## Detailed and historical records
 
-- requires case-sensitive keys and emits purpose-written missing/extra-key
-  errors rather than relying on StrictMode property failures;
-- parses all nine complete documents;
-- checks representative Legacy/Inferred and OpenAPI 3.0/3.1/3.2 invariants;
-- checks annotation presence (`format`, `contentEncoding`, and OpenAPI
-  discriminator) with PowerShell;
-- asserts symmetric scalar/transport excerpt selectors; and
-- creates JSON Schema 2020-12 wrappers from the exact emitted OpenAPI 3.1
-  component graph, adding only `$schema` and a root `$ref`.
+The current landings link deeper only when implementation history, raw numbers,
+or superseded alternatives are needed:
 
-Corvus validates structural JSON Schema assertions in those wrappers. It does
-not validate the OpenAPI container and does not assign assertion semantics to
-OpenAPI discriminator, `format`, or `contentEncoding` annotations. The public
-generator performs the separate OpenAPI parse.
+- [Detailed same-pass technical record](generated-schema-artifacts/same-pass-exporter-removal.md)
+- [Generated-artifact archive](generated-schema-artifacts/archive/README.md)
+- [Released-generator inspection](generated-schema-artifacts/jsonschema-net-generation-inspection/README.md)
+- [Historical collectible exporter](generated-schema-artifacts/two-stage-annotated-demo/exporter/README.md)
+- [Full proposal design history](../archive/2026-10-prototype-design-history/README.md)
 
-## Focused comparisons and practical impact
+The exact recorded repository validation counts and package/hardware provenance
+remain in the owning proof pages. They are evidence snapshots, not claims about
+the current checkout.
 
-1. **Directional DTO** — Inferred separates `DirectionalDto.Input` and
-   `DirectionalDto.Output`, retaining setter/getter nullability and requiredness.
-   Validators and generated clients can represent request and response contracts
-   independently.
-2. **Inheritance and polymorphism** — Inferred uses lossless `allOf`
-   inheritance and stable references. Explicit STJ polymorphism uses `oneOf`
-   only when each branch has a structural discriminator literal; otherwise
-   generation conservatively uses `anyOf`. Corvus accepts representative cat
-   and dog payloads and rejects missing/unknown discriminator payloads by JSON
-   Schema assertions. PowerShell separately checks the OpenAPI discriminator
-   annotation.
-3. **Effective serializer contract** — Inferred records numeric-or-quoted
-   numeric input from `JsonNumberHandling` and preserves mixed named properties
-   plus typed extension data. This improves validator alignment with effective
-   serializer input without claiming an exact language for every parser.
-4. **Scalars and transport** — The symmetric extract contains `small`,
-   `amount`, `data`, `identifier`, `relativeUri`, and `name` on both sides, plus
-   the same nine route/query/header parameters. It shows:
-   - exact integral numeric-instance bounds;
-   - removal of Legacy's misleading decimal `double` annotation;
-   - OpenAPI 3.0 `byte` versus OpenAPI 3.1/3.2 base64
-     `contentEncoding`;
-   - conventional `uuid`, `uri-reference`, and `date-time` annotations;
-   - `IPAddress`/`IPEndPoint` Legacy object references versus inferred
-     transport strings without narrowing formats; and
-   - the 3.1 `CompatibleOnly`, `None`, and callback
-     replacement/suppression results, including contextual `.Input`/`.Output`
-     identities.
-5. **Positional tuple** — Inferred OpenAPI 3.1 emits an array contract with
-   `prefixItems`. The app explicitly registers the public AOT-safe
-   `JsonArrayTupleConverters` converter. Package presence, RDG, `AddOpenApi`,
-   and Inferred mode remain inert without that application opt-in; repository
-   runtime tests cover the default, RDG on/off, dynamic and closed registration,
-   frozen options, and user precedence.
-
-The exact Legacy/default-Inferred OpenAPI 3.2 documents substantiate only
-default 3.2 generation and the selected contract/annotation checks. Policy and
-callback variants in this package are OpenAPI 3.1 evidence; no broader 3.2
-policy matrix is claimed.
-
-## Deliberate conservative boundaries
-
-- The numeric branch for `sbyte` has exact `minimum: -128` and `maximum: 127`.
-  Corvus therefore rejects numeric `128`.
-- The quoted-number branch models integer lexical shape, not every CLR
-  integral range. Corvus accepts string `"128"`, while the public app's
-  System.Text.Json probe using the same serializer options rejects it for
-  `sbyte`. `validation/runtime-probe.json` records that runtime result. This is
-  a known conservative underconstraint; the package does not claim all quoted
-  out-of-range integral values are rejected.
-- JSON Schema numbers are mathematically arbitrary precision. Many OpenAPI and
-  JavaScript-oriented tools instead use IEEE-754 number representations, so
-  large `Int64`, `UInt64`, `Int128`, and `UInt128` bounds may not remain exactly
-  representable in every downstream tool.
-- `uint32` and `uint64` are established custom client-generation hints used by
-  this feature, not universally registered OpenAPI Initiative formats.
-  Likewise, `float` and `double` are client hints rather than exact accepted
-  numeric domains.
-- No `duration` format is inferred for `TimeSpan`; opaque custom converters and
-  parsers have no candidate unless the callback supplies one; transport schemas
-  do not alias JSON-body components; and no decimal `multipleOf` or floating
-  precision bound is invented.
-- `legacy-stability.md` records the exact merge base and the strongest
-  reproducible compatibility evidence. The branch-added APIs prevent compiling
-  this same public app at the merge base, so no byte-for-byte merge-base public
-  app claim is made.
-- Repository benchmark projects were built/validated and their existing runs
-  completed as part of the exact OpenAPI build. No comparative schema-generation
-  timing or allocation measurements have been collected.
-
-The Corvus results are representative structural semantic spot-checks, not a
-proof of all endpoints, payloads, validators, generators, or tooling.
+Current repository validation is retained in
+[`validation-current.txt`](validation-current.txt): Build 3/3, source generators
+41/41, and OpenAPI 1,447 passed plus 5 skipped, for 1,491 passed plus 5 skipped
+overall.
