@@ -1669,4 +1669,149 @@ public class VirtualizeTest
         var hostStyle = Assert.Single(inlineStyleAttributes);
         Assert.Equal("overflow: auto; height: 800px;", (string)hostStyle.AttributeValue);
     }
+
+    [Fact]
+    public async Task Virtualize_DisposedWhileInitializationPending_DoesNotUseDisposedObjectReference()
+    {
+        var jsRuntime = new GatedVirtualizeJsRuntime("Blazor._internal.Virtualize.init");
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, nameof(Virtualize<int>.Items), (ICollection<int>)Enumerable.Range(0, 500).ToArray());
+                builder.AddComponentParameter(2, nameof(Virtualize<int>.ItemSize), 30f);
+                builder.AddComponentParameter(3, nameof(Virtualize<int>.InitialItemIndex), 50);
+                builder.AddComponentParameter(4, nameof(Virtualize<int>.ChildContent),
+                    (RenderFragment<int>)(item => content => content.AddContent(0, item)));
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(jsRuntime)
+            .BuildServiceProvider();
+
+        await using var renderer = new TestRenderer(serviceProvider)
+        {
+            ShouldHandleExceptions = true,
+        };
+        var componentId = renderer.AssignRootComponentId(rootComponent);
+        var renderTask = renderer.RenderRootComponentAsync(componentId);
+
+        await jsRuntime.InvocationStarted.WaitAsync(TimeSpan.FromSeconds(5));
+        rootComponent.InnerContent = null;
+        rootComponent.TriggerRender();
+        await jsRuntime.ReferenceDisposed.WaitAsync(TimeSpan.FromSeconds(5));
+
+        jsRuntime.CompleteInvocation();
+        await jsRuntime.InvocationCompleted.WaitAsync(TimeSpan.FromSeconds(5));
+        await renderer.Dispatcher.InvokeAsync(() => { });
+        await renderTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.True(renderer.HandledExceptions.Count == 0, string.Join(Environment.NewLine, renderer.HandledExceptions));
+        Assert.False(jsRuntime.InteropAttemptedAfterDisposal);
+    }
+
+    [Fact]
+    public async Task Virtualize_DisposedWhileLaterRenderInteropPending_DoesNotUseDisposedObjectReference()
+    {
+        var anchorMode = VirtualizeAnchorMode.None;
+        var jsRuntime = new GatedVirtualizeJsRuntime("Blazor._internal.Virtualize.setAnchorMode");
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, nameof(Virtualize<int>.Items), (ICollection<int>)Enumerable.Range(0, 500).ToArray());
+                builder.AddComponentParameter(2, nameof(Virtualize<int>.ItemSize), 30f);
+                builder.AddComponentParameter(3, nameof(Virtualize<int>.AnchorMode), anchorMode);
+                builder.AddComponentParameter(4, nameof(Virtualize<int>.ChildContent),
+                    (RenderFragment<int>)(item => content => content.AddContent(0, item)));
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(jsRuntime)
+            .BuildServiceProvider();
+
+        await using var renderer = new TestRenderer(serviceProvider)
+        {
+            ShouldHandleExceptions = true,
+        };
+        var componentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        anchorMode = VirtualizeAnchorMode.Start;
+        rootComponent.TriggerRender();
+        await jsRuntime.InvocationStarted.WaitAsync(TimeSpan.FromSeconds(5));
+
+        rootComponent.InnerContent = null;
+        rootComponent.TriggerRender();
+        await jsRuntime.ReferenceDisposed.WaitAsync(TimeSpan.FromSeconds(5));
+
+        jsRuntime.CompleteInvocation();
+        await jsRuntime.InvocationCompleted.WaitAsync(TimeSpan.FromSeconds(5));
+        await renderer.Dispatcher.InvokeAsync(() => { });
+
+        Assert.True(renderer.HandledExceptions.Count == 0, string.Join(Environment.NewLine, renderer.HandledExceptions));
+        Assert.False(jsRuntime.InteropAttemptedAfterDisposal);
+    }
+
+    private sealed class GatedVirtualizeJsRuntime(string gatedIdentifier) : IJSRuntime
+    {
+        private readonly TaskCompletionSource _invocationStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _completeInvocation = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _invocationCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _referenceDisposed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task InvocationStarted => _invocationStarted.Task;
+
+        public Task InvocationCompleted => _invocationCompleted.Task;
+
+        public Task ReferenceDisposed => _referenceDisposed.Task;
+
+        public bool InteropAttemptedAfterDisposal { get; private set; }
+
+        public void CompleteInvocation()
+        {
+            _completeInvocation.TrySetResult();
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+            => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+
+        public async ValueTask<TValue> InvokeAsync<TValue>(
+            string identifier,
+            CancellationToken cancellationToken,
+            object[] args)
+        {
+            var reference = (DotNetObjectReference<VirtualizeJsInterop>)args[0];
+
+            try
+            {
+                _ = reference.Value;
+            }
+            catch (ObjectDisposedException)
+            {
+                InteropAttemptedAfterDisposal = true;
+                throw;
+            }
+
+            if (identifier == gatedIdentifier)
+            {
+                _invocationStarted.TrySetResult();
+                await _completeInvocation.Task.WaitAsync(cancellationToken);
+                _invocationCompleted.TrySetResult();
+            }
+            else if (identifier == "Blazor._internal.Virtualize.dispose")
+            {
+                reference.Dispose();
+                _referenceDisposed.TrySetResult();
+            }
+
+            return default!;
+        }
+    }
 }

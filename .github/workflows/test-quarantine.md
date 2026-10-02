@@ -1,9 +1,8 @@
 ---
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
 
-features:
-  # Use the legacy inline detector until https://github.com/github/gh-aw/issues/61857 ships in a gh-aw release.
-  gh-aw-detection: false
+# Evidence collection can exceed ubuntu-slim's 15-minute job limit.
+runs-on-slim: ubuntu-latest
 
 on:
   schedule:
@@ -1173,7 +1172,7 @@ on:
         SCRIPT
 
     - name: Check out trusted source history for quarantine eligibility
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
 
@@ -1287,7 +1286,7 @@ on:
         SCRIPT
 
     - name: Upload deterministic evidence for safe output validation
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.1
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: |
@@ -1345,7 +1344,7 @@ safe-outputs:
   steps:
     - name: Download deterministic quarantine evidence
       continue-on-error: true
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@v8.0.1
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: ${{ runner.temp }}/test-quarantine-evidence
@@ -2107,7 +2106,7 @@ The injected object has this shape:
 
 - `generated_utc` — when the data was collected.
 - `builds` — a compact metadata map keyed by build ID (as a string), covering every build referenced below. Each value has `def` (83 or 87), `startedUtc`/`finishedUtc`, `sourceVersion` (the commit the build ran), and `pr` (the PR number for a merged-PR build, or `null` for a `main` build). Use it for the time- and PR-based checks in Step 1.2 (below) so you never need an AzDO call.
-- `source_a` — **main branch failures**: an object keyed by test name. Each value has `count` (total failures across defs 83 + 87 on `refs/heads/main` in the last 30 days), `assembly` (e.g. `InMemory.FunctionalTests--net11.0`), `builds` (every Azure DevOps build ID in which this test failed), `helix` (`{job, workitem}` Helix coordinates for the representative failure; present only when both were resolvable), and — for individual test cases — `evidence_build`, `run_id`, `result_id`, `leg`, `error`, and `stack` for the newest exact test result whose details were retrievable (failure text is capped). Individual test cases also carry `is_consistent_regression` — a precomputed boolean that is `true` **only when, on a pipeline (def) where the test failed 2 or more times on `main`, its two most recent failures were in back-to-back runs with no passing run in between**. That is the signature of a real regression (a test that recently started failing *consistently*), so a `true` value means the test must **not** be auto-quarantined under **Case A**. It is computed from the full per-pipeline `main` build timeline: a completed `main` build on that same pipeline that **succeeded or partially succeeded** (so tests actually ran), started strictly between the two failures, and in which the test did not fail, counts as a passing run that *clears* the streak (`failed`/`canceled` builds — e.g. compile/infra breaks that ran no tests — do not count as a pass). The check is conservative: a back-to-back streak on **either** pipeline sets it `true`, so an intermittent pattern on one pipeline can never mask a hard regression on another. A test with fewer than two failures on every single pipeline (e.g. it only flaked in Source B/PR builds) is `false`.
+- `source_a` — **main branch failures**: an object keyed by test name. Each value has `count` (total failures across defs 83 + 87 on `refs/heads/main` in the last 30 days), `assembly` (e.g. `InMemory.FunctionalTests--net12.0`), `builds` (every Azure DevOps build ID in which this test failed), `helix` (`{job, workitem}` Helix coordinates for the representative failure; present only when both were resolvable), and — for individual test cases — `evidence_build`, `run_id`, `result_id`, `leg`, `error`, and `stack` for the newest exact test result whose details were retrievable (failure text is capped). Individual test cases also carry `is_consistent_regression` — a precomputed boolean that is `true` **only when, on a pipeline (def) where the test failed 2 or more times on `main`, its two most recent failures were in back-to-back runs with no passing run in between**. That is the signature of a real regression (a test that recently started failing *consistently*), so a `true` value means the test must **not** be auto-quarantined under **Case A**. It is computed from the full per-pipeline `main` build timeline: a completed `main` build on that same pipeline that **succeeded or partially succeeded** (so tests actually ran), started strictly between the two failures, and in which the test did not fail, counts as a passing run that *clears* the streak (`failed`/`canceled` builds — e.g. compile/infra breaks that ran no tests — do not count as a pass). The check is conservative: a back-to-back streak on **either** pipeline sets it `true`, so an intermittent pattern on one pipeline can never mask a hard regression on another. A test with fewer than two failures on every single pipeline (e.g. it only flaked in Source B/PR builds) is `false`.
 - `source_b` — **merged-PR failures**: same shape as `source_a`, computed from the already-selected merged-into-`main` PR builds (the `Verify Source B PRs` step did the full B1–B4 selection). It may be empty (`{}`) if no qualifying PR builds failed this run. Source B captures flaky tests that only manifest in PR builds: (1) a PR retried until it passed, and (2) a PR merged on red because the only failures were unrelated flaky tests.
 - `source_c` — **work-item crash investigation**: a list, one entry per crashed work item (test name ending in `.WorkItemExecution`). Each entry has `workitem`, `build`, `job`, and either `fail_block_count` + `fail_blocks` (the extracted `[FAIL]` blocks from the Helix console log, capped per block and overall) or a `note` explaining why no blocks were extracted. **A work item with `fail_block_count` of 0 is almost always macOS-hang / "test host process crashed" infrastructure flakiness with no clean test-level failure — it is NOT a quarantine signal on its own; do not invent a culprit test from it.**
 - `source_c_truncated` — `true` if the global Source C size cap was hit and some work items were omitted; call this out in your analysis if it affects a decision.
