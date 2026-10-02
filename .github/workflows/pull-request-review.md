@@ -376,6 +376,9 @@ range) must be added or modified in the frozen diff. Never anchor to a nearby un
 Deduplicate against the complete prepared feedback and list true-positive duplicates
 separately with their existing comment or review reference. Feedback posted after
 preparation cannot be observed by this agent; do not claim a fresh-feedback check.
+Format each inline comment with only a one-line claim, `file:line`, severity, a minimal
+consumer repro using app or user code that reaches the line, what goes wrong in at most
+two lines, and a fix snippet when possible.
 
 The trusted `verify_live_head` gate must pass before the safe-output job begins, and a
 supported `jobs.safe_outputs.pre-steps` hook rechecks the live head inside that job before

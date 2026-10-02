@@ -74,6 +74,11 @@ public class PrepareReviewTests
         }
         Assert.False(File.Exists(Path.Combine(fixture.Output, manifest["sources"]!["head"]!["root"]!.GetValue<string>(), "AGENTS.md")));
         Assert.True(manifest["guidance"]!["workingTreeChanges"]!.GetValue<bool>());
+        Assert.Equal(".github/skills/review-pull-request/routing.md",
+            manifest["routing"]!["path"]!.GetValue<string>());
+        Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(
+            fixture.Output, "guidance/.github/skills/review-pull-request/routing.md.source")))),
+            manifest["routing"]!["sha256"]!.GetValue<string>());
         Assert.Equal(2, manifest["exclusions"]!.AsArray().Count);
         Assert.Contains("Do not review the excluded scope", manifest["exclusions"]![1]!["body"]!.GetValue<string>());
         foreach (var name in new[] { "apiFreeze", "fetch", "changedFiles", "diff", "feedback", "manifest" })
@@ -175,7 +180,7 @@ public class PrepareReviewTests
 
     [Theory]
     [InlineData("Components", true)]
-    [InlineData("JSInterop", false)]
+    [InlineData("ComponentsX", false)]
     public async Task RoutesARenameUsingItsPreviousPath(string area, bool components)
     {
         await using var fixture = await Fixture.CreateAsync();
@@ -224,6 +229,156 @@ public class PrepareReviewTests
     }
 
     [Theory]
+    [InlineData(false, "docs/CrossCuttingGuidance.md")]
+    [InlineData(true, "docs/CrossCuttingGuidance.md", "docs/BlazorComponentsGuidance.md")]
+    public async Task CurrentRoutingTablePreservesExistingGuideSelection(bool components, params string[] expected)
+    {
+        await using var fixture = await Fixture.CreateAsync(components);
+        var manifest = await fixture.PrepareAsync();
+        Assert.Equal(expected, manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>()));
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    public static TheoryData<string, string> MalformedRoutingTables => new()
+    {
+        { "missing", "Required routing table is missing" },
+        { "empty", "Required routing table is empty or malformed" },
+        { "malformed", "Required routing table is empty or malformed" },
+        { "bad prefix", "Every routing prefix except * must end in /" },
+        { "no star", "Required routing table needs a * row" },
+        { "duplicate", "Required routing table has a duplicate row" },
+        { "missing guide", "Required guide docs/MissingGuidance.md is missing" },
+        { "invalid guide", "Required guide docs/InvalidGuidance.md needs exactly one ## Overarching principles section" },
+    };
+
+    [Theory]
+    [MemberData(nameof(MalformedRoutingTables))]
+    public async Task MalformedRoutingTableReturnsBlocked(string mutation, string expected)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var routing = Path.Combine(fixture.GuidanceRoot, ".github/skills/review-pull-request/routing.md");
+        switch (mutation)
+        {
+            case "missing":
+                File.Delete(routing);
+                break;
+            case "empty":
+                await File.WriteAllTextAsync(routing, string.Empty, Utf8NoBom);
+                break;
+            case "malformed":
+                await File.WriteAllTextAsync(routing,
+                    "| Changed path prefix | Guide |\n| --- |\n| * | docs/CrossCuttingGuidance.md |\n", Utf8NoBom);
+                break;
+            case "bad prefix":
+                await File.WriteAllTextAsync(routing,
+                    "| Changed path prefix | Guide |\n| --- | --- |\n" +
+                    "| * | docs/CrossCuttingGuidance.md |\n| src/Components | docs/BlazorComponentsGuidance.md |\n", Utf8NoBom);
+                break;
+            case "no star":
+                await File.WriteAllTextAsync(routing,
+                    "| Changed path prefix | Guide |\n| --- | --- |\n| src/ | docs/CrossCuttingGuidance.md |\n", Utf8NoBom);
+                break;
+            case "duplicate":
+                await File.WriteAllTextAsync(routing,
+                    "| Changed path prefix | Guide |\n| --- | --- |\n" +
+                    "| * | docs/CrossCuttingGuidance.md |\n| * | docs/CrossCuttingGuidance.md |\n", Utf8NoBom);
+                break;
+            case "missing guide":
+                await File.WriteAllTextAsync(routing,
+                    "| Changed path prefix | Guide |\n| --- | --- |\n| * | docs/MissingGuidance.md |\n", Utf8NoBom);
+                break;
+            case "invalid guide":
+                await fixture.WriteGuidanceAsync("docs/InvalidGuidance.md",
+                    "# Invalid\n## Topics\n### Topic\n- A rule.\n");
+                await File.WriteAllTextAsync(routing,
+                    "| Changed path prefix | Guide |\n| --- | --- |\n| * | docs/InvalidGuidance.md |\n", Utf8NoBom);
+                break;
+        }
+
+        var output = new StringWriter();
+        var error = new StringWriter();
+        var originalOutput = Console.Out;
+        var originalError = Console.Error;
+        try
+        {
+            Console.SetOut(output);
+            Console.SetError(error);
+            var exitCode = await PrepareReviewProgram.RunAsync([
+                "--repo", "owner/product",
+                "--pr", "42",
+                "--output", fixture.Output,
+                "--guidance-root", fixture.GuidanceRoot,
+            ], fixture.CreateDependencies());
+            Assert.Equal(1, exitCode);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+            Console.SetError(originalError);
+        }
+        Assert.Equal(string.Empty, output.ToString());
+        Assert.StartsWith($"BLOCKED: {expected}", error.ToString(), StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
+    public async Task RoutesEveryMatchingRowAndDeduplicatesGuides()
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        await fixture.WriteGuidanceAsync(".github/skills/review-pull-request/routing.md",
+            "| Changed path prefix | Guide |\n| --- | --- |\n" +
+            "| * | docs/CrossCuttingGuidance.md |\n" +
+            "| src/ | docs/BlazorComponentsGuidance.md |\n" +
+            "| src/Components/ | docs/CrossCuttingGuidance.md |\n");
+        var manifest = await fixture.PrepareAsync();
+        Assert.Equal(["docs/CrossCuttingGuidance.md", "docs/BlazorComponentsGuidance.md"],
+            manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>()));
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Fact]
+    public async Task ReleaseBaseUsesRoutingFromTrustedGuidanceSnapshot()
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        fixture.Pull["base"]!["ref"] = "release/11.0";
+        var commit = fixture.Commit(new Dictionary<string, object>
+        {
+            [".github/skills/review-pull-request/routing.md"] =
+                "| Changed path prefix | Guide |\n| --- | --- |\n| * | docs/CrossCuttingGuidance.md |\n",
+            ["docs/CrossCuttingGuidance.md"] =
+                "# Guidance\n## Overarching principles\n- A principle.\n## Topics\n### Topic\n- A rule.\n",
+            [".github/copilot-instructions.md"] =
+                "# Instructions\n## Security Concerns Are Out of Scope\nDo not review the excluded scope.\n",
+        });
+        var options = fixture.Options with { GuidanceRoot = null, Guidance = $"reviewer/guidance@{commit}" };
+        var manifest = await fixture.PrepareAsync(options);
+        Assert.Equal(["docs/CrossCuttingGuidance.md"],
+            manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>()));
+        Assert.Equal("release/11.0", manifest["target"]!["baseRef"]!.GetValue<string>());
+        Assert.True((await fixture.CheckAsync(options))["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("table")]
+    [InlineData("hash")]
+    public async Task CheckRejectsAChangedOrTamperedRoutingTable(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var manifest = await fixture.PrepareAsync();
+        if (mutation == "table")
+        {
+            await File.AppendAllTextAsync(Path.Combine(fixture.Output,
+                "guidance/.github/skills/review-pull-request/routing.md.source"), "\nCHANGED\n", Utf8NoBom);
+        }
+        else
+        {
+            manifest["routing"]!["sha256"] = new string('0', 64);
+            await fixture.WriteManifestAsync(manifest);
+        }
+        await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+    }
+
+    [Theory]
     [InlineData("main")]
     [InlineData("release/11.0")]
     public async Task IncludesReadableComponentsArchitectureContextFromSelectedGuidance(string baseRef)
@@ -241,6 +396,9 @@ public class PrepareReviewTests
             architecture = "IMMUTABLE_REVIEWER_ARCHITECTURE\n";
             var commit = fixture.Commit(new Dictionary<string, object>
             {
+                [".github/skills/review-pull-request/routing.md"] =
+                    "| Changed path prefix | Guide |\n| --- | --- |\n" +
+                    "| * | docs/CrossCuttingGuidance.md |\n| src/Components/ | docs/BlazorComponentsGuidance.md |\n",
                 ["docs/CrossCuttingGuidance.md"] = "# Guidance\n## Overarching principles\n- A principle.\n## Topics\n### Topic\n- A rule.\n",
                 ["docs/BlazorComponentsGuidance.md"] = "# Components\n[Architecture](../src/Components/ARCHITECTURE.md)\n## Overarching principles\n- A principle.\n## Topics\n### Forms\n- A rule.\n",
                 ["src/Components/ARCHITECTURE.md"] = architecture,
@@ -497,6 +655,8 @@ public class PrepareReviewTests
         await using var fixture = await Fixture.CreateAsync();
         var commit = fixture.Commit(new Dictionary<string, object>
         {
+            [".github/skills/review-pull-request/routing.md"] =
+                "| Changed path prefix | Guide |\n| --- | --- |\n| * | docs/CrossCuttingGuidance.md |\n",
             ["docs/CrossCuttingGuidance.md"] = "# Guidance\n[Architecture](Architecture.md)\n## Overarching principles\n- A principle.\n## Topics\n### Topic\n- A rule.\n",
             ["docs/Architecture.md"] = new FileEntry("120000", "Other.md"),
             [".github/copilot-instructions.md"] = "# Instructions\n## Security Concerns Are Out of Scope\nDo not review the excluded scope.\n",
@@ -525,6 +685,8 @@ public class PrepareReviewTests
         await using var fixture = await Fixture.CreateAsync();
         var commit = fixture.Commit(new Dictionary<string, object>
         {
+            [".github/skills/review-pull-request/routing.md"] =
+                "| Changed path prefix | Guide |\n| --- | --- |\n| * | docs/CrossCuttingGuidance.md |\n",
             ["docs/CrossCuttingGuidance.md"] = "# REMOTE_GUIDANCE\n[Architecture](Architecture.md)\n## Overarching principles\n- A rule.\n## Topics\n### Topic\n- Another rule.\n",
             ["docs/Architecture.md"] = "REMOTE_ARCHITECTURE\n",
             [".github/copilot-instructions.md"] = "# Instructions\n## Security Concerns Are Out of Scope\nDo not review the excluded scope.\n",
@@ -741,6 +903,12 @@ public class PrepareReviewTests
             File.WriteAllText(Path.Combine(GuidanceRoot, "docs/CrossCuttingGuidance.md"),
                 "# Guidance\n## Overarching principles\n- ORIGINAL_GUIDANCE\n## Topics\n### Topic\n- Required clause.\n", Utf8NoBom);
             Directory.CreateDirectory(Path.Combine(GuidanceRoot, ".github"));
+            Directory.CreateDirectory(Path.Combine(GuidanceRoot, ".github/skills/review-pull-request"));
+            File.WriteAllText(Path.Combine(GuidanceRoot, ".github/skills/review-pull-request/routing.md"),
+                "| Changed path prefix | Guide |\n| --- | --- |\n" +
+                "| * | docs/CrossCuttingGuidance.md |\n| src/Components/ | docs/BlazorComponentsGuidance.md |\n", Utf8NoBom);
+            File.WriteAllText(Path.Combine(GuidanceRoot, "docs/BlazorComponentsGuidance.md"),
+                "# Components\n## Overarching principles\n- A principle.\n## Topics\n### Topic\n- A rule.\n", Utf8NoBom);
             File.WriteAllText(Path.Combine(GuidanceRoot, ".github/copilot-instructions.md"),
                 "# Instructions\n## Security Concerns Are Out of Scope\nDo not review the excluded scope.\n", Utf8NoBom);
             Git(GuidanceRoot, "init", "--quiet");
