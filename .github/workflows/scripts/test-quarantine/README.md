@@ -83,6 +83,12 @@ to an unambiguous `InlineData` row on a `ConditionalTheory`, or an existing
 `QuarantinedTestData` row, when possible and
 otherwise retains method-level behavior. It fails closed on ambiguous runner or
 data-row identities rather than using representative metadata to guess.
+Boolean and integer inline constants are normalized to their rendered argument
+values while retaining the original source arguments for patch validation.
+A `ConditionalTheory` with inline rows that cannot be matched exactly (including
+missing argument lists or unsupported constant expressions) is unproven, not a
+method-level quarantine candidate. Trailing attribute comments do not hide rows.
+Renamed row owners receive the same conservative history checks as method targets.
 Unresolved historical inheritance is unproven, not evidence that a test was
 never inherited.
 

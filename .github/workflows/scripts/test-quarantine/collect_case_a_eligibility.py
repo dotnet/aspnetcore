@@ -127,6 +127,18 @@ def normalize_data_value(value):
         value = cast.group(1).strip()
     if value.startswith('"') and value.endswith('"'):
         return value
+    if value in ("true", "false"):
+        return value.title()
+    integer = re.fullmatch(
+        r"([+-]?(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|[0-9][0-9_]*))"
+        r"(?:[uU][lL]?|[lL][uU]?)?",
+        re.sub(r"\s+", "", value),
+    )
+    if integer:
+        digits = integer.group(1).replace("_", "")
+        unsigned = digits.lstrip("+-").lower()
+        base = 16 if unsigned.startswith("0x") else 2 if unsigned.startswith("0b") else 10
+        return str(int(digits, base))
     if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", value):
         return value.rsplit(".", 1)[-1]
     return re.sub(r"\s+", "", value)
@@ -207,27 +219,22 @@ def square_bracket_delta(value):
 
 def logical_attributes(attributes):
     result = []
-    current = []
+    start = None
     depth = 0
-    for line in attributes.splitlines():
-        stripped = line.strip()
-        if not current:
-            if not stripped.startswith("["):
-                continue
-            current = [stripped]
-            depth = square_bracket_delta(stripped)
-        else:
-            current.append(stripped)
-            depth += square_bracket_delta(stripped)
-        if depth == 0:
-            attribute = " ".join(current)
-            inner = attribute[1:-1].strip()
-            result.extend(
-                f"[{item}]"
-                for item in split_arguments(inner)
-                if item
-            )
-            current = []
+    for index, character in enumerate(sanitize_csharp(attributes)):
+        if character == "[":
+            if depth == 0:
+                start = index + 1
+            depth += 1
+        elif character == "]" and depth:
+            depth -= 1
+            if depth == 0:
+                inner = " ".join(attributes[start:index].splitlines()).strip()
+                result.extend(
+                    f"[{item}]"
+                    for item in split_arguments(inner)
+                    if item
+                )
     return result
 
 
@@ -407,7 +414,7 @@ def attribute_block(lines, declaration_line):
     bracket_depth = 0
     index = declaration_line - 1
     while index >= 0:
-        stripped = lines[index].strip()
+        stripped = sanitize_csharp(lines[index]).strip()
         if not stripped or stripped.startswith("//"):
             if collected:
                 collected.append(lines[index])
@@ -578,6 +585,10 @@ def build_source_index(root):
                 ),
                 "data_quarantines": parsed_attributes["data"],
                 "inline_data": parsed_attributes["inline"],
+                "has_row_data": re.search(
+                    r"\b(?:InlineData|QuarantinedTestData)(?:Attribute)?\s*\(",
+                    sanitize_csharp(attributes),
+                ) is not None,
                 "conditional_theory": any(
                     CONDITIONAL_THEORY_PATTERN.fullmatch(attribute)
                     for attribute in logical_attributes(attributes)
@@ -774,6 +785,13 @@ def resolve_source(root, test_name, source_index=None):
             result["data_quarantine"] = data_matches[0]
         if inline_matches:
             result["matching_inline_data"] = inline_matches[0]
+    if (
+        result["conditional_theory"]
+        and result["has_row_data"]
+        and result["data_quarantine"] is None
+        and result["matching_inline_data"] is None
+    ):
+        return {"status": "unmatched-data-row", "matches": matches[:5]}
     result["declaring_type"] = result["type"]
     result["type"] = expected_type
     result["type_quarantined"] = (
@@ -2526,6 +2544,29 @@ def collect_requarantine_history(
                     )
                     if history_complete else [{"status": "ambiguous"}]
                 )
+                if (
+                    target_identity_rename_detected(
+                        root,
+                        declaration["path"],
+                        declaration["type"],
+                        declaration["method"],
+                        history_ref,
+                    )
+                    or target_identity_rename_detected(
+                        root,
+                        declaration["path"],
+                        declaration["type"],
+                        None,
+                        history_ref,
+                    )
+                    or namespace_rename_detected(
+                        root,
+                        declaration["path"],
+                        declaration["type"],
+                        history_ref,
+                    )
+                ):
+                    events = [{"status": "ambiguous"}]
                 targets.append({
                     "scope": "data",
                     "path": declaration["path"],

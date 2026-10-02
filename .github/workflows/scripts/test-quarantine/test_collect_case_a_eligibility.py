@@ -776,6 +776,91 @@ def test_theory_data_quarantine_support():
         }], history
 
 
+def test_inline_literal_resolution(raw="true", rendered="True"):
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(theory_source(f"[InlineData({raw})]"), encoding="utf-8")
+        commit(root, "Add inline constant", "2026-08-01T00:00:00Z")
+        name = TEST_NAME + f"(protocol: {rendered})"
+        result = collect_result(root, evidence(test_name=name), test_name=name)
+        assert result["status"] == "eligible", result
+        row = result["source_resolution"]["matching_inline_data"]
+        assert row is not None and row["data"] == raw, result
+        print(f"PASS inline literal: {raw} -> {rendered}")
+
+
+def test_unmatched_inline_row_fails_closed(cases=None):
+    for raw, name in cases or [
+        ("nameof(HttpProtocols.Http3)", TEST_NAME + '(protocol: "Http3")'),
+        ("1.0f", TEST_NAME + "(protocol: 1)"),
+        ("HttpProtocols.Http3", TEST_NAME),
+        ("HttpProtocols.Http3", TEST_NAME + "(protocol: Unknown)"),
+        ("HttpProtocols.Http3", TEST_NAME + "(protocol: Http3"),
+    ]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            _, file_path = initialize_repository(root)
+            file_path.write_text(theory_source(f"[InlineData({raw})]"), encoding="utf-8")
+            commit(root, "Add unmatched row", "2026-08-01T00:00:00Z")
+            result = collect_result(root, evidence(test_name=name), test_name=name)
+            assert result["status"] == "unproven", (raw, name, result)
+            assert "source-unmatched-data-row" in result["reasons"], result
+
+
+def test_commented_row_attributes():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(
+            theory_source("[InlineData(HttpProtocols.Http3)] // reason [detail]")
+            .replace("[ConditionalTheory]", "[ConditionalTheory] // condition"),
+            encoding="utf-8",
+        )
+        commit(root, "Add commented row", "2026-08-01T00:00:00Z")
+        result = collect_result(
+            root, evidence(test_name=THEORY_TEST_NAME), test_name=THEORY_TEST_NAME
+        )
+        assert result["status"] == "eligible", result
+        assert result["source_resolution"]["matching_inline_data"] is not None, result
+        quarantine = (
+            '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+            'OperatingSystems.Linux, HttpProtocols.Http3)] // reason'
+        )
+        file_path.write_text(theory_source(quarantine), encoding="utf-8")
+        commit(root, "Quarantine commented row", "2026-08-02T00:00:00Z")
+        result = collect_result(
+            root, evidence(test_name=THEORY_TEST_NAME), test_name=THEORY_TEST_NAME
+        )
+        assert_already_quarantined(result)
+
+
+def test_renamed_row_history(cases=None):
+    for old, new in cases or [
+        ("ReturnsExpectedResponse", "RenamedResponse"),
+        ("SampleTests", "RenamedTests"),
+        ("Microsoft.AspNetCore.Tests", "Microsoft.AspNetCore.Renamed"),
+    ]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            _, file_path = initialize_repository(root)
+            inline = theory_source("[InlineData(HttpProtocols.Http3)]")
+            quarantined = theory_source(
+                '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+                'OperatingSystems.Linux, HttpProtocols.Http3)]'
+            )
+            for day, text in enumerate((inline, quarantined, inline), 1):
+                file_path.write_text(text, encoding="utf-8")
+                commit(root, "Change row quarantine", f"2026-08-0{day}T00:00:00Z")
+            file_path.write_text(inline.replace(old, new), encoding="utf-8")
+            commit(root, "Rename unquarantined row owner", "2026-08-04T00:00:00Z")
+            file_path.write_text(quarantined.replace(old, new), encoding="utf-8")
+            commit(root, "Re-quarantine renamed row", "2026-08-05T00:00:00Z")
+            history = MODULE.collect_requarantine_history(root, "HEAD")
+            assert len(history["targets"]) == 1, history
+            assert history["targets"][0]["status"] == "ambiguous", (old, history)
+
+
 def test_build_source_ancestry():
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -3504,6 +3589,14 @@ def run_output(root, *args):
 
 
 def main():
+    for raw, rendered in [
+        ("true", "True"), ("false", "False"), ("-1L", "-1"),
+        ("1UL", "1"), ("0x10", "16"), ("0b10", "2"), ("1_000L", "1000"),
+    ]:
+        test_inline_literal_resolution(raw, rendered)
+    test_unmatched_inline_row_fails_closed()
+    test_commented_row_attributes()
+    test_renamed_row_history()
     test_helix_queue_cache()
     for queue, expected in [
         ("ubuntu.2404.amd64.open", "Linux"),
