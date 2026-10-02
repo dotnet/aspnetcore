@@ -28,9 +28,11 @@ In the POST request the client sends a query string parameter with the key "nego
 * If the requested version is greater than the servers largest supported version the server will respond with its largest supported version
 The client may close the connection if the "negotiateVersion" in the response is not acceptable.
 
-*useAck:*
+*useStatefulReconnect:*
 
-In the POST request the client may include a query string parameter with the key "useAck" and the value of "true". If this is included the server will decide if it supports/allows the [ack protocol](#todo) described below, and return "useAck": "true" as a json property in the negotiate response if it will use the ack protocol. If true, the client can reconnect using the same transport and reuse the connectionToken/connectionId. The server may still reject the reconnect if it takes too long or for any reason it chooses. If false, the client must not reuse connectionToken/connectionId. If the "useAck" property is missing from the negotiate response this also implies false, so the ack protocol should not be used.
+In the POST request the client may include a query string parameter with the key "useStatefulReconnect" and the value of "true". If this is included the server will decide if it supports/allows [stateful reconnect](#stateful-reconnect) described below, and return `"useStatefulReconnect": true` as a json property in the negotiate response if it will use stateful reconnect. If true, the client can reconnect on the same transport and reuse the connectionToken/connectionId. The server may still reject the reconnect if it takes too long or for any reason it chooses. If false, the client must not reuse connectionToken/connectionId. If the "useStatefulReconnect" property is missing from the negotiate response this also implies false, so stateful reconnect should not be used.
+
+Stateful reconnect is only supported on the WebSockets transport. If the negotiated transport is not WebSockets the client must treat the negotiate response as if "useStatefulReconnect" were false even when the server returned true.
 
 -----------
 
@@ -145,7 +147,9 @@ The WebSockets transport is unique in that it is full duplex, and a persistent c
 
 The WebSocket transport is activated by making a WebSocket connection to `[endpoint-base]`. The **optional** `id` query string value is used to identify the connection to attach to. If there is no `id` query string value, a new connection is established. If the parameter is specified but there is no connection with the specified ID value, a `404 Not Found` response is returned. Upon receiving this request, the connection is established and the server responds with a WebSocket upgrade (`101 Switching Protocols`) immediately ready for frames to be sent/received. The WebSocket OpCode field is used to indicate the type of the frame (Text or Binary).
 
-Establishing a second WebSocket connection when there is already a WebSocket connection associated with the Endpoints connection is not permitted and will fail with a `409 Conflict` status code.
+When the client opts in to stateful reconnect (see [Stateful Reconnect](#stateful-reconnect)) it should also append the `useStatefulReconnect=true` query string parameter when opening the WebSocket. This signals that the request is a reconnect attempt for an existing connection and, on a fresh connection, that subsequent transport-level disconnects should be recoverable.
+
+Establishing a second WebSocket connection when there is already a WebSocket connection associated with the Endpoints connection is not permitted and will fail with a `409 Conflict` status code. The one exception is when stateful reconnect was negotiated on the original connection: in that case, opening a new WebSocket to `[endpoint-base]` with the same `id` reattaches to the existing connection and the previous WebSocket is closed. If the existing connection has already been cleaned up (for example, the reconnect grace period has elapsed) the server responds with `404 Not Found` instead.
 
 Errors while establishing the connection are handled by returning a `500 Server Error` status code as the response to the upgrade request. This includes errors initializing EndPoint types. Unhandled application errors trigger a WebSocket `Close` frame with reason code that matches the error as per the spec (for errors like messages being too large, or invalid UTF-8). For other unexpected errors during the connection, a  non-`1000 Normal Closure` status code is used.
 
@@ -205,3 +209,38 @@ When data is available, the server responds with a body in one of the two format
 If the `id` parameter is missing, a `400 Bad Request` response is returned. If there is no connection with the ID specified in `id`, a `404 Not Found` response is returned.
 
 When the client has finished with the connection, it can issue a `DELETE` request to `[endpoint-base]` (with the `id` in the query string) to gracefully terminate the connection. The server will complete the latest poll with `204` to indicate that it has shut down.
+
+## Stateful Reconnect
+
+Stateful reconnect lets a client transparently recover from a transport-level
+disconnect without losing in-flight messages. When enabled, each side buffers
+the messages it has sent and the receiver acknowledges the messages it has
+processed; on reconnect the unacknowledged messages are replayed in order.
+
+Stateful reconnect is opt-in on both sides and is only supported by the
+WebSockets transport.
+
+### Negotiation
+
+1. The client sends `useStatefulReconnect=true` on the `POST [endpoint-base]/negotiate` request (see the [`useStatefulReconnect`](#post-endpoint-basenegotiate-request) negotiate parameter above).
+2. The server returns `"useStatefulReconnect": true` in the negotiate response only when the endpoint has been configured to allow stateful reconnects.
+3. The client must treat the property as `false` when the response omits it, or when the negotiated transport is not WebSockets. In that case the connectionToken/connectionId must not be reused.
+
+### Reconnect flow
+
+When stateful reconnect was negotiated and the WebSocket transport drops, the
+client may attempt to reconnect by opening a new WebSocket to `[endpoint-base]`
+with the same `id` query string value (the connectionToken from the original
+negotiate response) and `useStatefulReconnect=true`. The server reattaches the
+new WebSocket to the existing connection and notifies the upper layer that
+the connection has been re-established; any message-level replay or recovery
+is the responsibility of that upper layer (for example, the Hub protocol — see
+[`HubProtocol.md`](./HubProtocol.md#stateful-reconnect)). If the server has
+already cleaned the connection up (timeout, disposal, or otherwise) it
+responds with `404 Not Found` and the client must restart the connection from
+negotiate.
+
+The transport itself does not buffer or acknowledge application messages; it
+only guarantees that, after a successful reattach, both sides see the same
+logical connection they had before the drop. Any framing for buffering,
+acknowledgment and replay is defined by the upper layer.
