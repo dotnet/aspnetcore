@@ -57,6 +57,10 @@ INLINE_DATA_PATTERN = re.compile(
     r"^\s*\[\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
     r"InlineData(?:Attribute)?\s*\((?P<data>.*)\)\s*\]\s*$"
 )
+CONDITIONAL_THEORY_PATTERN = re.compile(
+    r"^\s*\[\s*(?:global::)?(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
+    r"ConditionalTheory(?:Attribute)?\s*(?:\(.*\))?\s*\]\s*$"
+)
 QUARANTINE_ISSUE_PATTERN = re.compile(
     r"https://github\.com/dotnet/aspnetcore/issues/(?P<issue>\d+)"
 )
@@ -570,6 +574,10 @@ def build_source_index(root):
                 ),
                 "data_quarantines": parsed_attributes["data"],
                 "inline_data": parsed_attributes["inline"],
+                "conditional_theory": any(
+                    CONDITIONAL_THEORY_PATTERN.fullmatch(attribute)
+                    for attribute in logical_attributes(attributes)
+                ),
                 "type_quarantined": type_quarantines.get(
                     (project_root, type_name),
                     False,
@@ -751,7 +759,7 @@ def resolve_source(root, test_name, source_index=None):
         ]
         inline_matches = [
             item for item in result["inline_data"]
-            if item["values"] == test_arguments
+            if result["conditional_theory"] and item["values"] == test_arguments
         ]
         if len(data_matches) > 1 or len(inline_matches) > 1:
             return {
@@ -2919,36 +2927,30 @@ def source_c_failure_records(source_c):
             record = records.setdefault(test_name, {"builds": []})
             if build_id not in record["builds"]:
                 record["builds"].append(build_id)
-            operating_system = operating_system_from_text(
+            record.setdefault("legs", {}).setdefault(str(build_id), []).append(
                 f"{item.get('job', '')} {item.get('workitem', '')}"
             )
-            if operating_system is not None:
-                record.setdefault("operating_systems", {})[
-                    str(build_id)
-                ] = operating_system
     return records
 
 
 def quarantine_operating_systems(record_a, record_b, record_c, builds):
     by_build = {}
-    for record in (record_a, record_b):
+    for record in (record_a, record_b, record_c):
         if not record:
             continue
-        evidence_build = record.get("evidence_build")
-        operating_system = operating_system_from_text(record.get("leg"))
-        if evidence_build is not None and operating_system is not None:
-            by_build.setdefault(evidence_build, set()).add(operating_system)
-    if record_c:
-        for build, operating_system in record_c.get(
-            "operating_systems",
-            {},
-        ).items():
-            by_build.setdefault(int(build), set()).add(operating_system)
+        for build in record.get("builds", []):
+            legs = record.get("legs", {}).get(str(build))
+            if legs is None and build == record.get("evidence_build"):
+                legs = [record.get("leg")]
+            operating_systems = {
+                operating_system_from_text(leg) for leg in (legs or [None])
+            }
+            by_build.setdefault(build, set()).update(operating_systems)
 
     resolved = set()
     for build in builds:
         operating_systems = by_build.get(build)
-        if operating_systems is None or len(operating_systems) != 1:
+        if operating_systems is None or None in operating_systems:
             return list(OPERATING_SYSTEMS)
         resolved.update(operating_systems)
     return [

@@ -62,6 +62,7 @@ def theory_source(data_attribute="[InlineData(HttpProtocols.Http3)]"):
 
 public class SampleTests
 {{
+    [ConditionalTheory]
     {data_attribute}
     public void ReturnsExpectedResponse(HttpProtocols protocol)
     {{
@@ -321,7 +322,66 @@ def assert_rejected(callback, message):
         raise AssertionError(f"Expected validation failure containing {message!r}")
 
 
+def test_theory_target_binding():
+    for theory in ("Theory", "ConditionalTheory"):
+        for case in ("case-a", "case-b"):
+            for rewrite_row in (True, False):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = pathlib.Path(directory)
+                    initial_source = theory_source().replace(
+                        "[ConditionalTheory]", f"[{theory}]"
+                    )
+                    _, commit = initialize_repository(root, initial_source)
+                    record = case_a_record() if case == "case-a" else case_b_record()
+                    record["source_resolution"] = MODULE.ELIGIBILITY.resolve_source(
+                        root, TEST_NAME + "(protocol: Http3)"
+                    )
+                    eligibility, history = receipts(commit, record)
+                    transport = root / "transport"
+                    transport.mkdir()
+                    branch = "test-quarantine/theory-binding"
+                    issue = "#aw_sample" if case == "case-a" else "1"
+                    arguments = (
+                        f'"https://github.com/dotnet/aspnetcore/issues/{issue}", '
+                        'OperatingSystems.Linux | OperatingSystems.MacOSX | '
+                        'OperatingSystems.Windows'
+                    )
+                    replacement = (
+                        f"[QuarantinedTestData({arguments}, HttpProtocols.Http3)]"
+                        if rewrite_row
+                        else f"[QuarantinedTest({arguments})]\n"
+                        "    [InlineData(HttpProtocols.Http3)]"
+                    )
+                    create_patch(
+                        root, transport, branch,
+                        initial_source.replace(
+                            "[InlineData(HttpProtocols.Http3)]", replacement
+                        ),
+                    )
+                    outputs = {"items": [pull_request(branch)]}
+                    if case == "case-a":
+                        outputs["items"].insert(0, case_a_issue())
+
+                    def check():
+                        return validate(
+                            root, commit, eligibility, history, outputs, transport
+                        )
+
+                    if rewrite_row == (theory == "ConditionalTheory"):
+                        result = check()
+                        assert result[0]["operation"] == case, result
+                    else:
+                        assert_rejected(
+                            check,
+                            "not bound to an exact eligible test"
+                            if case == "case-a"
+                            else "not bound to one exact eligible test",
+                        )
+                    print(f"PASS {case}: {theory}, row rewrite={rewrite_row}")
+
+
 def main():
+    test_theory_target_binding()
     assert_rejected(
         lambda: MODULE.changed_patch_lines(
             "diff --git a/src/A.cs b/src/A.cs\n"

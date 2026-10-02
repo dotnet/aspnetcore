@@ -581,7 +581,8 @@ on:
 
         ERROR_CAP = 1200
         STACK_CAP = 900
-        OCC_CAP = 2                  # occurrences tracked per test (for Source C multi-probe)
+        OCC_CAP = 2                  # occurrences tracked per work item (for Source C multi-probe)
+        OS_DETAIL_BUDGET = 1000      # additional result-detail calls per source for OS evidence
 
         BLOCK_CAP = 8000
         WORKITEM_CAP = 40000
@@ -739,20 +740,28 @@ on:
             agg = {}
             for bid in build_ids:
                 seen_in_build = set()
+                seen_results = set()
                 for t in failed_results(bid):
                     name = norm_name(t)
-                    if not name or name in seen_in_build:
+                    identity = (name, t.get("runId"), t.get("id"))
+                    if not name or identity in seen_results:
                         continue
+                    if name.endswith(WI_SUFFIX) and name in seen_in_build:
+                        continue
+                    seen_results.add(identity)
                     # Azure DevOps can publish duplicate rows for one test execution.
                     # Count at most one incident per exact test case per build while
-                    # retaining one representative result for enrichment.
-                    seen_in_build.add(name)
+                    # retaining distinct results so other platform failures are not lost.
                     e = agg.setdefault(name, {"count": 0, "assembly": t.get("automatedTestStorage", ""),
                                               "builds": [], "occ": []})
-                    e["count"] += 1
-                    e["builds"].append(bid)
-                    if t.get("runId") and t.get("id") and len(e["occ"]) < OCC_CAP:
-                        e["occ"].append({"runId": t["runId"], "resultId": t["id"], "build": bid})
+                    if name not in seen_in_build:
+                        seen_in_build.add(name)
+                        e["count"] += 1
+                        e["builds"].append(bid)
+                    if not name.endswith(WI_SUFFIX) or (
+                        t.get("runId") and t.get("id") and len(e["occ"]) < OCC_CAP
+                    ):
+                        e["occ"].append({"runId": t.get("runId"), "resultId": t.get("id"), "build": bid})
             return agg
 
 
@@ -773,28 +782,44 @@ on:
 
         def enrich(agg):
             """Attach Helix coords (job+workitem, only when BOTH present) and, for individual
-            tests, real error/stack from the representative result detail. For work items, also
+            tests, per-build platform evidence and real error/stack from the representative
+            result detail. For work items, also
             collect candidate (job, workitem, build) probes from every tracked occurrence so
             Source C can try more than just the first build."""
+            remaining_details = OS_DETAIL_BUDGET
             for name, e in agg.items():
                 is_wi = name.endswith(WI_SUFFIX)
                 probes = []
+                representative_index = next(
+                    (idx for idx, occ in enumerate(e.get("occ", []))
+                     if occ["runId"] and occ["resultId"]),
+                    None,
+                )
                 for idx, occ in enumerate(e.get("occ", [])):
-                    # Individual tests only need the first occurrence (error/stack + coords).
-                    if not is_wi and idx > 0:
-                        break
+                    if not is_wi:
+                        legs = e.setdefault("legs", {}).setdefault(str(occ["build"]), [])
+                        legs.append(None)
+                        if not occ["runId"] or not occ["resultId"]:
+                            e["detail_note"] = "platform evidence missing result identity"
+                            continue
+                        if idx != representative_index:
+                            if remaining_details == 0:
+                                e["detail_note"] = "platform evidence detail budget exhausted"
+                                continue
+                            remaining_details -= 1
                     try:
                         det = result_detail(occ["runId"], occ["resultId"])
                     except Exception as ex:
-                        if idx == 0:
-                            e["detail_note"] = f"detail fetch failed: {type(ex).__name__}"
+                        e["detail_note"] = f"detail fetch failed: {type(ex).__name__}"
                         continue
                     job, wi_name = parse_helix(det.get("comment"))
-                    if idx == 0 and job and wi_name:
+                    if not is_wi:
+                        legs[-1] = wi_name or ""
+                    if idx == representative_index and job and wi_name:
                         e["helix"] = {"job": job, "workitem": wi_name}
                     if is_wi and job and wi_name:
                         probes.append({"job": job, "workitem": wi_name, "build": occ["build"]})
-                    if idx == 0 and not is_wi:
+                    if idx == representative_index and not is_wi:
                         e["evidence_build"] = occ["build"]
                         e["run_id"] = occ["runId"]
                         e["result_id"] = occ["resultId"]
@@ -2122,6 +2147,7 @@ The injected object has this shape:
 - `source_b` — **merged-PR failures**: same shape as `source_a`, computed from the already-selected merged-into-`main` PR builds (the `Verify Source B PRs` step did the full B1–B4 selection). It may be empty (`{}`) if no qualifying PR builds failed this run. Source B captures flaky tests that only manifest in PR builds: (1) a PR retried until it passed, and (2) a PR merged on red because the only failures were unrelated flaky tests.
 - `source_c` — **work-item crash investigation**: a list, one entry per crashed work item (test name ending in `.WorkItemExecution`). Each entry has `workitem`, `build`, `job`, and either `fail_block_count` + `fail_blocks` (the extracted `[FAIL]` blocks from the Helix console log, capped per block and overall) or a `note` explaining why no blocks were extracted. **A work item with `fail_block_count` of 0 is almost always macOS-hang / "test host process crashed" infrastructure flakiness with no clean test-level failure — it is NOT a quarantine signal on its own; do not invent a culprit test from it.**
 - `source_c_truncated` — `true` if the global Source C size cap was hit and some work items were omitted; call this out in your analysis if it affects a decision.
+- Source A/B individual test records also contain `legs`, mapping each build ID to work-item names for its distinct failed results. A null or unrecognized entry means that platform could not be proven (including missing result identity, detail-fetch failure, or exhaustion of the additional lookup budget). The eligibility collector uses every retained incident, not the representative `leg`, to determine OS scope.
 - `trim` — present only if the whole payload approached the 1MB injection limit and optional enrichment had to be shed (e.g. `stack_dropped`, `error_dropped`). The per-test failure counts are never dropped; if you see this, error/stack for some tests may be missing and you can fetch them for a final candidate via its `helix` coordinates (Part 3).
 
 The deterministic collector also resolved current source/history and applied
@@ -2537,7 +2563,7 @@ Before writing the issue body (Case A) or investigation comment (Case B), comput
 
 - For any `ConditionalTheory` row that maps unambiguously to one `[InlineData(...)]`, replace that line with `[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/<ref>", <operatingSystems>, ...)]`. Preserve the original data arguments exactly. Never broaden an exact inline-row candidate to the whole method, even when sibling rows also qualify; each exact row remains its own candidate and PR.
 - Automatic row rewrites are limited to attributes written on one physical source line. If the matching `InlineData` or `QuarantinedTestData` spans multiple lines, skip the candidate rather than reformatting it.
-- Add `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/<ref>", <operatingSystems>)]` only when the candidate has no exact `InlineData` mapping, such as a non-parameterized test or unsupported external/member data. Use exactly the flags in `eligible_operating_systems`.
+- Add `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/<ref>", <operatingSystems>)]` only when the candidate has no exact `ConditionalTheory`/`InlineData` mapping, such as an ordinary xUnit `Theory`, a non-parameterized test, or unsupported external/member data. Do not convert `Theory` to `ConditionalTheory`. Use exactly the flags in `eligible_operating_systems`.
 - When all three flags are listed for a method target, the one-argument `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/<ref>")]` form is also allowed.
 - `QuarantinedTestData` requires an operating-system value. Use exactly the listed flags; all three preserve all-platform quarantine while keeping healthy rows enabled.
 - Never infer or alter platform scope yourself. The deterministic mapping is the safe-output contract.

@@ -79,7 +79,8 @@ accepted as validation evidence.
 
 Part 1 aggregates by exact test-case name, preserving theory argument lists,
 but not by assembly-qualified identity. The collector correlates those arguments
-to an unambiguous `InlineData` or `QuarantinedTestData` row when possible and
+to an unambiguous `InlineData` row on a `ConditionalTheory`, or an existing
+`QuarantinedTestData` row, when possible and
 otherwise retains method-level behavior. It fails closed on ambiguous runner or
 data-row identities rather than using representative metadata to guess.
 Unresolved historical inheritance is unproven, not evidence that a test was
@@ -118,8 +119,10 @@ into a KBE.
 - One exact fully qualified test per new-quarantine issue and PR.
 - Row-level quarantine changes preserve the original inline data arguments and
   are accepted only when the deterministic receipt resolves that exact row.
-- An exact `InlineData` candidate is always row-scoped; the validator never
-  permits broadening it to a method quarantine.
+- An exact `InlineData` candidate on a `ConditionalTheory` is always row-scoped;
+  the validator never permits broadening it to a method quarantine. Ordinary
+  xUnit theories remain method-scoped because they cannot consume quarantine
+  row metadata.
 - The collector recognizes multiline quarantine/data attributes, but automated
   row rewrites are deliberately limited to one-line attributes so patch
   validation never has to infer unchanged argument lines from diff context.
@@ -137,6 +140,10 @@ into a KBE.
 - Quarantine additions are bound to a deterministic operating-system set.
   A subset is emitted only when every retained incident has an unambiguous
   platform identity; otherwise the receipt requires all supported platforms.
+  Source A/B retain per-build `legs` for every distinct result, including
+  multiple platforms in one build. Additional result-detail calls are bounded
+  per source; missing identities, failed lookups, and budget exhaustion leave
+  explicit unknown entries rather than borrowing the representative result's OS.
   Existing partially scoped targets are not automatically widened or narrowed.
 - An assembly quarantine removal is treated as a prior unquarantine only if the
   runner actually inherited or declared the test at that transition. Ambiguous

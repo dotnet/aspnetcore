@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import ast
 import datetime
 import importlib.util
 import io
@@ -175,6 +176,7 @@ def evidence(regression=False, builds=(101, 102), test_name=TEST_NAME):
                 "run_id": 2001,
                 "result_id": 3001,
                 "leg": "Linux_Test",
+                "legs": {str(build): ["Linux_Test"] for build in builds},
                 "error": "stable-marker-123",
                 "stack": f"at {type_name.rsplit('.', 1)[-1]}.{method_name}()",
                 "is_consistent_regression": regression,
@@ -255,6 +257,188 @@ def assert_already_quarantined(result):
     assert result["status"] == "ineligible", result
     assert result["originating_case"] == "already-quarantined", result
     assert result["current_quarantine_state"] == "quarantined", result
+
+
+def test_row_targets_require_conditional_theory():
+    for attribute, row_target in [
+        ("[Theory]", False),
+        ("[TheoryAttribute]", False),
+        ("[ConditionalTheory]", True),
+        ("[ConditionalTheory(Skip = \"temporary\")]", True),
+        ("[Microsoft.AspNetCore.InternalTesting.ConditionalTheoryAttribute]", True),
+        ("[global::Microsoft.AspNetCore.InternalTesting.ConditionalTheoryAttribute()]", True),
+        ("[ConditionalTheory, Trait(\"Category\", \"Sample\")]", True),
+    ]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            _, file_path = initialize_repository(root)
+            file_path.write_text(
+                theory_source("[InlineData(HttpProtocols.Http3)]").replace(
+                    "[ConditionalTheory]", attribute
+                ),
+                encoding="utf-8",
+            )
+            commit(root, "Add theory", "2026-08-01T00:00:00Z")
+            result = collect_result(
+                root, evidence(test_name=THEORY_TEST_NAME),
+                test_name=THEORY_TEST_NAME,
+            )
+            assert result["status"] == "eligible", (attribute, result)
+            assert bool(result["source_resolution"]["matching_inline_data"]) == (
+                row_target
+            ), (attribute, result)
+            print(f"PASS row target: {attribute}")
+
+    for attribute in ("Theory", "ConditionalTheory"):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            _, file_path = initialize_repository(root)
+            file_path.write_text(
+                theory_source(
+                    "[InlineData(HttpProtocols.Http3)]",
+                    "[InlineData(HttpProtocols.Http3)]",
+                ).replace("[ConditionalTheory]", f"[{attribute}]"),
+                encoding="utf-8",
+            )
+            resolved = MODULE.resolve_source(root, THEORY_TEST_NAME)
+            assert resolved["status"] == (
+                "exact" if attribute == "Theory" else "ambiguous"
+            ), (attribute, resolved)
+
+
+def test_workflow_platform_evidence():
+    workflow = (SCRIPT.parents[2] / "test-quarantine.md").read_text(encoding="utf-8")
+    step = workflow.split("    - name: Aggregate Part 1 failures\n", 1)[1]
+    script = textwrap.dedent(
+        step.split("        python3 << 'SCRIPT'\n", 1)[1].split(
+            "\n        SCRIPT", 1
+        )[0]
+    )
+    tree = ast.parse(script)
+    functions = {
+        "aggregate", "norm_name", "parse_helix", "enrich", "result_detail",
+    }
+    tree.body = [
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name in functions
+    ]
+    namespace = {
+        "json": json, "WI_SUFFIX": ".WorkItemExecution", "OCC_CAP": 2,
+        "OS_DETAIL_BUDGET": 1000, "ERROR_CAP": 1200, "STACK_CAP": 900,
+        "VSTMR": "https://example.invalid", "scrub_secrets": lambda text: text,
+    }
+    exec(compile(tree, "test-quarantine.md", "exec"), namespace)
+
+    scenarios = [
+        ("two Linux builds", {101: ["Linux_Test"], 102: ["Linux_Test"]}, ["Linux"]),
+        ("three Linux builds", {101: ["Linux_Test"], 102: ["Linux_Test"], 103: ["Linux_Test"]}, ["Linux"]),
+        ("mixed builds", {101: ["Linux_Test"], 102: ["Windows_Test"]}, ["Linux", "Windows"]),
+        ("mixed same build", {101: ["Linux_Test", "Windows_Test"], 102: ["Linux_Test"]}, ["Linux", "Windows"]),
+        ("unknown second leg", {101: ["Linux_Test", ""], 102: ["Linux_Test"]}, ["Linux", "MacOSX", "Windows"]),
+        ("detail unavailable", {101: ["Linux_Test"], 102: [None]}, ["Linux", "MacOSX", "Windows"]),
+        ("missing identity", {101: ["Linux_Test"], 102: ["missing-id"]}, ["Linux", "MacOSX", "Windows"]),
+        ("missing first identity", {101: ["missing-id"], 102: ["Linux_Test"]}, ["Linux", "MacOSX", "Windows"]),
+    ]
+    for scenario, builds, expected in scenarios:
+        results = {}
+        details = {}
+        for build, legs in builds.items():
+            results[build] = []
+            for index, leg in enumerate(legs):
+                result_id = build * 10 + index
+                results[build].append({
+                    "automatedTestName": TEST_NAME,
+                    "runId": build, "id": result_id if leg != "missing-id" else None,
+                })
+                details[result_id] = leg
+            results[build].append(dict(results[build][0]))
+
+        def fetch(url):
+            result_id = int(url.split("/results/")[1].split("?")[0])
+            leg = details[result_id]
+            if leg is None:
+                raise OSError("fixture detail unavailable")
+            return {"comment": json.dumps({
+                "HelixJobId": "job-id", "HelixWorkItemName": leg,
+            })}, {}
+
+        namespace["failed_results"] = lambda build: iter(results[build])
+        namespace["fetch"] = mock.Mock(side_effect=fetch)
+        aggregated = namespace["enrich"](namespace["aggregate"](list(builds)))
+        actual = aggregated[TEST_NAME]
+        assert actual["count"] == len(builds), (scenario, actual)
+        assert namespace["fetch"].call_count == sum(
+            leg != "missing-id" for leg in details.values()
+        ), (scenario, namespace["fetch"].call_count)
+        if scenario == "missing first identity":
+            assert actual["evidence_build"] == 102, actual
+        for source in ("source_a", "source_b"):
+            with tempfile.TemporaryDirectory() as directory:
+                root = pathlib.Path(directory)
+                _, file_path = initialize_repository(root)
+                commit(root, "Add test", "2026-08-01T00:00:00Z")
+                data = evidence(builds=tuple(builds))
+                data["source_a"] = {}
+                data[source] = {TEST_NAME: {
+                    **actual, "is_consistent_regression": False,
+                }}
+                if source == "source_b":
+                    for metadata in data["builds"].values():
+                        metadata["pr"] = 42
+                result = collect_result(root, data)
+                assert result["status"] == "eligible", (scenario, source, result)
+                assert result["quarantine_operating_systems"] == [
+                    f"OperatingSystems.{name}" for name in expected
+                ], (scenario, source, result)
+        print(f"PASS platform evidence: {scenario}")
+
+    namespace["OS_DETAIL_BUDGET"] = 0
+    namespace["failed_results"] = lambda build: iter([{
+        "automatedTestName": TEST_NAME, "runId": build, "id": build,
+    }])
+    namespace["fetch"] = mock.Mock(return_value=({
+        "comment": json.dumps({"HelixWorkItemName": "Linux_Test"}),
+    }, {}))
+    actual = namespace["enrich"](namespace["aggregate"]([101, 102]))[TEST_NAME]
+    assert actual["legs"] == {"101": ["Linux_Test"], "102": [None]}, actual
+    assert actual["detail_note"] == "platform evidence detail budget exhausted"
+    assert namespace["fetch"].call_count == 1
+    assert MODULE.quarantine_operating_systems(actual, None, None, [101, 102]) == list(
+        MODULE.OPERATING_SYSTEMS
+    )
+    assert MODULE.quarantine_operating_systems(actual, None, None, [101]) == [
+        "OperatingSystems.Linux",
+    ]
+
+    namespace["failed_results"] = lambda build: iter([{
+        "automatedTestName": "Sample.WorkItemExecution", "runId": build, "id": build,
+    }])
+    namespace["fetch"] = mock.Mock(return_value=({
+        "comment": json.dumps({"HelixJobId": "job", "HelixWorkItemName": "Linux_Test"}),
+    }, {}))
+    work_item = namespace["enrich"](namespace["aggregate"]([101, 102, 103]))[
+        "Sample.WorkItemExecution"
+    ]
+    assert work_item["count"] == 3, work_item
+    assert len(work_item["probes"]) == 2, work_item
+    assert namespace["fetch"].call_count == 2
+
+
+def test_source_c_platform_evidence():
+    for second_leg, expected in [
+        ("Windows_Test", ["OperatingSystems.Linux", "OperatingSystems.Windows"]),
+        ("unknown", list(MODULE.OPERATING_SYSTEMS)),
+    ]:
+        record = MODULE.source_c_failure_records([
+            {"build": 101, "workitem": leg, "fail_blocks": f"{TEST_NAME} [FAIL]"}
+            for leg in ("Linux_Test", second_leg)
+        ])[TEST_NAME]
+        assert MODULE.quarantine_operating_systems(None, None, record, [101]) == expected
+    assert MODULE.quarantine_operating_systems(
+        {"builds": [101], "legs": {"101": [None]}},
+        {"builds": [101], "legs": {"101": ["Linux_Test"]}},
+        None, [101],
+    ) == list(MODULE.OPERATING_SYSTEMS)
 
 
 def test_theory_data_quarantine_support():
@@ -3181,6 +3365,9 @@ def run_output(root, *args):
 
 
 def main():
+    test_row_targets_require_conditional_theory()
+    test_workflow_platform_evidence()
+    test_source_c_platform_evidence()
     test_theory_data_quarantine_support()
     test_build_source_ancestry()
     test_history_cutoff_uses_first_parent_order()
@@ -3221,8 +3408,6 @@ def main():
         assert eligible["eligible_failure_builds"] == [101, 102]
         assert eligible["quarantine_operating_systems"] == [
             "OperatingSystems.Linux",
-            "OperatingSystems.MacOSX",
-            "OperatingSystems.Windows",
         ], eligible
 
         one_failure = record(collect(root, evidence(builds=(101,))))
