@@ -808,6 +808,25 @@ def test_unmatched_inline_row_fails_closed(cases=None):
             assert "source-unmatched-data-row" in result["reasons"], result
 
 
+def test_mixed_row_providers(provider='[MemberData(nameof(GetRows))]'):
+    for row in (
+        "[InlineData(HttpProtocols.Http3)]",
+        '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+        'OperatingSystems.Linux, HttpProtocols.Http3)]',
+    ):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            _, file_path = initialize_repository(root)
+            file_path.write_text(theory_source(row, provider), encoding="utf-8")
+            commit(root, "Add mixed row providers", "2026-08-01T00:00:00Z")
+            result = collect_result(
+                root, evidence(test_name=THEORY_TEST_NAME), test_name=THEORY_TEST_NAME
+            )
+            assert result["status"] == "unproven", result
+            assert "source-ambiguous" in result["reasons"], result
+            print(f"PASS mixed row providers: {row}, {provider}")
+
+
 def test_commented_row_attributes():
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -3589,6 +3608,16 @@ def run_output(root, *args):
 
 
 def main():
+    for provider in (
+        '[MemberData(nameof(GetRows))]',
+        '[Xunit.MemberDataAttribute(nameof(GetRows))]',
+        '[ClassData(typeof(Rows))]',
+        '[CustomRows]',
+        '[InlineData(HttpProtocols.Http3)]',
+        '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+        'OperatingSystems.Linux, HttpProtocols.Http3)]',
+    ):
+        test_mixed_row_providers(provider)
     for raw, rendered in [
         ("true", "True"), ("false", "False"), ("-1L", "-1"),
         ("1UL", "1"), ("0x10", "16"), ("0b10", "2"), ("1_000L", "1000"),

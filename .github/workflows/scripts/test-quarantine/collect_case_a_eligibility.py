@@ -61,6 +61,10 @@ CONDITIONAL_THEORY_PATTERN = re.compile(
     r"^\s*\[\s*(?:global::)?(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
     r"ConditionalTheory(?:Attribute)?\s*(?:\(.*\))?\s*\]\s*$"
 )
+TRAIT_PATTERN = re.compile(
+    r"^\s*\[\s*(?:global::)?(?:Xunit\.)?"
+    r"Trait(?:Attribute)?\s*\(.*\)\s*\]\s*$"
+)
 QUARANTINE_ISSUE_PATTERN = re.compile(
     r"https://github\.com/dotnet/aspnetcore/issues/(?P<issue>\d+)"
 )
@@ -593,6 +597,16 @@ def build_source_index(root):
                     CONDITIONAL_THEORY_PATTERN.fullmatch(attribute)
                     for attribute in logical_attributes(attributes)
                 ),
+                "has_unproven_data_provider": any(
+                    not any(pattern.fullmatch(attribute) for pattern in (
+                        CONDITIONAL_THEORY_PATTERN,
+                        INLINE_DATA_PATTERN,
+                        DATA_QUARANTINE_PATTERN,
+                        METHOD_QUARANTINE_PATTERN,
+                        TRAIT_PATTERN,
+                    ))
+                    for attribute in logical_attributes(attributes)
+                ),
                 "type_quarantined": type_quarantines.get(
                     (project_root, type_name),
                     False,
@@ -767,6 +781,12 @@ def resolve_source(root, test_name, source_index=None):
     result["test_arguments"] = test_arguments
     result["data_quarantine"] = None
     result["matching_inline_data"] = None
+    if (
+        result["conditional_theory"]
+        and result["has_row_data"]
+        and result["has_unproven_data_provider"]
+    ):
+        return {"status": "ambiguous", "matches": matches[:5]}
     if test_arguments is not None:
         data_matches = [
             item for item in result["data_quarantines"]
@@ -776,7 +796,7 @@ def resolve_source(root, test_name, source_index=None):
             item for item in result["inline_data"]
             if result["conditional_theory"] and item["values"] == test_arguments
         ]
-        if len(data_matches) > 1 or len(inline_matches) > 1:
+        if len(data_matches) + len(inline_matches) > 1:
             return {
                 "status": "ambiguous",
                 "matches": matches[:5],

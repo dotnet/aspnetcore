@@ -88,6 +88,12 @@ values while retaining the original source arguments for patch validation.
 A `ConditionalTheory` with inline rows that cannot be matched exactly (including
 missing argument lists or unsupported constant expressions) is unproven, not a
 method-level quarantine candidate. Trailing attribute comments do not hide rows.
+Row mapping also fails closed when other method attributes could provide data:
+`MemberData`, `ClassData`, and unrecognized attributes can produce the same
+rendered arguments as an inline row. Only the recognized theory, inline/data
+quarantine, method quarantine, and xUnit trait attributes are accepted for
+automatic row mapping; unknown attributes are not assumed to be non-data metadata.
+Matching inline and quarantined rows with identical arguments are ambiguous too.
 Renamed row owners receive the same conservative history checks as method targets.
 Unresolved historical inheritance is unproven, not evidence that a test was
 never inherited.

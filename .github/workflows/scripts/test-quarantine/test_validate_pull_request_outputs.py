@@ -322,7 +322,7 @@ def assert_rejected(callback, message):
         raise AssertionError(f"Expected validation failure containing {message!r}")
 
 
-def test_theory_target_binding(data="HttpProtocols.Http3", displayed="Http3", supported=True):
+def test_theory_target_binding(data="HttpProtocols.Http3", displayed="Http3", supported=True, provider=""):
     for theory in ("Theory", "ConditionalTheory"):
         for case in ("case-a", "case-b"):
             for rewrite_row in (True, False):
@@ -331,6 +331,10 @@ def test_theory_target_binding(data="HttpProtocols.Http3", displayed="Http3", su
                     initial_source = theory_source().replace(
                         "[ConditionalTheory]", f"[{theory}]"
                     ).replace("HttpProtocols.Http3", data)
+                    if provider:
+                        initial_source = initial_source.replace(
+                            f"[InlineData({data})]", f"[InlineData({data})]\n    {provider}"
+                        )
                     _, commit = initialize_repository(root, initial_source)
                     record = case_a_record() if case == "case-a" else case_b_record()
                     record["source_resolution"] = MODULE.ELIGIBILITY.resolve_source(
@@ -450,6 +454,12 @@ def test_row_comment_ownership():
 
 
 def main():
+    for provider in (
+        '[MemberData(nameof(GetRows))]',
+        '[ClassData(typeof(Rows))]',
+        '[CustomRows]',
+    ):
+        test_theory_target_binding(supported=False, provider=provider)
     test_row_comment_ownership()
     for case in ("case-a", "case-b", "unquarantine"):
         for comment in (" // reason", " // reason [detail]", " // unmatched [",
