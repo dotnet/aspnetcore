@@ -823,12 +823,6 @@
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSample/CookieSample.csproj" />
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSessionSample/CookieSessionSample.csproj" />
   </Folder>
-  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/">
-    <Project Path="src/Security/Authentication/DeviceBoundSessions/src/Microsoft.AspNetCore.Authentication.DeviceBoundSessions.csproj" />
-  </Folder>
-  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/samples/">
-    <Project Path="src/Security/Authentication/DeviceBoundSessions/samples/DbscDebugServer/DbscDebugServer.csproj" />
-  </Folder>
   <Folder Name="/src/Security/Authentication/Core/">
     <Project Path="src/Security/Authentication/Core/src/Microsoft.AspNetCore.Authentication.csproj" />
   </Folder>
@@ -1063,7 +1057,6 @@
     <Project Path="src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj" />
   </Folder>
   <Folder Name="/src/Servers/Kestrel/samples/">
-    <Project Path="src/Servers/Kestrel/samples/DirectTlsTransportApp/DirectTlsTransportApp.csproj" />
     <Project Path="src/Servers/Kestrel/samples/http2cat/http2cat.csproj" />
     <Project Path="src/Servers/Kestrel/samples/Http2SampleApp/Http2SampleApp.csproj" />
     <Project Path="src/Servers/Kestrel/samples/Http3SampleApp/Http3SampleApp.csproj" />
@@ -1081,10 +1074,6 @@
   </Folder>
   <Folder Name="/src/Servers/Kestrel/tools/">
     <Project Path="src/Servers/Kestrel/tools/CodeGenerator/CodeGenerator.csproj" />
-  </Folder>
-  <Folder Name="/src/Servers/Kestrel/Transport.DirectTls/">
-    <Project Path="src/Servers/Kestrel/Transport.DirectTls/src/Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.csproj" />
-    <Project Path="src/Servers/Kestrel/Transport.DirectTls/test/Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Servers/Kestrel/Transport.Quic/">
     <Project Path="src/Servers/Kestrel/Transport.Quic/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
