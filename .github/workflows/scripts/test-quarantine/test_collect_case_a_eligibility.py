@@ -2,6 +2,7 @@
 
 import ast
 import datetime
+import http.client
 import importlib.util
 import io
 import json
@@ -10,6 +11,7 @@ import pathlib
 import subprocess
 import tempfile
 import textwrap
+import urllib.parse
 from unittest import mock
 
 
@@ -175,8 +177,8 @@ def evidence(regression=False, builds=(101, 102), test_name=TEST_NAME):
                 "evidence_build": builds[-1],
                 "run_id": 2001,
                 "result_id": 3001,
-                "leg": "Linux_Test",
-                "legs": {str(build): ["Linux_Test"] for build in builds},
+                "leg": "Sample.Tests--net11.0",
+                "queues": {str(build): ["ubuntu.2404.amd64.open"] for build in builds},
                 "error": "stable-marker-123",
                 "stack": f"at {type_name.rsplit('.', 1)[-1]}.{method_name}()",
                 "is_consistent_regression": regression,
@@ -306,7 +308,7 @@ def test_row_targets_require_conditional_theory():
             ), (attribute, resolved)
 
 
-def test_workflow_platform_evidence():
+def part1_functions():
     workflow = (SCRIPT.parents[2] / "test-quarantine.md").read_text(encoding="utf-8")
     step = workflow.split("    - name: Aggregate Part 1 failures\n", 1)[1]
     script = textwrap.dedent(
@@ -315,29 +317,36 @@ def test_workflow_platform_evidence():
         )[0]
     )
     tree = ast.parse(script)
-    functions = {
-        "aggregate", "norm_name", "parse_helix", "enrich", "result_detail",
-    }
     tree.body = [
         node for node in tree.body
-        if isinstance(node, ast.FunctionDef) and node.name in functions
+        if isinstance(node, ast.FunctionDef)
     ]
     namespace = {
         "json": json, "WI_SUFFIX": ".WorkItemExecution", "OCC_CAP": 2,
         "OS_DETAIL_BUDGET": 1000, "ERROR_CAP": 1200, "STACK_CAP": 900,
         "VSTMR": "https://example.invalid", "scrub_secrets": lambda text: text,
+        "HELIX": "https://helix.dot.net/api/2019-06-17",
+        "urllib": urllib, "http": http, "sys": mock.Mock(),
     }
     exec(compile(tree, "test-quarantine.md", "exec"), namespace)
+    return namespace
 
+
+def test_workflow_platform_evidence():
+    namespace = part1_functions()
+    linux = "ubuntu.2404.amd64.open"
+    windows = "windows.amd64.vs2026.open"
     scenarios = [
-        ("two Linux builds", {101: ["Linux_Test"], 102: ["Linux_Test"]}, ["Linux"]),
-        ("three Linux builds", {101: ["Linux_Test"], 102: ["Linux_Test"], 103: ["Linux_Test"]}, ["Linux"]),
-        ("mixed builds", {101: ["Linux_Test"], 102: ["Windows_Test"]}, ["Linux", "Windows"]),
-        ("mixed same build", {101: ["Linux_Test", "Windows_Test"], 102: ["Linux_Test"]}, ["Linux", "Windows"]),
-        ("unknown second leg", {101: ["Linux_Test", ""], 102: ["Linux_Test"]}, ["Linux", "MacOSX", "Windows"]),
-        ("detail unavailable", {101: ["Linux_Test"], 102: [None]}, ["Linux", "MacOSX", "Windows"]),
-        ("missing identity", {101: ["Linux_Test"], 102: ["missing-id"]}, ["Linux", "MacOSX", "Windows"]),
-        ("missing first identity", {101: ["missing-id"], 102: ["Linux_Test"]}, ["Linux", "MacOSX", "Windows"]),
+        ("two Linux builds", {101: [linux], 102: [linux]}, ["Linux"]),
+        ("three Linux builds", {101: [linux], 102: [linux], 103: [linux]}, ["Linux"]),
+        ("mixed builds", {101: [linux], 102: [windows]}, ["Linux", "Windows"]),
+        ("mixed same build", {101: [linux, windows], 102: [linux]}, ["Linux", "Windows"]),
+        ("unknown second queue", {101: [linux, ""], 102: [linux]}, ["Linux", "MacOSX", "Windows"]),
+        ("detail unavailable", {101: [linux], 102: [None]}, ["Linux", "MacOSX", "Windows"]),
+        ("missing identity", {101: [linux], 102: ["missing-id"]}, ["Linux", "MacOSX", "Windows"]),
+        ("missing first identity", {101: ["missing-id"], 102: [linux]}, ["Linux", "MacOSX", "Windows"]),
+        ("queue unavailable", {101: [linux], 102: ["fetch-error"]}, ["Linux", "MacOSX", "Windows"]),
+        ("unsupported queue", {101: [linux], 102: ["unknown.amd64.open"]}, ["Linux", "MacOSX", "Windows"]),
     ]
     for scenario, builds, expected in scenarios:
         results = {}
@@ -354,21 +363,28 @@ def test_workflow_platform_evidence():
             results[build].append(dict(results[build][0]))
 
         def fetch(url):
+            if "/jobs/" in url:
+                result_id = int(url.rsplit("-", 1)[1])
+                if details[result_id] == "fetch-error":
+                    raise OSError("fixture queue unavailable")
+                return {"QueueId": details[result_id]}, {}
             result_id = int(url.split("/results/")[1].split("?")[0])
             leg = details[result_id]
             if leg is None:
                 raise OSError("fixture detail unavailable")
             return {"comment": json.dumps({
-                "HelixJobId": "job-id", "HelixWorkItemName": leg,
+                "HelixJobId": f"job-{result_id}", "HelixWorkItemName": "Sample.Tests--net11.0",
             })}, {}
 
         namespace["failed_results"] = lambda build: iter(results[build])
         namespace["fetch"] = mock.Mock(side_effect=fetch)
-        aggregated = namespace["enrich"](namespace["aggregate"](list(builds)))
+        aggregated = namespace["enrich"](namespace["aggregate"](list(builds)), {})
         actual = aggregated[TEST_NAME]
         assert actual["count"] == len(builds), (scenario, actual)
         assert namespace["fetch"].call_count == sum(
             leg != "missing-id" for leg in details.values()
+        ) + sum(
+            leg not in (None, "missing-id") for leg in details.values()
         ), (scenario, namespace["fetch"].call_count)
         if scenario == "missing first identity":
             assert actual["evidence_build"] == 102, actual
@@ -396,13 +412,16 @@ def test_workflow_platform_evidence():
     namespace["failed_results"] = lambda build: iter([{
         "automatedTestName": TEST_NAME, "runId": build, "id": build,
     }])
-    namespace["fetch"] = mock.Mock(return_value=({
-        "comment": json.dumps({"HelixWorkItemName": "Linux_Test"}),
-    }, {}))
-    actual = namespace["enrich"](namespace["aggregate"]([101, 102]))[TEST_NAME]
-    assert actual["legs"] == {"101": ["Linux_Test"], "102": [None]}, actual
+    namespace["fetch"] = mock.Mock(side_effect=lambda url: (
+        {"QueueId": linux} if "/jobs/" in url else
+        {"comment": json.dumps({
+            "HelixJobId": "job", "HelixWorkItemName": "Sample.Tests--net11.0",
+        })}, {}
+    ))
+    actual = namespace["enrich"](namespace["aggregate"]([101, 102]), {})[TEST_NAME]
+    assert actual["queues"] == {"101": [linux], "102": [None]}, actual
     assert actual["detail_note"] == "platform evidence detail budget exhausted"
-    assert namespace["fetch"].call_count == 1
+    assert namespace["fetch"].call_count == 2
     assert MODULE.quarantine_operating_systems(actual, None, None, [101, 102]) == list(
         MODULE.OPERATING_SYSTEMS
     )
@@ -414,9 +433,9 @@ def test_workflow_platform_evidence():
         "automatedTestName": "Sample.WorkItemExecution", "runId": build, "id": build,
     }])
     namespace["fetch"] = mock.Mock(return_value=({
-        "comment": json.dumps({"HelixJobId": "job", "HelixWorkItemName": "Linux_Test"}),
+        "comment": json.dumps({"HelixJobId": "job", "HelixWorkItemName": "Sample.Tests--net11.0"}),
     }, {}))
-    work_item = namespace["enrich"](namespace["aggregate"]([101, 102, 103]))[
+    work_item = namespace["enrich"](namespace["aggregate"]([101, 102, 103]), {})[
         "Sample.WorkItemExecution"
     ]
     assert work_item["count"] == 3, work_item
@@ -425,20 +444,140 @@ def test_workflow_platform_evidence():
 
 
 def test_source_c_platform_evidence():
-    for second_leg, expected in [
-        ("Windows_Test", ["OperatingSystems.Linux", "OperatingSystems.Windows"]),
+    for second_queue, expected in [
+        ("windows.amd64.vs2026.open", ["OperatingSystems.Linux", "OperatingSystems.Windows"]),
         ("unknown", list(MODULE.OPERATING_SYSTEMS)),
     ]:
         record = MODULE.source_c_failure_records([
-            {"build": 101, "workitem": leg, "fail_blocks": f"{TEST_NAME} [FAIL]"}
-            for leg in ("Linux_Test", second_leg)
+            {"build": 101, "workitem": "batch_1--net11.0", "queue": queue,
+             "fail_blocks": f"{TEST_NAME} [FAIL]"}
+            for queue in ("ubuntu.2404.amd64.open", second_queue)
         ])[TEST_NAME]
         assert MODULE.quarantine_operating_systems(None, None, record, [101]) == expected
     assert MODULE.quarantine_operating_systems(
-        {"builds": [101], "legs": {"101": [None]}},
-        {"builds": [101], "legs": {"101": ["Linux_Test"]}},
+        {"builds": [101], "queues": {"101": [None]}},
+        {"builds": [101], "queues": {"101": ["ubuntu.2404.amd64.open"]}},
         None, [101],
     ) == list(MODULE.OPERATING_SYSTEMS)
+    for record in [
+        {"builds": [101], "legs": {"101": ["Windows_Test"]},
+         "evidence_build": 101, "leg": "Linux_Test"},
+        MODULE.source_c_failure_records([{
+            "build": 101, "job": "Linux", "workitem": "Windows",
+            "fail_blocks": f"{TEST_NAME} [FAIL]",
+        }])[TEST_NAME],
+    ]:
+        assert MODULE.quarantine_operating_systems(record, None, None, [101]) == list(
+            MODULE.OPERATING_SYSTEMS
+        ), record
+
+
+def test_helix_queue_cache():
+    for response, expected, warning in [
+        ({"QueueId": "ubuntu.2404.amd64.open"}, "ubuntu.2404.amd64.open", False),
+        ({"QueueId": "unknown.amd64.open"}, "unknown.amd64.open", False),
+        ({}, None, True),
+        ({"QueueId": ""}, None, True),
+        ({"QueueId": ["ubuntu.2404.amd64.open"]}, None, True),
+        ([], None, True),
+        (OSError("fixture queue unavailable"), None, True),
+        (ValueError("fixture invalid JSON"), None, True),
+        (http.client.IncompleteRead(b"partial"), None, True),
+        (http.client.BadStatusLine("fixture invalid status"), None, True),
+    ]:
+        namespace = part1_functions()
+        namespace["fetch"] = mock.Mock(
+            side_effect=response if isinstance(response, Exception) else None,
+            return_value=(response, {}),
+        )
+        cache = {}
+        for _ in range(2):
+            assert namespace["helix_queue"]("job-id", cache) == expected
+        namespace["fetch"].assert_called_once_with(
+            "https://helix.dot.net/api/2019-06-17/jobs/job-id"
+        )
+        assert namespace["sys"].stderr.write.call_count == int(warning)
+        assert namespace["helix_queue"](None, cache) is None
+        assert namespace["fetch"].call_count == 1
+
+
+def test_production_queue_evidence(
+    queue="ubuntu.2404.amd64.open",
+    expected="Linux",
+    sources=("source_a", "source_b", "source_c"),
+):
+    for source in sources:
+        namespace = part1_functions()
+        builds = [
+            {"id": build, "startTime": f"2026-08-{day}T10:00:00Z",
+             "sourceVersion": str(build), "definition": {"id": 83},
+             "sourceBranch": "refs/pull/42/merge" if source == "source_b" else "refs/heads/main"}
+            for build, day in ((101, 15), (102, 16))
+        ]
+        workitem = "batch_1--net11.0"
+        # Shape verified against Helix job 1c70e76a-1985-4b12-943c-1cb84e4c9499.
+        job_id = "1c70e76a-1985-4b12-943c-1cb84e4c9499"
+        calls = []
+
+        def fetch(url):
+            calls.append(url)
+            if url == f"{namespace['HELIX']}/jobs/{job_id}":
+                return {"Name": job_id, "QueueId": queue}, {}
+            assert "/testresults/runs/" in url, url
+            result_job = (
+                "earlier-job-with-no-fail-blocks"
+                if source == "source_c" and "/runs/102/" in url
+                else job_id
+            )
+            return {"comment": json.dumps({
+                "HelixJobId": result_job, "HelixWorkItemName": workitem,
+            })}, {}
+
+        namespace.update({
+            "DEFS": [83],
+            "os": mock.Mock(environ={
+                "SOURCE_B_BUILD_IDS": "[101,102]" if source == "source_b" else "",
+            }),
+            "datetime": datetime,
+            "SOURCE_C_DOWNLOAD_BUDGET": 10000,
+            "SOURCE_C_GLOBAL_CAP": 10000, "WORKITEM_CAP": 10000,
+            "list_failed_builds": lambda *_args, **_kwargs: (
+                [] if source == "source_b" else builds
+            ),
+            "builds_by_ids": lambda _ids: builds,
+            "list_completed_builds": lambda *_args, **_kwargs: [],
+            "mark_intermittency": lambda agg, *_args: [
+                entry.update(is_consistent_regression=False) for entry in agg.values()
+            ],
+            "failed_results": lambda build: iter([{
+                "automatedTestName": (
+                    workitem + ".WorkItemExecution" if source == "source_c" else TEST_NAME
+                ),
+                "runId": build, "id": build,
+            }]),
+            "fetch": fetch,
+            "helix_console_blocks": lambda job, _wi: (
+                [f"{TEST_NAME} [FAIL]"] if job == job_id else [], 100
+            ),
+            "emit": lambda out: json.dumps(out),
+        })
+        data = json.loads(namespace["main"]())
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            initialize_repository(root)
+            commit(root, "Add test", "2026-08-01T00:00:00Z")
+            result = collect_result(root, data)
+            assert result["eligible_failure_builds"], result
+            assert result["status"] == (
+                "ineligible" if source == "source_c" else "eligible"
+            ), result
+            if source == "source_c":
+                assert result["eligible_failure_builds"] == [101], result
+            assert result["quarantine_operating_systems"] == [
+                f"OperatingSystems.{expected}",
+            ], (queue, source, result)
+        assert calls.count(f"{namespace['HELIX']}/jobs/{job_id}") == 1, calls
+        print(f"PASS production queue: {source}, {queue}")
 
 
 def test_theory_data_quarantine_support():
@@ -3365,6 +3504,18 @@ def run_output(root, *args):
 
 
 def main():
+    test_helix_queue_cache()
+    for queue, expected in [
+        ("ubuntu.2404.amd64.open", "Linux"),
+        ("azurelinux.3.amd64.open", "Linux"),
+        ("almalinux.10.amd64.open", "Linux"),
+        ("fedora.44.amd64.open", "Linux"),
+        ("alpine.323.amd64.open", "Linux"),
+        ("debian.13.arm64.open", "Linux"),
+        ("OSX.26.Arm64.Open", "MacOSX"),
+        ("Windows.Amd64.VS2026.Open", "Windows"),
+    ]:
+        test_production_queue_evidence(queue, expected)
     test_row_targets_require_conditional_theory()
     test_workflow_platform_evidence()
     test_source_c_platform_evidence()

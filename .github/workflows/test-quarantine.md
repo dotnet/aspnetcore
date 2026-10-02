@@ -570,7 +570,7 @@ on:
         # optional enrichment (never the per-test counts) and fails loud rather than letting
         # GitHub silently truncate into corrupt JSON. Validated ~170KB on 30 days of data.
         python3 << 'SCRIPT'
-        import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error, re
+        import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error, re, http.client
 
         ADO = "https://dev.azure.com/dnceng-public/public/_apis"
         VSTMR = "https://vstmr.dev.azure.com/dnceng-public/public/_apis"
@@ -780,7 +780,24 @@ on:
             return data
 
 
-        def enrich(agg):
+        def helix_queue(job_id, queue_cache):
+            if not isinstance(job_id, str) or not job_id:
+                sys.stderr.write("platform evidence: missing Helix job identity\n")
+                return None
+            if job_id not in queue_cache:
+                queue_cache[job_id] = None
+                try:
+                    data, _ = fetch(f"{HELIX}/jobs/{urllib.parse.quote(job_id, safe='')}")
+                    queue = data.get("QueueId") if isinstance(data, dict) else None
+                    if not isinstance(queue, str) or not queue.strip():
+                        raise ValueError("Helix job response has no QueueId")
+                    queue_cache[job_id] = queue
+                except (OSError, ValueError, http.client.HTTPException) as ex:
+                    sys.stderr.write(f"platform evidence: Helix queue lookup failed: {type(ex).__name__}\n")
+            return queue_cache[job_id]
+
+
+        def enrich(agg, queue_cache):
             """Attach Helix coords (job+workitem, only when BOTH present) and, for individual
             tests, per-build platform evidence and real error/stack from the representative
             result detail. For work items, also
@@ -797,8 +814,8 @@ on:
                 )
                 for idx, occ in enumerate(e.get("occ", [])):
                     if not is_wi:
-                        legs = e.setdefault("legs", {}).setdefault(str(occ["build"]), [])
-                        legs.append(None)
+                        queues = e.setdefault("queues", {}).setdefault(str(occ["build"]), [])
+                        queues.append(None)
                         if not occ["runId"] or not occ["resultId"]:
                             e["detail_note"] = "platform evidence missing result identity"
                             continue
@@ -814,7 +831,7 @@ on:
                         continue
                     job, wi_name = parse_helix(det.get("comment"))
                     if not is_wi:
-                        legs[-1] = wi_name or ""
+                        queues[-1] = helix_queue(job, queue_cache)
                     if idx == representative_index and job and wi_name:
                         e["helix"] = {"job": job, "workitem": wi_name}
                     if is_wi and job and wi_name:
@@ -987,6 +1004,7 @@ on:
 
 
         def main():
+            queue_cache = {}
             # Source A: failed/partial builds on main, both pipelines, last 30 days.
             a_builds = [b for d in DEFS for b in list_failed_builds(d, branch="refs/heads/main")]
             # Make the representative occurrence deterministic and recent. Any eligible
@@ -998,7 +1016,7 @@ on:
             bmeta = {}
             for b in a_builds:
                 bmeta[str(b["id"])] = build_meta(b)
-            source_a = enrich(aggregate([b["id"] for b in a_builds]))
+            source_a = enrich(aggregate([b["id"] for b in a_builds]), queue_cache)
             # Flakiness signal: needs the FULL main timeline (incl. succeeded builds), not just
             # the failed/partial builds above, to spot a passing run between two failures.
             all_main_builds = [b for d in DEFS for b in list_completed_builds(d, branch="refs/heads/main")]
@@ -1023,7 +1041,7 @@ on:
                         bmeta.get(str(bid), {}).get("startedUtc") or "",
                         int(bid)),
                     reverse=True)
-            source_b = enrich(aggregate(b_ids))
+            source_b = enrich(aggregate(b_ids), queue_cache)
 
             # Source C: work items (combined A+B) -> Helix console [FAIL] blocks. Probe each
             # tracked occurrence until one yields [FAIL] blocks (the first build is often a
@@ -1090,6 +1108,7 @@ on:
                     continue
                 total += len(joined)
                 source_c.append({"workitem": name, "build": chosen["build"], "job": chosen["job"],
+                                 "queue": helix_queue(chosen["job"], queue_cache),
                                  "log_bytes": chosen["log"], "fail_block_count": len(chosen["blocks"]),
                                  "fail_blocks": joined})
 
@@ -2147,7 +2166,7 @@ The injected object has this shape:
 - `source_b` — **merged-PR failures**: same shape as `source_a`, computed from the already-selected merged-into-`main` PR builds (the `Verify Source B PRs` step did the full B1–B4 selection). It may be empty (`{}`) if no qualifying PR builds failed this run. Source B captures flaky tests that only manifest in PR builds: (1) a PR retried until it passed, and (2) a PR merged on red because the only failures were unrelated flaky tests.
 - `source_c` — **work-item crash investigation**: a list, one entry per crashed work item (test name ending in `.WorkItemExecution`). Each entry has `workitem`, `build`, `job`, and either `fail_block_count` + `fail_blocks` (the extracted `[FAIL]` blocks from the Helix console log, capped per block and overall) or a `note` explaining why no blocks were extracted. **A work item with `fail_block_count` of 0 is almost always macOS-hang / "test host process crashed" infrastructure flakiness with no clean test-level failure — it is NOT a quarantine signal on its own; do not invent a culprit test from it.**
 - `source_c_truncated` — `true` if the global Source C size cap was hit and some work items were omitted; call this out in your analysis if it affects a decision.
-- Source A/B individual test records also contain `legs`, mapping each build ID to work-item names for its distinct failed results. A null or unrecognized entry means that platform could not be proven (including missing result identity, detail-fetch failure, or exhaustion of the additional lookup budget). The eligibility collector uses every retained incident, not the representative `leg`, to determine OS scope.
+- Source A/B individual test records also contain `queues`, mapping each build ID to the Helix job's `QueueId` for its distinct failed results. Source C records with failure blocks carry the selected job's `queue`. Job lookups are cached across all three sources. A null or unrecognized queue means that platform could not be proven (including missing identity, lookup failure, or exhaustion of the additional result-detail budget). The eligibility collector uses every retained incident's queue, never work-item names or the representative `leg`, to determine OS scope.
 - `trim` — present only if the whole payload approached the 1MB injection limit and optional enrichment had to be shed (e.g. `stack_dropped`, `error_dropped`). The per-test failure counts are never dropped; if you see this, error/stack for some tests may be missing and you can fetch them for a final candidate via its `helix` coordinates (Part 3).
 
 The deterministic collector also resolved current source/history and applied

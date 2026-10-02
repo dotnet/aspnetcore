@@ -140,10 +140,14 @@ into a KBE.
 - Quarantine additions are bound to a deterministic operating-system set.
   A subset is emitted only when every retained incident has an unambiguous
   platform identity; otherwise the receipt requires all supported platforms.
-  Source A/B retain per-build `legs` for every distinct result, including
-  multiple platforms in one build. Additional result-detail calls are bounded
-  per source; missing identities, failed lookups, and budget exhaustion leave
-  explicit unknown entries rather than borrowing the representative result's OS.
+  Source A/B retain per-build `queues` for every distinct result, including
+  multiple platforms in one build. These come from the Helix job API's `QueueId`,
+  not the OS-neutral work-item name. Source C records carry the selected job's
+  `queue`. Job lookups (including failures) are cached across all three sources.
+  Additional result-detail calls are bounded per source; missing identities,
+  failed lookups, and budget exhaustion leave explicit unknown entries rather
+  than borrowing the representative result's OS. Older payloads without queue
+  metadata also require all supported platforms.
   Existing partially scoped targets are not automatically widened or narrowed.
 - An assembly quarantine removal is treated as a prior unquarantine only if the
   runner actually inherited or declared the test at that transition. Ambiguous

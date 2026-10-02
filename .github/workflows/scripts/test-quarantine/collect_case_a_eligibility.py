@@ -154,29 +154,33 @@ def operating_system_values(value):
     )
 
 
-def operating_system_from_text(value):
-    tokens = set(re.findall(r"[a-z0-9]+", str(value).lower()))
-    matches = set()
-    if tokens.intersection({
+def operating_system_from_queue(value):
+    if not isinstance(value, str):
+        return None
+    platform = value.strip().split(".", 1)[0].lower()
+    if platform in {
         "linux",
         "ubuntu",
         "debian",
         "alpine",
         "centos",
         "rhel",
-    }):
-        matches.add("OperatingSystems.Linux")
-    if tokens.intersection({"mac", "macos", "osx"}):
-        matches.add("OperatingSystems.MacOSX")
-    if tokens.intersection({
+        "azurelinux",
+        "almalinux",
+        "fedora",
+    }:
+        return "OperatingSystems.Linux"
+    if platform in {"mac", "macos", "osx"}:
+        return "OperatingSystems.MacOSX"
+    if platform in {
         "win",
         "win7",
         "win10",
         "win11",
         "windows",
-    }):
-        matches.add("OperatingSystems.Windows")
-    return next(iter(matches)) if len(matches) == 1 else None
+    }:
+        return "OperatingSystems.Windows"
+    return None
 
 
 def square_bracket_delta(value):
@@ -2927,8 +2931,8 @@ def source_c_failure_records(source_c):
             record = records.setdefault(test_name, {"builds": []})
             if build_id not in record["builds"]:
                 record["builds"].append(build_id)
-            record.setdefault("legs", {}).setdefault(str(build_id), []).append(
-                f"{item.get('job', '')} {item.get('workitem', '')}"
+            record.setdefault("queues", {}).setdefault(str(build_id), []).append(
+                item.get("queue")
             )
     return records
 
@@ -2939,11 +2943,9 @@ def quarantine_operating_systems(record_a, record_b, record_c, builds):
         if not record:
             continue
         for build in record.get("builds", []):
-            legs = record.get("legs", {}).get(str(build))
-            if legs is None and build == record.get("evidence_build"):
-                legs = [record.get("leg")]
+            queues = record.get("queues", {}).get(str(build))
             operating_systems = {
-                operating_system_from_text(leg) for leg in (legs or [None])
+                operating_system_from_queue(queue) for queue in (queues or [None])
             }
             by_build.setdefault(build, set()).update(operating_systems)
 
