@@ -110,6 +110,8 @@ Once the transport connection is open, the client's first hub-level message is a
 
 The selected hub protocol belongs to that connection for its lifetime. Negotiation protocol versions and hub protocol versions govern separate contracts. A handshake rejection or timeout ends startup before the connection enters normal hub lifetime processing; opening an HTTP transport alone does not create a successfully connected hub client.
 
+Changes to these wire contracts should preserve interoperability between older clients and newer servers, and between newer clients and older servers. Respect HTTP `negotiateVersion` and hub protocol version checks when adding capabilities; for example, the [.NET client](clients/csharp/Client.Core/src/HubConnection.cs) sends hub protocol version 1 when stateful reconnect is not negotiated and the protocol supports it.
+
 ## Transport and Protocol Separation
 
 ### Transport Composition and Transfer Formats
@@ -150,7 +152,7 @@ Each hub invocation has its own activation and service scope. A streaming invoca
 
 Ordinary non-streaming hub invocations are serialized per connection by default. `HubOptions.MaximumParallelInvocationsPerClient` changes that invocation limit; it does not impose a single global lock on the server or make hub instances connection-scoped.
 
-Invocations with streaming parameters or streaming results do not consume this non-streaming invocation limit. The dispatcher can continue processing messages while a stream is active, which is necessary to receive upload items, cancellation, and other connection traffic. Stream ownership and completion therefore cannot be inferred from the completion of the dispatch call that started the stream.
+Invocations with streaming parameters or streaming results do not consume this non-streaming invocation limit. The dispatcher can continue processing messages while a stream is active, which is necessary to receive upload items, cancellation, and other connection traffic. Stream ownership and completion therefore cannot be inferred from the completion of the dispatch call that started the stream. See [Limit per-connection streaming invocations](https://learn.microsoft.com/aspnet/core/signalr/hubs#limit-per-connection-streaming-invocations) for application-enforced streaming limits.
 
 Cancellation crosses both invocation and connection boundaries. Invocation cancellation targets the corresponding active operation; connection abortion signals that the connection can no longer support its work. Stream completion, linked cancellation, hub release, and scope disposal remain owned by the invocation and connection machinery, including when application code observes cancellation asynchronously.
 
@@ -190,6 +192,8 @@ The shared .NET implementation is in [`common/Shared/MessageBuffer.cs`](common/S
 Ordinary automatic reconnect is a different client policy: it attempts to establish a new connection after the previous one is lost. It does not retain the old server connection, group memberships, or an unacknowledged-message buffer. Stateful reconnect instead depends on the original server connection still existing and the resumption succeeding. It is not durable storage, process failover, or a general exactly-once delivery guarantee, and a Redis backplane does not turn it into those things.
 
 ## Scaleout, Groups, and Users
+
+[Azure SignalR Service (ASRS)](https://learn.microsoft.com/azure/azure-signalr/signalr-overview) is a managed scale-out option. New SignalR features should be designed to work with it.
 
 `DefaultHubLifetimeManager<THub>` tracks and addresses connections in the current process. Broadcasts, group sends, user sends, and connection-targeted sends resolve to local connection contexts. Group membership is associated with connections, while user addressing uses the user identifier supplied for those connections; a user may have multiple connections.
 
