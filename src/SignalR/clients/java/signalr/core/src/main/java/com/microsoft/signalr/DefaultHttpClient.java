@@ -154,7 +154,7 @@ final class DefaultHttpClient extends HttpClient {
                 HttpResponse httpResponse;
                 try (ResponseBody body = response.body()) {
                     httpResponse = new HttpResponse(response.code(), response.message(), ByteBuffer.wrap(body.bytes()));
-                } catch (Throwable ex) {
+                } catch (Exception ex) {
                     // OkHttp marks the callback as signalled before invoking onResponse, so it never calls
                     // onFailure for anything thrown from here. Reading the body can still fail, for example when
                     // the connection drops mid-response, so terminate the Single ourselves. Otherwise callers
