@@ -383,7 +383,82 @@ def test_theory_target_binding(data="HttpProtocols.Http3", displayed="Http3", su
                     print(f"PASS {case}: {theory}, data={data}, row rewrite={rewrite_row}")
 
 
+def test_commented_row_patch(case="case-a", comment=" // reason [detail]", changed_comment=None):
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        reference = "#aw_sample" if case == "case-a" else "1"
+        inline = "[InlineData(HttpProtocols.Http3)]"
+        quarantine = (
+            f'[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/{reference}", '
+            "OperatingSystems.Linux, HttpProtocols.Http3)]"
+        )
+        before, after = (quarantine, inline) if case == "unquarantine" else (inline, quarantine)
+        _, commit = initialize_repository(root, theory_source(before + comment))
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/commented-row"
+        create_patch(
+            root, transport, branch,
+            theory_source(after + (comment if changed_comment is None else changed_comment)),
+        )
+        eligibility, history = receipts(
+            commit,
+            data_record("case-b" if case == "case-b" else "case-a",
+                        operating_systems=["OperatingSystems.Linux"]),
+            [{
+                "scope": "data", "path": TEST_PATH, "type": TYPE_NAME,
+                "method": "ReturnsExpectedResponse", "data": "HttpProtocols.Http3",
+                "issue": 1, "status": "first-quarantine",
+            }] if case == "unquarantine" else None,
+        )
+        items = [pull_request(branch)]
+        if case == "case-a":
+            items.insert(0, case_a_issue())
+
+        def check():
+            return validate(root, commit, eligibility, history, {"items": items}, transport)
+
+        if changed_comment is None:
+            result = check()
+            assert result[0]["operation"] == case, result
+        else:
+            assert_rejected(check, "preserve trailing comments")
+        print(f"PASS commented row: {case}, {comment!r}, changed={changed_comment!r}")
+
+
+def test_row_comment_ownership():
+    replacement = (
+        '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+        'OperatingSystems.Linux, 1)]'
+    )
+    swapped = (
+        "@@ -1 +1 @@\n-[InlineData(1)] // first\n"
+        f"+{replacement} // second\n"
+        "@@ -10 +10 @@\n-[InlineData(1)] // second\n"
+        f"+{replacement} // first\n"
+    )
+    assert_rejected(
+        lambda: MODULE.changed_patch_lines(swapped), "preserve trailing comments"
+    )
+    data = '"https://example.test/path] // text"'
+    actual = MODULE.changed_patch_lines(
+        f"@@ -1 +1 @@\n-[InlineData({data})] // reason [\n"
+        '+[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+        f"OperatingSystems.Linux, {data})] // reason [\n"
+    )
+    assert actual == [("-", None, "inline", data), ("+", "1", "data", data)], actual
+
+
 def main():
+    test_row_comment_ownership()
+    for case in ("case-a", "case-b", "unquarantine"):
+        for comment in (" // reason", " // reason [detail]", " // unmatched [",
+                        " /* reason [detail] */"):
+            test_commented_row_patch(case, comment)
+        for comment, changed in [
+            (" // reason", ""), ("", " // new reason"), (" // reason", " // changed reason"),
+        ]:
+            test_commented_row_patch(case, comment, changed)
     test_theory_target_binding()
     test_theory_target_binding("true", "True")
     test_theory_target_binding("-1L", "-1")

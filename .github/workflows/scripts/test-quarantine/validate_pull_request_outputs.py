@@ -122,6 +122,7 @@ def changed_patch_lines(patch):
     changed = []
     attributes = []
     in_hunk = False
+    hunk = 0
     for line in patch.splitlines():
         if line.startswith("diff --git "):
             in_hunk = False
@@ -130,6 +131,7 @@ def changed_patch_lines(patch):
             continue
         if line.startswith("@@"):
             in_hunk = True
+            hunk += 1
             continue
         if not in_hunk:
             continue
@@ -138,39 +140,54 @@ def changed_patch_lines(patch):
         if not line.startswith(("+", "-")):
             continue
         content = line[1:].strip()
-        changed.append((line[0], content))
+        changed.append((line[0], content, hunk))
     logical_changes = []
     current_operation = None
     current_lines = []
     bracket_depth = 0
-    for operation, content in changed:
+    current_hunk = None
+    for operation, content, hunk in changed:
+        syntax = ELIGIBILITY.sanitize_csharp(content)
         if current_lines:
-            if operation != current_operation:
+            if operation != current_operation or hunk != current_hunk:
                 raise ValidationError(
                     "Patch splits one attribute across add/remove operations"
                 )
             current_lines.append(content)
-            bracket_depth += ELIGIBILITY.square_bracket_delta(content)
+            bracket_depth += ELIGIBILITY.square_bracket_delta(syntax)
             if bracket_depth == 0:
                 logical_changes.append((
                     current_operation,
                     " ".join(current_lines),
                     len(current_lines),
+                    current_hunk,
                 ))
                 current_operation = None
                 current_lines = []
             continue
         if content.startswith("["):
-            bracket_depth = ELIGIBILITY.square_bracket_delta(content)
+            bracket_depth = ELIGIBILITY.square_bracket_delta(syntax)
             if bracket_depth > 0:
                 current_operation = operation
+                current_hunk = hunk
                 current_lines = [content]
                 continue
-        logical_changes.append((operation, content, 1))
+        logical_changes.append((operation, content, 1, hunk))
     if current_lines:
         raise ValidationError("Patch contains an incomplete attribute")
 
-    for operation, content, physical_line_count in logical_changes:
+    row_comments = []
+    for operation, content, physical_line_count, hunk in logical_changes:
+        comment = ""
+        syntax = ELIGIBILITY.sanitize_csharp(content)
+        closing = syntax.rfind("]") + 1
+        if closing and not syntax[closing:].strip():
+            suffix = content[closing:]
+            if suffix.strip() and re.fullmatch(
+                r"\s*(?:/\*.*?\*/\s*)*(?://[^\n]*)?", suffix
+            ):
+                comment = suffix
+                content = content[:closing]
         attribute = ATTRIBUTE_LINE.fullmatch(content)
         if attribute:
             attribute_name = attribute.group("attribute")
@@ -198,6 +215,10 @@ def changed_patch_lines(patch):
                 raise ValidationError(
                     "Automated data-row rewrites require one-line attributes"
                 )
+            if comment and attribute_name != "QuarantinedTestData":
+                raise ValidationError(
+                    "Trailing comments are supported only on data-row replacements"
+                )
             if operating_systems is not None:
                 values = [
                     value.strip()
@@ -217,6 +238,8 @@ def changed_patch_lines(patch):
                 "data" if data is not None else "quarantine",
                 data,
             ))
+            if data is not None:
+                row_comments.append((operation, hunk, data, comment))
             continue
         inline_data = INLINE_DATA_LINE.fullmatch(content)
         if inline_data:
@@ -230,12 +253,24 @@ def changed_patch_lines(patch):
                 "inline",
                 inline_data.group("data"),
             ))
+            row_comments.append((operation, hunk, inline_data.group("data"), comment))
             continue
         if operation == "+" and content == USING_LINE:
             continue
         raise ValidationError(
             f"Patch contains a non-quarantine change: {operation}{content}"
         )
+    if any(comment for _, _, _, comment in row_comments):
+        removed_comments = collections.Counter(
+            (hunk, data, comment) for operation, hunk, data, comment in row_comments
+            if operation == "-"
+        )
+        added_comments = collections.Counter(
+            (hunk, data, comment) for operation, hunk, data, comment in row_comments
+            if operation == "+"
+        )
+        if removed_comments != added_comments:
+            raise ValidationError("Data-row replacements must preserve trailing comments")
     return attributes
 
 

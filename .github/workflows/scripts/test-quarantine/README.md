@@ -132,6 +132,9 @@ into a KBE.
 - The collector recognizes multiline quarantine/data attributes, but automated
   row rewrites are deliberately limited to one-line attributes so patch
   validation never has to infer unchanged argument lines from diff context.
+  One-line row replacements may retain trailing line or block comments. The
+  validator ignores comment brackets when parsing, but requires the exact
+  comment to remain attached to the same data arguments in the same diff hunk.
 - The agent cannot author or override new-quarantine eligibility facts.
 - Every quarantine or unquarantine PR is mechanically bound to deterministic
   receipts before the privileged PR handler runs. An unquarantine PR may
