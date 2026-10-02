@@ -38,6 +38,12 @@ internal class EndpointParameter
         // Coalesce attributes on the property and attributes on the matching parameter
         var attributeBuilder = ImmutableArray.CreateBuilder<AttributeData>();
         attributeBuilder.AddRange(property.GetAttributes());
+        if (property.TryGetInheritedAttributeImplementingInterface(
+            wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata),
+            out var inheritedServiceAttribute))
+        {
+            attributeBuilder.Add(inheritedServiceAttribute);
+        }
         if (parameter is not null)
         {
             attributeBuilder.AddRange(parameter.GetAttributes());

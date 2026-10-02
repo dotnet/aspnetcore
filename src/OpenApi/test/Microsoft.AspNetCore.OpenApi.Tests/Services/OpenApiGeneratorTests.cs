@@ -505,6 +505,15 @@ public class OpenApiOperationGeneratorTests
     }
 
     [Fact]
+    public void ExcludesInheritedFromServicesPropertyFromOperation()
+    {
+        var operation = GetOpenApiOperation(([AsParameters] InheritedFromServicesArgumentList req) => { });
+
+        Assert.Empty(operation.Parameters);
+        Assert.Null(operation.RequestBody);
+    }
+
+    [Fact]
     public void TestParameterIsRequired()
     {
         var operation = GetOpenApiOperation(([FromRoute] int foo, int? bar) => { });
@@ -1123,6 +1132,17 @@ public class OpenApiOperationGeneratorTests
     private class ArgumentListClassWithReadOnlyProperties : ArgumentListClass
     {
         public int ReadOnly { get; }
+    }
+
+    private class FromServicesArgumentList
+    {
+        [FromServices]
+        public virtual IServiceProvider Service { get; set; } = null!;
+    }
+
+    private class InheritedFromServicesArgumentList : FromServicesArgumentList
+    {
+        public override IServiceProvider Service { get; set; } = null!;
     }
 
     private struct ArgumentListStruct
