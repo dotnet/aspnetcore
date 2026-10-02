@@ -19,6 +19,48 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests;
 
 public class MinimalFormTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MapPost_WithFormTypeHavingMultiplePublicConstructors_ThrowsOnRequest(bool useStruct)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            if (useStruct)
+                            {
+                                endpoints.MapPost("/", ([FromForm] FormStructWithMultipleConstructors value) => value)
+                                    .DisableAntiforgery();
+                            }
+                            else
+                            {
+                                endpoints.MapPost("/", ([FromForm] FormClassWithMultipleConstructors value) => value)
+                                    .DisableAntiforgery();
+                            }
+                        });
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services => services.AddRouting())
+            .Build();
+
+        await host.StartAsync();
+        var client = host.GetTestClient();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => client.PostAsync("/", new FormUrlEncodedContent([new("value", "42")])));
+
+        var parameterType = useStruct
+            ? typeof(FormStructWithMultipleConstructors)
+            : typeof(FormClassWithMultipleConstructors);
+        Assert.Equal($"No converter registered for type '{parameterType.FullName}'.", exception.Message);
+    }
 
     [Fact]
     public async Task MapPost_WithForm_ValidToken_Works()
@@ -760,6 +802,28 @@ public class MinimalFormTests
         public string Name { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime DueDate { get; set; }
+    }
+
+    private sealed class FormClassWithMultipleConstructors
+    {
+        public FormClassWithMultipleConstructors(int value)
+        {
+        }
+
+        public FormClassWithMultipleConstructors(string value)
+        {
+        }
+    }
+
+    private struct FormStructWithMultipleConstructors
+    {
+        public FormStructWithMultipleConstructors(int value)
+        {
+        }
+
+        public FormStructWithMultipleConstructors(string value)
+        {
+        }
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]
