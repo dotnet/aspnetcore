@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi;
 using ValidatedSchemaAdapters;
 
 namespace Microsoft.AspNetCore.OpenApi.Microbenchmarks;
@@ -32,6 +33,10 @@ public class ValidatedJsonSchemaBenchmarks
     private DefaultHttpContext _responseContext;
     private OpenApiValidatedJsonSchemaEndpointPlan _requestPlan;
     private OpenApiValidatedJsonSchemaEndpointPlan _responsePlan;
+    private OpenApiValidatedJsonSchemaEndpointPlan _generatedRequestPlan;
+    private OpenApiValidatedJsonSchemaEndpointPlan _generatedResponsePlan;
+    private DefaultHttpContext _generatedRequestContext;
+    private DefaultHttpContext _generatedResponseContext;
     private IOpenApiJsonSchemaValidator _noOpValidator;
     private IOpenApiJsonSchemaValidator _corvusValidator;
     private IOpenApiJsonSchemaValidator _jsonSchemaNetValidator;
@@ -66,6 +71,24 @@ public class ValidatedJsonSchemaBenchmarks
         _responsePlan = new(s_next);
         _responsePlan.Add(output);
 
+        var generatedInput = new OpenApiGeneratedValidatedJsonSchemaRegistration<GeneratedNoOpBinding>(
+            OpenApiSchemaEvidencePurpose.Input,
+            options: null);
+        _generatedRequestContext = new DefaultHttpContext();
+        _generatedRequestContext.Request.ContentType = "application/json";
+        _generatedRequestContext.Request.ContentLength = s_payload.Length;
+        _generatedRequestContext.Request.Body = new MemoryStream(s_payload, writable: false);
+        _generatedRequestPlan = new(s_next);
+        _generatedRequestPlan.Add(generatedInput);
+
+        var generatedOutput = new OpenApiGeneratedValidatedJsonSchemaRegistration<GeneratedNoOpBinding>(
+            OpenApiSchemaEvidencePurpose.Output,
+            options: null);
+        _generatedResponseContext = new DefaultHttpContext();
+        _generatedResponseContext.Response.Body = Stream.Null;
+        _generatedResponsePlan = new(s_next);
+        _generatedResponsePlan.Add(generatedOutput);
+
         _noOpValidator = NoOpValidator.Instance;
         _corvusValidator = new CorvusValidatorFactory().CreateValidator(input.Evidence);
         _jsonSchemaNetValidator = new JsonSchemaNetValidatorFactory().CreateValidator(input.Evidence);
@@ -73,6 +96,8 @@ public class ValidatedJsonSchemaBenchmarks
 
         _requestPlan.ExecuteAsync(_context).GetAwaiter().GetResult();
         _responsePlan.ExecuteAsync(_responseContext).GetAwaiter().GetResult();
+        _generatedRequestPlan.ExecuteAsync(_generatedRequestContext).GetAwaiter().GetResult();
+        _generatedResponsePlan.ExecuteAsync(_generatedResponseContext).GetAwaiter().GetResult();
     }
 
     [MemoryDiagnoser]
@@ -252,6 +277,17 @@ public class ValidatedJsonSchemaBenchmarks
         => _responsePlan.ExecuteAsync(_responseContext);
 
     [Benchmark]
+    public Task GeneratedValidatedFrameworkOnly()
+    {
+        _generatedRequestContext.Request.Body.Position = 0;
+        return _generatedRequestPlan.ExecuteAsync(_generatedRequestContext);
+    }
+
+    [Benchmark]
+    public Task GeneratedValidatedFrameworkOnlyResponse()
+        => _generatedResponsePlan.ExecuteAsync(_generatedResponseContext);
+
+    [Benchmark]
     public bool ValidatorNoOp()
         => _noOpValidator.ValidateAsync(s_payload, _validationContext).GetAwaiter().GetResult().IsValid;
 
@@ -299,5 +335,45 @@ public class ValidatedJsonSchemaBenchmarks
             OpenApiJsonSchemaValidationContext context,
             CancellationToken cancellationToken = default)
             => ValueTask.FromResult(OpenApiJsonSchemaValidationResult.Valid);
+    }
+
+    private sealed class GeneratedNoOpBinding :
+        IOpenApiValidatedJsonSchemaBinding<GeneratedNoOpBinding>
+    {
+        public static Type Type => typeof(object);
+        public static string SchemaIdentity => "generated-no-op-schema";
+        public static string Identity => "generated-no-op-binding";
+        public static OpenApiJsonSchemaDialect Dialect => OpenApiJsonSchemaDialect.Draft202012;
+        public static OpenApiJsonSchemaValidationCapabilities Capabilities
+            => OpenApiJsonSchemaValidationCapabilities.None;
+
+        public static OpenApiSchema CreateOpenApiSchema(OpenApiSpecVersion openApiVersion)
+            => new();
+
+        public static ValueTask<OpenApiJsonSchemaValidationResult> ValidateAsync(
+            ReadOnlyMemory<byte> utf8Json,
+            OpenApiSchemaEvidencePurpose purpose,
+            CancellationToken cancellationToken = default)
+            => ValueTask.FromResult(OpenApiJsonSchemaValidationResult.Valid);
+    }
+
+    [MemoryDiagnoser]
+    public class ValidatedJsonSchemaRegistrationBenchmarks
+    {
+        [Benchmark(Baseline = true)]
+        public object RuntimeRegistration()
+            => new OpenApiValidatedJsonSchemaRegistration(
+                typeof(object),
+                OpenApiSchemaEvidencePurpose.Input,
+                s_schema,
+                OpenApiJsonSchemaDialect.Draft202012,
+                OpenApiJsonSchemaValidationCapabilities.None,
+                NoOpValidatorFactory.Instance);
+
+        [Benchmark]
+        public object GeneratedRegistration()
+            => new OpenApiGeneratedValidatedJsonSchemaRegistration<GeneratedNoOpBinding>(
+                OpenApiSchemaEvidencePurpose.Input,
+                options: null);
     }
 }

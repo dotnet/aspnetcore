@@ -1094,16 +1094,16 @@ internal sealed class OpenApiDocumentService(
     }
 
 #pragma warning disable ASP0040 // The framework consumes validated schema endpoint metadata.
-    private static OpenApiValidatedJsonSchemaRegistration? GetValidatedSchemaRegistration(
+    private static IOpenApiValidatedJsonSchemaRegistration? GetValidatedSchemaRegistration(
         ApiDescription description,
         OpenApiSchemaEvidencePurpose purpose,
         Type type,
         int? statusCode,
         string contentType)
     {
-        OpenApiValidatedJsonSchemaRegistration? result = null;
+        IOpenApiValidatedJsonSchemaRegistration? result = null;
         foreach (var registration in description.ActionDescriptor.EndpointMetadata
-            .OfType<OpenApiValidatedJsonSchemaRegistration>())
+            .OfType<IOpenApiValidatedJsonSchemaRegistration>())
         {
             if (registration.Purpose != purpose ||
                 registration.Type != type ||

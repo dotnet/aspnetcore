@@ -39,6 +39,42 @@ public static class OpenApiValidatedJsonSchemaEndpointConventionBuilderExtension
     }
 
     /// <summary>
+    /// Adds endpoint-scoped generated JSON Schema evidence and enforcement.
+    /// </summary>
+    /// <typeparam name="TBinding">The generated schema and validator binding.</typeparam>
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <param name="purpose">The serializer direction to validate.</param>
+    /// <returns>The supplied <paramref name="builder"/>.</returns>
+    public static IEndpointConventionBuilder WithValidatedJsonSchema<TBinding>(
+        this IEndpointConventionBuilder builder,
+        OpenApiSchemaEvidencePurpose purpose)
+        where TBinding : IOpenApiValidatedJsonSchemaBinding<TBinding>
+        => WithValidatedJsonSchema<TBinding>(builder, purpose, options: null);
+
+    /// <summary>
+    /// Adds endpoint-scoped generated JSON Schema evidence and enforcement.
+    /// </summary>
+    /// <typeparam name="TBinding">The generated schema and validator binding.</typeparam>
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <param name="purpose">The serializer direction to validate.</param>
+    /// <param name="options">The endpoint enforcement options.</param>
+    /// <returns>The supplied <paramref name="builder"/>.</returns>
+    public static IEndpointConventionBuilder WithValidatedJsonSchema<TBinding>(
+        this IEndpointConventionBuilder builder,
+        OpenApiSchemaEvidencePurpose purpose,
+        OpenApiValidatedJsonSchemaOptions? options)
+        where TBinding : IOpenApiValidatedJsonSchemaBinding<TBinding>
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Add(endpointBuilder => AddRegistration(
+            endpointBuilder,
+            new OpenApiGeneratedValidatedJsonSchemaRegistration<TBinding>(purpose, options)));
+
+        return builder;
+    }
+
+    /// <summary>
     /// Adds JSON Schema evidence and runtime enforcement to selected controller actions.
     /// </summary>
     /// <param name="builder">The controller endpoint convention builder.</param>
@@ -71,9 +107,60 @@ public static class OpenApiValidatedJsonSchemaEndpointConventionBuilderExtension
         return builder;
     }
 
+    /// <summary>
+    /// Adds generated JSON Schema evidence and enforcement to selected controller actions.
+    /// </summary>
+    /// <typeparam name="TBinding">The generated schema and validator binding.</typeparam>
+    /// <param name="builder">The controller endpoint convention builder.</param>
+    /// <param name="purpose">The serializer direction to validate.</param>
+    /// <param name="actionPredicate">A predicate that selects controller actions.</param>
+    /// <returns>The supplied <paramref name="builder"/>.</returns>
+    public static IEndpointConventionBuilder WithValidatedJsonSchema<TBinding>(
+        this IEndpointConventionBuilder builder,
+        OpenApiSchemaEvidencePurpose purpose,
+        Func<ControllerActionDescriptor, bool> actionPredicate)
+        where TBinding : IOpenApiValidatedJsonSchemaBinding<TBinding>
+        => WithValidatedJsonSchema<TBinding>(builder, purpose, actionPredicate, options: null);
+
+    /// <summary>
+    /// Adds generated JSON Schema evidence and enforcement to selected controller actions.
+    /// </summary>
+    /// <typeparam name="TBinding">The generated schema and validator binding.</typeparam>
+    /// <param name="builder">The controller endpoint convention builder.</param>
+    /// <param name="purpose">The serializer direction to validate.</param>
+    /// <param name="actionPredicate">A predicate that selects controller actions.</param>
+    /// <param name="options">The endpoint enforcement options.</param>
+    /// <returns>The supplied <paramref name="builder"/>.</returns>
+    public static IEndpointConventionBuilder WithValidatedJsonSchema<TBinding>(
+        this IEndpointConventionBuilder builder,
+        OpenApiSchemaEvidencePurpose purpose,
+        Func<ControllerActionDescriptor, bool> actionPredicate,
+        OpenApiValidatedJsonSchemaOptions? options)
+        where TBinding : IOpenApiValidatedJsonSchemaBinding<TBinding>
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(actionPredicate);
+
+        builder.Add(endpointBuilder =>
+        {
+            foreach (var metadata in endpointBuilder.Metadata)
+            {
+                if (metadata is ControllerActionDescriptor action && actionPredicate(action))
+                {
+                    AddRegistration(
+                        endpointBuilder,
+                        new OpenApiGeneratedValidatedJsonSchemaRegistration<TBinding>(purpose, options));
+                    break;
+                }
+            }
+        });
+
+        return builder;
+    }
+
     private static void AddRegistration(
         EndpointBuilder endpointBuilder,
-        OpenApiValidatedJsonSchemaRegistration registration)
+        IOpenApiValidatedJsonSchemaRegistration registration)
     {
         OpenApiValidatedJsonSchemaEndpointPlan? plan = null;
         foreach (var metadata in endpointBuilder.Metadata)
@@ -102,8 +189,8 @@ public static class OpenApiValidatedJsonSchemaEndpointConventionBuilderExtension
 internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
 {
     private readonly RequestDelegate _next;
-    private readonly List<OpenApiValidatedJsonSchemaRegistration> _inputs = [];
-    private readonly List<OpenApiValidatedJsonSchemaRegistration> _outputs = [];
+    private readonly List<IOpenApiValidatedJsonSchemaRegistration> _inputs = [];
+    private readonly List<IOpenApiValidatedJsonSchemaRegistration> _outputs = [];
     private readonly ConcurrentBag<PooledBufferStream> _buffers = [];
     private long _maximumResponseSize;
 
@@ -112,7 +199,7 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
         _next = next;
     }
 
-    public void Add(OpenApiValidatedJsonSchemaRegistration registration)
+    public void Add(IOpenApiValidatedJsonSchemaRegistration registration)
     {
         var registrations = registration.Purpose == OpenApiSchemaEvidencePurpose.Input ? _inputs : _outputs;
         foreach (var existing in registrations)
@@ -171,7 +258,7 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
 
     private Task ContinueRequest(
         HttpContext context,
-        OpenApiValidatedJsonSchemaRegistration input,
+        IOpenApiValidatedJsonSchemaRegistration input,
         PooledBufferStream buffer)
     {
         var originalBody = context.Request.Body;
@@ -182,10 +269,7 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
             ValueTask<OpenApiJsonSchemaValidationResult> validation;
             try
             {
-                validation = input.Validator.ValidateAsync(
-                    buffer.WrittenMemory,
-                    input.ValidationContext,
-                    context.RequestAborted);
+                validation = input.ValidateAsync(buffer.WrittenMemory, context.RequestAborted);
             }
             catch
             {
@@ -281,10 +365,7 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
         ValueTask<OpenApiJsonSchemaValidationResult> validation;
         try
         {
-            validation = output.Validator.ValidateAsync(
-                buffer.WrittenMemory,
-                output.ValidationContext,
-                context.RequestAborted);
+            validation = output.ValidateAsync(buffer.WrittenMemory, context.RequestAborted);
         }
         catch
         {
@@ -343,7 +424,7 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
     private async Task AwaitRequestReadAsync(
         ValueTask read,
         HttpContext context,
-        OpenApiValidatedJsonSchemaRegistration input,
+        IOpenApiValidatedJsonSchemaRegistration input,
         PooledBufferStream buffer)
     {
         try
@@ -459,7 +540,7 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
     private async Task AwaitResponseValidationAsync(
         ValueTask<OpenApiJsonSchemaValidationResult> validation,
         HttpContext context,
-        OpenApiValidatedJsonSchemaRegistration output,
+        IOpenApiValidatedJsonSchemaRegistration output,
         PooledBufferStream buffer,
         Stream originalBody)
     {
@@ -494,11 +575,11 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
         }
     }
 
-    private static OpenApiValidatedJsonSchemaRegistration? SelectInputRegistration(
-        List<OpenApiValidatedJsonSchemaRegistration> registrations,
+    private static IOpenApiValidatedJsonSchemaRegistration? SelectInputRegistration(
+        List<IOpenApiValidatedJsonSchemaRegistration> registrations,
         string? contentType)
     {
-        OpenApiValidatedJsonSchemaRegistration? selected = null;
+        IOpenApiValidatedJsonSchemaRegistration? selected = null;
         foreach (var registration in registrations)
         {
             if (registration.Purpose != OpenApiSchemaEvidencePurpose.Input ||
@@ -517,12 +598,12 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
         return selected;
     }
 
-    private static OpenApiValidatedJsonSchemaRegistration? SelectOutputRegistration(
-        List<OpenApiValidatedJsonSchemaRegistration> registrations,
+    private static IOpenApiValidatedJsonSchemaRegistration? SelectOutputRegistration(
+        List<IOpenApiValidatedJsonSchemaRegistration> registrations,
         int statusCode,
         string? contentType)
     {
-        OpenApiValidatedJsonSchemaRegistration? selected = null;
+        IOpenApiValidatedJsonSchemaRegistration? selected = null;
         foreach (var registration in registrations)
         {
             if (registration.Purpose != OpenApiSchemaEvidencePurpose.Output ||
@@ -600,7 +681,7 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
 
     private static async Task RejectResponseAsync(
         HttpContext context,
-        OpenApiValidatedJsonSchemaRegistration registration,
+        IOpenApiValidatedJsonSchemaRegistration registration,
         Stream originalBody,
         string message)
     {
@@ -609,7 +690,7 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.OpenApi.ValidatedJsonSchema");
         logger.LogError(
             "Validated JSON response {SchemaIdentity} was suppressed: {Reason}",
-            registration.Evidence.Identity,
+            registration.Identity,
             message);
 
         if (context.Response.HasStarted)
@@ -900,7 +981,7 @@ internal static class OpenApiValidatedJsonSchemaEndpointExecutor
     public static Task ExecuteAsync(HttpContext context, RequestDelegate next)
     {
         var plan = new OpenApiValidatedJsonSchemaEndpointPlan(next);
-        foreach (var registration in context.GetEndpoint()?.Metadata.GetOrderedMetadata<OpenApiValidatedJsonSchemaRegistration>() ?? [])
+        foreach (var registration in context.GetEndpoint()?.Metadata.GetOrderedMetadata<IOpenApiValidatedJsonSchemaRegistration>() ?? [])
         {
             plan.Add(registration);
         }

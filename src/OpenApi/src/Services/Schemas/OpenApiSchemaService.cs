@@ -142,9 +142,10 @@ internal sealed class OpenApiSchemaService(
                         }
                     }
                 }
-                // STJ uses `true` in place of an empty object to represent a schema that matches
-                // anything (like the `object` type) or types with user-defined converters. We override
-                // this default behavior here to match the format expected in OpenAPI v3.
+                // JSON Schema permits both `true` and an empty object to represent a schema that
+                // matches every instance. Normalize the boolean form to its equivalent object form
+                // because the downstream OpenAPI model represents schemas as Schema Objects (and
+                // OpenAPI 3.0 does not support boolean schemas).
                 if (schema.GetValueKind() == JsonValueKind.True)
                 {
                     schema = new JsonObject();
@@ -451,12 +452,12 @@ internal sealed class OpenApiSchemaService(
         ApiParameterDescription? parameterDescription = null,
         CancellationToken cancellationToken = default,
         InferredTransportBindingFact? transportBindingFact = null,
-        OpenApiValidatedJsonSchemaRegistration? validatedSchema = null)
+        IOpenApiValidatedJsonSchemaRegistration? validatedSchema = null)
     {
 #pragma warning disable ASP0040 // The framework implements validated schema evidence.
         if (validatedSchema is not null)
         {
-            var importedSchema = OpenApiValidatedJsonSchemaImporter.Import(validatedSchema.Evidence, openApiVersion);
+            var importedSchema = validatedSchema.CreateOpenApiSchema(openApiVersion);
             await ApplyValidatedSchemaTransformersAsync(
                 document ?? throw new InvalidOperationException("Validated schemas require an OpenAPI document."),
                 importedSchema,
@@ -515,7 +516,7 @@ internal sealed class OpenApiSchemaService(
         ApiParameterDescription? parameterDescription = null,
         CancellationToken cancellationToken = default,
         InferredTransportBindingFact? transportBindingFact = null,
-        OpenApiValidatedJsonSchemaRegistration? validatedSchema = null)
+        IOpenApiValidatedJsonSchemaRegistration? validatedSchema = null)
     {
         // For non-body enum parameters, check if a naming policy transforms the enum values.
         // If so, skip componentization and return an inline schema with the original C# member

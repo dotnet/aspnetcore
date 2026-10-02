@@ -88,8 +88,8 @@ internal static class InferredScalarContractFactBuilder
         {
             var bounds = scalarEvidence.Minimum is not null || scalarEvidence.Maximum is not null
                 ? new InferredNumericBoundsFact(
-                    scalarEvidence.Minimum?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
-                    scalarEvidence.Maximum?.ToString(CultureInfo.InvariantCulture) ?? string.Empty)
+                    scalarEvidence.Minimum?.ToString() ?? string.Empty,
+                    scalarEvidence.Maximum?.ToString() ?? string.Empty)
                 : null;
             return new(
                 type,

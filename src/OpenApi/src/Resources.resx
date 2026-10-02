@@ -208,6 +208,15 @@
   <data name="SchemaEvidenceMinimumExceedsMaximum" xml:space="preserve">
     <value>The schema evidence minimum cannot exceed its maximum.</value>
   </data>
+  <data name="SchemaNumberExponentOutOfRange" xml:space="preserve">
+    <value>Normalizing the schema number would produce an exponent outside the supported 32-bit range.</value>
+  </data>
+  <data name="SchemaNumberInvalid" xml:space="preserve">
+    <value>The value is not a valid supported JSON number.</value>
+  </data>
+  <data name="SchemaNumberSignificandTooLarge" xml:space="preserve">
+    <value>The schema number significand cannot contain more than 10,000 decimal digits.</value>
+  </data>
   <data name="SchemaEvidenceElementTypesCannotContainNull" xml:space="preserve">
     <value>Schema evidence element types cannot contain null.</value>
   </data>

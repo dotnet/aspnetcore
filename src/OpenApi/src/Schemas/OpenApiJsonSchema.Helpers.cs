@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -179,11 +178,6 @@ internal sealed partial class OpenApiJsonSchema
 
     private static string GetNumericLiteral(ref Utf8JsonReader reader)
     {
-        if (reader.TryGetDecimal(out var value))
-        {
-            return value.ToString(CultureInfo.InvariantCulture);
-        }
-
         using var document = JsonDocument.ParseValue(ref reader);
         return document.RootElement.GetRawText();
     }

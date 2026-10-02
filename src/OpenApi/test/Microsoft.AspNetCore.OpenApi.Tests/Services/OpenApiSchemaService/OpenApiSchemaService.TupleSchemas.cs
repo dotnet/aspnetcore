@@ -434,6 +434,40 @@ public partial class OpenApiSchemaServiceTests
     }
 
     [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2)]
+    public async Task SchemaEvidenceProvider_EmitsExactArbitraryPrecisionNumericBounds(OpenApiSpecVersion version)
+    {
+        var services = new ServiceCollection();
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new BoundedNumberConverter()));
+        var builder = CreateBuilder(services);
+        builder.MapGet("/", () => new BoundedNumber("0.5"));
+        var options = new OpenApiOptions
+        {
+            OpenApiVersion = version,
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+        };
+        options.AddSchemaEvidenceProvider(new BoundedNumberSchemaEvidenceProvider());
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var schema = GetResponseSchema(document);
+        var json = JsonNode.Parse(await document.SerializeAsJsonAsync(version))!;
+        var serializedSchema = json["paths"]!["/"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!;
+        if (serializedSchema["$ref"]?.GetValue<string>() is { } reference)
+        {
+            var componentName = reference[(reference.LastIndexOf('/') + 1)..];
+            serializedSchema = json["components"]!["schemas"]![componentName]!;
+        }
+
+        Assert.Equal(JsonSchemaType.Number, schema.Type);
+        Assert.Equal(BoundedNumberSchemaEvidenceProvider.Minimum.ToString(), schema.Minimum);
+        Assert.Equal(BoundedNumberSchemaEvidenceProvider.Maximum.ToString(), schema.Maximum);
+        Assert.Equal("-12345678901234567890.1234567890123456789", serializedSchema["minimum"]!.ToJsonString());
+        Assert.Equal("1e+1000", serializedSchema["maximum"]!.ToJsonString());
+    }
+
+    [Theory]
     [InlineData(OpenApiScalarFormatPolicy.Conventional, "strict-id")]
     [InlineData(OpenApiScalarFormatPolicy.CompatibleOnly, null)]
     [InlineData(OpenApiScalarFormatPolicy.None, null)]
@@ -665,6 +699,8 @@ public partial class OpenApiSchemaServiceTests
 
     private readonly record struct StrictId(string Value);
 
+    private readonly record struct BoundedNumber(string Value);
+
     private sealed class StrictIdConverter : JsonConverter<StrictId>
     {
         public override StrictId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -672,6 +708,34 @@ public partial class OpenApiSchemaServiceTests
 
         public override void Write(Utf8JsonWriter writer, StrictId value, JsonSerializerOptions options)
             => writer.WriteStringValue(value.Value);
+    }
+
+    private sealed class BoundedNumberConverter : JsonConverter<BoundedNumber>
+    {
+        public override BoundedNumber Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            using var document = JsonDocument.ParseValue(ref reader);
+            var value = OpenApiSchemaNumber.Parse(document.RootElement.GetRawText());
+            if (value < BoundedNumberSchemaEvidenceProvider.Minimum ||
+                value > BoundedNumberSchemaEvidenceProvider.Maximum)
+            {
+                throw new JsonException();
+            }
+
+            return new(document.RootElement.GetRawText());
+        }
+
+        public override void Write(Utf8JsonWriter writer, BoundedNumber value, JsonSerializerOptions options)
+        {
+            var number = OpenApiSchemaNumber.Parse(value.Value);
+            if (number < BoundedNumberSchemaEvidenceProvider.Minimum ||
+                number > BoundedNumberSchemaEvidenceProvider.Maximum)
+            {
+                throw new JsonException();
+            }
+
+            writer.WriteRawValue(number.ToString());
+        }
     }
 
     private sealed class StrictIdSchemaEvidenceProvider : IOpenApiSchemaEvidenceProvider
@@ -688,6 +752,22 @@ public partial class OpenApiSchemaServiceTests
                     "^[A-Z]{3}-[0-9]{3}$")
                 : null;
         }
+    }
+
+    private sealed class BoundedNumberSchemaEvidenceProvider : IOpenApiSchemaEvidenceProvider
+    {
+        public static OpenApiSchemaNumber Minimum { get; } =
+            OpenApiSchemaNumber.Parse("-12345678901234567890.1234567890123456789");
+
+        public static OpenApiSchemaNumber Maximum { get; } = OpenApiSchemaNumber.Parse("1e1000");
+
+        public OpenApiSchemaEvidence? GetSchemaEvidence(OpenApiSchemaEvidenceContext context)
+            => context.EffectiveType == typeof(BoundedNumber) && context.Converter is BoundedNumberConverter
+                ? new OpenApiScalarSchemaEvidence(
+                    OpenApiScalarSchemaValueKind.Number,
+                    minimum: Minimum,
+                    maximum: Maximum)
+                : null;
     }
 
     private sealed class RecordingSchemaEvidenceProvider(string name, List<string> calls) : IOpenApiSchemaEvidenceProvider

@@ -577,6 +577,48 @@ public class ValidatedJsonSchemaTests
     }
 
     [Fact]
+    public async Task GeneratedBinding_UsesSameEndpointExecutionSemantics()
+    {
+        var services = new ServiceCollection()
+            .AddLogging()
+            .AddProblemDetails()
+            .AddRouting()
+            .BuildServiceProvider();
+        var endpoints = new DefaultEndpointRouteBuilder(new ApplicationBuilder(services));
+        endpoints.MapPost("/", (ValidatedNode node) => Results.Json(new { value = node.Value }))
+            .WithValidatedJsonSchema<GeneratedBinding>(OpenApiSchemaEvidencePurpose.Input)
+            .WithValidatedJsonSchema<GeneratedBinding>(OpenApiSchemaEvidencePurpose.Output);
+        var endpoint = Assert.IsType<RouteEndpoint>(endpoints.DataSources.Single().Endpoints.Single());
+        var context = new DefaultHttpContext
+        {
+            RequestServices = services,
+        };
+        context.Request.Method = HttpMethods.Post;
+        context.Request.ContentType = "application/json";
+        context.Request.ContentLength = 11;
+        context.Request.Body = new MemoryStream("""{"value":1}"""u8.ToArray());
+        context.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature());
+        context.Response.Body = new MemoryStream();
+        context.SetEndpoint(endpoint);
+
+        await endpoint.RequestDelegate!(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.True(IsValueOne(((MemoryStream)context.Response.Body).ToArray()));
+    }
+
+    [Fact]
+    public void GeneratedBinding_CreatesIsolatedOpenApiSchemas()
+    {
+        var first = GeneratedBinding.CreateOpenApiSchema(OpenApiSpecVersion.OpenApi3_2);
+        var second = GeneratedBinding.CreateOpenApiSchema(OpenApiSpecVersion.OpenApi3_2);
+
+        Assert.NotSame(first, second);
+        first.Title = "changed";
+        Assert.Null(second.Title);
+    }
+
+    [Fact]
     public async Task MvcConvention_InvalidRequestStopsBeforeInputFormattingAndReturns400()
     {
         await using var app = await CreateMvcApplicationAsync((endpoints, state) =>
@@ -594,6 +636,28 @@ public class ValidatedJsonSchemaTests
         Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
         Assert.Equal(0, state.InputFormatterReads);
         Assert.Equal(0, state.ActionInvocations);
+    }
+
+    [Fact]
+    public async Task GeneratedBinding_MvcConventionUsesActionPredicate()
+    {
+        await using var app = await CreateMvcApplicationAsync((endpoints, state) =>
+        {
+            endpoints.WithValidatedJsonSchema<GeneratedBinding>(
+                OpenApiSchemaEvidencePurpose.Input,
+                static action => action.ActionName == nameof(ValidatedSchemaController.Echo));
+        });
+        var client = app.GetTestClient();
+
+        var invalidResponse = await client.PostAsync(
+            "/mvc/echo",
+            new StringContent("""{"value":2}""", Encoding.UTF8, "application/json"));
+        var validResponse = await client.PostAsync(
+            "/mvc/echo-two",
+            new StringContent("""{"value":2}""", Encoding.UTF8, "application/json"));
+
+        Assert.Equal(StatusCodes.Status400BadRequest, (int)invalidResponse.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, (int)validResponse.StatusCode);
     }
 
     [Fact]
@@ -995,6 +1059,30 @@ public class ValidatedJsonSchemaTests
     private sealed class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
     {
         public bool CanHaveBody => true;
+    }
+
+    private sealed class GeneratedBinding : IOpenApiValidatedJsonSchemaBinding<GeneratedBinding>
+    {
+        public static Type Type => typeof(ValidatedNode);
+        public static string SchemaIdentity => "generated-schema";
+        public static string Identity => "generated-binding";
+        public static OpenApiJsonSchemaDialect Dialect => OpenApiJsonSchemaDialect.Draft202012;
+        public static OpenApiJsonSchemaValidationCapabilities Capabilities
+            => OpenApiJsonSchemaValidationCapabilities.None;
+
+        public static OpenApiSchema CreateOpenApiSchema(OpenApiSpecVersion openApiVersion)
+            => new();
+
+        public static ValueTask<OpenApiJsonSchemaValidationResult> ValidateAsync(
+            ReadOnlyMemory<byte> utf8Json,
+            OpenApiSchemaEvidencePurpose purpose,
+            CancellationToken cancellationToken = default)
+            => ValueTask.FromResult(IsValueOne(utf8Json)
+                ? OpenApiJsonSchemaValidationResult.Valid
+                : new OpenApiJsonSchemaValidationResult(
+                [
+                    new OpenApiJsonSchemaValidationError("/value", "const", "The value must be one."),
+                ]));
     }
 }
 

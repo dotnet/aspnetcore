@@ -218,6 +218,30 @@ lowering and widens schemas whose semantics cannot be represented safely. The Op
 Object is an extended subset of JSON Schema Wright Draft 00 and is an emission target, not a
 selectable validation dialect.
 
+Validated schemas can also be supplied as generated artifacts. `OpenApiValidatedJsonSchema`
+MSBuild items declare a logical name, dialect, validation capabilities, and optional closed
+validator binding. The packaged incremental generator validates and normalizes the source at
+build time, emits exact source and canonical normalized UTF-8 data, a resolved local-reference
+table, stable identities, and code that creates a fresh typed OpenAPI model for each request.
+Generated endpoint registrations use the same limits, selectors, failure behavior, buffering,
+and OpenAPI transformer pipeline as runtime registrations, but perform no schema parsing,
+normalization, hashing, local-reference resolution, reflection, dynamic-code generation, or
+validator compilation at startup. Independent generators can implement the same static artifact
+and validator contracts without depending on this generator or on generator execution order.
+Runtime registrations remain available for schemas that are selected or constructed dynamically.
+
+Generated artifacts are not themselves validators. A closed binding must pair an artifact with
+validator code generated or compiled ahead of time. If a validation engine only offers runtime
+compilation or evaluation, the artifact is generated but that engine remains a partial-AOT
+boundary. MVC consumes generated bindings through endpoint conventions after controller endpoint
+construction; this avoids schema processing but does not make MVC reflection-free. RDG can only
+generate artifacts and bindings from authoritative serializer facts visible in the same
+compilation. Generated bindings use one type-erased endpoint registration object (80 B measured
+startup allocation) and the same precomputed plan as independent generated producers. That
+adapter performs no schema processing or validator compilation and adds 0 B/op to the successful
+hot path. Dynamic serializer options, converters, OpenAPI transformers, or descriptors emitted
+by another source generator use the existing runtime schema-registration fallback.
+
 The generated schema does not infer `uniqueItems` for set types because System.Text.Json accepts
 duplicate JSON array entries and coalesces them during materialization rather than validating
 uniqueness. It also does not infer `propertyNames` or a finite dictionary-key domain. The public

@@ -5,7 +5,6 @@ using System.Buffers.Binary;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -155,8 +154,8 @@ public sealed class OpenApiScalarSchemaEvidence : OpenApiSchemaEvidence
         OpenApiScalarSchemaValueKind valueKind,
         string? format = null,
         string? pattern = null,
-        BigInteger? minimum = null,
-        BigInteger? maximum = null)
+        OpenApiSchemaNumber? minimum = null,
+        OpenApiSchemaNumber? maximum = null)
     {
         if (valueKind is < OpenApiScalarSchemaValueKind.Boolean or > OpenApiScalarSchemaValueKind.Number)
         {
@@ -204,12 +203,12 @@ public sealed class OpenApiScalarSchemaEvidence : OpenApiSchemaEvidence
     /// <summary>
     /// Gets the optional inclusive numeric minimum.
     /// </summary>
-    public BigInteger? Minimum { get; }
+    public OpenApiSchemaNumber? Minimum { get; }
 
     /// <summary>
     /// Gets the optional inclusive numeric maximum.
     /// </summary>
-    public BigInteger? Maximum { get; }
+    public OpenApiSchemaNumber? Maximum { get; }
 }
 
 /// <summary>
@@ -555,7 +554,7 @@ public sealed class OpenApiValidatedJsonSchemaOptions
 /// Atomically associates validated JSON Schema evidence, its compiled validator, and endpoint enforcement.
 /// </summary>
 [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public sealed class OpenApiValidatedJsonSchemaRegistration
+public sealed class OpenApiValidatedJsonSchemaRegistration : IOpenApiValidatedJsonSchemaRegistration
 {
     internal IOpenApiJsonSchemaValidator Validator { get; }
     internal OpenApiJsonSchemaValidationContext ValidationContext { get; }
@@ -627,4 +626,67 @@ public sealed class OpenApiValidatedJsonSchemaRegistration
     /// Gets the endpoint enforcement options.
     /// </summary>
     public OpenApiValidatedJsonSchemaOptions Options { get; }
+
+    string IOpenApiValidatedJsonSchemaRegistration.Identity => Evidence.Identity;
+
+    OpenApiSchema IOpenApiValidatedJsonSchemaRegistration.CreateOpenApiSchema(OpenApiSpecVersion openApiVersion)
+        => OpenApiValidatedJsonSchemaImporter.Import(Evidence, openApiVersion);
+
+    ValueTask<OpenApiJsonSchemaValidationResult> IOpenApiValidatedJsonSchemaRegistration.ValidateAsync(
+        ReadOnlyMemory<byte> utf8Json,
+        CancellationToken cancellationToken)
+        => Validator.ValidateAsync(utf8Json, ValidationContext, cancellationToken);
 }
+
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+internal interface IOpenApiValidatedJsonSchemaRegistration
+{
+    Type Type { get; }
+    OpenApiSchemaEvidencePurpose Purpose { get; }
+    OpenApiValidatedJsonSchemaOptions Options { get; }
+    string Identity { get; }
+    OpenApiSchema CreateOpenApiSchema(OpenApiSpecVersion openApiVersion);
+    ValueTask<OpenApiJsonSchemaValidationResult> ValidateAsync(
+        ReadOnlyMemory<byte> utf8Json,
+        CancellationToken cancellationToken);
+}
+
+internal sealed class OpenApiGeneratedValidatedJsonSchemaRegistration<TBinding> :
+    IOpenApiValidatedJsonSchemaRegistration
+    where TBinding : IOpenApiValidatedJsonSchemaBinding<TBinding>
+{
+    public OpenApiGeneratedValidatedJsonSchemaRegistration(
+        OpenApiSchemaEvidencePurpose purpose,
+        OpenApiValidatedJsonSchemaOptions? options)
+    {
+        if (purpose == OpenApiSchemaEvidencePurpose.Neutral)
+        {
+            throw new ArgumentException(Resources.ValidatedJsonSchemaPurposeMustBeDirectional, nameof(purpose));
+        }
+
+        Purpose = purpose;
+        Options = options ?? new();
+        if (Options.MaxPayloadSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(options), Resources.ValidatedJsonSchemaPayloadLimitMustBePositive);
+        }
+        if (string.IsNullOrWhiteSpace(Options.ContentType))
+        {
+            throw new ArgumentException(Resources.ValidatedJsonSchemaContentTypeCannotBeEmpty, nameof(options));
+        }
+    }
+
+    public Type Type => TBinding.Type;
+    public OpenApiSchemaEvidencePurpose Purpose { get; }
+    public OpenApiValidatedJsonSchemaOptions Options { get; }
+    public string Identity => TBinding.Identity;
+
+    public OpenApiSchema CreateOpenApiSchema(OpenApiSpecVersion openApiVersion)
+        => TBinding.CreateOpenApiSchema(openApiVersion);
+
+    public ValueTask<OpenApiJsonSchemaValidationResult> ValidateAsync(
+        ReadOnlyMemory<byte> utf8Json,
+        CancellationToken cancellationToken)
+        => TBinding.ValidateAsync(utf8Json, Purpose, cancellationToken);
+}
+#pragma warning restore ASP0040
