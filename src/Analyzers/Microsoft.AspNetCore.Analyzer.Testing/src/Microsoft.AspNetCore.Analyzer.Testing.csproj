@@ -8,16 +8,15 @@
     <!-- This is actually a library for test projects, not a test project. Treat project as a test asset. -->
     <IsTestAssetProject>true</IsTestAssetProject>
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
-    <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <IsShippingPackage>false</IsShippingPackage>
     <!-- Nullable disabled because package is used in tests. -->
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System.Reflection.Metadata" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="System.Reflection.Metadata" />
 
     <!--
       This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
@@ -27,8 +26,8 @@
 
       See https://xunit.github.io/docs/nuget-packages and the special note in https://xunit.github.io/releases/2.3.
     -->
-    <Reference Include="xunit.assert" />
-    <Reference Include="xunit.abstractions" />
+    <PackageReference Include="xunit.abstractions" />
+    <PackageReference Include="xunit.assert" />
   </ItemGroup>
 
   <ItemGroup>

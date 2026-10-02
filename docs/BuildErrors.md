@@ -116,7 +116,7 @@ When attempting to restore servicing tags e.g. `v3.1.7`,  the NuGet.config file 
 
 The `darc-int-...` feeds in NuGet.config are used only when building internally and are not needed after the tags are created. Delete all such entries in the file and retry.
 
-## Error: Generated code is not up to date in eng/ProjectReferences.props.
+## Error: Generated framework or shipping project inventories are not up to date.
 
 After some project additions or moves, you may need to update the two `DotNetProjects Include` lists in `eng/Build.props`
 
