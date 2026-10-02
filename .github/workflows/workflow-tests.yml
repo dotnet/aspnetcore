@@ -4,8 +4,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/**'
-      - '.github/skills/create-kbe/**'
-      - '.github/skills/pr-attention-queue/**'
+      - '.github/skills/**'
 
 permissions:
   contents: read

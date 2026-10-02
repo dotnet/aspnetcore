@@ -145,11 +145,7 @@ into a KBE.
 
 ## Validation
 
-The [`Workflow tests`](../../workflow-tests.yml) pull-request workflow discovers and runs `test_*.py`, `test_*.js`, and `test_*.cjs` scripts recursively under `.github/workflows`, including all suites below. It also runs the PR attention pulse suite through its PowerShell entry point, which invokes its supporting PowerShell and CommonJS tests with the matching gh-aw toolchain. It runs when any workflow file, the `create-kbe` skill, or the `pr-attention-queue` skill changes. New standalone Python and JavaScript tests should follow the `test_*` naming convention and return a nonzero exit code on failure.
-
-It uses a disposable GitHub-hosted runner with read-only permissions,
-does not persist checkout credentials, and has no secrets or artifact handoff
-to the privileged quarantine workflow.
+The [`Workflow tests`](../../workflow-tests.yml) pull-request workflow runs these suites when workflow or skill files change; the commands below also support local validation.
 
 These fixtures use synthetic evidence, mock GitHub requests, and temporary Git
 repositories. They do not create issues or pull requests, run an agent, or prove
