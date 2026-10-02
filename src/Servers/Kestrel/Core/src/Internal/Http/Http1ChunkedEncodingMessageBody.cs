@@ -17,8 +17,10 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
     // byte consts don't have a data type annotation so we pre-cast it
     private const byte ByteCR = (byte)'\r';
     private const byte ByteLF = (byte)'\n';
-    // "7FFFFFFF\r\n" is the largest chunk size that could be returned as an int.
-    private const int MaxChunkPrefixBytes = 10;
+    private const byte ByteSemicolon = (byte)';';
+
+    // "7FFFFFFF" is the largest chunk size that could be returned as an int.
+    private const int MaxChunkPrefixBytes = 8;
 
     private long _inputLength;
 
@@ -27,6 +29,8 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
     private Task? _pumpTask;
     private readonly Pipe _requestBodyPipe;
     private ReadResult _readResult;
+
+    private ChunkedExtensionParser? _chunkedExtensionParser;
 
     public Http1ChunkedEncodingMessageBody(Http1Connection context, bool keepAlive)
         : base(context, keepAlive)
@@ -205,6 +209,20 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
         consumed = default;
         examined = default;
 
+        // https://www.rfc-editor.org/rfc/rfc9112#section-7.1
+        // chunked-body   = *chunk
+        //                  last-chunk
+        //                  trailer-section
+        //                  CRLF
+        //
+        // chunk          = chunk-size [ chunk-ext ] CRLF
+        //                  chunk-data CRLF
+        //
+        // chunk-size     = 1*HEXDIG
+        //
+        // last-chunk     = 1*("0") [ chunk-ext ] CRLF
+        //
+        // chunk-data     = 1*OCTET
         while (_mode < Mode.Trailer)
         {
             if (_mode == Mode.Prefix)
@@ -294,7 +312,7 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
         consumed = buffer.Start;
         var reader = new SequenceReader<byte>(buffer);
 
-        if (!reader.TryRead(out var ch1) || !reader.TryRead(out var ch2))
+        if (!reader.TryRead(out var ch))
         {
             examined = reader.Position;
             return;
@@ -303,33 +321,60 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
         // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedPrefix.
         examined = reader.Position;
 
-        var chunkSize = CalculateChunkSize(ch1, 0);
-        ch1 = ch2;
+        var chunkSize = CalculateChunkSize(ch, 0);
 
-        while (reader.Consumed < MaxChunkPrefixBytes)
+        while (reader.Consumed <= MaxChunkPrefixBytes)
         {
-            if (ch1 == ';')
+            // We only peek here.
+            // If this was a semicolon or BWS, we don't want to advance
+            // the reader, because we want the extension parsing to
+            // consume that byte, not here.
+            if (!reader.TryPeek(out ch))
             {
-                consumed = reader.Position;
+                return;
+            }
+
+            // An extension can only start with either semicolon or BWS.
+            // And data or trailer can never start with semicolon nor BWS.
+            if (ch == ByteSemicolon || IsBadWhitespaceByte(ch))
+            {
                 examined = reader.Position;
+                consumed = reader.Position;
 
                 AddAndCheckObservedBytes(reader.Consumed);
                 _inputLength = chunkSize;
                 _mode = Mode.Extension;
+
+                var reject = !_context.ServiceContext.ServerOptions.EnableChunkedExtensions;
+
+                _context.OnChunkedExtension(reject);
+
+                if (reject)
+                {
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.ChunkedExtensionNotAllowed);
+                }
+
                 return;
             }
 
-            if (!reader.TryRead(out ch2))
-            {
-                examined = reader.Position;
-                return;
-            }
-
-            // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedPrefix.
+            reader.Advance(1);
             examined = reader.Position;
 
-            if (ch1 == '\r' && ch2 == '\n')
+            if (ch == ByteCR)
             {
+                // We have CR but we don't know yet what will be after it.
+                if (!reader.TryRead(out var expectedLF))
+                {
+                    return;
+                }
+
+                examined = reader.Position;
+
+                if (expectedLF != ByteLF)
+                {
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
+                }
+
                 consumed = reader.Position;
 
                 AddAndCheckObservedBytes(reader.Consumed);
@@ -338,74 +383,45 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                 return;
             }
 
-            chunkSize = CalculateChunkSize(ch1, chunkSize);
-            ch1 = ch2;
+            if (reader.Consumed > MaxChunkPrefixBytes)
+            {
+                // We consumed already the 8 bytes fully. And the next byte wasn't CRLF nor semicolon.
+                break;
+            }
+
+            chunkSize = CalculateChunkSize(ch, chunkSize);
         }
 
-        // At this point, 10 bytes have been consumed which is enough to parse the max value "7FFFFFFF\r\n".
+        // At this point, 8 bytes have been consumed which is enough to parse the max value "7FFFFFFF".
         KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
     }
 
-    // https://www.rfc-editor.org/rfc/rfc9112#section-7.1
-    // chunk          = chunk-size [ chunk-ext ] CRLF
-    // chunk-data CRLF
+    private static bool IsBadWhitespaceByte(byte b)
+        => b is 0x20 or 0x09;
 
-    // https://www.rfc-editor.org/rfc/rfc9112#section-7.1.1
-    // chunk-ext      = *( BWS ";" BWS chunk-ext-name
-    //                     [BWS "=" BWS chunk-ext-val] )
-    // chunk-ext-name = token
-    // chunk-ext-val  = token / quoted-string
     private void ParseExtension(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
     {
-        // Chunk-extensions parsed for \r\n and throws for unpaired \r or \n.
+        var parser = _chunkedExtensionParser ?? new ChunkedExtensionParser();
 
-        do
+        var reader = new SequenceReader<byte>(buffer);
+        if (parser.Consume(ref reader, out consumed, out examined))
         {
-            SequencePosition? extensionCursorPosition = buffer.PositionOfAny(ByteCR, ByteLF);
+            _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;
 
-            if (extensionCursorPosition == null)
-            {
-                // End marker not found yet
-                consumed = buffer.End;
-                examined = buffer.End;
-                AddAndCheckObservedBytes(buffer.Length);
-                return;
-            }
+            // If the next chunk has an extension, we will create a new parser with fresh state.
+            // Alternatively, we could also reuse the same parser, but we will want to remove
+            // the "Completed" state in ChunkedExtensionParser and use StartOfExtension instead.
+            _chunkedExtensionParser = null;
+        }
+        else
+        {
+            // ChunkedExtensionParser is a struct.
+            // We want to ensure that we don't lose the state of the parser across multiple calls to ParseExtension.
+            // We ensure we have the state in the private field, and not just in a "copy" of the struct.
+            _chunkedExtensionParser = parser;
+        }
 
-            var extensionCursor = extensionCursorPosition.Value;
-
-            var charsToByteCRExclusive = buffer.Slice(0, extensionCursor).Length;
-
-            var suffixBuffer = buffer.Slice(extensionCursor);
-            if (suffixBuffer.Length < 2)
-            {
-                consumed = extensionCursor;
-                examined = buffer.End;
-                AddAndCheckObservedBytes(charsToByteCRExclusive);
-                return;
-            }
-
-            suffixBuffer = suffixBuffer.Slice(0, 2);
-            var suffixSpan = suffixBuffer.ToSpan();
-
-            if (suffixSpan[0] == ByteCR && suffixSpan[1] == ByteLF)
-            {
-                // We consumed the \r\n at the end of the extension, so switch modes.
-                _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;
-
-                consumed = suffixBuffer.End;
-                examined = suffixBuffer.End;
-                AddAndCheckObservedBytes(charsToByteCRExclusive + 2);
-            }
-            else
-            {
-                consumed = suffixBuffer.End;
-                examined = suffixBuffer.End;
-
-                // We have \rX or \nX, that's an invalid extension.
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkExtension);
-            }
-        } while (_mode == Mode.Extension);
+        AddAndCheckObservedBytes(reader.Consumed);
     }
 
     private void ReadChunkedData(in ReadOnlySequence<byte> buffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)

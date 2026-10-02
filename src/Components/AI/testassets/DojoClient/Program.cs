@@ -31,6 +31,18 @@ builder.Services.AddKeyedScoped<IChatClient>(
 builder.Services.AddKeyedScoped<IChatClient>(
     DojoScenarios.HumanInTheLoopEndpoint,
     (sp, _) => CreateChatClient(sp, DojoScenarios.HumanInTheLoopEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.ToolBasedGenerativeUIEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.ToolBasedGenerativeUIEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.AgenticGenerativeUIEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.AgenticGenerativeUIEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.SharedStateEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.SharedStateEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.PredictiveStateUpdatesEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.PredictiveStateUpdatesEndpoint));
 
 var app = builder.Build();
 

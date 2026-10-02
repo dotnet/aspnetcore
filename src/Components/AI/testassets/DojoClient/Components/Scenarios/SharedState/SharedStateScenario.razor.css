@@ -1,0 +1,307 @@
+.shared-state {
+    background: #f8f8fb;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-width: 0;
+}
+
+.shared-state-layout {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-width: 0;
+}
+
+.recipe-panel {
+    align-items: flex-start;
+    background: #f8f8fb;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 118px 24px 96px;
+}
+
+.shared-state-chat {
+    background: #fff;
+    border-left: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 320px;
+    width: 480px;
+}
+
+.shared-state-chat--desktop-closed {
+    display: none;
+}
+
+.shared-state-chat__desktop-header {
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    flex: 0 0 64px;
+    justify-content: center;
+    padding: 0 32px;
+    position: relative;
+}
+
+.shared-state-chat__desktop-header h1 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.shared-state-chat__desktop-header button {
+    background: transparent;
+    border: 0;
+    color: #6b6b6b;
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 8px;
+    position: absolute;
+    right: 17px;
+    top: 12px;
+}
+
+.shared-state-chat .dojo-chat-panel {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
+
+.shared-state-chat__mobile-header {
+    display: none;
+}
+
+.shared-state-chat__welcome {
+    align-items: center;
+    display: flex;
+    font-size: 1.55rem;
+    height: 100%;
+    justify-content: center;
+    margin: 0;
+    text-align: center;
+}
+
+.shared-state-chat__open {
+    background: #fff;
+    border: 1px solid #d9d9de;
+    border-radius: 999px 0 0 999px;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+    cursor: pointer;
+    display: none;
+    font-weight: 600;
+    padding: 12px 18px;
+    position: fixed;
+    right: 0;
+    top: 20px;
+    z-index: 2;
+}
+
+.shared-state-chat__open {
+    display: none;
+}
+
+.shared-state-layout:has(.shared-state-chat--desktop-closed) > .shared-state-chat__open {
+    display: block;
+}
+
+.shared-state-chat ::deep .sc-ai-message-list {
+    max-width: none;
+    padding: 40px 32px 24px;
+}
+
+.shared-state-chat ::deep .sc-ai-message-list:has(.shared-state-chat__welcome) {
+    height: 100%;
+}
+
+.shared-state-chat ::deep .sc-ai-chat-page__footer {
+    border-top: 0;
+    padding: 16px 32px 23px;
+}
+
+.shared-state-chat ::deep .sc-ai-chat-page__input-container {
+    max-width: none;
+    position: relative;
+}
+
+.shared-state-chat ::deep .sc-ai-input {
+    align-items: center;
+    border-color: #d9d9de;
+    border-radius: 28px;
+    gap: 4px;
+    min-height: 68px;
+    padding: 5px 12px 5px 18px;
+}
+
+.shared-state-chat ::deep .sc-ai-input:focus-within {
+    border-color: #a6a6ab;
+}
+
+.shared-state-chat ::deep .sc-ai-input__textarea {
+    min-height: 48px;
+    padding: 13px 8px;
+}
+
+.shared-state-chat ::deep .sc-ai-input__send {
+    background: #ededf0;
+    color: #8a8a90;
+}
+
+.shared-state-chat ::deep .sc-ai-input:not(:has(.sc-ai-input__textarea:placeholder-shown)) .sc-ai-input__send {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.shared-state-chat ::deep .sc-ai-input:has(.sc-ai-input__textarea:placeholder-shown) .sc-ai-input__send {
+    pointer-events: none;
+}
+
+.shared-state-chat ::deep .sc-ai-input__send svg {
+    transform: rotate(-45deg);
+}
+
+.shared-state-chat ::deep .shared-state-chat__add {
+    background: transparent;
+    border: 0;
+    color: #9a9a9f;
+    cursor: pointer;
+    font-size: 1.7rem;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.shared-state-chat__disclaimer {
+    color: #77777d;
+    font-size: 0.75rem;
+    margin: 12px 0 0;
+    text-align: center;
+}
+
+.shared-state-chat ::deep .shared-state-stop {
+    align-items: center;
+    background: #050505;
+    border: 0;
+    border-radius: 50%;
+    bottom: 13px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    height: 36px;
+    justify-content: center;
+    position: absolute;
+    right: 13px;
+    width: 36px;
+}
+
+.shared-state-chat ::deep .shared-state-stop::after {
+    background: currentColor;
+    border-radius: 2px;
+    content: "";
+    height: 13px;
+    width: 13px;
+}
+
+.shared-state-chat ::deep .sc-ai-input:has(+ .shared-state-stop) .sc-ai-input__send {
+    visibility: hidden;
+}
+
+@media (max-width: 48rem) {
+    .shared-state-layout {
+        display: block;
+        min-height: 100dvh;
+    }
+
+    .recipe-panel {
+        display: block;
+        overflow: visible;
+        padding: 24px 0 22px;
+    }
+
+    .shared-state-chat {
+        border-bottom: 0;
+        border-left: 0;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        min-height: 0;
+        min-width: 0;
+        position: sticky;
+        bottom: 0;
+        width: 100%;
+        z-index: 3;
+    }
+
+    .shared-state-chat--desktop-closed {
+        display: flex;
+    }
+
+    .shared-state-chat__desktop-header {
+        display: none;
+    }
+
+    .shared-state-chat__mobile-header {
+        align-items: center;
+        background: #fff;
+        border: 0;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        min-height: 69px;
+        padding: 12px 17px;
+        text-align: left;
+        width: 100%;
+    }
+
+    .shared-state-chat__mobile-header span:first-child {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .shared-state-chat__mobile-header strong {
+        font-size: 1rem;
+    }
+
+    .shared-state-chat__mobile-header small {
+        color: #77777d;
+        font-size: 0.875rem;
+    }
+
+    .shared-state-chat__chevron {
+        border-left: 2px solid #9ca3af;
+        border-top: 2px solid #9ca3af;
+        height: 10px;
+        margin-right: 6px;
+        transform: rotate(45deg);
+        transition: transform 150ms ease;
+        width: 10px;
+    }
+
+    .shared-state-chat--mobile-open .shared-state-chat__chevron {
+        transform: rotate(225deg);
+    }
+
+    .shared-state-chat .dojo-chat-panel {
+        display: none;
+    }
+
+    .shared-state-chat--mobile-open .dojo-chat-panel {
+        display: flex;
+        height: min(70dvh, 36rem);
+    }
+
+    .shared-state-chat__open {
+        display: none !important;
+    }
+
+    .shared-state-chat ::deep .sc-ai-chat-page__footer {
+        padding: 12px 16px 18px;
+    }
+
+    .shared-state-chat ::deep .sc-ai-message-list {
+        padding: 24px 16px;
+    }
+}

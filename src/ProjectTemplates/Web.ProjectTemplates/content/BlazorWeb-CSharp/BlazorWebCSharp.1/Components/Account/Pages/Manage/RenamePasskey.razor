@@ -19,7 +19,9 @@
         <h4>Enter a name for your passkey</h4>
     }
     <hr />
-    <ValidationSummary class="text-danger" role="alert" />
+    <div role="alert" aria-atomic="true">
+        <ValidationSummary class="text-danger" />
+    </div>
     <div class="form-floating mb-3">
         <InputText @bind-Value="Input.Name" id="Input.Name" class="form-control" aria-required="true" placeholder="My passkey" />
         <label for="Input.Name" class="form-label">Passkey name</label>

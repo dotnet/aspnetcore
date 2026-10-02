@@ -1,10 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Time.Testing;
@@ -873,6 +879,30 @@ public class ResponseCachingMiddlewareTests
         Assert.False(await middleware.TryServeFromCacheAsync(context));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void FinalizeCache_IndependentlyAccountsForVaryRuleAndResponseKeys(bool rejectVaryRules)
+    {
+        const long sizeLimit = 256;
+        var baseKey = rejectVaryRules ? new string('b', 200) : "b";
+        var storageVaryKey = rejectVaryRules ? "s" : new string('s', 200);
+        var cache = new MemoryResponseCache(new MemoryCache(new MemoryCacheOptions { SizeLimit = sizeLimit }));
+        var middleware = TestUtils.CreateTestMiddleware(
+            cache: cache,
+            keyProvider: new TestResponseCachingKeyProvider(baseKey, storageVaryKey: storageVaryKey));
+        var context = TestUtils.CreateTestContext();
+        context.BaseKey = baseKey;
+        context.HttpContext.Response.Headers.Vary = HeaderNames.From;
+        middleware.ShimResponseStream(context);
+
+        middleware.FinalizeCacheHeaders(context);
+        middleware.FinalizeCacheBody(context);
+
+        Assert.Equal(!rejectVaryRules, cache.Get(baseKey) is CachedVaryByRules);
+        Assert.Equal(rejectVaryRules, cache.Get(storageVaryKey) is CachedResponse);
+    }
+
     [Fact]
     public void AddResponseCachingFeature_SecondInvocation_Throws()
     {
@@ -1050,5 +1080,68 @@ public class ResponseCachingMiddlewareTests
         var normalizedStrings = ResponseCachingMiddleware.GetOrderCasingNormalizedStringValues(originalStrings);
 
         Assert.Equal(originalStrings, normalizedStrings);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ResponseWithVaryStar_AndDownstreamMiddlewareAppendedVaryHeader_IsNotServedFromCache(bool appendStarFirst)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddResponseCaching();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCaching();
+                        app.Use(async (context, next) =>
+                        {
+                            if (!appendStarFirst)
+                            {
+                                context.Response.Headers.Append("Vary", "Accept-Encoding");
+                            }
+                            await next(context);
+                        });
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers.CacheControl = new CacheControlHeaderValue
+                            {
+                                Public = true,
+                                MaxAge = TimeSpan.FromSeconds(10)
+                            }.ToString();
+                            if (appendStarFirst)
+                            {
+                                context.Response.Headers.Vary = "*";
+                                context.Response.Headers.Append("Vary", "Accept-Encoding");
+                            }
+                            else
+                            {
+                                context.Response.Headers.Append("Vary", "*");
+                            }
+                            await context.Response.WriteAsync(Guid.NewGuid().ToString());
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var client = server.CreateClient();
+        var initialResponse = await client.GetAsync("");
+        var subsequentResponse = await client.GetAsync("");
+
+        initialResponse.EnsureSuccessStatusCode();
+        subsequentResponse.EnsureSuccessStatusCode();
+
+        Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
+        var initialContent = await initialResponse.Content.ReadAsStringAsync();
+        var subsequentContent = await subsequentResponse.Content.ReadAsStringAsync();
+        Assert.NotEqual(initialContent, subsequentContent);
     }
 }

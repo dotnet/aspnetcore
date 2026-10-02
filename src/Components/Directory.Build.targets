@@ -6,7 +6,7 @@
        Exclude netstandard projects (analyzers, generators, tasks), Wasm projects
        (which provide their own JS via the Components.WebAssembly package), and
        source-only builds (Assets.Internal is excluded from source-build). -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true' and '$(IncludeComponentsWebAssets)' != 'false'">
     <Reference Include="Microsoft.AspNetCore.App.Internal.Assets" PrivateAssets="All" />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
@@ -35,7 +35,7 @@
          CopyBuildOutputToOutputDirectory=false so no DLL exists in the output directory)
        - Private=false: don't copy to consuming project output
        - PrivateAssets=all: don't flow as a dependency to consuming packages -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true' and '$(IncludeComponentsWebAssets)' != 'false'">
     <ProjectReference Update="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj"
       ReferenceOutputAssembly="false"
       Private="false"
