@@ -3,10 +3,6 @@
 This guidance covers ASP.NET Core source work. Consult the relevant sections alongside the
 requested task and applicable repository and area instructions.
 
-Area architecture overviews:
-
-- [SignalR](../src/SignalR/ARCHITECTURE.md)
-
 ## Overarching principles
 
 - Preserve compatibility and public API discipline over local convenience. New APIs, constructors, options, packages, templates, analyzer IDs, and shared-framework metadata become long-lived contracts.
