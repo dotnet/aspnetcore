@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="..\..\Extensions.Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
     <Compile Include="..\..\Extensions.Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
+    <Compile Include="..\..\UI\src\Areas\Identity\ReauthenticationMarker.cs" Link="Infrastructure\ReauthenticationMarker.cs" />
     <Compile Include="..\..\UI\src\UIFramework.cs" Link="Infrastructure\UIFramework.cs" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
@@ -35,6 +36,7 @@
     <Reference Include="Microsoft.AspNetCore.Cors" />
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.HostFiltering" />

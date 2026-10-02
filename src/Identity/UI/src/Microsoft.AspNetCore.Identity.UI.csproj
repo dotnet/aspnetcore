@@ -48,6 +48,8 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />

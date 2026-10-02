@@ -1,31 +1,30 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Security.Cryptography;
-using BlazorWebCSharp._1.Data;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace BlazorWebCSharp._1.Components.Account;
+namespace Microsoft.AspNetCore.Identity.UI;
 
-// Records that the user recently confirmed their identity with a credential the account already
-// has. Creating a new login credential requires this marker.
-//
-// The marker is a data-protected payload of the user id and the current security stamp, so
-// changing the password or signing out everywhere invalidates any marker already issued. It is
-// valid for five minutes rather than for a single use.
-internal static class PasskeyReauthentication
+internal static class ReauthenticationMarker
 {
-    private const string CookieName = "Identity.Reauthentication";
-    private const string ProtectorPurpose = "BlazorWebCSharp._1.Components.Account.PasskeyReauthentication.v1";
+    private const string CookieName = "Identity.UI.Reauthentication";
+    private const string ProtectorPurpose = "Microsoft.AspNetCore.Identity.UI.ReauthenticationMarker.v1";
 
     private static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(5);
 
-    public static async Task MarkAsync(HttpContext context, UserManager<ApplicationUser> userManager, ApplicationUser user)
+    public static async Task MarkAsync<TUser>(HttpContext context, UserManager<TUser> userManager, TUser user)
+        where TUser : class
     {
         var payload = await GetExpectedPayloadAsync(userManager, user);
         var protectedPayload = GetProtector(context).Protect(payload, Lifetime);
         context.Response.Cookies.Append(CookieName, protectedPayload, GetCookieOptions(context));
     }
 
-    public static async Task<bool> IsVerifiedAsync(HttpContext context, UserManager<ApplicationUser> userManager, ApplicationUser user)
+    public static async Task<bool> IsVerifiedAsync<TUser>(HttpContext context, UserManager<TUser> userManager, TUser user)
+        where TUser : class
     {
         if (!context.Request.Cookies.TryGetValue(CookieName, out var protectedPayload) || string.IsNullOrEmpty(protectedPayload))
         {
@@ -39,7 +38,6 @@ internal static class PasskeyReauthentication
         }
         catch (CryptographicException)
         {
-            // The marker expired, was tampered with, or was protected with a retired key.
             return false;
         }
 
@@ -50,8 +48,16 @@ internal static class PasskeyReauthentication
     public static void Clear(HttpContext context)
         => context.Response.Cookies.Delete(CookieName, GetCookieOptions(context));
 
-    private static async Task<string> GetExpectedPayloadAsync(UserManager<ApplicationUser> userManager, ApplicationUser user)
-        => $"{await userManager.GetUserIdAsync(user)}:{await userManager.GetSecurityStampAsync(user)}";
+    private static async Task<string> GetExpectedPayloadAsync<TUser>(UserManager<TUser> userManager, TUser user)
+        where TUser : class
+    {
+        var userId = await userManager.GetUserIdAsync(user);
+        var securityStamp = userManager.SupportsUserSecurityStamp
+            ? await userManager.GetSecurityStampAsync(user)
+            : null;
+
+        return $"{userId}:{securityStamp}";
+    }
 
     private static ITimeLimitedDataProtector GetProtector(HttpContext context)
         => context.RequestServices
@@ -62,8 +68,6 @@ internal static class PasskeyReauthentication
     private static CookieOptions GetCookieOptions(HttpContext context) => new()
     {
         HttpOnly = true,
-        // Matches the identity cookies, which use CookieSecurePolicy.SameAsRequest so that the
-        // template still works over plain HTTP in development.
         Secure = context.Request.IsHttps,
         SameSite = SameSiteMode.Lax,
         IsEssential = true,

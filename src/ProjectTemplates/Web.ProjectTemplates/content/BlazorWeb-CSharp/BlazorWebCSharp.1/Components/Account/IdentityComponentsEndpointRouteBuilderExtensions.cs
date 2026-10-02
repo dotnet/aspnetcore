@@ -73,7 +73,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromForm] string returnUrl) =>
         {
-            PasskeyReauthentication.Clear(context);
+            ReauthenticationMarker.Clear(context);
             await signInManager.SignOutAsync();
             return TypedResults.LocalRedirect($"~/{returnUrl}");
         });
@@ -157,7 +157,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 return Results.NotFound($"Unable to load user with ID '{userManager.GetUserId(context.User)}'.");
             }
 
-            if (!await PasskeyReauthentication.IsVerifiedAsync(context, userManager, user))
+            if (!await ReauthenticationMarker.IsVerifiedAsync(context, userManager, user))
             {
                 return Results.BadRequest("You must confirm your identity before adding a passkey.");
             }
@@ -230,11 +230,28 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return Results.Challenge(properties, [provider]);
         });
 
-        manageGroup.MapPost("/LinkExternalLogin", async (
+        manageGroup.MapPost("/LinkExternalLogin", [RequireAntiforgeryToken] async (
             HttpContext context,
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromForm] string provider) =>
         {
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is not { IsValid: true })
+            {
+                return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
+            }
+
+            var user = await signInManager.UserManager.GetUserAsync(context.User);
+            if (user is null)
+            {
+                return Results.NotFound($"Unable to load user with ID '{signInManager.UserManager.GetUserId(context.User)}'.");
+            }
+
+            if (!await ReauthenticationMarker.IsVerifiedAsync(context, signInManager.UserManager, user))
+            {
+                return Results.BadRequest("You must confirm your identity before adding an external login.");
+            }
+
             // Clear the existing external cookie to ensure a clean login process
             await context.SignOutAsync(IdentityConstants.ExternalScheme);
 
