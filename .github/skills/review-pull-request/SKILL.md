@@ -31,6 +31,8 @@ an immutable revision; hosted guidance must identify the trusted workflow commit
 
 Files under `source/<sha>/<path>.source` contain ordinary Git blobs from the role
 indicated in the manifest; every bundled source filename carries the `.source` suffix.
+Guides, policies, and context documents under `guidance.root` carry the same suffix:
+read each entry at `<guidance.root>/<path><suffix>`.
 The full tree is available for unchanged producers, consumers, overloads, and
 instructions. The suffix makes source-side
 `AGENTS.md` and `.github` files inert evidence. A symlink is only link text, a
@@ -88,8 +90,9 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 
 ## Review and independent validation
 
-Launch one fresh reviewer worker per routed guide as a full-capability `general-purpose`
-agent, never an explore, fast, or other lightweight agent, explicitly using
+Launch exactly one fresh reviewer worker per routed guide as a full-capability
+`general-purpose` agent, never an explore, fast, or other lightweight agent, explicitly
+using
 `gpt-5.6-sol` (the evaluated configuration). If the user explicitly selected a different
 worker model, report the run as unevaluated. Record each requested agent type/model and
 any runtime-reported values; record unavailable runtime values as `unknown`, which alone
@@ -108,9 +111,11 @@ the combined result `PATH: per-guide`. Do not label a per-guide worker
 `single-reviewer` or claim that its own guide result completes the entire PR. If a
 worker fails or does not return, record that guide as incomplete rather than
 substituting coordinator analysis for an independent pass. Never spawn a worker per
-topic, nest reviewers, or count a launched worker as a returned result. In an
-explicitly configured offline one-pass comparison, apply the exact same guide texts and
-gates in one context and report `single-reviewer`, not independent guide workers.
+topic, nest reviewers, relaunch a worker, replace one worker with another, or count a
+launched worker as a returned result. Send any correction or clarification to the same
+worker; if it cannot receive it, record that guide as incomplete. In an explicitly
+configured offline one-pass comparison, apply the exact same guide texts and gates in
+one context and report `single-reviewer`, not independent guide workers.
 
 Independently check every returned candidate before acceptance. Require:
 
