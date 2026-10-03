@@ -42,4 +42,20 @@ public class EventCallbackTest : ServerTestBase<ToggleExecutionModeServerFixture
         target.Click();
         Browser.Equal("Render Count: 2", () => count.Text);
     }
+
+    [Fact]
+    public void EventCallback_NullOptionalDelegate_IsNotDispatchedUntilEnabled()
+    {
+        var count = Browser.Exists(By.Id("null_optional_event_callback_render_count"));
+        Browser.Equal("Render Count: 1", () => count.Text);
+
+        Browser.Exists(By.Id("null_optional_event_callback_button")).Click();
+        Browser.Equal("Render Count: 1", () => count.Text);
+
+        Browser.Exists(By.Id("toggle_null_optional_event_callback")).Click();
+        Browser.Equal("Render Count: 2", () => count.Text);
+
+        Browser.Exists(By.Id("null_optional_event_callback_button")).Click();
+        Browser.Equal("Render Count: 3", () => count.Text);
+    }
 }

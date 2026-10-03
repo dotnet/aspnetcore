@@ -297,7 +297,8 @@ public sealed class RenderTreeBuilder : IDisposable
         }
         else
         {
-            // Track the attribute name if needed since we elided the frame.
+            // No receiver was supplied and no delegate was provided; there is no event
+            // dispatch to wire up, so elide the frame rather than wire a no-op listener.
             TrackAttributeName(name);
         }
     }
@@ -380,9 +381,10 @@ public sealed class RenderTreeBuilder : IDisposable
             }
             else if (value is IEventCallback callbackValue)
             {
-                if (callbackValue.HasDelegate)
+                var unpackedCallbackValue = callbackValue.UnpackForRenderTree();
+                if (unpackedCallbackValue != null)
                 {
-                    _entries.AppendAttribute(sequence, name, callbackValue.UnpackForRenderTree());
+                    _entries.AppendAttribute(sequence, name, unpackedCallbackValue);
                 }
                 else
                 {
