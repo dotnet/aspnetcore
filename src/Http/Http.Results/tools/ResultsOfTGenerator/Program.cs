@@ -8,7 +8,7 @@ namespace ResultsOfTGenerator;
 
 public class Program
 {
-    private const int TYPE_ARG_COUNT = 6;
+    private const int TYPE_ARG_COUNT = 8;
 
     public static void Main(string[] args)
     {
