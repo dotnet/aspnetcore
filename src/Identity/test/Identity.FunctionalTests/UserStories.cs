@@ -229,10 +229,11 @@ public class UserStories
         return await changePassword.ChangePasswordAsync(oldPassword, newPassword);
     }
 
-    internal static async Task<SetPassword> SetPasswordAsync(Index index, string newPassword)
+    internal static async Task<SetPassword> SetPasswordAsync(Index index, string newPassword, string externalLogin)
     {
         var manage = await index.ClickManageLinkAsync();
         var setPassword = await manage.ClickChangePasswordLinkExternalLoginAsync();
+        setPassword = await setPassword.ReauthenticateAsync(externalLogin);
 
         return await setPassword.SetPasswordAsync(newPassword);
     }
