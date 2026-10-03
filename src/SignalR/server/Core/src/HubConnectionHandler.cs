@@ -506,12 +506,21 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
                     // No message limit, just parse and dispatch
                     if (_maximumMessageSize == null)
                     {
-                        while (protocol.TryParseMessage(ref buffer, binder, out var message))
+                        while (!buffer.IsEmpty)
                         {
-                            connection.StopClientTimeout();
-                            // This lets us know the timeout has stopped and we need to re-enable it after dispatching the message
-                            messageReceived = true;
-                            await _dispatcher.DispatchMessageAsync(connection, message);
+                            var remaining = buffer.Length;
+
+                            if (protocol.TryParseMessage(ref buffer, binder, out var message))
+                            {
+                                connection.StopClientTimeout();
+                                messageReceived = true;
+                                await _dispatcher.DispatchMessageAsync(connection, message);
+                            }
+                            else if (buffer.Length == remaining)
+                            {
+                                break;
+                            }
+
                         }
 
                         if (messageReceived)
@@ -535,6 +544,8 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
                                 overLength = true;
                             }
 
+                            var remaining = segment.Length;
+
                             if (protocol.TryParseMessage(ref segment, binder, out var message))
                             {
                                 connection.StopClientTimeout();
@@ -542,17 +553,19 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
                                 messageReceived = true;
                                 await _dispatcher.DispatchMessageAsync(connection, message);
                             }
-                            else if (overLength)
+                            else if (segment.Length == remaining)
                             {
-                                throw new InvalidDataException($"The maximum message size of {maxMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
-                            }
-                            else
-                            {
-                                // No need to update the buffer since we didn't parse anything
+                                if (overLength)
+                                {
+                                    throw new InvalidDataException($"The maximum message size of {maxMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
+                                }
+
+                                // Nothing was consumed, we need more data
                                 break;
                             }
 
-                            // Update the buffer to the remaining segment
+                            // Update the buffer to the remaining segment. If there was no message, the protocol
+                            // consumed one it chose to ignore (e.g. an unknown message type) and we skip past it.
                             buffer = buffer.Slice(segment.Start);
                         }
 
