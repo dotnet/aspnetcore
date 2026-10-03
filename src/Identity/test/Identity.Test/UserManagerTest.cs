@@ -2220,4 +2220,66 @@ public class UserManagerTest
         }
     }
 
+    [Theory]
+    [InlineData("CreateAsync")]
+    [InlineData("AddPasswordAsync")]
+    [InlineData("ChangePasswordAsync")]
+    public async Task VirtualUpdatePasswordHashCalledForPasswordOperations(string operation)
+    {
+        var hasher = new PasswordHasher<PocoUser>();
+        var user = new PocoUser { UserName = "test" };
+        var currentPasswordHash = hasher.HashPassword(user, "currentpassword");
+
+        var store = new Mock<IUserPasswordStore<PocoUser>>();
+        store.Setup(s => s.GetPasswordHashAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(operation == "AddPasswordAsync" ? null : currentPasswordHash);
+        store.Setup(s => s.SetPasswordHashAsync(It.IsAny<PocoUser>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        store.Setup(s => s.UpdateAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(IdentityResult.Success);
+        store.Setup(s => s.CreateAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(IdentityResult.Success);
+        store.Setup(s => s.GetUserIdAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("userid");
+        store.Setup(s => s.GetUserNameAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("test");
+        store.Setup(s => s.SetNormalizedUserNameAsync(It.IsAny<PocoUser>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var manager = new TrackingUserManager(store.Object);
+
+        switch (operation)
+        {
+            case "CreateAsync":
+                await manager.CreateAsync(user, "password");
+                break;
+            case "AddPasswordAsync":
+                await manager.AddPasswordAsync(user, "password");
+                break;
+            case "ChangePasswordAsync":
+                await manager.ChangePasswordAsync(user, "currentpassword", "newpassword");
+                break;
+        }
+
+        Assert.True(manager.VirtualUpdatePasswordHashCalled, $"Virtual UpdatePasswordHash should be called from {operation}");
+    }
+
+    private class TrackingUserManager : UserManager<PocoUser>
+    {
+        public bool VirtualUpdatePasswordHashCalled { get; private set; }
+
+        public TrackingUserManager(IUserPasswordStore<PocoUser> store)
+            : base(store, null, new PasswordHasher<PocoUser>(), Array.Empty<IUserValidator<PocoUser>>(),
+                   Array.Empty<IPasswordValidator<PocoUser>>(), new UpperInvariantLookupNormalizer(),
+                   new IdentityErrorDescriber(), null, new Microsoft.Extensions.Logging.Abstractions.NullLogger<UserManager<PocoUser>>())
+        {
+        }
+
+        protected override Task<IdentityResult> UpdatePasswordHash(PocoUser user, string newPassword, bool validatePassword)
+        {
+            VirtualUpdatePasswordHashCalled = true;
+            return base.UpdatePasswordHash(user, newPassword, validatePassword);
+        }
+    }
+
 }
