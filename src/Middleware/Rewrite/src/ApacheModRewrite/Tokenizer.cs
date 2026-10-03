@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
@@ -106,7 +106,42 @@ internal sealed class Tokenizer
         {
             var token = tokens[i];
             var trimmed = token.Trim('\"');
-            tokens[i] = Regex.Unescape(trimmed);
+            tokens[i] = UnescapeApacheString(trimmed);
         }
+    }
+    // Only unescape Apache-specific sequences (space, quote, backslash).
+    // Regex shorthands like \d, \w, \s are preserved as-is for the regex engine.
+    private static string UnescapeApacheString(string input)
+    {
+        if (!input.Contains('\\'))
+        {
+            return input;
+        }
+
+        var sb = new StringBuilder(input.Length);
+        for (var i = 0; i < input.Length; i++)
+        {
+            if (input[i] == '\\' && i + 1 < input.Length)
+            {
+                var next = input[i + 1];
+                switch (next)
+                {
+                    case '"':
+                    case '\\':
+                    case ' ':
+                        sb.Append(next);
+                        i++;
+                        continue;
+                    default:
+                        // \d, \w, \s gibi regex shorthand'leri — backslash'i koru
+                        sb.Append('\\');
+                        sb.Append(next);
+                        i++;
+                        continue;
+                }
+            }
+            sb.Append(input[i]);
+        }
+        return sb.ToString();
     }
 }
