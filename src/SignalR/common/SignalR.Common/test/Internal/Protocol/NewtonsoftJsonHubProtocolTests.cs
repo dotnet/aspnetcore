@@ -106,4 +106,5 @@ public class NewtonsoftJsonHubProtocolTests : JsonHubProtocolTestsBase
         }.ToDictionary(t => t.Name);
 
     public static IEnumerable<object[]> CustomProtocolTestDataNames => CustomProtocolTestData.Keys.Select(name => new object[] { name });
+
 }
