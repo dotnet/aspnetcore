@@ -22,3 +22,7 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AnchorMode.set ->
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TGridItem>?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemComparer.set -> void
 *REMOVED*override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSet() -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.FooterTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.FooterTemplate.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.FooterTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.FooterTemplate.set -> void
