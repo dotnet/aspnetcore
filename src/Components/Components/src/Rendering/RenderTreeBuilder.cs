@@ -18,6 +18,15 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// </summary>
 public sealed class RenderTreeBuilder : IDisposable
 {
+    /// <summary>
+    /// The marker attribute name that is emitted on an &lt;option&gt; element when the
+    /// developer writes <c>value="@null"</c>. The Blazor client-side change handler
+    /// recognizes this attribute on the selected &lt;option&gt; and reports <c>null</c>
+    /// in the change event so that nullable bound values receive <c>null</c> instead of
+    /// an empty string. The value of the attribute is the same as its name.
+    /// </summary>
+    private const string NullValueOptionMarkerAttributeName = "data-blazor-null-option";
+
     private static readonly object BoxedTrue = true;
     private static readonly object BoxedFalse = false;
 
@@ -227,6 +236,11 @@ public sealed class RenderTreeBuilder : IDisposable
         {
             _entries.AppendAttribute(sequence, name, value);
         }
+        else if (IsOptionElementValueAttribute(name))
+        {
+            _entries.AppendAttribute(sequence, NullValueOptionMarkerAttributeName, NullValueOptionMarkerAttributeName);
+            _entries.AppendAttribute(sequence, name, string.Empty);
+        }
         else
         {
             TrackAttributeName(name);
@@ -364,7 +378,15 @@ public sealed class RenderTreeBuilder : IDisposable
             if (value == null)
             {
                 // Treat 'null' attribute values for elements as a conditional attribute.
-                TrackAttributeName(name);
+                if (IsOptionElementValueAttribute(name))
+                {
+                    _entries.AppendAttribute(sequence, NullValueOptionMarkerAttributeName, NullValueOptionMarkerAttributeName);
+                    _entries.AppendAttribute(sequence, name, string.Empty);
+                }
+                else
+                {
+                    TrackAttributeName(name);
+                }
             }
             else if (value is bool boolValue)
             {
@@ -807,6 +829,69 @@ public sealed class RenderTreeBuilder : IDisposable
         frame.AttributeValueField = value;
     }
 
+    // Returns true when the current open element is an <option> whose null "value" attribute should emit a marker, excluding <select multiple> and <datalist> to preserve the browser's text-content fallback.
+    private bool IsOptionElementValueAttribute(string name)
+    {
+        if (!string.Equals(name, "value", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (_openElementIndices.Count == 0)
+        {
+            return false;
+        }
+
+        var optionFrameIndex = _openElementIndices.Peek();
+        ref var optionFrame = ref _entries.Buffer[optionFrameIndex];
+        if (!string.Equals(optionFrame.ElementNameField, "option", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return !IsWithinDatalistOrMultipleSelectElement(optionFrameIndex);
+    }
+
+    // Determines whether the <option> frame at optionFrameIndex is a direct child of a <datalist>, or of a <select multiple>; relies on attribute frames always following an element's opening frame.
+    private bool IsWithinDatalistOrMultipleSelectElement(int optionFrameIndex)
+    {
+        if (_openElementIndices.Count < 2)
+        {
+            return false;
+        }
+
+        var indices = _openElementIndices.ToArray();
+        var parentFrameIndex = indices[1];
+        ref var parentFrame = ref _entries.Buffer[parentFrameIndex];
+
+        if (string.Equals(parentFrame.ElementNameField, "datalist", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (!string.Equals(parentFrame.ElementNameField, "select", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        for (var i = parentFrameIndex + 1; i < optionFrameIndex; i++)
+        {
+            ref var frame = ref _entries.Buffer[i];
+            if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
+            {
+                break;
+            }
+
+            if (frame.AttributeValueField is not null &&
+                string.Equals(frame.AttributeNameField, "multiple", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     internal void AssertTreeIsValid(IComponent component)
     {
         if (_openElementIndices.Count > 0)
@@ -840,9 +925,17 @@ public sealed class RenderTreeBuilder : IDisposable
 
         // Now that we've found the last attribute, we can iterate backwards and process duplicates.
         var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
+        var isOptionElement = first > 0 &&
+            buffer[first - 1].FrameTypeField == RenderTreeFrameType.Element &&
+            string.Equals(buffer[first - 1].ElementNameField, "option", StringComparison.OrdinalIgnoreCase);
         for (var i = last; i >= first; i--)
         {
             ref var frame = ref buffer[i];
+            if (frame.FrameTypeField == RenderTreeFrameType.None)
+            {
+                continue;
+            }
+
             Debug.Assert(frame.FrameTypeField == RenderTreeFrameType.Attribute, $"Frame type is {frame.FrameTypeField} at {i}");
 
             if (!seenAttributeNames.TryAdd(frame.AttributeNameField, i))
@@ -860,6 +953,18 @@ public sealed class RenderTreeBuilder : IDisposable
                 {
                     // This attribute has been overridden. For now, blank out its name to *mark* it. We'll do a pass
                     // later to wipe it out.
+                    // A null option's marker and empty value are one logical attribute, so discard both together.
+                    if (isOptionElement &&
+                        i > first &&
+                        string.Equals(frame.AttributeNameField, "value", StringComparison.Ordinal) &&
+                        frame.AttributeValueField is string { Length: 0 } &&
+                        buffer[i - 1].FrameTypeField == RenderTreeFrameType.Attribute &&
+                        string.Equals(buffer[i - 1].AttributeNameField, NullValueOptionMarkerAttributeName, StringComparison.Ordinal) &&
+                        buffer[i - 1].SequenceField == frame.SequenceField)
+                    {
+                        buffer[i - 1] = default;
+                    }
+
                     frame = default;
                 }
                 else
