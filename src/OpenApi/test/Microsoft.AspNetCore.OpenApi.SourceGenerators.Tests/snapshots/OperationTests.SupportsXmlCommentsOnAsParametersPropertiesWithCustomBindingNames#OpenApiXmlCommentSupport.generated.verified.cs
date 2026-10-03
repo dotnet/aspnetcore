@@ -54,8 +54,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new global::System.Collections.Generic.Dictionary<string, XmlComment>();
 
-            cache.Add(@"P:Query.Name", new XmlComment(@"The full name of the person.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:TestController.Get(System.Int32)", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"userId", @"The id of the user.", null, false)], null));
+            cache.Add(@"T:ClientInfo", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"Version", @"The version of the client application.", null, false), new XmlParameterComment(@"DeviceId", @"The identifier of the client device.", null, false)], null));
+            cache.Add(@"T:LoginRequest", new XmlComment(@"The login payload.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ClientInfo.Version", new XmlComment(@"The version of the client application.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ClientInfo.DeviceId", new XmlComment(@"The identifier of the client device.", null, null, null, null, false, null, null, null));
 
             return cache;
         }
