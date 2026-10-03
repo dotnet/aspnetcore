@@ -145,11 +145,7 @@ into a KBE.
 
 ## Validation
 
-The `Quarantine workflow checks` pull-request workflow runs all suites below
-when the quarantine workflow, matcher instructions, skill, or supporting scripts
-change. It uses a disposable GitHub-hosted runner with read-only permissions,
-does not persist checkout credentials, and has no secrets or artifact handoff
-to the privileged quarantine workflow.
+The [`Workflow tests`](../../workflow-tests.yml) pull-request workflow runs these suites when workflow or skill files change; the commands below also support local validation.
 
 These fixtures use synthetic evidence, mock GitHub requests, and temporary Git
 repositories. They do not create issues or pull requests, run an agent, or prove
