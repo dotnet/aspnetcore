@@ -80,7 +80,7 @@ private:
     TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, ErrorContext& error);
 
     std::filesystem::path
-    HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext);
+    HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext, ErrorContext& error);
 
     IHttpServer            &m_pServer;
     HandlerResolver        &m_handlerResolver;
