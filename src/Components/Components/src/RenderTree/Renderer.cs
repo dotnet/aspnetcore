@@ -37,6 +37,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
     private readonly Dictionary<ulong, (int RenderedByComponentId, EventCallback Callback, string? attributeName)> _eventBindings = new();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
+    private readonly HashSet<int> _errorBoundariesWithPendingSubtreeClear = new();
     private readonly ILogger _logger;
     private readonly ILoggerFactory _loggerFactory;
     private SectionRegistry? _sectionRegistry;
@@ -1090,6 +1091,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
             _componentStateById.Remove(disposeComponentId);
             _componentStateByComponent.Remove(disposeComponentState.Component);
+            _errorBoundariesWithPendingSubtreeClear.Remove(disposeComponentId);
             _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
         }
 
@@ -1209,8 +1211,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 // Don't just trust the error boundary to dispose its subtree - force it to do so by
                 // making it render an empty fragment. Ensures that failed components don't continue to
-                // operate, which would be a whole new kind of edge case to support forever.
-                AddToRenderQueue(candidate.ComponentId, builder => { });
+                // operate, which would be a whole new kind of edge case to support forever. Skip only if the error boundary already has a pending subtree clear.
+                var boundaryComponentId = candidate.ComponentId;
+                if (_errorBoundariesWithPendingSubtreeClear.Add(boundaryComponentId))
+                {
+                    AddToRenderQueue(
+                        boundaryComponentId,
+                        _ => _errorBoundariesWithPendingSubtreeClear.Remove(boundaryComponentId));
+                }
 
                 try
                 {

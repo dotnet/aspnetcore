@@ -6218,7 +6218,7 @@ public class RendererTest
         public void HandleException(Exception error)
         {
             ReceivedException = error;
-            receivedErrorTaskCompletionSource.SetResult();
+            receivedErrorTaskCompletionSource.TrySetResult();
         }
 
         public static void RenderNestedErrorBoundaries(RenderTreeBuilder builder, RenderFragment innerContent)
