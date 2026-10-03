@@ -25,6 +25,32 @@ public class AuthenticationServiceTests
     }
 
     [Fact]
+    public async Task MultipleClaimTransformsAllRuns()
+    {
+        var transform1 = new RunOnce();
+        var transform2 = new RunOnce();
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+            o.AddScheme<BaseHandler>("base", "whatever");
+        })
+            .AddSingleton<IClaimsTransformation>(transform1)
+            .AddSingleton<IClaimsTransformation>(transform2)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext();
+        context.RequestServices = services;
+        // Because base handler returns a different principal per call, its run multiple times
+        await context.AuthenticateAsync("base");
+        Assert.Equal(1, transform1.Ran);
+        Assert.Equal(1, transform2.Ran);
+        await context.AuthenticateAsync("base");
+        Assert.Equal(2, transform1.Ran);
+        Assert.Equal(2, transform2.Ran);
+        await context.AuthenticateAsync("base");
+        Assert.Equal(3, transform1.Ran);
+        Assert.Equal(3, transform2.Ran);
+    }
+
+    [Fact]
     public async Task CustomHandlersAuthenticateRunsClaimsTransformationEveryTime()
     {
         var transform = new RunOnce();
