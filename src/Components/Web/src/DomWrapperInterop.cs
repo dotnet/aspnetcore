@@ -10,4 +10,6 @@ internal static class DomWrapperInterop
     public const string Focus = Prefix + "focus";
 
     public const string FocusBySelector = Prefix + "focusBySelector";
+
+    public const string Blur = Prefix + "blur";
 }
