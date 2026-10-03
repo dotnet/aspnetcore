@@ -60,7 +60,7 @@ parameters:
 
 # Renovate version used in the container image tag.
 - name: renovateVersion
-  default: 43
+  default: 44
   type: number
 
 # Pool configuration for SDL analysis.
