@@ -18,8 +18,12 @@ return await PrepareReviewProgram.RunAsync(args);
 internal static partial class PrepareReviewProgram
 {
     internal const string Suffix = ".source";
+    internal const string RoutingPath = ".github/skills/review-pull-request/routing.md";
     private const int MaximumBlobBytes = 16 * 1024 * 1024;
     private const int MaximumProcessOutputBytes = 64 * 1024 * 1024;
+    private const string BlazorComponentsGuidePath = "docs/BlazorComponentsGuidance.md";
+    private const string TargetMovedDuringPreparationMessage =
+        "The target or base branch moved during preparation; no ready manifest was written.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
     private static readonly HashSet<string> ComponentsOnlyPolicies = new(StringComparer.Ordinal)
     {
@@ -46,6 +50,8 @@ internal static partial class PrepareReviewProgram
     internal sealed record Link(string Path, string? Anchor, string Guide, string? Role = null, string? Reason = null);
     internal sealed record GuideLinkResult(List<Link> Included, List<Link> Context, List<Link> Skipped);
     internal sealed record GuideResult(string Principles, List<string> Topics, string Body);
+    internal sealed record RoutingEntry(string Prefix, string Guide);
+    private sealed record RoutingResult(string Sha256, List<string> Guides, bool BlazorComponentsRouted);
     private sealed record TreeEntry(string Mode, string Type, string Sha, string Name);
     private sealed record Pointer(string Path, string Kind, string? Commit = null);
 
@@ -124,8 +130,10 @@ internal static partial class PrepareReviewProgram
     private static byte[] Objects(string directory, params string[] args) =>
         Run("git", GitArguments(["--git-dir", directory, .. args]));
 
-    private static byte[] Run(string command, IReadOnlyList<string> args, string? workingDirectory = null, byte[]? input = null)
+    internal static byte[] Run(string command, IReadOnlyList<string> args, string? workingDirectory = null, byte[]? input = null,
+        int maximumProcessOutputBytes = MaximumProcessOutputBytes)
     {
+        Require(maximumProcessOutputBytes > 0, "The maximum process output must be positive.");
         var start = new ProcessStartInfo(command)
         {
             WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory,
@@ -146,13 +154,77 @@ internal static partial class PrepareReviewProgram
             process.StandardInput.BaseStream.Write(input);
             process.StandardInput.Close();
         }
-        using var output = new MemoryStream();
-        var outputTask = process.StandardOutput.BaseStream.CopyToAsync(output);
-        var errorTask = process.StandardError.ReadToEndAsync();
+        var exceededOutputLimit = 0;
+        async Task<byte[]> ReadOutputAsync()
+        {
+            using var output = new MemoryStream();
+            var buffer = ArrayPool<byte>.Shared.Rent(81920);
+            try
+            {
+                int read;
+                while ((read = await process.StandardOutput.BaseStream.ReadAsync(buffer)) > 0)
+                {
+                    if (Volatile.Read(ref exceededOutputLimit) != 0
+                        || output.Length > maximumProcessOutputBytes - read)
+                    {
+                        KillProcess();
+                        continue;
+                    }
+                    await output.WriteAsync(buffer.AsMemory(0, read));
+                }
+                return output.ToArray();
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+        async Task<string> ReadErrorAsync()
+        {
+            var error = new StringBuilder();
+            var buffer = ArrayPool<char>.Shared.Rent(4096);
+            var bytes = 0;
+            try
+            {
+                int read;
+                while ((read = await process.StandardError.ReadAsync(buffer)) > 0)
+                {
+                    var additionalBytes = Utf8NoBom.GetByteCount(buffer, 0, read);
+                    if (Volatile.Read(ref exceededOutputLimit) != 0
+                        || bytes > maximumProcessOutputBytes - additionalBytes)
+                    {
+                        KillProcess();
+                        continue;
+                    }
+                    error.Append(buffer, 0, read);
+                    bytes += additionalBytes;
+                }
+                return error.ToString();
+            }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(buffer);
+            }
+        }
+        void KillProcess()
+        {
+            if (Interlocked.Exchange(ref exceededOutputLimit, 1) != 0)
+            {
+                return;
+            }
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException) when (process.HasExited)
+            {
+            }
+        }
+        var outputTask = ReadOutputAsync();
+        var errorTask = ReadErrorAsync();
         Task.WaitAll(outputTask, errorTask);
         process.WaitForExit();
-        Require(output.Length <= MaximumProcessOutputBytes
-            && Utf8NoBom.GetByteCount(errorTask.Result) <= MaximumProcessOutputBytes,
+        Require(exceededOutputLimit == 0,
             $"{command} failed: process output exceeded 64 MiB.");
         if (process.ExitCode != 0)
         {
@@ -164,7 +236,7 @@ internal static partial class PrepareReviewProgram
             var error = stderr.Trim();
             throw new InvalidOperationException($"{command} failed: {(error.Length > 0 ? error : $"exit code {process.ExitCode}")}");
         }
-        return output.ToArray();
+        return outputTask.Result;
     }
 
     private static void Require(bool condition, string message)
@@ -275,6 +347,20 @@ internal static partial class PrepareReviewProgram
     {
         Require(!Directory.Exists(path) && !File.Exists(path), $"Output directory already exists: {path}");
         Directory.CreateDirectory(path);
+    }
+
+    private static void DeleteOutputDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+        foreach (var name in Directory.EnumerateFileSystemEntries(path, "*", SearchOption.AllDirectories))
+        {
+            File.SetAttributes(name, File.GetAttributes(name) & ~FileAttributes.ReadOnly);
+        }
+        File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
+        Directory.Delete(path, recursive: true);
     }
 
     private static List<string> Walk(string directory, string prefix = "")
@@ -391,11 +477,74 @@ internal static partial class PrepareReviewProgram
     private static string AnchorFor(string title) => NonAnchorRegex().Replace(TagRegex().Replace(title.ToLowerInvariant(), ""), "")
         .Replace(" ", "-", StringComparison.Ordinal);
 
-    private static bool ChangedIn(JsonArray files, Regex expression) => files.Any(file =>
-        new[] { file?["filename"]?.GetValue<string>(), file?["previous_filename"]?.GetValue<string>() }
-            .Any(name => name is not null && expression.IsMatch(name)));
+    internal static List<RoutingEntry> ParseRouting(string markdown)
+    {
+        var lines = markdown.ReplaceLineEndings("\n").Split('\n').Select(line => line.Trim()).ToArray();
+        const string header = "| Changed path prefix | Guide |";
+        var headers = lines.Select((line, index) => (line, index)).Where(item => item.line == header).ToList();
+        Require(headers.Count == 1, "Required routing table is empty or malformed.");
+        var headerIndex = headers[0].index;
+        Require(headerIndex + 2 < lines.Length && lines[headerIndex + 1] == "| --- | --- |",
+            "Required routing table is empty or malformed.");
+        var entries = new List<RoutingEntry>();
+        var tableLines = new HashSet<int> { headerIndex, headerIndex + 1 };
+        for (var index = headerIndex + 2; index < lines.Length && lines[index].StartsWith('|'); index++)
+        {
+            tableLines.Add(index);
+            var cells = lines[index].Split('|');
+            Require(cells.Length == 4 && cells[0].Length == 0 && cells[3].Length == 0,
+                "Required routing table is empty or malformed.");
+            var prefix = cells[1].Trim();
+            var guide = cells[2].Trim();
+            Require(prefix.Length > 0 && guide.EndsWith(".md", StringComparison.Ordinal),
+                "Required routing table is empty or malformed.");
+            if (prefix == "*")
+            {
+                CheckPaths([guide]);
+            }
+            else
+            {
+                Require(prefix.EndsWith('/') && !prefix.Contains('*', StringComparison.Ordinal),
+                    "Every routing prefix except * must end in /.");
+                CheckPaths([prefix[..^1], guide]);
+            }
+            entries.Add(new(prefix, guide));
+        }
+        Require(entries.Count > 0 && lines.Select((line, index) => (line, index))
+            .Where(item => item.line.StartsWith('|')).All(item => tableLines.Contains(item.index)),
+            "Required routing table is empty or malformed.");
+        Require(entries.Any(entry => entry.Prefix == "*"), "Required routing table needs a * row.");
+        Require(entries.Distinct().Count() == entries.Count, "Required routing table has a duplicate row.");
+        return entries;
+    }
 
-    internal static GuideLinkResult GuideLinks(string text, string guidePath, bool components)
+    private static async Task<RoutingResult> RouteGuidesAsync(string guidanceRoot, JsonArray files)
+    {
+        var routingFile = Path.Combine(guidanceRoot, (RoutingPath + Suffix).Replace('/', Path.DirectorySeparatorChar));
+        Require(File.Exists(routingFile), $"Required routing table is missing: {RoutingPath}");
+        var routingBytes = await File.ReadAllBytesAsync(routingFile);
+        var entries = ParseRouting(Utf8NoBom.GetString(routingBytes));
+        foreach (var guide in entries.Select(entry => entry.Guide).Distinct(StringComparer.Ordinal))
+        {
+            var guideFile = Path.Combine(guidanceRoot, (guide + Suffix).Replace('/', Path.DirectorySeparatorChar));
+            Require(File.Exists(guideFile), $"Required guide {guide} is missing.");
+            ValidateGuide(await File.ReadAllTextAsync(guideFile, Utf8NoBom), guide);
+        }
+        var guides = new List<string>();
+        foreach (var entry in entries)
+        {
+            if ((entry.Prefix == "*" || files.Any(file =>
+                    new[] { file?["filename"]?.GetValue<string>(), file?["previous_filename"]?.GetValue<string>() }
+                        .Any(name => name is not null && name.StartsWith(entry.Prefix, StringComparison.Ordinal))))
+                && !guides.Contains(entry.Guide, StringComparer.Ordinal))
+            {
+                guides.Add(entry.Guide);
+            }
+        }
+        return new(Hash(routingBytes), guides, guides.Contains(BlazorComponentsGuidePath, StringComparer.Ordinal));
+    }
+
+    internal static GuideLinkResult GuideLinks(string text, string guidePath, bool blazorComponentsRouted)
     {
         var included = new List<Link>();
         var context = new List<Link>();
@@ -424,7 +573,7 @@ internal static partial class PrepareReviewProgram
                 {
                     skipped.Add(link with { Reason = "Supporting source example, not a delegated criterion." });
                 }
-                else if (!components && anchor is not null && ComponentsOnlyPolicies.Contains($"{resolved}#{anchor}"))
+                else if (!blazorComponentsRouted && anchor is not null && ComponentsOnlyPolicies.Contains($"{resolved}#{anchor}"))
                 {
                     skipped.Add(link with { Reason = "Components-only criterion is not applicable to this change." });
                 }
@@ -795,6 +944,19 @@ internal static partial class PrepareReviewProgram
 
     internal static async Task<JsonObject> PrepareAsync(Options options, Dependencies? dependencies = null)
     {
+        try
+        {
+            return await PrepareOnceAsync(options, dependencies);
+        }
+        catch (InvalidOperationException error) when (!options.Check && error.Message == TargetMovedDuringPreparationMessage)
+        {
+            DeleteOutputDirectory(Path.GetFullPath(options.Output));
+            return await PrepareOnceAsync(options, dependencies);
+        }
+    }
+
+    private static async Task<JsonObject> PrepareOnceAsync(Options options, Dependencies? dependencies)
+    {
         dependencies ??= new();
         var timings = new JsonObject();
         async Task<T> Timed<T>(string name, Func<Task<T>> action)
@@ -1080,7 +1242,7 @@ internal static partial class PrepareReviewProgram
         var guides = new JsonArray();
         var policies = new JsonArray();
         var context = new JsonArray();
-        var components = ChangedIn(files, ComponentsPathRegex());
+        var routing = await RouteGuidesAsync(Path.Combine(output, "guidance"), files);
         var exclusions = new JsonArray
         {
             new JsonObject
@@ -1098,15 +1260,13 @@ internal static partial class PrepareReviewProgram
             ["body"] = ResolvePolicy(instruction, "security-concerns-are-out-of-scope", instructionPath),
         });
         var skippedLinks = new JsonArray();
-        var guideNames = new List<string> { "docs/CrossCuttingGuidance.md" };
-        if (ChangedIn(files, ComponentsPathRegex())) guideNames.Add("docs/BlazorComponentsGuidance.md");
-        foreach (var name in guideNames)
+        foreach (var name in routing.Guides)
         {
             var body = await File.ReadAllTextAsync(Path.Combine(output, "guidance",
                 (name + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
             var parsed = ValidateGuide(body, name);
             guides.Add(new JsonObject { ["path"] = name, ["topics"] = new JsonArray(parsed.Topics.Select(topic => JsonValue.Create(topic)).ToArray()) });
-            var links = GuideLinks(body, name, components);
+            var links = GuideLinks(body, name, routing.BlazorComponentsRouted);
             foreach (var link in links.Skipped) skippedLinks.Add(LinkJson(link));
             var classified = await ContextLinksAsync(links.Context, Path.Combine(output, "guidance"), guidance["pointers"]?.AsArray());
             foreach (var item in classified) context.Add(item!.DeepClone());
@@ -1119,8 +1279,7 @@ internal static partial class PrepareReviewProgram
                 policies.Add(item);
             }
         }
-        Require(JsonEqual((await Freeze()).Identity, frozen.Identity),
-            "The target or base branch moved during preparation; no ready manifest was written.");
+        Require(JsonEqual((await Freeze()).Identity, frozen.Identity), TargetMovedDuringPreparationMessage);
         var manifestStopwatch = Stopwatch.StartNew();
         var artifacts = new JsonObject();
         foreach (var name in new[] { "diff.patch", "files.json", "pull.json", "feedback.json" })
@@ -1137,6 +1296,11 @@ internal static partial class PrepareReviewProgram
             ["suffix"] = Suffix,
             ["sources"] = sources,
             ["guidance"] = guidance,
+            ["routing"] = new JsonObject
+            {
+                ["path"] = RoutingPath,
+                ["sha256"] = routing.Sha256,
+            },
             ["guides"] = guides,
             ["policies"] = policies,
             ["context"] = context,
@@ -1169,6 +1333,7 @@ internal static partial class PrepareReviewProgram
         Require(sources is not null
             && sources.Select(pair => pair.Key).Order(StringComparer.Ordinal).SequenceEqual(["baseTip", "head", "mergeBase"])
             && manifest["guidance"]?["root"]?.GetValue<string>() == "guidance"
+            && manifest["routing"] is JsonObject
             && artifacts is not null
             && artifacts.Select(pair => pair.Key).Order(StringComparer.Ordinal).SequenceEqual(["diff.patch", "feedback.json", "files.json", "pull.json"])
             && manifest["guides"] is JsonArray && manifest["policies"] is JsonArray && manifest["context"] is JsonArray
@@ -1203,10 +1368,12 @@ internal static partial class PrepareReviewProgram
                 == pair.Value!.GetValue<string>(), $"Incomplete or modified input: {pair.Key}");
         }
         var changed = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "files.json")))!.AsArray();
-        var required = new List<string> { "docs/CrossCuttingGuidance.md" };
-        if (ChangedIn(changed, ComponentsPathRegex())) required.Add("docs/BlazorComponentsGuidance.md");
+        var routing = await RouteGuidesAsync(Path.Combine(output, "guidance"), changed);
+        Require(manifest["routing"]!["path"]!.GetValue<string>() == RoutingPath
+            && manifest["routing"]!["sha256"]!.GetValue<string>() == routing.Sha256,
+            "Prepared routing table changed.");
         Require(manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>())
-            .SequenceEqual(required, StringComparer.Ordinal), "Prepared guide routing is incomplete.");
+            .SequenceEqual(routing.Guides, StringComparer.Ordinal), "Prepared guide routing is incomplete.");
         var included = new List<Link>();
         var context = new List<Link>();
         var skipped = new List<Link>();
@@ -1217,7 +1384,7 @@ internal static partial class PrepareReviewProgram
             var actual = ValidateGuide(body, path);
             Require(actual.Topics.SequenceEqual(guide["topics"]!.AsArray().Select(item => item!.GetValue<string>()), StringComparer.Ordinal),
                 $"Prepared guide topics changed: {path}");
-            var links = GuideLinks(body, path, ChangedIn(changed, ComponentsPathRegex()));
+            var links = GuideLinks(body, path, routing.BlazorComponentsRouted);
             included.AddRange(links.Included);
             context.AddRange(links.Context);
             skipped.AddRange(links.Skipped);
@@ -1248,7 +1415,8 @@ internal static partial class PrepareReviewProgram
                     (instructions + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
                 "security-concerns-are-out-of-scope", instructions),
             "Prepared exclusions do not match the trusted instruction snapshot.");
-        _ = freeze;
+        Require(JsonEqual((await freeze()).Identity, manifest["target"]),
+            "The target or base branch moved during validation.");
         return manifest;
     }
 
@@ -1485,8 +1653,6 @@ internal static partial class PrepareReviewProgram
     private static partial Regex SkippedLineRegex();
     [GeneratedRegex("^(#{1,6}) (.+)$", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
     private static partial Regex HeadingRegex();
-    [GeneratedRegex("^src/Components/", RegexOptions.CultureInvariant)]
-    private static partial Regex ComponentsPathRegex();
     [GeneratedRegex("^(?:https://github\\.com/|git@github\\.com:)([a-z0-9_.-]+/[a-z0-9_.-]+?)(?:\\.git)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex RemoteRegex();
 }
