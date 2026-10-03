@@ -7,3 +7,4 @@ prefix ends in `/` and matches at a directory boundary. A path can route more th
 | --- | --- |
 | * | docs/CrossCuttingGuidance.md |
 | src/Components/ | docs/BlazorComponentsGuidance.md |
+| src/SignalR/ | docs/SignalRGuidance.md |

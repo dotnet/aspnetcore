@@ -141,7 +141,7 @@ public class PrepareReviewTests
     [Fact]
     public void ClassifiesEveryRepositoryRelativeMarkdownLinkInEachRoutedGuide()
     {
-        foreach (var name in new[] { "CrossCuttingGuidance.md", "BlazorComponentsGuidance.md" })
+        foreach (var name in new[] { "CrossCuttingGuidance.md", "BlazorComponentsGuidance.md", "SignalRGuidance.md" })
         {
             var body = File.ReadAllText(Path.Combine(RepositoryRoot, "docs", name));
             var classified = PrepareReviewProgram.GuideLinks(body, $"docs/{name}");
@@ -462,6 +462,215 @@ public class PrepareReviewTests
         }
         Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(bytes)), Assert.Single(manifest["context"]!.AsArray())!["sha256"]!.GetValue<string>());
         Assert.True((await fixture.CheckAsync(options))["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("src/SignalR/server/Core/Value.cs", false, false, true)]
+    [InlineData("src/SignalR/common/Http.Connections/Value.cs", false, false, true)]
+    [InlineData("src/SignalR/common/SignalR.Common/Value.cs", false, false, true)]
+    [InlineData("src/SignalR/clients/csharp/Value.cs", false, false, true)]
+    [InlineData("src/SignalR/clients/ts/Value.ts", false, false, true)]
+    [InlineData("src/SignalR/clients/java/Value.java", false, false, true)]
+    [InlineData("src/SignalR/server/Core/Value.cs", true, false, true)]
+    [InlineData("src/SignalR/server/Core/Value.cs", false, true, true)]
+    [InlineData("src/SignalRExtra/Value.cs", false, false, false)]
+    [InlineData("src/SignalR.cs", false, false, false)]
+    [InlineData("src/JSInterop/Value.cs", false, false, false)]
+    [InlineData("src/Components/Value.cs", false, false, false)]
+    public async Task RoutesSignalRFromTrustedTableAtDirectoryBoundaries(
+        string path, bool renamed, bool components, bool signalR)
+    {
+        await using var fixture = await Fixture.CreateAsync(components);
+        await WriteSignalRGuidanceAsync(fixture);
+        var original = new Dictionary<string, object> { [path] = "OLD_VALUE\n" };
+        if (components)
+        {
+            original["src/Components/Value.cs"] = "COMPONENT_VALUE\n";
+        }
+        var old = fixture.Commit(original);
+        var newPath = renamed ? "docs/Moved.cs" : path;
+        var head = fixture.Commit(new Dictionary<string, object> { [newPath] = "NEW_VALUE\n" }, old);
+        fixture.BaseTip = old;
+        fixture.MergeBase = old;
+        fixture.Pull["head"]!["sha"] = head;
+        fixture.Files = new JsonArray(new JsonObject
+        {
+            ["filename"] = newPath,
+            ["status"] = renamed ? "renamed" : "modified",
+            ["sha"] = fixture.Git(fixture.Repository, "rev-parse", $"{head}:{newPath}"),
+        });
+        if (renamed)
+        {
+            fixture.Files[0]!["previous_filename"] = path;
+        }
+        if (components)
+        {
+            fixture.Files.Add(new JsonObject
+            {
+                ["filename"] = "src/Components/Value.cs",
+                ["status"] = "removed",
+                ["sha"] = fixture.Git(fixture.Repository, "rev-parse", $"{old}:src/Components/Value.cs"),
+            });
+        }
+        fixture.Pull["changed_files"] = fixture.Files.Count;
+        fixture.Diff = fixture.GitBytes(fixture.Repository, "diff", "--binary", old, head);
+        var manifest = await fixture.PrepareAsync();
+        var expected = new List<string> { "docs/CrossCuttingGuidance.md" };
+        if (components || path.StartsWith("src/Components/", StringComparison.Ordinal))
+        {
+            expected.Add("docs/BlazorComponentsGuidance.md");
+        }
+        if (signalR)
+        {
+            expected.Add("docs/SignalRGuidance.md");
+        }
+        Assert.Equal(expected, manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>()));
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("readable")]
+    [InlineData("missing")]
+    [InlineData("unreadable")]
+    public async Task ReleaseSignalRUsesImmutableGuideAndDirectArchitectureContext(string contextStatus)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var guidance = await WriteSignalRGuidanceAsync(fixture);
+        SetSignalRChangedFile(fixture);
+        fixture.Pull["base"]!["ref"] = "release/10.0";
+        const string architecturePath = "src/SignalR/ARCHITECTURE.md";
+        if (contextStatus == "missing")
+        {
+            guidance.Remove(architecturePath);
+        }
+        else if (contextStatus == "unreadable")
+        {
+            guidance[architecturePath] = new FileEntry("120000", "Other.md");
+        }
+        var commit = fixture.Commit(guidance);
+        var options = fixture.Options with { GuidanceRoot = null, Guidance = $"reviewer/guidance@{commit}" };
+        var manifest = await fixture.PrepareAsync(options);
+        Assert.Equal("remote", manifest["guidance"]!["mode"]!.GetValue<string>());
+        Assert.Equal(commit, manifest["guidance"]!["commit"]!.GetValue<string>());
+        Assert.Equal((string)guidance["docs/SignalRGuidance.md"], await File.ReadAllTextAsync(
+            Path.Combine(fixture.Output, "guidance/docs/SignalRGuidance.md.source"), Utf8NoBom));
+        var context = Assert.Single(manifest["context"]!.AsArray())!;
+        Assert.Equal(architecturePath, context["path"]!.GetValue<string>());
+        Assert.Equal("docs/SignalRGuidance.md", context["guide"]!.GetValue<string>());
+        Assert.Equal("context", context["role"]!.GetValue<string>());
+        Assert.Equal(contextStatus, context["status"]!.GetValue<string>());
+        Assert.Empty(manifest["policies"]!.AsArray());
+        Assert.Empty(manifest["skippedLinks"]!.AsArray());
+        if (contextStatus == "readable")
+        {
+            var bytes = await File.ReadAllBytesAsync(Path.Combine(fixture.Output, $"guidance/{architecturePath}.source"));
+            Assert.Equal((string)guidance[architecturePath], Utf8NoBom.GetString(bytes));
+            Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(bytes)), context["sha256"]!.GetValue<string>());
+        }
+        foreach (var role in new[] { "head", "mergeBase", "baseTip" })
+        {
+            Assert.False(File.Exists(Path.Combine(fixture.Output,
+                manifest["sources"]![role]!["root"]!.GetValue<string>(), $"{architecturePath}.source")));
+        }
+        Assert.True((await fixture.CheckAsync(options))["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("empty")]
+    [InlineData("malformed")]
+    [InlineData("unreadable")]
+    public async Task InvalidRequiredSignalRGuideBlocksPreparation(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var guidance = await WriteSignalRGuidanceAsync(fixture);
+        SetSignalRChangedFile(fixture);
+        const string path = "docs/SignalRGuidance.md";
+        if (mutation == "missing")
+        {
+            guidance.Remove(path);
+        }
+        else
+        {
+            guidance[path] = mutation switch
+            {
+                "empty" => string.Empty,
+                "malformed" => "# SignalR\n## Topics\n### Empty\n",
+                _ => new FileEntry("120000", "Other.md"),
+            };
+        }
+        var commit = fixture.Commit(guidance);
+        var output = new StringWriter();
+        var error = new StringWriter();
+        var originalOutput = Console.Out;
+        var originalError = Console.Error;
+        try
+        {
+            Console.SetOut(output);
+            Console.SetError(error);
+            var exitCode = await PrepareReviewProgram.RunAsync([
+                "--repo", "owner/product", "--pr", "42", "--output", fixture.Output,
+                "--guidance", $"reviewer/guidance@{commit}",
+            ], fixture.CreateDependencies());
+            Assert.Equal(1, exitCode);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+            Console.SetError(originalError);
+        }
+        Assert.Contains("BLOCKED:", error.ToString());
+        Assert.Contains($"Required guide {path}", error.ToString());
+        Assert.DoesNotContain("\"ready\": true", output.ToString());
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    private static void SetSignalRChangedFile(Fixture fixture)
+    {
+        const string path = "src/SignalR/server/Core/Value.cs";
+        var original = new Dictionary<string, object>
+        {
+            [path] = "OLD_VALUE\n",
+            ["src/Unchanged.cs"] = "MERGE_DEPENDENCY\n",
+        };
+        fixture.MergeBase = fixture.Commit(original);
+        var head = fixture.Commit(new Dictionary<string, object>(original) { [path] = "NEW_VALUE\n" }, fixture.MergeBase);
+        fixture.BaseTip = fixture.Commit(new Dictionary<string, object>(original)
+        {
+            ["src/Unchanged.cs"] = "BASE_TIP_DEPENDENCY\n",
+        }, fixture.MergeBase);
+        fixture.Pull["head"]!["sha"] = head;
+        fixture.Files = new JsonArray(new JsonObject
+        {
+            ["filename"] = path,
+            ["status"] = "modified",
+            ["sha"] = fixture.Git(fixture.Repository, "rev-parse", $"{head}:{path}"),
+        });
+        fixture.Pull["changed_files"] = fixture.Files.Count;
+        fixture.Diff = fixture.GitBytes(fixture.Repository, "diff", "--binary", fixture.MergeBase, head);
+    }
+
+    private static async Task<Dictionary<string, object>> WriteSignalRGuidanceAsync(Fixture fixture)
+    {
+        var guidance = new Dictionary<string, object>
+        {
+            [".github/skills/review-pull-request/routing.md"] = await File.ReadAllTextAsync(
+                Path.Combine(RepositoryRoot, ".github/skills/review-pull-request/routing.md"), Utf8NoBom),
+            ["docs/SignalRGuidance.md"] = await File.ReadAllTextAsync(
+                Path.Combine(RepositoryRoot, "docs/SignalRGuidance.md"), Utf8NoBom),
+            ["src/SignalR/ARCHITECTURE.md"] = await File.ReadAllTextAsync(
+                Path.Combine(RepositoryRoot, "src/SignalR/ARCHITECTURE.md"), Utf8NoBom),
+            ["docs/CrossCuttingGuidance.md"] = "# Guidance\n## Overarching principles\n- A principle.\n## Topics\n### Topic\n- A rule.\n",
+            ["docs/BlazorComponentsGuidance.md"] = "# Components\n## Overarching principles\n- A principle.\n## Topics\n### Topic\n- A rule.\n",
+            [".github/copilot-instructions.md"] = await File.ReadAllTextAsync(
+                Path.Combine(fixture.GuidanceRoot, ".github/copilot-instructions.md"), Utf8NoBom),
+        };
+        foreach (var entry in guidance)
+        {
+            await fixture.WriteGuidanceAsync(entry.Key, (string)entry.Value);
+        }
+
+        return guidance;
     }
 
     [Fact]
