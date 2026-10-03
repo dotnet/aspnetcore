@@ -287,7 +287,7 @@ internal sealed class GetDocumentCommandWorker
             documentNames = [_context.DocumentName];
         }
 
-        if (!string.IsNullOrWhiteSpace(_context.FileName) && !Regex.IsMatch(_context.FileName, "^([A-Za-z0-9-_]+)$"))
+        if (!string.IsNullOrWhiteSpace(_context.FileName) && !Regex.IsMatch(_context.FileName, "^([A-Za-z0-9_.-]+)$"))
         {
             _reporter.WriteError(Resources.FileNameFormatInvalid);
             return false;
