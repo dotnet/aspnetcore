@@ -197,9 +197,47 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             const filename = path.join(process.env.RUNNER_TEMP, 'review-publication-gate', 'agent_output.json');
-            const output = JSON.parse(fs.readFileSync(filename, 'utf8'));
+            let output;
+            try {
+              output = JSON.parse(fs.readFileSync(filename, 'utf8'));
+            } catch {
+              core.setFailed('The agent output is not valid JSON.');
+              return;
+            }
+            const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+            if (!isObject(output)) {
+              core.setFailed('The agent output root must be an object.');
+              return;
+            }
             if (!Array.isArray(output.items)) {
               core.setFailed('The agent output has no complete items list.');
+              return;
+            }
+            if (Object.hasOwn(output, 'errors')) {
+              if (!Array.isArray(output.errors) || !output.errors.every(error => typeof error === 'string')) {
+                core.setFailed('The agent output errors field is malformed.');
+                return;
+              }
+              if (output.errors.length > 0) {
+                core.setFailed('The agent output contains collection errors.');
+                return;
+              }
+            }
+            if (!output.items.every(item => isObject(item) && typeof item.type === 'string')) {
+              core.setFailed('Every agent output item must be an object with a string type.');
+              return;
+            }
+            const supported = new Set([
+              'add_comment',
+              'create_pull_request_review_comment',
+              'missing_data',
+              'missing_tool',
+              'noop',
+              'report_incomplete',
+              'submit_pull_request_review',
+            ]);
+            if (output.items.some(item => !supported.has(item.type))) {
+              core.setFailed('The agent output contains an unsupported item type.');
               return;
             }
             const count = type => output.items.filter(item => item.type === type).length;
@@ -209,21 +247,23 @@ jobs:
             const statusComments = output.items.filter(item => item.type === 'add_comment');
             const incompleteItems = output.items.filter(item =>
               ['report_incomplete', 'missing_data', 'missing_tool'].includes(item.type));
-            const incomplete = incompleteItems.length > 0;
-            const statusMatch = statusComments.length === 1 && typeof statusComments[0].body === 'string'
-              ? statusComments[0].body.match(
-                /^Review not published \((BLOCKED|INCOMPLETE)\): ([^\r\n]{1,240})\n\nNo partial findings were published\.$/)
-              : null;
             const incompleteReason = incompleteItems.length === 1 &&
               typeof incompleteItems[0].reason === 'string'
               ? incompleteItems[0].reason
               : null;
-            if ((noop > 0 && (comments || reviews || incomplete || statusComments.length)) ||
-                (incomplete && (comments || reviews || noop !== 0 || incompleteItems.length !== 1 ||
-                  !statusMatch || statusMatch[2] !== incompleteReason)) ||
-                (!incomplete && statusComments.length > 0) ||
-                (comments > 0 && reviews !== 1) ||
-                (reviews > 0 && (comments < 1 || comments > 5))) {
+            const reasonIsValid = incompleteReason !== null && incompleteReason.length >= 1 &&
+              incompleteReason.length <= 240 && !/[\r\n]/.test(incompleteReason);
+            const expectedStatusBodies = reasonIsValid
+              ? ['BLOCKED', 'INCOMPLETE'].map(status =>
+                  `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`)
+              : [];
+            const findings = comments >= 1 && comments <= 5 && reviews === 1 &&
+              output.items.length === comments + 1;
+            const clean = noop === 1 && output.items.length === 1;
+            const stopped = incompleteItems.length === 1 && statusComments.length === 1 &&
+              output.items.length === 2 && typeof statusComments[0].body === 'string' &&
+              expectedStatusBodies.includes(statusComments[0].body);
+            if (!findings && !clean && !stopped) {
               core.setFailed('Incomplete or partial review output cannot be published.');
             }
       - name: Reject a moved pull request before safe outputs
@@ -377,8 +417,8 @@ Deduplicate against the complete prepared feedback and list true-positive duplic
 separately with their existing comment or review reference. Feedback posted after
 preparation cannot be observed by this agent; do not claim a fresh-feedback check.
 Format each inline comment with only a one-line claim, `file:line`, severity, a minimal
-consumer repro using app or user code that reaches the line, what goes wrong in at most
-two lines, and a fix snippet when possible.
+repro using app/user code, CLI commands, or workflow inputs that reaches the affected
+behavior, what goes wrong in at most two lines, and a fix snippet when possible.
 
 The trusted `verify_live_head` gate must pass before the safe-output job begins, and a
 supported `jobs.safe_outputs.pre-steps` hook rechecks the live head inside that job before

@@ -175,9 +175,9 @@ review reference), `UNRESOLVED` (candidate and exact missing evidence), `DISCARD
 (claim and precise source reason), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
 `NEW_FINDINGS` entry contains only a one-line claim; `file:line`; severity (`P1` for
 broken/incorrect common usage or data loss, `P2` for incorrect behavior in a realistic
-narrower scenario, or `P3` for minor/edge or test/doc-only impact); a minimal consumer
-repro using app or user code that reaches the line; what goes wrong in at most two
-lines; and a fix snippet when possible.
+narrower scenario, or `P3` for minor/edge or test/doc-only impact); a minimal repro using
+app/user code, CLI commands, or workflow inputs that reaches the affected behavior;
+what goes wrong in at most two lines; and a fix snippet when possible.
 
 Return `BLOCKED` when a required bundle input is invalid, missing, unreadable,
 mismatched, malformed, empty, or truncated. Return `INCOMPLETE` when a routed worker
