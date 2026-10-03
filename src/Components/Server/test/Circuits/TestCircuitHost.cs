@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
@@ -17,8 +18,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal class TestCircuitHost : CircuitHost
 {
-    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, CircuitActivitySource circuitActivitySource, ILogger logger)
-        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, circuitHandlers, circuitMetrics, circuitActivitySource, logger)
+    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, HostInitializerInvoker hostInitializerInvoker, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, CircuitActivitySource circuitActivitySource, ILogger logger)
+        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, hostInitializerInvoker, circuitHandlers, circuitMetrics, circuitActivitySource, logger)
     {
     }
 
@@ -27,6 +28,7 @@ internal class TestCircuitHost : CircuitHost
         AsyncServiceScope? serviceScope = null,
         RemoteRenderer remoteRenderer = null,
         IReadOnlyList<ComponentDescriptor> descriptors = null,
+        IHostInitializer[] browserHostInitializers = null,
         CircuitHandler[] handlers = null,
         CircuitClientProxy clientProxy = null)
     {
@@ -74,6 +76,7 @@ internal class TestCircuitHost : CircuitHost
             descriptors ?? new List<ComponentDescriptor>(),
             jsRuntime,
             navigationManager,
+            new HostInitializerInvoker([.. browserHostInitializers ?? []], serviceScope.Value.ServiceProvider),
             handlers,
             circuitMetrics,
             circuitActivitySource,

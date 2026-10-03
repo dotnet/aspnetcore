@@ -9,6 +9,11 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
 {
     private readonly string _environment;
 
+    public string HostStartupValuesJson { get; set; } =
+        """{"document.baseURI":"https://www.example.com/awesome-part-that-will-be-truncated-in-tests","location.href":"https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool"}""";
+
+    public string HostStartupValueKeysJson { get; private set; } = string.Empty;
+
     public TestInternalJSImportMethods(string environment = "Production")
     {
         _environment = environment;
@@ -19,6 +24,12 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     
     public string GetApplicationCulture()
         => "en-US";
+
+    public string GetHostStartupValues(string keysJson)
+    {
+        HostStartupValueKeysJson = keysJson;
+        return HostStartupValuesJson;
+    }
 
     public string GetPersistedState()
         => null;

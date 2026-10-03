@@ -270,12 +270,7 @@ public class MvcServiceCollectionExtensionsTest
             }
             else
             {
-                var implementationType = service switch
-                {
-                    { ImplementationType: { } type } => type,
-                    { ImplementationInstance: { } instance } => instance.GetType(),
-                    { ImplementationFactory: { } factory } => factory(serviceProvider).GetType(),
-                };
+                var implementationType = GetImplementationType(service, serviceProvider);
 
                 if (implementationType != null && !implementationType.Assembly.FullName.Contains("Mvc"))
                 {
@@ -284,7 +279,7 @@ public class MvcServiceCollectionExtensionsTest
                 else
                 {
                     // 'multi-registration' services should only have one *instance* of each implementation registered.
-                    AssertContainsSingle(services, service.ServiceType, service.ImplementationType);
+                    AssertContainsSingle(services, service.ServiceType, implementationType, service.ServiceKey, serviceProvider);
                 }
             }
         }
@@ -629,12 +624,16 @@ public class MvcServiceCollectionExtensionsTest
     private void AssertContainsSingle(
         IServiceCollection services,
         Type serviceType,
-        Type implementationType)
+        Type implementationType,
+        object serviceKey = null,
+        IServiceProvider serviceProvider = null)
     {
+        serviceProvider ??= services.BuildServiceProvider();
         var matches = services
             .Where(sd =>
                 sd.ServiceType == serviceType &&
-                sd.ImplementationType == implementationType)
+                Equals(sd.ServiceKey, serviceKey) &&
+                GetImplementationType(sd, serviceProvider) == implementationType)
             .ToArray();
 
         if (matches.Length == 0)
@@ -644,27 +643,25 @@ public class MvcServiceCollectionExtensionsTest
         else if (matches.Length > 1)
         {
             var implementations = new List<Type>();
-            var sp = services.BuildServiceProvider();
             foreach ( var service in matches )
             {
-                if (service.ImplementationType is not null)
-                {
-                    implementations.Add(service.ImplementationType);
-                }
-                else if (service.ImplementationInstance is not null)
-                {
-                    implementations.Add(service.ImplementationInstance.GetType());
-                }
-                else if (service.ImplementationFactory is not null)
-                {
-                    var instance = service.ImplementationFactory(sp);
-                    implementations.Add(instance.GetType());
-                }
+                implementations.Add(GetImplementationType(service, serviceProvider));
             }
 
             Assert.Fail($"Found multiple instances of {implementationType} registered as {serviceType}");
         }
     }
+
+    private static Type GetImplementationType(ServiceDescriptor service, IServiceProvider serviceProvider)
+        => service switch
+        {
+            { IsKeyedService: true, KeyedImplementationType: { } type } => type,
+            { IsKeyedService: true, KeyedImplementationInstance: { } instance } => instance.GetType(),
+            { IsKeyedService: true, KeyedImplementationFactory: { } factory } => factory(serviceProvider, service.ServiceKey).GetType(),
+            { ImplementationType: { } type } => type,
+            { ImplementationInstance: { } instance } => instance.GetType(),
+            { ImplementationFactory: { } factory } => factory(serviceProvider).GetType(),
+        };
 
     private IWebHostEnvironment GetHostingEnvironment()
     {

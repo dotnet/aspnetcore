@@ -76,15 +76,16 @@ internal partial class CircuitRegistry
     /// </summary>
     public void Register(CircuitHost circuitHost)
     {
+        // Subscribe before publication so a synchronous initialization failure cannot escape cleanup.
+        circuitHost.UnhandledException += CircuitHost_UnhandledException;
+
         if (!ConnectedCircuits.TryAdd(circuitHost.CircuitId, circuitHost))
         {
+            circuitHost.UnhandledException -= CircuitHost_UnhandledException;
+
             // This will likely never happen, except perhaps in unit tests, since CircuitIds are unique.
             throw new ArgumentException($"Circuit with identity {circuitHost.CircuitId} is already registered.");
         }
-
-        // Register for unhandled exceptions from the circuit. The registry is responsible for tearing
-        // down the circuit on errors.
-        circuitHost.UnhandledException += CircuitHost_UnhandledException;
     }
 
     public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId)

@@ -1,5 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Web.AssetPathAttributes
+Microsoft.AspNetCore.Components.Hosting.IBrowserStartupValueProvider
+Microsoft.AspNetCore.Components.Hosting.IBrowserStartupValueProvider.Keys.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Components.Web.EnvironmentView
 Microsoft.AspNetCore.Components.Web.EnvironmentView.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.EnvironmentView.ChildContent.set -> void

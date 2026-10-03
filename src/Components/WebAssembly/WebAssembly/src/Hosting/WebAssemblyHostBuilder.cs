@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -94,12 +96,12 @@ public sealed class WebAssemblyHostBuilder
         InitializeWebAssemblyRenderer();
 
         // Retrieve required attributes from JSRuntimeInvoker
-        InitializeNavigationManager();
+        var baseAddress = GetNormalizedBaseAddress();
         InitializeRegisteredRootComponents();
         InitializePersistedState();
         InitializeDefaultServices();
 
-        var hostEnvironment = InitializeEnvironment();
+        var hostEnvironment = InitializeEnvironment(baseAddress);
         HostEnvironment = hostEnvironment;
 
         _createServiceProvider = () =>
@@ -183,18 +185,19 @@ public sealed class WebAssemblyHostBuilder
         _persistedState = _jsMethods.GetPersistedState();
     }
 
-    private void InitializeNavigationManager()
-    {
-        var baseUri = _jsMethods.NavigationManager_GetBaseUri();
-        var uri = _jsMethods.NavigationManager_GetLocationHref();
+    private string GetNormalizedBaseAddress()
+        => NormalizeBaseAddress(_jsMethods.NavigationManager_GetBaseUri());
 
-        WebAssemblyNavigationManager.Instance = new WebAssemblyNavigationManager(baseUri, uri);
+    internal static string NormalizeBaseAddress(string baseAddress)
+    {
+        var lastSlashIndex = baseAddress.LastIndexOf('/');
+        return lastSlashIndex >= 0 ? baseAddress[..(lastSlashIndex + 1)] : baseAddress;
     }
 
-    private WebAssemblyHostEnvironment InitializeEnvironment()
+    private WebAssemblyHostEnvironment InitializeEnvironment(string baseAddress)
     {
         var applicationEnvironment = _jsMethods.GetApplicationEnvironment();
-        var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
+        var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, baseAddress);
 
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
         Services.AddSingleton<IHostEnvironment>(sp => new WebAssemblyHostEnvironmentAdapter(sp.GetRequiredService<IWebAssemblyHostEnvironment>()));
@@ -324,16 +327,139 @@ public sealed class WebAssemblyHostBuilder
         // service provider and the scope here.
         var services = _createServiceProvider();
         var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
+        var hostCancellationTokenSource = new CancellationTokenSource();
 
-        return new WebAssemblyHost(this, services, scope, _persistedState);
+        try
+        {
+            return new WebAssemblyHost(
+                this,
+                services,
+                scope,
+                _persistedState,
+                hostCancellationTokenSource);
+        }
+        catch
+        {
+            var cleanupTask = DisposeFailedBuildResourcesAsync(
+                scope,
+                services,
+                hostCancellationTokenSource);
+            if (cleanupTask.IsCompleted)
+            {
+                ReportFailedBuildCleanup(cleanupTask);
+            }
+            else
+            {
+                _ = ObserveFailedBuildCleanupAsync(cleanupTask);
+            }
+
+            throw;
+        }
+    }
+
+    private static async Task DisposeFailedBuildResourcesAsync(
+        AsyncServiceScope scope,
+        IServiceProvider services,
+        CancellationTokenSource hostCancellationTokenSource)
+    {
+        List<Exception>? exceptions = null;
+
+        try
+        {
+            hostCancellationTokenSource.Cancel();
+        }
+        catch (Exception exception)
+        {
+            (exceptions ??= []).Add(exception);
+        }
+
+        try
+        {
+            await scope.DisposeAsync();
+        }
+        catch (Exception exception)
+        {
+            (exceptions ??= []).Add(exception);
+        }
+
+        try
+        {
+            if (services is IAsyncDisposable asyncDisposableServices)
+            {
+                await asyncDisposableServices.DisposeAsync();
+            }
+            else if (services is IDisposable disposableServices)
+            {
+                disposableServices.Dispose();
+            }
+        }
+        catch (Exception exception)
+        {
+            (exceptions ??= []).Add(exception);
+        }
+
+        try
+        {
+            hostCancellationTokenSource.Dispose();
+        }
+        catch (Exception exception)
+        {
+            (exceptions ??= []).Add(exception);
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(
+                "One or more resources could not be disposed after the WebAssembly host build failed.",
+                exceptions);
+        }
+    }
+
+    private static async Task ObserveFailedBuildCleanupAsync(Task cleanupTask)
+    {
+        try
+        {
+            await cleanupTask;
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"Failed to dispose resources after the WebAssembly host build failed: {exception}");
+        }
+    }
+
+    private static void ReportFailedBuildCleanup(Task cleanupTask)
+    {
+        try
+        {
+            cleanupTask.GetAwaiter().GetResult();
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"Failed to dispose resources after the WebAssembly host build failed: {exception}");
+        }
     }
 
     [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]
     [DynamicDependency(JsonSerialized, typeof(AntiforgeryRequestToken))]
     internal void InitializeDefaultServices()
     {
+        Services.AddSingleton<InteractiveHostStartupValues>();
+        Services.TryAddSingleton<IHostStartupValues>(
+            static services => services.GetRequiredService<InteractiveHostStartupValues>());
+        Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerInitializer>());
+        Services.TryAddSingleton<HostInitializerCollection>();
+        Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
-        Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
+        Services.AddSingleton(static services =>
+        {
+            var navigationManager = new WebAssemblyNavigationManager();
+            WebAssemblyNavigationManager.Instance = navigationManager;
+            return navigationManager;
+        });
+        Services.AddSingleton<NavigationManager>(
+            static services => services.GetRequiredService<WebAssemblyNavigationManager>());
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(_jsMethods);

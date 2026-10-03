@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.DataProtection;
@@ -466,6 +467,15 @@ public class RazorComponentResultTest
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
             .AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>()
+            .AddKeyedSingleton<HttpContextHostStartupValues>(HostInitializerKey.Static)
+            .AddKeyedSingleton<IHostStartupValues>(
+                HostInitializerKey.Static,
+                static (services, key) => services.GetRequiredKeyedService<HttpContextHostStartupValues>(key))
+            .AddSingleton<IHostStartupValues>(
+                static services => services.GetRequiredKeyedService<IHostStartupValues>(HostInitializerKey.Static))
+            .AddKeyedSingleton<IHostInitializer, NavigationManagerInitializer>(HostInitializerKey.Static)
+            .AddSingleton<IHttpContextStartupValueProvider, NavigationHttpContextStartupValueProvider>()
+            .AddSingleton<HostInitializerCollection>()
             .AddLogging();
 
         var result = new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };
