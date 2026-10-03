@@ -1,37 +1,34 @@
-# `<Reference>` resolution
+# Project and package references
 
-Most project files in this repo should use `<Reference>` instead of `<ProjectReference>` or `<PackageReference>`.
-This was done to enable ASP.NET Core's unique requirements without requiring most ASP.NET Core contributors
-to understand the complex rules for how versions and references should work. The build system will resolve
-Reference items to the correct type and version of references based on our servicing and update rules.
+Projects use standard MSBuild `<ProjectReference>` items for in-repository dependencies and
+NuGet `<PackageReference>` items for external dependencies. Package versions are managed with
+[NuGet Central Package Management](https://learn.microsoft.com/nuget/consume-packages/central-package-management).
+There is no assembly-name-to-project-or-package conversion.
 
-See [ResolveReferences.targets](/eng/targets/ResolveReferences.targets) for the exact implementation of custom
-`<Reference>` resolutions.
-
-The requirements that led to this system are:
-
-* Versions of external dependencies should be consistent and easily discovered.
-* Newer versions of packages should not have lower dependency versions than previous releases.
-* Servicing releases should not add or remove dependencies in existing packages.
-
-As a minor point, the current system also makes our project files somewhat less verbose.
+[ResolveReferences.targets](/eng/targets/ResolveReferences.targets) retains shared-framework boundary checks,
+copy-local and transitivity defaults, reference-assembly selection, and framework dependency metadata for packing.
+Central transitive pinning is not enabled: adding a central version does not add a direct package dependency.
 
 ## Recommendations for writing a .csproj
 
-* Use `<Reference>`.
-* Do not use `<PackageReference>`.
-* If you need to use a new package, add it to `eng/Dependencies.props` and `eng/Versions.props`.
+* Use `<ProjectReference Include="$(RepoRoot)src\Area\Project.csproj" />` for projects governed by this repository's build imports. Keep relative paths in standalone projects and copied consumers that do not define `RepoRoot`.
+* Use `<PackageReference Include="Package.Name" />` for external packages, retaining any required asset metadata.
+* Keep references sorted within their item groups, without changing conditions or metadata.
+* Add a new package's `<PackageVersion>` to `Directory.Packages.props` and its version property to `eng/Versions.props`.
+* Use `VersionOverride` only for intentional project-specific versions, such as analyzer compatibility pins.
+* Standalone consumers that do not enable central package management must retain explicit `Version` attributes, including the Components.Testing package integration assets.
+* Reserve `<Reference>` for actual assembly references, not package IDs or in-repository assembly names.
+* Shared-source packages need `IncludeAssets="ContentFiles;Build"` and `PrivateAssets="All"`.
 * If the package comes from a partner team and needs to have versions automatically updated, also add an entry `eng/Version.Details.xml`.
 * Otherwise, add the package to [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj) so Dependabot can find and update it. See the README next to that file for details.
-* Only use `<ProjectReference>` in test projects.
 * Name the .csproj file to match the assembly name.
 * Follow the project checklist below when adding, moving, or removing projects.
 
 ## Important files
 
-* [eng/Dependencies.props](/eng/Dependencies.props) - contains a list of all package references that might be used in the repo.
-* [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj) - restates non-Maestro-managed packages from `eng/Dependencies.props` as ordinary `<PackageReference>` items so Dependabot can find and update them. Never built.
-* [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project.
+* [Directory.Packages.props](/Directory.Packages.props) - enables central version management for repository projects and maps package IDs to version properties using `<PackageVersion>`, including source-build overrides.
+* [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj) - exposes the selected non-Maestro-managed packages to existing Dependabot jobs. Never built.
+* Generated `eng/SharedFramework.Local.props`, `eng/ShippingAssemblies.props`, and `eng/TrimmableProjects.props` retain assembly identities and producer paths for framework packs, API documentation, and trimming.
 * [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and build.
 * [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependency variables in
   [eng/Versions.props](/eng/Versions.props) and, for SDKs and `msbuild` toolsets, [global.json](global.json).
@@ -56,8 +53,8 @@ Complete this checklist for every structural project change:
 
 Steps for adding a new package dependency to an existing project. Let's say I'm adding a dependency on System.Banana.
 
-1. Add the package to the .csproj file using `<Reference Include="System.Banana" />`
-2. Add an entry to [eng/Dependencies.props](/eng/Dependencies.props) e.g. `<LatestPackageReference Include="System.Banana" />`
+1. Add the package to the .csproj file using `<PackageReference Include="System.Banana" />`
+2. Add an entry to [Directory.Packages.props](/Directory.Packages.props) e.g. `<PackageVersion Include="System.Banana" Version="$(SystemBananaVersion)" />`
 3. If this package comes from another dotnet team and should be updated automatically by our bot&hellip;
     1. Add an entry to [eng/Versions.props](/eng/Versions.props) like this `<SystemBananaVersion>0.0.1-beta-1</SystemBananaVersion>`.
     2. Add an entry to [eng/Version.Details.xml](/eng/Version.Details.xml) like this:
@@ -90,10 +87,10 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
 
         The attribute value should be `"Microsoft.CodeAnalysis.Razor"` for dotnet/runtime dependencies in
         dotnet/aspnetcore-tooling.
-4. Otherwise (no Maestro automation), add `<PackageReference Include="System.Banana" Version="$(SystemBananaVersion)" />`
+4. Otherwise (no Maestro automation), add `<PackageReference Include="System.Banana" />`
    to [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj)
    so Dependabot can find and update it. `CodeCheck.ps1` fails if this file isn't kept in sync with
-   `eng/Dependencies.props`.
+   `Directory.Packages.props`.
 
 ## A darc cheatsheet
 
