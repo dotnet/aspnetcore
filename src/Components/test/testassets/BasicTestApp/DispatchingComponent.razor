@@ -14,9 +14,17 @@
 <button id="run-with-dispatch" @onclick=RunWithDispatch>Run with dispatch</button>
 <button id="run-with-double-dispatch" @onclick=RunWithDoubleDispatch>Run with double dispatch</button>
 <button id="run-async-with-dispatch" @onclick=RunAsyncWorkWithDispatch>Run async work with dispatch</button>
+<button id="run-with-suppressed-execution-context" @onclick=RunWithSuppressedExecutionContext>
+    Run with suppressed execution context
+</button>
+
+<p id="suppressed-execution-context-result">@suppressedExecutionContextResult</p>
 
 @code {
+    static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
+
     string result;
+    string suppressedExecutionContextResult;
 
     async Task RunWithoutDispatch()
     {
@@ -65,6 +73,95 @@
         result += " Third";
         await invokeTask;
         result += " Fifth";
+    }
+
+    void RunWithSuppressedExecutionContext()
+    {
+        suppressedExecutionContextResult = "Running";
+
+        ThreadPool.UnsafeQueueUserWorkItem(_ =>
+        {
+            try
+            {
+                InvokeAsync(() => { }).GetAwaiter().GetResult();
+                var (contextLeaked, dispatcherOverlapped) = RunSuppressedExecutionContextScenario();
+                suppressedExecutionContextResult =
+                    $"Context leaked: {contextLeaked}; Dispatcher overlapped: {dispatcherOverlapped}";
+            }
+            catch (Exception exception)
+            {
+                suppressedExecutionContextResult = exception.ToString();
+            }
+            finally
+            {
+                _ = InvokeAsync(StateHasChanged);
+            }
+        }, null);
+    }
+
+    (bool ContextLeaked, bool DispatcherOverlapped) RunSuppressedExecutionContextScenario()
+    {
+        using var rendererEntered = new ManualResetEventSlim();
+        using var releaseRenderer = new ManualResetEventSlim();
+        using var leakChecked = new ManualResetEventSlim();
+        using var dispatcherOccupied = new ManualResetEventSlim();
+        using var releaseDispatcher = new ManualResetEventSlim();
+        using var holderDone = new ManualResetEventSlim();
+        var contextLeaked = false;
+        var dispatcherOverlapped = false;
+
+        ThreadPool.UnsafeQueueUserWorkItem(_ =>
+        {
+            var originalContext = SynchronizationContext.Current;
+            InvokeAsync(async () =>
+            {
+                rendererEntered.Set();
+                Wait(releaseRenderer, nameof(releaseRenderer));
+                await Task.CompletedTask;
+            }).GetAwaiter().GetResult();
+
+            contextLeaked = !ReferenceEquals(SynchronizationContext.Current, originalContext);
+            leakChecked.Set();
+
+            Wait(dispatcherOccupied, nameof(dispatcherOccupied));
+            var componentUpdate = InvokeAsync(() =>
+            {
+                dispatcherOverlapped = dispatcherOccupied.IsSet && !releaseDispatcher.IsSet;
+                StateHasChanged();
+            });
+
+            releaseDispatcher.Set();
+            componentUpdate.GetAwaiter().GetResult();
+            holderDone.Set();
+        }, null);
+
+        Wait(rendererEntered, nameof(rendererEntered));
+        Task queuedNotification;
+        using (ExecutionContext.SuppressFlow())
+        {
+            queuedNotification = InvokeAsync(() => { });
+        }
+
+        releaseRenderer.Set();
+        Wait(leakChecked, nameof(leakChecked));
+
+        InvokeAsync(() =>
+        {
+            dispatcherOccupied.Set();
+            Wait(releaseDispatcher, nameof(releaseDispatcher));
+        }).GetAwaiter().GetResult();
+
+        Wait(holderDone, nameof(holderDone));
+        queuedNotification.GetAwaiter().GetResult();
+        return (contextLeaked, dispatcherOverlapped);
+    }
+
+    static void Wait(ManualResetEventSlim signal, string name)
+    {
+        if (!signal.Wait(Timeout))
+        {
+            throw new TimeoutException($"Timed out waiting for {name}.");
+        }
     }
 
     void AttemptToRender()
