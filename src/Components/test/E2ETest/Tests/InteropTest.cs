@@ -87,6 +87,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["asyncGenericInstanceMethod"] = @"""Updated value 1""",
             ["requestDotNetStreamReferenceAsync"] = @"""Success""",
             ["requestDotNetStreamWrapperReferenceAsync"] = @"""Success""",
+            ["requestDotNetStreamReferenceBlobAsync"] = @"""Success""",
             ["invokeVoidAsyncReturnsWithoutSerializing"] = "Success",
             ["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success",
             ["invokeAsyncThrowsSerializingCircularStructure"] = "Success",
@@ -160,6 +161,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["genericInstanceMethod"] = @"""Updated value 2""",
             ["requestDotNetStreamReference"] = @"""Success""",
             ["requestDotNetStreamWrapperReference"] = @"""Success""",
+            ["requestDotNetStreamReferenceBlob"] = @"""Success""",
             // GetValue tests
             ["getValueFromDataProperty"] = "10",
             ["getValueFromGetter"] = "20",
