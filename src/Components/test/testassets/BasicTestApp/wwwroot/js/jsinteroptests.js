@@ -331,6 +331,15 @@ function jsToDotNetStreamReturnValue() {
   return new Uint8Array(largeArray);
 }
 
+function getConcurrentLargeJSStreams() {
+  const createStreamReference = () => {
+    const data = Uint8Array.from({ length: 500000 }, (_, index) => index % 256);
+    return DotNet.createJSStreamReference(data);
+  };
+
+  return [createStreamReference(), createStreamReference()];
+}
+
 function jsToDotNetStreamWrapperObjectReturnValueAsync() {
   return new Promise((resolve, reject) => {
     setTimeout(function () {
