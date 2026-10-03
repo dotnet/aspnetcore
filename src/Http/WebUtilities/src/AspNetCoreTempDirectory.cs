@@ -19,11 +19,18 @@ internal static class AspNetCoreTempDirectory
                 var temp = Environment.GetEnvironmentVariable("ASPNETCORE_TEMP") ?? // ASPNETCORE_TEMP - User set temporary location.
                            Path.GetTempPath();                                      // Fall back.
 
+                if (!Directory.Exists(temp))
+                {
+                    // Do not cache a missing path. A typo in ASPNETCORE_TEMP keeps failing
+                    // until the directory exists; a later deletion is handled below.
+                    throw new DirectoryNotFoundException(temp);
+                }
+
                 _tempDirectory = temp;
             }
 
-            // The path is cached for the process lifetime, but the directory can still disappear
-            // (cleanup tools, operators). CreateDirectory is a no-op if it already exists.
+            // The resolved path is cached for the process lifetime, but the directory can still
+            // disappear (cleanup tools, operators). CreateDirectory is a no-op if it already exists.
             Directory.CreateDirectory(_tempDirectory);
 
             return _tempDirectory;
