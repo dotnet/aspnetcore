@@ -51,12 +51,26 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
             .Collect()
             .Select((endpoints, _) => EmitHelperTypes(endpoints));
 
-        var endpointsAndHelpers = interceptorDefinitions.Collect().Combine(endpointHelpers).Combine(httpVerbs).Combine(helperTypes);
+        var tupleConverterRegistration = endpoints
+            .Collect()
+            .Select((endpoints, _) => EmitTupleConverterRegistration(TupleContractManifest.Create(endpoints)));
+
+        var endpointsAndHelpers = interceptorDefinitions.Collect()
+            .Combine(endpointHelpers)
+            .Combine(httpVerbs)
+            .Combine(helperTypes)
+            .Combine(tupleConverterRegistration);
 
         context.RegisterSourceOutput(endpointsAndHelpers, (context, sources) =>
         {
-            var (((endpointsCode, helperMethods), httpVerbs), helperTypes) = sources;
-            Emit(context, endpointsCode, helperMethods ?? string.Empty, httpVerbs, helperTypes ?? string.Empty);
+            var ((((endpointsCode, helperMethods), httpVerbs), helperTypes), tupleConverterRegistration) = sources;
+            Emit(
+                context,
+                endpointsCode,
+                helperMethods ?? string.Empty,
+                httpVerbs,
+                helperTypes ?? string.Empty,
+                tupleConverterRegistration);
         });
     }
 }

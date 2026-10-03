@@ -1,0 +1,24 @@
+Current repository OpenAPI validation
+======================================
+
+Command (repository root):
+  source activate.sh && ./src/OpenApi/build.sh -test
+
+Result:
+  Build tests:            3 passed, 0 skipped, 0 failed (3 total)
+  Source-generator tests: 41 passed, 0 skipped, 0 failed (41 total)
+  OpenAPI tests:          1,447 passed, 5 skipped, 0 failed (1,452 total)
+  Aggregate:              1,491 passed, 5 skipped, 0 failed (1,496 total)
+  Build result:           succeeded, 0 warnings, 0 errors
+
+Count sources:
+  artifacts/log/Debug/Microsoft.AspNetCore.OpenApi.Build.Tests_net11.0_x64.log
+  artifacts/log/Debug/Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests_net11.0_x64.log
+  artifacts/log/Debug/Microsoft.AspNetCore.OpenApi.Tests_net11.0_x64.log
+
+The aggregate passed count is 3 + 41 + 1,447 = 1,491. The five skipped tests
+belong to Microsoft.AspNetCore.OpenApi.Tests.
+
+Environment:
+  .NET SDK 11.0.100-rc.1.26420.103
+  Ubuntu 22.04.5 LTS under WSL

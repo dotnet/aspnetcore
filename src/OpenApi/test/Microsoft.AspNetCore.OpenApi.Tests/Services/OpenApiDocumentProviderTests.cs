@@ -87,6 +87,30 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GenerateAsync_WithExplicitVersionMakesVersionAvailableToTransformers()
+    {
+        var observedVersions = new List<OpenApiSpecVersion>();
+        var documentName = "v1";
+        var serviceProvider = CreateServiceProvider(
+            [documentName],
+            OpenApiSpecVersion.OpenApi3_2,
+            options => options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
+                observedVersions.Add(context.OpenApiVersion);
+#pragma warning restore ASP0040
+                return Task.CompletedTask;
+            }));
+        var documentProvider = new OpenApiDocumentProvider(serviceProvider);
+        var stringWriter = new StringWriter();
+
+        await documentProvider.GenerateAsync(documentName, stringWriter, OpenApiSpecVersion.OpenApi3_0);
+
+        Assert.Equal([OpenApiSpecVersion.OpenApi3_0], observedVersions);
+        Assert.StartsWith("{\n  \"openapi\": \"3.0.4\"", stringWriter.ToString());
+    }
+
+    [Fact]
     public void GetDocumentNames_ReturnsAllRegisteredDocumentName()
     {
         // Arrange
@@ -280,7 +304,10 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         action(result.Document);
     }
 
-    private static IServiceProvider CreateServiceProvider(string[] documentNames, OpenApiSpecVersion openApiSpecVersion = OpenApiSpecVersion.OpenApi3_1)
+    private static IServiceProvider CreateServiceProvider(
+        string[] documentNames,
+        OpenApiSpecVersion openApiSpecVersion = OpenApiSpecVersion.OpenApi3_1,
+        Action<OpenApiOptions> configureOptions = null)
     {
         var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiDocumentProviderTests) };
         var serviceProviderIsService = new ServiceProviderIsService();
@@ -290,7 +317,11 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
             .AddSingleton(CreateApiDescriptionGroupCollectionProvider());
         foreach (var documentName in documentNames)
         {
-            serviceCollection.AddOpenApi(documentName, x => x.OpenApiVersion = openApiSpecVersion);
+            serviceCollection.AddOpenApi(documentName, options =>
+            {
+                options.OpenApiVersion = openApiSpecVersion;
+                configureOptions?.Invoke(options);
+            });
         }
         var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
         return serviceProvider;

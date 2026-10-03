@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +33,32 @@ public static partial class SnapshotTestHelper
         => Verify(source, generator, [], out compilation, out _);
 
     public static Task Verify(string source, IIncrementalGenerator generator, Dictionary<string, List<string>> classLibrarySources, out Compilation compilation, out List<byte[]> generatedAssemblies)
+        => VerifyCore(source, generator, classLibrarySources, null, null, out compilation, out generatedAssemblies);
+
+    public static Task VerifyAdditionalFile(
+        string source,
+        IIncrementalGenerator generator,
+        string path,
+        string content,
+        IReadOnlyDictionary<string, string> metadata,
+        out Compilation compilation)
+        => VerifyCore(
+            source,
+            generator,
+            [],
+            new TestAdditionalText(path, content),
+            metadata,
+            out compilation,
+            out _);
+
+    private static Task VerifyCore(
+        string source,
+        IIncrementalGenerator generator,
+        Dictionary<string, List<string>> classLibrarySources,
+        AdditionalText additionalFile,
+        IReadOnlyDictionary<string, string> additionalFileMetadata,
+        out Compilation compilation,
+        out List<byte[]> generatedAssemblies)
     {
         var references = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
@@ -73,6 +100,10 @@ public static partial class SnapshotTestHelper
                 .ToList();
 
         var additionalTexts = new List<AdditionalText>();
+        if (additionalFile is not null)
+        {
+            additionalTexts.Add(additionalFile);
+        }
         generatedAssemblies = [];
 
         foreach (var classLibrary in classLibrarySources)
@@ -107,16 +138,13 @@ public static partial class SnapshotTestHelper
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
 
-        var programEmitResult = inputCompilation.Emit(Stream.Null);
-        if (!programEmitResult.Success)
-        {
-            throw new InvalidOperationException($"Failed to compile Program.cs: {string.Join(Environment.NewLine, programEmitResult.Diagnostics)}");
-        }
-
         var driver = CSharpGeneratorDriver.Create(
             generators: [generator.AsSourceGenerator()],
             additionalTexts: additionalTexts,
-            parseOptions: ParseOptions);
+            parseOptions: ParseOptions,
+            optionsProvider: additionalFile is null
+                ? null
+                : new TestAnalyzerConfigOptionsProvider(additionalFile, additionalFileMetadata!));
 
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
@@ -589,6 +617,40 @@ public static partial class SnapshotTestHelper
         public override SourceText GetText(CancellationToken cancellationToken = default)
         {
             return SourceText.From(text, Encoding.UTF8);
+        }
+    }
+
+    private sealed class TestAnalyzerConfigOptionsProvider(
+        AdditionalText additionalText,
+        IReadOnlyDictionary<string, string> metadata) : AnalyzerConfigOptionsProvider
+    {
+        private readonly AnalyzerConfigOptions _options = new TestAnalyzerConfigOptions(metadata);
+
+        public override AnalyzerConfigOptions GlobalOptions { get; } =
+            new TestAnalyzerConfigOptions(new Dictionary<string, string>());
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree)
+            => GlobalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile)
+            => string.Equals(textFile.Path, additionalText.Path, StringComparison.Ordinal)
+                ? _options
+                : GlobalOptions;
+    }
+
+    private sealed class TestAnalyzerConfigOptions(
+        IReadOnlyDictionary<string, string> values) : AnalyzerConfigOptions
+    {
+        public override bool TryGetValue(string key, out string value)
+        {
+            if (values.TryGetValue(key, out var configured))
+            {
+                value = configured;
+                return true;
+            }
+
+            value = string.Empty;
+            return false;
         }
     }
 }

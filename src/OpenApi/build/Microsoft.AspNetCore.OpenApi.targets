@@ -3,6 +3,32 @@
   <PropertyGroup>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
   </PropertyGroup>
+  <ItemGroup>
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="OpenApiValidatedJsonSchema" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LogicalName" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Dialect" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Capabilities" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SchemaIdentity" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ClrType" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ValidatorType" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ValidatorConfigurationIdentity" />
+  </ItemGroup>
+  <Target Name="AddValidatedJsonSchemasForOpenApi"
+    BeforeTargets="CoreCompile"
+    Condition="'@(OpenApiValidatedJsonSchema)' != ''">
+    <ItemGroup>
+      <AdditionalFiles
+        Include="@(OpenApiValidatedJsonSchema)"
+        OpenApiValidatedJsonSchema="true"
+        LogicalName="%(OpenApiValidatedJsonSchema.LogicalName)"
+        Dialect="%(OpenApiValidatedJsonSchema.Dialect)"
+        Capabilities="%(OpenApiValidatedJsonSchema.Capabilities)"
+        SchemaIdentity="%(OpenApiValidatedJsonSchema.SchemaIdentity)"
+        ClrType="%(OpenApiValidatedJsonSchema.ClrType)"
+        ValidatorType="%(OpenApiValidatedJsonSchema.ValidatorType)"
+        ValidatorConfigurationIdentity="%(OpenApiValidatedJsonSchema.ValidatorConfigurationIdentity)" />
+    </ItemGroup>
+  </Target>
   <Target Name="GenerateAdditionalXmlFilesForOpenApi"
     AfterTargets="ResolveReferences">
     <ItemGroup>

@@ -1,0 +1,231 @@
+{
+  "inferred": {
+    "inheritanceOperation": {
+      "operationId": "LosslessInheritance",
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Customer"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "polymorphismOperation": {
+      "operationId": "DiscriminatedPolymorphism",
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Animal"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "schemas": {
+      "Animal": {
+        "discriminator": {
+          "mapping": {
+            "cat": "#/components/schemas/AnimalCat",
+            "dog": "#/components/schemas/AnimalDog"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AnimalCat"
+          },
+          {
+            "$ref": "#/components/schemas/AnimalDog"
+          }
+        ],
+        "required": "kind",
+        "type": "object"
+      },
+      "AnimalCat": {
+        "properties": {
+          "kind": {
+            "enum": "cat",
+            "type": "string"
+          },
+          "lives": {
+            "format": "int32",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AnimalDog": {
+        "properties": {
+          "good": {
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": "dog",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Customer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Entity"
+          },
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "Entity": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "legacy": {
+    "inheritanceOperation": {
+      "operationId": "LosslessInheritance",
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Customer"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "polymorphismOperation": {
+      "operationId": "DiscriminatedPolymorphism",
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Animal"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "schemas": {
+      "Animal": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/AnimalCat"
+          },
+          {
+            "$ref": "#/components/schemas/AnimalDog"
+          }
+        ],
+        "discriminator": {
+          "mapping": {
+            "cat": "#/components/schemas/AnimalCat",
+            "dog": "#/components/schemas/AnimalDog"
+          },
+          "propertyName": "kind"
+        },
+        "required": "kind",
+        "type": "object"
+      },
+      "AnimalCat": {
+        "properties": {
+          "kind": {
+            "enum": "cat",
+            "type": "string"
+          },
+          "lives": {
+            "format": "int32",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AnimalDog": {
+        "properties": {
+          "good": {
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": "dog",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Customer": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

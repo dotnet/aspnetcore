@@ -27,7 +27,7 @@ public class GenerateAdditionalXmlFilesForOpenApiTests
     [Fact]
     public async Task VerifiesTargetGeneratesXmlFiles()
     {
-        var projectFile = CreateTestProject();
+        var projectFile = CreateTestProject(includeValidatedSchema: false);
         var startInfo = new ProcessStartInfo
         {
             FileName = DotNetMuxer.MuxerPathOrDefault(),
@@ -82,7 +82,36 @@ public class GenerateAdditionalXmlFilesForOpenApiTests
         );
     }
 
-    private static string CreateTestProject()
+    [Fact]
+    public void VerifiesTargetForwardsValidatedSchemaMetadata()
+    {
+        var projectFile = CreateTestProject(includeValidatedSchema: true);
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = DotNetMuxer.MuxerPathOrDefault(),
+            Arguments = $"build -t:Build -getItem:AdditionalFiles",
+            WorkingDirectory = Path.GetDirectoryName(projectFile),
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+
+        using var process = Process.Start(startInfo);
+        process.WaitForExit(_defaultProcessTimeout);
+        Assert.Equal(0, process.ExitCode);
+
+        var output = process.StandardOutput.ReadToEnd();
+        var result = JsonSerializer.Deserialize<ItemsResult>(output);
+        var schema = Assert.Single(result.Items.AdditionalFiles, item => item["Identity"].EndsWith("schema.json", StringComparison.Ordinal));
+
+        Assert.Equal("true", schema["OpenApiValidatedJsonSchema"]);
+        Assert.Equal("Person", schema["LogicalName"]);
+        Assert.Equal("Draft202012", schema["Dialect"]);
+        Assert.Equal("FormatAssertions", schema["Capabilities"]);
+        Assert.Equal("5f26e1108737429022275068f71a3f513d04a26e071e8ebecce88b76cff9a83a", schema["SchemaIdentity"]);
+    }
+
+    private static string CreateTestProject(bool includeValidatedSchema)
     {
         var classLibTempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(classLibTempPath);
@@ -123,6 +152,15 @@ public class Class1
         File.Copy(sourceTargetsPath, targetTargetsPath);
 
         var projectPath = Path.Combine(tempPath, "TestProject.csproj");
+        var validatedSchemaItem = includeValidatedSchema
+            ? """
+    <OpenApiValidatedJsonSchema Include="schema.json"
+      LogicalName="Person"
+      Dialect="Draft202012"
+      Capabilities="FormatAssertions"
+      SchemaIdentity="5f26e1108737429022275068f71a3f513d04a26e071e8ebecce88b76cff9a83a" />
+"""
+            : string.Empty;
         var projectContent = $$"""
 <Project Sdk="Microsoft.NET.Sdk.Web">
     <Import Project="{{targetTargetsPath}}" />
@@ -137,10 +175,16 @@ public class Class1
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <ProjectReference Include="{{classLibProjectPath}}" />
+{{validatedSchemaItem}}
   </ItemGroup>
 </Project>
 """;
         File.WriteAllText(projectPath, projectContent);
+
+        if (includeValidatedSchema)
+        {
+            File.WriteAllText(Path.Combine(tempPath, "schema.json"), """{"type":"object"}""");
+        }
 
         // Create a test source file
         var sourcePath = Path.Combine(tempPath, "Program.cs");

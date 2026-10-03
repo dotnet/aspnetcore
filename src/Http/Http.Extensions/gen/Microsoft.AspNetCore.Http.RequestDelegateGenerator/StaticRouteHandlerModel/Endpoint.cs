@@ -25,6 +25,8 @@ internal class Endpoint
 #pragma warning restore RSEXPERIMENTAL002
         HttpMethod = GetHttpMethod(operation);
         EmitterContext = new EmitterContext();
+        SupportsGeneratedTupleConverters = semanticModel.Compilation.GetTypeByMetadataName(
+            "Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters") is not null;
 
         if (!operation.TryGetRouteHandlerMethod(semanticModel, needsAccurateSignature: true, out var method))
         {
@@ -95,6 +97,7 @@ internal class Endpoint
     public string HttpMethod { get; }
     public bool IsAwaitable { get; set; }
     public bool NeedsParameterArray { get; }
+    public bool SupportsGeneratedTupleConverters { get; }
     public string? RoutePattern { get; }
     public EmitterContext EmitterContext { get; }
     public EndpointResponse? Response { get; }

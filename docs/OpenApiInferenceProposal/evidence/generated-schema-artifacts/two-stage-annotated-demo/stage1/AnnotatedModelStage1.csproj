@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <JsonSchemaGenerationMode>CanonicalOnly</JsonSchemaGenerationMode>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <EnablePublicApiAnalyzer>false</EnablePublicApiAnalyzer>
+    <NoWarn>$(NoWarn);RS0016;RS0017;RS0037</NoWarn>
+    <RestoreAdditionalProjectSources>$(JsonSchemaGenerationPrototypePackageRoot);$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
+    <RestorePackagesPath>$(BaseIntermediateOutputPath)prototype-packages</RestorePackagesPath>
+    <RestoreNoCache>true</RestoreNoCache>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net.Generation" Version="7.3.11" />
+    <CompilerVisibleProperty Include="JsonSchemaGenerationMode" />
+  </ItemGroup>
+  <Target Name="RequirePrototypePackage" BeforeTargets="Restore">
+    <Error Condition="'$(JsonSchemaGenerationPrototypePackageRoot)' == ''"
+      Text="JsonSchemaGenerationPrototypePackageRoot must point to the directory containing the approved JsonSchema.Net.Generation 7.3.11 prototype package." />
+  </Target>
+</Project>

@@ -1,0 +1,32 @@
+Focused schema-evidence validation
+==================================
+
+Repository environment:
+  source activate.sh
+
+Provider-focused selection:
+  dotnet exec \
+    --depsfile artifacts/bin/Microsoft.AspNetCore.OpenApi.Tests/Debug/net11.0/Microsoft.AspNetCore.OpenApi.Tests.deps.json \
+    --runtimeconfig artifacts/bin/Microsoft.AspNetCore.OpenApi.Tests/Debug/net11.0/Microsoft.AspNetCore.OpenApi.Tests.runtimeconfig.json \
+    "$HOME/.nuget/packages/xunit.runner.console/2.9.2/tools/netcoreapp2.0/xunit.console.dll" \
+    artifacts/bin/Microsoft.AspNetCore.OpenApi.Tests/Debug/net11.0/Microsoft.AspNetCore.OpenApi.Tests.dll \
+    -nocolor \
+    -method "OpenApiSchemaServiceTests.SchemaEvidence*"
+
+Result:
+  16 passed, 0 skipped, 0 failed (16 total)
+
+Exact-number selection:
+  dotnet exec \
+    --depsfile artifacts/bin/Microsoft.AspNetCore.OpenApi.Tests/Debug/net11.0/Microsoft.AspNetCore.OpenApi.Tests.deps.json \
+    --runtimeconfig artifacts/bin/Microsoft.AspNetCore.OpenApi.Tests/Debug/net11.0/Microsoft.AspNetCore.OpenApi.Tests.runtimeconfig.json \
+    "$HOME/.nuget/packages/xunit.runner.console/2.9.2/tools/netcoreapp2.0/xunit.console.dll" \
+    artifacts/bin/Microsoft.AspNetCore.OpenApi.Tests/Debug/net11.0/Microsoft.AspNetCore.OpenApi.Tests.dll \
+    -nocolor \
+    -class OpenApiSchemaNumberTests
+
+Result:
+  34 passed, 0 skipped, 0 failed (34 total)
+
+The totals include all discovered xUnit theory rows. The complete repository
+command and current project totals are retained in validation-current.txt.

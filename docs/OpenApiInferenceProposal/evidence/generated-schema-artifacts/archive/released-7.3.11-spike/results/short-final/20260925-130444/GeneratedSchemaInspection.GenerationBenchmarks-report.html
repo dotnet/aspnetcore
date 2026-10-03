@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>GeneratedSchemaInspection.GenerationBenchmarks-20260925-130450</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.0, OS=ubuntu 22.04
+13th Gen Intel Core i7-13800H, 1 CPU, 20 logical and 10 physical cores
+.NET SDK=11.0.100-rc.1.26420.103
+  [Host]   : .NET 11.0.0 (11.0.26.45408), X64 RyuJIT
+  ShortRun : .NET 11.0.0 (11.0.26.42103), X64 RyuJIT
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1
+WarmupCount=3
+</code></pre>
+
+<table>
+<thead><tr><th>              Method</th><th>    Mean</th><th>    Error</th><th>  StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>WarmStaticFieldAccess</td><td>0.6633 ns</td><td>1.0906 ns</td><td>0.0598 ns</td><td>1.00</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>-</td>
+</tr><tr><td>RebuildNativeResourceGraph</td><td>40,050.7877 ns</td><td>207,855.8784 ns</td><td>11,393.2821 ns</td><td>60,677.52</td><td>17,001.79</td><td>4.6387</td><td>1.4648</td><td>-</td><td>58,720 B</td>
+</tr><tr><td>SerializeRootOnly</td><td>626.9299 ns</td><td>1,470.8585 ns</td><td>80.6227 ns</td><td>952.07</td><td>160.15</td><td>0.0496</td><td>-</td><td>-</td><td>624 B</td>
+</tr><tr><td>CopyManualCanonicalBundle</td><td>47.9433 ns</td><td>118.1180 ns</td><td>6.4744 ns</td><td>73.27</td><td>16.87</td><td>0.0746</td><td>-</td><td>-</td><td>936 B</td>
+</tr><tr><td>CreateSupportedBundle</td><td>41,528.1809 ns</td><td>193,451.7203 ns</td><td>10,603.7416 ns</td><td>63,000.44</td><td>16,462.05</td><td>4.8828</td><td>2.4414</td><td>-</td><td>63,216 B</td>
+</tr><tr><td>ParseSupportedBundle</td><td>30,362.1695 ns</td><td>71,431.1932 ns</td><td>3,915.3847 ns</td><td>46,032.37</td><td>7,014.82</td><td>4.6387</td><td>2.1973</td><td>-</td><td>58,496 B</td>
+</tr><tr><td>CompileCorvusFromBundle</td><td>306.4259 ns</td><td>594.5196 ns</td><td>32.5876 ns</td><td>467.74</td><td>95.98</td><td>0.2766</td><td>0.0019</td><td>-</td><td>3,472 B</td>
+</tr><tr><td>NativeValid</td><td>9,693.6298 ns</td><td>5,762.0119 ns</td><td>315.8353 ns</td><td>14,686.35</td><td>1,263.12</td><td>1.5259</td><td>-</td><td>-</td><td>19,641 B</td>
+</tr><tr><td>NativeInvalid</td><td>12,694.5641 ns</td><td>6,587.8719 ns</td><td>361.1035 ns</td><td>19,231.31</td><td>1,590.71</td><td>2.0142</td><td>0.0610</td><td>-</td><td>25,458 B</td>
+</tr><tr><td>ParsedBundleValid</td><td>14,317.1873 ns</td><td>34,507.2977 ns</td><td>1,891.4614 ns</td><td>21,658.37</td><td>2,866.46</td><td>1.9531</td><td>0.0610</td><td>-</td><td>24,818 B</td>
+</tr><tr><td>ParsedBundleInvalid</td><td>23,792.2989 ns</td><td>132,215.0892 ns</td><td>7,247.1552 ns</td><td>36,023.91</td><td>10,656.30</td><td>2.5635</td><td>0.1221</td><td>-</td><td>32,578 B</td>
+</tr><tr><td>CorvusBundleValid</td><td>253.8483 ns</td><td>460.1708 ns</td><td>25.2235 ns</td><td>387.25</td><td>76.19</td><td>0.0134</td><td>-</td><td>-</td><td>168 B</td>
+</tr><tr><td>CorvusBundleInvalid</td><td>194.2290 ns</td><td>43.2924 ns</td><td>2.3730 ns</td><td>294.45</td><td>27.03</td><td>0.0134</td><td>-</td><td>-</td><td>168 B</td>
+</tr></tbody></table>
+</body>
+</html>

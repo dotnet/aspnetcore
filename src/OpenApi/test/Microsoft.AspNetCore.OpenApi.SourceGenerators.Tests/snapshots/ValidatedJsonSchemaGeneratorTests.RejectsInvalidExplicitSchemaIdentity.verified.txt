@@ -1,0 +1,14 @@
+{
+  Diagnostics: [
+    {
+      Id: OASGEN002,
+      Title: Invalid generated JSON Schema metadata,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (0,0)-(0,0),
+      MessageFormat: {0},
+      Message: SchemaIdentity must be a 64-character hexadecimal SHA-256 value.,
+      Category: OpenApi
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+Runtime validated-schema adapter execution
+==========================================
+
+Command (repository root after source activate.sh):
+  dotnet run --project \
+    docs/OpenApiInferenceProposal/evidence/validated-schema-adapters/ValidatedSchemaAdapters.csproj \
+    --no-build
+
+Result:
+  CorvusValidatorFactory:
+    Draft 2020-12, Draft 4, Draft 6, Draft 7, and Draft 2019-09 corpus passed.
+    Concurrent cache reuse passed.
+    Format annotation/assertion toggle passed.
+    Minimal API valid request/response returned 200.
+    Minimal API invalid request returned 400.
+    Minimal API oversized request returned 413.
+    Minimal API invalid and oversized responses were suppressed and returned 500.
+
+  JsonSchemaNetValidatorFactory:
+    Draft 2020-12, Draft 6, Draft 7, and Draft 2019-09 corpus passed.
+    Draft 4 was explicitly rejected.
+    Concurrent cache reuse passed.
+    Format annotation/assertion toggle passed.
+    Minimal API valid request/response returned 200.
+    Minimal API invalid request returned 400.
+    Minimal API oversized request returned 413.
+    Minimal API invalid and oversized responses were suppressed and returned 500.
+
+Process exit code: 0
+
+Dynamic loopback ports and request timings were removed because they are not
+acceptance criteria. This executable does not host MVC; repository MVC tests
+are the MVC proof.

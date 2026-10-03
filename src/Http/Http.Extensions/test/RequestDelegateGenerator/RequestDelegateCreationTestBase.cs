@@ -348,7 +348,9 @@ public static class {{className}}
         return project.GetCompilationAsync();
     }
 
-    internal static Project CreateProject(Func<CSharpCompilationOptions, CSharpCompilationOptions> modifyCompilationOptions = null)
+    internal static Project CreateProject(
+        Func<CSharpCompilationOptions, CSharpCompilationOptions> modifyCompilationOptions = null,
+        bool includeOpenApi = false)
     {
         var projectName = $"TestProject-{Guid.NewGuid()}";
         var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
@@ -374,6 +376,11 @@ public static class {{className}}
             {
                 // Skip the source generator itself
                 if (resolveReferencePath.Equals(typeof(RequestDelegateGenerator.RequestDelegateGenerator).Assembly.Location, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                if (!includeOpenApi &&
+                    Path.GetFileNameWithoutExtension(resolveReferencePath).Equals("Microsoft.AspNetCore.OpenApi", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

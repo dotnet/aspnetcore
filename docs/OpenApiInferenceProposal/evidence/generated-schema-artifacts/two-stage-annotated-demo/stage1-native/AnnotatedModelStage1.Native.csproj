@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <JsonSchemaGenerationMode>NativeAndCanonical</JsonSchemaGenerationMode>
+    <EnablePublicApiAnalyzer>false</EnablePublicApiAnalyzer>
+    <NoWarn>$(NoWarn);RS0016;RS0017;RS0037</NoWarn>
+    <RestoreAdditionalProjectSources>$(JsonSchemaGenerationPrototypePackageRoot);$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
+    <RestorePackagesPath>$(BaseIntermediateOutputPath)prototype-packages-native</RestorePackagesPath>
+    <RestoreNoCache>true</RestoreNoCache>
+    <RootNamespace>GeneratedSchemaInspection</RootNamespace>
+    <AssemblyName>AnnotatedModelStage1Native</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../stage1/FlagshipModel.cs" Link="FlagshipModel.cs" />
+    <PackageReference Include="JsonSchema.Net.Generation" Version="7.3.11" />
+    <CompilerVisibleProperty Include="JsonSchemaGenerationMode" />
+  </ItemGroup>
+  <Target Name="RequirePrototypePackage" BeforeTargets="Restore">
+    <Error Condition="'$(JsonSchemaGenerationPrototypePackageRoot)' == ''"
+      Text="JsonSchemaGenerationPrototypePackageRoot must point to the approved prototype package directory." />
+  </Target>
+</Project>

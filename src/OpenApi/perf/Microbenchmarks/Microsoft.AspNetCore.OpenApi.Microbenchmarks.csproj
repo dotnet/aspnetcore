@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,10 +15,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\test\Microsoft.AspNetCore.OpenApi.Tests\Microsoft.AspNetCore.OpenApi.Tests.csproj" />
+    <PackageReference Include="Corvus.Text.Json.Validator" Version="5.6.1" />
+    <PackageReference Include="JsonSchema.Net" Version="9.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+    <Compile Include="..\..\..\..\docs\OpenApiInferenceProposal\evidence\validated-schema-adapters\CorvusValidatorFactory.cs" Link="ValidatedSchemaAdapters\CorvusValidatorFactory.cs" />
+    <Compile Include="..\..\..\..\docs\OpenApiInferenceProposal\evidence\validated-schema-adapters\JsonSchemaNetValidatorFactory.cs" Link="ValidatedSchemaAdapters\JsonSchemaNetValidatorFactory.cs" />
   </ItemGroup>
 
 </Project>
