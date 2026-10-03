@@ -4,6 +4,7 @@
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
+import { showErrorNotification } from '../BootErrors';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -193,7 +194,10 @@ function onDocumentSubmit(event: SubmitEvent) {
       }
     }
 
-    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
+    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions).catch(error => {
+      console.error(error);
+      showErrorNotification();
+    });
   }
 }
 
@@ -211,8 +215,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
-  currentEnhancedNavigationAbortController = new AbortController();
-  const abortSignal = currentEnhancedNavigationAbortController.signal;
+  const abortController = new AbortController();
+  currentEnhancedNavigationAbortController = abortController;
+  const abortSignal = abortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
     mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
@@ -222,11 +227,19 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       'accept': acceptHeader,
     },
   }, fetchOptions));
+  const isGetRequest = !fetchOptions?.method || fetchOptions.method.toLowerCase() === 'get';
+  let response: Response;
+  try {
+    response = await responsePromise;
+  } catch (ex) {
+    handleEnhancedNavigationFailure(ex, internalDestinationHref, isGetRequest, abortController);
+    return;
+  }
+
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
-  await getResponsePartsWithFraming(
-    responsePromise, abortSignal,
+  const responseBodyPromise = getResponsePartsWithFraming(
+    response,
     (response, initialContent) => {
-      const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
       const isSuccessResponse = response.status >= 200 && response.status < 300;
 
       // For true 301/302/etc redirections to external URLs, we'll receive an opaque response
@@ -341,6 +354,13 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     }
   );
 
+  try {
+    await responseBodyPromise;
+  } catch (ex) {
+    handleEnhancedNavigationFailure(ex, internalDestinationHref, isGetRequest, abortController);
+    return;
+  }
+
   if (!abortSignal.aborted) {
     // The whole response including any streaming SSR is now finished, and it was not aborted (no other navigation
     // has since started). So finally, recreate the native "scroll to hash" behavior.
@@ -366,52 +386,57 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   }
 }
 
-async function getResponsePartsWithFraming(responsePromise: Promise<Response>, abortSignal: AbortSignal, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {
-  let response: Response;
-
-  try {
-    response = await responsePromise;
-
-    if (!response.body) { // Not sure how this can happen, but the TypeScript annotations suggest it can
-      onInitialDocument(response, '');
-      return;
-    }
-
-    const frameBoundary = response.headers.get('ssr-framing');
-    if (!frameBoundary) {
-      // Shouldn't happen, but perhaps some proxy stripped the headers. In that case we just won't respect streaming and will
-      // wait for the whole response.
-      const allResponseText = await response.text();
-      onInitialDocument(response, allResponseText);
-      return;
-    }
-
-    // This is going to be a framed response, so split it into chunks based on our framing boundaries
-    let isFirstFramedChunk = true;
-    await response.body
-      .pipeThrough(new TextDecoderStream())
-      .pipeThrough(splitStream(`<!--${frameBoundary}-->`))
-      .pipeTo(new WritableStream({
-        write(chunk) {
-          // Inside here, we know the chunks correspond precisely to frames within our message framing mechanism.
-          // The first one is always the initial document that we will merge into the existing DOM. All subsequent ones
-          // are blocks of <blazor-ssr>...</blazor-ssr> markup whose insertion would trigger a streaming SSR DOM update.
-          if (isFirstFramedChunk) {
-            isFirstFramedChunk = false;
-            onInitialDocument(response, chunk);
-          } else {
-            onStreamingElement(chunk);
-          }
-        },
-      }));
-  } catch (ex) {
-    if ((ex as Error).name === 'AbortError' && abortSignal.aborted) {
-      // Not an error. This happens if a different navigation started before this one completed.
-      return;
-    } else {
-      throw ex;
-    }
+function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: string, isGetRequest: boolean, abortController: AbortController) {
+  if ((ex as Error).name === 'AbortError' && abortController.signal.aborted) {
+    return;
   }
+
+  if (isGetRequest) {
+    retryEnhancedNavAsFullPageLoad(internalDestinationHref);
+    return;
+  }
+
+  if (currentEnhancedNavigationAbortController === abortController) {
+    performingEnhancedPageLoad = false;
+    navigationEnhancementCallbacks.enhancedNavigationCompleted();
+  }
+
+  throw ex;
+}
+
+async function getResponsePartsWithFraming(response: Response, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {
+  if (!response.body) { // Not sure how this can happen, but the TypeScript annotations suggest it can
+    onInitialDocument(response, '');
+    return;
+  }
+
+  const frameBoundary = response.headers.get('ssr-framing');
+  if (!frameBoundary) {
+    // Shouldn't happen, but perhaps some proxy stripped the headers. In that case we just won't respect streaming and will
+    // wait for the whole response.
+    const allResponseText = await response.text();
+    onInitialDocument(response, allResponseText);
+    return;
+  }
+
+  // This is going to be a framed response, so split it into chunks based on our framing boundaries
+  let isFirstFramedChunk = true;
+  await response.body
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(splitStream(`<!--${frameBoundary}-->`))
+    .pipeTo(new WritableStream({
+      write(chunk) {
+        // Inside here, we know the chunks correspond precisely to frames within our message framing mechanism.
+        // The first one is always the initial document that we will merge into the existing DOM. All subsequent ones
+        // are blocks of <blazor-ssr>...</blazor-ssr> markup whose insertion would trigger a streaming SSR DOM update.
+        if (isFirstFramedChunk) {
+          isFirstFramedChunk = false;
+          onInitialDocument(response, chunk);
+        } else {
+          onStreamingElement(chunk);
+        }
+      },
+    }));
 }
 
 export function replaceDocumentWithPlainText(text: string) {
@@ -467,3 +492,4 @@ function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
   history.replaceState(null, '', internalDestinationHref + '?');
   location.replace(internalDestinationHref);
 }
+
