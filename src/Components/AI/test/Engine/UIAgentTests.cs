@@ -124,6 +124,26 @@ public class UIAgentTests
     }
 
     [Fact]
+    public async Task SendMessageAsync_FailedAttemptsDoNotGrowHistory()
+    {
+        var requestHistoryCounts = new List<int>();
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((messages, _, _) =>
+        {
+            requestHistoryCounts.Add(messages.Count());
+            return ResponseEmitters.EmitErrorAfterTokens(
+                ["partial"],
+                new InvalidOperationException("boom"));
+        });
+        var agent = new UIAgent(client);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => CollectAsync(agent, "Hello"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => CollectAsync(agent, "Hello"));
+
+        Assert.Equal([1, 1], requestHistoryCounts);
+    }
+
+    [Fact]
     public async Task SendMessageAsync_UsesConfiguredChatOptions()
     {
         var client = new DelegatingStreamingChatClient();
