@@ -31,7 +31,7 @@ public class HttpsConfigurationTests
                     .UseKestrelCore()
                     .ConfigureKestrel(serverOptions =>
                     {
-                        serverOptions.TestOverrideDefaultCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
+                        serverOptions.TestOverrideDefaultCertificate = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
                     })
                     .Configure(app => { })
                     // This is what ASPNETCORE_URLS would populate
@@ -218,7 +218,7 @@ public class HttpsConfigurationTests
                     .UseKestrelCore()
                     .ConfigureKestrel(serverOptions =>
                     {
-                        serverOptions.TestOverrideDefaultCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
+                        serverOptions.TestOverrideDefaultCertificate = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
 
                         serverOptions.ListenAnyIP(0, listenOptions =>
                         {
@@ -251,7 +251,7 @@ public class HttpsConfigurationTests
                         {
                             listenOptions.UseHttps(new HttpsConnectionAdapterOptions()
                             {
-                                ServerCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword"),
+                                ServerCertificate = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword"),
                             });
                         });
                     })
