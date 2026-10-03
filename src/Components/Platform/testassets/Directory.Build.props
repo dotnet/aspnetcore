@@ -1,0 +1,30 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup Condition=" $(IsTestProject) ">
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <_ImportComponentsTestingTargets>true</_ImportComponentsTestingTargets>
+    <_ImportComponentsTestingTargets Condition="'$(ExcludeFromBuild)' == 'true' or '$(SkipTestBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">false</_ImportComponentsTestingTargets>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Remove="Moq" />
+    <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" $(IsTestProject) and '$(_ImportComponentsTestingTargets)' == 'true' ">
+    <_E2ETasksProject>$(MSBuildThisFileDirectory)..\..\Testing\tasks\Microsoft.AspNetCore.Components.Testing.Tasks.csproj</_E2ETasksProject>
+    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == ''">$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
+  </PropertyGroup>
+
+</Project>

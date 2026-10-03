@@ -147,6 +147,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" />
     <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src\Components\Media\src\Microsoft.AspNetCore.Components.Media.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Platform" ProjectPath="$(RepoRoot)src\Components\Platform\src\Microsoft.AspNetCore.Components.Platform.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter\src\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid\src\Microsoft.AspNetCore.Components.QuickGrid.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server.AutoPause" ProjectPath="$(RepoRoot)src\Components\Server.AutoPause\src\Microsoft.AspNetCore.Components.Server.AutoPause.csproj" />
