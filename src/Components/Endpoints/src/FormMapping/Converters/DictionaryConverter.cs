@@ -43,7 +43,9 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         found = keys.HasValues();
         if (!found)
         {
-            result = default!;
+            found = true;
+            buffer = TDictionaryPolicy.CreateBuffer();
+            result = TDictionaryPolicy.ToResult(buffer)!;
             return true;
         }
 
