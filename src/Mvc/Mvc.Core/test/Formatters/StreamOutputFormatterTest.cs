@@ -81,6 +81,24 @@ public class StreamOutputFormatterTest
         Assert.False(result);
     }
 
+    [Fact]
+    public async Task WriteAsync_ReactsToCancellation()
+    {
+        var formatter = new StreamOutputFormatter();
+        var httpContext = new DefaultHttpContext();
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        httpContext.RequestAborted = cts.Token;
+
+        var context = new OutputFormatterWriteContext(
+            httpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(MemoryStream),
+            new MemoryStream());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => formatter.WriteAsync(context));
+    }
+
     private class SimplePOCO
     {
         public int Id { get; set; }
