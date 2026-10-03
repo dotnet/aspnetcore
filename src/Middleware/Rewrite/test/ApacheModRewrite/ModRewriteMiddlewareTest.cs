@@ -196,6 +196,31 @@ public class ModRewriteMiddlewareTest
     }
 
     [Fact]
+    public async Task Invoke_ShouldHandleShorthandCharacterClassInRuleRegex()
+    {
+        var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^/(\d)$ /?num=$1"));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("http://www.foo.org/1");
+
+        Assert.Equal("/?num=1", response);
+    }
+
+    [Fact]
     public async Task Invoke_ShouldIgnorePorts()
     {
         var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^/$ /homepage.html"));
