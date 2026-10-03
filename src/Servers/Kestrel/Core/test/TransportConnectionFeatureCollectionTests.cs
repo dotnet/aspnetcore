@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -20,7 +19,7 @@ public class TransportConnectionFeatureCollectionTests
     public void IConnectionEndPointFeature_IsAvailableInFeatureCollection()
     {
         var serviceContext = new TestServiceContext();
-        var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
+        var connection = new DefaultConnectionContext();
         var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
         var kestrelConnection = CreateKestrelConnection(serviceContext, connection, transportConnectionManager);
         
@@ -33,7 +32,7 @@ public class TransportConnectionFeatureCollectionTests
     public void IConnectionEndPointFeature_ReturnsCorrectLocalEndPoint()
     {
         var serviceContext = new TestServiceContext();
-        var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
+        var connection = new DefaultConnectionContext();
         var expectedLocalEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8080);
         connection.LocalEndPoint = expectedLocalEndPoint;
         var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
@@ -49,7 +48,7 @@ public class TransportConnectionFeatureCollectionTests
     public void IConnectionEndPointFeature_ReturnsCorrectRemoteEndPoint()
     {
         var serviceContext = new TestServiceContext();
-        var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
+        var connection = new DefaultConnectionContext();
         var expectedRemoteEndPoint = new IPEndPoint(IPAddress.Parse("192.168.1.100"), 54321);
         connection.RemoteEndPoint = expectedRemoteEndPoint;
         var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
@@ -65,7 +64,7 @@ public class TransportConnectionFeatureCollectionTests
     public void IConnectionEndPointFeature_AllowsSettingLocalEndPoint()
     {
         var serviceContext = new TestServiceContext();
-        var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
+        var connection = new DefaultConnectionContext();
         var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
         var kestrelConnection = CreateKestrelConnection(serviceContext, connection, transportConnectionManager);
         var newLocalEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9090);
@@ -81,7 +80,7 @@ public class TransportConnectionFeatureCollectionTests
     public void IConnectionEndPointFeature_AllowsSettingRemoteEndPoint()
     {
         var serviceContext = new TestServiceContext();
-        var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
+        var connection = new DefaultConnectionContext();
         var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
         var kestrelConnection = CreateKestrelConnection(serviceContext, connection, transportConnectionManager);
         var newRemoteEndPoint = new IPEndPoint(IPAddress.Parse("10.0.0.1"), 12345);

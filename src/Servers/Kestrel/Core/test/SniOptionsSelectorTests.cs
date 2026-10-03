@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
-using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -67,7 +67,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (wwwSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
         Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
@@ -124,7 +124,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "b.a.example.org");
         Assert.Equal("Long", pathDictionary[baSubdomainOptions.ServerCertificate]);
@@ -170,7 +170,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (wwwSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "wWw.eXample.oRg");
         Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
@@ -219,7 +219,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (wwwSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "wWw.eXample.oRg");
         Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
@@ -282,7 +282,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "c.a.example.org");
         Assert.Equal("a", pathDictionary[aSubdomainOptions.ServerCertificate]);
@@ -327,7 +327,7 @@ public class SniOptionsSelectorTests
              mockCertificateConfigLoader,
              fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
              fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-             logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
+             logger: NullLogger<HttpsConnectionMiddleware>.Instance));
         Assert.Equal("An item with the same key has already been added. Key: .EXAMPLE.org (Parameter 'key')", exception.Message);
     }
 
@@ -340,7 +340,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var authExWithServerName = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), "example.org"));
         Assert.Equal(CoreStrings.FormatSniNotConfiguredForServerName("example.org", "TestEndpointName"), authExWithServerName.Message);
@@ -403,7 +403,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), serverName);
         Assert.Equal("WildcardOnly", pathDictionary[options.ServerCertificate]);
@@ -432,7 +432,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         // Without validation this would incorrectly match "*.example.org" via a naive EndsWith(".example.org") scan.
         var authEx = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), "evil\0.example.org"));
@@ -479,7 +479,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), serverName);
         Assert.Equal("WildcardOnly", pathDictionary[options.ServerCertificate]);
@@ -526,7 +526,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), serverName);
         Assert.Equal("WildcardPrefix", pathDictionary[options.ServerCertificate]);
@@ -558,7 +558,7 @@ public class SniOptionsSelectorTests
             mockCertificateConfigLoader,
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), null);
         Assert.Equal("WildcardOnly", pathDictionary[options.ServerCertificate]);
@@ -584,7 +584,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
         var (options2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
@@ -621,7 +621,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             fallbackOptions,
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
         Assert.Same(lastSeenSslOptions, options1);
@@ -664,7 +664,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             fallbackOptions,
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (selectorOptions1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "selector.example.org");
         Assert.Same(selectorCertificate, selectorOptions1.ServerCertificate);
@@ -700,7 +700,7 @@ public class SniOptionsSelectorTests
                 new MockCertificateConfigLoader(),
                 fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
+                logger: NullLogger<HttpsConnectionMiddleware>.Instance));
 
         Assert.Equal(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound, ex.Message);
     }
@@ -723,7 +723,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             fallbackOptions,
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
         Assert.Same(fallbackOptions.ServerCertificate, options.ServerCertificate);
@@ -751,7 +751,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             fallbackOptions,
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
         Assert.Same(selectorCertificate, options.ServerCertificate);
@@ -778,7 +778,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var mockConnectionContext = new MockConnectionContext();
         sniOptionsSelector.GetOptions(mockConnectionContext, "www.example.org");
@@ -811,7 +811,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.None,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
         var alpnList = options.ApplicationProtocols;
@@ -841,7 +841,7 @@ public class SniOptionsSelectorTests
             new MockCertificateConfigLoader(),
             new HttpsConnectionAdapterOptions(),
             fallbackHttpProtocols: HttpProtocols.Http1,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var mockConnectionContext = new MockConnectionContext();
         sniOptionsSelector.GetOptions(mockConnectionContext, "www.example.org");
@@ -877,7 +877,7 @@ public class SniOptionsSelectorTests
                 SslProtocols = SslProtocols.Tls13
             },
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
 #pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
@@ -908,7 +908,7 @@ public class SniOptionsSelectorTests
                 SslProtocols = SslProtocols.Tls13
             },
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
         Assert.Equal(SslProtocols.Tls13, options.EnabledSslProtocols);
@@ -938,7 +938,7 @@ public class SniOptionsSelectorTests
                 ClientCertificateMode = ClientCertificateMode.AllowCertificate
             },
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, certMode) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
 
@@ -973,7 +973,7 @@ public class SniOptionsSelectorTests
                 ClientCertificateMode = ClientCertificateMode.AllowCertificate
             },
             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            logger: NullLogger<HttpsConnectionMiddleware>.Instance);
 
         var (options, certMode) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
 

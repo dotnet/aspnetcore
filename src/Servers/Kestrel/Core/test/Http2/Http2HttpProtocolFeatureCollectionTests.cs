@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -22,7 +21,7 @@ public class Http2HttpProtocolFeatureCollectionTests
     {
         var context = TestContextFactory.CreateHttp2StreamContext(
             serviceContext: new TestServiceContext(),
-            timeoutControl: Mock.Of<ITimeoutControl>());
+            timeoutControl: new TestTimeoutControl());
 
         var http2Stream = new TestHttp2Stream(context);
         http2Stream.Reset();

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -43,10 +42,9 @@ public class HttpConnectionManagerTests : LoggedTest
         KestrelTrace trace)
     {
         var serviceContext = new TestServiceContext();
-        var mock = new Mock<DefaultConnectionContext>() { CallBase = true };
-        mock.Setup(m => m.ConnectionId).Returns(connectionId);
+        var connectionContext = new DefaultConnectionContext(connectionId);
         var transportConnectionManager = new TransportConnectionManager(httpConnectionManager);
-        var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, trace, TestContextFactory.CreateMetricsContext(mock.Object));
+        var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, connectionContext, trace, TestContextFactory.CreateMetricsContext(connectionContext));
         transportConnectionManager.AddConnection(0, httpConnection);
 
         var connectionCount = 0;
