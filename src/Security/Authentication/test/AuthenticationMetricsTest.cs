@@ -347,7 +347,7 @@ public class AuthenticationMetricsTest
         var authenticationService = new AuthenticationServiceImpl(
             Mock.Of<IAuthenticationSchemeProvider>(),
             authenticationHandlerProvider.Object,
-            claimsTransform.Object,
+            new[] { claimsTransform.Object },
             options,
             metrics);
 
