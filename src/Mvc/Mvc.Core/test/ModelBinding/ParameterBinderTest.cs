@@ -873,6 +873,214 @@ public class ParameterBinderTest
         public string DerivedProperty { get; set; }
     }
 
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/57637
+    [Fact]
+    public async Task BindModelAsync_ComplexType_PropertyNameMatchesParameterName_UsesEmptyPrefix()
+    {
+        // Arrange
+        // Simulates: Test([FromQuery] TestParameter parameter) with query ?Parameter=test
+        // where TestParameter has a property called "Parameter".
+        var actionContext = GetControllerContext();
+        var modelMetadataProvider = new TestModelMetadataProvider();
+        var modelMetadata = modelMetadataProvider.GetMetadataForType(typeof(ModelWithParameterProperty));
+
+        var parameterDescriptor = new ParameterDescriptor
+        {
+            Name = "parameter",
+            ParameterType = typeof(ModelWithParameterProperty),
+        };
+
+        // Value provider contains "Parameter" which exactly matches the parameter name (case-insensitive)
+        // but has no sub-keys (no "parameter.Something" entries)
+        var valueProvider = new TestEnumerableValueProvider(
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Parameter", "test" },
+            });
+
+        string capturedModelName = null;
+        var mockBinder = new Mock<IModelBinder>(MockBehavior.Strict);
+        mockBinder
+            .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+            .Returns<ModelBindingContext>(context =>
+            {
+                capturedModelName = context.ModelName;
+                context.Result = ModelBindingResult.Success(new ModelWithParameterProperty());
+                return Task.CompletedTask;
+            });
+
+        var parameterBinder = new ParameterBinder(
+            modelMetadataProvider,
+            Mock.Of<IModelBinderFactory>(),
+            new DefaultObjectValidator(
+                modelMetadataProvider,
+                new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                new MvcOptions()),
+            _optionsAccessor,
+            NullLoggerFactory.Instance);
+
+        // Act
+        await parameterBinder.BindModelAsync(
+            actionContext,
+            mockBinder.Object,
+            valueProvider,
+            parameterDescriptor,
+            modelMetadata,
+            value: null);
+
+        // Assert - Model name should be empty string so complex type binder can find "Parameter" directly
+        Assert.Equal(string.Empty, capturedModelName);
+    }
+
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/57637
+    [Fact]
+    public async Task BindModelAsync_ComplexType_WithDelimitedPrefix_UsesParameterNameAsPrefix()
+    {
+        // Arrange
+        // Simulates: Test([FromQuery] TestParameter parameter) with query ?parameter.Parameter=test
+        // where the query uses the parameter name as an explicit prefix
+        var actionContext = GetControllerContext();
+        var modelMetadataProvider = new TestModelMetadataProvider();
+        var modelMetadata = modelMetadataProvider.GetMetadataForType(typeof(ModelWithParameterProperty));
+
+        var parameterDescriptor = new ParameterDescriptor
+        {
+            Name = "parameter",
+            ParameterType = typeof(ModelWithParameterProperty),
+        };
+
+        // Value provider contains "parameter.Parameter" - a properly delimited prefix
+        var valueProvider = new TestEnumerableValueProvider(
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "parameter.Parameter", "test" },
+            });
+
+        string capturedModelName = null;
+        var mockBinder = new Mock<IModelBinder>(MockBehavior.Strict);
+        mockBinder
+            .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+            .Returns<ModelBindingContext>(context =>
+            {
+                capturedModelName = context.ModelName;
+                context.Result = ModelBindingResult.Success(new ModelWithParameterProperty());
+                return Task.CompletedTask;
+            });
+
+        var parameterBinder = new ParameterBinder(
+            modelMetadataProvider,
+            Mock.Of<IModelBinderFactory>(),
+            new DefaultObjectValidator(
+                modelMetadataProvider,
+                new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                new MvcOptions()),
+            _optionsAccessor,
+            NullLoggerFactory.Instance);
+
+        // Act
+        await parameterBinder.BindModelAsync(
+            actionContext,
+            mockBinder.Object,
+            valueProvider,
+            parameterDescriptor,
+            modelMetadata,
+            value: null);
+
+        // Assert - Model name should be "parameter" since the query uses it as an explicit prefix
+        Assert.Equal("parameter", capturedModelName);
+    }
+
+    [Fact]
+    public async Task BindModelAsync_SimpleType_ExactMatchParameterName_UsesParameterNameAsModelName()
+    {
+        // Arrange
+        // For simple types (e.g., string), an exact match should still use the parameter name.
+        var actionContext = GetControllerContext();
+        var modelMetadataProvider = new TestModelMetadataProvider();
+        var modelMetadata = modelMetadataProvider.GetMetadataForType(typeof(string));
+
+        var parameterDescriptor = new ParameterDescriptor
+        {
+            Name = "name",
+            ParameterType = typeof(string),
+        };
+
+        var valueProvider = new TestEnumerableValueProvider(
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "name", "testValue" },
+            });
+
+        string capturedModelName = null;
+        var mockBinder = new Mock<IModelBinder>(MockBehavior.Strict);
+        mockBinder
+            .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+            .Returns<ModelBindingContext>(context =>
+            {
+                capturedModelName = context.ModelName;
+                context.Result = ModelBindingResult.Success("testValue");
+                return Task.CompletedTask;
+            });
+
+        var parameterBinder = new ParameterBinder(
+            modelMetadataProvider,
+            Mock.Of<IModelBinderFactory>(),
+            new DefaultObjectValidator(
+                modelMetadataProvider,
+                new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                new MvcOptions()),
+            _optionsAccessor,
+            NullLoggerFactory.Instance);
+
+        // Act
+        await parameterBinder.BindModelAsync(
+            actionContext,
+            mockBinder.Object,
+            valueProvider,
+            parameterDescriptor,
+            modelMetadata,
+            value: null);
+
+        // Assert - Simple types should still use the parameter name
+        Assert.Equal("name", capturedModelName);
+    }
+
+    private class ModelWithParameterProperty
+    {
+        public string Parameter { get; set; }
+    }
+
+    private class TestEnumerableValueProvider : IValueProvider, IEnumerableValueProvider
+    {
+        private readonly PrefixContainer _prefixContainer;
+        private readonly Dictionary<string, string> _values;
+
+        public TestEnumerableValueProvider(Dictionary<string, string> values)
+        {
+            _values = values;
+            _prefixContainer = new PrefixContainer(values.Keys);
+        }
+
+        public bool ContainsPrefix(string prefix)
+        {
+            return _prefixContainer.ContainsPrefix(prefix);
+        }
+
+        public IDictionary<string, string> GetKeysFromPrefix(string prefix)
+        {
+            return _prefixContainer.GetKeysFromPrefix(prefix);
+        }
+
+        public ValueProviderResult GetValue(string key)
+        {
+            if (_values.TryGetValue(key, out var value))
+            {
+                return new ValueProviderResult(value);
+            }
+            return ValueProviderResult.None;
+        }
+    }
+
     private class AlwaysInvalidAttribute : ValidationAttribute
     {
         public AlwaysInvalidAttribute()
