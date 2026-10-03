@@ -303,6 +303,58 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         AssertBrowserLogDoesNotContainErrors();
     }
 
+    [Fact]
+    public void InteractiveServerComponents_CanBecomeInteractive_AfterEnhancedNavigationDuringCircuitInitialization()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        var token = Guid.NewGuid().ToString("N");
+        var javascript = (IJavaScriptExecutor)Browser;
+        Assert.True(Post($"{ServerPathBase}/circuit-handler-test/arm/{token}"));
+
+        var released = false;
+        try
+        {
+            Browser.Click(By.Id(AddServerPrerenderedId));
+            Browser.True(() => IsCircuitHandlerEntered());
+            Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+
+            javascript.ExecuteScript("document.getElementById(arguments[0]).click();", AddServerPrerenderedId);
+            Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+
+            released = Post($"{ServerPathBase}/circuit-handler-test/release/{token}");
+            Assert.True(released);
+
+            Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+            Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+
+            Browser.Click(By.Id("increment-0"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("count-0")).Text);
+            Browser.Click(By.Id("increment-1"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("count-1")).Text);
+
+            AssertBrowserLogDoesNotContainErrors();
+        }
+        finally
+        {
+            if (!released)
+            {
+                Post($"{ServerPathBase}/circuit-handler-test/release/{token}");
+            }
+        }
+
+        bool Post(string url)
+            => (bool)javascript.ExecuteAsyncScript(
+                "const done = arguments[arguments.length - 1]; fetch(arguments[0], { method: 'POST' }).then(response => done(response.ok)).catch(() => done(false));",
+                url);
+
+        bool IsCircuitHandlerEntered()
+            => (bool)javascript.ExecuteAsyncScript(
+                "const done = arguments[arguments.length - 1]; fetch(arguments[0], { cache: 'no-store' }).then(response => response.json()).then(value => done(value.entered)).catch(() => done(false));",
+                $"{ServerPathBase}/circuit-handler-test/entered/{token}");
+    }
+
     [Theory]
     [MemberData(nameof(AddCounterLinkSequences))]
     public void MultipleDynamicallyAddedSsrComponents_CanBecomeInteractive_AfterEnhancedNavigation(string[] addCounterLinkIds)
