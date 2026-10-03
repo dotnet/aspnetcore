@@ -358,6 +358,9 @@ public sealed class WebAssemblyHostBuilder
         // Register metrics and tracing when supported and not disabled by the feature switch.
         if (IsMeterSupported && IsMeterEnabled)
         {
+            Services.AddKeyedSingleton<IComponentRenderMode>(
+                "Microsoft.AspNetCore.Components.ActivityState.WebAssembly",
+                RenderMode.InteractiveWebAssembly);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);
         }

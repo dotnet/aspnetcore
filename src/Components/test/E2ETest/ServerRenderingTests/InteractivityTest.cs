@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
+using System.Net.Http.Json;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
+using TestContentPackage;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
@@ -26,6 +29,161 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public async Task PerPageActivityLinks_AreRestoredWhenInteractiveRuntimeIsInitialized(string mode)
+    {
+        var testId = Guid.NewGuid().ToString("N");
+        try
+        {
+            Navigate($"{ServerPathBase}/activity-links/{mode}/circuit-initialization?activity-links-test-id={testId}");
+
+            Browser.Equal("True", () => Browser.FindElement(By.Id("activity-links-interactive")).Text);
+            Browser.Click(By.Id("activity-links-trigger"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("activity-links-trigger-count")).Text);
+
+            var expectedOperations = mode == "server"
+                ? new[]
+                {
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Server.Circuits.StartCircuit",
+                    "Microsoft.AspNetCore.Components.HandleEvent",
+                }
+                : new[]
+                {
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.HandleEvent",
+                };
+            var telemetry = await GetActivityLinksTelemetryAsync(testId, expectedOperations.Length);
+            AssertActivityLinksTelemetry(
+                telemetry,
+                expectedOperations,
+                "/activity-links/{Mode}/circuit-initialization",
+                expectCircuit: mode == "server");
+        }
+        finally
+        {
+            await CompleteActivityLinksTelemetryAsync(testId);
+        }
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public async Task PerPageActivityLinks_AreUpdatedAfterEnhancedNavigation(string mode)
+    {
+        var testId = Guid.NewGuid().ToString("N");
+        try
+        {
+            Navigate($"{ServerPathBase}/activity-links/{mode}/navigation/one?activity-links-test-id={testId}");
+
+            Browser.Equal("True", () => Browser.FindElement(By.Id("activity-links-interactive")).Text);
+            var instanceId = Browser.FindElement(By.Id("activity-links-instance")).Text;
+
+            Browser.Click(By.Id("activity-links-navigate"));
+
+            Browser.Equal(
+                "Activity links navigation two",
+                () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal(
+                instanceId,
+                () => Browser.FindElement(By.Id("activity-links-instance")).Text);
+            Browser.Click(By.Id("activity-links-trigger"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("activity-links-trigger-count")).Text);
+
+            var expectedOperations = mode == "server"
+                ? new[]
+                {
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Server.Circuits.StartCircuit",
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.HandleEvent",
+                }
+                : new[]
+                {
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.Navigate",
+                    "Microsoft.AspNetCore.Components.HandleEvent",
+                };
+            var telemetry = await GetActivityLinksTelemetryAsync(testId, expectedOperations.Length);
+            AssertActivityLinksTelemetry(
+                telemetry,
+                expectedOperations,
+                $"/activity-links/{mode}/navigation/two",
+                expectCircuit: mode == "server");
+        }
+        finally
+        {
+            await CompleteActivityLinksTelemetryAsync(testId);
+        }
+    }
+
+    private async Task<ActivityLinksTestSpan[]> GetActivityLinksTelemetryAsync(string testId, int expectedCount)
+    {
+        using var client = new HttpClient { BaseAddress = _serverFixture.RootUri };
+        for (var i = 0; i < 100; i++)
+        {
+            var telemetry = await client.GetFromJsonAsync<ActivityLinksTestSpan[]>(
+                $"{ServerPathBase}/activity-links/telemetry/{testId}");
+            if (telemetry is { Length: >= 1 } && telemetry.Length >= expectedCount)
+            {
+                return telemetry;
+            }
+            await Task.Delay(100);
+        }
+
+        return [];
+    }
+
+    private async Task CompleteActivityLinksTelemetryAsync(string testId)
+    {
+        using var client = new HttpClient { BaseAddress = _serverFixture.RootUri };
+        await client.DeleteAsync($"{ServerPathBase}/activity-links/telemetry/{testId}");
+    }
+
+    private static void AssertActivityLinksTelemetry(
+        ActivityLinksTestSpan[] telemetry,
+        string[] expectedOperations,
+        string expectedRoute,
+        bool expectCircuit)
+    {
+        var actualOperations = telemetry.Select(span => span.Name).ToArray();
+        Assert.True(
+            expectedOperations.SequenceEqual(actualOperations),
+            $"Expected: {string.Join(", ", expectedOperations)}{Environment.NewLine}" +
+            $"Actual: {string.Join(", ", telemetry.Select(span => $"{span.Name} route={span.Route} trace={span.TraceId} span={span.SpanId}"))}");
+        var route = telemetry.Last(span => span.Name == "Microsoft.AspNetCore.Components.Navigate");
+        var eventActivity = Assert.Single(
+            telemetry.Where(span => span.Name == "Microsoft.AspNetCore.Components.HandleEvent"));
+        Assert.Equal(expectedRoute, eventActivity.Route);
+        Assert.Contains(
+            eventActivity.Links,
+            link => link.TraceId == route.TraceId && link.SpanId == route.SpanId);
+
+        var circuit = telemetry.SingleOrDefault(
+            span => span.Name == "Microsoft.AspNetCore.Components.Server.Circuits.StartCircuit");
+        if (expectCircuit)
+        {
+            Assert.NotNull(circuit);
+            Assert.Equal(circuit.CircuitId, eventActivity.CircuitId);
+            Assert.Contains(
+                eventActivity.Links,
+                link => link.TraceId == circuit.TraceId && link.SpanId == circuit.SpanId);
+        }
+        else
+        {
+            Assert.Null(circuit);
+            Assert.Null(eventActivity.CircuitId);
+        }
+    }
 
     [Fact]
     public void CanRenderInteractiveServerComponent()
