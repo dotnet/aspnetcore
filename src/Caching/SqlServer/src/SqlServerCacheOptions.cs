@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
@@ -28,7 +29,21 @@ public class SqlServerCacheOptions : IOptions<SqlServerCacheOptions>
     /// <summary>
     /// Gets or sets the connection string to the database.
     /// </summary>
+    /// <remarks>
+    /// Either <see cref="ConnectionString"/> or <see cref="ConnectionFactory"/> must be set, but not both.
+    /// </remarks>
     public string? ConnectionString { get; set; }
+
+    /// <summary>
+    /// Gets or sets a factory for creating <see cref="SqlConnection"/> instances.
+    /// Use this instead of <see cref="ConnectionString"/> when the connection requires dynamic configuration,
+    /// such as token-based authentication or runtime-resolved credentials.
+    /// </summary>
+    /// <remarks>
+    /// Either <see cref="ConnectionString"/> or <see cref="ConnectionFactory"/> must be set, but not both.
+    /// When set, <see cref="ConnectionString"/> is ignored.
+    /// </remarks>
+    public Func<SqlConnection>? ConnectionFactory { get; set; }
 
     /// <summary>
     /// Gets or sets the schema name of the table.
