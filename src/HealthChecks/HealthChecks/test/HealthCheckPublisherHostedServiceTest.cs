@@ -180,6 +180,84 @@ public class HealthCheckPublisherHostedServiceTest
     }
 
     [Fact]
+    public async Task StopAsync_WaitsForInFlightPublisher_BeforeReturning()
+    {
+        // Arrange
+        var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var publisher = new TestPublisher() { Wait = unblock.Task, };
+
+        // Use the real timer (not RunServiceAsync) so the publish is tracked the same way it is at runtime.
+        var service = CreateService(new[] { publisher }, configurePublisherOptions: options =>
+        {
+            options.Delay = TimeSpan.Zero;
+        });
+
+        try
+        {
+            await service.StartAsync();
+
+            // A publish is now in flight and parked inside PublishAsync.
+            await publisher.Started.TimeoutAfter(TimeSpan.FromSeconds(10));
+
+            // Act
+            var stopTask = service.StopAsync();
+
+            // Assert - StopAsync must not complete while the publish is still running.
+            await Task.Yield();
+            Assert.False(stopTask.IsCompleted);
+            Assert.False(service.IsTimerRunning);
+            Assert.True(service.IsStopping);
+
+            // Let the publish finish; StopAsync can now complete.
+            unblock.SetResult(null);
+
+            await stopTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+            Assert.Single(publisher.Entries);
+        }
+        finally
+        {
+            unblock.TrySetResult(null);
+            await service.StopAsync();
+            Assert.False(service.IsTimerRunning);
+            Assert.True(service.IsStopping);
+        }
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenCancellationTokenCanceled_DoesNotWaitForInFlightPublisher()
+    {
+        // Arrange
+        var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var publisher = new TestPublisher() { Wait = unblock.Task, };
+
+        var service = CreateService(new[] { publisher }, configurePublisherOptions: options =>
+        {
+            options.Delay = TimeSpan.Zero;
+        });
+
+        try
+        {
+            await service.StartAsync();
+
+            await publisher.Started.TimeoutAfter(TimeSpan.FromSeconds(10));
+
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            // Act + Assert - returns promptly, without throwing, even though the publish is still blocked.
+            await service.StopAsync(cts.Token).TimeoutAfter(TimeSpan.FromSeconds(10));
+            Assert.True(service.IsStopping);
+        }
+        finally
+        {
+            unblock.TrySetResult(null);
+            await service.StopAsync();
+        }
+    }
+
+    [Fact]
     public async Task RunAsync_WaitsForCompletion_Single()
     {
         // Arrange
