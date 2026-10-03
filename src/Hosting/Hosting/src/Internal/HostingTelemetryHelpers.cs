@@ -272,14 +272,14 @@ internal static class HostingTelemetryHelpers
         return false;
     }
 
-    public static void SetActivityHttpMethodTags(ref TagList tags, string originalHttpMethod)
+    public static void SetActivityHttpMethodTags(List<KeyValuePair<string, object?>> tags, string originalHttpMethod)
     {
         var normalizedHttpMethod = GetNormalizedHttpMethod(originalHttpMethod);
-        tags.Add(AttributeHttpRequestMethod, normalizedHttpMethod);
+        tags.Add(new(AttributeHttpRequestMethod, normalizedHttpMethod));
 
         if (originalHttpMethod != normalizedHttpMethod)
         {
-            tags.Add(AttributeHttpRequestMethodOriginal, originalHttpMethod);
+            tags.Add(new(AttributeHttpRequestMethodOriginal, originalHttpMethod));
         }
     }
 

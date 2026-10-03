@@ -164,6 +164,16 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
         internal HttpActivityFeature? HttpActivityFeature;
         internal HttpMetricsTagsFeature? MetricsTagsFeature;
 
+        // Telemetry state that is reused across requests handled by a pooled context,
+        // which is typically for the lifetime of a connection. The cached values are
+        // keyed on their inputs, so they're intentionally not cleared by Reset().
+        internal List<KeyValuePair<string, object?>>? ActivityCreationTags;
+        internal object? CachedRemotePort;
+        internal string? CachedHostValue;
+        internal string? CachedHostScheme;
+        internal string? CachedServerAddress;
+        internal object? CachedServerPort;
+
         public void Reset()
         {
             // Not resetting HttpContext here as we pool it on the Context

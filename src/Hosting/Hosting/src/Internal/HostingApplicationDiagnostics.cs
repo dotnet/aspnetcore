@@ -28,6 +28,9 @@ internal sealed class HostingApplicationDiagnostics
 
     private const string RequestUnhandledKey = "__RequestUnhandled";
 
+    // The most tags that AddInitializeActivityTags adds.
+    private const int MaxInitializeActivityTags = 11;
+
     private readonly ActivitySource _activitySource;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly DistributedContextPropagator _propagator;
@@ -122,7 +125,7 @@ internal sealed class HostingApplicationDiagnostics
 
         if (ActivityCreator.IsActivityCreated(_activitySource, loggingEnabled || diagnosticListenerActivityCreationEnabled))
         {
-            context.Activity = StartActivity(httpContext, loggingEnabled || diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
+            context.Activity = StartActivity(httpContext, context, loggingEnabled || diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
             context.HasDiagnosticListener = hasDiagnosticListener;
 
             if (context.Activity != null)
@@ -417,7 +420,7 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private Activity? StartActivity(HttpContext httpContext, bool diagnosticsOrLoggingEnabled, out bool hasDiagnosticListener)
+    private Activity? StartActivity(HttpContext httpContext, HostingApplication.Context context, bool diagnosticsOrLoggingEnabled, out bool hasDiagnosticListener)
     {
         // StartActivity is only called if an Activity is already verified to be created.
         Debug.Assert(ActivityCreator.IsActivityCreated(_activitySource, diagnosticsOrLoggingEnabled),
@@ -425,26 +428,40 @@ internal sealed class HostingApplicationDiagnostics
 
         hasDiagnosticListener = false;
 
-        var initializeTags = !SuppressActivityOpenTelemetryData
-            ? CreateInitializeActivityTags(httpContext)
-            : (TagList?)null;
-
-        var headers = httpContext.Request.Headers;
-        var activity = ActivityCreator.CreateFromRemote(
-            _activitySource,
-            _propagator,
-            headers,
-            static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
+        List<KeyValuePair<string, object?>>? initializeTags = null;
+        Activity? activity;
+        try
+        {
+            if (!SuppressActivityOpenTelemetryData)
             {
-                fieldValues = default;
-                var headers = (IHeaderDictionary)carrier!;
-                fieldValue = headers[fieldName];
-            },
-            ActivityName,
-            ActivityKind.Server,
-            tags: initializeTags,
-            links: null,
-            diagnosticsOrLoggingEnabled);
+                // The list is reused by later requests on the same context. This is safe because the tags are copied
+                // into the activity when it's created, and the list is always cleared before this method returns.
+                initializeTags = context.ActivityCreationTags ??= new List<KeyValuePair<string, object?>>(MaxInitializeActivityTags);
+                AddInitializeActivityTags(initializeTags, httpContext, context);
+            }
+
+            var headers = httpContext.Request.Headers;
+            activity = ActivityCreator.CreateFromRemote(
+                _activitySource,
+                _propagator,
+                headers,
+                static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
+                {
+                    fieldValues = default;
+                    var headers = (IHeaderDictionary)carrier!;
+                    fieldValue = headers[fieldName];
+                },
+                ActivityName,
+                ActivityKind.Server,
+                tags: initializeTags,
+                links: null,
+                diagnosticsOrLoggingEnabled);
+        }
+        finally
+        {
+            initializeTags?.Clear();
+        }
+
         if (activity is null)
         {
             return null;
@@ -472,7 +489,7 @@ internal sealed class HostingApplicationDiagnostics
         return activity;
     }
 
-    private TagList CreateInitializeActivityTags(HttpContext httpContext)
+    private void AddInitializeActivityTags(List<KeyValuePair<string, object?>> creationTags, HttpContext httpContext, HostingApplication.Context context)
     {
         // The tags here are set when the activity is created. They can be used in sampling decisions.
         // Most values in semantic conventions that are present at creation are specified:
@@ -483,54 +500,94 @@ internal sealed class HostingApplicationDiagnostics
         // - network.protocol.name (only required if not "http", which is never the case here)
         //
         // Note that these tags are added even if Activity.IsAllDataRequested is false, as they may be used in sampling decisions.
+        //
+        // Update MaxInitializeActivityTags when adding tags here or in HostingTelemetryHelpers.SetActivityHttpMethodTags.
 
         var request = httpContext.Request;
-        var creationTags = new TagList();
+        var connection = httpContext.Connection;
 
-        if (httpContext.Connection.RemoteIpAddress is { } remoteIpAddress)
+        if (connection.RemoteIpAddress is { } remoteIpAddress)
         {
             var remoteIpAddressString = remoteIpAddress.ToString();
-            creationTags.Add(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
-            creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerAddress, remoteIpAddressString);
+            creationTags.Add(new(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString));
+            creationTags.Add(new(HostingTelemetryHelpers.AttributeNetworkPeerAddress, remoteIpAddressString));
 
-            if (httpContext.Connection.RemotePort is { } remotePort && remotePort > 0)
+            var remotePort = connection.RemotePort;
+            if (remotePort > 0)
             {
-                creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerPort, remotePort);
+                creationTags.Add(new(HostingTelemetryHelpers.AttributeNetworkPeerPort, GetBoxedRemotePort(context, remotePort)));
             }
         }
 
-        if (request.Host.HasValue)
+        var scheme = request.Scheme;
+        var host = request.Host;
+        if (host.HasValue)
         {
-            creationTags.Add(HostingTelemetryHelpers.AttributeServerAddress, request.Host.Host);
+            GetServerAddressAndPort(context, host, scheme, out var serverAddress, out var serverPort);
+            creationTags.Add(new(HostingTelemetryHelpers.AttributeServerAddress, serverAddress));
 
-            if (HostingTelemetryHelpers.TryGetServerPort(request.Host, request.Scheme, out var port))
+            if (serverPort is not null)
             {
-                creationTags.Add(HostingTelemetryHelpers.AttributeServerPort, port);
+                creationTags.Add(new(HostingTelemetryHelpers.AttributeServerPort, serverPort));
             }
         }
 
-        HostingTelemetryHelpers.SetActivityHttpMethodTags(ref creationTags, request.Method);
+        HostingTelemetryHelpers.SetActivityHttpMethodTags(creationTags, request.Method);
 
         if (request.Headers.TryGetValue(HeaderNames.UserAgent, out var values))
         {
             var userAgent = values.Count > 0 ? values[0] : null;
             if (!string.IsNullOrEmpty(userAgent))
             {
-                creationTags.Add(HostingTelemetryHelpers.AttributeUserAgentOriginal, userAgent);
+                creationTags.Add(new(HostingTelemetryHelpers.AttributeUserAgentOriginal, userAgent));
             }
         }
 
-        creationTags.Add(HostingTelemetryHelpers.AttributeUrlScheme, request.Scheme);
+        creationTags.Add(new(HostingTelemetryHelpers.AttributeUrlScheme, scheme));
 
         var path = (request.PathBase.HasValue || request.Path.HasValue) ? (request.PathBase + request.Path).ToString() : "/";
-        creationTags.Add(HostingTelemetryHelpers.AttributeUrlPath, path);
+        creationTags.Add(new(HostingTelemetryHelpers.AttributeUrlPath, path));
 
         if (!SuppressActivityUrlQuery && request.QueryString.Value is { Length: > 0 } queryString)
         {
-            creationTags.Add(HostingTelemetryHelpers.AttributeUrlQuery, HostingTelemetryHelpers.GetRedactedQueryString(queryString));
+            creationTags.Add(new(HostingTelemetryHelpers.AttributeUrlQuery, HostingTelemetryHelpers.GetRedactedQueryString(queryString)));
+        }
+    }
+
+    private static object GetBoxedRemotePort(HostingApplication.Context context, int remotePort)
+    {
+        // The remote port is the same for every request on a connection, so reuse the boxed value from the previous request.
+        var cached = context.CachedRemotePort;
+        if (cached is not null && (int)cached == remotePort)
+        {
+            return cached;
         }
 
-        return creationTags;
+        object boxed = remotePort;
+        context.CachedRemotePort = boxed;
+
+        return boxed;
+    }
+
+    private static void GetServerAddressAndPort(HostingApplication.Context context, HostString host, string scheme, out string serverAddress, out object? serverPort)
+    {
+        // The Host header is almost always the same for every request on a connection (and Kestrel reuses the string instance).
+        // Caching the parsed values avoids parsing the header again, and allocating the host name when the header includes a
+        // port, for every request.
+        var hostValue = host.Value;
+        if (!string.Equals(hostValue, context.CachedHostValue, StringComparison.Ordinal) ||
+            !string.Equals(scheme, context.CachedHostScheme, StringComparison.Ordinal))
+        {
+            context.CachedServerAddress = host.Host;
+            context.CachedServerPort = HostingTelemetryHelpers.TryGetServerPort(host, scheme, out var port) ? port : null;
+
+            // Update the keys last so a failure while parsing can't leave a stale entry.
+            context.CachedHostValue = hostValue;
+            context.CachedHostScheme = scheme;
+        }
+
+        serverAddress = context.CachedServerAddress!;
+        serverPort = context.CachedServerPort;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
