@@ -14,6 +14,10 @@ If a contributor reviews an issue and determines that more information is needed
 
 If the author does not post a response within **7 days**, the issue will be automatically closed. If the author responds within **7 days** after the issue is closed, the issue will be automatically re-opened. We recognize that you may not be able to respond immediately to our requests, we're happy to hear from you whenever you're able to provide the new information.
 
+### Needs: Repro
+
+When investigating an issue requires a minimal reproduction project, a contributor will apply the `Needs: Repro` label. This automatically posts a templated reply pointing to the [Bug Report Reproduction Guide](./repro.md) and applies `Needs: Author Feedback`, so the 7-day auto-close behavior described above also applies.
+
 ### PR: pending author input
 Similar to the `Needs Author Feedback` process above, PRs also require author input from time to time. When a member of our team asks for some follow-up changes from the author, we mark these PRs with `pr: pending author input` label. After doing so, we expect the author to respond within 14 days.
 If the author does not post a response or updates the PR within **14 days**, the issue will be automatically closed. If the author responds within **7 days** after the issue is closed, the issue will be automatically re-opened. We recognize that you may not be able to respond immediately to our requests, we're happy to hear from you whenever you're able to provide the new information.
