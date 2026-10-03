@@ -76,10 +76,9 @@ internal sealed class OpenApiDocumentService(
             Info = GetOpenApiInfo(),
             Servers = GetOpenApiServers(httpRequest)
         };
-        document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
         try
         {
-            await ApplyTransformersAsync(document, scopedServiceProvider, schemaTransformers, cancellationToken);
+            await ApplyTransformersAndGeneratePathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
         }
 
         finally
@@ -101,7 +100,12 @@ internal sealed class OpenApiDocumentService(
         return document;
     }
 
-    private async Task ApplyTransformersAsync(OpenApiDocument document, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
+    private async Task ApplyTransformersAndGeneratePathsAsync(
+        OpenApiDocument document,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiOperationTransformer[] operationTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        CancellationToken cancellationToken)
     {
         var documentTransformerContext = new OpenApiDocumentTransformerContext
         {
@@ -111,11 +115,42 @@ internal sealed class OpenApiDocumentService(
             Document = document,
             SchemaTransformers = schemaTransformers
         };
-        // Use index-based for loop to avoid allocating an enumerator with a foreach.
-        for (var i = 0; i < _options.DocumentTransformers.Count; i++)
+        var pathsGenerated = false;
+        var hasGenerationTransformers = false;
+        for (var i = 0; i < _options.Transformers.Count; i++)
         {
-            var transformer = _options.DocumentTransformers[i];
-            await transformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+            if (_options.Transformers[i].Kind is not OpenApiTransformerKind.Document)
+            {
+                hasGenerationTransformers = true;
+                break;
+            }
+        }
+
+        if (!hasGenerationTransformers)
+        {
+            document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+            pathsGenerated = true;
+        }
+
+        // Use index-based for loop to avoid allocating an enumerator with a foreach.
+        for (var i = 0; i < _options.Transformers.Count; i++)
+        {
+            var transformerRegistration = _options.Transformers[i];
+            if (transformerRegistration.Kind is OpenApiTransformerKind.Document)
+            {
+                var documentTransformer = (IOpenApiDocumentTransformer)transformerRegistration.Transformer;
+                await documentTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+            }
+            else if (!pathsGenerated)
+            {
+                document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+                pathsGenerated = true;
+            }
+        }
+
+        if (!pathsGenerated)
+        {
+            document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
         }
     }
 
