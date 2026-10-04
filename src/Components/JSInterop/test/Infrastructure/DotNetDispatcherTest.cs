@@ -96,6 +96,28 @@ public class DotNetDispatcherTest
         Assert.Equal(123, result.IntVal);
     }
 
+    [Theory]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethod), true)]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethodReturningNonGenericTask), false)]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethodReturningValueTask), true)]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethodReturningValueTaskNonGeneric), false)]
+    public void CannotInvokeAsyncMethodSynchronously(string methodIdentifier, bool hasArguments)
+    {
+        var jsRuntime = new TestJSRuntime();
+        var targetReference = DotNetObjectReference.Create(new SomePublicType());
+        var argumentReference = DotNetObjectReference.Create(new TestDTO());
+        jsRuntime.Invoke<object>("unimportant", targetReference, argumentReference);
+
+        var argsJson = hasArguments
+            ? JsonSerializer.Serialize(new object[] { new TestDTO(), argumentReference }, jsRuntime.JsonSerializerOptions)
+            : "[]";
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, methodIdentifier, targetReference.ObjectId, default), argsJson));
+
+        Assert.Equal($"The JSInvokable method '{methodIdentifier}' returns an asynchronous value. Use 'invokeMethodAsync' to invoke it.", exception.Message);
+    }
+
     [Fact]
     public void CanInvokeStaticNonVoidMethodWithoutCustomIdentifier()
     {
