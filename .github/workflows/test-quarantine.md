@@ -4,10 +4,6 @@ if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.for
 # Evidence collection can exceed ubuntu-slim's 15-minute job limit.
 runs-on-slim: ubuntu-latest
 
-features:
-  # Use the legacy inline detector until https://github.com/github/gh-aw/issues/61857 ships in a gh-aw release.
-  gh-aw-detection: false
-
 on:
   schedule:
     - cron: "0 10 */2 * *"
