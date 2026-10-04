@@ -144,7 +144,7 @@ public class PrepareReviewTests
         foreach (var name in new[] { "CrossCuttingGuidance.md", "BlazorComponentsGuidance.md" })
         {
             var body = File.ReadAllText(Path.Combine(RepositoryRoot, "docs", name));
-            var classified = PrepareReviewProgram.GuideLinks(body, $"docs/{name}", true);
+            var classified = PrepareReviewProgram.GuideLinks(body, $"docs/{name}");
             var count = Regex.Matches(body, @"\[[^\]]+\]\((?:\.\.?/)*[^)\s]+\.md(?:#[^)\s]*)?\)").Count;
             Assert.Equal(count, classified.Included.Count + classified.Context.Count + classified.Skipped.Count);
             Assert.All(classified.Context, link => Assert.Equal("context", link.Role));
@@ -152,30 +152,74 @@ public class PrepareReviewTests
         }
         var architecture = PrepareReviewProgram.GuideLinks(
             File.ReadAllText(Path.Combine(RepositoryRoot, "docs/BlazorComponentsGuidance.md")),
-            "docs/BlazorComponentsGuidance.md", true);
+            "docs/BlazorComponentsGuidance.md");
         var context = Assert.Single(architecture.Context);
         Assert.Equal("src/Components/ARCHITECTURE.md", context.Path);
+        Assert.Contains("src/Components/AGENTS.md#code-clarity-and-durable-knowledge",
+            architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        Assert.Contains("src/Components/AGENTS.md#cross-runtime-design-checkpoint",
+            architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        Assert.Contains("src/Components/AGENTS.md#creating-e2e-tests",
+            architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         var sample = "- Apply [binding](Policy.md#binding).\n" +
             "- Orient with [architecture](../src/Components/ARCHITECTURE.md).\n" +
             "- Read [design](<../src/Components/DESIGN.md> \"Context\").\n" +
             "- External [docs](https://example.com/Policy.md) are not repository-relative.\n" +
             "- Supplemental implementation/test references: [example](Example.md#sample).\n" +
             "- For Components APIs follow [API](../src/Components/AGENTS.md#code-clarity-and-durable-knowledge); generic JSInterop differs.\n";
-        var links = PrepareReviewProgram.GuideLinks(sample, "docs/Guide.md", false);
-        Assert.Equal(["binding"], links.Included.Select(link => link.Anchor));
+        var links = PrepareReviewProgram.GuideLinks(sample, "docs/Guide.md");
+        Assert.Equal(["binding", "code-clarity-and-durable-knowledge"], links.Included.Select(link => link.Anchor));
         Assert.Equal(["src/Components/ARCHITECTURE.md", "src/Components/DESIGN.md"], links.Context.Select(link => link.Path));
-        Assert.Equal(["sample", "code-clarity-and-durable-knowledge"], links.Skipped.Select(link => link.Anchor));
+        Assert.Equal(["sample"], links.Skipped.Select(link => link.Anchor));
         var mixed = File.ReadAllLines(Path.Combine(RepositoryRoot, "docs/BlazorComponentsGuidance.md"))
             .Single(line => line.Contains("For Components E2E work", StringComparison.Ordinal));
-        var jsInterop = PrepareReviewProgram.GuideLinks(mixed, "docs/BlazorComponentsGuidance.md", false);
+        var mixedLinks = PrepareReviewProgram.GuideLinks(mixed, "docs/BlazorComponentsGuidance.md");
         Assert.Equal([
             "CONTRIBUTING.md#tests",
             ".github/copilot-instructions.md#running-tests",
-        ], jsInterop.Included.Select(link => $"{link.Path}#{link.Anchor}"));
-        Assert.Equal(["src/Components/AGENTS.md#creating-e2e-tests"],
-            jsInterop.Skipped.Select(link => $"{link.Path}#{link.Anchor}"));
+            "src/Components/AGENTS.md#creating-e2e-tests",
+        ], mixedLinks.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        Assert.Empty(mixedLinks.Skipped);
         Assert.Throws<InvalidOperationException>(() =>
-            PrepareReviewProgram.GuideLinks("[bad](Policy.md#)", "docs/Guide.md", true));
+            PrepareReviewProgram.GuideLinks("[bad](Policy.md#)", "docs/Guide.md"));
+    }
+
+    [Theory]
+    [InlineData("code-clarity-and-durable-knowledge", "Code Clarity and Durable Knowledge")]
+    [InlineData("cross-runtime-design-checkpoint", "Cross-Runtime Design Checkpoint")]
+    [InlineData("creating-e2e-tests", "Creating E2E Tests")]
+    public async Task IncludesPoliciesLinkedByDifferentlyNamedRoutedGuide(string anchor, string heading)
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        await fixture.WriteGuidanceAsync(".github/skills/review-pull-request/routing.md",
+            "| Changed path prefix | Guide |\n| --- | --- |\n" +
+            "| * | docs/CrossCuttingGuidance.md |\n" +
+            "| src/Components/ | docs/SpecializedGuidance.md |\n");
+        await fixture.WriteGuidanceAsync("docs/SpecializedGuidance.md",
+            "# Specialized\n## Overarching principles\n- A principle.\n" +
+            "## Topics\n### Tests\n" +
+            $"- Follow [the delegated policy](../src/Components/AGENTS.md#{anchor}).\n");
+        await fixture.WriteGuidanceAsync("src/Components/AGENTS.md",
+            $"# Components\n## {heading}\n- Validate the behavior.\n");
+
+        var manifest = await fixture.PrepareAsync();
+
+        Assert.Equal([
+            "docs/CrossCuttingGuidance.md",
+            "docs/SpecializedGuidance.md",
+        ], manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>()));
+        Assert.Empty(manifest["skippedLinks"]!.AsArray());
+        var policy = Assert.Single(manifest["policies"]!.AsArray())!.AsObject();
+        Assert.Equal("src/Components/AGENTS.md", policy["path"]!.GetValue<string>());
+        Assert.Equal(anchor, policy["anchor"]!.GetValue<string>());
+        Assert.Equal("docs/SpecializedGuidance.md", policy["guide"]!.GetValue<string>());
+        Assert.Equal($"## {heading}\n- Validate the behavior.", policy["body"]!.GetValue<string>());
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        manifest["policies"] = new JsonArray();
+        await fixture.WriteManifestAsync(manifest);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Contains("Prepared required policy inputs are incomplete.", exception.Message);
     }
 
     [Theory]

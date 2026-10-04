@@ -68,8 +68,8 @@ mandatory check and does not by itself make a guide incomplete. Context from the
 reviewer guidance snapshot never proves behavior or a binding contract on the
 target branch: verify such claims against the frozen `head`, `mergeBase`, or `baseTip`
 source and applicable primary contracts, especially for older release bases.
-`skippedLinks[]` lists supporting references or inapplicable links with reasons,
-never silent omissions; their source paths may still be evidence for a candidate.
+`skippedLinks[]` lists supporting references with reasons, never silent omissions;
+their source paths may still be evidence for a candidate.
 For public API and baseline changes, formal approval is human-owned.
 For source-only review, exclude executing CI/browser workflows and unsupported
 implementation validation; use the bundle's explicitly classified `exclusions` to

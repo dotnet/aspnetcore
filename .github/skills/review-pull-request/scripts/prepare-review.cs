@@ -21,16 +21,9 @@ internal static partial class PrepareReviewProgram
     internal const string RoutingPath = ".github/skills/review-pull-request/routing.md";
     private const int MaximumBlobBytes = 16 * 1024 * 1024;
     private const int MaximumProcessOutputBytes = 64 * 1024 * 1024;
-    private const string BlazorComponentsGuidePath = "docs/BlazorComponentsGuidance.md";
     private const string TargetMovedDuringPreparationMessage =
         "The target or base branch moved during preparation; no ready manifest was written.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
-    private static readonly HashSet<string> ComponentsOnlyPolicies = new(StringComparer.Ordinal)
-    {
-        "src/Components/AGENTS.md#code-clarity-and-durable-knowledge",
-        "src/Components/AGENTS.md#cross-runtime-design-checkpoint",
-        "src/Components/AGENTS.md#creating-e2e-tests",
-    };
 
     internal sealed record Options(
         string? Repo,
@@ -51,7 +44,7 @@ internal static partial class PrepareReviewProgram
     internal sealed record GuideLinkResult(List<Link> Included, List<Link> Context, List<Link> Skipped);
     internal sealed record GuideResult(string Principles, List<string> Topics, string Body);
     internal sealed record RoutingEntry(string Prefix, string Guide);
-    private sealed record RoutingResult(string Sha256, List<string> Guides, bool BlazorComponentsRouted);
+    private sealed record RoutingResult(string Sha256, List<string> Guides);
     private sealed record TreeEntry(string Mode, string Type, string Sha, string Name);
     private sealed record Pointer(string Path, string Kind, string? Commit = null);
 
@@ -541,10 +534,10 @@ internal static partial class PrepareReviewProgram
                 guides.Add(entry.Guide);
             }
         }
-        return new(Hash(routingBytes), guides, guides.Contains(BlazorComponentsGuidePath, StringComparer.Ordinal));
+        return new(Hash(routingBytes), guides);
     }
 
-    internal static GuideLinkResult GuideLinks(string text, string guidePath, bool blazorComponentsRouted)
+    internal static GuideLinkResult GuideLinks(string text, string guidePath)
     {
         var included = new List<Link>();
         var context = new List<Link>();
@@ -572,10 +565,6 @@ internal static partial class PrepareReviewProgram
                 if (SkippedLineRegex().IsMatch(line))
                 {
                     skipped.Add(link with { Reason = "Supporting source example, not a delegated criterion." });
-                }
-                else if (!blazorComponentsRouted && anchor is not null && ComponentsOnlyPolicies.Contains($"{resolved}#{anchor}"))
-                {
-                    skipped.Add(link with { Reason = "Components-only criterion is not applicable to this change." });
                 }
                 else if (anchor is not null)
                 {
@@ -1266,7 +1255,7 @@ internal static partial class PrepareReviewProgram
                 (name + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
             var parsed = ValidateGuide(body, name);
             guides.Add(new JsonObject { ["path"] = name, ["topics"] = new JsonArray(parsed.Topics.Select(topic => JsonValue.Create(topic)).ToArray()) });
-            var links = GuideLinks(body, name, routing.BlazorComponentsRouted);
+            var links = GuideLinks(body, name);
             foreach (var link in links.Skipped) skippedLinks.Add(LinkJson(link));
             var classified = await ContextLinksAsync(links.Context, Path.Combine(output, "guidance"), guidance["pointers"]?.AsArray());
             foreach (var item in classified) context.Add(item!.DeepClone());
@@ -1384,7 +1373,7 @@ internal static partial class PrepareReviewProgram
             var actual = ValidateGuide(body, path);
             Require(actual.Topics.SequenceEqual(guide["topics"]!.AsArray().Select(item => item!.GetValue<string>()), StringComparer.Ordinal),
                 $"Prepared guide topics changed: {path}");
-            var links = GuideLinks(body, path, routing.BlazorComponentsRouted);
+            var links = GuideLinks(body, path);
             included.AddRange(links.Included);
             context.AddRange(links.Context);
             skipped.AddRange(links.Skipped);
