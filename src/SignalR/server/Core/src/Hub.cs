@@ -98,6 +98,9 @@ public abstract class Hub : IDisposable
     /// The previous principal is intentionally not exposed because its underlying resources
     /// (for example a <see cref="System.Security.Principal.WindowsIdentity"/>'s <c>SafeHandle</c>)
     /// may already be disposed by the time this method runs.
+    /// Authentication refresh does not change <see cref="HubCallerContext.UserIdentifier"/> or rekey
+    /// SignalR user routing. <c>Clients.User(...)</c> remains associated with the identifier established
+    /// when the connection started. Reconnect the client to change its routing identifier.
     /// </remarks>
     public virtual Task OnAuthenticationRefreshedAsync()
     {

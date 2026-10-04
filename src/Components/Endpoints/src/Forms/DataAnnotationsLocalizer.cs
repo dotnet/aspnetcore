@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Validation;
 
@@ -40,7 +39,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
     // FormatErrorMessage when no localizer is configured or the attribute already supplies
     // resource-based localization.
     //
-    // Keep in sync with the generated ResolveAttributeErrorMessage/FormatErrorMessage in
+    // Keep in sync with the generated ResolveAttributeErrorMessage in
     // src/Validation/gen/Templates/ValidatableInfo.cs, which this mirrors for the SSR client payload.
     public string? ResolveAttributeErrorMessage(
        string? memberName,
@@ -63,7 +62,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
         }
 
         // Format the localized template with attribute-specific arguments
-        return FormatMessage(attribute, CultureInfo.CurrentCulture, localizedTemplate, displayName);
+        return attribute.FormatMessage(localizedTemplate, displayName);
     }
 
     // Resolves the localized message template for a validation attribute.
@@ -134,19 +133,4 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
                 $"The {nameof(ValidationOptions)}.{nameof(ValidationOptions.LocalizerProvider)} " +
                 $"delegate returned null for type '{type.FullName}'. " +
                 $"The delegate must return a non-null {nameof(IStringLocalizer)} instance.");
-
-    private static string FormatMessage(ValidationAttribute attribute, CultureInfo culture, string messageTemplate, string displayName)
-        => attribute switch
-        {
-            IValidationMessageFormatter selfFormatter => selfFormatter.FormatMessage(culture, messageTemplate, displayName),
-            CompareAttribute a => string.Format(culture, messageTemplate, displayName, a.OtherPropertyDisplayName ?? a.OtherProperty),
-            FileExtensionsAttribute a => string.Format(culture, messageTemplate, displayName, a.Extensions),
-            LengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MinimumLength, a.MaximumLength),
-            MaxLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
-            MinLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
-            RangeAttribute a => string.Format(culture, messageTemplate, displayName, a.Minimum, a.Maximum),
-            RegularExpressionAttribute a => string.Format(culture, messageTemplate, displayName, a.Pattern),
-            StringLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MaximumLength, a.MinimumLength),
-            _ => string.Format(culture, messageTemplate, displayName),
-        };
 }

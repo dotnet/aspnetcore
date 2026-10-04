@@ -158,6 +158,15 @@ public class ClientValidationProviderTests
     }
 
     [Fact]
+    public void CustomRuleProviderAttribute_TakesPrecedenceOverBuiltInBaseType()
+    {
+        var rule = SingleRule(GetData<RequiredDerivedRuleProviderModel>(nameof(RequiredDerivedRuleProviderModel.Value))!, nameof(RequiredDerivedRuleProviderModel.Value));
+
+        Assert.Equal("requiredif", rule.Name);
+        Assert.Equal("Other", rule.Params!["other"]);
+    }
+
+    [Fact]
     public void DisplayNameAttribute_IsUsedInErrorMessage()
     {
         var rule = SingleRule(GetData<DisplayNameModel>(nameof(DisplayNameModel.Field))!, nameof(DisplayNameModel.Field));
@@ -589,6 +598,25 @@ public class ClientValidationProviderTests
         {
             yield return new ClientValidationRule("custom",
                 new Dictionary<string, string> { ["foo"] = "bar" });
+        }
+    }
+
+    private sealed class RequiredDerivedRuleProviderModel
+    {
+        [RequiredIf("Other", ErrorMessage = "conditional message")]
+        public string Value { get; set; } = "";
+    }
+
+    private sealed class RequiredIfAttribute : RequiredAttribute, IClientValidationRuleProvider
+    {
+        private readonly string _otherProperty;
+
+        public RequiredIfAttribute(string otherProperty) => _otherProperty = otherProperty;
+
+        public IEnumerable<ClientValidationRule> GetClientValidationRules()
+        {
+            yield return new ClientValidationRule("requiredif",
+                new Dictionary<string, string> { ["other"] = _otherProperty });
         }
     }
 

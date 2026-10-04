@@ -50,11 +50,11 @@ internal sealed class TextBlockHandler : ContentBlockHandler<RichContentBlock>
         var rawText = state.RawText;
         if (rawText.Length == 0)
         {
-            state.Paragraphs = Array.Empty<string>();
+            state.Content = Array.Empty<RichTextNode>();
             return;
         }
 
-        var paragraphs = new List<string>();
+        var paragraphs = new List<RichTextNode>();
         var start = 0;
         while (start < rawText.Length)
         {
@@ -73,10 +73,10 @@ internal sealed class TextBlockHandler : ContentBlockHandler<RichContentBlock>
             start = breakIndex + 2;
         }
 
-        state.Paragraphs = paragraphs;
+        state.Content = paragraphs;
     }
 
-    private static void AddParagraph(List<string> paragraphs, ReadOnlySpan<char> text)
+    private static void AddParagraph(List<RichTextNode> paragraphs, ReadOnlySpan<char> text)
     {
         var trimmed = text.TrimEnd("\r\n".AsSpan());
         if (trimmed.Length == 0)
@@ -84,6 +84,8 @@ internal sealed class TextBlockHandler : ContentBlockHandler<RichContentBlock>
             return;
         }
 
-        paragraphs.Add(trimmed.ToString());
+        var paragraph = new ParagraphNode();
+        paragraph.AddChild(new TextNode(trimmed.ToString()));
+        paragraphs.Add(paragraph);
     }
 }

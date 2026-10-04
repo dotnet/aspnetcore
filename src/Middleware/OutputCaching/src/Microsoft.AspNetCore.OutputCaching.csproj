@@ -22,4 +22,8 @@
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>

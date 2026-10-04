@@ -26,6 +26,12 @@
 
   <Import Project="..\AspNetCoreTools.NativeAot.props" />
 
+  <PropertyGroup Condition="'$(PublishAot)' == 'true'">
+    <!-- Dedicated native CLI shims load this aggregate as their only .NET runtime, avoiding
+         the multiple-runtime limitation in https://github.com/dotnet/runtime/issues/91762. -->
+    <_SuppressNativeLibEventSourceWarning>true</_SuppressNativeLibEventSourceWarning>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\dotnet-dev-certs\src\dotnet-dev-certs.csproj" IncludeInAggregateExecutable="true" />
     <ProjectReference Include="..\..\dotnet-user-jwts\src\dotnet-user-jwts.csproj" IncludeInAggregateExecutable="true" />

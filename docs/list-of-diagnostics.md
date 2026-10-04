@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0038`)
+### ASP (`ASP0000-ASP0039`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -35,7 +35,6 @@
 |  __`ASP0027`__ | Unnecessary public Program class declaration |
 |  __`ASP0028`__ | Consider using ListenAnyIP() instead of Listen(IPAddress.Any) |
 |  __`ASP0029`__ | Experimental warning for validations resolver APIs |
-|  __`ASP0030`__ | Experimental warning for QuickGrid virtualization anchoring APIs |
 |  __`ASP0031`__ | Experimental warning for Device Bound Sessions (DBSC) APIs |
 |  __`ASP0032`__ | Experimental warning for RenderFragment serialization APIs |
 |  __`ASP0033`__ | \[ValidatableType\] is applied to an inaccessible type |
@@ -44,6 +43,7 @@
 |  __`ASP0036`__ | Validatable property or its type on an endpoint parameter type is not accessible |
 |  __`ASP0037`__ | \[ValidatableType] cannot be used in generated code |
 |  __`ASP0038`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
+|  __`ASP0039`__ | Experimental warning for well-known passkey endpoints APIs |
 
 ### API (`API1000-API1003`)
 
@@ -66,7 +66,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0016`)
+### BL  (`BL0001-BL0019`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -86,6 +86,9 @@
 |  __`BL0014`__ | For loop iterator used inside a closure. |
 |  __`BL0015`__ | [JSInvokable] methods should be public |
 |  __`BL0016`__ | Unguarded JS interop call |
+|  __`BL0017`__ | Component declares `Dispose()` but does not implement `IDisposable`  |
+|  __`BL0018`__ | Component declares `DisposeAsync()` but does not implement `IAsyncDisposable` |
+|  __`BL0019`__ | Virtualize uses an invalid spacer element |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 

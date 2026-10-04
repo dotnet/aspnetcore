@@ -34,6 +34,9 @@ public interface IFormOptionsMetadata
     /// <summary>
     /// A limit on the length of individual keys. Forms containing keys that
     /// exceed this limit will throw an InvalidDataException when parsed.
+    /// This limit applies only to forms with an <c>application/x-www-form-urlencoded</c>
+    /// content type. For forms with a <c>multipart/form-data</c> content type,
+    /// the length of a key is limited by <see cref="MultipartHeadersLengthLimit"/>.
     /// Defaults to 2,048 bytes, which is approximately 2KB.
     /// </summary>
     int? KeyLengthLimit { get; }
@@ -41,7 +44,10 @@ public interface IFormOptionsMetadata
     /// <summary>
     /// A limit on the length of individual form values. Forms containing
     /// values that exceed this limit will throw an InvalidDataException
-    /// when parsed. Defaults to 4,194,304 bytes, which is approximately 4MB.
+    /// when parsed. This limit applies only to forms with an
+    /// <c>application/x-www-form-urlencoded</c> content type. For forms with a
+    /// <c>multipart/form-data</c> content type, use <see cref="MultipartBodyLengthLimit"/>.
+    /// Defaults to 4,194,304 bytes, which is approximately 4MB.
     /// </summary>
     int? ValueLengthLimit { get; }
 
