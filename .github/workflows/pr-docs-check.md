@@ -86,7 +86,7 @@ safe-outputs:
     client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
     private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
     owner: dotnet
-    repositories: ["AspNetCore.Docs"]
+    repositories: ["AspNetCore.Docs", "AspNetCore.Docs.Automation"]
   report-failure-as-issue: false
   noop:
     report-as-issue: false
