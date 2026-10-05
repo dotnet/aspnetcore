@@ -4,6 +4,7 @@
 using System.ComponentModel;
 using System.Net.Http;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -92,6 +93,37 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesNamedFloatingPointLiteralsWithoutObjectType()
+    {
+        // Arrange
+        var builder = CreateBuilder(numberHandling: JsonNumberHandling.AllowNamedFloatingPointLiterals);
+
+        // Act
+        builder.MapGet("/api", () => new FloatingPointResponse(12.0));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var response = Assert.Single(operation.Responses).Value;
+            var schema = response.Content["application/json"].Schema;
+            var temperatureSchema = schema.Properties["temperatureF"];
+
+            Assert.Null(temperatureSchema.Type);
+            Assert.Equal("double", temperatureSchema.Format);
+            Assert.Equal(2, temperatureSchema.AnyOf.Count);
+
+            var numberOrStringSchema = temperatureSchema.AnyOf[0];
+            Assert.Equal(JsonSchemaType.Number | JsonSchemaType.String, numberOrStringSchema.Type);
+            Assert.NotNull(numberOrStringSchema.Pattern);
+
+            var namedLiteralsSchema = temperatureSchema.AnyOf[1];
+            Assert.Equal(new[] { "NaN", "Infinity", "-Infinity" },
+                namedLiteralsSchema.Enum.Select(value => value.GetValue<string>()));
         });
     }
 
@@ -1039,6 +1071,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
         internal Todo Get() => new(1, "Write test", false, DateTime.Now);
     }
+
+    public record FloatingPointResponse(double TemperatureF);
+
 
     private class ClassWithObjectProperty
     {
