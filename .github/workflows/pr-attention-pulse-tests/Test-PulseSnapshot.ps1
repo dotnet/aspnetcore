@@ -154,11 +154,15 @@ function Invoke-SnapshotValidation
         -ExpectedBodyPath $Publication.BodyPath -SnapshotContextPath $Publication.ContextPath `
         -SanitizerModulePath $collectorSanitizerPath -ExpectedIssueNumber 69328 @expected 2>&1)
     $exitCode = $LASTEXITCODE
+    $messageText = [regex]::Replace(
+        (($messages -join " ") -replace "$([char]27)\[[0-9;]*[A-Za-z]", ""),
+        "\s+",
+        " ")
     $retained = Get-Content -LiteralPath $Publication.AgentOutputPath -Raw | ConvertFrom-Json -Depth 100
     if ($ExpectedFailure)
     {
         Assert-True ($exitCode -ne 0) "The real private validator unexpectedly accepted the invalid snapshot."
-        Assert-True (($messages -join " ").Contains($ExpectedFailure, [StringComparison]::Ordinal)) "Expected '$ExpectedFailure'; actual: $($messages -join ' ')"
+        Assert-True ($messageText.Contains($ExpectedFailure, [StringComparison]::Ordinal)) "Expected '$ExpectedFailure'; actual: $messageText"
         Assert-True (($retained | ConvertTo-Json -Compress) -ceq '{"items":[],"errors":[]}') "Rejection must disarm the exact collected output envelope."
         Assert-True (-not (Test-Path $rawOutputPath) -and -not (Test-Path "$($Publication.AgentOutputPath).rejected")) "Rejection must remove raw and quarantined output."
         $rejectedPublications.Add([pscustomobject]@{
