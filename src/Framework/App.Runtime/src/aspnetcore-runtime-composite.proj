@@ -17,7 +17,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
-    <ProjectReference Include="Microsoft.AspNetCore.App.Runtime.Composite.sfxproj" />
+    <ProjectReference Include="Microsoft.AspNetCore.App.Runtime.Composite.sfxproj"
+                      Build="$(BuildProjectReferences)" />
   </ItemGroup>
 
   <!--

@@ -5,6 +5,10 @@ const path = require("node:path");
 const [actionsDir, workflowPath, lockPath] = process.argv.slice(2);
 const workflow = fs.readFileSync(workflowPath, "utf8");
 const lock = fs.readFileSync(lockPath, "utf8");
+const actionsLockPath = path.join(path.dirname(workflowPath), "..", "aw", "actions-lock.json");
+const actionsLock = JSON.parse(fs.readFileSync(actionsLockPath, "utf8"));
+const setup = Object.values(actionsLock.entries).find(entry => entry.repo === "github/gh-aw-actions/setup");
+assert.ok(setup, "The gh-aw setup action must be pinned in actions-lock.json.");
 const onBlock = text => text.match(/^on:\r?\n((?:[ \t]+[^\r\n]*\r?\n|\r?\n)+)/m)?.[1] ?? "";
 const sourceOn = onBlock(workflow);
 const compiledOn = onBlock(lock);
@@ -43,7 +47,7 @@ async function main() {
   await test("ScheduledActivationWiring", () => {
     assert.equal(roles, "admin,maintainer,write");
     assert.match(sourceOn, /^  roles: \[admin, maintainer, write\]\r?$/m);
-    assert.ok(preActivation.includes("uses: github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7"));
+    assert.ok(preActivation.includes(`uses: github/gh-aw-actions/setup@${setup.sha} # ${setup.version}`));
     assert.ok(preActivation.includes("activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}"));
     assert.ok(lock.includes("if: needs.pre_activation.outputs.activated == 'true'"));
     assert.ok(membershipScript?.includes("require(path.join(actionsDir, 'check_membership.cjs'))"));
