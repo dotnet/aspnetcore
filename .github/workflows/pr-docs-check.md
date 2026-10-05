@@ -2,9 +2,9 @@
 name: "PR Documentation Check"
 
 description: >
-  Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
+  Runs only when manually dispatched to analyze an ASP.NET Core pull request merged into main from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Every conclusive run comments on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description.
 
-max-turns: 100
+max-turns: 50
 
 on:
   # Keep the upstream rollout manual-only. Add an automatic merged-PR trigger separately after production approval.
@@ -115,6 +115,7 @@ safe-outputs:
         --source-repository "${EXPECTED_SOURCE_REPOSITORY}"
         --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}"
         --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
+        --source-preflight "${RUNNER_TEMP}/pr-docs-check-context/source-preflight.json"
   create-pull-request:
     target-repo: "dotnet/AspNetCore.Docs"
     head-repo: "dotnet/AspNetCore.Docs.Automation"
@@ -163,6 +164,7 @@ safe-outputs:
     target-repo: "dotnet/AspNetCore.Docs"
     required-title-prefix: "[docs] "
     required-labels: [documentation]
+    body: false
   jobs:
     notify-source-pr:
       name: "Notify source PR"
@@ -231,7 +233,9 @@ safe-outputs:
           with:
             persist-credentials: false
             path: _validator
-            sparse-checkout: .github/workflows/pr-docs-check/validate_outcome.py
+            sparse-checkout: |
+              .github/workflows/pr-docs-check/validate_outcome.py
+              .github/workflows/pr-docs-check/author_body.cjs
             sparse-checkout-cone-mode: false
         - name: Download trusted draft context
           uses: actions/download-artifact@v8.0.1
@@ -312,6 +316,7 @@ safe-outputs:
             --safe-outputs-result "${SAFE_OUTPUTS_RESULT}"
             --safe-outputs-items-failed "${SAFE_OUTPUTS_ITEMS_FAILED}"
             --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
+            --source-preflight "${RUNNER_TEMP}/pr-docs-check-context/source-preflight.json"
             --output "${RUNNER_TEMP}/pr-docs-check-outcome.json"
         - name: Publish trusted source outcome
           id: source-outcome
@@ -362,7 +367,7 @@ safe-outputs:
               });
 
               const author = sourcePr.data.user;
-              const sourceAuthor = author?.type === 'Bot' ? '' : (author?.login || '');
+              const sourceAuthor = author?.type === 'User' && !author?.login?.endsWith('[bot]') ? (author?.login || '') : '';
               core.setOutput('source-author', sourceAuthor);
               const surfaces = (outcome.surfaces || []).map(surface =>
                 `* **${surface.name}:** ${surface.required ? 'Required' : 'Not required'} — ${surface.reason}`);
@@ -444,8 +449,8 @@ safe-outputs:
             github-token: ${{ steps.docs-bot-token.outputs.token }}
             script: |
               const fs = require('fs');
+              const { authorBody } = require(`${process.env.GITHUB_WORKSPACE}/_validator/.github/workflows/pr-docs-check/author_body.cjs`);
 
-              const docsAuthorMarker = '<!-- aspnetcore-pr-docs-check-author -->';
               const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
               const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
               const sourceAuthor = process.env.SOURCE_AUTHOR;
@@ -457,32 +462,30 @@ safe-outputs:
                 return;
               }
 
-              const authorComment = [
-                docsAuthorMarker,
-                `@${sourceAuthor}, this draft documents your source change in ${expectedRepository}#${expectedPrNumber}.`,
-                '',
-                'Please review it for technical accuracy and confirm that the user impact and recommended guidance match the implementation.',
-              ].join('\n');
-              const docsComments = await github.paginate(github.rest.issues.listComments, {
+              const docsPr = await github.rest.pulls.get({
                 owner: 'dotnet',
                 repo: 'AspNetCore.Docs',
-                issue_number: docsPrNumber,
-                per_page: 100,
+                pull_number: docsPrNumber,
               });
-              const priorAuthorComment = docsComments.find(comment => comment.body?.includes(docsAuthorMarker));
-              if (priorAuthorComment) {
-                await github.rest.issues.updateComment({
+              const validated = JSON.parse(fs.readFileSync(
+                `${process.env.RUNNER_TEMP}/pr-docs-check-docs-pr.json`, 'utf8'));
+              const identity = pr => JSON.stringify([
+                pr.number, pr.state, pr.draft, pr.user?.login, pr.base?.ref, pr.base?.repo?.full_name,
+                pr.head?.ref, pr.head?.repo?.full_name, pr.title,
+                (pr.labels || []).map(label => label.name).sort(),
+              ]);
+              if (identity(docsPr.data) !== identity(validated) ||
+                  !docsPr.data.body?.split('\n').includes(`Source: ${expectedRepository}#${expectedPrNumber}`)) {
+                throw new Error('The docs PR identity changed after outcome validation.');
+              }
+              const body = authorBody(docsPr.data.body, { type: 'User', login: sourceAuthor },
+                expectedRepository, expectedPrNumber);
+              if (body !== docsPr.data.body) {
+                await github.rest.pulls.update({
                   owner: 'dotnet',
                   repo: 'AspNetCore.Docs',
-                  comment_id: priorAuthorComment.id,
-                  body: authorComment,
-                });
-              } else {
-                await github.rest.issues.createComment({
-                  owner: 'dotnet',
-                  repo: 'AspNetCore.Docs',
-                  issue_number: docsPrNumber,
-                  body: authorComment,
+                  pull_number: docsPrNumber,
+                  body,
                 });
               }
 
@@ -515,22 +518,14 @@ pre-agent-steps:
       set -euo pipefail
       trap 'rm -rf -- _workflow-source' EXIT
 
-      case "${SOURCE_REPOSITORY}" in
-        dotnet/aspnetcore) ;;
-        *)
-          echo "ERROR: Unexpected source repository: ${SOURCE_REPOSITORY}" >&2
-          exit 1
-          ;;
-      esac
-      if ! [[ "${SOURCE_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
-        echo "ERROR: SOURCE_PR_NUMBER must be a positive integer." >&2
-        exit 1
-      fi
-
       CONTEXT_DIR=/tmp/gh-aw/pr-docs-check
-      mkdir -p "${CONTEXT_DIR}"
-      gh api "/repos/${SOURCE_REPOSITORY}/pulls/${SOURCE_PR_NUMBER}" \
-        > "${CONTEXT_DIR}/source-pr.json"
+      python3 _workflow-source/.github/workflows/pr-docs-check/prepare_context.py \
+        --source-repository "${SOURCE_REPOSITORY}" \
+        --source-pr-number "${SOURCE_PR_NUMBER}" \
+        --output-directory "${CONTEXT_DIR}"
+      if [ "$(jq -r '.status' "${CONTEXT_DIR}/source-preflight.json")" != "eligible" ]; then
+        exit 0
+      fi
       gh api --method GET --paginate --slurp "/repos/dotnet/aspnetcore/branches?per_page=100" \
         | jq '[.[][] | .name]' \
         > "${CONTEXT_DIR}/source-branches.json"
@@ -567,7 +562,9 @@ pre-agent-steps:
     uses: actions/upload-artifact@v7.0.1
     with:
       name: pr-docs-check-context-${{ github.run_attempt }}
-      path: /tmp/gh-aw/pr-docs-check/existing-draft.json
+      path: |
+        /tmp/gh-aw/pr-docs-check/existing-draft.json
+        /tmp/gh-aw/pr-docs-check/source-preflight.json
       if-no-files-found: error
       retention-days: 1
 
@@ -587,13 +584,17 @@ This workflow is manually dispatched. Do not modify `dotnet/aspnetcore` or push 
 
 ## Validate the request
 
-Confirm that:
+Read `/tmp/gh-aw/pr-docs-check/source-preflight.json` first. Trusted pre-agent steps validate the request and inspect high-level metadata before fetching patches or resolving versions. Confirm that:
 
 - `source_repository` is exactly `dotnet/aspnetcore`.
 - `pr_number` is a positive integer.
-- The pull request exists and is merged.
+- The pull request exists and is merged into `main`.
 
-If the repository input is invalid or the pull request doesn't exist, emit `noop` with the validation failure and stop because there is no valid source PR to notify. If the pull request exists but isn't merged, emit `noop`, then emit `notify_source_pr` with confidence 0, `result: "skipped"`, `docs_pr_action: "none"`, all three surfaces set to not required because the change isn't eligible for analysis, and stop.
+For preflight status `invalid`, emit `noop` with the validation failure and stop because there is no valid source PR to notify. For `ineligible` (unmerged or merged into any branch other than `main`, including `release/*`), emit `noop`, then emit `notify_source_pr` with confidence 0, `result: "skipped"`, `docs_pr_action: "none"`, all three surfaces set to not required because the change isn't eligible for analysis, and stop. For `restricted`, follow the generic restricted outcome below and stop. Do not read patches, linked issues, comments, or version inputs on these early paths. The trusted safe-output preflight enforces these outcomes independently.
+
+## Execution budget and completion
+
+Keep research bounded within the 50-invocation limit and start finalizing by invocation 35. Reserve the remaining budget for editing, reviewing every required documentation surface, and emitting all required safe outputs. Batch related searches and reads; use cached inputs instead of repeating API requests. Stop researching once you have enough evidence for the smallest accurate change. Prepare the create/update and notification payloads together before emitting either, preserving the output order below. If you cannot finish a required draft, emit `notify_source_pr` with `result: "draft_failed"` and the concrete blocker instead of exhausting the cap or retrying a deterministic failure.
 
 ## Vulnerability-related changes are out of scope
 
@@ -633,7 +634,7 @@ Use the existing canonical documentation as the boundary for level of detail:
 
 ## Gather source context
 
-After the security-concern gate passes, use the authenticated `gh` CLI to read the source pull request. Read:
+After the security-concern gate passes, read `/tmp/gh-aw/pr-docs-check/pr.json` and `/tmp/gh-aw/pr-docs-check/signals.json`. Verify their source identity against the request and use the recorded signals verbatim rather than recomputing them. These cached inputs reuse the source PR and paginated file responses fetched before agent execution. The compact metadata preserves the full authored title/body, author, labels, milestone, base/head identity, merge state, and changed-file metadata without embedding all patches. Read relevant patches selectively from `/tmp/gh-aw/pr-docs-check/files.json` using `jq` by filename, not the entire patch collection. The cache replaces redundant reads, not access to additional context. Use authenticated `gh` or GitHub tools for additional source code, features, linked issues, and both review and issue comments when needed. Read:
 
 - title, body, author, labels, milestone, base branch, and merge state;
 - changed file names and relevant diff hunks;
@@ -641,6 +642,8 @@ After the security-concern gate passes, use the authenticated `gh` CLI to read t
 - review and issue comments only when they contain information needed to write accurate documentation.
 
 Treat the source PR description and code diff as the primary evidence. Copy API names, option names, defaults, templates, and other identifiers exactly from the diff.
+
+Use the deterministic signals as an evidence checklist for all three independent decisions, not as an automatic docs requirement. Inspect every matching category and cite the relevant file and old/new line or metadata evidence in your reasons. Public API/ref baselines, template content, defaults/configuration, analyzers/diagnostics, TFMs, and explicit user-facing or breaking wording are candidates to confirm against implementation, tests, and current documentation. A path match alone, including comment-only changes, does not establish material user impact. Preserve the documented bug-fix and internal-only exemptions. Apply the confidence floors below when the corresponding behavior is confirmed; do not lower confidence for a confirmed change merely because the implementation is small. `no_signal` is not proof that documentation is unnecessary. Missing/incomplete patches or an incomplete file list require targeted additional reads before dismissing a potentially user-facing change; if the evidence remains insufficient, explain that limitation rather than claiming internal-only or inventing a documentation requirement.
 
 Read `/tmp/gh-aw/pr-docs-check/target-version.json` and `/tmp/gh-aw/pr-docs-check/existing-draft.json` verbatim. Do not recalculate the ASP.NET Core version or independently select a documentation pull request. If either file is missing, malformed, or inconsistent with the requested source PR, emit `notify_source_pr` with `result: "draft_failed"` and `docs_pr_action: "none"`, then stop.
 
@@ -752,10 +755,10 @@ Then emit `notify_source_pr` exactly once with `result: "drafted"`, `docs_pr_act
 When an existing draft was found, the trusted pre-agent step has checked out its head branch. Update the documentation on that branch, then:
 
 1. Emit `push_to_pull_request_branch` exactly once with `pull_request_number` set to `/tmp/gh-aw/pr-docs-check/existing-draft.json`'s selected number.
-2. Emit `update_pull_request` exactly once for the same number, replacing its title with `[docs] ` followed by the current concise title and replacing its body with the same body structure required above.
+2. Emit `update_pull_request` exactly once for the same number, replacing its title with `[docs] ` followed by the current concise title. Omit `body` to preserve the existing generated description, gh-aw attribution, and human edits. Describe the current documentation decisions in the source notification.
 3. Emit `notify_source_pr` exactly once with `result: "drafted"`, `docs_pr_action: "updated"`, `existing_docs_pr_number` set to the selected number, the confidence score, all three surface decisions and reasons, and a concise summary.
 
-The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main` in `dotnet/AspNetCore.Docs`, uses a head branch in `dotnet/AspNetCore.Docs.Automation`, has the required title prefix and label, carries the exact source marker, and is owned by the configured GitHub App bot. It obtains the source PR author directly from GitHub and creates or refreshes one author-notification comment on the docs PR.
+The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main` in `dotnet/AspNetCore.Docs`, uses a head branch in `dotnet/AspNetCore.Docs.Automation`, has the required title prefix and label, carries the exact source marker, and is owned by the configured GitHub App bot. It obtains the human source PR author directly from GitHub and creates or refreshes one managed attribution section in the docs PR description for both new and updated drafts, preserving everything outside that section. Bot authors are excluded. Do not add author mentions yourself, create a separate author comment, request reviewers, or assign anyone.
 
 If confidence is below 60, make no file changes and emit `noop` exactly once with:
 
