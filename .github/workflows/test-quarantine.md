@@ -2086,10 +2086,9 @@ safe-outputs:
 
 tools:
   edit:
-  bash: ["git:*", "grep", "cat", "head", "tail", "wc", "curl", "python3", "echo", "date", "sort", "uniq"]
+  bash: ["git:*", "grep", "cat", "head", "tail", "wc", "python3", "echo", "date", "sort", "uniq"]
   github:
     toolsets: [repos, issues, pull_requests, search]
-  web-fetch:
 
 network:
   allowed:
@@ -2139,6 +2138,20 @@ You are an automated workflow that manages flaky test quarantine in the dotnet/a
 
 1. **Quarantine** tests that are flaky and causing CI failures
 2. **Unquarantine** tests that have been reliably passing for 30+ days
+
+## Critical HTTP access rule
+
+For every Azure DevOps, VSTMR, Helix, or other HTTP request, run a
+**standalone `python3` command using `urllib.request`**. Never use `curl` or
+`web_fetch`, and never combine an HTTP request with `git`, shell loops, pipes,
+or other shell operations in the same tool call. Perform pagination and
+result processing inside the standalone Python program.
+
+A shell **permission denied** response means the command was rejected before
+it ran; it does not mean the remote service is unreachable. Retry with a
+standalone `python3`/`urllib.request` command. Conclude that required data is
+unavailable only when that compliant command executes and returns an actual
+network or HTTP error.
 
 Before creating any PRs or issues, check for existing open PRs in dotnet/aspnetcore that already address the same tests. Humans may also open quarantine/unquarantine PRs without the `[test-quarantine]` prefix, so do not rely solely on title matching. For each test you plan to modify, search open PRs for any that touch the same test file by looking at PR changed files. If an open PR already adds or removes a `[QuarantinedTest]` or `[QuarantinedTestData]` attribute for a test case you were about to modify, skip that test case.
 
@@ -2290,6 +2303,11 @@ Query two pipelines in the `dnceng-public` Azure DevOps organization, `public` p
 
 - **aspnetcore-quarantined-tests** (definition ID **84**) — runs only quarantined tests
 - **components-e2e** (definition ID **87**) — runs both quarantined and non-quarantined tests
+
+Follow the **Critical HTTP access rule** above. Use standalone
+`python3`/`urllib.request` tool calls for these requests. If a tool call is
+denied before execution, correct the command and retry; do not treat the
+denial as evidence that Azure DevOps is unavailable.
 
 For each pipeline, query only builds on the **main branch**:
 
