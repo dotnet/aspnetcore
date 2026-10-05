@@ -98,8 +98,8 @@ class WorkflowPolicyTests(unittest.TestCase):
         trigger = self.workflow.split("on:", 1)[1].split("permissions:", 1)[0]
         self.assertIn("workflow_dispatch:", trigger)
         self.assertNotIn("pull_request:", trigger)
-        preparation = self.workflow.split("  - name: Resolve source version and existing docs draft", 1)[1]
-        self.assertLess(preparation.index("prepare_context.py"), preparation.index("source-branches.json"))
+        preparation = self.workflow.split("- name: Resolve source version and existing docs draft", 1)[1]
+        self.assertLess(preparation.index("prepare_run.py"), preparation.index("source-branches.json"))
         self.assertLess(preparation.index('!= "eligible"'), preparation.index("resolve_target_version.py"))
         self.assertEqual(2, self.workflow.count('--source-preflight "${RUNNER_TEMP}'))
         self.assertEqual(2, self.compiled_workflow.count('--source-preflight "${RUNNER_TEMP}'))
