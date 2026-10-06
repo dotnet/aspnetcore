@@ -284,7 +284,7 @@ public class FormDataMapperTests
 #nullable disable
 
     [Fact]
-    public void Deserialize_Collections_NoElements_ReturnsEmptyCollection()
+    public void Deserialize_Array_NoElements_ReturnsEmptyArray()
     {
         // Arrange
         var data = new Dictionary<string, StringValues>() { };
@@ -293,26 +293,34 @@ public class FormDataMapperTests
         var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataMapper.Map<List<int>>(reader, options);
+        var result = FormDataMapper.Map<string[]>(reader, options);
 
         // Assert
         Assert.NotNull(result);
         Assert.Empty(result);
     }
 
-    [Theory]
-    [InlineData(typeof(string[]))]
-    [InlineData(typeof(List<int>))]
-    [InlineData(typeof(Dictionary<int, int>))]
-    public void Deserialize_CollectionsAndDictionaries_NoRootValues_ReturnsEmptyValue(Type type)
+    [Fact]
+    public void Deserialize_Collections_NoElements_ReturnsNull()
+    {
+        var reader = CreateFormDataReader(new Dictionary<string, StringValues>(), CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
+
+        var result = FormDataMapper.Map<List<int>>(reader, options);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void Deserialize_EmptyDictionary_ReturnsNull()
     {
         var reader = CreateFormDataReader(new Dictionary<string, StringValues>(), CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
-        var result = CallDeserialize(reader, options, type);
+        var result = FormDataMapper.Map<IReadOnlyDictionary<int, int>>(reader, options);
 
-        Assert.NotNull(result);
-        Assert.Empty(Assert.IsAssignableFrom<IEnumerable>(result));
+        Assert.Null(result);
     }
 
     [Theory]
@@ -1164,22 +1172,6 @@ public class FormDataMapperTests
         var dictionary = Assert.IsType<ReadOnlyDictionary<int, int>>(result);
         Assert.Equal(expected.Count, dictionary.Count);
         Assert.Equal(expected.OrderBy(o => o.Key).ToArray(), dictionary.OrderBy(o => o.Key).ToArray());
-    }
-
-    [Fact]
-    public void Deserialize_EmptyDictionary_ReturnsEmptyDictionary()
-    {
-        // Arrange
-        var collection = new Dictionary<string, StringValues>() { };
-        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
-        var options = new FormDataMapperOptions();
-
-        // Act
-        var result = FormDataMapper.Map<IReadOnlyDictionary<int, int>>(reader, options);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Empty(result);
     }
 
     [Theory]
@@ -2120,8 +2112,7 @@ public class FormDataMapperTests
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
-            Assert.NotNull(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
-            Assert.Empty(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+            Assert.Null(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
         });
     }
 
@@ -2180,8 +2171,7 @@ public class FormDataMapperTests
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
-            Assert.NotNull(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
-            Assert.Empty(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+            Assert.Null(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
         });
     }
 

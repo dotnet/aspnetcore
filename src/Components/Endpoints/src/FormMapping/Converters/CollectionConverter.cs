@@ -54,7 +54,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         ref FormDataReader context,
         Type type,
         FormDataMapperOptions options,
-        [NotNullWhen(true)] out TCollection? result,
+        out TCollection? result,
         out bool found)
     {
         TElement currentElement;
@@ -251,8 +251,15 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         }
         else
         {
-            buffer = TCollectionPolicy.CreateBuffer();
-            result = TCollectionPolicy.ToResult(buffer);
+            if (typeof(TCollection).IsArray)
+            {
+                buffer = TCollectionPolicy.CreateBuffer();
+                result = TCollectionPolicy.ToResult(buffer);
+            }
+            else
+            {
+                result = default;
+            }
         }
 
         return succeeded;
