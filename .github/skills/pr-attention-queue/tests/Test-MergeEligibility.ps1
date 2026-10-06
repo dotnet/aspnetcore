@@ -340,7 +340,7 @@ if ($EvidenceDirectory) {
     $reviewFollowupFixtures | ConvertTo-Json -Depth 30 |
         Set-Content -LiteralPath (Join-Path $EvidenceDirectory "review-followup-producer-fixtures.json")
 }
-foreach ($scenario in @("human-thread", "bot-thread", "unknown-review", "informational-top-level", "other-reviewer-old-concern", "later-concern", "missing", "truncated-comments", "truncated-threads", "truncated-reviews", "missing-comment-nodes")) {
+foreach ($scenario in @("human-thread", "bot-thread", "unknown-review", "informational-top-level", "coordination-top-level", "other-reviewer-old-concern", "later-concern", "missing", "truncated-comments", "truncated-threads", "truncated-reviews", "missing-comment-nodes")) {
     Assert-MergeCase "merge evidence $scenario" {
         $fixture = Get-ClearFixture
         switch ($scenario) {
@@ -348,6 +348,7 @@ foreach ($scenario in @("human-thread", "bot-thread", "unknown-review", "informa
             "bot-thread" { $fixture.threads = @(@{ isResolved = $false; isOutdated = $false; author = "copilot-pull-request-reviewer" }) }
             "unknown-review" { $fixture.reviews += @{ author = @{ login = "reviewer" }; state = "COMMENTED"; submittedAt = "2026-09-15T00:00:00Z"; commit = @{ oid = $fixture.headRefOid }; bodyText = "Hmm." } }
             "informational-top-level" { $fixture.comments = @(@{ author = @{ login = "reviewer" }; createdAt = "2026-09-15T00:00:00Z"; bodyText = "FYI: context only."; authorAssociation = "MEMBER" }) }
+            "coordination-top-level" { $fixture.comments = @(@{ author = @{ login = "reviewer" }; createdAt = "2026-09-15T00:00:00Z"; bodyText = "/azp run"; authorAssociation = "MEMBER" }) }
             "other-reviewer-old-concern" { $fixture.comments = @(@{ author = @{ login = "different-reviewer" }; createdAt = "2026-08-20T00:00:00Z"; bodyText = "Please update coverage."; authorAssociation = "MEMBER" }) }
             "later-concern" { $fixture.comments = @(@{ author = @{ login = "PureWeen" }; createdAt = "2026-09-15T00:00:00Z"; bodyText = "Please update coverage."; authorAssociation = "MEMBER" }) }
             "missing" { $fixture | Add-Member missingDiscussion $true }
@@ -357,12 +358,28 @@ foreach ($scenario in @("human-thread", "bot-thread", "unknown-review", "informa
             "missing-comment-nodes" { $fixture | Add-Member missingCommentNodes $true }
         }
         $item = (Get-Result @($fixture)).items[0]
-        if ($scenario -eq "informational-top-level") {
-            Require ($item.shownInDigest -and $item.mergeEligibility -eq "eligible") "Explicit informational discussion is a clear control."
+        if ($scenario -in @("informational-top-level", "coordination-top-level")) {
+            Require ($item.shownInDigest -and $item.mergeEligibility -eq "eligible") "Informational or coordination-only top-level discussion must remain merge eligible."
         }
         else {
             Require ($item.bucket -eq "ReadyToMerge" -and -not $item.shownInDigest -and $item.shownInMergeVerification) "Uncertainty must be visible as merge verification, not a fabricated author blocker or clear ready."
         }
+    }
+}
+foreach ($reviewBody in @("/azp run", "Done.")) {
+    Assert-MergeCase "submitted review '$reviewBody' remains feedback" {
+        $fixture = Get-ClearFixture
+        $fixture.reviews += @{
+            author = @{ login = "reviewer" }
+            state = "COMMENTED"
+            submittedAt = "2026-09-15T00:00:00Z"
+            commit = @{ oid = $fixture.headRefOid }
+            bodyText = $reviewBody
+        }
+        $item = (Get-Result @($fixture)).items[0]
+        Require ($item.mergeEligibility -eq "verification-needed" -and
+            $item.shownInMergeVerification -and
+            $item.discussionAssessment.signals -contains "review-feedback-requires-verification") "A submitted COMMENTED review body must remain outstanding formal review feedback."
     }
 }
 Assert-MergeCase "failed discussion collection fails queue closed" {
