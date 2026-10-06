@@ -15,6 +15,7 @@ $fixturePath = Join-Path $PSScriptRoot "fixtures\merge-state-refresh.json"
 $results = [Collections.Generic.List[object]]::new()
 $cases = @(
     @{ name = "clear"; kind = "regression"; eligibility = "eligible"; retries = 1; bucket = "ReadyToMerge"; reason = "approved"; actor = "merger" },
+    @{ name = "pending-ci-rerun"; kind = "regression"; retries = 1; bucket = "WaitingOnCI"; reason = "ci-rerun-pending"; actor = "CI/automation" },
     @{ name = "unresolved-thread"; kind = "regression"; eligibility = "verification-needed"; retries = 1; bucket = "ReadyToMerge"; reason = "approved"; actor = "merger" },
     @{ name = "unknown-state"; kind = "control"; retries = 1; reason = "merge-state-not-clean" },
     @{ name = "missing-state"; kind = "control"; retries = 1; reason = "merge-state-not-clean" },
@@ -42,6 +43,7 @@ if ($Case) {
 foreach ($scenario in $cases) {
     $fixture = Get-Content -Raw -LiteralPath $fixturePath | ConvertFrom-Json -Depth 30
     switch ($scenario.name) {
+        "pending-ci-rerun" { $fixture.labels += [pscustomobject]@{ name = "pending-ci-rerun" } }
         "unresolved-thread" { $fixture.threads = @(@{ isResolved = $false; isOutdated = $false }) }
         "unknown-state" { $fixture.retryResponse.mergeStateStatus = "UNKNOWN" }
         "missing-state" { $fixture.retryResponse.PSObject.Properties.Remove("mergeStateStatus") }
@@ -97,6 +99,12 @@ foreach ($scenario in $cases) {
         }
         elseif ($item.bucket -eq "ReadyToMerge" -or $item.mergeEligibility -ne "not-candidate" -or $item.shownInMergeVerification) {
             throw "Incomplete or blocked merge facts must not grant merge clearance."
+        }
+
+        if ($scenario.name -eq "pending-ci-rerun" -and
+            ($item.mergeStateStatus -ne "CLEAN" -or $item.blockers -notcontains "CI must be rerun before merge." -or
+                $item.reasonCodes -notcontains "approved")) {
+            throw "Refreshed CLEAN state must preserve approval and the CI rerun merge gate."
         }
 
         $expectedBucket = $scenario.bucket ?? "WaitingOnCI"
