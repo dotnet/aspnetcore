@@ -74,6 +74,40 @@ def _validate_update_targets(payload: Any, expected_number: int) -> None:
         actual_number = _positive_int(item.get("pull_request_number"), f"{item_type} pull_request_number")
         if actual_number != expected_number:
             raise OutcomeValidationError(f"{item_type} targeted {actual_number}; expected {expected_number}.")
+        if item_type == "update_pull_request" and "body" in item:
+            raise OutcomeValidationError("Docs PR updates must preserve the existing body; omit body.")
+
+
+def _validate_source_preflight(payload: Any, source_pr_number: int, preflight: Any) -> None:
+    if preflight is None:
+        return
+    if (
+        not isinstance(preflight, dict)
+        or preflight.get("source_repository") != "dotnet/aspnetcore"
+        or preflight.get("source_pr_number") != source_pr_number
+        or preflight.get("status") not in {"eligible", "restricted", "ineligible", "invalid"}
+    ):
+        raise OutcomeValidationError("Source preflight does not match the requested pull request.")
+    status = preflight["status"]
+    if status == "eligible":
+        return
+    if status == "invalid":
+        if len(_items(payload)) != 1 or _count(payload, "noop") != 1:
+            raise OutcomeValidationError("Invalid source requests require only one noop.")
+        return
+    notification = _one_item(payload, "notify_source_pr")
+    expected_result = "restricted" if status == "restricted" else "skipped"
+    if (
+        notification.get("result") != expected_result
+        or notification.get("docs_pr_action") != "none"
+        or _confidence(notification) != 0
+        or any(notification.get(f"{key}_required") is not False for key in (
+            "conceptual", "migration", "breaking_change",
+        ))
+        or _count(payload, "noop") != 1
+        or any(item.get("type") not in {"noop", "notify_source_pr"} for item in _items(payload))
+    ):
+        raise OutcomeValidationError(f"Source preflight requires the {expected_result} no-documentation outcome.")
 
 
 def _validate_docs_pr(
@@ -144,7 +178,9 @@ def build_outcome(
     docs_pr_author: str = "",
     safe_outputs_result: str = "success",
     safe_outputs_items_failed: Any = 0,
+    source_preflight: Any | None = None,
 ) -> dict[str, Any]:
+    _validate_source_preflight(payload, source_pr_number, source_preflight)
     notification = _one_item(payload, "notify_source_pr")
     notification_source_pr_number = _positive_int(
         notification.get("source_pr_number"),
@@ -336,7 +372,11 @@ def validate_preflight(
     payload: Any,
     source_pr_number: int,
     expected_existing_draft: Any,
+    source_preflight: Any | None = None,
 ) -> None:
+    _validate_source_preflight(payload, source_pr_number, source_preflight)
+    if isinstance(source_preflight, dict) and source_preflight.get("status") == "invalid":
+        return
     notification = _one_item(payload, "notify_source_pr")
     notification_source_pr_number = _positive_int(
         notification.get("source_pr_number"),
@@ -398,19 +438,38 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--agent-output", required=True, type=Path)
     parser.add_argument("--source-repository", required=True)
-    parser.add_argument("--source-pr-number", required=True, type=int)
+    parser.add_argument("--source-pr-number", required=True)
     parser.add_argument("--created-pr-url", default="")
     parser.add_argument("--docs-pr-metadata", type=Path)
     parser.add_argument("--docs-pr-author", default="")
     parser.add_argument("--safe-outputs-result", default="success")
     parser.add_argument("--safe-outputs-items-failed", default="0")
     parser.add_argument("--expected-existing-draft", type=Path)
+    parser.add_argument("--source-preflight", type=Path)
     parser.add_argument("--preflight", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
 
     try:
         payload = _load_json(args.agent_output)
+        source_preflight = _load_json(args.source_preflight) if args.source_preflight else None
+        if isinstance(source_preflight, dict) and source_preflight.get("status") == "invalid":
+            if not args.preflight:
+                raise OutcomeValidationError("Invalid source requests cannot notify a source PR.")
+            if (
+                source_preflight.get("source_repository") != args.source_repository
+                or source_preflight.get("requested_pr_number") != args.source_pr_number
+            ):
+                raise OutcomeValidationError("Invalid source preflight does not match the request.")
+            if len(_items(payload)) != 1 or _count(payload, "noop") != 1:
+                raise OutcomeValidationError("Invalid source requests require only one noop.")
+            return 0
+        source_pr_number = _positive_int(
+            int(args.source_pr_number) if args.source_pr_number.isdigit() else None,
+            "Source PR number",
+        )
+        if args.source_repository != "dotnet/aspnetcore":
+            raise OutcomeValidationError("Unexpected source repository.")
         expected_existing_draft = (
             _load_json(args.expected_existing_draft)
             if args.expected_existing_draft
@@ -419,7 +478,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.preflight:
             if expected_existing_draft is None:
                 raise OutcomeValidationError("--expected-existing-draft is required with --preflight.")
-            validate_preflight(payload, args.source_pr_number, expected_existing_draft)
+            validate_preflight(payload, source_pr_number, expected_existing_draft, source_preflight)
             return 0
         if args.output is None:
             raise OutcomeValidationError("--output is required unless --preflight is used.")
@@ -427,13 +486,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         outcome = build_outcome(
             payload,
             args.source_repository,
-            args.source_pr_number,
+            source_pr_number,
             args.created_pr_url,
             metadata,
             expected_existing_draft,
             args.docs_pr_author,
             args.safe_outputs_result,
             args.safe_outputs_items_failed,
+            source_preflight,
         )
     except OutcomeValidationError as error:
         if args.preflight:
