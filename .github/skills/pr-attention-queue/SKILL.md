@@ -122,6 +122,8 @@ A recorded response does not mean the discussion is resolved. `no-response` is o
 bounded evidence is complete and there were zero top-level human responses. If the evidence is
 incomplete, truncated, or requires human interpretation because of unresolved inline discussion, the
 result remains `unknown` rather than `no-response`.
+Do not count automation comments, including `dotnet-policy-service`, as human responses; complete
+bot-only discussion evidence can establish `no-response`.
 A non-author human coordination command is recorded response evidence because it demonstrates
 engagement, but it does not prove resolution and does not create a discussion-verification signal by
 itself. Coordination classification applies only to top-level discussion comments, never submitted
@@ -275,7 +277,10 @@ Do not promote a PR from `NeedsRescue`, `WaitingOnAuthor`, `WaitingOnCI`, or `De
 Classification precedence is evidence-driven:
 
 - An exact `* NO MERGE *` label requires maintainer triage even when CI is also pending.
-- `pending-ci-rerun` routes to `WaitingOnCI`.
+- Treat `pending-ci-rerun` as informational for review routing: it is an inactivity marker requiring
+  CI revalidation before merge, not evidence that CI is running. Preserve `ci-rerun-pending` on every
+  labeled classification, including drafts and excluded bot-authored PRs. Hold an otherwise
+  merge-ready PR in `WaitingOnCI` until CI is rerun and the label is removed.
 - An approved PR whose merge state is `BEHIND` routes to author/maintainer branch-update work rather
   than CI.
 - A current non-author `COMMENTED` review routes to `WaitingOnAuthor` unless the author responded or
