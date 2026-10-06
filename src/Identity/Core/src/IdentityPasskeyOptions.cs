@@ -169,7 +169,6 @@ public class IdentityPasskeyOptions
     /// This option applies to both creating a new passkey and requesting an existing passkey.
     /// </para>
     /// <para>
-    /// If left <see langword="null"/>, cross-origin requests are disallowed, and the request is only
     /// If left <see langword="null"/>, requests from cross-origin iframes are disallowed, and the
     /// HTTP request's <c>Origin</c> header must match the client data origin. Configure this option when passkey
     /// operations must be restricted to specific origins, such as when untrusted content is hosted
