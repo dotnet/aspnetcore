@@ -75,7 +75,8 @@
             try
             {
                 var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson);
-                if (attestationResult.Succeeded)
+                if (attestationResult.Succeeded &&
+                    string.Equals(attestationResult.UserEntity.Id, await UserManager.GetUserIdAsync(user), StringComparison.Ordinal))
                 {
                     if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestationResult.Passkey, out var defaultName))
                     {
@@ -91,6 +92,10 @@
                     }
 
                     Logger.LogWarning("The upgraded passkey could not be added to the user's account.");
+                }
+                else if (attestationResult.Succeeded)
+                {
+                    Logger.LogWarning("The upgraded passkey was created for a different account.");
                 }
                 else
                 {

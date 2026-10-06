@@ -1,0 +1,113 @@
+[
+  {
+    "number": 401,
+    "title": "Community contribution with only policy automation",
+    "url": "https://github.com/dotnet/aspnetcore/pull/401",
+    "author": { "login": "policy-bot-only-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [{ "name": "area-blazor" }, { "name": "community-contribution" }],
+    "createdAt": "2026-08-25T18:00:00Z",
+    "updatedAt": "2026-09-01T18:00:00Z",
+    "headRefOid": "4014014014014014014014014014014014014011",
+    "headRefName": "policy-bot-only",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [{ "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [{
+      "author": { "login": "dotnet-policy-service" },
+      "createdAt": "2026-09-01T18:00:00Z",
+      "bodyText": "Please rerun validation before merging."
+    }],
+    "discussionComments": [{
+      "author": { "login": "dotnet-policy-service" },
+      "authorAssociation": "NONE",
+      "createdAt": "2026-09-01T18:00:00Z",
+      "bodyText": "Please rerun validation before merging."
+    }],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 1,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Components/src/PolicyBotOnly.cs" }],
+    "changedFiles": 1
+  },
+  {
+    "number": 402,
+    "title": "Author acknowledgement mentioning policy automation",
+    "url": "https://github.com/dotnet/aspnetcore/pull/402",
+    "author": { "login": "policy-mention-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [{ "name": "area-blazor" }, { "name": "community-contribution" }],
+    "createdAt": "2026-08-25T18:00:00Z",
+    "updatedAt": "2026-09-02T18:00:00Z",
+    "headRefOid": "4024024024024024024024024024024024024022",
+    "headRefName": "policy-mention",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [{ "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [{
+      "author": { "login": "policy-mention-author", "is_bot": false },
+      "createdAt": "2026-09-02T18:00:00Z",
+      "bodyText": "@dotnet-policy-service agree"
+    }],
+    "discussionComments": [{
+      "author": { "login": "policy-mention-author" },
+      "authorAssociation": "CONTRIBUTOR",
+      "createdAt": "2026-09-02T18:00:00Z",
+      "bodyText": "@dotnet-policy-service agree"
+    }],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 1,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Components/src/PolicyMention.cs" }],
+    "changedFiles": 1
+  },
+  {
+    "number": 403,
+    "title": "Truncated community discussion showing policy automation",
+    "url": "https://github.com/dotnet/aspnetcore/pull/403",
+    "author": { "login": "truncated-policy-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [{ "name": "area-blazor" }, { "name": "community-contribution" }],
+    "createdAt": "2026-08-25T18:00:00Z",
+    "updatedAt": "2026-09-01T18:00:00Z",
+    "headRefOid": "4034034034034034034034034034034034034033",
+    "headRefName": "truncated-policy-bot",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [{ "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [{
+      "author": { "login": "dotnet-policy-service" },
+      "createdAt": "2026-09-01T18:00:00Z",
+      "bodyText": "Please rerun validation before merging."
+    }],
+    "discussionComments": [{
+      "author": { "login": "dotnet-policy-service" },
+      "authorAssociation": "NONE",
+      "createdAt": "2026-09-01T18:00:00Z",
+      "bodyText": "Please rerun validation before merging."
+    }],
+    "discussionCommentsComplete": false,
+    "discussionCommentTotalCount": 51,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Components/src/TruncatedPolicyBot.cs" }],
+    "changedFiles": 1
+  }
+]

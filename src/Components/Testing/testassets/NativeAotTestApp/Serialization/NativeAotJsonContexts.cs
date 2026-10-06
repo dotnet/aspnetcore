@@ -9,6 +9,7 @@ namespace NativeAotTestApp.Serialization;
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(InteropRequest))]
 [JsonSerializable(typeof(InteropResponse))]
+[JsonSerializable(typeof(AsyncInteropResult))]
 [JsonSerializable(typeof(SplitEventArgs))]
 [JsonSerializable(typeof(StorageProfile))]
 internal sealed partial class NativeAotJsonContext : JsonSerializerContext;

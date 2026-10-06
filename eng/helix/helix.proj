@@ -84,7 +84,7 @@
     -->
 
     <!-- Grab published `HelixTestRunner` project output. -->
-    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net11.0\publish\"
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net12.0\publish\"
         Destination="HelixTestRunner" />
   </ItemGroup>
 
