@@ -4,6 +4,7 @@ from pathlib import Path
 
 
 WORKFLOW = Path(__file__).parents[1] / "pr-docs-check.md"
+COMPILED_WORKFLOW = Path(__file__).parents[1] / "pr-docs-check.lock.yml"
 POOL_TOKEN_EXPRESSION = "${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}"
 
 
@@ -11,6 +12,7 @@ class AuthenticationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
+        cls.compiled_workflow = COMPILED_WORKFLOW.read_text(encoding="utf-8")
 
     def test_copilot_inference_uses_pat_pool(self):
         engine = self._section("engine:", "checkout:")
@@ -62,6 +64,26 @@ class AuthenticationTests(unittest.TestCase):
             "github-token: ${{ steps.docs-bot-token.outputs.token }}",
             self._step("Notify source author on docs pull request"),
         )
+
+    def test_pr_creation_token_covers_upstream_and_head_repository(self):
+        safe_outputs_app = self._section("safe-outputs:", "  report-failure-as-issue:")
+
+        self.assertIn(
+            'repositories: ["AspNetCore.Docs", "AspNetCore.Docs.Automation"]',
+            safe_outputs_app,
+        )
+
+        compiled_app_tokens = self.compiled_workflow.split(
+            "id: safe-outputs-app-token"
+        )[1:]
+        self.assertTrue(compiled_app_tokens)
+        for compiled_app_token in compiled_app_tokens:
+            self.assertIn(
+                "          repositories: |-\n"
+                "            AspNetCore.Docs\n"
+                "            AspNetCore.Docs.Automation\n",
+                compiled_app_token.split("      - name:", 1)[0],
+            )
 
     def test_source_notification_has_least_privilege_write_permissions(self):
         job = self._section("notify-source-pr:", "pre-agent-steps:")
