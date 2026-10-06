@@ -114,13 +114,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         // Assert
         var documentService = CreateDocumentService(builder, new OpenApiOptions());
-        var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
+        var scopedService = ((IServiceScopeFactory)builder.ServiceProvider).CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
-        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_1);
 
         var expected = """
             {
-              "openapi": "3.2.0",
+              "openapi": "3.1.0",
               "info": {
                 "title": "OpenApiDocumentServiceTests | Test",
                 "version": "1.0.0"
