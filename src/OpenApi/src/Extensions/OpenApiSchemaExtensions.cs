@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -40,16 +41,27 @@ internal static class OpenApiSchemaExtensions
 
     private static bool IsAlreadyNullable(this IOpenApiSchema schema)
     {
-        if (schema is OpenApiSchema { Type: { } schemaType } && schemaType.HasFlag(JsonSchemaType.Null))
+        // Use the IOpenApiSchema interface members directly (rather than pattern-matching on
+        // OpenApiSchema) so that schema references (e.g. "$ref" to a componentized schema) are
+        // also handled correctly, since they proxy these properties to their target schema.
+        if (schema.Type is { } schemaType && schemaType.HasFlag(JsonSchemaType.Null))
         {
             return true;
         }
 
-        if (schema is OpenApiSchema { OneOf: { } oneOfSchemas })
+        // An inline enum schema (e.g. for a nullable enum type with no $ref) represents
+        // nullability by including a `null` entry in its `enum` list rather than setting
+        // the `type` keyword, so check for that case too.
+        if (schema.Enum is { } enumValues && enumValues.Any(static value => value is null))
+        {
+            return true;
+        }
+
+        if (schema.OneOf is { } oneOfSchemas)
         {
             foreach (var oneOfSchema in oneOfSchemas)
             {
-                if (oneOfSchema is OpenApiSchema { Type: { } oneOfSchemaType } && oneOfSchemaType.HasFlag(JsonSchemaType.Null))
+                if (oneOfSchema.Type is { } oneOfSchemaType && oneOfSchemaType.HasFlag(JsonSchemaType.Null))
                 {
                     return true;
                 }
