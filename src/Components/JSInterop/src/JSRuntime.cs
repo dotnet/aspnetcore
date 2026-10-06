@@ -78,6 +78,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
         => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.FunctionCall, args);
 
@@ -92,30 +93,37 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.FunctionCall, cancellationToken, args);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
         => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.ConstructorCall, args);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
         => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.ConstructorCall, cancellationToken, args);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
         => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.GetValue, null);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
         => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.GetValue, cancellationToken, null);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
         => await InvokeAsync<IJSVoidResult>(WindowObjectId, identifier, JSCallType.SetValue, [value]);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
         => await InvokeAsync<IJSVoidResult>(WindowObjectId, identifier, JSCallType.SetValue, cancellationToken, [value]);
 
