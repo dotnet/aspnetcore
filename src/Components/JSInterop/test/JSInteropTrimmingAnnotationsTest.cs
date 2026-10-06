@@ -25,9 +25,9 @@ public class JSInteropTrimmingAnnotationsTest
     public void SerializationMethods_RequireUnreferencedCode(Type type, int expectedMethodCount)
     {
         var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(method => method.Name.StartsWith("Invoke", StringComparison.Ordinal)
-                || method.Name.StartsWith("GetValue", StringComparison.Ordinal)
-                || method.Name.StartsWith("SetValue", StringComparison.Ordinal))
+            .Where(method => method.Name.StartsWith(nameof(IJSInProcessObjectReference.Invoke), StringComparison.Ordinal)
+                || method.Name.StartsWith(nameof(IJSInProcessObjectReference.GetValue), StringComparison.Ordinal)
+                || method.Name.StartsWith(nameof(IJSInProcessObjectReference.SetValue), StringComparison.Ordinal))
             .ToArray();
 
         Assert.Equal(expectedMethodCount, methods.Length);
