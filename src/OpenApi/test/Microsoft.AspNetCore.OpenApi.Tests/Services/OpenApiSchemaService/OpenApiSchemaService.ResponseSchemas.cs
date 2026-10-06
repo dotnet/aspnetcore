@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -100,7 +101,12 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     public async Task GetOpenApiResponse_HandlesNamedFloatingPointLiteralsWithoutObjectType()
     {
         // Arrange
-        var builder = CreateBuilder(numberHandling: JsonNumberHandling.AllowNamedFloatingPointLiterals);
+        var services = new ServiceCollection();
+        services.PostConfigure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+        {
+            options.SerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+        });
+        var builder = CreateBuilder(services);
 
         // Act
         builder.MapGet("/api", () => new FloatingPointResponse(12.0));
@@ -1073,7 +1079,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     public record FloatingPointResponse(double TemperatureF);
-
 
     private class ClassWithObjectProperty
     {
