@@ -112,25 +112,74 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/api", () => new FloatingPointResponse(12.0));
 
         // Assert
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
-            var response = Assert.Single(operation.Responses).Value;
-            var schema = response.Content["application/json"].Schema;
-            var temperatureSchema = schema.Properties["temperatureF"];
+        var documentService = CreateDocumentService(builder, new OpenApiOptions());
+        var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
 
-            Assert.Null(temperatureSchema.Type);
-            Assert.Equal("double", temperatureSchema.Format);
-            Assert.Equal(2, temperatureSchema.AnyOf.Count);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ],
+              "paths": {
+                "/api": {
+                  "get": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "required": [
+                                "temperatureF"
+                              ],
+                              "type": "object",
+                              "properties": {
+                                "temperatureF": {
+                                  "format": "double",
+                                  "anyOf": [
+                                    {
+                                      "type": [
+                                        "number",
+                                        "string"
+                                      ],
+                                      "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$"
+                                    },
+                                    {
+                                      "enum": [
+                                        "NaN",
+                                        "Infinity",
+                                        "-Infinity"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """;
 
-            var numberOrStringSchema = temperatureSchema.AnyOf[0];
-            Assert.Equal(JsonSchemaType.Number | JsonSchemaType.String, numberOrStringSchema.Type);
-            Assert.NotNull(numberOrStringSchema.Pattern);
-
-            var namedLiteralsSchema = temperatureSchema.AnyOf[1];
-            Assert.Equal(new[] { "NaN", "Infinity", "-Infinity" },
-                namedLiteralsSchema.Enum.Select(value => value.GetValue<string>()));
-        });
+        Assert.True(JsonNode.DeepEquals(
+            JsonNode.Parse(actual),
+            JsonNode.Parse(expected)));
     }
 
     [Fact]
