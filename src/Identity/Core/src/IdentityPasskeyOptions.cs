@@ -52,10 +52,11 @@ public class IdentityPasskeyOptions
     /// This option applies to both creating a new passkey and requesting an existing passkey.
     /// </para>
     /// <para>
-    /// If left <see langword="null"/>, the server's origin may be used instead, which could
-    /// have security implications and it's application developer's responsibility to configure it correctly.
-    /// For more information, see Host header validation and Subdomain security
-    /// in <see href="https://learn.microsoft.com/aspnet/core/security/authentication/passkeys" />.
+    /// If left <see langword="null"/>, the request host is used as the relying party identifier.
+    /// Use the narrowest appropriate domain and configure <see cref="ValidateOrigin"/> when subdomains
+    /// under that domain might host untrusted content. For more information, see
+    /// <see href="https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/#host-header-validation">Host header validation</see>
+    /// and <see href="https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/#subdomain-security">Subdomain security</see>.
     /// </para>
     /// <para>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#rp-id"/>.
@@ -169,9 +170,11 @@ public class IdentityPasskeyOptions
     /// </para>
     /// <para>
     /// If left <see langword="null"/>, cross-origin requests are disallowed, and the request is only
-    /// considered valid if the request's origin header matches the credential's origin, which could have security implications
-    /// and it's application developer's responsibility to configure it correctly.
-    /// For more information, see Subdomain security in <see href="https://learn.microsoft.com/aspnet/core/security/authentication/passkeys" />.
+    /// If left <see langword="null"/>, requests from cross-origin iframes are disallowed, and the
+    /// HTTP request's <c>Origin</c> header must match the client data origin. Configure this option when passkey
+    /// operations must be restricted to specific origins, such as when untrusted content is hosted
+    /// on a subdomain within the relying party identifier's scope. For more information, see
+    /// <see href="https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/#custom-origin-validation">Custom origin validation</see>.
     /// </para>
     /// </remarks>
     public Func<PasskeyOriginValidationContext, ValueTask<bool>>? ValidateOrigin { get; set; }
