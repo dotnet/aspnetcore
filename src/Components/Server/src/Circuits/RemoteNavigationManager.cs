@@ -136,10 +136,20 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
                 await _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options);
                 Log.NavigationCompleted(_logger, uri);
             }
-            catch (TaskCanceledException)
-            when (_jsRuntime is RemoteJSRuntime remoteRuntime && remoteRuntime.IsPermanentlyDisconnected)
+            catch (Exception ex)
+            when ((ex is TaskCanceledException or JSDisconnectedException) &&
+                _jsRuntime is RemoteJSRuntime remoteRuntime &&
+                remoteRuntime.IsPermanentlyDisconnected)
             {
                 Log.NavigationStoppedSessionEnded(_logger, uri);
+            }
+            catch (TaskCanceledException ex)
+            {
+                // No cancellation token is passed to the interop call, so in practice this is the
+                // JSInteropDefaultCallTimeout elapsing, e.g. because the navigateTo call or its reply was
+                // lost during a transient disconnect. Any other cancellation is also logged here rather
+                // than terminating a circuit that may still be live.
+                Log.NavigationTimedOut(_logger, uri, ex);
             }
             catch (Exception ex)
             {
@@ -242,5 +252,8 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(7, LogLevel.Debug, "Navigation stopped because the session ended when navigating to {Uri}", EventName = "NavigationStoppedSessionEnded")]
         public static partial void NavigationStoppedSessionEnded(ILogger logger, string uri);
+
+        [LoggerMessage(8, LogLevel.Warning, "Navigation timed out when changing the location to {Uri}", EventName = "NavigationTimedOut")]
+        public static partial void NavigationTimedOut(ILogger logger, string uri, Exception exception);
     }
 }
