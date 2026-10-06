@@ -251,7 +251,6 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         }
         else
         {
-            found = true;
             buffer = TCollectionPolicy.CreateBuffer();
             result = TCollectionPolicy.ToResult(buffer);
         }
