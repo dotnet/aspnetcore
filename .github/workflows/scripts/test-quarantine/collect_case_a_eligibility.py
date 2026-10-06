@@ -25,15 +25,52 @@ import urllib.request
 
 WORK_ITEM_SUFFIX = ".WorkItemExecution"
 QUARANTINE = "QuarantinedTest"
+OPERATING_SYSTEMS = (
+    "OperatingSystems.Linux",
+    "OperatingSystems.MacOSX",
+    "OperatingSystems.Windows",
+)
 QUARANTINE_ATTRIBUTE_PATTERN = re.compile(
     r"(?:\[|,)\s*(?:assembly\s*:\s*)?"
     r"(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
-    r"QuarantinedTest(?:Attribute)?\s*(?:\(|\])"
+    r"QuarantinedTest(?:Data)?(?:Attribute)?\s*(?:\(|\])"
 )
 ASSEMBLY_QUARANTINE_PATTERN = re.compile(
     r"\[\s*assembly\s*:\s*"
     r"(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
     r"QuarantinedTest(?:Attribute)?\s*(?:\(|\])"
+)
+METHOD_QUARANTINE_PATTERN = re.compile(
+    r"^\s*\[\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
+    r"QuarantinedTest(?:Attribute)?\s*\(\s*"
+    r'"(?P<reason>[^"]*)"\s*'
+    r"(?:,\s*(?P<operating_systems>[^,\]]+))?\s*\)\s*\]\s*$"
+)
+DATA_QUARANTINE_PATTERN = re.compile(
+    r"^\s*\[\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
+    r"QuarantinedTestData(?:Attribute)?\s*\(\s*"
+    r'"(?P<reason>[^"]*)"\s*,\s*'
+    r"(?P<operating_systems>[^,]+)\s*,\s*"
+    r"(?P<data>.*)\)\s*\]\s*$"
+)
+INLINE_DATA_PATTERN = re.compile(
+    r"^\s*\[\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
+    r"InlineData(?:Attribute)?\s*\((?P<data>.*)\)\s*\]\s*$"
+)
+CONDITIONAL_THEORY_PATTERN = re.compile(
+    r"^\s*\[\s*(?:global::)?(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
+    r"ConditionalTheory(?:Attribute)?\s*(?:\(.*\))?\s*\]\s*$"
+)
+TRAIT_PATTERN = re.compile(
+    r"^\s*\[\s*(?:global::)?(?:Xunit\.)?"
+    r"Trait(?:Attribute)?\s*\(.*\)\s*\]\s*$"
+)
+NON_DATA_CONDITION_PATTERN = re.compile(
+    r"^\s*\[\s*(?:global::)?(?:Microsoft\.AspNetCore\.InternalTesting\.)?"
+    r"(?:MsQuicSupported|OSSkipCondition|FrameworkSkipCondition|"
+    r"EnvironmentVariableSkipCondition|MinimumOSVersion|MaximumOSVersion|"
+    r"DockerOnly|RemoteExecutionSupported|SkipNonHelix|SkipOnHelix|SkipOnCI|SkipOnAlpine)"
+    r"(?:Attribute)?\s*(?:\(.*\))?\s*\]\s*$"
 )
 QUARANTINE_ISSUE_PATTERN = re.compile(
     r"https://github\.com/dotnet/aspnetcore/issues/(?P<issue>\d+)"
@@ -56,6 +93,215 @@ IDENTITY_HISTORY_CACHE = {}
 
 def has_quarantine_attribute(text):
     return QUARANTINE_ATTRIBUTE_PATTERN.search(sanitize_csharp(text)) is not None
+
+
+def split_arguments(value):
+    arguments = []
+    start = 0
+    depth = 0
+    quote = None
+    escaped = False
+    for index, character in enumerate(value):
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == quote:
+                quote = None
+            continue
+        if character in ('"', "'"):
+            quote = character
+        elif character in "([{":
+            depth += 1
+        elif character in ")]}":
+            depth -= 1
+        elif character == "," and depth == 0:
+            arguments.append(value[start:index].strip())
+            start = index + 1
+    arguments.append(value[start:].strip())
+    return arguments
+
+
+def normalize_data_value(value):
+    value = value.strip()
+    label = re.match(r"^[A-Za-z_][A-Za-z0-9_]*\s*:\s*(.*)$", value)
+    if label:
+        value = label.group(1).strip()
+    while True:
+        cast = re.match(
+            r"^\(\s*[A-Za-z_][A-Za-z0-9_.<>\[\]?]*\s*\)\s*(.*)$",
+            value,
+        )
+        if not cast:
+            break
+        value = cast.group(1).strip()
+    if value.startswith('"') and value.endswith('"'):
+        return value
+    if value in ("true", "false"):
+        return value.title()
+    integer = re.fullmatch(
+        r"([+-]?(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|[0-9][0-9_]*))"
+        r"(?:[uU][lL]?|[lL][uU]?)?",
+        re.sub(r"\s+", "", value),
+    )
+    if integer:
+        digits = integer.group(1).replace("_", "")
+        unsigned = digits.lstrip("+-").lower()
+        base = 16 if unsigned.startswith("0x") else 2 if unsigned.startswith("0b") else 10
+        return str(int(digits, base))
+    if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", value):
+        return value.rsplit(".", 1)[-1]
+    return re.sub(r"\s+", "", value)
+
+
+def data_values(value):
+    return tuple(normalize_data_value(item) for item in split_arguments(value))
+
+
+def operating_system_values(value):
+    if value is None:
+        return OPERATING_SYSTEMS
+    values = tuple(
+        item.strip()
+        for item in value.split("|")
+    )
+    if (
+        len(values) != len(set(values))
+        or any(item not in OPERATING_SYSTEMS for item in values)
+    ):
+        return None
+    return tuple(
+        item for item in OPERATING_SYSTEMS
+        if item in values
+    )
+
+
+def operating_system_from_queue(value):
+    if not isinstance(value, str):
+        return None
+    platform = value.strip().split(".", 1)[0].lower()
+    if platform in {
+        "linux",
+        "ubuntu",
+        "debian",
+        "alpine",
+        "centos",
+        "rhel",
+        "azurelinux",
+        "almalinux",
+        "fedora",
+    }:
+        return "OperatingSystems.Linux"
+    if platform in {"mac", "macos", "osx"}:
+        return "OperatingSystems.MacOSX"
+    if platform in {
+        "win",
+        "win7",
+        "win10",
+        "win11",
+        "windows",
+    }:
+        return "OperatingSystems.Windows"
+    return None
+
+
+def square_bracket_delta(value):
+    depth = 0
+    quote = None
+    escaped = False
+    for character in value:
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == quote:
+                quote = None
+            continue
+        if character in ('"', "'"):
+            quote = character
+        elif character == "[":
+            depth += 1
+        elif character == "]":
+            depth -= 1
+    return depth
+
+
+def logical_attributes(attributes):
+    result = []
+    start = None
+    depth = 0
+    for index, character in enumerate(sanitize_csharp(attributes)):
+        if character == "[":
+            if depth == 0:
+                start = index + 1
+            depth += 1
+        elif character == "]" and depth:
+            depth -= 1
+            if depth == 0:
+                inner = " ".join(attributes[start:index].splitlines()).strip()
+                result.extend(
+                    f"[{item}]"
+                    for item in split_arguments(inner)
+                    if item
+                )
+    return result
+
+
+def quarantine_attributes(attributes):
+    result = {
+        "method": [],
+        "data": [],
+        "inline": [],
+    }
+    for attribute in logical_attributes(attributes):
+        method = METHOD_QUARANTINE_PATTERN.fullmatch(attribute)
+        if method:
+            result["method"].append({
+                "attribute": attribute,
+                "reason": method.group("reason"),
+                "operating_systems": method.group("operating_systems"),
+                "operating_system_values": operating_system_values(
+                    method.group("operating_systems")
+                ),
+            })
+            continue
+        data = DATA_QUARANTINE_PATTERN.fullmatch(attribute)
+        if data:
+            raw_data = data.group("data").strip()
+            result["data"].append({
+                "attribute": attribute,
+                "reason": data.group("reason"),
+                "operating_systems": data.group("operating_systems").strip(),
+                "operating_system_values": operating_system_values(
+                    data.group("operating_systems")
+                ),
+                "data": raw_data,
+                "values": data_values(raw_data),
+            })
+            continue
+        inline = INLINE_DATA_PATTERN.fullmatch(attribute)
+        if inline:
+            raw_data = inline.group("data").strip()
+            result["inline"].append({
+                "attribute": attribute,
+                "data": raw_data,
+                "values": data_values(raw_data),
+            })
+    return result
+
+
+def split_test_name(test_name):
+    opening = test_name.find("(")
+    if opening < 0:
+        return test_name, None
+    if not test_name.endswith(")"):
+        return test_name[:opening], None
+    return test_name[:opening], tuple(
+        normalize_data_value(item)
+        for item in split_arguments(test_name[opening + 1:-1])
+    )
 
 
 def parse_utc(value):
@@ -179,7 +425,7 @@ def attribute_block(lines, declaration_line):
     bracket_depth = 0
     index = declaration_line - 1
     while index >= 0:
-        stripped = lines[index].strip()
+        stripped = sanitize_csharp(lines[index]).strip()
         if not stripped or stripped.startswith("//"):
             if collected:
                 collected.append(lines[index])
@@ -327,15 +573,47 @@ def build_source_index(root):
             method = method_match.group("method")
             method_line = clean.count("\n", 0, position)
             attributes = attribute_block(lines, method_line)
+            parsed_attributes = quarantine_attributes(attributes)
             method_index.setdefault(method, []).append({
                 "path": relative_path,
                 "type": type_name,
                 "method": method,
                 "method_line": method_line + 1,
                 "project_root": project_root,
-                "method_quarantined": has_quarantine_attribute(attributes),
+                "method_quarantined": bool(parsed_attributes["method"]),
+                "method_operating_systems": (
+                    parsed_attributes["method"][0][
+                        "operating_system_values"
+                    ]
+                    if len(parsed_attributes["method"]) == 1
+                    else None
+                ),
                 "quarantine_attribute": (
-                    attributes if has_quarantine_attribute(attributes) else ""
+                    "\n".join(
+                        item["attribute"]
+                        for item in parsed_attributes["method"]
+                    )
+                ),
+                "data_quarantines": parsed_attributes["data"],
+                "inline_data": parsed_attributes["inline"],
+                "has_row_data": re.search(
+                    r"\b(?:InlineData|QuarantinedTestData)(?:Attribute)?\s*\(",
+                    sanitize_csharp(attributes),
+                ) is not None,
+                "conditional_theory": any(
+                    CONDITIONAL_THEORY_PATTERN.fullmatch(attribute)
+                    for attribute in logical_attributes(attributes)
+                ),
+                "has_unproven_data_provider": any(
+                    not any(pattern.fullmatch(attribute) for pattern in (
+                        CONDITIONAL_THEORY_PATTERN,
+                        INLINE_DATA_PATTERN,
+                        DATA_QUARANTINE_PATTERN,
+                        METHOD_QUARANTINE_PATTERN,
+                        TRAIT_PATTERN,
+                        NON_DATA_CONDITION_PATTERN,
+                    ))
+                    for attribute in logical_attributes(attributes)
                 ),
                 "type_quarantined": type_quarantines.get(
                     (project_root, type_name),
@@ -437,8 +715,9 @@ def resolve_base_type_name(type_names, current_type, base_name):
 
 
 def resolve_source(root, test_name, source_index=None):
-    method = test_name.rsplit(".", 1)[-1]
-    expected_type = normalize_type_name(test_name.rsplit(".", 1)[0])
+    source_test_name, test_arguments = split_test_name(test_name)
+    method = source_test_name.rsplit(".", 1)[-1]
+    expected_type = normalize_type_name(source_test_name.rsplit(".", 1)[0])
     source_index = source_index or build_source_index(root)
     expected_runner = logical_type(source_index, expected_type)
     if expected_runner["status"] != "exact":
@@ -507,6 +786,40 @@ def resolve_source(root, test_name, source_index=None):
 
     result = dict(matches[0])
     result["status"] = "exact"
+    result["test_arguments"] = test_arguments
+    result["data_quarantine"] = None
+    result["matching_inline_data"] = None
+    if (
+        result["conditional_theory"]
+        and result["has_row_data"]
+        and result["has_unproven_data_provider"]
+    ):
+        return {"status": "ambiguous", "matches": matches[:5]}
+    if test_arguments is not None:
+        data_matches = [
+            item for item in result["data_quarantines"]
+            if item["values"] == test_arguments
+        ]
+        inline_matches = [
+            item for item in result["inline_data"]
+            if result["conditional_theory"] and item["values"] == test_arguments
+        ]
+        if len(data_matches) + len(inline_matches) > 1:
+            return {
+                "status": "ambiguous",
+                "matches": matches[:5],
+            }
+        if data_matches:
+            result["data_quarantine"] = data_matches[0]
+        if inline_matches:
+            result["matching_inline_data"] = inline_matches[0]
+    if (
+        result["conditional_theory"]
+        and result["has_row_data"]
+        and result["data_quarantine"] is None
+        and result["matching_inline_data"] is None
+    ):
+        return {"status": "unmatched-data-row", "matches": matches[:5]}
     result["declaring_type"] = result["type"]
     result["type"] = expected_type
     result["type_quarantined"] = (
@@ -762,6 +1075,8 @@ def historical_project_source_index(
     methods = {}
     method_quarantines = set()
     method_quarantine_issues = {}
+    data_quarantines = set()
+    data_quarantine_issues = {}
     for relative_path in paths:
         if not relative_path.endswith(".cs"):
             continue
@@ -832,11 +1147,15 @@ def historical_project_source_index(
             methods[key] = methods.get(key, 0) + 1
             declaration_line = clean.count("\n", 0, match.start())
             attributes = attribute_block(lines, declaration_line)
-            if has_quarantine_attribute(attributes):
+            parsed_attributes = quarantine_attributes(attributes)
+            if parsed_attributes["method"]:
                 method_quarantines.add(key)
                 issues = {
                     int(match.group("issue"))
-                    for match in QUARANTINE_ISSUE_PATTERN.finditer(attributes)
+                    for item in parsed_attributes["method"]
+                    for match in QUARANTINE_ISSUE_PATTERN.finditer(
+                        item["attribute"]
+                    )
                 }
                 issue = next(iter(issues)) if len(issues) == 1 else None
                 if (
@@ -846,6 +1165,17 @@ def historical_project_source_index(
                     method_quarantine_issues[key] = None
                 else:
                     method_quarantine_issues[key] = issue
+            for data_attribute in parsed_attributes["data"]:
+                data_key = (*key, data_attribute["values"])
+                data_quarantines.add(data_key)
+                issue = quarantine_issue(data_attribute["attribute"])
+                if (
+                    data_key in data_quarantine_issues
+                    and data_quarantine_issues[data_key] != issue
+                ):
+                    data_quarantine_issues[data_key] = None
+                else:
+                    data_quarantine_issues[data_key] = issue
 
     result = {
         "status": "exact",
@@ -856,6 +1186,8 @@ def historical_project_source_index(
         "methods": methods,
         "method_quarantines": method_quarantines,
         "method_quarantine_issues": method_quarantine_issues,
+        "data_quarantines": data_quarantines,
+        "data_quarantine_issues": data_quarantine_issues,
     }
     source_cache[cache_key] = result
     return result
@@ -879,7 +1211,8 @@ def historical_test_source(
     if source_index["status"] != "exact":
         return {"status": "ambiguous"}
 
-    runner_type, method = test_name.rsplit(".", 1)
+    source_test_name, _ = split_test_name(test_name)
+    runner_type, method = source_test_name.rsplit(".", 1)
     current_type = normalize_type_name(runner_type)
     if current_type not in source_index["types"]:
         return {"status": "missing"}
@@ -1502,6 +1835,7 @@ def method_quarantine_transitions(
                 if history.returncode == 0 else None
             ),
             "methods": {},
+            "data": {},
         }
     cached_history = history_cache[relative_project_root]
     target = (type_name, method)
@@ -1569,12 +1903,115 @@ def method_quarantine_transitions(
     return events
 
 
+def data_quarantine_transitions(
+    root,
+    project_root,
+    type_name,
+    method,
+    data_values,
+    history_ref,
+    history_cache,
+    source_cache,
+    content_cache,
+):
+    root = pathlib.Path(root)
+    relative_project_root = str(
+        pathlib.Path(project_root).relative_to(root)
+    ).replace(os.sep, "/")
+    if relative_project_root not in history_cache:
+        history = git_result(
+            root,
+            "log",
+            "--first-parent",
+            "--format=%H%x09%P%x09%cI",
+            "-G",
+            QUARANTINE,
+            history_ref,
+            "--",
+            relative_project_root,
+        )
+        history_cache[relative_project_root] = {
+            "lines": (
+                history.stdout.splitlines()
+                if history.returncode == 0 else None
+            ),
+            "methods": {},
+            "data": {},
+        }
+    cached_history = history_cache[relative_project_root]
+    target = (type_name, method, data_values)
+    if target in cached_history["data"]:
+        return cached_history["data"][target]
+    if cached_history["lines"] is None:
+        return [{"status": "ambiguous"}]
+
+    events = []
+    for line in cached_history["lines"]:
+        sha, parent_values, timestamp = line.split("\t", 2)
+        parent = parent_values.split()[0] if parent_values else None
+        current_index = historical_project_source_index(
+            root,
+            relative_project_root,
+            sha,
+            source_cache,
+            content_cache,
+            quarantine_only=True,
+        )
+        if parent is None:
+            parent_index = {
+                "status": "exact",
+                "data_quarantines": set(),
+                "data_quarantine_issues": {},
+            }
+        else:
+            parent_index = historical_project_source_index(
+                root,
+                relative_project_root,
+                parent,
+                source_cache,
+                content_cache,
+                quarantine_only=True,
+            )
+        if (
+            current_index["status"] != "exact"
+            or parent_index["status"] != "exact"
+        ):
+            result = [{
+                "status": "ambiguous",
+                "commit": sha,
+                "utc": timestamp,
+            }]
+            cached_history["data"][target] = result
+            return result
+        current = target in current_index["data_quarantines"]
+        previous = target in parent_index["data_quarantines"]
+        if current == previous:
+            continue
+        events.append({
+            "status": "added" if current else "removed",
+            "commit": sha,
+            "utc": timestamp,
+            "scope": "data",
+            "type": type_name,
+            "method": method,
+            "data": data_values,
+            "issue": (
+                current_index["data_quarantine_issues"].get(target)
+                if current
+                else parent_index["data_quarantine_issues"].get(target)
+            ),
+        })
+    cached_history["data"][target] = events
+    return events
+
+
 def target_quarantine_transitions(
     root,
     project_root,
     scope,
     type_name,
     method,
+    data_values,
     history_ref,
     history_cache,
     source_cache,
@@ -1619,6 +2056,10 @@ def target_quarantine_transitions(
                 ("method", item[0], item[1])
                 for item in source["method_quarantines"]
             )
+            proxies.update(
+                ("data", item[0], item[1], item[2])
+                for item in source["data_quarantines"]
+            )
             return assembly["quarantined"], frozenset(proxies)
         type_quarantined = type_name in source["type_quarantines"]
         if scope == "type":
@@ -1627,6 +2068,11 @@ def target_quarantine_transitions(
                 for item in source["method_quarantines"]
                 if item[0] == type_name
             }
+            proxies.update(
+                ("data", item[0], item[1], item[2])
+                for item in source["data_quarantines"]
+                if item[0] == type_name
+            )
             if proxies or type_quarantined:
                 if assembly["quarantined"]:
                     proxies.add(("assembly",))
@@ -1647,10 +2093,17 @@ def target_quarantine_transitions(
             type_name,
             method,
         ) in source["method_quarantines"]
+        data_quarantined = (
+            type_name,
+            method,
+            data_values,
+        ) in source["data_quarantines"] if scope == "data" else False
         proxies = set()
         if type_quarantined:
             proxies.add(("type", type_name))
-        if method_quarantined or type_quarantined:
+        if scope == "data" and method_quarantined:
+            proxies.add(("method", type_name, method))
+        if data_quarantined or method_quarantined or type_quarantined:
             if assembly["quarantined"]:
                 proxies.add(("assembly",))
         elif assembly["quarantined"]:
@@ -1665,7 +2118,10 @@ def target_quarantine_transitions(
                 return None
             if (type_name, method) in full_source["methods"]:
                 proxies.add(("assembly",))
-        return method_quarantined, frozenset(proxies)
+        return (
+            data_quarantined if scope == "data" else method_quarantined,
+            frozenset(proxies),
+        )
 
     events = []
     for line in history:
@@ -1692,6 +2148,7 @@ def target_quarantine_transitions(
                 "methods": {},
                 "type_quarantines": set(),
                 "method_quarantines": set(),
+                "data_quarantines": set(),
             }
             parent_assembly = {
                 "status": "exact",
@@ -1740,7 +2197,7 @@ def target_quarantine_transitions(
             and (
                 type_name not in parent_source["types"]
                 or (
-                    scope == "method"
+                    scope in ("method", "data")
                     and (type_name, method) not in parent_source["methods"]
                 )
             )
@@ -1766,7 +2223,7 @@ def target_quarantine_transitions(
                     full_parent_source["status"] == "exact"
                     and type_name in full_parent_source["types"]
                     and (
-                        scope != "method"
+                        scope not in ("method", "data")
                         or (type_name, method) in full_parent_source["methods"]
                     )
                 )
@@ -1909,27 +2366,53 @@ def current_quarantine_targets(source_index):
     seen = set()
     for declarations in source_index["methods"].values():
         for declaration in declarations:
-            if not declaration["method_quarantined"]:
-                continue
-            key = (
-                "method",
-                declaration["path"],
-                declaration["type"],
-                declaration["method"],
-            )
-            if key in seen:
-                continue
-            seen.add(key)
-            targets.append({
-                "scope": "method",
-                "path": declaration["path"],
-                "project_root": declaration["project_root"],
-                "type": declaration["type"],
-                "method": declaration["method"],
-                "reference": quarantine_reference(
-                    declaration["quarantine_attribute"]
-                ),
-            })
+            if declaration["method_quarantined"]:
+                key = (
+                    "method",
+                    declaration["path"],
+                    declaration["type"],
+                    declaration["method"],
+                )
+                if key not in seen:
+                    seen.add(key)
+                    targets.append({
+                        "scope": "method",
+                        "path": declaration["path"],
+                        "project_root": declaration["project_root"],
+                        "type": declaration["type"],
+                        "method": declaration["method"],
+                        "reference": quarantine_reference(
+                            declaration["quarantine_attribute"]
+                        ),
+                        "operating_systems": list(
+                            declaration["method_operating_systems"] or ()
+                        ),
+                    })
+            for data_attribute in declaration["data_quarantines"]:
+                data_key = (
+                    "data",
+                    declaration["path"],
+                    declaration["type"],
+                    declaration["method"],
+                    data_attribute["values"],
+                )
+                if data_key in seen:
+                    continue
+                seen.add(data_key)
+                targets.append({
+                    "scope": "data",
+                    "path": declaration["path"],
+                    "project_root": declaration["project_root"],
+                    "type": declaration["type"],
+                    "method": declaration["method"],
+                    "data": data_attribute["data"],
+                    "operating_systems": list(
+                        data_attribute["operating_system_values"] or ()
+                    ),
+                    "reference": quarantine_reference(
+                        data_attribute["attribute"]
+                    ),
+                })
     for declarations in source_index["types"].values():
         for declaration in declarations:
             if not declaration["quarantined"]:
@@ -1985,74 +2468,145 @@ def collect_requarantine_history(
 
     for declarations in source_index["methods"].values():
         for declaration in declarations:
-            if not declaration["method_quarantined"]:
-                continue
-            key = (
-                "method",
-                declaration["path"],
-                declaration["type"],
-                declaration["method"],
-            )
-            if key in seen:
-                continue
-            seen.add(key)
-            issue = quarantine_issue(declaration["quarantine_attribute"])
-            history_complete = project_history_is_complete(
-                root,
-                declaration["project_root"],
-                [declaration["path"]],
-                history_ref,
-                project_history_cache,
-            )
-            events = (
-                target_quarantine_transitions(
+            if declaration["method_quarantined"]:
+                key = (
+                    "method",
+                    declaration["path"],
+                    declaration["type"],
+                    declaration["method"],
+                )
+                if key not in seen:
+                    seen.add(key)
+                    issue = quarantine_issue(
+                        declaration["quarantine_attribute"]
+                    )
+                    history_complete = project_history_is_complete(
+                        root,
+                        declaration["project_root"],
+                        [declaration["path"]],
+                        history_ref,
+                        project_history_cache,
+                    )
+                    events = (
+                        target_quarantine_transitions(
+                            root,
+                            declaration["project_root"],
+                            "method",
+                            declaration["type"],
+                            declaration["method"],
+                            None,
+                            history_ref,
+                            target_history_cache,
+                            source_cache,
+                            content_cache,
+                            assembly_state_cache,
+                        )
+                        if history_complete else [{"status": "ambiguous"}]
+                    )
+                    if (
+                        target_identity_rename_detected(
+                            root,
+                            declaration["path"],
+                            declaration["type"],
+                            declaration["method"],
+                            history_ref,
+                        )
+                        or target_identity_rename_detected(
+                            root,
+                            declaration["path"],
+                            declaration["type"],
+                            None,
+                            history_ref,
+                        )
+                        or namespace_rename_detected(
+                            root,
+                            declaration["path"],
+                            declaration["type"],
+                            history_ref,
+                        )
+                    ):
+                        events = [{"status": "ambiguous"}]
+                    targets.append({
+                        "scope": "method",
+                        "path": declaration["path"],
+                        "type": declaration["type"],
+                        "method": declaration["method"],
+                        "issue": issue,
+                        "status": (
+                            classify_current_quarantine_history(events)
+                            if issue is not None else "ambiguous"
+                        ),
+                    })
+            for data_attribute in declaration["data_quarantines"]:
+                key = (
+                    "data",
+                    declaration["path"],
+                    declaration["type"],
+                    declaration["method"],
+                    data_attribute["values"],
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
+                issue = quarantine_issue(data_attribute["attribute"])
+                history_complete = project_history_is_complete(
                     root,
                     declaration["project_root"],
-                    "method",
-                    declaration["type"],
-                    declaration["method"],
+                    [declaration["path"]],
                     history_ref,
-                    target_history_cache,
-                    source_cache,
-                    content_cache,
-                    assembly_state_cache,
+                    project_history_cache,
                 )
-                if history_complete else [{"status": "ambiguous"}]
-            )
-            if (
-                target_identity_rename_detected(
-                    root,
-                    declaration["path"],
-                    declaration["type"],
-                    declaration["method"],
-                    history_ref,
+                events = (
+                    target_quarantine_transitions(
+                        root,
+                        declaration["project_root"],
+                        "data",
+                        declaration["type"],
+                        declaration["method"],
+                        data_attribute["values"],
+                        history_ref,
+                        target_history_cache,
+                        source_cache,
+                        content_cache,
+                        assembly_state_cache,
+                    )
+                    if history_complete else [{"status": "ambiguous"}]
                 )
-                or target_identity_rename_detected(
-                    root,
-                    declaration["path"],
-                    declaration["type"],
-                    None,
-                    history_ref,
-                )
-                or namespace_rename_detected(
-                    root,
-                    declaration["path"],
-                    declaration["type"],
-                    history_ref,
-                )
-            ):
-                events = [{"status": "ambiguous"}]
-            targets.append({
-                "scope": "method",
-                "path": declaration["path"],
-                "type": declaration["type"],
-                "method": declaration["method"],
-                "issue": issue,
-                "status": (
-                    classify_current_quarantine_history(events)
-                    if issue is not None else "ambiguous"
-                ),
-            })
+                if (
+                    target_identity_rename_detected(
+                        root,
+                        declaration["path"],
+                        declaration["type"],
+                        declaration["method"],
+                        history_ref,
+                    )
+                    or target_identity_rename_detected(
+                        root,
+                        declaration["path"],
+                        declaration["type"],
+                        None,
+                        history_ref,
+                    )
+                    or namespace_rename_detected(
+                        root,
+                        declaration["path"],
+                        declaration["type"],
+                        history_ref,
+                    )
+                ):
+                    events = [{"status": "ambiguous"}]
+                targets.append({
+                    "scope": "data",
+                    "path": declaration["path"],
+                    "type": declaration["type"],
+                    "method": declaration["method"],
+                    "data": data_attribute["data"],
+                    "issue": issue,
+                    "status": (
+                        classify_current_quarantine_history(events)
+                        if issue is not None else "ambiguous"
+                    ),
+                })
 
     for declarations in source_index["types"].values():
         for declaration in declarations:
@@ -2076,6 +2630,7 @@ def collect_requarantine_history(
                     declaration["project_root"],
                     "type",
                     declaration["type"],
+                    None,
                     None,
                     history_ref,
                     target_history_cache,
@@ -2135,6 +2690,7 @@ def collect_requarantine_history(
                 "assembly",
                 None,
                 None,
+                None,
                 history_ref,
                 target_history_cache,
                 source_cache,
@@ -2173,6 +2729,7 @@ def collect_requarantine_history(
                 item["scope"],
                 item.get("type") or "",
                 item.get("method") or "",
+                item.get("data") or "",
                 item.get("issue") or 0,
             ),
         ),
@@ -2437,13 +2994,40 @@ def source_c_failure_records(source_c):
         if not isinstance(build_id, int):
             continue
         for match in SOURCE_C_FAILURE_PATTERN.finditer(item.get("fail_blocks", "")):
-            test_name = match.group("test").split("(", 1)[0].strip()
+            test_name = match.group("test").strip()
             if not test_name or test_name.endswith(WORK_ITEM_SUFFIX):
                 continue
             record = records.setdefault(test_name, {"builds": []})
             if build_id not in record["builds"]:
                 record["builds"].append(build_id)
+            record.setdefault("queues", {}).setdefault(str(build_id), []).append(
+                item.get("queue")
+            )
     return records
+
+
+def quarantine_operating_systems(record_a, record_b, record_c, builds):
+    by_build = {}
+    for record in (record_a, record_b, record_c):
+        if not record:
+            continue
+        for build in record.get("builds", []):
+            queues = record.get("queues", {}).get(str(build))
+            operating_systems = {
+                operating_system_from_queue(queue) for queue in (queues or [None])
+            }
+            by_build.setdefault(build, set()).update(operating_systems)
+
+    resolved = set()
+    for build in builds:
+        operating_systems = by_build.get(build)
+        if operating_systems is None or None in operating_systems:
+            return list(OPERATING_SYSTEMS)
+        resolved.update(operating_systems)
+    return [
+        operating_system for operating_system in OPERATING_SYSTEMS
+        if operating_system in resolved
+    ]
 
 
 def collect(
@@ -2515,6 +3099,7 @@ def collect(
             "eligible_failure_builds": [],
             "case_b_eligible": False,
             "case_b_issue": None,
+            "quarantine_operating_systems": None,
             "evidence": None,
             "reasons": reasons,
         }
@@ -2574,6 +3159,7 @@ def collect(
 
         quarantined = (
             source["method_quarantined"]
+            or source["data_quarantine"] is not None
             or source["type_quarantined"]
             or source["assembly_quarantined"]
         )
@@ -2595,6 +3181,25 @@ def collect(
                 historical_content_cache,
             )
             transitions.append(events[0] if events else {"status": "none"})
+        data_target = (
+            source["data_quarantine"]
+            or source["matching_inline_data"]
+        )
+        if data_target is not None:
+            events = data_quarantine_transitions(
+                root,
+                source["project_root"],
+                source["declaring_type"],
+                source["method"],
+                data_target["values"],
+                history_ref,
+                method_history_cache,
+                historical_source_cache,
+                historical_content_cache,
+            )
+            transitions.append(
+                events[0] if events else {"status": "none"}
+            )
         transitions.append(type_quarantine_transition(
             root,
             source["assembly_project_root"],
@@ -2759,6 +3364,12 @@ def collect(
             included.add(build_id)
 
         receipt["eligible_failure_builds"] = sorted(included)
+        receipt["quarantine_operating_systems"] = quarantine_operating_systems(
+            record_a,
+            record_b,
+            record_c,
+            included,
+        )
         if case_b:
             receipt["status"] = "ineligible"
             if included:
