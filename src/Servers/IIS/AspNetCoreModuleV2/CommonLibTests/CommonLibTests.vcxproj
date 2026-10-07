@@ -31,6 +31,7 @@
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="inprocess_application_tests.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="processmanager_owner_tests.cpp" />
     <ClCompile Include="StandardOutputRedirectionTest.cpp" />
     <ClCompile Include="BindingInformationTest.cpp" />
     <ClCompile Include="utility_tests.cpp" />
@@ -54,6 +55,9 @@
     </ProjectReference>
     <ProjectReference Include="..\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <Project>{d57ea297-6dc2-4bc0-8c91-334863327863}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
+      <Project>{7f87406c-a3c8-4139-a68d-e4c344294a67}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -82,7 +86,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\RequestHandlerLib;..\IISLib;..\CommonLib;$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googlemock\include;...\AspNetCore\Inc;..\InProcessRequestHandler\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\RequestHandlerLib;..\IISLib;..\CommonLib;$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googlemock\include;...\AspNetCore\Inc;..\InProcessRequestHandler\;..\OutOfProcessRequestHandler\</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -91,7 +95,7 @@
       <SubSystem>Console</SubSystem>
       <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(ArtifactsObjDir)InProcessRequestHandler\$(Platform)\$(Configuration)\;$(LibNetHostPath)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;inprocessapplication.obj;inprocesshandler.obj;ahadmin.lib;Rpcrt4.lib;inprocessapplicationbase.obj;stdafx.obj;version.lib;inprocessoptions.obj;$(LibNetHostPath)\libnethost.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;inprocessapplication.obj;inprocesshandler.obj;ahadmin.lib;Rpcrt4.lib;inprocessapplicationbase.obj;stdafx.obj;version.lib;inprocessoptions.obj;$(ArtifactsObjDir)OutOfProcessRequestHandler\$(Platform)\$(Configuration)\stdafx.obj;$(ArtifactsObjDir)OutOfProcessRequestHandler\$(Platform)\$(Configuration)\processmanager.obj;$(ArtifactsObjDir)OutOfProcessRequestHandler\$(Platform)\$(Configuration)\serverprocess.obj;ws2_32.lib;iphlpapi.lib;winhttp.lib;$(LibNetHostPath)\libnethost.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>

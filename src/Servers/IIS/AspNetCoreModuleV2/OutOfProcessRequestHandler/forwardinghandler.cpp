@@ -106,7 +106,8 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
     IHttpResponse              *pResponse = m_pW3Context->GetResponse();
     IHttpConnection            *pClientConnection = nullptr;
     PROTOCOL_CONFIG            *pProtocol = &sm_ProtocolConfig;
-    SERVER_PROCESS             *pServerProcess = nullptr;
+    SERVER_PROCESS             *pServerProcessRaw = nullptr;
+    SERVER_PROCESS_PTR            pServerProcess;
 
     USHORT                      cchHostName = 0;
 
@@ -136,12 +137,14 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
         FAILURE(E_INVALIDARG);
     }
 
-    hr = m_pApplication->GetProcess(&pServerProcess);
+    hr = m_pApplication->GetProcess(&pServerProcessRaw);
     if (FAILED_LOG(hr))
     {
         fFailedToStartKestrel = TRUE;
         FAILURE(hr);
     }
+
+    pServerProcess.reset(pServerProcessRaw);
 
     if (pServerProcess == nullptr)
     {
@@ -192,7 +195,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
         pProtocol,
         hConnect,
         &struEscapedUrl,
-        pServerProcess));
+        pServerProcess.get()));
 
     m_fReactToDisconnect = TRUE;
 
@@ -348,6 +351,7 @@ Finished:
         DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == nullptr);
     }
 
+    pServerProcess.reset();
     DereferenceRequestHandler();
     //
     // Do not use this object after dereferencing it, it may be gone.
