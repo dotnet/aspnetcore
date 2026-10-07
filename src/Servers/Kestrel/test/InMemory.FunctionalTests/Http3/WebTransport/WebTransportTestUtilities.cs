@@ -3,7 +3,9 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Net.Http;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -21,7 +23,7 @@ internal class WebTransportTestUtilities
 {
     private static int streamCounter;
 
-    public static async ValueTask<WebTransportSession> GenerateSession(Http3InMemory inMemory, TaskCompletionSource exitSessionTcs)
+    public static async ValueTask<WebTransportSession> GenerateSession(Http3InMemory inMemory, TaskCompletionSource exitSessionTcs, RequestDelegate application = null)
     {
 #pragma warning disable CA2252 // WebTransport is a preview feature
         var appCompletedTcs = new TaskCompletionSource<IWebTransportSession>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -29,6 +31,16 @@ internal class WebTransportTestUtilities
         await inMemory.InitializeConnectionAsync(async context =>
         {
             var webTransportFeature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+
+            if (!webTransportFeature.IsWebTransportRequest)
+            {
+                if (application is not null)
+                {
+                    await application(context);
+                }
+
+                return;
+            }
 
             try
             {
@@ -76,6 +88,23 @@ internal class WebTransportTestUtilities
 
         return (WebTransportSession)await appCompletedTcs.Task.DefaultTimeout();
 #pragma warning restore CA2252 // WebTransport is a preview feature
+    }
+
+    public static async Task<Http3StreamBase> CreateUnidirectionalStream(Http3InMemory inMemory, long streamType, long sessionId)
+    {
+        var streamContext = new TestStreamContext(canRead: true, canWrite: false, inMemory);
+        streamContext.Initialize(inMemory.GetStreamId(0x02));
+
+        var stream = new Http3StreamBase(streamContext);
+        var buffer = new byte[VariableLengthIntegerHelper.GetByteCount(streamType) + VariableLengthIntegerHelper.GetByteCount(sessionId)];
+        var length = VariableLengthIntegerHelper.WriteInteger(buffer, streamType);
+        VariableLengthIntegerHelper.WriteInteger(buffer.AsSpan(length), sessionId);
+
+        stream.Pair.Application.Output.Write(buffer);
+        await stream.Pair.Application.Output.FlushAsync();
+        await inMemory.MultiplexedConnectionContext.ToServerAcceptQueue.Writer.WriteAsync(streamContext);
+
+        return stream;
     }
 
     public static WebTransportStream CreateStream(WebTransportStreamType type, Memory<byte>? memory = null)

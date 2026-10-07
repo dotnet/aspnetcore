@@ -1,8 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
+using System.Text;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -83,6 +88,40 @@ public class WebTransportSessionTests : Http3TestBase
         }
 
         Assert.Equal(0, Http3Api.Connection.WebTransportSessionCount);
+
+        exitTcs.SetResult();
+    }
+
+    [Fact]
+    public async Task WebTransportSession_LateAssociatedStreamDoesNotAbortConnection()
+    {
+        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
+
+        var exitTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var session = await WebTransportTestUtilities.GenerateSession(Http3Api, exitTcs, _echoApplication);
+        var request = await Http3Api.CreateRequestStream(new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        });
+
+        await request.OnStreamCreatedTask.DefaultTimeout();
+
+        session.OnClientConnectionClosed();
+
+        var lateStream = await WebTransportTestUtilities.CreateUnidirectionalStream(
+            Http3Api,
+            (long)Http3StreamType.WebTransportUnidirectional,
+            session.SessionId);
+
+        await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await lateStream.ReceiveEndAsync());
+
+        await request.SendDataAsync("Hello world"u8.ToArray(), endStream: true);
+        await request.ExpectHeadersAsync();
+        var responseData = await request.ExpectDataAsync();
+        Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.Span));
 
         exitTcs.SetResult();
     }

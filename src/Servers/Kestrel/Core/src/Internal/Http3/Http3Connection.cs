@@ -659,7 +659,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             if (!_webtransportSessions.TryGetValue(correspondingSession, out var session))
             {
                 stream.Abort(new ConnectionAbortedException(CoreStrings.ReceivedLooseWebTransportStream));
-                throw new Http3StreamErrorException(CoreStrings.ReceivedLooseWebTransportStream, Http3ErrorCode.StreamCreationError);
+                return;
             }
 
             stream.Context.WebTransportSession = session;
