@@ -2,12 +2,11 @@
 name: "PR Documentation Check"
 
 description: >
-  Runs only when manually dispatched to analyze an ASP.NET Core pull request merged into main from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Existing trusted drafts are skipped before inference by default; explicit refresh analyzes and updates only when needed. Conclusive analyses comment on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description.
+  Analyzes an ASP.NET Core pull request automatically when merged into main or when manually dispatched, classifies conceptual, migration, and breaking-change documentation needs, and either opens a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or records why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Existing branch-matched open PRs are skipped before inference by default; explicit refresh analyzes and updates only bot-authored drafts when needed. Conclusive analyses comment on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description.
 
 max-turns: 50
 
 on:
-  # Keep the upstream rollout manual-only. Add an automatic merged-PR trigger separately after production approval.
   workflow_dispatch:
     inputs:
       source_repository:
@@ -22,7 +21,7 @@ on:
         required: true
         type: string
       existing_draft:
-        description: "Skip an existing trusted draft before analysis, or refresh it only if needed"
+        description: "Skip an existing branch-matched PR before analysis, or refresh a bot draft only if needed"
         required: true
         type: choice
         default: skip
@@ -30,6 +29,7 @@ on:
           - skip
           - refresh
   roles: [admin, maintainer, write]
+  bots: ["github-actions[bot]"]
   reaction: none
   status-comment: false
 
@@ -90,6 +90,7 @@ network:
     - github
 
 safe-outputs:
+  needs: [docs_context]
   github-app:
     client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
     private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
@@ -114,19 +115,24 @@ safe-outputs:
       with:
         persist-credentials: false
         path: _safe-output-validator
-        sparse-checkout: .github/workflows/pr-docs-check/validate_outcome.py
+        ref: main
+        sparse-checkout: .github/workflows/pr-docs-check
         sparse-checkout-cone-mode: false
     - name: Reject inconsistent docs mutations
       env:
         EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
         EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
         GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+        GH_TOKEN: ${{ steps.safe-outputs-app-token.outputs.token }}
+        DOCS_BOT_APP_SLUG: ${{ steps.safe-outputs-app-token.outputs.app-slug }}
       run: >-
         python3 _safe-output-validator/.github/workflows/pr-docs-check/validate_outcome.py
         --preflight
+        --validate-live
         --agent-output "${GH_AW_AGENT_OUTPUT}"
         --source-repository "${EXPECTED_SOURCE_REPOSITORY}"
         --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}"
+        --docs-pr-author "${DOCS_BOT_APP_SLUG}[bot]"
         --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
         --source-preflight "${RUNNER_TEMP}/pr-docs-check-context/source-preflight.json"
         --workspace-evidence "${RUNNER_TEMP}/pr-docs-check-workspace/workspace-evidence.json"
@@ -155,7 +161,7 @@ safe-outputs:
     recreate-ref: true
     protected-files: blocked
   push-to-pull-request-branch:
-    target: "*"
+    target: ${{ needs.docs_context.outputs.docs_pr_number }}
     target-repo: "dotnet/AspNetCore.Docs"
     head-repo: "dotnet/AspNetCore.Docs.Automation"
     allowed-repos:
@@ -166,19 +172,12 @@ safe-outputs:
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
       owner: dotnet
       repositories: ["AspNetCore.Docs.Automation"]
-    required-title-prefix: "[docs] "
-    required-labels: [documentation]
     fallback-as-pull-request: false
+    if-no-changes: error
     check-branch-protection: false
     allowed-files:
       - "aspnetcore/**"
     protected-files: blocked
-  update-pull-request:
-    target: "*"
-    target-repo: "dotnet/AspNetCore.Docs"
-    required-title-prefix: "[docs] "
-    required-labels: [documentation]
-    body: false
   jobs:
     notify-source-pr:
       name: "Notify source PR"
@@ -247,6 +246,7 @@ safe-outputs:
           with:
             persist-credentials: false
             path: _validator
+            ref: main
             sparse-checkout: |
               .github/workflows/pr-docs-check/validate_outcome.py
               .github/workflows/pr-docs-check/author_body.cjs
@@ -493,14 +493,12 @@ safe-outputs:
                 `${process.env.RUNNER_TEMP}/pr-docs-check-docs-pr.json`, 'utf8'));
               const identity = pr => JSON.stringify([
                 pr.number, pr.state, pr.draft, pr.user?.login, pr.base?.ref, pr.base?.repo?.full_name,
-                pr.head?.ref, pr.head?.repo?.full_name, pr.head?.sha, pr.title,
-                (pr.labels || []).map(label => label.name).sort(),
+                pr.head?.ref, pr.head?.repo?.full_name, pr.head?.sha,
               ]);
-              if (identity(docsPr.data) !== identity(validated) ||
-                  !docsPr.data.body?.split('\n').includes(`Source: ${expectedRepository}#${expectedPrNumber}`)) {
+              if (identity(docsPr.data) !== identity(validated)) {
                 throw new Error('The docs PR identity changed after outcome validation.');
               }
-              const body = authorBody(docsPr.data.body, { type: 'User', login: sourceAuthor },
+              const body = authorBody(docsPr.data.body ?? '', { type: 'User', login: sourceAuthor },
                 expectedRepository, expectedPrNumber);
               if (body !== docsPr.data.body) {
                 await github.rest.pulls.update({
@@ -522,11 +520,13 @@ jobs:
     outputs:
       analyze: ${{ steps.context.outputs.analyze }}
       head_sha: ${{ steps.context.outputs.head_sha }}
+      docs_pr_number: ${{ steps.context.outputs.docs_pr_number }}
     steps:
       - name: Check out trusted workflow helpers
         uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
+          ref: main
           sparse-checkout: .github/workflows/pr-docs-check
           sparse-checkout-cone-mode: false
       - name: Mint ASP.NET Core docs bot token
@@ -646,7 +646,9 @@ timeout-minutes: 20
 
 Analyze pull request #${{ inputs.pr_number }} in `${{ inputs.source_repository }}` and decide whether it requires an update to the ASP.NET Core documentation in the current workspace, `dotnet/AspNetCore.Docs`.
 
-This workflow is manually dispatched. The `existing_draft` option defaults to `skip`: after source eligibility and trusted draft validation, an existing draft is linked in the job summary and the agent and publication jobs do not run. Explicit `refresh` reanalyzes the trusted draft and changes it only when needed. Either option analyzes normally when no draft exists. Do not modify `dotnet/aspnetcore` or push directly to `dotnet/AspNetCore.Docs`. Before analysis, trusted preparation resolves the source version and searches for an existing automated documentation draft. Trusted safe outputs push documentation branches to `dotnet/AspNetCore.Docs.Automation` and open or update draft pull requests against `dotnet/AspNetCore.Docs`. Your only permitted visible outcomes are:
+This workflow runs automatically only for source PRs merged into upstream `main`, via the native `pr-docs-check-merged.yml` dispatcher, or by manual dispatch. The merged-only `pull_request_target` dispatcher uses the base/default-branch workflow and queues this workflow at `main` with the exact source PR number and `existing_draft=skip`. It performs no checkout or source PR execution. The agent workflow retains the existing App credentials, PAT pool, and source notification token; its bot allowlist permits the dispatching `github-actions[bot]` while retaining role checks for human dispatchers. Trusted helpers are checked out from `main`; source PR content is data only, never checked out or executed. Closed-unmerged and non-main events never reach inference or publication.
+
+The `existing_draft` option defaults to `skip`; automatic dispatches explicitly use `skip` and an absent input also resolves to `skip`: after source eligibility and branch topology validation, an existing open PR is linked in the job summary and the agent and publication jobs do not run. Recognition uses the exact automation head repository, source-PR-specific branch (including a legacy hex suffix), and docs repository/main base, never its title, labels, or body. Explicit manual `refresh` reanalyzes only the original bot-authored open draft and changes it only when needed. Non-drafts are always skipped without changes. Ambiguous matches or other authors block refresh and replacement. Either option analyzes normally when no open PR exists; an orphan branch or closed historical PR is not an existing open PR, and new-PR publication retains the configured branch recreation behavior. Do not modify `dotnet/aspnetcore` or push directly to `dotnet/AspNetCore.Docs`. Before analysis, trusted preparation resolves the source version and searches for an existing automated documentation draft. Trusted safe outputs push documentation branches to `dotnet/AspNetCore.Docs.Automation` and open or update draft pull requests against `dotnet/AspNetCore.Docs`. Your only permitted visible outcomes are:
 
 1. When documentation confidence is at least 60%, one new or updated draft pull request in `dotnet/AspNetCore.Docs` and one `notify_source_pr` result.
 2. When documentation confidence is below 60%, one `noop` result and one `notify_source_pr` result explaining why no documentation PR was created.
@@ -810,7 +812,7 @@ Make the smallest complete documentation change across every required surface. M
 
 ## Create or update the draft pull request
 
-Inspect `/tmp/gh-aw/pr-docs-check/existing-draft.json` before editing. It contains at most one selected trusted automated draft and may list older duplicates for human cleanup. Never create another pull request when `found` is `true`. When `blocked` is `true`, an existing matching pull request is no longer a draft or no longer has the required automation identity, title, or label; do not modify or replace it. Complete the analysis, then use `draft_failed` if documentation is required or `skipped` if it is not.
+Inspect `/tmp/gh-aw/pr-docs-check/existing-draft.json` before editing. It contains at most one selected bot-authored open draft. Never create another pull request when `found` is `true`. When `blocked` is `true`, matching open PRs are ambiguous, are no longer drafts, or have another author; do not modify or replace them. Trusted preparation skips or rejects these cases before inference.
 
 When no existing draft was found, after making and reviewing the documentation changes, emit `create_pull_request` exactly once with:
 
@@ -829,10 +831,10 @@ When an existing draft was found, the trusted pre-agent step has checked out its
 Otherwise update the documentation on that branch, then:
 
 1. Emit `push_to_pull_request_branch` exactly once with `pull_request_number` set to `/tmp/gh-aw/pr-docs-check/existing-draft.json`'s selected number.
-2. Emit `update_pull_request` exactly once for the same number, replacing its title with `[docs] ` followed by the current concise title. Omit `body` to preserve the existing generated description, gh-aw attribution, and human edits. Describe the current documentation decisions in the source notification.
-3. Emit `notify_source_pr` exactly once with `result: "drafted"`, `docs_pr_action: "updated"`, `existing_docs_pr_number` set to the selected number, the confidence score, all three surface decisions and reasons, and a concise summary.
+2. Do not emit `update_pull_request` or edit the title or body. Preserve the current editorial title, generated description, gh-aw attribution, and human edits. Describe the current documentation decisions in the source notification.
+3. Emit `notify_source_pr` exactly once with `result: "drafted"`, `docs_pr_action: "updated"`, `existing_docs_pr_number` set to the selected number, the confidence score, all three surface decisions and reasons, and a concise summary. An updated outcome requires a real push; a metadata-only operation cannot satisfy it.
 
-The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main` in `dotnet/AspNetCore.Docs`, uses a head branch in `dotnet/AspNetCore.Docs.Automation`, has the required title prefix and label, carries the exact source marker, and is owned by the configured GitHub App bot. It obtains the human source PR author directly from GitHub and creates or refreshes one managed attribution section in the docs PR description for new, updated, and sufficient unchanged drafts, preserving everything outside that section. An unchanged outcome may refresh this managed attribution only; it does not change the title or documentation and is reported as already sufficient, not updated. Bot authors are excluded. Do not add author mentions yourself, create a separate author comment, request reviewers, or assign anyone.
+The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main` in `dotnet/AspNetCore.Docs`, uses the exact source-specific head branch in `dotnet/AspNetCore.Docs.Automation`, and is owned by the configured GitHub App bot. Title, labels, and body do not establish identity or refresh eligibility. It obtains the human source PR author directly from GitHub and creates or refreshes one managed attribution section in the docs PR description for new, updated, and sufficient unchanged drafts, preserving everything outside that section. An unchanged outcome may refresh this managed attribution only; it does not change the title or documentation and is reported as already sufficient, not updated. Bot authors are excluded. Do not add author mentions yourself, create a separate author comment, request reviewers, or assign anyone.
 
 If confidence is below 60, make no file changes and emit `noop` exactly once with:
 

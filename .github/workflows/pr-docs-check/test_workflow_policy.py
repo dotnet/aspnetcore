@@ -114,8 +114,9 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertNotIn("github.rest.issues", attribution)
         self.assertNotIn("assignees:", self.workflow)
         self.assertNotIn("reviewers:", self.workflow)
-        self.assertIn("Omit `body` to preserve the existing generated description", self.workflow)
-        self.assertIn('\\"allow_body\\":false', self.compiled_workflow)
+        self.assertIn("Do not emit `update_pull_request` or edit the title or body.", self.workflow)
+        self.assertNotIn("  update-pull-request:", self.workflow)
+        self.assertNotIn('\\"required_title_prefix\\"', self.compiled_workflow)
 
 
 if __name__ == "__main__":

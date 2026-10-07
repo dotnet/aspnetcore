@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"5f7752f0504d3196507fa183c319d8341304ac9c9211e18daf9d2813a820861c","body_hash":"9756831b7f3a78ef33948b3e57c5d0fc752fc0a827a4f40e15f23ac04fac338f","compiler_version":"v0.89.21","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.87"}}
-# gh-aw-manifest: {"version":1,"secrets":["ASPNETCORE_DOCS_BOT_CLIENT_ID","ASPNETCORE_DOCS_BOT_PRIVATE_KEY","COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_ENDPOINT","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/create-github-app-token","sha":"bcd2ba49218906704ab6c1aa796996da409d3eb1","version":"v3.2.0"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"924af5fdc64061cfbf66fb584c8b07e2ac230c60","version":"v0.89.21"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.23","digest":"sha256:2c78aaba1c108e130e2d6d01e4f2cca334ea04c53e6f258913ac34173fe7e3b2","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.23@sha256:2c78aaba1c108e130e2d6d01e4f2cca334ea04c53e6f258913ac34173fe7e3b2"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.23","digest":"sha256:c15c3d1208df10c5b588a3657be53742aa982ae0909d1eb1812525268794ca64","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.23@sha256:c15c3d1208df10c5b588a3657be53742aa982ae0909d1eb1812525268794ca64"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.23","digest":"sha256:9e31a6e518eba44652b9ae94ce55c3b6958e06290c3b81b08de4174751bb439a","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.23@sha256:9e31a6e518eba44652b9ae94ce55c3b6958e06290c3b81b08de4174751bb439a"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.23","digest":"sha256:02ffc56dd40158223064ef03a78c2d9717473c93723b4e403d455ea6f0b09ae0","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.23@sha256:02ffc56dd40158223064ef03a78c2d9717473c93723b4e403d455ea6f0b09ae0"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.25","digest":"sha256:9be0a86220e807a0ecc89e53d7453468f7a53fbc6b3d1efd2299025ffe01d086","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.25@sha256:9be0a86220e807a0ecc89e53d7453468f7a53fbc6b3d1efd2299025ffe01d086"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.12.2","digest":"sha256:508a0857ec762b1ab1cece29193345b501fab1dd9d1228a7b617062954cecac6","pinned_image":"ghcr.io/github/github-mcp-server:v1.12.2@sha256:508a0857ec762b1ab1cece29193345b501fab1dd9d1228a7b617062954cecac6"}],"mcp_servers":[{"name":"safeoutputs","tools":["create_pull_request","missing_data","missing_tool","noop","notify_source_pr","push_to_pull_request_branch","update_pull_request"]}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"9929b1397d274c9b560611b2f05cbf3d0b3d97a3dd71ae18a9fab22dd1093ed8","body_hash":"d14dda16aeed357972005802ce18288f3bc1dd25f9a7aef88e94fec53ad0dd6a","compiler_version":"v0.89.21","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.87"}}
+# gh-aw-manifest: {"version":1,"secrets":["ASPNETCORE_DOCS_BOT_CLIENT_ID","ASPNETCORE_DOCS_BOT_PRIVATE_KEY","COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_ENDPOINT","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/create-github-app-token","sha":"bcd2ba49218906704ab6c1aa796996da409d3eb1","version":"v3.2.0"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"924af5fdc64061cfbf66fb584c8b07e2ac230c60","version":"v0.89.21"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.23","digest":"sha256:2c78aaba1c108e130e2d6d01e4f2cca334ea04c53e6f258913ac34173fe7e3b2","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.23@sha256:2c78aaba1c108e130e2d6d01e4f2cca334ea04c53e6f258913ac34173fe7e3b2"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.23","digest":"sha256:c15c3d1208df10c5b588a3657be53742aa982ae0909d1eb1812525268794ca64","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.23@sha256:c15c3d1208df10c5b588a3657be53742aa982ae0909d1eb1812525268794ca64"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.23","digest":"sha256:9e31a6e518eba44652b9ae94ce55c3b6958e06290c3b81b08de4174751bb439a","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.23@sha256:9e31a6e518eba44652b9ae94ce55c3b6958e06290c3b81b08de4174751bb439a"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.23","digest":"sha256:02ffc56dd40158223064ef03a78c2d9717473c93723b4e403d455ea6f0b09ae0","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.23@sha256:02ffc56dd40158223064ef03a78c2d9717473c93723b4e403d455ea6f0b09ae0"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.25","digest":"sha256:9be0a86220e807a0ecc89e53d7453468f7a53fbc6b3d1efd2299025ffe01d086","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.25@sha256:9be0a86220e807a0ecc89e53d7453468f7a53fbc6b3d1efd2299025ffe01d086"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.12.2","digest":"sha256:508a0857ec762b1ab1cece29193345b501fab1dd9d1228a7b617062954cecac6","pinned_image":"ghcr.io/github/github-mcp-server:v1.12.2@sha256:508a0857ec762b1ab1cece29193345b501fab1dd9d1228a7b617062954cecac6"}],"mcp_servers":[{"name":"safeoutputs","tools":["create_pull_request","missing_data","missing_tool","noop","notify_source_pr","push_to_pull_request_branch"]}]}
 # This file was automatically generated by gh-aw (v0.89.21). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -23,7 +23,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Runs only when manually dispatched to analyze an ASP.NET Core pull request merged into main from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Existing trusted drafts are skipped before inference by default; explicit refresh analyzes and updates only when needed. Conclusive analyses comment on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description.
+# Analyzes an ASP.NET Core pull request automatically when merged into main or when manually dispatched, classifies conceptual, migration, and breaking-change documentation needs, and either opens a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or records why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Existing branch-matched open PRs are skipped before inference by default; explicit refresh analyzes and updates only bot-authored drafts when needed. Conclusive analyses comment on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description.
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -70,6 +70,8 @@
 
 name: "PR Documentation Check"
 on:
+  # bots: # Bots processed as bot check in pre-activation job
+  # - github-actions[bot] # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -83,7 +85,7 @@ on:
         type: string
       existing_draft:
         default: skip
-        description: Skip an existing trusted draft before analysis, or refresh it only if needed
+        description: Skip an existing branch-matched PR before analysis, or refresh a bot draft only if needed
         options:
           - skip
           - refresh
@@ -318,7 +320,7 @@ jobs:
           GH_AW_INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
           GH_AW_INPUTS_SOURCE_REPOSITORY: ${{ inputs.source_repository }}
           GH_AW_PROMPT_CONTENT_0000: "<system>\n"
-          GH_AW_PROMPT_CONTENT_0001: "<safe-output-tools>\nTools: create_pull_request, update_pull_request, push_to_pull_request_branch, missing_tool, missing_data, noop, notify_source_pr\n"
+          GH_AW_PROMPT_CONTENT_0001: "<safe-output-tools>\nTools: create_pull_request, push_to_pull_request_branch, missing_tool, missing_data, noop, notify_source_pr\n"
           GH_AW_PROMPT_CONTENT_0002: "</safe-output-tools>\n"
           GH_AW_PROMPT_CONTENT_0003: "<github-context>\nThe following GitHub context information is available for this workflow:\n{{#if github.actor}}\n- **actor**: __GH_AW_GITHUB_ACTOR__\n{{/if}}\n{{#if github.repository}}\n- **repository**: __GH_AW_GITHUB_REPOSITORY__\n{{/if}}\n{{#if github.workspace}}\n- **workspace**: __GH_AW_GITHUB_WORKSPACE__\n{{/if}}\n{{#if github.event.issue.number || (github.aw.context.item_type == 'issue' && github.aw.context.item_number)}}\n- **issue-number**: #__GH_AW_EXPR_802A9F6A__\n{{/if}}\n{{#if github.event.discussion.number || (github.aw.context.item_type == 'discussion' && github.aw.context.item_number)}}\n- **discussion-number**: #__GH_AW_EXPR_1A3A194A__\n{{/if}}\n{{#if github.event.pull_request.number || (github.aw.context.item_type == 'pull_request' && github.aw.context.item_number)}}\n- **pull-request-number**: #__GH_AW_EXPR_463A214A__\n{{/if}}\n{{#if github.event.comment.id || github.aw.context.comment_id}}\n- **comment-id**: __GH_AW_EXPR_FF1D34CE__\n{{/if}}\n{{#if github.run_id}}\n- **workflow-run-id**: __GH_AW_GITHUB_RUN_ID__\n{{/if}}\n- **checkouts**: The following repositories have been checked out and are available in the workspace:\n  - repo `dotnet/AspNetCore.Docs` → `__GH_AW_GITHUB_WORKSPACE__` (cwd) (**current** - this is the repository you are working on; use this as the target for all GitHub operations unless otherwise specified) [shallow clone, fetch-depth=1 (default)] [additional refs fetched: *]\n  - **Note**: The workspace path reported above may contain a separate shallow, credential-free checkout of the host repository. Use the exact checkout path shown for the repository you need. Before concluding that a branch is unavailable, confirm your working directory matches that path and inspect refs there. If the branch is not present in that checkout and is not listed as an additional fetched ref, it has NOT been checked out. For private repositories you cannot fetch it. If the branch is required and not available, exit with an error and ask the user to add it to the `fetch:` option of the `checkout:` configuration (e.g., `fetch: [\"refs/pulls/open/*\"]` for all open PR refs, or `fetch: [\"main\", \"feature/my-branch\"]` for specific branches).\n  - **Warning: No git credentials are available to the agent.** Credentials are\n    intentionally removed after the checkout step for security. This means any git\n    operation that needs to authenticate to the remote will fail. In private repositories, that includes:\n    - `git fetch`, `git pull`, `git clone`, and `git push` (direct push, not via safe-output tools)\n    - Checking out or switching to a remote branch that is not already fetched\n    - Deepening a shallow clone (`git fetch --unshallow`)\n    - On-demand blob fetches in partial/blobless clones (operations on files not in the initial checkout)\n    Do NOT attempt to configure credentials, run `git credential fill`, or modify `.gitconfig` —\n    authentication will not succeed. If you encounter credential prompts or authentication errors,\n    stop immediately and report the limitation rather than spending turns trying to work around it.\n</github-context>\n\n"
           GH_AW_PROMPT_CONTENT_0004: "</system>\n"
@@ -360,6 +362,7 @@ jobs:
           GH_AW_INPUTS_SOURCE_REPOSITORY: ${{ inputs.source_repository }}
           GH_AW_MCP_CLI_SERVERS_LIST: '- `safeoutputs` — run `safeoutputs --help` to see available tools'
           GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_ANALYZE: ${{ needs.docs_context.outputs.analyze }}
+          GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_DOCS_PR_NUMBER: ${{ needs.docs_context.outputs.docs_pr_number }}
           GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_HEAD_SHA: ${{ needs.docs_context.outputs.head_sha }}
           GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER: ${{ needs.pat_pool.outputs.pat_number }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
@@ -388,6 +391,7 @@ jobs:
                 GH_AW_INPUTS_SOURCE_REPOSITORY: process.env.GH_AW_INPUTS_SOURCE_REPOSITORY,
                 GH_AW_MCP_CLI_SERVERS_LIST: process.env.GH_AW_MCP_CLI_SERVERS_LIST,
                 GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_ANALYZE: process.env.GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_ANALYZE,
+                GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_DOCS_PR_NUMBER: process.env.GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_DOCS_PR_NUMBER,
                 GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_HEAD_SHA: process.env.GH_AW_NEEDS_DOCS_CONTEXT_OUTPUTS_HEAD_SHA,
                 GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER: process.env.GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
@@ -671,7 +675,7 @@ jobs:
         env:
           GH_AW_FILE_ROOT: "${{ runner.temp }}/gh-aw"
           GH_AW_FILE_CONFIG: "{\"files\":[{\"path\":\"safeoutputs/config.json\",\"content_env\":\"GH_AW_SAFE_OUTPUTS_CONFIG\"}]}"
-          GH_AW_SAFE_OUTPUTS_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"preserve_branch_name\":true,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"recreate_ref\":true,\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"notify-source-pr\":{\"description\":\"Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the create, update, or no-op output.\\n\\nUse `result: \\\"restricted\\\"` when the source PR is excluded by the security-concern rules. Use `result: \\\"drafted\\\"` when documentation confidence is at least 60 and you either emitted `create_pull_request`, updated the one trusted existing draft, or confirmed that draft already contains sufficient documentation with `noop` and `docs_pr_action: \\\"unchanged\\\"`. The notification job converts an unfulfilled creation request to a draft-failed notification. Use `result: \\\"skipped\\\"` when confidence is below 60 and no docs PR was requested. Use `result: \\\"draft_failed\\\"` only when confidence is at least 60 but you could not request a docs PR operation.\\n\",\"inputs\":{\"breaking_change_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the breaking-change decision.\",\"required\":true,\"type\":\"string\"},\"breaking_change_required\":{\"default\":null,\"description\":\"Whether a compatibility-breaking change entry is required.\",\"required\":true,\"type\":\"boolean\"},\"conceptual_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the conceptual decision.\",\"required\":true,\"type\":\"string\"},\"conceptual_required\":{\"default\":null,\"description\":\"Whether durable conceptual documentation is required.\",\"required\":true,\"type\":\"boolean\"},\"docs_needed_confidence\":{\"default\":null,\"description\":\"Integer confidence from 0 through 100 that documentation is needed.\",\"required\":true,\"type\":\"number\"},\"docs_pr_action\":{\"default\":null,\"description\":\"One of: created, updated, unchanged, none.\",\"required\":true,\"type\":\"string\"},\"existing_docs_pr_number\":{\"default\":null,\"description\":\"Existing docs PR number when docs_pr_action is updated or unchanged.\",\"required\":false,\"type\":\"number\"},\"migration_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the migration decision.\",\"required\":true,\"type\":\"string\"},\"migration_required\":{\"default\":null,\"description\":\"Whether version-to-version migration guidance is required.\",\"required\":true,\"type\":\"boolean\"},\"result\":{\"default\":null,\"description\":\"One of: drafted, skipped, draft_failed, restricted.\",\"required\":true,\"type\":\"string\"},\"source_pr_number\":{\"default\":null,\"description\":\"Analyzed source pull request number.\",\"required\":true,\"type\":\"number\"},\"summary\":{\"default\":null,\"description\":\"A concise explanation of the overall decision.\",\"required\":true,\"type\":\"string\"}}},\"push_to_pull_request_branch\":{\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"check_branch_protection\":false,\"fallback_as_pull_request\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"if_no_changes\":\"warn\",\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"required_labels\":[\"documentation\"],\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"report_incomplete\":{},\"update_pull_request\":{\"allow_body\":false,\"allow_title\":true,\"max\":1,\"required_labels\":[\"documentation\"],\"required_title_prefix\":\"[docs] \",\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"update_branch\":false,\"update_branch_stacks\":true}}"
+          GH_AW_SAFE_OUTPUTS_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"preserve_branch_name\":true,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"recreate_ref\":true,\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"notify-source-pr\":{\"description\":\"Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the create, update, or no-op output.\\n\\nUse `result: \\\"restricted\\\"` when the source PR is excluded by the security-concern rules. Use `result: \\\"drafted\\\"` when documentation confidence is at least 60 and you either emitted `create_pull_request`, updated the one trusted existing draft, or confirmed that draft already contains sufficient documentation with `noop` and `docs_pr_action: \\\"unchanged\\\"`. The notification job converts an unfulfilled creation request to a draft-failed notification. Use `result: \\\"skipped\\\"` when confidence is below 60 and no docs PR was requested. Use `result: \\\"draft_failed\\\"` only when confidence is at least 60 but you could not request a docs PR operation.\\n\",\"inputs\":{\"breaking_change_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the breaking-change decision.\",\"required\":true,\"type\":\"string\"},\"breaking_change_required\":{\"default\":null,\"description\":\"Whether a compatibility-breaking change entry is required.\",\"required\":true,\"type\":\"boolean\"},\"conceptual_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the conceptual decision.\",\"required\":true,\"type\":\"string\"},\"conceptual_required\":{\"default\":null,\"description\":\"Whether durable conceptual documentation is required.\",\"required\":true,\"type\":\"boolean\"},\"docs_needed_confidence\":{\"default\":null,\"description\":\"Integer confidence from 0 through 100 that documentation is needed.\",\"required\":true,\"type\":\"number\"},\"docs_pr_action\":{\"default\":null,\"description\":\"One of: created, updated, unchanged, none.\",\"required\":true,\"type\":\"string\"},\"existing_docs_pr_number\":{\"default\":null,\"description\":\"Existing docs PR number when docs_pr_action is updated or unchanged.\",\"required\":false,\"type\":\"number\"},\"migration_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the migration decision.\",\"required\":true,\"type\":\"string\"},\"migration_required\":{\"default\":null,\"description\":\"Whether version-to-version migration guidance is required.\",\"required\":true,\"type\":\"boolean\"},\"result\":{\"default\":null,\"description\":\"One of: drafted, skipped, draft_failed, restricted.\",\"required\":true,\"type\":\"string\"},\"source_pr_number\":{\"default\":null,\"description\":\"Analyzed source pull request number.\",\"required\":true,\"type\":\"number\"},\"summary\":{\"default\":null,\"description\":\"A concise explanation of the overall decision.\",\"required\":true,\"type\":\"string\"}}},\"push_to_pull_request_branch\":{\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"check_branch_protection\":false,\"fallback_as_pull_request\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"if_no_changes\":\"error\",\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target\":\"\",\"target-repo\":\"dotnet/AspNetCore.Docs\"},\"report_incomplete\":{}}"
         with:
           script: |
             const path = require('path');
@@ -685,9 +689,7 @@ jobs:
           GH_AW_TOOLS_META_JSON: |
             {
               "description_suffixes": {
-                "create_pull_request": " CONSTRAINTS: Maximum 1 pull request(s) can be created. Title will be prefixed with \"[docs] \". Labels [\"documentation\"] will be automatically added. PRs will be created as drafts.",
-                "push_to_pull_request_branch": " CONSTRAINTS: The target pull request title must start with \"[docs] \".",
-                "update_pull_request": " CONSTRAINTS: Maximum 1 pull request(s) can be updated. Target: *. Only PRs with labels [documentation] can be updated. Only PRs with title prefix \"[docs] \" can be updated."
+                "create_pull_request": " CONSTRAINTS: Maximum 1 pull request(s) can be created. Title will be prefixed with \"[docs] \". Labels [\"documentation\"] will be automatically added. PRs will be created as drafts."
               },
               "repo_params": {
                 "create_pull_request": {
@@ -929,50 +931,6 @@ jobs:
                     "maxLength": 1024
                   }
                 }
-              },
-              "update_pull_request": {
-                "defaultMax": 1,
-                "fields": {
-                  "body": {
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 65000
-                  },
-                  "draft": {
-                    "type": "boolean"
-                  },
-                  "operation": {
-                    "type": "string",
-                    "enum": [
-                      "replace",
-                      "append",
-                      "prepend",
-                      "replace-island"
-                    ]
-                  },
-                  "pr": {
-                    "issueOrPRNumber": true
-                  },
-                  "pr_number": {
-                    "issueOrPRNumber": true
-                  },
-                  "pull_request_number": {
-                    "issueOrPRNumber": true
-                  },
-                  "repo": {
-                    "type": "string",
-                    "maxLength": 256
-                  },
-                  "title": {
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 256
-                  },
-                  "update_branch": {
-                    "type": "boolean"
-                  }
-                },
-                "customValidation": "requiresOneOf:title,body,update_branch"
               }
             }
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -1890,7 +1848,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           WORKFLOW_NAME: "PR Documentation Check"
-          WORKFLOW_DESCRIPTION: "Runs only when manually dispatched to analyze an ASP.NET Core pull request merged into main from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Existing trusted drafts are skipped before inference by default; explicit refresh analyzes and updates only when needed. Conclusive analyses comment on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description."
+          WORKFLOW_DESCRIPTION: "Analyzes an ASP.NET Core pull request automatically when merged into main or when manually dispatched, classifies conceptual, migration, and breaking-change documentation needs, and either opens a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or records why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Existing branch-matched open PRs are skipped before inference by default; explicit refresh analyzes and updates only bot-authored drafts when needed. Conclusive analyses comment on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
           GH_AW_DETECTION_SKIP_PROMPT_SUMMARY: "true"
@@ -1959,7 +1917,7 @@ jobs:
           RUNNER_TEMP: ${{ runner.temp }}
           TRACEPARENT: ${{ env.GITHUB_AW_OTEL_TRACE_ID != '' && env.GITHUB_AW_OTEL_PARENT_SPAN_ID != '' && format('00-{0}-{1}-01', env.GITHUB_AW_OTEL_TRACE_ID, env.GITHUB_AW_OTEL_PARENT_SPAN_ID) || '' }}
           WORKFLOW_NAME: "PR Documentation Check"
-          WORKFLOW_DESCRIPTION: "Runs only when manually dispatched to analyze an ASP.NET Core pull request merged into main from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Existing trusted drafts are skipped before inference by default; explicit refresh analyzes and updates only when needed. Conclusive analyses comment on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description."
+          WORKFLOW_DESCRIPTION: "Analyzes an ASP.NET Core pull request automatically when merged into main or when manually dispatched, classifies conceptual, migration, and breaking-change documentation needs, and either opens a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or records why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Existing branch-matched open PRs are skipped before inference by default; explicit refresh analyzes and updates only bot-authored drafts when needed. Conclusive analyses comment on the source pull request, and a drafted docs pull request attributes the human source pull request author in its description."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
         run: |
@@ -2080,6 +2038,7 @@ jobs:
       pull-requests: read
     outputs:
       analyze: ${{ steps.context.outputs.analyze }}
+      docs_pr_number: ${{ steps.context.outputs.docs_pr_number }}
       head_sha: ${{ steps.context.outputs.head_sha }}
     steps:
       - name: Configure GH_HOST for enterprise compatibility
@@ -2095,6 +2054,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: main
           sparse-checkout: .github/workflows/pr-docs-check
           sparse-checkout-cone-mode: false
       - name: Mint ASP.NET Core docs bot token
@@ -2171,6 +2131,7 @@ jobs:
         with:
           path: _validator
           persist-credentials: false
+          ref: main
           sparse-checkout: |
             .github/workflows/pr-docs-check/validate_outcome.py
             .github/workflows/pr-docs-check/author_body.cjs
@@ -2414,14 +2375,12 @@ jobs:
               `${process.env.RUNNER_TEMP}/pr-docs-check-docs-pr.json`, 'utf8'));
             const identity = pr => JSON.stringify([
               pr.number, pr.state, pr.draft, pr.user?.login, pr.base?.ref, pr.base?.repo?.full_name,
-              pr.head?.ref, pr.head?.repo?.full_name, pr.head?.sha, pr.title,
-              (pr.labels || []).map(label => label.name).sort(),
+              pr.head?.ref, pr.head?.repo?.full_name, pr.head?.sha,
             ]);
-            if (identity(docsPr.data) !== identity(validated) ||
-                !docsPr.data.body?.split('\n').includes(`Source: ${expectedRepository}#${expectedPrNumber}`)) {
+            if (identity(docsPr.data) !== identity(validated)) {
               throw new Error('The docs PR identity changed after outcome validation.');
             }
-            const body = authorBody(docsPr.data.body, { type: 'User', login: sourceAuthor },
+            const body = authorBody(docsPr.data.body ?? '', { type: 'User', login: sourceAuthor },
               expectedRepository, expectedPrNumber);
             if (body !== docsPr.data.body) {
               await github.rest.pulls.update({
@@ -2536,6 +2495,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GH_AW_REQUIRED_ROLES: "admin,maintainer,write"
+          GH_AW_ALLOWED_BOTS: "github-actions[bot]"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -2551,6 +2511,7 @@ jobs:
       - activation
       - agent
       - detection
+      - docs_context
     if: (!cancelled()) && needs.agent.result != 'skipped' && needs.detection.result == 'success'
     runs-on: ubuntu-slim
     environment: copilot-pat-pool
@@ -2719,14 +2680,17 @@ jobs:
         with:
           path: _safe-output-validator
           persist-credentials: false
-          sparse-checkout: .github/workflows/pr-docs-check/validate_outcome.py
+          ref: main
+          sparse-checkout: .github/workflows/pr-docs-check
           sparse-checkout-cone-mode: false
       - name: Reject inconsistent docs mutations
-        run: python3 _safe-output-validator/.github/workflows/pr-docs-check/validate_outcome.py --preflight --agent-output "${GH_AW_AGENT_OUTPUT}" --source-repository "${EXPECTED_SOURCE_REPOSITORY}" --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}" --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json" --source-preflight "${RUNNER_TEMP}/pr-docs-check-context/source-preflight.json" --workspace-evidence "${RUNNER_TEMP}/pr-docs-check-workspace/workspace-evidence.json"
+        run: python3 _safe-output-validator/.github/workflows/pr-docs-check/validate_outcome.py --preflight --validate-live --agent-output "${GH_AW_AGENT_OUTPUT}" --source-repository "${EXPECTED_SOURCE_REPOSITORY}" --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}" --docs-pr-author "${DOCS_BOT_APP_SLUG}[bot]" --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json" --source-preflight "${RUNNER_TEMP}/pr-docs-check-context/source-preflight.json" --workspace-evidence "${RUNNER_TEMP}/pr-docs-check-workspace/workspace-evidence.json"
         env:
+          DOCS_BOT_APP_SLUG: ${{ steps.safe-outputs-app-token.outputs.app-slug }}
           EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
           EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_TOKEN: ${{ steps.safe-outputs-app-token.outputs.token }}
       - name: Process Safe Outputs
         id: process_safe_outputs
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -2737,7 +2701,7 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
           GH_AW_SAFE_OUTPUT_JOBS: "{\"notify_source_pr\":\"\"}"
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"preserve_branch_name\":true,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"recreate_ref\":true,\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"push_to_pull_request_branch\":{\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"check_branch_protection\":false,\"fallback_as_pull_request\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"if_no_changes\":\"warn\",\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"required_labels\":[\"documentation\"],\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"report_incomplete\":{},\"update_pull_request\":{\"allow_body\":false,\"allow_title\":true,\"max\":1,\"required_labels\":[\"documentation\"],\"required_title_prefix\":\"[docs] \",\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"update_branch\":false,\"update_branch_stacks\":true}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"preserve_branch_name\":true,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"recreate_ref\":true,\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"push_to_pull_request_branch\":{\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"check_branch_protection\":false,\"fallback_as_pull_request\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"if_no_changes\":\"error\",\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target\":\"${{ needs.docs_context.outputs.docs_pr_number }}\",\"target-repo\":\"dotnet/AspNetCore.Docs\"},\"report_incomplete\":{}}"
           GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
           GITHUB_TOKEN: ${{ steps.safe-outputs-app-token.outputs.token }}
         with:
