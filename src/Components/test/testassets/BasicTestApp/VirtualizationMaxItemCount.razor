@@ -11,7 +11,7 @@
 </p>
 
 <div id="virtualize-scroll-area" style="height: 600px; overflow-y: scroll; outline: 1px solid red; background: #eee;">
-    <Virtualize ItemsProvider="GetItems" ItemSize="30" MaxItemCount="10">
+    <Virtualize ItemsProvider="GetItems" ItemSize="30" MaxItemCount="10" OverscanCount="3">
         <div class="my-item" @key="context" style="height: 30px; outline: 1px solid #ccc">
             Id: @context.Id; Name: @context.Name
         </div>

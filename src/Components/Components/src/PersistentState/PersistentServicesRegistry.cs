@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Internal;
@@ -15,7 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
-internal sealed class PersistentServicesRegistry
+internal sealed partial class PersistentServicesRegistry
 {
     private static readonly string _registryKey = typeof(PersistentServicesRegistry).FullName!;
     private static readonly RootTypeCache _persistentServiceTypeCache = new();
@@ -27,7 +29,7 @@ internal sealed class PersistentServicesRegistry
 
     static PersistentServicesRegistry()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _cachedAccessorsByType.Clear;
         }
@@ -88,7 +90,21 @@ internal sealed class PersistentServicesRegistry
             subscriptions.Add((
                 state.RegisterOnPersisting(() =>
                 {
-                    state.PersistAsJson(_registryKey, _registrations);
+                    var registrations = new PersistentServiceRegistration[_registrations.Length];
+                    for (var i = 0; i < _registrations.Length; i++)
+                    {
+                        registrations[i] = new PersistentServiceRegistration
+                        {
+                            Assembly = _registrations[i].Assembly,
+                            FullTypeName = _registrations[i].FullTypeName,
+                        };
+                    }
+
+                    state.PersistAsBytes(
+                        _registryKey,
+                        JsonSerializer.SerializeToUtf8Bytes(
+                            registrations,
+                            PersistentServicesRegistryJsonContext.Default.PersistentServiceRegistrationArray));
                     return Task.CompletedTask;
                 }, RenderMode),
                 default));
@@ -115,10 +131,12 @@ internal sealed class PersistentServicesRegistry
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Types registered for persistence are preserved in the API call to register them and typically live in assemblies that aren't trimmed.")]
-    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(PersistentServiceRegistration))]
     private void UpdateRegistrations(PersistentComponentState state)
     {
-        if (state.TryTakeFromJson<PersistentServiceRegistration[]>(_registryKey, out var registry) && registry != null)
+        if (state.TryTakeBytes(_registryKey, out var data) &&
+            JsonSerializer.Deserialize(
+                data,
+                PersistentServicesRegistryJsonContext.Default.PersistentServiceRegistrationArray) is { } registry)
         {
             _registrations = ResolveRegistrations(_registrations.Concat(registry));
         }
@@ -251,4 +269,10 @@ internal sealed class PersistentServicesRegistry
 
         private string GetDebuggerDisplay() => $"{Assembly}::{FullTypeName}";
     }
+
+    [JsonSourceGenerationOptions(
+        PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true)]
+    [JsonSerializable(typeof(PersistentServiceRegistration[]))]
+    private sealed partial class PersistentServicesRegistryJsonContext : JsonSerializerContext;
 }

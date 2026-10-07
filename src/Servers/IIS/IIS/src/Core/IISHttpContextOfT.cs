@@ -56,62 +56,73 @@ internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContex
                 success = false;
             }
 
-            if (ResponsePipeWrapper != null)
+            try
             {
-                await ResponsePipeWrapper.CompleteAsync();
-            }
+                if (ResponsePipeWrapper != null)
+                {
+                    await ResponsePipeWrapper.CompleteAsync();
+                }
 
-            _streams.Stop();
+                _streams.Stop();
 
-            if (!HasResponseStarted && _applicationException == null && _onStarting != null)
-            {
-                await FireOnStarting();
-                // Dispose
-            }
+                if (!HasResponseStarted && _applicationException == null && _onStarting != null)
+                {
+                    await FireOnStarting();
+                    // Dispose
+                }
 
-            if (!success && HasResponseStarted && AdvancedHttp2FeaturesSupported())
-            {
-                // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
-                // Otherwise the default is Cancel = 0x8 (h2) or 0x010c (h3).
-                if (HttpVersion == System.Net.HttpVersion.Version20)
+                if (!success && HasResponseStarted && AdvancedHttp2FeaturesSupported())
                 {
                     // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
-                    SetResetCode(2);
+                    // Otherwise the default is Cancel = 0x8 (h2) or 0x010c (h3).
+                    if (HttpVersion == System.Net.HttpVersion.Version20)
+                    {
+                        // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
+                        SetResetCode(2);
+                    }
+                    else if (HttpVersion == System.Net.HttpVersion.Version30)
+                    {
+                        // HTTP/3 H3_INTERNAL_ERROR = 0x0102 https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-8.1
+                        SetResetCode(0x0102);
+                    }
                 }
-                else if (HttpVersion == System.Net.HttpVersion.Version30)
+
+                if (!_requestAborted)
                 {
-                    // HTTP/3 H3_INTERNAL_ERROR = 0x0102 https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-8.1
-                    SetResetCode(0x0102);
+                    await ProduceEnd();
+                }
+                else if (!HasResponseStarted && _requestRejectedException == null)
+                {
+                    // If the request was aborted and no response was sent, we use status code 499 for logging
+                    StatusCode = ClientDisconnected ? StatusCodes.Status499ClientClosedRequest : 0;
+                    success = false;
                 }
             }
-
-            if (!_requestAborted)
+            finally
             {
-                await ProduceEnd();
-            }
-            else if (!HasResponseStarted && _requestRejectedException == null)
-            {
-                // If the request was aborted and no response was sent, we use status code 499 for logging               
-                StatusCode = ClientDisconnected ? StatusCodes.Status499ClientClosedRequest : 0;
-                success = false;
-            }
+                // Defensive finally in case any of the above code throws an exception
 
-            // Complete response writer and request reader pipe sides
-            _bodyOutput.Complete();
-            _bodyInputPipe?.Reader.Complete();
+                // Important cleanup, this ensures native is done with async completions and we can cleanup resources
+                // If this somehow didn't run and native was still doing async completions, we could end up AVing
+                // when trying to access managed objects that were already collected.
 
-            // Allow writes to drain
-            if (_writeBodyTask != null)
-            {
-                await _writeBodyTask;
-            }
+                // Complete response writer and request reader pipe sides
+                _bodyOutput.Complete();
+                _bodyInputPipe?.Reader.Complete();
 
-            // Cancel all remaining IO, there might be reads pending if not entire request body was sent by client
-            AsyncIO?.Complete();
+                // Allow writes to drain
+                if (_writeBodyTask != null)
+                {
+                    await _writeBodyTask;
+                }
 
-            if (_readBodyTask != null)
-            {
-                await _readBodyTask;
+                // Cancel all remaining IO, there might be reads pending if not entire request body was sent by client
+                AsyncIO?.Complete();
+
+                if (_readBodyTask != null)
+                {
+                    await _readBodyTask;
+                }
             }
         }
         catch (Exception ex)

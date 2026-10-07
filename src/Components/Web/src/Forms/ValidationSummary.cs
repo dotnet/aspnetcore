@@ -59,14 +59,29 @@ public class ValidationSummary : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        // As an optimization, only evaluate the messages enumerable once, and
-        // only produce the enclosing <ul> if there's at least one message
-        var validationMessages = Model is null ?
-            CurrentEditContext.GetValidationMessages() :
-            CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
+        if (AssignedRenderMode is not null)
+        {
+            // Interactive .NET validation
+            RenderInteractiveRenderTree(builder);
+        }
+        else
+        {
+            // Client-side JS validation
+            RenderStaticRenderTree(builder);
+        }
+    }
 
+    private IEnumerable<string> GetValidationMessages()
+        => Model is null
+            ? CurrentEditContext.GetValidationMessages()
+            : CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
+
+    private void RenderInteractiveRenderTree(RenderTreeBuilder builder)
+    {
+        // As an optimization, only evaluate the messages enumerable once, and
+        // only produce the enclosing <ul> if there's at least one message.
         var first = true;
-        foreach (var error in validationMessages)
+        foreach (var error in GetValidationMessages())
         {
             if (first)
             {
@@ -88,6 +103,39 @@ public class ValidationSummary : ComponentBase, IDisposable
             // We have at least one validation message.
             builder.CloseElement();
         }
+    }
+
+    private void RenderStaticRenderTree(RenderTreeBuilder builder)
+    {
+        var messages = new List<string>(GetValidationMessages());
+        var hasErrors = messages.Count > 0;
+
+        // The <ul> itself is the carrier the JS client-validation engine locates via
+        // data-valmsg-summary. The state class starts as validation-summary-errors/-valid so
+        // server-rendered errors are styled before the JS engine runs.
+        builder.OpenElement(0, "ul");
+        builder.AddAttribute(1, "class", hasErrors
+            ? "validation-errors validation-summary-errors"
+            : "validation-errors validation-summary-valid");
+        builder.AddMultipleAttributes(2, AdditionalAttributes);
+        builder.AddAttribute(3, "data-valmsg-summary", "true");
+        if (!hasErrors)
+        {
+            // No server-side messages: keep the empty summary out of the layout until the JS engine
+            // populates it.
+            // Use the hidden attribute rather than an inline style="display:none" for CSP compliance.
+            builder.AddAttribute(4, "hidden", true);
+        }
+
+        foreach (var error in messages)
+        {
+            builder.OpenElement(5, "li");
+            builder.AddAttribute(6, "class", "validation-message");
+            builder.AddContent(7, error);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement(); // ul
     }
 
     /// <inheritdoc/>

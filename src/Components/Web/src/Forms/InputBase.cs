@@ -60,6 +60,18 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public string? DisplayName { get; set; }
 
+    internal string GetDisplayName()
+    {
+        if (DisplayName is not null)
+        {
+            return DisplayName;
+        }
+
+        return ExpressionMemberAccessor.TryGetDisplayName(ValueExpression!, out var displayName)
+            ? displayName
+            : FieldIdentifier.FieldName;
+    }
+
     /// <summary>
     /// Gets the associated <see cref="Forms.EditContext"/>.
     /// This property is uninitialized if the input does not have a parent <see cref="EditForm"/>.
@@ -207,13 +219,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
             if (_shouldGenerateFieldNames)
             {
-                if (_formattedValueExpression is null && ValueExpression is not null)
-                {
-                    _formattedValueExpression = FieldPrefix != null ? FieldPrefix.GetFieldName(ValueExpression) :
-                        ExpressionFormatter.FormatLambda(ValueExpression);
-                }
-
-                return _formattedValueExpression ?? string.Empty;
+                return GetFieldName();
             }
 
             return string.Empty;
@@ -225,7 +231,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </summary>
     /// <remarks>
     /// If an explicit "id" is provided via <see cref="AdditionalAttributes"/>, that value takes precedence.
-    /// Otherwise, the id is derived from <see cref="NameAttributeValue"/> with invalid characters sanitized.
+    /// Otherwise, the id is a sanitized version of <see cref="NameAttributeValue"/> in SSR mode; generated independently in interactive mode.
     /// </remarks>
     protected string IdAttributeValue
     {
@@ -236,9 +242,19 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 return Convert.ToString(idAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
             }
 
-            return FieldIdGenerator.SanitizeHtmlId(NameAttributeValue);
+            var fieldName = NameAttributeValue;
+            if (string.IsNullOrEmpty(fieldName))
+            {
+                fieldName = GetFieldName();
+            }
+
+            return FieldIdGenerator.SanitizeHtmlId(fieldName);
         }
     }
+
+    private string GetFieldName()
+        => _formattedValueExpression ??= FieldPrefix?.GetFieldName(ValueExpression!)
+            ?? ExpressionFormatter.FormatLambda(ValueExpression!);
 
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
@@ -263,6 +279,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
                 _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+
+                if (AssignedRenderMode is null)
+                {
+                    // Register the input for client-side validation if rendered in static SSR mode.
+                    RenderedFieldRegistry.GetOrCreate(EditContext).Register(FieldIdentifier, NameAttributeValue);
+                }
             }
             else
             {

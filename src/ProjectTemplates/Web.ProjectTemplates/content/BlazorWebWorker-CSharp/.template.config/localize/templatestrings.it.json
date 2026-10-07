@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Ruolo di lavoro di Blazor",
+  "description": "Un progetto per creare una libreria di classi che esegue codice .NET in un ruolo di lavoro da un'app Blazor WebAssembly o Blazor Web.",
+  "symbols/Framework/description": "Framework di destinazione per il progetto.",
+  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
+  "postActions/restore/description": "Consente di ripristinare i pacchetti NuGet richiesti da questo progetto.",
+  "postActions/restore/manualInstructions/default/text": "Esegui \"dotnet restore\""
+}

@@ -38,7 +38,7 @@ internal partial class Http2Frame
 
     public byte HeadersPriorityWeight { get; set; }
 
-    private int HeadersPayloadOffset => (HeadersHasPadding ? 1 : 0) + (HeadersHasPriority ? 5 : 0);
+    public int HeadersPayloadOffset => (HeadersHasPadding ? 1 : 0) + (HeadersHasPriority ? 5 : 0);
 
     public int HeadersPayloadLength => PayloadLength - HeadersPayloadOffset - HeadersPadLength;
 

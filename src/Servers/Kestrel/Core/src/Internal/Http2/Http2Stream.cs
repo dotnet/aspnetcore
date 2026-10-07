@@ -336,8 +336,15 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             return false;
         }
 
+        // https://www.rfc-editor.org/rfc/rfc9113#section-8.3.1
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
+
+        if (queryIndex != -1 && HttpCharacters.ContainsInvalidQueryChar(QueryString))
+        {
+            ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
+            return false;
+        }
 
         var pathSegment = queryIndex == -1 ? path.AsSpan() : path.AsSpan(0, queryIndex);
 
@@ -441,8 +448,11 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             for (var i = 0; i < pathSegment.Length; i++)
             {
                 var ch = pathSegment[i];
-                // The header parser should already be checking this
-                Debug.Assert(32 < ch && ch < 127);
+                if (ch > byte.MaxValue)
+                {
+                    ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
+                    return false;
+                }
                 pathBuffer[i] = (byte)ch;
             }
 

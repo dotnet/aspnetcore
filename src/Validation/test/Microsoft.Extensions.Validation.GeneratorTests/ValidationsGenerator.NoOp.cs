@@ -178,4 +178,57 @@ public class ComplexType
             });
         });
     }
+
+    [Fact]
+    public async Task CanGenerateWhenAddValidationCalledMultipleTimes()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+builder.Services.AddValidation(); // second call should not cause CS8785
+
+var app = builder.Build();
+
+app.MapPost("/complex-type", (ComplexType complexType) => Results.Ok("Passed"));
+
+app.Run();
+
+public class ComplexType
+{
+    [Range(10, 100)]
+    public int IntegerWithRange { get; set; } = 10;
+}
+""";
+        await Verify(source, out var compilation);
+        // Verify that types are still validated even with multiple AddValidation calls
+        await VerifyEndpoint(compilation, "/complex-type", async (endpoint, serviceProvider) =>
+        {
+            var payload = """
+                {
+                    "IntegerWithRange": 5
+                }
+                """;
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Collection(problemDetails.Errors, kvp =>
+            {
+                Assert.Equal("IntegerWithRange", kvp.Key);
+                Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+            });
+        });
+    }
 }

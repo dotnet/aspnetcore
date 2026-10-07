@@ -2,20 +2,22 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
     <OutputType>Exe</OutputType>
     <PublishTrimmed>true</PublishTrimmed>
+    <RuntimeIdentifier Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />
 
   <ItemGroup>
-    <Reference Include="@(TrimmableProject)" />
+    <ProjectReference Include="@(TrimmableProject->'%(ProjectPath)')" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Packages required to produce a complete dependency graph for the trimmer -->
-    <Reference Include="System.Configuration.ConfigurationManager" />
-    <Reference Include="System.Security.Permissions" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
+    <PackageReference Include="System.Security.Permissions" />
   </ItemGroup>
   <Target Name="ILLinkTrimProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(SkipTestBuild)' != 'true'">
     <PropertyGroup>
@@ -24,10 +26,19 @@
       <ILLinkArgs>$(ILLinkArgs) --action link</ILLinkArgs>
       <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'">$(ILLinkArgs) --generate-warning-suppressions xml</ILLinkArgs>
     </PropertyGroup>
+    <JoinItems Left="@(ReferencePath->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"
+               LeftKey="MSBuildSourceProjectFile" LeftMetadata="*"
+               Right="@(TrimmableProject->'%(ProjectPath)')" RightKey="FullPath" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_ProjectReferencePaths" />
+    </JoinItems>
     <ItemGroup>
-      <RootAssemblies Include="@(ReferencePath->HasMetadata('ProjectPath'))" RootMode="visible" />
-      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(FileName).WarningSuppressions.xml"
-        SuppressionFileName="%(FileName).WarningSuppressions" />
+      <RootAssemblies Include="@(_ProjectReferencePaths->'%(Filename)')" RootMode="visible" />
+      <!-- Create clean items for AssemblyPaths (ITaskItem[] that flows to external task host).
+           Using Remove+Include pattern to strip all inherited metadata. -->
+      <_CleanAssemblyPaths Remove="@(_CleanAssemblyPaths)" />
+      <_CleanAssemblyPaths Include="@(_ProjectReferencePaths->'%(FullPath)')" />
+      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.MSBuildSourceProjectFile)'))))\%(RootAssemblies.Identity).WarningSuppressions.xml"
+        SuppressionFileName="%(RootAssemblies.Identity).WarningSuppressions" />
       <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />
     </ItemGroup>
 
@@ -45,7 +56,7 @@
       <_DotNetHostFileName>$([System.IO.Path]::GetFileName('$(DotNetTool)'))</_DotNetHostFileName>
     </PropertyGroup>
     <ILLink
-        AssemblyPaths=""
+        AssemblyPaths="@(_CleanAssemblyPaths)"
         RootAssemblyNames="@(RootAssemblies)"
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
         ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"

@@ -113,8 +113,8 @@ public class SpanDataProtectorComparison
     [Benchmark]
     public unsafe int RefWriter_ProtectUnprotectRoundtrip()
     {
-        var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
-        var unprotectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+        var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
+        var unprotectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
         try
         {
             _spanDataProtector.Protect(_plaintext, ref protectBuffer);

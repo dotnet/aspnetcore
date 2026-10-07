@@ -56,7 +56,9 @@ else
                                 <ValidationMessage For="() => Input.Code" class="text-danger" />
                             </div>
                             <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>
-                            <ValidationSummary class="text-danger" role="alert" />
+                            <div role="alert" aria-atomic="true">
+                                <ValidationSummary class="text-danger" />
+                            </div>
                         </EditForm>
                     </div>
                 </div>
@@ -77,17 +79,22 @@ else
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
         Input ??= new();
 
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -98,7 +105,7 @@ else
     {
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -126,7 +133,8 @@ else
         }
         else
         {
-            RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", message, HttpContext);
+            IdentityStatusMessage = message;
+            RedirectManager.RedirectTo("Account/Manage/TwoFactorAuthentication");
         }
     }
 

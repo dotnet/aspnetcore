@@ -54,7 +54,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    public static void EndInvokeJS(string argsJson)
+    public static void EndInvokeJS([StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
         {
@@ -66,7 +66,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    public static void BeginInvokeDotNet(string? callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
+    public static void BeginInvokeDotNet(string? callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID
         // We only need one for any given call. This helps to work around the limitation that we can
@@ -95,7 +95,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [SupportedOSPlatform("browser")]
     [JSExport]
-    public static void UpdateRootComponentsCore(string operationsJson, string appState)
+    public static void UpdateRootComponentsCore([StringSyntax(StringSyntaxAttribute.Json)] string operationsJson, string appState)
     {
         try
         {

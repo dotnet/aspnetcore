@@ -27,6 +27,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52462")]
     public async Task BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed()
     {
         // Arrange
@@ -226,7 +227,6 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/59978")]
     public async Task BidirectionalStream_MultipleStreamsOnConnection_ReusedFromPool()
     {
         // Arrange

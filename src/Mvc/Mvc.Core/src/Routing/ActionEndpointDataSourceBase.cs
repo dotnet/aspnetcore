@@ -72,7 +72,7 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
     protected void Subscribe()
     {
         // IMPORTANT: this needs to be called by the derived class to avoid the fragile base class
-        // problem. We can't call this in the base-class constuctor because it's too early.
+        // problem. We can't call this in the base-class constructor because it's too early.
         //
         // It's possible for someone to override the collection provider without providing
         // change notifications. If that's the case we won't process changes.

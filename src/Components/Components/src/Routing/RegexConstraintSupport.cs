@@ -10,6 +10,6 @@ internal static class RegexConstraintSupport
     // until the context switch flows to the runtime.
     // This value gets updated by the linker when the app is trimmed, so the code will always be removed from
     // webassembly unless the switch is enabled.
-    public static bool IsEnabled =>
+    public static bool IsEnabled { get; } =
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport", out var enabled) && enabled;
 }

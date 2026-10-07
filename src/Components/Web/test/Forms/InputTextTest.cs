@@ -63,6 +63,26 @@ public class InputTextTest
         Assert.Equal("custom-id", idAttribute.AttributeValue);
     }
 
+    [Fact]
+    public async Task RendersIdAttribute_WhenShouldUseFieldIdentifiersIsFalse_InteractiveMode()
+    {
+        // simulate interactive mode where ShouldUseFieldIdentifiers is false
+        var model = new TestModel();
+        var editContext = new EditContext(model) { ShouldUseFieldIdentifiers = false };
+        var rootComponent = new TestInputHostComponent<string, InputText>
+        {
+            EditContext = editContext,
+            ValueExpression = () => model.StringProperty,
+        };
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        // id should still be generated for Label/Input association to work in interactive mode
+        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
+    }
+
     private async Task<int> RenderAndGetInputTextComponentIdAsync(TestInputHostComponent<string, InputText> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);

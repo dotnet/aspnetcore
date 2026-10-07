@@ -5,9 +5,11 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
 using System.Web;
+
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,14 +27,41 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        TestFeatureSwitches.SetUrlBasedQuickGridNavigationAndSorting(true);
+
         services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         });
+
+        if (Configuration.GetValue<bool>("UseHybridCacheViewStore"))
+        {
+            services.AddHybridCache();
+        }
+
         services.AddHttpContextAccessor();
+        services.AddAuthorizationCore();
         services.AddCascadingAuthenticationState();
+
+        if (Configuration.GetValue<bool>("UseSession"))
+        {
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+            if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+            {
+                services.Configure<RazorComponentsServiceOptions>(options =>
+                {
+                    options.TempDataProviderType = TempDataProviderType.SessionStorage;
+                });
+            }
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,6 +88,11 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         await context.Response.WriteAsync("Triggered a 404 status code.");
                     });
                 });
+
+                if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+                {
+                    app.UseSession();
+                }
 
                 if (!env.IsDevelopment())
                 {
@@ -87,6 +121,11 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
+
+            if (Configuration.GetValue<bool>("UseSession"))
+            {
+                app.UseSession();
+            }
 
             ConfigureSubdirPipeline(app, env);
         });

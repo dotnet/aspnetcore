@@ -1,0 +1,22 @@
+@inject IGreetingService GreetingService
+
+<section id="dialog-panel" role="dialog" aria-label="Dynamic dialog">
+    <h2>@Title</h2>
+    <p id="dialog-theme">@Theme</p>
+    <p id="dialog-greeting">@GreetingService.Greeting</p>
+    <input id="dialog-value" @bind="_value" />
+    <button id="dialog-submit" @onclick="() => OnSubmit.InvokeAsync(_value)">Submit</button>
+</section>
+
+@code {
+    private string _value = "";
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<string> OnSubmit { get; set; }
+
+    [CascadingParameter]
+    public string Theme { get; set; } = "";
+}

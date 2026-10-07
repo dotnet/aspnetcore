@@ -157,7 +157,7 @@ public class SharedFxTests
         }
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/69595")]
     public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
     {
         // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
@@ -322,7 +322,7 @@ public class SharedFxTests
         var runtimeListEntries = runtimeListDoc.Root.Descendants();
 
         var packageFolder = SkipOnHelixAttribute.OnHelix() ?
-            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            AppContext.BaseDirectory :
             TestData.GetPackagesFolder();
         var sharedFxPath = Directory.GetFiles(packageFolder, "Microsoft.AspNetCore.App.Runtime.*-*." + TestData.GetSharedFxVersion() + ".nupkg").FirstOrDefault();
         Assert.NotNull(sharedFxPath);

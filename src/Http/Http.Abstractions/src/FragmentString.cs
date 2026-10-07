@@ -152,7 +152,7 @@ public readonly struct FragmentString : IEquatable<FragmentString>
     }
 
     /// <summary>
-    /// Evalutes if one fragment is not equal to another.
+    /// Evaluates if one fragment is not equal to another.
     /// </summary>
     /// <param name="left">A <see cref="FragmentString"/> instance.</param>
     /// <param name="right">A <see cref="FragmentString"/> instance.</param>

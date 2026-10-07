@@ -9,7 +9,7 @@ public class RequestDecompressionOptionsTests
     public void Options_InitializedWithDefaultProviders()
     {
         // Arrange
-        var defaultProviderCount = 3;
+        var defaultProviderCount = 4;
 
         // Act
         var options = new RequestDecompressionOptions();
@@ -17,6 +17,9 @@ public class RequestDecompressionOptionsTests
         // Assert
         var providers = options.DecompressionProviders;
         Assert.Equal(defaultProviderCount, providers.Count);
+
+        var zstdProvider = Assert.Contains("zstd", providers);
+        Assert.IsType<ZstandardDecompressionProvider>(zstdProvider);
 
         var brotliProvider = Assert.Contains("br", providers);
         Assert.IsType<BrotliDecompressionProvider>(brotliProvider);

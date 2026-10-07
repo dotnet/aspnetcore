@@ -93,6 +93,14 @@ public class BlazorTemplateTest : LoggedTest
         // later, while the opposite is not true.
         await project.RunDotNetPublishAsync();
         await project.RunDotNetBuildAsync();
+
+        if (args.Contains(ArgConstants.IndividualAuth) && !args.Contains(ArgConstants.UseLocalDb))
+        {
+            await project.RunDotNetEfUpdateDatabaseAsync();
+            await project.RunDotNetEfCreateMigrationAsync("blazor");
+            project.AssertEmptyMigration("blazor");
+        }
+
         var expectedPages = GetExpectedPages(args);
         var unexpectedPages = GetUnxpectedPages(args);
 

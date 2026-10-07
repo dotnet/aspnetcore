@@ -82,9 +82,11 @@ internal partial class ResourceCollectionUrlEndpoint
     private static byte[] CreateGzipBytes(byte[] bytes)
     {
         using var gzipContent = new MemoryStream();
-        using var gzipStream = new GZipStream(gzipContent, CompressionLevel.Optimal, leaveOpen: true);
-        gzipStream.Write(bytes);
-        gzipStream.Flush();
+        using (var gzipStream = new GZipStream(gzipContent, CompressionLevel.Optimal, leaveOpen: true))
+        {
+            gzipStream.Write(bytes);
+        }
+
         return gzipContent.ToArray();
     }
 
@@ -199,14 +201,14 @@ internal partial class ResourceCollectionUrlEndpoint
         private readonly byte[] _content;
         private readonly string _contentETag;
         private readonly byte[] _gzipContent;
-        private readonly string[] _gzipContentETags;
+        private readonly string _gzipContentETag;
 
         public ResourceCollectionEndpointsBuilder(byte[] content, byte[] gzipContent)
         {
             _content = content;
             _contentETag = ComputeETagTag(content);
             _gzipContent = gzipContent;
-            _gzipContentETags = [$"W/ {_contentETag}", ComputeETagTag(gzipContent)];
+            _gzipContentETag = ComputeETagTag(gzipContent);
         }
 
         private string ComputeETagTag(byte[] content)
@@ -249,8 +251,7 @@ internal partial class ResourceCollectionUrlEndpoint
         private void WriteEncodingHeaders(HttpContext context)
         {
             context.Response.Headers[HeaderNames.ContentEncoding] = "gzip";
-            context.Response.Headers[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
-            context.Response.Headers.ETag = new StringValues(_gzipContentETags);
+            context.Response.Headers.ETag = _gzipContentETag;
         }
 
         private void WriteNoEncodingHeaders(HttpContext context)
@@ -260,18 +261,19 @@ internal partial class ResourceCollectionUrlEndpoint
 
         private static void WriteFingerprintHeaders(HttpContext context)
         {
-            context.Response.Headers[HeaderNames.CacheControl] = "max-age=31536000, immutable";
+            context.Response.Headers[HeaderNames.CacheControl] = "max-age=31536000, immutable, no-transform";
         }
 
         private static void WriteNonFingerprintedHeaders(HttpContext context)
         {
-            context.Response.Headers[HeaderNames.CacheControl] = "no-cache, must-revalidate";
+            context.Response.Headers[HeaderNames.CacheControl] = "no-cache, must-revalidate, no-transform";
         }
 
         private static void WriteCommonHeaders(HttpContext context, byte[] contents)
         {
             context.Response.ContentType = "application/javascript";
             context.Response.ContentLength = contents.Length;
+            context.Response.Headers[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
         }
 
         internal IEnumerable<RouteEndpointBuilder> CreateEndpoints(

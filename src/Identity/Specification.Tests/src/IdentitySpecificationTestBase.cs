@@ -819,5 +819,6 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
         Assert.Equal(expected.AttestationObject, actual.AttestationObject);
         Assert.Equal(expected.ClientDataJson, actual.ClientDataJson);
         Assert.Equal(expected.Transports, actual.Transports);
+        Assert.Equal(expected.Aaguid, actual.Aaguid);
     }
 }

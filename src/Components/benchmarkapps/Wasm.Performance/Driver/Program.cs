@@ -86,41 +86,48 @@ public class Program
         await page.GotoAsync(launchUrl);
         page.Console += WriteBrowserConsoleMessage;
 
-        do
+        try
         {
-            BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
-            using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
-            using var registration = runCancellationToken.Token.Register(async () =>
+            do
             {
-                var exceptionMessage = $"Timed out after {timeForEachRun}.";
-                try
+                BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
+                using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
+                using var registration = runCancellationToken.Token.Register(async () =>
                 {
-                    var innerHtml = await page.GetAttributeAsync(":first-child", "innerHTML");
-                    exceptionMessage += Environment.NewLine + "Browser state: " + Environment.NewLine + innerHtml;
-                }
-                catch
+                    var exceptionMessage = $"Timed out after {timeForEachRun}.";
+                    try
+                    {
+                        var innerHtml = await page.GetAttributeAsync(":first-child", "innerHTML");
+                        exceptionMessage += Environment.NewLine + "Browser state: " + Environment.NewLine + innerHtml;
+                    }
+                    catch
+                    {
+                        // Do nothing;
+                    }
+                    BenchmarkResultTask.TrySetException(new TimeoutException(exceptionMessage));
+                });
+
+                var results = await BenchmarkResultTask.Task;
+
+                FormatAsBenchmarksOutput(results,
+                    includeMetadata: firstRun,
+                    isStressRun: isStressRun);
+
+                if (!isStressRun)
                 {
-                    // Do nothing;
+                    PrettyPrint(results);
                 }
-                BenchmarkResultTask.TrySetException(new TimeoutException(exceptionMessage));
-            });
 
-            var results = await BenchmarkResultTask.Task;
+                firstRun = false;
+            } while (isStressRun && !stressRunCancellation.IsCancellationRequested);
 
-            FormatAsBenchmarksOutput(results,
-                includeMetadata: firstRun,
-                isStressRun: isStressRun);
-
-            if (!isStressRun)
-            {
-                PrettyPrint(results);
-            }
-
-            firstRun = false;
-        } while (isStressRun && !stressRunCancellation.IsCancellationRequested);
-
-        Console.WriteLine("Done executing benchmark");
-        return 0;
+            Console.WriteLine("Done executing benchmark");
+            return 0;
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
     }
 
     private static void WriteBrowserConsoleMessage(object sender, IConsoleMessage message)
@@ -217,6 +224,45 @@ public class Program
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .FirstOrDefault(f => f.Key == "CommitHash")
                 ?.Value,
+        });
+
+        // Framework versions of the build under test. crank normally captures these
+        // via the Microsoft.Crank.EventSources EventSource, but that channel isn't
+        // available for container-based jobs (this benchmark builds from a Dockerfile),
+        // so the values must be emitted over stdout. The RegressionBot uses the
+        // "aspNetCoreVersion"/"netCoreAppVersion" result keys (each formatted as
+        // "<version>+<commitHash>") to attribute regressions to dependency updates,
+        // populating the "Dependencies" column of the filed regression issues.
+        output.Metadata.Add(new BenchmarkMetadata
+        {
+            Source = "BlazorWasm",
+            Name = "netCoreAppVersion",
+            ShortDescription = ".NET Runtime Version",
+        });
+
+        output.Measurements.Add(new BenchmarkMeasurement
+        {
+            Timestamp = DateTime.UtcNow,
+            Name = "netCoreAppVersion",
+            Value = typeof(object).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion,
+        });
+
+        output.Metadata.Add(new BenchmarkMetadata
+        {
+            Source = "BlazorWasm",
+            Name = "aspNetCoreVersion",
+            ShortDescription = "ASP.NET Core Version",
+        });
+
+        output.Measurements.Add(new BenchmarkMeasurement
+        {
+            Timestamp = DateTime.UtcNow,
+            Name = "aspNetCoreVersion",
+            Value = typeof(WebApplication).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion,
         });
 
         foreach (var result in benchmarkResult.ScenarioResults)

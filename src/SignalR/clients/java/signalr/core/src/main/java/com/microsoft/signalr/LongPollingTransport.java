@@ -115,7 +115,7 @@ class LongPollingTransport implements Transport {
                             logger.debug("Message received.");
                             try {
                                 onReceiveThread.submit(() -> this.onReceive(response.getContent()));
-                            // it's possible for stop to be called while a request is in progress, if stop throws it wont wait for
+                            // it's possible for stop to be called while a request is in progress, if stop throws it won't wait for
                             // an in-progress poll to complete and will shutdown the thread. We should ignore the exception so we don't
                             // get an unhandled RX error
                             } catch(Exception e) {}

@@ -144,6 +144,9 @@ internal static partial class NativeMethods
     private static partial int http_close_connection(NativeSafeHandle pInProcessHandler);
 
     [LibraryImport(AspNetCoreModuleDll)]
+    private static partial int http_set_close(NativeSafeHandle pInProcessHandler);
+
+    [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_response_set_need_goaway(NativeSafeHandle pInProcessHandler);
 
     [LibraryImport(AspNetCoreModuleDll)]
@@ -304,6 +307,11 @@ internal static partial class NativeMethods
     public static void HttpCloseConnection(NativeSafeHandle pInProcessHandler)
     {
         Validate(http_close_connection(pInProcessHandler));
+    }
+
+    public static void HttpSetClose(NativeSafeHandle pInProcessHandler)
+    {
+        Validate(http_set_close(pInProcessHandler));
     }
 
     public static unsafe void HttpResponseSetUnknownHeader(NativeSafeHandle pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, bool fReplace)

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.AspNetCore.JsonPatch.Converters;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
@@ -13,22 +12,13 @@ using Microsoft.AspNetCore.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-#if NET
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Metadata;
-#endif
-
 namespace Microsoft.AspNetCore.JsonPatch;
 
 // Implementation details: the purpose of this type of patch document is to allow creation of such
 // documents for cases where there's no class/DTO to work on. Typical use case: backend not built in
 // .NET or architecture doesn't contain a shared DTO layer.
 [JsonConverter(typeof(JsonPatchDocumentConverter))]
-#if NET
-public class JsonPatchDocument : IJsonPatchDocument, IEndpointParameterMetadataProvider
-#else
 public class JsonPatchDocument : IJsonPatchDocument
-#endif
 {
     public List<Operation> Operations { get; private set; }
 
@@ -61,7 +51,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("add", PathHelpers.ValidateAndNormalizePath(path), null, value));
+        Operations.Add(new Operation("add", PathHelpers.NormalizePath(path), null, value));
         return this;
     }
 
@@ -75,7 +65,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("remove", PathHelpers.ValidateAndNormalizePath(path), null, null));
+        Operations.Add(new Operation("remove", PathHelpers.NormalizePath(path), null, null));
         return this;
     }
 
@@ -90,7 +80,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("replace", PathHelpers.ValidateAndNormalizePath(path), null, value));
+        Operations.Add(new Operation("replace", PathHelpers.NormalizePath(path), null, value));
         return this;
     }
 
@@ -105,7 +95,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("test", PathHelpers.ValidateAndNormalizePath(path), null, value));
+        Operations.Add(new Operation("test", PathHelpers.NormalizePath(path), null, value));
         return this;
     }
 
@@ -121,7 +111,7 @@ public class JsonPatchDocument : IJsonPatchDocument
         ArgumentNullThrowHelper.ThrowIfNull(from);
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("move", PathHelpers.ValidateAndNormalizePath(path), PathHelpers.ValidateAndNormalizePath(from)));
+        Operations.Add(new Operation("move", PathHelpers.NormalizePath(path), PathHelpers.NormalizePath(from)));
         return this;
     }
 
@@ -137,7 +127,7 @@ public class JsonPatchDocument : IJsonPatchDocument
         ArgumentNullThrowHelper.ThrowIfNull(from);
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("copy", PathHelpers.ValidateAndNormalizePath(path), PathHelpers.ValidateAndNormalizePath(from)));
+        Operations.Add(new Operation("copy", PathHelpers.NormalizePath(path), PathHelpers.NormalizePath(from)));
         return this;
     }
 
@@ -230,14 +220,4 @@ public class JsonPatchDocument : IJsonPatchDocument
         return allOps;
     }
 
-#if NET
-    /// <inheritdoc/>
-    static void IEndpointParameterMetadataProvider.PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
-    {
-        ArgumentNullException.ThrowIfNull(parameter);
-        ArgumentNullException.ThrowIfNull(builder);
-
-        builder.Metadata.Add(new AcceptsMetadata(["application/json-patch+json"], parameter.ParameterType));
-    }
-#endif
 }

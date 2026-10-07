@@ -133,7 +133,7 @@ internal static class ProblemDetailsDefaults
         [500] =
         (
             "https://tools.ietf.org/html/rfc9110#section-15.6.1",
-            "An error occurred while processing your request."
+            "Internal Server Error"
         ),
 
         [501] =

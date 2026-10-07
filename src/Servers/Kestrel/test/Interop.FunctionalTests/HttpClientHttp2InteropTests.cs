@@ -689,9 +689,9 @@ public class HttpClientHttp2InteropTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46717")]
     [Theory]
     [MemberData(nameof(SupportedSchemes))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46717")]
     public async Task ServerReset_BeforeRequestBody_ClientBodyThrows(string scheme)
     {
         var clientEcho = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);

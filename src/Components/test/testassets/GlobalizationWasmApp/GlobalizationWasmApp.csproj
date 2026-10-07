@@ -11,14 +11,18 @@
     <WasmApplicationEnvironmentName>Staging</WasmApplicationEnvironmentName>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
+  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <Reference Include="Microsoft.Extensions.Localization" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
+  </PropertyGroup>
 
 </Project>

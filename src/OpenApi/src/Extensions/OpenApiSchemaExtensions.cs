@@ -21,6 +21,23 @@ internal static class OpenApiSchemaExtensions
         };
     }
 
+    public static void MakeArrayItemsNullable(this IOpenApiSchema schema)
+    {
+        if (schema is not OpenApiSchema { Items: { } items } arraySchema)
+        {
+            return;
+        }
+
+        if (items is OpenApiSchema { Type: { } itemType } inlineItemSchema)
+        {
+            inlineItemSchema.Type = itemType | JsonSchemaType.Null;
+        }
+        else
+        {
+            arraySchema.Items = items.CreateOneOfNullableWrapper();
+        }
+    }
+
     public static bool IsComponentizedSchema(this OpenApiSchema schema)
         => schema.IsComponentizedSchema(out _);
 
@@ -37,4 +54,9 @@ internal static class OpenApiSchemaExtensions
         schemaId = null;
         return false;
     }
+
+    public static bool IsUnion(this OpenApiSchema schema)
+        => schema.Metadata is not null
+            && schema.Metadata.TryGetValue(OpenApiConstants.SchemaIsUnion, out var isUnion)
+            && isUnion is true;
 }

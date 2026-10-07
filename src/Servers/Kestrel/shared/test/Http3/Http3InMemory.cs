@@ -746,6 +746,19 @@ internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
         await SendAsync(Span<byte>.Empty);
     }
 
+    /// <summary>
+    /// Sends a trailer HEADERS frame whose declared payload length is larger than the bytes
+    /// actually written, simulating a fragmented trailer HEADERS frame that spans multiple reads.
+    /// The frame header declares <paramref name="declaredLength"/> bytes, but only one byte is sent.
+    /// </summary>
+    internal async Task SendTrailerHeadersPartialAsync(int declaredLength = 100)
+    {
+        var outputWriter = Pair.Application.Output;
+        Http3FrameWriter.WriteHeader(Http3FrameType.Headers, frameLength: declaredLength, outputWriter);
+        // Send a single byte so the frame reader parses the header and enters isContinuedFrame mode.
+        await SendAsync([ 0x00 ]);
+    }
+
     internal async Task SendDataAsync(Memory<byte> data, bool endStream = false)
     {
         await SendFrameAsync(Http3FrameType.Data, data, endStream);

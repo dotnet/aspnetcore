@@ -15,8 +15,15 @@ public interface IHttpResponseFeature
     int StatusCode { get; set; }
 
     /// <summary>
-    /// Gets or sets the reason-phrase as defined in RFC 7230. Note this field is no longer supported by HTTP/2.
+    /// Gets or sets the reason-phrase as defined in
+    /// <see href="https://www.rfc-editor.org/rfc/rfc9112#section-4">RFC 9112 Section 4</see>.
+    /// Note this field is no longer supported by HTTP/2.
     /// </summary>
+    /// <remarks>
+    /// Must contain only ASCII characters: HTAB (0x09), SP (0x20), and VCHAR (0x21-0x7E).
+    /// Non-ASCII characters (> 0x7E) and control characters including CR and LF are rejected.
+    /// Callers should not pass untrusted or user-supplied input without prior sanitization.
+    /// </remarks>
     string? ReasonPhrase { get; set; }
 
     /// <summary>

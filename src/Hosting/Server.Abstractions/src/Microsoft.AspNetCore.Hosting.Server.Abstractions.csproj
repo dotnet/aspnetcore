@@ -12,8 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
   </ItemGroup>
 
 </Project>

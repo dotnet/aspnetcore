@@ -111,7 +111,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         NavigationManager.OnNotFound += OnNotFound;
         RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearRouteCaches;
         }
@@ -179,7 +179,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
         NavigationManager.OnNotFound -= OnNotFound;
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
         }
@@ -246,7 +246,10 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
 
-            _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
+            if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
+            {
+                _renderHandle.ComponentActivitySource.StopNavigateActivity(activityHandle, null);
+            }
             return;
         }
 
@@ -289,7 +292,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 Log.DisplayingNotFound(_logger, locationPath, _baseUri);
 
                 // We did not find a Component that matches the route.
-                // Only show the NotFound content if the application developer programatically got us here i.e we did not
+                // Only show the NotFound content if the application developer programmatically got us here i.e we did not
                 // intercept the navigation. In all other cases, force a browser navigation since this could be non-Blazor content.
                 RenderNotFound();
             }
@@ -301,18 +304,21 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
-        _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
+        if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
+        {
+            _renderHandle.ComponentActivitySource.StopNavigateActivity(activityHandle, null);
+        }
     }
 
     private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
     {
         ComponentsActivityHandle activityHandle = default;
-        if (_renderHandle.ComponentActivitySource != null)
+        if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
         {
             activityHandle = _renderHandle.ComponentActivitySource.StartNavigateActivity(componentType, template);
         }
 
-        if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
+        if (ComponentsMetrics.IsSupported && _renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
         {
             _renderHandle.ComponentMetrics.Navigation(componentType, template);
         }
@@ -411,10 +417,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 $"Ensure the route matches a component with a [Route] attribute.");
         }
 
-        builder.OpenComponent<RouteView>(0);
-        builder.AddAttribute(1, nameof(RouteView.RouteData),
-            new RouteData(componentType, new Dictionary<string, object>()));
-        builder.CloseComponent();
+        Found(new RouteData(componentType, new Dictionary<string, object>()))(builder);
     }
 
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
@@ -440,10 +443,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             if (NotFoundPage != null)
             {
-                builder.OpenComponent<RouteView>(0);
-                builder.AddAttribute(1, nameof(RouteView.RouteData),
-                    new RouteData(NotFoundPage, _emptyParametersDictionary));
-                builder.CloseComponent();
+                Found(new RouteData(NotFoundPage, _emptyParametersDictionary))(builder);
             }
 #pragma warning disable CS0618 // Type or member is obsolete
             else if (NotFound != null)

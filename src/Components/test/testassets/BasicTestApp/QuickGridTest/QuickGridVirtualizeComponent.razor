@@ -26,7 +26,7 @@
         itemsProvider = async request =>
         {
             await Task.CompletedTask;
-            Interlocked.Increment(ref ItemsProviderCallCount);
+            ItemsProviderCallCount++;
             StateHasChanged();
             return GridItemsProviderResult.From(
                 items: Enumerable.Range(1, 100).Select(i => new Person { Id = i, Name = $"Person {i}" }).ToList(),

@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -1220,6 +1221,147 @@ public class StaticAssetsIntegrationTests
                 return stream;
             }
         }
+    }
+
+    [Fact]
+    public async Task EndpointOrder_DefaultsToNegative100_WhenOrderNotSet()
+    {
+        // Arrange
+        var appName = nameof(EndpointOrder_DefaultsToNegative100_WhenOrderNotSet);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        // Act
+        var endpoint = app.Services.GetRequiredService<EndpointDataSource>().Endpoints
+            .OfType<RouteEndpoint>()
+            .Single(e => e.RoutePattern.RawText == "sample.txt");
+
+        // Assert
+        Assert.Equal(-100, endpoint.Order);
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task EndpointOrder_UsesValueFromManifest_WhenOrderIsSet()
+    {
+        // Arrange
+        var appName = nameof(EndpointOrder_UsesValueFromManifest_WhenOrderIsSet);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        Directory.CreateDirectory(webRoot);
+        var manifestPath = Path.Combine(AppContext.BaseDirectory, $"{appName}.staticwebassets.endpoints.json");
+        var hash = GetEtag("Hello, World!");
+        var lastModified = DateTimeOffset.UtcNow;
+        File.WriteAllText(Path.Combine(webRoot, "index.html"), "Hello, World!");
+
+        var manifest = new StaticAssetsManifest()
+        {
+            Version = 1,
+            ManifestType = "Build",
+            Endpoints =
+            [
+                new StaticAssetDescriptor
+                {
+                    Route = "index.html",
+                    AssetPath = "index.html",
+                    Selectors = [],
+                    Properties = [new("integrity", $"sha256-{hash}")],
+                    ResponseHeaders = [
+                        new("Accept-Ranges", "bytes"),
+                        new("Content-Length", "Hello, World!".Length.ToString(CultureInfo.InvariantCulture)),
+                        new("Content-Type", "text/html"),
+                        new("ETag", $"\"{hash}\""),
+                        new("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
+                    ],
+                    Order = "2147483647"
+                },
+                new StaticAssetDescriptor
+                {
+                    Route = "other.html",
+                    AssetPath = "index.html",
+                    Selectors = [],
+                    Properties = [new("integrity", $"sha256-{hash}")],
+                    ResponseHeaders = [
+                        new("Accept-Ranges", "bytes"),
+                        new("Content-Length", "Hello, World!".Length.ToString(CultureInfo.InvariantCulture)),
+                        new("Content-Type", "text/html"),
+                        new("ETag", $"\"{hash}\""),
+                        new("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
+                    ],
+                }
+            ]
+        };
+
+        {
+            using var stream = File.Create(manifestPath);
+            using var writer = new Utf8JsonWriter(stream);
+            JsonSerializer.Serialize(writer, manifest);
+        }
+
+        var appBuilder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        appBuilder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        appBuilder.WebHost.UseTestServer();
+
+        var app = appBuilder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        // Act
+        var endpoints = app.Services.GetRequiredService<EndpointDataSource>().Endpoints
+            .OfType<RouteEndpoint>()
+            .ToList();
+
+        var indexEndpoint = endpoints.Single(e => e.RoutePattern.RawText == "index.html");
+        var otherEndpoint = endpoints.Single(e => e.RoutePattern.RawText == "other.html");
+
+        // Assert
+        Assert.Equal(2147483647, indexEndpoint.Order);
+        Assert.Equal(-100, otherEndpoint.Order);
+
+        Directory.Delete(webRoot, true);
     }
 
     [Fact]

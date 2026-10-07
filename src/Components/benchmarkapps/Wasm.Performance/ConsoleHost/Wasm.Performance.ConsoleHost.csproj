@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TestApp\Wasm.Performance.TestApp.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 

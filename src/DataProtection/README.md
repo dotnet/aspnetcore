@@ -7,7 +7,7 @@ Data Protection APIs for protecting and unprotecting data. You can find document
 The following contains a description of each sub-directory in the `DataProtection` directory.
 
 - `Abstractions`: Contains the source files for the main DataProtection interfaces like `IDataProtector` and `IDataProtectionProvider`
-- `Cryptography.Internal`: Contains the source files for cryptography infrastucture. Applications and libraries should not reference this package directly.
+- `Cryptography.Internal`: Contains the source files for cryptography infrastructure. Applications and libraries should not reference this package directly.
 - `Cryptography.KeyDerivation`: Contains the source files related to key derivation, i.e. PBKDF2
 - `DataProtection`: Contains the main implementation of DataProtection for ASP.NET Core to protect and unprotect data.
 - `EntityFrameworkCore`: Contains the implementation for storing data using EntityFrameworkCore

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.HotReload;
 
@@ -12,7 +13,13 @@ internal sealed class HotReloadManager
 {
     public static readonly HotReloadManager Default = new();
 
-    public bool MetadataUpdateSupported { get; set; } = MetadataUpdater.IsSupported;
+#pragma warning disable IDE0044 // Add readonly modifier - mutated via reflection by E2E tests; keeping it non-readonly avoids JIT const-folding making those writes invisible.
+    private static bool s_isSupported =
+        AppContext.TryGetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", out bool isSupported) ? isSupported : true;
+#pragma warning restore IDE0044
+
+    [FeatureSwitchDefinition("System.Reflection.Metadata.MetadataUpdater.IsSupported")]
+    internal static bool IsSupported => s_isSupported;
 
     /// <summary>
     /// Gets a value that determines if OnDeltaApplied is subscribed to.

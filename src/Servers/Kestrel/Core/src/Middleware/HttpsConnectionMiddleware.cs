@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Net.Security;
 using System.Security;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
@@ -117,10 +118,12 @@ internal sealed class HttpsConnectionMiddleware
 
         _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, userCertificateValidationCallback: remoteCertificateValidationCallback);
 
+#pragma warning disable CS0618 // Type or member is obsolete - still need to support the old property for back-compat
         if (options.TlsClientHelloBytesCallback is not null)
         {
             _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
         }
+#pragma warning restore CS0618
     }
 
     internal HttpsConnectionMiddleware(
@@ -153,7 +156,7 @@ internal sealed class HttpsConnectionMiddleware
             context.Features.Get<IMemoryPoolFeature>()?.MemoryPool ?? MemoryPool<byte>.Shared);
         var sslStream = sslDuplexPipe.Stream;
 
-        var feature = new Core.Internal.TlsConnectionFeature(sslStream, context);
+        var feature = new Core.Internal.TlsConnectionFeature(sslStream, context, _logger);
         // Set the mode if options were used. If the callback is used it will set the mode later.
         feature.AllowDelayedClientCertificateNegotation =
             _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
@@ -187,6 +190,8 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (OperationCanceledException ex)
         {
+            feature.Exception = ex;
+            feature.Snapshot();
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationTimedOut();
@@ -195,6 +200,8 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (IOException ex)
         {
+            feature.Exception = ex;
+            feature.Snapshot();
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
@@ -203,6 +210,8 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (AuthenticationException ex)
         {
+            feature.Exception = ex;
+            feature.Snapshot();
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
@@ -238,7 +247,16 @@ internal sealed class HttpsConnectionMiddleware
             await using (sslStream)
             await using (sslDuplexPipe)
             {
-                await _next(context);
+                try
+                {
+                    await _next(context);
+                }
+                finally
+                {
+                    // Snapshot SslStream-backed properties before disposal so outer middleware
+                    // can still read ITlsHandshakeFeature after the connection completes.
+                    feature.Snapshot();
+                }
                 // Dispose the inner stream (SslDuplexPipe) before disposing the SslStream
                 // as the duplex pipe can hit an ODE as it still may be writing.
             }
@@ -565,7 +583,7 @@ internal sealed class HttpsConnectionMiddleware
             sslServerAuthenticationOptions.ServerCertificate = null;
             sslServerAuthenticationOptions.ServerCertificateSelectionCallback = (sender, host) =>
             {
-                // There is no ConnectionContext available durring the QUIC handshake.
+                // There is no ConnectionContext available during the QUIC handshake.
                 var cert = httpsOptions.ServerCertificateSelector(null, host);
                 if (cert != null)
                 {
@@ -628,6 +646,9 @@ internal static partial class HttpsConnectionMiddlewareLoggerExtensions
 
     [LoggerMessage(9, LogLevel.Information, "Certificate with thumbprint {Thumbprint} lacks the subjectAlternativeName (SAN) extension and may not be accepted by browsers.", EventName = "NoSubjectAlternativeName")]
     public static partial void NoSubjectAlternativeName(this ILogger<HttpsConnectionMiddleware> logger, string thumbprint);
+
+    [LoggerMessage(10, LogLevel.Debug, "Failed to read TLS channel binding token of kind {ChannelBindingKind}.", EventName = "FailedToReadChannelBinding")]
+    public static partial void FailedToReadChannelBinding(this ILogger<HttpsConnectionMiddleware> logger, ChannelBindingKind channelBindingKind, Exception exception);
 
     public static void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, StoreLocation storeLocation, Exception exception)
     {

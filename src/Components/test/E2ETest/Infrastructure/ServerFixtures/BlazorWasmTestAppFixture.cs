@@ -3,35 +3,31 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Gateway;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TestServer;
-using DevHostServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
 public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
 {
-    public readonly bool TestTrimmedOrMultithreadingApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
+    public readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
-        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedOrMultithreadingApps")
+        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
         .Value == "true";
 
     public string Environment { get; set; }
     public string PathBase { get; set; }
     public string ContentRoot { get; private set; }
 
-    public bool RequiresMultithreadingHeaders { get; set; }
-
     protected override IHost CreateWebHost()
     {
-        if (TestTrimmedOrMultithreadingApps)
+        if (TestTrimmedApps)
         {
-            var staticFilePath = Path.Combine(AppContext.BaseDirectory, "trimmed-or-threading", typeof(TProgram).Assembly.GetName().Name);
+            var staticFilePath = Path.Combine(AppContext.BaseDirectory, "trimmed", typeof(TProgram).Assembly.GetName().Name);
             if (!Directory.Exists(staticFilePath))
             {
                 throw new DirectoryNotFoundException($"Test is configured to use trimmed outputs, but trimmed outputs were not found in {staticFilePath}.");
@@ -40,8 +36,38 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             return CreateStaticWebHost(staticFilePath);
         }
 
-        ContentRoot = FindSampleOrTestSitePath(
-            typeof(TProgram).Assembly.FullName);
+        var clientAssemblyPath = typeof(TProgram).Assembly.Location;
+        ContentRoot = FindSampleOrTestSitePath(typeof(TProgram).Assembly.FullName);
+        var indexHtmlPath = Path.Combine(ContentRoot, "wwwroot", "index.html");
+        var runtimeManifestPath = Path.ChangeExtension(clientAssemblyPath, ".staticwebassets.runtime.json");
+        var endpointsManifestPath = Path.ChangeExtension(clientAssemblyPath, ".staticwebassets.endpoints.json");
+        var clientAssemblyExists = File.Exists(clientAssemblyPath);
+        var contentRootExists = Directory.Exists(ContentRoot);
+        var indexHtmlExists = File.Exists(indexHtmlPath);
+        var runtimeManifestExists = File.Exists(runtimeManifestPath);
+        var endpointsManifestExists = File.Exists(endpointsManifestPath);
+
+        if (!clientAssemblyExists ||
+            !contentRootExists ||
+            !indexHtmlExists ||
+            !runtimeManifestExists ||
+            !endpointsManifestExists)
+        {
+            throw new InvalidOperationException(
+                $"""
+                The Blazor WebAssembly E2E test app is not ready to start.
+                Client assembly: '{clientAssemblyPath}' ({(clientAssemblyExists ? "found" : "missing")})
+                Content root: '{ContentRoot}' ({(contentRootExists ? "found" : "missing")})
+                Entry point: '{indexHtmlPath}' ({(indexHtmlExists ? "found" : "missing")})
+                Runtime manifest: '{runtimeManifestPath}' ({(runtimeManifestExists ? "found" : "missing")})
+                Endpoints manifest: '{endpointsManifestPath}' ({(endpointsManifestExists ? "found" : "missing")})
+
+                Rebuild the E2E project and referenced test apps before rerunning the test with --no-build:
+                  dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore
+                A --no-dependencies build can copy existing dependency outputs, but it does not rebuild referenced client apps.
+                Do not use it when referenced app outputs may be stale or missing.
+                """);
+        }
 
         var host = "127.0.0.1";
         if (E2ETestOptions.Instance.SauceTest)
@@ -53,8 +79,10 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             {
                 "--urls", $"http://{host}:0",
                 "--contentroot", ContentRoot,
-                "--pathbase", PathBase,
-                "--applicationpath", typeof(TProgram).Assembly.Location,
+                "--Gateway:PathBase", PathBase,
+                "--staticWebAssets", runtimeManifestPath,
+                "--ClientApps:app:EndpointsManifest", endpointsManifestPath,
+                "--ClientApps:app:PathPrefix", "",
             };
 
         if (!string.IsNullOrEmpty(Environment))
@@ -63,12 +91,9 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             args.Add(Environment);
         }
 
-        if (RequiresMultithreadingHeaders || WebAssemblyTestHelper.MultithreadingIsEnabled())
-        {
-            args.Add("--apply-cop-headers");
-        }
-
-        return DevHostServerProgram.BuildWebHost(args.ToArray());
+        var app = BlazorGateway.BuildWebHost(args.ToArray());
+        app.MapFallbackToFile("index.html");
+        return app;
     }
 
     private IHost CreateStaticWebHost(string contentRoot)
@@ -99,14 +124,6 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             {
                 app.UsePathBase(PathBase);
             }
-
-            app.Use(async (ctx, next) =>
-            {
-                // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
-                ctx.Response.Headers.Append("Cross-Origin-Embedder-Policy", "require-corp");
-                ctx.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");
-                await next(ctx);
-            });
 
             app.UseStaticFiles(new StaticFileOptions
             {

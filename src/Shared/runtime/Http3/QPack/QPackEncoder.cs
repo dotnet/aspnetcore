@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
@@ -34,7 +34,7 @@ namespace System.Net.Http.QPack
             }
         }
 
-        public static byte[] EncodeStaticIndexedHeaderFieldToArray(int index)
+        public static unsafe byte[] EncodeStaticIndexedHeaderFieldToArray(int index)
         {
             Span<byte> buffer = stackalloc byte[IntegerEncoder.MaxInt32EncodedLength];
 
@@ -88,7 +88,7 @@ namespace System.Net.Http.QPack
         /// <summary>
         /// Encodes just the name part of a Literal Header Field With Static Name Reference. Must call <see cref="EncodeValueString(string, Encoding?, Span{byte}, out int)"/> after to encode the header's value.
         /// </summary>
-        public static byte[] EncodeLiteralHeaderFieldWithStaticNameReferenceToArray(int index)
+        public static unsafe byte[] EncodeLiteralHeaderFieldWithStaticNameReferenceToArray(int index)
         {
             Span<byte> temp = stackalloc byte[IntegerEncoder.MaxInt32EncodedLength];
 
@@ -99,7 +99,7 @@ namespace System.Net.Http.QPack
             return temp.Slice(0, headerBytesWritten).ToArray();
         }
 
-        public static byte[] EncodeLiteralHeaderFieldWithStaticNameReferenceToArray(int index, string value)
+        public static unsafe byte[] EncodeLiteralHeaderFieldWithStaticNameReferenceToArray(int index, string value)
         {
             Span<byte> temp = value.Length < 256 ? stackalloc byte[256 + IntegerEncoder.MaxInt32EncodedLength * 2] : new byte[value.Length + IntegerEncoder.MaxInt32EncodedLength * 2];
             bool res = EncodeLiteralHeaderFieldWithStaticNameReference(index, value, temp, out int bytesWritten);
@@ -159,7 +159,7 @@ namespace System.Net.Http.QPack
         /// <summary>
         /// Encodes just the value part of a Literawl Header Field Without Static Name Reference. Must call <see cref="EncodeValueString(string, Encoding?, Span{byte}, out int)"/> after to encode the header's value.
         /// </summary>
-        public static byte[] EncodeLiteralHeaderFieldWithoutNameReferenceToArray(string name)
+        public static unsafe byte[] EncodeLiteralHeaderFieldWithoutNameReferenceToArray(string name)
         {
             Span<byte> temp = name.Length < 256 ? stackalloc byte[256 + IntegerEncoder.MaxInt32EncodedLength] : new byte[name.Length + IntegerEncoder.MaxInt32EncodedLength];
 
@@ -169,7 +169,7 @@ namespace System.Net.Http.QPack
             return temp.Slice(0, nameLength).ToArray();
         }
 
-        public static byte[] EncodeLiteralHeaderFieldWithoutNameReferenceToArray(string name, string value)
+        public static unsafe byte[] EncodeLiteralHeaderFieldWithoutNameReferenceToArray(string name, string value)
         {
             Span<byte> temp = (name.Length + value.Length) < 256 ? stackalloc byte[256 + IntegerEncoder.MaxInt32EncodedLength * 2] : new byte[name.Length + value.Length + IntegerEncoder.MaxInt32EncodedLength * 2];
 

@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
@@ -235,11 +237,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Equal("Proposal", ((OpenApiSchemaReference)schema).Reference.Id);
             var effectiveSchema = schema;
             Assert.Collection(effectiveSchema.Properties,
-                property => {
+                property =>
+                {
                     Assert.Equal("proposalElement", property.Key);
                     Assert.Equal("Proposal", ((OpenApiSchemaReference)property.Value).Reference.Id);
                 },
-                property => {
+                property =>
+                {
                     Assert.Equal("stream", property.Key);
                     var targetSchema = property.Value;
                     Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, targetSchema.Type);
@@ -395,7 +399,15 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                     Assert.Equal("The date and time the todo item was created.", property.Value.Description);
+                },
+                property =>
+                {
+                    var reference = Assert.IsType<OpenApiSchemaReference>(property.Value);
+                    Assert.Equal("sampleEnum", property.Key);
+                    Assert.Equal("The sample enum property.", reference.Description);
                 });
+            var sampleEnumSchema = document.Components.Schemas["SampleEnum"];
+            Assert.Equal("Enum: SampleEnum", sampleEnumSchema.Description);
         });
     }
 
@@ -735,6 +747,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         [Description("The date and time the todo item was created.")]
         public DateTime CreatedAt { get; set; }
+
+        [Description("The sample enum property.")]
+        public SampleEnum SampleEnum { get; set; }
     }
 
 #nullable enable
@@ -989,6 +1004,37 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         Assert.Equal("Approved", statusReference.Default.GetValue<string>());
     }
 
+    [Fact]
+    public async Task GetOpenApiRequestBody_EnumFormFieldWithGlobalNamingPolicy_UsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint with an enum form parameter
+        builder.MapPost("/form-enum", ([FromForm] Priority priority) => { });
+
+        // Assert - the OpenAPI schema for the form field should use the original C# member names
+        // (PascalCase), NOT the naming-policy-transformed values (kebab-case), because form
+        // parameter binding uses Enum.TryParse which only accepts the original member names.
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/form-enum"].Operations[HttpMethod.Post];
+            var properties = operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties;
+            var property = properties["priority"];
+            Assert.NotNull(property);
+
+            Assert.Collection(property.Enum,
+                value => Assert.Equal("HighPriority", value.GetValue<string>()),
+                value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+                value => Assert.Equal("LowPriority", value.GetValue<string>()));
+        });
+    }
+
     [ApiController]
     [Produces("application/json")]
     public class TestBodyController
@@ -998,5 +1044,84 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         internal Status FormPostWithOptionalEnumParam(
             [FromForm(Name = "status")] Status status = Status.Approved
         ) => status;
+    }
+
+    [Fact]
+    public async Task GetRequestBody_HandleNullableEnumDescription()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/", (NullableEnumModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Post];
+
+            var modelSchema = document.Components.Schemas["SampleEnum"];
+            Assert.Equal("Enum: SampleEnum", modelSchema.Description);
+        });
+    }
+
+    private class NullableEnumModel
+    {
+        public SampleEnum? EnumProperty { get; set; }
+    }
+
+    [Description("Enum: SampleEnum")]
+    public enum SampleEnum
+    {
+        FirstValue,
+        SecondValue
+    }
+
+    [Fact]
+    public async Task HandlesNullableAndNonNullableEnumPropertiesWithSharedComponentAndOneOf()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/nullableEnum", (NullableEnumDto body) => { });
+
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
+        var expectedComponents = """
+            {
+              "NullableEnumDto": {
+                "type": "object",
+                "properties": {
+                  "nullableStatus": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/components/schemas/Status"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "$ref": "#/components/schemas/Status"
+                  }
+                }
+              },
+              "Status": {
+                "enum": [
+                  "Pending",
+                  "Approved",
+                  "Rejected"
+                ]
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
+    }
+
+    internal class NullableEnumDto
+    {
+        public Status? NullableStatus { get; set; }
+        public Status Status { get; set; }
     }
 }
