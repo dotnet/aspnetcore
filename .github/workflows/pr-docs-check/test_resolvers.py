@@ -155,6 +155,7 @@ class FindExistingDraftTests(unittest.TestCase):
             "draft": draft,
             "updated_at": updated_at,
             "body": "Source: dotnet/aspnetcore#42\n\nDetails",
+            "title": "[docs] Update docs",
             "base": {
                 "ref": "main",
                 "repo": {"full_name": "dotnet/AspNetCore.Docs"},
