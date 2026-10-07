@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
@@ -27,6 +28,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly ILogger _logger;
     private readonly CircuitMetrics _circuitMetrics;
     private readonly CircuitActivitySource _circuitActivitySource;
+    private readonly HostInitializerInvoker _hostInitializerInvoker;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -54,6 +56,7 @@ internal partial class CircuitHost : IAsyncDisposable
         IReadOnlyList<ComponentDescriptor> descriptors,
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
+        HostInitializerInvoker hostInitializerInvoker,
         CircuitHandler[] circuitHandlers,
         CircuitMetrics circuitMetrics,
         CircuitActivitySource circuitActivitySource,
@@ -73,6 +76,7 @@ internal partial class CircuitHost : IAsyncDisposable
         Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
+        _hostInitializerInvoker = hostInitializerInvoker ?? throw new ArgumentNullException(nameof(hostInitializerInvoker));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _circuitMetrics = circuitMetrics;
         _circuitActivitySource = circuitActivitySource;
@@ -92,6 +96,7 @@ internal partial class CircuitHost : IAsyncDisposable
         JSRuntime.UnhandledException += ReportAndInvoke_UnhandledException;
 
         _navigationManager.UnhandledException += ReportAndInvoke_UnhandledException;
+
     }
 
     public CircuitHandle Handle { get; }
@@ -114,7 +119,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpActivityContext, CancellationToken cancellationToken)
+    public Task<bool> InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpActivityContext, CancellationToken cancellationToken)
     {
         Log.InitializationStarted(_logger);
 
@@ -133,6 +138,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+
+                await _hostInitializerInvoker.InitializeBrowserAsync(cancellationToken);
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
                 // the components immediately during start.
@@ -178,6 +185,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 Log.InitializationSucceeded(_logger);
 
                 _circuitActivitySource.StopCircuitActivity(activityHandle, null);
+                return true;
             }
             catch (Exception ex)
             {
@@ -185,8 +193,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                return false;
             }
         }));
     }
@@ -761,7 +770,7 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    internal Task UpdateRootComponents(
+    internal async Task UpdateRootComponents(
         RootComponentOperationBatch operationBatch,
         IClearableStore store,
         bool isRestore,
@@ -769,7 +778,7 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.UpdateRootComponentsStarted(_logger);
 
-        return Renderer.Dispatcher.InvokeAsync(async () =>
+        await Renderer.Dispatcher.InvokeAsync(async () =>
         {
             var shouldClearStore = false;
             var shouldWaitForQuiescence = false;
@@ -785,6 +794,16 @@ internal partial class CircuitHost : IAsyncDisposable
                     // the footprint for Blazor Server closer to what it was before.
                     throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
                         " been provided during circuit start up.");
+                }
+
+                try
+                {
+                    await _hostInitializerInvoker.InitializeBrowserAsync(cancellation);
+                }
+                catch
+                {
+                    // InitializeAsync owns reporting host initialization failures.
+                    return;
                 }
 
                 if (store != null)

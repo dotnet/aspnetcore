@@ -21,10 +21,8 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     /// </summary>
     public static WebAssemblyNavigationManager Instance { get; set; } = default!;
 
-    public WebAssemblyNavigationManager(string baseUri, string uri)
-    {
-        Initialize(baseUri, uri);
-    }
+    internal void InitializeNavigation(string baseUri, string uri)
+        => Initialize(baseUri, uri);
 
     public void CreateLogger(ILoggerFactory loggerFactory)
     {

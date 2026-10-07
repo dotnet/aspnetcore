@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -83,6 +84,23 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddScoped<IServerComponentDeserializer, ServerComponentDeserializer>();
         services.TryAddScoped<IErrorBoundaryLogger, RemoteErrorBoundaryLogger>();
         services.TryAddScoped<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        services.TryAddScoped<InteractiveServerContext>();
+        services.TryAddKeyedScoped<InteractiveHostStartupValues>(HostInitializerKey.Server);
+        services.TryAddKeyedScoped<IHostStartupValues>(
+            HostInitializerKey.Server,
+            static (services, key) => services.GetRequiredKeyedService<InteractiveHostStartupValues>(key));
+        services.TryAddEnumerable(
+            ServiceDescriptor.KeyedSingleton<IHostInitializer, NavigationManagerInitializer>(HostInitializerKey.Server));
+        services.TryAddEnumerable(
+            ServiceDescriptor.KeyedSingleton<IHostInitializer, NavigationManagerJSRuntimeInitializer>(HostInitializerKey.Server));
+        services.TryAddEnumerable(
+            ServiceDescriptor.KeyedSingleton<IHostInitializer, NavigationServicesJSRuntimeInitializer>(HostInitializerKey.Server));
+        services.TryAddSingleton<HostInitializerCollection>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
+        services.TryAddSingleton<BrowserStartupValueCollection>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Scoped<IHostStartupValues, DefaultHostStartupValues>());
 
         services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
         services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();

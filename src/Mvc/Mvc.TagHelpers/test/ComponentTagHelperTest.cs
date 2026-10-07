@@ -9,9 +9,12 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
@@ -77,9 +80,17 @@ public class ComponentTagHelperTest
 
     private ViewContext GetViewContext()
     {
+        var webRootFileProvider = new NullFileProvider();
         var httpContext = new DefaultHttpContext
         {
             RequestServices = new ServiceCollection()
+                .AddRazorComponents()
+                .Services
+                .AddSingleton<IConfiguration>(new ConfigurationManager())
+                .AddSingleton(Mock.Of<IWebHostEnvironment>(
+                    environment =>
+                        environment.ApplicationName == "TestApplication" &&
+                        environment.WebRootFileProvider == webRootFileProvider))
                 .AddScoped<IComponentPrerenderer, EndpointHtmlRenderer>()
                 .AddScoped<ServerComponentSerializer>()
                 .AddScoped(_ => Mock.Of<IDataProtectionProvider>(

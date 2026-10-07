@@ -1,6 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Components.BasePath
 Microsoft.AspNetCore.Components.BasePath.BasePath() -> void
+Microsoft.AspNetCore.Components.Hosting.IHttpContextStartupValueProvider
+Microsoft.AspNetCore.Components.Hosting.IHttpContextStartupValueProvider.GetValues(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewSizeLimit.get -> long
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewSizeLimit.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.DisableClientValidation.get -> bool

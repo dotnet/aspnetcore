@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ServerComponentDescriptor, descriptorToMarker, discoverServerPersistedState } from '../../Services/ComponentDescriptorDiscovery';
+import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 import { RootComponentManager } from '../../Services/RootComponentManager';
@@ -19,6 +18,7 @@ import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
+import { evaluateHostStartupValues } from '../../Services/HostStartupValues';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
@@ -112,12 +112,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
+    const applicationState = this._applicationState || '';
+    const startupValuesJson = await this.getStartupValuesJson();
     this._circuitId = await this._connection.invoke<string>(
       'StartCircuit',
-      navigationManagerFunctions.getBaseURI(),
-      navigationManagerFunctions.getLocationHref(),
+      startupValuesJson,
       componentsJson,
-      this._applicationState || ''
+      applicationState
     );
 
     if (!this._circuitId) {
@@ -131,6 +132,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     return true;
+  }
+
+  private async getStartupValuesJson(): Promise<string> {
+    const keys = await this._connection!.invoke<string[]>('GetStartupValueKeys');
+    return JSON.stringify(evaluateHostStartupValues(keys));
   }
 
   private async startConnection(): Promise<HubConnection> {
@@ -466,11 +472,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       const persistedCircuitState = this._persistedCircuitState;
       this._persistedCircuitState = undefined;
 
+      const startupValuesJson = await this.getStartupValuesJson();
       const newCircuitId = await this._connection!.invoke<string>(
         'ResumeCircuit',
         this._circuitId,
-        navigationManagerFunctions.getBaseURI(),
-        navigationManagerFunctions.getLocationHref(),
+        startupValuesJson,
         persistedCircuitState?.components ?? '[]',
         persistedCircuitState?.applicationState ?? '',
       );
