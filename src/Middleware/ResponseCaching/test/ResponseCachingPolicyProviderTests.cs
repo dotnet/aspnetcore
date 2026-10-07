@@ -1,8 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests;
@@ -229,8 +230,24 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ResponseWithSetCookieNotCacheable);
     }
 
-    [Fact]
-    public void IsResponseCacheable_VaryHeaderByStar_NotAllowed()
+    public static TheoryData<StringValues> VaryHeaderWithStarData
+    {
+        get
+        {
+            return new TheoryData<StringValues>
+            {
+                "*",
+                new StringValues(["*", "Accept-Encoding"]),
+                "*, Accept-Encoding",
+                "Accept-Encoding, *",
+                "gzip, *, br"
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(VaryHeaderWithStarData))]
+    public void IsResponseCacheable_VaryHeaderByStar_NotAllowed(StringValues vary)
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -238,12 +255,27 @@ public class ResponseCachingPolicyProviderTests
         {
             Public = true
         }.ToString();
-        context.HttpContext.Response.Headers.Vary = "*";
+        context.HttpContext.Response.Headers.Vary = vary;
 
         Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
         TestUtils.AssertLoggedMessages(
             sink.Writes,
             LoggedMessage.ResponseWithVaryStarNotCacheable);
+    }
+
+    [Fact]
+    public void IsResponseCacheable_ValidVaryHeaderWithoutAsterisk_Allowed()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(sink);
+        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
+        {
+            Public = true
+        }.ToString();
+        context.HttpContext.Response.Headers.Vary = "Accept-Encoding, User-Agent";
+
+        Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
+        Assert.Empty(sink.Writes);
     }
 
     [Fact]

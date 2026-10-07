@@ -52,8 +52,20 @@ parameters:
   type: string
   default: https://helix.dot.net/
 
-# Helix API access token forwarded to the tool via the HELIX_ACCESSTOKEN environment variable.
+# Helix API access token forwarded via HELIX_ACCESSTOKEN. Not forwarded when
+# useEntraAuthentication is true.
 - name: helixAccessToken
+  type: string
+  default: ''
+
+# Use a refreshable Entra credential instead of a PAT or anonymous access.
+- name: useEntraAuthentication
+  type: boolean
+  default: false
+
+# Azure service connection ID authorized for Helix. Required when
+# useEntraAuthentication is true.
+- name: azureSubscription
   type: string
   default: ''
 
@@ -61,6 +73,12 @@ parameters:
 - name: pollingIntervalSeconds
   type: number
   default: 30
+
+# Maximum number of work items whose results may be downloaded, parsed, and
+# uploaded concurrently.
+- name: testResultUploadParallelism
+  type: number
+  default: 48
 
 # When 'true' (the default), Helix work items that exit 0 but have failed AzDO test results
 # are treated as failed: they count toward the monitor's exit code and are resubmitted by a
@@ -83,6 +101,15 @@ parameters:
 - name: useFullyQualifiedTestName
   type: boolean
   default: false
+
+# Controls per-test output attachments. Defaults to Failed.
+- name: testResultAttachmentMode
+  type: string
+  default: Failed
+  values:
+  - Failed
+  - All
+  - None
 
 # Advanced: optional pipeline artifact (produced earlier in this run) that contains the tool
 # nupkg. When set, the artifact is downloaded and the tool is installed from the nupkg into
@@ -125,6 +152,26 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 1
+
+  - ${{ if and(eq(parameters.useEntraAuthentication, true), eq(parameters.azureSubscription, '')) }}:
+    - pwsh: throw "azureSubscription must be set when useEntraAuthentication is true."
+      displayName: Validate Helix Entra authentication
+
+  - ${{ if eq(parameters.useEntraAuthentication, true) }}:
+    - task: AzureCLI@2
+      displayName: Initialize Helix Entra authentication
+      inputs:
+        azureSubscription: ${{ parameters.azureSubscription }}
+        addSpnToEnvironment: true
+        scriptType: pscore
+        scriptLocation: inlineScript
+        inlineScript: |
+          if ([string]::IsNullOrWhiteSpace($env:servicePrincipalId) -or [string]::IsNullOrWhiteSpace($env:tenantId)) {
+            throw "The Helix Azure service connection did not provide a service principal or tenant ID."
+          }
+
+          Write-Host "##vso[task.setvariable variable=HelixEntraClientId]$env:servicePrincipalId"
+          Write-Host "##vso[task.setvariable variable=HelixEntraTenantId]$env:tenantId"
 
   - ${{ if ne(parameters.toolNupkgArtifactName, '') }}:
     - task: DownloadPipelineArtifact@2
@@ -199,6 +246,7 @@ jobs:
 
       toolArgs=(
         --helix-base-uri              '${{ parameters.helixBaseUri }}'
+        --use-entra-authentication    '${{ parameters.useEntraAuthentication }}'
         --polling-interval-seconds    '${{ parameters.pollingIntervalSeconds }}'
         --fail-on-failed-tests        '${{ parameters.failWorkItemsWithFailedTests }}'
         --allow-no-helix-jobs         '${{ parameters.allowNoHelixJobs }}'
@@ -206,10 +254,13 @@ jobs:
         --max-wait-minutes            "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
         --stage-name                  '$(System.StageName)'
         --stage-attempt               '$(System.StageAttempt)'
+        --job-attempt                 '$(System.JobAttempt)'
+        --test-result-upload-parallelism '${{ parameters.testResultUploadParallelism }}'
       )
 
       organization='${{ parameters.organization }}'
       repository='${{ parameters.repository }}'
+      testResultAttachmentMode='${{ parameters.testResultAttachmentMode }}'
 
       # Fall back to Azure DevOps-provided environment variables when the caller did not
       # supply organization / repository explicitly. BUILD_REPOSITORY_NAME is typically
@@ -232,6 +283,9 @@ jobs:
 
       if [ -n "$organization" ]; then toolArgs+=( --organization "$organization" ); fi
       if [ -n "$repository" ];   then toolArgs+=( --repository   "$repository" );   fi
+      if [ -n "$testResultAttachmentMode" ]; then
+        toolArgs+=( --test-result-attachment-mode "$testResultAttachmentMode" )
+      fi
 
       # Build.Reason and Build.SourceBranch are required to derive the Helix source filter
       # the same way the Helix SDK submitter does (PR -> 'pr', internal -> 'official',
@@ -254,4 +308,9 @@ jobs:
     displayName: Monitor Helix Jobs
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      HELIX_ACCESSTOKEN: ${{ parameters.helixAccessToken }}
+      ${{ if eq(parameters.useEntraAuthentication, false) }}:
+        HELIX_ACCESSTOKEN: ${{ parameters.helixAccessToken }}
+      ${{ if eq(parameters.useEntraAuthentication, true) }}:
+        AZURESUBSCRIPTION_CLIENT_ID: $(HelixEntraClientId)
+        AZURESUBSCRIPTION_TENANT_ID: $(HelixEntraTenantId)
+        AZURESUBSCRIPTION_SERVICE_CONNECTION_ID: ${{ parameters.azureSubscription }}

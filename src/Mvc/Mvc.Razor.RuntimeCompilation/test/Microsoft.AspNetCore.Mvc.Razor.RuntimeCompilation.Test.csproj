@@ -6,14 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-    <Reference Include="Microsoft.AspNetCore.Razor" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
-    <ProjectReference Include="..\..\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.RazorPages\src\Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
   </ItemGroup>
 
 </Project>

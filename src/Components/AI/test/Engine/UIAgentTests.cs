@@ -39,7 +39,8 @@ public class UIAgentTests
         var rich = Assert.IsType<RichContentBlock>(
             Assert.Single(blocks.Where(b => b.Role == ChatRole.Assistant)));
         Assert.Equal("Hello world!", rich.RawText);
-        Assert.Equal(["Hello world!"], rich.Paragraphs);
+        var paragraph = Assert.IsType<ParagraphNode>(Assert.Single(rich.Content));
+        Assert.Equal("Hello world!", Assert.IsType<TextNode>(Assert.Single(paragraph.Children)).Text);
     }
 
     [Fact]

@@ -140,6 +140,7 @@ public class PackageLayoutTests
         using var package = PackageArchive.Open(WebAssemblyPackageId);
 
         Assert.True(package.HasEntry("staticwebassets/_framework/blazor.webassembly.js"));
+        Assert.True(package.HasEntry("staticwebassets/_framework/blazor.webassembly.js.map"));
 
         using var manifest = package.ReadPackageAssetsManifest();
         var js = GetAsset(manifest, "_framework/blazor.webassembly.js");
@@ -147,12 +148,14 @@ public class PackageLayoutTests
     }
 
     [ConditionalFact]
-    public void AssetsInternalPackage_ShipsBlazorScriptsAsFrameworkAssets()
+    public void AssetsInternalPackage_ShipsBlazorScriptsAndSourceMaps()
     {
         using var package = PackageArchive.Open(AssetsInternalPackageId);
 
         Assert.True(package.HasEntry("staticwebassets/_framework/blazor.web.js"));
         Assert.True(package.HasEntry("staticwebassets/_framework/blazor.server.js"));
+        Assert.True(package.HasEntry("staticwebassets/_framework/blazor.web.js.map"));
+        Assert.True(package.HasEntry("staticwebassets/_framework/blazor.server.js.map"));
 
         using var manifest = package.ReadPackageAssetsManifest();
         Assert.Equal("Framework", GetAsset(manifest, "_framework/blazor.web.js").GetProperty("SourceType").GetString());

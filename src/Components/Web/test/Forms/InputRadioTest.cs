@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -73,6 +74,24 @@ public class InputRadioTest
         Assert.All(inputRadioComponents, inputRadio => Assert.NotNull(inputRadio.Element));
     }
 
+    [Fact]
+    public async Task ValidationErrorUsesDisplayAttributeOnModel()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<TestEnum, TestInputRadioGroup>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.TestEnum,
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.TestEnum);
+        var inputRadioGroup = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputRadioGroup.SetCurrentValueAsStringAsync("invalidValue");
+
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Contains("The Radio choice field is not valid.", validationMessages);
+    }
+
     private static RenderFragment RadioButtonsWithoutGroup(string name) => (builder) =>
     {
         foreach (var selectedValue in (TestEnum[])Enum.GetValues(typeof(TestEnum)))
@@ -125,7 +144,16 @@ public class InputRadioTest
 
     private class TestModel
     {
+        [Display(Name = "Radio choice")]
         public TestEnum TestEnum { get; set; }
+    }
+
+    private class TestInputRadioGroup : InputRadioGroup<TestEnum>
+    {
+        public async Task SetCurrentValueAsStringAsync(string value)
+        {
+            await InvokeAsync(() => { base.CurrentValueAsString = value; });
+        }
     }
 
     private class TestInputRadio : InputRadio<TestEnum>

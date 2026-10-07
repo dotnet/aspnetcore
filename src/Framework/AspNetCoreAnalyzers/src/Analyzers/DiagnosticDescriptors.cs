@@ -223,7 +223,7 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true);
 
     internal static readonly DiagnosticDescriptor DoNotUseLocalFunctionsInMarkup = CreateDiagnosticDescriptor(
-        "ASP0039",
+        "ASP0040",
         CreateLocalizableResourceString(nameof(Resources.Analyzer_DoNotUseLocalFunctionsInMarkup_Title)),
         CreateLocalizableResourceString(nameof(Resources.Analyzer_DoNotUseLocalFunctionsInMarkup_Message)),
         Usage,

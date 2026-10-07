@@ -95,7 +95,7 @@
         !$(IsTestProject) AND
         '$(IsMicrobenchmarksProject)' != 'true' ">true</IsImplementationProject>
 
-    <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
+    <!-- This determines whether a project belongs in the generated reference inventories. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND
         ( '$(IsImplementationProject)' == 'true' OR '$(IsSpecificationTestProject)' == 'true' ) ">true</IsProjectReferenceProvider>
 
@@ -131,6 +131,9 @@
       '$(Language)' == 'C#' AND
       '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
     <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
+    <!-- Keep assembly identities compatible with the bootstrap SDK's ASP.NET Core 11 reference packs.
+         Remove this pin once those references are replaced with matching ASP.NET Core 12 assemblies. -->
+    <AssemblyVersion Condition=" '$(PinAspNetCoreAssemblyVersionToPreviousMajor)' != 'false' ">11.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -170,6 +173,14 @@
       !$(RuntimeIdentifier.StartsWith('browser-'))">
     <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
+
+  <!-- Make build properties available to test processes via runtimeconfig.json,
+       so that subprocess dotnet invocations can forward them and avoid recompiling
+       framework projects with different properties. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <RuntimeHostConfigurationOption Include="DotNetBuildUseMonoRuntime" Value="$(DotNetBuildUseMonoRuntime)" Condition="'$(DotNetBuildUseMonoRuntime)' != ''" />
+    <RuntimeHostConfigurationOption Include="ContinuousIntegrationBuild" Value="$(ContinuousIntegrationBuild)" Condition="'$(ContinuousIntegrationBuild)' != ''" />
+  </ItemGroup>
 
   <!-- Properties for Package Validation -->
   <PropertyGroup Condition="'$(ExcludeFromSourceOnlyBuild)' != 'true'">

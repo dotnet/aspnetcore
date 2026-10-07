@@ -11,7 +11,6 @@
     <IncludeSymbols>false</IncludeSymbols>
     <ContentTargetFolders>content</ContentTargetFolders>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoSemVer20>true</NoSemVer20>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
@@ -28,12 +27,12 @@
       $(DefaultNetCoreTargetFramework), add previous SiteExtension packages to the list below. Remove
       entries when packages aren't needed in the bundle anymore.
       -->
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" PrivateAssets="All" />
     <!--
       Bundle the just-built LB.csproj package content into this one the easy way. See
       UpdateLatestPackageReferences for the hard way.
@@ -41,11 +40,11 @@
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64"
         Condition=" '$(IsShipping)' == 'false' AND '$(DotNetBuild)' != 'true'"
         PrivateAssets="All"
-        Version="$(PackageVersion)" />
+        VersionOverride="$(PackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86"
         Condition=" '$(IsShipping)' == 'false' AND '$(DotNetBuild)' != 'true'"
         PrivateAssets="All"
-        Version="$(PackageVersion)" />
+        VersionOverride="$(PackageVersion)" />
 
     <_SiteExtensionsReference Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64.$(PackageVersion).nupkg"
         Name="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64"
@@ -83,7 +82,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Web.Xdt.Extensions"
+    <ProjectReference Include="$(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -105,10 +104,10 @@
     <ItemGroup Condition="'$(DotNetBuild)' != 'true'">
       <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64"
           PrivateAssets="All"
-          Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
+          VersionOverride="%(_ResolvedPackageVersionInfo.PackageVersion)" />
       <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86"
           PrivateAssets="All"
-          Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
+          VersionOverride="%(_ResolvedPackageVersionInfo.PackageVersion)" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(DotNetBuild)' == 'true'">
@@ -120,6 +119,14 @@
   </Target>
 
   <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
+    <ResolvePackageDependencies
+        ProjectPath="$(MSBuildProjectFullPath)"
+        ProjectAssetsFile="$(ProjectAssetsFile)"
+        ProjectLanguage="$(Language)"
+        TargetFramework="$(TargetFramework)">
+      <Output TaskParameter="PackageDefinitions" ItemName="_RestoredPackageDefinition" />
+    </ResolvePackageDependencies>
+
     <Unzip
         SourceFiles="@(_SiteExtensionsReference)"
         DestinationFolder="$(SiteExtensionsReferenceLayoutDir)%(Name)"
@@ -129,12 +136,16 @@
     <Error Condition="!Exists('$(MicrosoftWebXdtExtensionsPath)')" Text="Microsoft.Web.Xdt.Extensions.dll should be available for SiteExtensions .nupkg, but isn't." />
 
     <ItemGroup>
+      <_ContentPackageDefinition Include="@(_RestoredPackageDefinition->'%(Name)')" />
+      <_IndirectPackageDefinition Include="@(_ContentPackageDefinition)" Exclude="@(PackageReference)" />
+      <_ContentPackageDefinition Remove="@(_IndirectPackageDefinition)" />
+
       <!--
         The x64 & x86 SiteExtension packages have identical deps.json files. We include only the x64 files to
         avoid build warnings.
       -->
       <ContentFilesToPack
-          Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*"
+          Include="%(_ContentPackageDefinition.ResolvedPath)\content\**\*.*"
           Exclude="$(NugetPackageRoot)\Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.x86\**\Microsoft.AspNetCore.AzureAppServices.HostingStartup.deps.json" />
 
       <ContentFilesToPack

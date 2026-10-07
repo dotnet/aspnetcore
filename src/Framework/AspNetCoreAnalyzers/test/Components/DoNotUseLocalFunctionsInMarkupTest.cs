@@ -35,7 +35,7 @@ public class TestComponent : ComponentBase
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
         var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
-        Assert.Equal("ASP0039", analyzerDiagnostic.Id);
+        Assert.Equal("ASP0040", analyzerDiagnostic.Id);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
         Assert.StartsWith("Local function 'LocalFunction' accesses RenderTreeBuilder from parent scope", analyzerDiagnostic.GetMessage(CultureInfo.InvariantCulture));
     }

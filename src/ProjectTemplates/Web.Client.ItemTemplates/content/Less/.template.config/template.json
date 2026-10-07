@@ -6,8 +6,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "LESS is a language that compiles into CSS",
   "groupIdentity": "Microsoft.DotNet.Web.ClientItems.Less",
-  "precedence": "11000",
-  "identity": "Microsoft.DotNet.Web.ClientItems.Less.11.0",
+  "precedence": "12000",
+  "identity": "Microsoft.DotNet.Web.ClientItems.Less.12.0",
   "shortName": "less",
   "sourceName": "styleSheet1",
   "tags": {

@@ -1,7 +1,9 @@
 parameters:
-  sourceIndexUploadPackageVersion: 2.0.0-20260521.2
-  sourceIndexProcessBinlogPackageVersion: 1.0.1-20260521.2
+  runAsPublic: false
+  sourceIndexUploadPackageVersion: '2.0.0-20260521.2'
+  sourceIndexComplogPackageVersion: '*'
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+  sourceIndexPublicPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
   binlogPath: artifacts/log/Debug/Build.binlog
 
 steps:
@@ -14,14 +16,17 @@ steps:
     workingDirectory: $(Agent.TempDirectory)
 
 - script: |
-    $(Agent.TempDirectory)/dotnet/dotnet tool install BinLogToSln --version ${{parameters.sourceIndexProcessBinlogPackageVersion}} --source ${{parameters.sourceIndexPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
-    $(Agent.TempDirectory)/dotnet/dotnet tool install UploadIndexStage1 --version ${{parameters.sourceIndexUploadPackageVersion}} --source ${{parameters.sourceIndexPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
-  displayName: "Source Index: Download netsourceindex Tools"
+    $(Agent.TempDirectory)/dotnet/dotnet tool install complog --version "${{parameters.sourceIndexComplogPackageVersion}}" --source ${{parameters.sourceIndexPublicPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
+    $(Agent.TempDirectory)/dotnet/dotnet tool install UploadIndexStage1 --version "${{parameters.sourceIndexUploadPackageVersion}}" --source ${{parameters.sourceIndexPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
+  displayName: "Source Index: Download Tools"
   # Set working directory to temp directory so 'dotnet' doesn't try to use global.json and use the repo's sdk.
   workingDirectory: $(Agent.TempDirectory)
 
-- script: $(Agent.TempDirectory)/.source-index/tools/BinLogToSln -i ${{parameters.BinlogPath}} -r $(System.DefaultWorkingDirectory) -n $(Build.Repository.Name) -o .source-index/stage1output
-  displayName: "Source Index: Process Binlog into indexable sln"
+- script: |
+    mkdir ".source-index/stage1output"
+    git rev-parse HEAD > .source-index/stage1output/hash
+    $(Agent.TempDirectory)/.source-index/tools/complog create ${{parameters.BinlogPath}} -o .source-index/stage1output/build.complog
+  displayName: "Source Index: Process Binlog into Complog"
 
 - ${{ if and(ne(parameters.runAsPublic, 'true'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - task: AzureCLI@2
