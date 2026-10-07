@@ -23,6 +23,11 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             args: ["-int", interactivityOption, "-au", authOption],
             getTargetProject: GetTargetProject);
 
+        var routesPath = Path.Combine(project.TemplateOutputDir, "Components", "Routes.razor");
+        var routes = await File.ReadAllTextAsync(routesPath);
+        Assert.Contains("DefaultLayout=\"typeof(MainLayout)\"", routes);
+        Assert.DoesNotContain("DefaultLayout=\"typeof(Layout.MainLayout)\"", routes);
+
         // There won't be a counter page when the 'None' interactivity option is used
         var pagesToExclude = interactivityOption is "None"
             ? BlazorTemplatePages.Counter
