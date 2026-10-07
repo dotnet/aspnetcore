@@ -43,6 +43,24 @@ public class MvcTemplateTest : LoggedTest
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
+    [Fact]
+    public async Task MvcTemplate_NameWithSpaces_ReferencesScopedCssBundle()
+    {
+        var project = await ProjectFactory.CreateProject(Output);
+
+        await project.RunDotNetNewAsync("mvc", args: new[] { "--name \"My Web App\"" });
+
+        var layoutContents = project.ReadFile("Views/Shared/_Layout.cshtml");
+        Assert.Contains("href=\"~/My_Web_App.styles.css\"", layoutContents);
+        Assert.DoesNotContain("href=\"~/Company.WebApplication1.styles.css\"", layoutContents);
+
+        await project.RunDotNetBuildAsync();
+
+        project.AssertFileExists(
+            Path.Combine("obj", "Debug", project.TargetFramework, "scopedcss", "bundle", "My_Web_App.bundle.scp.css"),
+            shouldExist: true);
+    }
+
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_NoAuthNoHttpsCSharp() => await MvcTemplateCore(languageOverride: null, new[] { ArgConstants.NoHttps });

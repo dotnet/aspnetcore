@@ -317,17 +317,18 @@
       },
       "replaces": "44300"
     },
-    "StyleBundleName":{
+    "StyleBundleName": {
       "type": "generated",
       "generator": "regex",
       "replaces": "StyleBundleName",
       "parameters": {
-      "source": "name",
-      "steps": [
-        {
-          "regex": " ",
-          "replacement": "_"
-        }]
+        "source": "name",
+        "steps": [
+          {
+            "regex": " ",
+            "replacement": "_"
+          }
+        ]
       }
     },
     "OrganizationalAuth": {

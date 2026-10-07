@@ -34,6 +34,24 @@ public class RazorPagesTemplateTest : LoggedTest
         }
     }
 
+    [Fact]
+    public async Task RazorPagesTemplate_NameWithSpaces_ReferencesScopedCssBundle()
+    {
+        var project = await ProjectFactory.CreateProject(Output);
+
+        await project.RunDotNetNewAsync("razor", args: new[] { "--name \"My Web App\"" });
+
+        var layoutContents = ReadFile(project.TemplateOutputDir, "Pages/Shared/_Layout.cshtml");
+        Assert.Contains("href=\"~/My_Web_App.styles.css\"", layoutContents);
+        Assert.DoesNotContain("href=\"~/Company.WebApplication1.styles.css\"", layoutContents);
+
+        await project.RunDotNetBuildAsync();
+
+        project.AssertFileExists(
+            Path.Combine("obj", "Debug", project.TargetFramework, "scopedcss", "bundle", "My_Web_App.bundle.scp.css"),
+            shouldExist: true);
+    }
+
     [ConditionalTheory]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData(true, false)]
