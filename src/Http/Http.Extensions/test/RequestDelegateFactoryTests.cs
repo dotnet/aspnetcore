@@ -2056,8 +2056,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.", nse.Message);
     }
 
-    [Fact]
-    public async Task RequestDelegatePopulatesNullableIFormFileParameterAsNullWhenRequestHasNoBody()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestDelegatePopulatesNullableIFormFileParameterAsNullWhenRequestHasNoBody(bool throwOnBadRequest)
     {
         IFormFile? fileArgument = null;
         var invoked = false;
@@ -2071,7 +2073,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
 
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new RequestDelegateFactoryOptions { ThrowOnBadRequest = throwOnBadRequest });
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
@@ -2081,8 +2083,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(200, httpContext.Response.StatusCode);
     }
 
-    [Fact]
-    public async Task RequestDelegateSets400ResponseForRequiredIFormFileWhenRequestHasNoBody()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestDelegateSets400ResponseForRequiredIFormFileWhenRequestHasNoBody(bool throwOnBadRequest)
     {
         var invoked = false;
 
@@ -2094,13 +2098,22 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
 
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new RequestDelegateFactoryOptions { ThrowOnBadRequest = throwOnBadRequest });
         var requestDelegate = factoryResult.RequestDelegate;
 
-        await requestDelegate(httpContext);
+        if (throwOnBadRequest)
+        {
+            var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+            Assert.Equal(400, exception.StatusCode);
+            Assert.Contains("Unexpected request without body", exception.Message);
+        }
+        else
+        {
+            await requestDelegate(httpContext);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+        }
 
         Assert.False(invoked);
-        Assert.Equal(400, httpContext.Response.StatusCode);
     }
 
     [Fact]

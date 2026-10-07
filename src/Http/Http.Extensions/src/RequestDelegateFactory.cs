@@ -2141,6 +2141,7 @@ public static partial class RequestDelegateFactory
         ParameterInfo parameter,
         RequestDelegateFactoryContext factoryContext)
     {
+        UpdateFormAllowEmptyRequestBody(parameter, factoryContext);
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.FormCollectionParameter);
         factoryContext.ReadForm = true;
@@ -2159,6 +2160,7 @@ public static partial class RequestDelegateFactory
     {
         var valueExpression = GetValueFromProperty(FormExpr, FormIndexerProperty, key, GetExpressionType(parameter.ParameterType));
 
+        UpdateFormAllowEmptyRequestBody(parameter, factoryContext);
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(key, RequestDelegateFactoryConstants.FormAttribute);
         factoryContext.ReadForm = true;
@@ -2195,6 +2197,7 @@ public static partial class RequestDelegateFactory
         RequestDelegateFactoryContext factoryContext,
         bool setExpressions = false)
     {
+        UpdateFormAllowEmptyRequestBody(parameter, factoryContext);
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.TryAdd(key, RequestDelegateFactoryConstants.FormBindingAttribute);
         factoryContext.ReadForm = true;
