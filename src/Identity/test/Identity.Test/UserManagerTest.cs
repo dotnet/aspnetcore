@@ -1377,6 +1377,60 @@ public class UserManagerTest
         IdentityResultAssert.IsSuccess(await manager.ResetAccessFailedCountAsync(user));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AccessFailedAsync_LargeDefaultLockoutTimeSpan_ClampsToMaxValueWithoutOverflow(bool isMax)
+    {
+        var user = new PocoUser() { UserName = Guid.NewGuid().ToString() };
+        DateTimeOffset? capturedLockoutEnd = null;
+        var store = new Mock<IUserLockoutStore<PocoUser>>();
+        store.Setup(x => x.IncrementAccessFailedCountAsync(user, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+        store.Setup(x => x.SetLockoutEndDateAsync(user, It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
+            .Callback<PocoUser, DateTimeOffset?, CancellationToken>((_, end, _) => capturedLockoutEnd = end)
+            .Returns(Task.CompletedTask);
+        store.Setup(x => x.ResetAccessFailedCountAsync(user, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        store.Setup(x => x.UpdateAsync(user, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var manager = MockHelpers.TestUserManager(store.Object);
+        manager.Options.Lockout.MaxFailedAccessAttempts = 5;
+        manager.Options.Lockout.DefaultLockoutTimeSpan = isMax ? TimeSpan.MaxValue : TimeSpan.FromDays(5_000_000);
+
+        var result = await manager.AccessFailedAsync(user);
+
+        IdentityResultAssert.IsSuccess(result);
+        Assert.Equal(DateTimeOffset.MaxValue, capturedLockoutEnd);
+    }
+
+    [Fact]
+    public async Task AccessFailedAsync_LargeNegativeDefaultLockoutTimeSpan_ClampsToMinValueWithoutOverflow()
+    {
+        var user = new PocoUser() { UserName = Guid.NewGuid().ToString() };
+        DateTimeOffset? capturedLockoutEnd = null;
+        var store = new Mock<IUserLockoutStore<PocoUser>>();
+        store.Setup(x => x.IncrementAccessFailedCountAsync(user, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+        store.Setup(x => x.SetLockoutEndDateAsync(user, It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
+            .Callback<PocoUser, DateTimeOffset?, CancellationToken>((_, end, _) => capturedLockoutEnd = end)
+            .Returns(Task.CompletedTask);
+        store.Setup(x => x.ResetAccessFailedCountAsync(user, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        store.Setup(x => x.UpdateAsync(user, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var manager = MockHelpers.TestUserManager(store.Object);
+        manager.Options.Lockout.MaxFailedAccessAttempts = 5;
+        manager.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.MinValue;
+
+        var result = await manager.AccessFailedAsync(user);
+
+        IdentityResultAssert.IsSuccess(result);
+        Assert.Equal(DateTimeOffset.MinValue, capturedLockoutEnd);
+    }
+
     [Fact]
     public async Task ManagerPublicNullChecks()
     {

@@ -1193,6 +1193,29 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
     /// Test.
     /// </summary>
     /// <returns>Task</returns>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AccessFailed_LargeDefaultLockoutTimeSpan_ClampsToMaxValueWithoutOverflow(bool isMax)
+    {
+        var mgr = CreateManager();
+        mgr.Options.Lockout.DefaultLockoutTimeSpan = isMax ? TimeSpan.MaxValue : TimeSpan.FromDays(5_000_000);
+        mgr.Options.Lockout.MaxFailedAccessAttempts = 1;
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
+        Assert.True(await mgr.GetLockoutEnabledAsync(user));
+        Assert.False(await mgr.IsLockedOutAsync(user));
+
+        IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
+        Assert.True(await mgr.IsLockedOutAsync(user));
+        Assert.Equal(DateTimeOffset.MaxValue, await mgr.GetLockoutEndDateAsync(user));
+        Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
     [Fact]
     public async Task ResetAccessCountPreventsLockout()
     {
