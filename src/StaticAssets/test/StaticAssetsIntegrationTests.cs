@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO.Compression;
 using System.Net;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.StaticAssets.Tests;
@@ -1404,4 +1406,439 @@ public class StaticAssetsIntegrationTests
 
         Assert.Equal(parsed, truncated);
     }
+
+    // Regression coverage for https://github.com/dotnet/aspnetcore/issues/69643: a route that is still in the
+    // manifest but whose file can't be opened must fail with a 404 that caches don't store, not an empty 200.
+    // Each theory runs with the development runtime handler (true) and without it, like a published app (false).
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MissingMappedAsset_Returns404WithNoStore(bool reloadStaticAssetsAtRuntime)
+    {
+        var appName = $"{nameof(MissingMappedAsset_Returns404WithNoStore)}_{reloadStaticAssetsAtRuntime}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+
+        var logs = new RecordingLoggerProvider();
+        await using var app = await StartMissingAssetTestAppAsync(appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime, logs);
+        using var client = app.GetTestClient();
+
+        // The manifest still maps the route, but the file behind it is gone.
+        File.Delete(Path.Combine(webRoot, "sample.txt"));
+
+        using var response = await client.GetAsync("/sample.txt");
+
+        await AssertMissingAssetResponseAsync(response);
+        Assert.Contains(logs.Writes, write =>
+            write.EventId.Id == 18 &&
+            write.EventId.Name == "MappedAssetFileNotFound" &&
+            write.Level == LogLevel.Warning &&
+            write.Exception is FileNotFoundException);
+        Assert.DoesNotContain(logs.Writes, write => write.EventId.Name == "StaticWebAssetsNotEnabled");
+
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MissingBuildAsset_InProduction_LogsStaticWebAssetsNotEnabled(bool reloadStaticAssetsAtRuntime)
+    {
+        var appName = $"{nameof(MissingBuildAsset_InProduction_LogsStaticWebAssetsNotEnabled)}_{reloadStaticAssetsAtRuntime}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+
+        var logs = new RecordingLoggerProvider();
+        await using var app = await StartMissingAssetTestAppAsync(
+            appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime, logs, environmentName: "Production");
+        using var client = app.GetTestClient();
+
+        Assert.Equal("Production", app.Environment.EnvironmentName);
+        Assert.IsType<PhysicalFileProvider>(app.Environment.WebRootFileProvider);
+        Assert.Contains(app.Services.GetRequiredService<EndpointDataSource>().Endpoints,
+            endpoint => endpoint.Metadata.GetMetadata<BuildAssetMetadata>() is not null);
+
+        File.Delete(Path.Combine(webRoot, "sample.txt"));
+
+        using var response = await client.GetAsync("/sample.txt");
+
+        await AssertMissingAssetResponseAsync(response);
+        Assert.Contains(logs.Writes, write =>
+            write.EventId.Id == 17 &&
+            write.EventId.Name == "StaticWebAssetsNotEnabled" &&
+            write.Level == LogLevel.Warning);
+        Assert.Contains(logs.Writes, write =>
+            write.EventId.Id == 18 &&
+            write.EventId.Name == "MappedAssetFileNotFound" &&
+            write.Level == LogLevel.Warning &&
+            write.Exception is FileNotFoundException);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MappedAssetDeletedAfterBeingServed_Returns404WithNoStore(bool reloadStaticAssetsAtRuntime)
+    {
+        var appName = $"{nameof(MappedAssetDeletedAfterBeingServed_Returns404WithNoStore)}_{reloadStaticAssetsAtRuntime}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+
+        await using var app = await StartMissingAssetTestAppAsync(appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime);
+        using var client = app.GetTestClient();
+
+        // Serve the asset once, so the failure comes from sending a file that was already resolved.
+        using var served = await client.GetAsync("/sample.txt");
+        Assert.Equal(HttpStatusCode.OK, served.StatusCode);
+
+        File.Delete(Path.Combine(webRoot, "sample.txt"));
+
+        using var response = await client.GetAsync("/sample.txt");
+
+        await AssertMissingAssetResponseAsync(response);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MissingCompressedMappedAsset_Returns404WithNoStore(bool reloadStaticAssetsAtRuntime)
+    {
+        var appName = $"{nameof(MissingCompressedMappedAsset_Returns404WithNoStore)}_{reloadStaticAssetsAtRuntime}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", true),
+            ]);
+
+        await using var app = await StartMissingAssetTestAppAsync(appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime);
+        using var client = app.GetTestClient();
+
+        // Remove both representations, like renaming the .wasm and .wasm.gz files in the issue's repro.
+        File.Delete(Path.Combine(webRoot, "sample.txt"));
+        File.Delete(Path.Combine(webRoot, "sample.txt.gz"));
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+
+        using var response = await client.SendAsync(request);
+
+        await AssertMissingAssetResponseAsync(response);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MissingMappedAsset_RangeRequest_Returns404WithNoStore(bool reloadStaticAssetsAtRuntime)
+    {
+        var appName = $"{nameof(MissingMappedAsset_RangeRequest_Returns404WithNoStore)}_{reloadStaticAssetsAtRuntime}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+
+        await using var app = await StartMissingAssetTestAppAsync(appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime);
+        using var client = app.GetTestClient();
+
+        File.Delete(Path.Combine(webRoot, "sample.txt"));
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        request.Headers.Range = new RangeHeaderValue(0, 4);
+
+        using var response = await client.SendAsync(request);
+
+        await AssertMissingAssetResponseAsync(response);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MissingMappedAsset_IsServedAgainAfterTheFileIsRestored(bool reloadStaticAssetsAtRuntime)
+    {
+        var appName = $"{nameof(MissingMappedAsset_IsServedAgainAfterTheFileIsRestored)}_{reloadStaticAssetsAtRuntime}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+
+        await using var app = await StartMissingAssetTestAppAsync(appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime);
+        using var client = app.GetTestClient();
+
+        // Rename the file away and back, like the repro in the issue.
+        var filePath = Path.Combine(webRoot, "sample.txt");
+        var renamedPath = filePath + ".renamed";
+        File.Move(filePath, renamedPath);
+
+        using var missing = await client.GetAsync("/sample.txt");
+        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+
+        File.Move(renamedPath, filePath);
+
+        using var response = await client.GetAsync("/sample.txt");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal($"\"{GetEtag("Hello, World!")}\"", response.Headers.ETag.Tag);
+        Assert.Equal("Hello, World!", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task MappedAssetThatFailsAfterTheResponseStarted_IsNotRewritten()
+    {
+        await using var app = await CreateAppAsync(new FailAfterFirstReadFileProvider("sample.txt", "Hello, World!"));
+        using var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("http://localhost/sample.txt", HttpCompletionOption.ResponseHeadersRead);
+
+        // The status line was already sent, so the response can't be turned into a 404.
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        // The body is cut short instead, the same as before this change.
+        await Assert.ThrowsAnyAsync<Exception>(() => response.Content.ReadAsByteArrayAsync());
+    }
+
+    private static async Task<WebApplication> StartMissingAssetTestAppAsync(
+        string appName,
+        string contentRoot,
+        string webRoot,
+        bool reloadStaticAssetsAtRuntime,
+        RecordingLoggerProvider loggerProvider = null,
+        string environmentName = "Development")
+    {
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = environmentName,
+            WebRootPath = webRoot
+        });
+
+        // true: the development runtime handler wraps the endpoints (the default when an app runs from its build output).
+        // false: the endpoints serve the manifest as-is, the way a published app does.
+        builder.WebHost.UseSetting(
+            StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey,
+            reloadStaticAssetsAtRuntime ? "true" : "false");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+
+        if (loggerProvider is not null)
+        {
+            builder.Logging.AddProvider(loggerProvider);
+        }
+
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        try
+        {
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapStaticAssets();
+            });
+
+            await app.StartAsync();
+
+            return app;
+        }
+        catch
+        {
+            await app.DisposeAsync();
+            throw;
+        }
+    }
+
+    private static async Task AssertMissingAssetResponseAsync(HttpResponseMessage response)
+    {
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        // A 404 can still be stored and reused by caches, so the response must tell them not to store it.
+        Assert.NotNull(response.Headers.CacheControl);
+        Assert.True(response.Headers.CacheControl.NoStore);
+
+        // Nothing that describes the successful asset may leak into the error response.
+        Assert.Null(response.Headers.ETag);
+        Assert.Empty(response.Headers.AcceptRanges);
+        Assert.Empty(response.Headers.Vary);
+        Assert.Null(response.Content.Headers.LastModified);
+        Assert.Null(response.Content.Headers.ContentType);
+        Assert.Null(response.Content.Headers.ContentRange);
+        Assert.Empty(response.Content.Headers.ContentEncoding);
+
+        Assert.Empty(await response.Content.ReadAsByteArrayAsync());
+    }
+
+    // Same setup as CreateClient(), but with a caller-supplied file provider and explicit application ownership.
+    private static async Task<WebApplication> CreateAppAsync(IFileProvider fileProvider)
+    {
+        var manifest = new StaticAssetsManifest()
+        {
+            Version = 1
+        };
+        manifest.Endpoints.Add(new StaticAssetDescriptor
+        {
+            Route = "sample.txt",
+            AssetPath = "sample.txt",
+            Selectors = [],
+            Properties = [],
+            ResponseHeaders = [
+                new("Accept-Ranges", "bytes"),
+                new("Content-Length", "Hello, World!".Length.ToString(CultureInfo.InvariantCulture)),
+                new("Content-Type", GetContentType("sample.txt")),
+                new("ETag", $"\"{GetEtag("Hello, World!")}\""),
+                new("Last-Modified", new DateTimeOffset(2023, 03, 03, 0, 0, 0, TimeSpan.Zero).ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture))
+            ]
+        });
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = "InMemoryWithFileProvider",
+            ContentRootPath = AppContext.BaseDirectory,
+            EnvironmentName = "Development",
+            WebRootPath = AppContext.BaseDirectory
+        });
+        builder.Environment.WebRootFileProvider = fileProvider;
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        try
+        {
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapStaticAssets(manifest);
+            });
+
+            await app.StartAsync();
+
+            return app;
+        }
+        catch
+        {
+            await app.DisposeAsync();
+            throw;
+        }
+    }
+
+    private sealed class MissingAssetTestFiles(string appName, string contentRoot) : IDisposable
+    {
+        public void Dispose()
+        {
+            try
+            {
+                File.Delete(Path.Combine(AppContext.BaseDirectory, $"{appName}.staticwebassets.endpoints.json"));
+            }
+            finally
+            {
+                if (Directory.Exists(contentRoot))
+                {
+                    Directory.Delete(contentRoot, recursive: true);
+                }
+            }
+        }
+    }
+
+    // Serves a file that disappears while it's being copied to the response body.
+    private sealed class FailAfterFirstReadFileProvider(string path, string content) : IFileProvider
+    {
+        public IDirectoryContents GetDirectoryContents(string subpath) => NotFoundDirectoryContents.Singleton;
+
+        public IFileInfo GetFileInfo(string subpath) =>
+            subpath == path ? new FailAfterFirstReadFileInfo(path, content) : new NotFoundFileInfo(subpath);
+
+        public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
+
+        private sealed class FailAfterFirstReadFileInfo(string filePath, string fileContent) : IFileInfo
+        {
+            public bool Exists => true;
+
+            public long Length => Encoding.UTF8.GetByteCount(fileContent);
+
+            public string PhysicalPath => null;
+
+            public string Name => Path.GetFileName(filePath);
+
+            public DateTimeOffset LastModified => new(2023, 03, 03, 0, 0, 0, TimeSpan.Zero);
+
+            public bool IsDirectory => false;
+
+            public Stream CreateReadStream() => new FailAfterFirstReadStream(Encoding.UTF8.GetBytes(fileContent));
+        }
+    }
+
+    private sealed class FailAfterFirstReadStream(byte[] content) : MemoryStream(content)
+    {
+        private bool _hasRead;
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            if (_hasRead)
+            {
+                throw new FileNotFoundException("The file was removed while it was being sent.");
+            }
+
+            _hasRead = true;
+
+            // Return only part of the content, so the copy loop writes it to the response and then reads again.
+            return base.ReadAsync(buffer[..Math.Min(5, buffer.Length)], cancellationToken);
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+    }
+
+#nullable enable
+    private sealed class RecordingLoggerProvider : ILoggerProvider
+    {
+        public ConcurrentQueue<(LogLevel Level, EventId EventId, Exception? Exception)> Writes { get; } = new();
+
+        public ILogger CreateLogger(string categoryName) => new RecordingLogger(Writes);
+
+        public void Dispose()
+        {
+        }
+
+        private sealed class RecordingLogger(ConcurrentQueue<(LogLevel Level, EventId EventId, Exception? Exception)> writes) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+                => writes.Enqueue((logLevel, eventId, exception));
+        }
+    }
+#nullable restore
 }

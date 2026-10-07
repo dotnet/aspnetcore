@@ -158,9 +158,9 @@ internal class StaticAssetsInvoker
                     _logger.FileServed(Route, PhysicalPath);
                     return;
                 }
-                catch (FileNotFoundException)
+                catch (FileNotFoundException ex)
                 {
-                    if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() != null)
+                    if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() is not null)
                     {
                         var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
                         if (!environment.IsDevelopment() && environment.WebRootFileProvider is not CompositeFileProvider)
@@ -168,7 +168,19 @@ internal class StaticAssetsInvoker
                             _logger.EnsureStaticWebAssetsEnabled();
                         }
                     }
+
+                    // The manifest maps this route, but its file can't be opened (for example, it was deleted or renamed,
+                    // or a build is rewriting it). Don't complete the request as an empty 200 that clients and caches
+                    // would treat as the real asset. Clear() throws if the response has already started, so a response
+                    // that is already being sent is never rewritten.
                     context.Response.Clear();
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+
+                    // A 404 on its own can still be stored and reused by caches (for example by a fetch that uses
+                    // cache: 'force-cache'), so tell them not to store it.
+                    context.Response.Headers.CacheControl = "no-store";
+
+                    _logger.MappedAssetFileNotFound(context.Request.Path.ToString(), ex);
                 }
                 return;
             case PreconditionState.NotModified:
