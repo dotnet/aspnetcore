@@ -50,6 +50,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
 
     /// <inheritdoc />
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The call serializes only the URI string and NavigationOptions properties preserved above.")]
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         ArgumentNullException.ThrowIfNull(uri);
@@ -80,6 +81,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The call serializes only a Boolean value.")]
     public override void Refresh(bool forceReload = false)
     {
         DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.Refresh, forceReload);

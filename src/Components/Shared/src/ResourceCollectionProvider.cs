@@ -47,6 +47,7 @@ internal class ResourceCollectionProvider
 
     [DynamicDependency(JsonSerialized, typeof(ResourceAsset))]
     [DynamicDependency(JsonSerialized, typeof(ResourceAssetProperty))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The call uses a string URL and the fixed resource asset types preserved by the dependencies above.")]
     private async Task<ResourceAssetCollection> LoadResourceCollection()
     {
         if (_url == null)

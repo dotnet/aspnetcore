@@ -188,7 +188,7 @@ public class JSComponentInterop
         return new(null, callback);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The callback value type is defined by the component's EventCallback<T> parameter and preserved by the component parameter contract.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "RegisterForJavaScript warns consumers that arbitrary EventCallback<T> values are serialized.")]
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "EventCallback and EventCallback<TValue> constructors are referenced statically and will be preserved.")]
     private static object CreateEventCallbackWithSingleParameter(Type eventCallbackType, IJSObjectReference? jsObjectReference)
     {
