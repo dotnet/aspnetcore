@@ -8,9 +8,8 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>8</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>32</AspNetCorePatchVersion>
-    <PreReleaseVersionIteration>
-    </PreReleaseVersionIteration>
+    <AspNetCorePatchVersion>33</AspNetCorePatchVersion>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">7.7.3</IdentityModelVersion>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">7.*</IdentityModelVersion>
     <!--
