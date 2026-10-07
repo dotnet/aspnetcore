@@ -140,6 +140,7 @@ public class PackageLayoutTests
         using var package = PackageArchive.Open(WebAssemblyPackageId);
 
         Assert.True(package.HasEntry("staticwebassets/_framework/blazor.webassembly.js"));
+        Assert.True(package.HasEntry("staticwebassets/_framework/blazor.webassembly.js.map"));
 
         using var manifest = package.ReadPackageAssetsManifest();
         var js = GetAsset(manifest, "_framework/blazor.webassembly.js");

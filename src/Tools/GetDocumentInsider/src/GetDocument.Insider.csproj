@@ -39,7 +39,7 @@
     <InternalsVisibleTo Include="Microsoft.Extensions.ApiDescription.Tool.Tests" />
   </ItemGroup>
 
-  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 </Project>

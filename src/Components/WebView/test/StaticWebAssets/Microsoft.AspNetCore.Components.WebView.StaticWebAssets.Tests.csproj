@@ -13,28 +13,63 @@
     run dotnet build/publish, and assert the expected static web asset endpoints are produced.
 
     These tests consume the locally-built .nupkg files and spin up out-of-proc dotnet builds, so
-    they only run on the build machine (not on Helix).
+    they only run on the build machine (not on Helix). Package prerequisites are prepared in an
+    isolated feed before the tests run, including dependencies that a normal project build does not pack.
   -->
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <BuildHelixPayload>false</BuildHelixPayload>
+    <_StaticWebAssetsPackageFeed>$(ArtifactsTmpDir)WebViewStaticWebAssetsPackages\$(TargetFramework)\$(TargetOsName)-$(TargetArchitecture)\</_StaticWebAssetsPackageFeed>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebView" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" ReferenceOutputAssembly="false" />
+    <Reference Include="Microsoft.AspNetCore.Identity.UI" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\Analyzers\src\Microsoft.AspNetCore.Components.Analyzers.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <ItemGroup>
+    <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Components\WebView\WebView\src\Microsoft.AspNetCore.Components.WebView.csproj" />
+    <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj" />
+    <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
+    <!-- This is a package-only dependency in Components' custom nuspec. -->
+    <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Components\Analyzers\src\Microsoft.AspNetCore.Components.Analyzers.csproj" />
+  </ItemGroup>
+
+  <Target Name="_PrepareStaticWebAssetsPackages"
+          AfterTargets="Build"
+          BeforeTargets="RunTests;VSTest"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true' and '$(ExcludeFromBuild)' != 'true' and '$(BuildNodeJS)' != 'false' and ('$(DotNetBuildSourceOnly)' != 'true' or '$(ExcludeFromSourceOnlyBuild)' != 'true')">
+    <MSBuild Projects="@(_StaticWebAssetsPackageRoot)"
+             Targets="_GetAllRestoreProjectPathItems"
+             BuildInParallel="$(BuildInParallel)"
+             RemoveProperties="IsPackable;NoBuild;TargetFramework">
+      <Output TaskParameter="TargetOutputs" ItemName="_StaticWebAssetsPackageProject" />
+    </MSBuild>
+    <MSBuild Projects="@(_StaticWebAssetsPackageProject->Distinct())"
+             Targets="Build"
+             BuildInParallel="$(BuildInParallel)"
+             RemoveProperties="IsPackable;NoBuild;TargetFramework;BuildProjectReferences" />
+    <RemoveDir Directories="$(_StaticWebAssetsPackageFeed)" />
+    <MSBuild Projects="@(_StaticWebAssetsPackageProject->Distinct())"
+             Targets="Pack"
+             Properties="NoBuild=true;BuildProjectReferences=false;PackageOutputPath=$(_StaticWebAssetsPackageFeed);NuspecOutputPath=$(_StaticWebAssetsPackageFeed)nuspec\%(_StaticWebAssetsPackageProject.Filename)\"
+             RemoveProperties="IsPackable;TargetFramework" />
+  </Target>
 
   <!-- Surface the information the tests need to locate the built packages and the repo SDK. -->
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>ArtifactsShippingPackagesDir</_Parameter1>
-      <_Parameter2>$(ArtifactsShippingPackagesDir)</_Parameter2>
+      <_Parameter2>$(_StaticWebAssetsPackageFeed)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
-      <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>
+      <_Parameter2>$(_StaticWebAssetsPackageFeed)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>StaticWebAssetsTestPackageVersion</_Parameter1>
