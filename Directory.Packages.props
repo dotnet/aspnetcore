@@ -83,7 +83,6 @@ are expressed as central `<PackageVersion>` items.
         <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="$(MicrosoftOpenApiYamlReaderVersion)" />
         <PackageVersion Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryVersion)" />
         <PackageVersion Include="System.Buffers" Version="$(SystemBuffersVersion)" />
-        <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomVersion)" />
         <PackageVersion Include="System.CommandLine.Experimental" Version="$(SystemCommandLineExperimentalVersion)" />
         <PackageVersion Include="System.ComponentModel" Version="$(SystemComponentModelVersion)" />
         <PackageVersion Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsVersion)" />
