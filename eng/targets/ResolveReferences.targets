@@ -1,6 +1,6 @@
 <!--
   These targets preserve shared-framework reference boundaries, asset selection, and packaging.
-  For more details, see /docs/ReferenceResolution.md.
+  For more details, see /docs/SharedFramework.md.
 
 -->
 <Project>

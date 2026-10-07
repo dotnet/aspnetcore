@@ -6,10 +6,9 @@ Do **not** add `ExcludeFromBuild` (or similar) to try to make that more explicit
 `ExcludeFromBuild` disables NuGet restore entirely, which would also stop Dependabot from resolving
 any packages out of this project.
 
-Projects now use ordinary `<PackageReference>` items and NuGet Central Package Management
-(see [docs/ReferenceResolution.md](/docs/ReferenceResolution.md)). This discovery project remains the
-entry point for the existing Dependabot jobs, selecting the packages those jobs should update without
-requiring them to restore every product and platform.
+Projects now use ordinary `<PackageReference>` items and NuGet Central Package Management. This
+discovery project remains the entry point for the existing Dependabot jobs, selecting the packages
+those jobs should update without requiring them to restore every product and platform.
 
 Its references use the central versions in `Directory.Packages.props`.
 The version properties remain in `eng/Versions.props`, shared with the real consuming projects.

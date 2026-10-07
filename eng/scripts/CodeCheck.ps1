@@ -164,7 +164,7 @@ try {
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError  -filepath $filePath `
                 ("Generated code is not up to date in $file. You might need to regenerate the reference " +
-                 "assemblies or project list (see docs/ReferenceResolution.md)")
+                 "assemblies or project list (see docs/AddingNewProjects.md)")
             & git --no-pager diff --ignore-space-change $filePath
         }
     }
