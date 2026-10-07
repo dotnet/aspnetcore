@@ -12,6 +12,8 @@ public class ConversationTurn
     private readonly List<ContentBlock> _requestBlocks = new();
     private readonly List<ContentBlock> _responseBlocks = new();
 
+    internal event Action<int>? ResponseBlocksTruncated;
+
     /// <summary>
     /// Gets the identifier of this turn.
     /// </summary>
@@ -39,6 +41,22 @@ public class ConversationTurn
 
     internal void ClearResponseBlocks()
     {
-        _responseBlocks.Clear();
+        TruncateResponseBlocks(0);
+    }
+
+    internal void TruncateResponseBlocks(int count)
+    {
+        if (count < 0 || count > _responseBlocks.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count));
+        }
+
+        if (count == _responseBlocks.Count)
+        {
+            return;
+        }
+
+        _responseBlocks.RemoveRange(count, _responseBlocks.Count - count);
+        ResponseBlocksTruncated?.Invoke(count);
     }
 }

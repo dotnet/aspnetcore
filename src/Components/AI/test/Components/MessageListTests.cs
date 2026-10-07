@@ -71,6 +71,38 @@ public class MessageListTests
     }
 
     [Fact]
+    public async Task DataContent_RendersWithMatchingMediaComponent()
+    {
+        var cut = RenderMessageList(_ => ResponseEmitters.EmitTextResponse("Reviewed"));
+        var context = GetAgentContext(cut);
+        var image = new DataContent(new byte[] { 1, 2, 3 }, "image/png")
+        {
+            Name = "damage.png",
+        };
+
+        await cut.InvokeAsync(() => context.SendMessageAsync(
+            new ChatMessage(ChatRole.User, [new TextContent("Review this"), image])));
+
+        var html = cut.GetHtml();
+        Assert.Contains("data-blazor-image", html);
+        Assert.Contains("damage.png", html);
+        Assert.Contains("alt=\"damage.png\"", html);
+    }
+
+    [Fact]
+    public void Transcript_HasNonStreamingLiveRegionSemantics()
+    {
+        var cut = RenderMessageList(_ => ResponseEmitters.EmitTextResponse("Hello"));
+
+        var html = cut.GetHtml();
+        Assert.Contains("role=\"log\"", html);
+        Assert.Contains("aria-label=\"Conversation\"", html);
+        Assert.Contains("aria-live=\"off\"", html);
+        Assert.Contains("role=\"status\"", html);
+        Assert.Contains("aria-live=\"polite\"", html);
+    }
+
+    [Fact]
     public async Task RichTextContent_RendersStructuredNodesAndEncodesUnsafeContent()
     {
         var cut = RenderMessageList(_ => EmitRichTextResponse());
@@ -144,6 +176,31 @@ public class MessageListTests
         Assert.Contains("sc-ai-error", html);
         Assert.Contains("type=\"button\"", html);
         Assert.Contains("Retry", html);
+    }
+
+    [Fact]
+    public async Task Retry_RemovesFailedResponseContainerWithoutDuplicatingRequest()
+    {
+        var callCount = 0;
+        var cut = RenderMessageList(_ => callCount++ == 0
+            ? ResponseEmitters.EmitErrorAfterTokens(
+                ["Partial response"],
+                new InvalidOperationException("boom"))
+            : ResponseEmitters.EmitTextResponse("Recovered response"));
+        var context = GetAgentContext(cut);
+
+        await cut.InvokeAsync(() => context.SendMessageAsync("Unique request"));
+
+        var failedHtml = cut.GetHtml();
+        Assert.DoesNotContain("Partial response", failedHtml);
+        Assert.Equal(1, CountOccurrences(failedHtml, "Unique request"));
+
+        await cut.InvokeAsync(() => context.RetryAsync());
+
+        var recoveredHtml = cut.GetHtml();
+        Assert.DoesNotContain("Partial response", recoveredHtml);
+        Assert.Contains("Recovered response", recoveredHtml);
+        Assert.Equal(1, CountOccurrences(recoveredHtml, "Unique request"));
     }
 
     [Fact]

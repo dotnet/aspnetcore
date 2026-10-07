@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.JSInterop;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 
@@ -12,6 +14,7 @@ internal sealed class TestServiceProvider : IServiceProvider
     internal TestServiceProvider()
     {
         AddService<IJSRuntime>(new NullJSRuntime());
+        AddService<ILoggerFactory>(NullLoggerFactory.Instance);
     }
 
     public object? GetService(Type serviceType)
