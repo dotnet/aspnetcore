@@ -2,11 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
+using AngleSharp.Html.Dom;
 using Identity.DefaultUI.WebSite;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests;
 
@@ -143,6 +149,246 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         AssertClaimsEqual(principals[1], principals[2], "AspNet.Identity.SecurityStamp");
     }
 
+    [Theory]
+    [InlineData("Missing")]
+    [InlineData("DifferentUser")]
+    [InlineData("Malformed")]
+    [InlineData("ChangedStamp")]
+    [InlineData("Expired")]
+    public async Task CannotSetPasswordWithInvalidReauthentication(string marker)
+    {
+        var principals = new List<ClaimsPrincipal>();
+        using var server = ServerFactory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services => services.SetupTestThirdPartyLogin()
+                .SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme)));
+        var cookies = new CookieContainer();
+        using var client = server.CreateClient(cookies);
+        var userName = Guid.NewGuid().ToString();
+        var email = $"{userName}@example.com";
+        var password = "[PLACEHOLDER]-1a-updated";
+        var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        var manage = await index.ClickManageLinkAsync();
+        var setPassword = await manage.ClickChangePasswordLinkExternalLoginAsync();
+
+        switch (marker)
+        {
+            case "Missing":
+                Assert.Null(cookies.GetCookies(client.BaseAddress)[SetPassword.ReauthenticationCookieName]);
+                break;
+            case "DifferentUser":
+                var otherCookies = new CookieContainer();
+                using (var otherClient = server.CreateClient(otherCookies))
+                {
+                    var otherUserName = Guid.NewGuid().ToString();
+                    var otherIndex = await UserStories.RegisterNewUserWithSocialLoginAsync(otherClient, otherUserName, $"{otherUserName}@example.com");
+                    var otherManage = await otherIndex.ClickManageLinkAsync();
+                    var otherSetPassword = await otherManage.ClickChangePasswordLinkExternalLoginAsync();
+                    await otherSetPassword.ReauthenticateAsync(otherUserName);
+                    var otherMarker = Assert.IsType<Cookie>(otherCookies.GetCookies(otherClient.BaseAddress)[SetPassword.ReauthenticationCookieName]);
+                    cookies.Add(client.BaseAddress, new Cookie(SetPassword.ReauthenticationCookieName, otherMarker.Value, "/"));
+                }
+                break;
+            case "Malformed":
+                cookies.Add(client.BaseAddress, new Cookie(SetPassword.ReauthenticationCookieName, "not-a-protected-marker", "/"));
+                break;
+            case "ChangedStamp":
+                var beforeConfirmation = DateTimeOffset.UtcNow;
+                setPassword = await setPassword.ReauthenticateAsync(userName);
+                var afterConfirmation = DateTimeOffset.UtcNow;
+                var issuedMarker = Assert.IsType<Cookie>(cookies.GetCookies(client.BaseAddress)[SetPassword.ReauthenticationCookieName]);
+                using (var scope = server.Services.CreateScope())
+                {
+                    var protector = scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>()
+                        .CreateProtector("Microsoft.AspNetCore.Identity.UI.ReauthenticationMarker.v1")
+                        .ToTimeLimitedDataProtector();
+                    protector.Unprotect(issuedMarker.Value, out var expiration);
+                    Assert.InRange(expiration, beforeConfirmation.AddMinutes(5), afterConfirmation.AddMinutes(5));
+                    // UserManager.AddPasswordAsync rotates the security stamp while this marker is still live.
+                    await setPassword.SetPasswordAsync("[PLACEHOLDER]-1a-original");
+                    protector.Unprotect(issuedMarker.Value, out _);
+                    cookies.Add(client.BaseAddress, new Cookie(SetPassword.ReauthenticationCookieName, issuedMarker.Value, "/"));
+                }
+                break;
+            case "Expired":
+                using (var scope = server.Services.CreateScope())
+                {
+                    var claimTypes = scope.ServiceProvider.GetRequiredService<IOptions<IdentityOptions>>().Value.ClaimsIdentity;
+                    var principal = Assert.Single(principals);
+                    var userId = Assert.Single(principal.FindAll(claimTypes.UserIdClaimType)).Value;
+                    var stamp = Assert.Single(principal.FindAll(claimTypes.SecurityStampClaimType)).Value;
+                    var protector = scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>()
+                        .CreateProtector("Microsoft.AspNetCore.Identity.UI.ReauthenticationMarker.v1")
+                        .ToTimeLimitedDataProtector();
+                    // This is verifier-level expiry coverage, not natural aging of a callback-issued marker.
+                    var expiredMarker = protector.Protect($"{userId}:{stamp}", DateTimeOffset.UtcNow.AddMinutes(-1));
+                    cookies.Add(client.BaseAddress, new Cookie(SetPassword.ReauthenticationCookieName, expiredMarker, "/"));
+                }
+                break;
+        }
+
+        var response = await setPassword.PostPasswordAsync(password);
+        var content = await response.Content.ReadAsStringAsync();
+        using var loginClient = server.CreateClient();
+        var loginFailure = await Record.ExceptionAsync(() => UserStories.LoginFailsAsync(loginClient, email, password));
+
+        Assert.Multiple(
+            () => ResponseAssert.IsOK(response),
+            () => Assert.Contains(SetPassword.ReauthenticationRefusal, content),
+            () => Assert.Null(loginFailure));
+
+        if (marker == "ChangedStamp")
+        {
+            using var originalPasswordClient = server.CreateClient();
+            await UserStories.LoginExistingUserAsync(originalPasswordClient, email, "[PLACEHOLDER]-1a-original");
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CannotSetPasswordAfterReauthenticationWithUnlinkedAccount(bool linkedToAnotherUser)
+    {
+        using var server = ServerFactory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services => services.SetupTestThirdPartyLogin()));
+        var cookies = new CookieContainer();
+        using var client = server.CreateClient(cookies);
+        var userName = Guid.NewGuid().ToString();
+        var email = $"{userName}@example.com";
+        var password = "[PLACEHOLDER]-1a-updated";
+        var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        var manage = await index.ClickManageLinkAsync();
+        var setPassword = await manage.ClickChangePasswordLinkExternalLoginAsync();
+        var otherUserName = Guid.NewGuid().ToString();
+        if (linkedToAnotherUser)
+        {
+            using var otherClient = server.CreateClient();
+            await UserStories.RegisterNewUserWithSocialLoginAsync(otherClient, otherUserName, $"{otherUserName}@example.com");
+        }
+
+        setPassword = await setPassword.ReauthenticateAsync(otherUserName);
+
+        Assert.Contains("Error: That login is not linked to this account.", setPassword.Document.Body.TextContent);
+        Assert.Null(cookies.GetCookies(client.BaseAddress)[SetPassword.ReauthenticationCookieName]);
+        var response = await setPassword.PostPasswordAsync(password);
+        ResponseAssert.IsOK(response);
+        Assert.Contains(SetPassword.ReauthenticationRefusal, await response.Content.ReadAsStringAsync());
+        using var loginClient = server.CreateClient();
+        await UserStories.LoginFailsAsync(loginClient, email, password);
+    }
+
+    [Theory]
+    [InlineData("NotRegistered")]
+    [InlineData(null)]
+    [InlineData("Other")]
+    [InlineData("Contoso")]
+    public async Task CannotReauthenticateSetPasswordWithUnavailableProvider(string provider)
+    {
+        using var server = ServerFactory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services =>
+            {
+                services.SetupTestThirdPartyLogin().AddAuthentication()
+                    .AddScheme<ContosoAuthenticationOptions, ContosoAuthenticationHandler>("Other", "Other", options =>
+                        options.SignInScheme = IdentityConstants.ExternalScheme);
+            }));
+        using var client = server.CreateClient();
+        var userName = Guid.NewGuid().ToString();
+        var email = $"{userName}@example.com";
+        var password = "[PLACEHOLDER]-1a-updated";
+        var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        if (provider == "Contoso")
+        {
+            server.Services.GetRequiredService<IAuthenticationSchemeProvider>().RemoveScheme("Contoso");
+        }
+
+        var manage = await index.ClickManageLinkAsync();
+        var setPassword = await manage.ClickChangePasswordLinkExternalLoginAsync();
+        var response = await setPassword.PostReauthenticationAsync(provider);
+
+        ResponseAssert.IsOK(response);
+        Assert.Contains("The selected external login is not available for confirmation.", await response.Content.ReadAsStringAsync());
+        var document = await ResponseAssert.IsHtmlDocumentAsync(response);
+        HtmlAssert.HasForm("#set-password-form", document);
+        Assert.Null(document.QuerySelector("#Input_NewPassword"));
+        var buttons = document.QuerySelectorAll("#reauthenticate-form button");
+        const string noLoginsMessage = "You must have a configured external login linked to this account to confirm your identity before setting a password.";
+        if (provider == "Contoso")
+        {
+            Assert.Empty(buttons);
+            Assert.Contains(noLoginsMessage, setPassword.Document.Body.TextContent);
+            Assert.Contains(noLoginsMessage, document.Body.TextContent);
+        }
+        else
+        {
+            Assert.Equal("Contoso", Assert.Single(buttons).GetAttribute("value"));
+            Assert.DoesNotContain(noLoginsMessage, setPassword.Document.Body.TextContent);
+            Assert.DoesNotContain(noLoginsMessage, document.Body.TextContent);
+        }
+
+        setPassword = new SetPassword(client, document, setPassword.Context);
+        var passwordResponse = await setPassword.PostPasswordAsync(password);
+        ResponseAssert.IsOK(passwordResponse);
+        Assert.Contains(SetPassword.ReauthenticationRefusal, await passwordResponse.Content.ReadAsStringAsync());
+        using var loginClient = server.CreateClient();
+        await UserStories.LoginFailsAsync(loginClient, email, password);
+    }
+
+    [Theory]
+    [InlineData("[PLACEHOLDER]-1a-updated", "different", "The new password and confirmation password do not match.")]
+    [InlineData("alllowercase", "alllowercase", "Passwords must have at least one digit ('0'-'9').")]
+    public Task CanSetPasswordAfterValidationFailure(string password, string confirmation, string error) =>
+        AssertCanSetPasswordAfterFailedRequestAsync(
+            setPassword => setPassword.PostPasswordAsync(password, confirmation), password, error);
+
+    [Fact]
+    public Task CanSetPasswordAfterReauthenticationFailure() =>
+        AssertCanSetPasswordAfterFailedRequestAsync(
+            setPassword => setPassword.PostReauthenticationAsync("NotRegistered"),
+            "[PLACEHOLDER]-1a-final",
+            "The selected external login is not available for confirmation.");
+
+    private async Task AssertCanSetPasswordAfterFailedRequestAsync(
+        Func<SetPassword, Task<HttpResponseMessage>> request,
+        string password,
+        string error)
+    {
+        using var server = ServerFactory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services => services.SetupTestThirdPartyLogin()));
+        var cookies = new CookieContainer();
+        using var client = server.CreateClient(cookies);
+        var userName = Guid.NewGuid().ToString();
+        var email = $"{userName}@example.com";
+        var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        var manage = await index.ClickManageLinkAsync();
+        var setPassword = await manage.ClickChangePasswordLinkExternalLoginAsync();
+        Assert.Null(setPassword.Document.QuerySelector("#Input_NewPassword"));
+        setPassword = await setPassword.ReauthenticateAsync(userName);
+        var issuedMarker = Assert.IsType<Cookie>(cookies.GetCookies(client.BaseAddress)[SetPassword.ReauthenticationCookieName]);
+        Assert.True(issuedMarker.HttpOnly);
+        Assert.True(issuedMarker.Secure);
+        Assert.Equal("/", issuedMarker.Path);
+        var marker = issuedMarker.Value;
+
+        var response = await request(setPassword);
+        var document = await ResponseAssert.IsHtmlDocumentAsync(response);
+
+        Assert.Contains(error, document.Body.TextContent);
+        var form = HtmlAssert.HasForm("#set-password-form", document);
+        Assert.IsAssignableFrom<IHtmlInputElement>(form["Input_NewPassword"]);
+        Assert.IsAssignableFrom<IHtmlInputElement>(form["Input_ConfirmPassword"]);
+        HtmlAssert.HasElement("button[type=submit]", form);
+        Assert.Null(document.QuerySelector("#reauthenticate-form"));
+        Assert.Equal(marker, cookies.GetCookies(client.BaseAddress)[SetPassword.ReauthenticationCookieName].Value);
+        Assert.DoesNotContain(response.Headers.Where(header => header.Key == "Set-Cookie").SelectMany(header => header.Value),
+            value => value.StartsWith(SetPassword.ReauthenticationCookieName + "=", StringComparison.Ordinal));
+        using var failedLoginClient = server.CreateClient();
+        await UserStories.LoginFailsAsync(failedLoginClient, email, password);
+
+        setPassword = new SetPassword(client, document, setPassword.Context);
+        await setPassword.SetPasswordAsync("[PLACEHOLDER]-1a-final");
+        using var loginClient = server.CreateClient();
+        await UserStories.LoginExistingUserAsync(loginClient, email, "[PLACEHOLDER]-1a-final");
+    }
+
     [Fact]
     public async Task CanSetPasswordWithExternalLogin()
     {
@@ -172,7 +418,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         Assert.NotNull(principals[1].Identities.Single().Claims.Single(c => c.Type == ClaimTypes.AuthenticationMethod).Value);
 
         // Act 2
-        await UserStories.SetPasswordAsync(index, "[PLACEHOLDER]-1a-updated");
+        await UserStories.SetPasswordAsync(index, "[PLACEHOLDER]-1a-updated", userName);
 
         // Assert 2
         // RefreshSignIn uses the same AuthenticationMethod claim value
