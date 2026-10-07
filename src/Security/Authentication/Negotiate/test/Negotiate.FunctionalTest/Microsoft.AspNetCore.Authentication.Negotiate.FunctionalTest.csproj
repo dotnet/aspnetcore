@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)TestCertificateFactory.cs" LinkBase="Shared" />
     <Reference Include="Microsoft.AspNetCore.Authentication" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
@@ -29,10 +30,6 @@
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="System.Net.Http.WinHttpHandler" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="negotiateAuthCert.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
