@@ -1,0 +1,16 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace GeneratedSchemaInspection;
+
+internal static class FlagshipCorvusProgramImage
+{
+    internal const string CorvusCommit = "6af6c149ee5c9461faa9850a34d0e0cff1fd9be2";
+    internal const int ImageVersion = 6;
+    internal const string ConfigurationIdentity = "draft2020-12;format=false;content=true;regex=interpreted;max-depth=128";
+    internal const string SchemaGraphIdentity = "5F26E1108737429022275068F71A3F513D04A26E071E8EBECCE88B76CFF9A83A";
+    internal const string ImageIdentity = "1992DDA660F086171EEC0093D66DDA41904971D09958FD8C1342AF34FC86A5C2";
+    internal const string BindingIdentity = "E38594DC849D46A34883B4F3D0CD9DAD495CFEFAB476C86F3110DF8A55A201B4";
+    internal const int PatternCount = 0;
+    internal static ReadOnlyMemory<byte> Bytes { get; } = Convert.FromBase64String("Q0pTUAwAAgAEAAAwdXJuOmZsYWdzaGlwOmNvbmRpdGlvbmFsABhbImJ1c2luZXNzIl0ANAAOYWRkcmVzcyRwcm9wZXJ0aWVzL2FkZHJlc3MucHJvcGVydGllcy9hZGRyZXNzLyRyZWYIa2luZB5wcm9wZXJ0aWVzL2tpbmQKdGF4SWQgcHJvcGVydGllcy90YXhJZCp1bmV2YWx1YXRlZFByb3BlcnRpZXMEaWYIdGhlbgYvaWYmL3Byb3BlcnRpZXMvYWRkcmVzcwgkcmVmIC9wcm9wZXJ0aWVzL2tpbmQiL3Byb3BlcnRpZXMvdGF4SWQKL3RoZW4sL3VuZXZhbHVhdGVkUHJvcGVydGllcxBidXNpbmVzczYvJGRlZnMvdXJuOmZsYWdzaGlwOmFkZHJlc3MIY2l0eR5wcm9wZXJ0aWVzL2NpdHkMc3RyZWV0InByb3BlcnRpZXMvc3RyZWV0IC9wcm9wZXJ0aWVzL2NpdHkkL3Byb3BlcnRpZXMvc3RyZWV0FgAABKCogQCEJgAADAEABCgGAgQEBhACAQgGCgEGAAEMCA4BCAEAAQQEAAIECAIBAQEMEAEMAQEBAQABAQEAAAAAAQISAQIKFAEKAQIABICIgACAAAAABwEWAAgCCA4KAQ4AAQIAAgIAAggBAQEBAQEBBAAEgCCAAAACAAAJARgAJAEBAwAQABAaARAAAQEBAAAAAAEBAQEGAAQMAIEABAAAAAMBHCAACAAEDACBAAQAAAADAR4hAAoABICIgACAAAAABwEgAAgCDAEAAQIAAgIAAgwBAQEBAQEBDAAEAgAAAAIAAAACASIAAA4ABAgAggAIAAAAAwIcAAEAJAEBARAABICIgQCEAAAABwEmBAgEKBIqAQYCASwULgEGAAEEAAIEBAACBCwoAQEBAQEBARIABAwAgQAEAAAAAxAwIAAUAAQMAIEABAAAAAMQMiAA");
+}

@@ -49,7 +49,11 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
 
         var targetDocumentService = serviceProvider.GetRequiredKeyedService<OpenApiDocumentService>(lowercasedDocumentName);
         using var scopedService = serviceProvider.CreateScope();
-        var document = await targetDocumentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
+        var document = await targetDocumentService.GetOpenApiDocumentAsync(
+            scopedService.ServiceProvider,
+            httpRequest: null,
+            openApiSpecVersion,
+            cancellationToken: default);
         var jsonWriter = new OpenApiJsonWriter(writer);
         await document.SerializeAsync(jsonWriter, openApiSpecVersion);
     }

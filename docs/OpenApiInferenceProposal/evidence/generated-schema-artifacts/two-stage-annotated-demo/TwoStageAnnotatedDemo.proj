@@ -1,0 +1,44 @@
+<Project>
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <DemoRoot>$(MSBuildThisFileDirectory)</DemoRoot>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(DemoRoot)../../../../../'))</RepoRoot>
+    <ArtifactsBinDir>$(RepoRoot)artifacts/bin/</ArtifactsBinDir>
+    <EvidenceOutput>$(DemoRoot)generated</EvidenceOutput>
+    <Stage1Project>$(DemoRoot)stage1/AnnotatedModelStage1.csproj</Stage1Project>
+    <Stage1NativeProject>$(DemoRoot)stage1-native/AnnotatedModelStage1.Native.csproj</Stage1NativeProject>
+    <ExporterProject>$(DemoRoot)exporter/AnnotatedSchemaExporter.csproj</ExporterProject>
+    <Stage2Project>$(DemoRoot)stage2/AnnotatedSchemaDemo.csproj</Stage2Project>
+    <CorvusProducerProject>$(DemoRoot)../jsonschema-net-generation-inspection/corvus-image-producer/CorvusImageProducer.csproj</CorvusProducerProject>
+  </PropertyGroup>
+
+  <Target Name="Build">
+    <Error Condition="'$(CorvusJsonSchemaSourceRoot)' == ''"
+      Text="CorvusJsonSchemaSourceRoot must point to Corvus.JsonSchema commit 6af6c149ee5c9461faa9850a34d0e0cff1fd9be2." />
+    <Error Condition="'$(JsonSchemaGenerationPrototypePackageRoot)' == ''"
+      Text="JsonSchemaGenerationPrototypePackageRoot must point to the approved prototype package directory." />
+    <MSBuild Projects="$(Stage1Project);$(Stage1NativeProject)"
+      Targets="Restore;Build"
+      Properties="Configuration=$(Configuration);CorvusJsonSchemaSourceRoot=$(CorvusJsonSchemaSourceRoot);JsonSchemaGenerationPrototypePackageRoot=$(JsonSchemaGenerationPrototypePackageRoot)" />
+    <MSBuild Projects="$(CorvusProducerProject)"
+      Targets="Build"
+      Properties="Configuration=$(Configuration);CorvusJsonSchemaSourceRoot=$(CorvusJsonSchemaSourceRoot)" />
+    <MakeDir Directories="$(EvidenceOutput)" />
+    <Exec Command="dotnet &quot;$(ArtifactsBinDir)AnnotatedModelStage1/$(Configuration)/net11.0/AnnotatedModelStage1.dll&quot; &quot;$(EvidenceOutput)&quot;" />
+    <Exec Command="dotnet &quot;$(ArtifactsBinDir)CorvusImageProducer/$(Configuration)/net10.0/CorvusImageProducer.dll&quot; &quot;$(EvidenceOutput)/flagship.schema.json&quot; &quot;$(EvidenceOutput)/FlagshipCorvusProgramImage.g.cs&quot; urn:flagship:conditional &quot;$(EvidenceOutput)/flagship.bundle.json&quot;"
+      EnvironmentVariables="DOTNET_ROLL_FORWARD=Major" />
+    <MSBuild Projects="$(Stage2Project)"
+      Targets="Build"
+      Properties="Configuration=$(Configuration);CorvusJsonSchemaSourceRoot=$(CorvusJsonSchemaSourceRoot);JsonSchemaGenerationPrototypePackageRoot=$(JsonSchemaGenerationPrototypePackageRoot)" />
+  </Target>
+
+  <Target Name="Run" DependsOnTargets="Build">
+    <Exec Command="dotnet &quot;$(ArtifactsBinDir)AnnotatedSchemaDemo/$(Configuration)/net11.0/AnnotatedSchemaDemo.dll&quot; --verify" />
+  </Target>
+
+  <Target Name="Clean">
+    <MSBuild Projects="$(Stage2Project);$(CorvusProducerProject);$(ExporterProject);$(Stage1NativeProject);$(Stage1Project)"
+      Targets="Clean"
+      Properties="Configuration=$(Configuration);CorvusJsonSchemaSourceRoot=$(CorvusJsonSchemaSourceRoot);JsonSchemaGenerationPrototypePackageRoot=$(JsonSchemaGenerationPrototypePackageRoot);BuildProjectReferences=false" />
+  </Target>
+</Project>

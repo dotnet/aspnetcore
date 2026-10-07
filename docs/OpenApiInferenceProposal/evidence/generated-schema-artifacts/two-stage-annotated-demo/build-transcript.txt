@@ -1,0 +1,113 @@
+SAME-PASS EXPORTER-REMOVAL TRANSCRIPT
+Sanitized paths; active pipeline; 2026-10-01
+HISTORICAL SNAPSHOT: preserve the recorded external-package run and its then-current
+repository counts. Current repository counts are in ../../validation-current.txt;
+current deployment replay is in results/deployment-inspection-current.txt.
+
+Package:
+  JsonSchema.Net.Generation.7.3.11.nupkg
+  sha256=5cd990f735218993a2a2322b86032db27685f66f62ece536a4ff940115f6adee
+  source=json-everything ff430467e33e54d56537954fae73dbdda2c95246
+
+Corvus:
+  source=corvus-dotnet/Corvus.JsonSchema
+  commit=6af6c149ee5c9461faa9850a34d0e0cff1fd9be2
+
+Command:
+  source activate.sh
+  dotnet msbuild \
+    docs/OpenApiInferenceProposal/evidence/generated-schema-artifacts/two-stage-annotated-demo/TwoStageAnnotatedDemo.proj \
+    /t:Run \
+    /p:CorvusJsonSchemaSourceRoot=<repo-root>/artifacts/corvus-image-source \
+    /p:JsonSchemaGenerationPrototypePackageRoot=<prototype-package-directory>
+
+Active stages:
+  AnnotatedModelStage1 (CanonicalOnly)
+  AnnotatedModelStage1.Native (NativeAndCanonical)
+  canonical bundle/manifest and compatibility-schema adapter
+  CorvusImageProducer
+  AnnotatedSchemaDemo:
+    shared FlagshipAnnotatedArtifact
+    JsonSchemaNetNativeValidator -> JsonSchemaNetBinding
+    CorvusProgramImageValidator -> CorvusBinding
+
+Not invoked:
+  AnnotatedSchemaExporter
+
+Generated authority:
+  root-uri=urn:flagship:conditional
+  graph-identity=5F26E1108737429022275068F71A3F513D04A26E071E8EBECCE88B76CFF9A83A
+  bundle-bytes=1803
+  bundle-sha256=8bf1dcf1c1e152864b408807468fea1cf3082dfbd3e51410070732f3dd13a28a
+  compatibility-schema-bytes=539
+  compatibility-schema-sha256=0c79cfe3d63f3bd4124262ec4899c940b0ae649cb751c02cb4dc30be30a0b0c3
+  image-version=6
+  image-bytes=726
+  image-identity=1992DDA660F086171EEC0093D66DDA41904971D09958FD8C1342AF34FC86A5C2
+  jsonschema-net-binding-identity=E1E6950C7A3B6DCF7F450DA466406BC1BCA6752850B5FA0E16D4FE4CB85427B0
+  corvus-binding-identity=E38594DC849D46A34883B4F3D0CD9DAD495CFEFAB476C86F3110DF8A55A201B4
+  patterns=0
+
+Verification:
+  Engine-only JsonSchema.Net native graph: corpus agreed
+  Engine-only JsonSchema.Net canonical parse: corpus agreed
+  Engine-only Corvus compile: corpus agreed
+  Engine-only Corvus ProgramImage: corpus agreed
+  ASP.NET bindings: input/output corpus and diagnostic classification agreed
+  Binding identities: shared graph identity and distinct engine/configuration identities
+  Minimal API: request/response enforcement, 128-byte limit, and failures agreed
+  MVC: request/response enforcement, 128-byte limit, and failures agreed
+  OpenAPI 3.0/3.1/3.2: output agreed from the shared artifact
+  Requests: no validator reinitialization or schema processing
+  final output: verified
+
+Focused symmetric binding benchmarks:
+  Dry (correctness only):
+    JsonSchema.Net binding: 42.822 ms; 14 KB/op
+    Corvus binding: 7.487 ms; 1 KB/op
+  Short:
+    JsonSchema.Net binding: 9,283.3 ns; 12,816 B/op
+    Corvus binding: 359.1 ns; 168 B/op
+  Default:
+    JsonSchema.Net binding: 8,433.5 ns; 12,816 B/op
+    Corvus binding: 384.8 ns; 168 B/op
+  Scope: complete ASP.NET binding calls, not framework-wrapper allocation.
+  Retained framework evidence: 80 B registration; 0 B/op warmed incremental wrapper.
+
+Determinism:
+  Two clean builds produced identical hashes for:
+    flagship.bundle.json
+    flagship.manifest.json
+    flagship.schema.json
+    flagship.generated.props
+    FlagshipCorvusProgramImage.g.cs
+  generated-props-sha256=d34305df3eabf6c150969fad54242c250739dee169afac525a0a4c8eb075bf08
+  generated-image-source-sha256=9cf68fe8005ecc2d6f486b2cbaf13f61514e8432fbcfd4d162b86fdb9a42a123
+
+Corvus-only deployment:
+  trimmed: built and ran; directory-bytes=31536314
+  NativeAOT: built and ran; directory-bytes=14546204
+  NativeAOT executable-bytes=4268320
+  NativeAOT debug-file-bytes=6739688
+  Both printed:
+    5F26E1108737429022275068F71A3F513D04A26E071E8EBECCE88B76CFF9A83A:
+    1992DDA660F086171EEC0093D66DDA41904971D09958FD8C1342AF34FC86A5C2
+  File names and .deps.json contained no JsonSchema.Net, Json.More,
+  JsonPointer, or Humanizer dependency.
+  Managed and NativeAOT binary inspection found no GeneratedJsonSchemas or
+  JsonSchemaBuilder symbol.
+
+Repository validation:
+  source activate.sh && ./src/OpenApi/build.sh -test
+  prerequisite after deterministic cleans:
+    ./eng/build.sh --all --no-restore --no-build-java
+    stopped later at the intentionally uninitialized MessagePack-CSharp
+    submodule, after materializing every trimming-fixture dependency reference
+  exact OpenAPI rerun: succeeded in 00:00:55.65, 0 warnings, 0 errors
+  Build tests: 3 passed of 3
+  Source-generator tests: 42 passed of 42
+  OpenAPI tests: 1,411 passed, 5 skipped of 1,416
+  Aggregate: 1,456 passed, 5 skipped, 0 failed of 1,461
+
+Historical exporter transcript:
+  ../archive/exporter-demo/build-transcript.txt

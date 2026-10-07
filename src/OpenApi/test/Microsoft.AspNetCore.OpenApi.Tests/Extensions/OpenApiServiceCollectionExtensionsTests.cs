@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 
+#pragma warning disable ASP0040 // Tests exercise experimental OpenAPI APIs.
 public class OpenApiServiceCollectionExtensions
 {
     [Fact]
@@ -24,7 +25,6 @@ public class OpenApiServiceCollectionExtensions
         // Assert
         Assert.IsAssignableFrom<IServiceCollection>(returnedServices);
     }
-
     [Fact]
     public void AddOpenApi_WithDocumentName_RegistersServices()
     {
@@ -236,6 +236,8 @@ public class OpenApiServiceCollectionExtensions
         var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName);
         Assert.NotNull(documentProvider);
         Assert.IsType<OpenApiDocumentService>(documentProvider);
+        var versionedProvider = serviceProvider.GetRequiredKeyedService<IOpenApiVersionedDocumentProvider>(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName);
+        Assert.IsType<OpenApiDocumentService>(versionedProvider);
     }
 
     [Fact]
@@ -293,6 +295,38 @@ public class OpenApiServiceCollectionExtensions
         Assert.NotNull(document.Info);
         Assert.Equal($"Test Application | {documentName.ToLowerInvariant()}", document.Info.Title);
         Assert.Equal("1.0.0", document.Info.Version);
+    }
+
+    [Fact]
+    public async Task GetOpenApiDocumentAsync_UsesConfiguredVersionAndExplicitMethodUsesRequestedVersion()
+    {
+        var observedVersions = new List<OpenApiSpecVersion>();
+        var services = new ServiceCollection();
+        services.AddSingleton<IHostEnvironment>(new HostingEnvironment
+        {
+            EnvironmentName = Environments.Development,
+            ApplicationName = "Test Application"
+        });
+        services.AddLogging();
+        services.AddRouting();
+        var documentName = "v1";
+        services.AddOpenApi(documentName, options =>
+        {
+            options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                observedVersions.Add(context.OpenApiVersion);
+                return Task.CompletedTask;
+            });
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName);
+        var versionedDocumentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiVersionedDocumentProvider>(documentName);
+
+        await documentProvider.GetOpenApiDocumentAsync(default);
+        await versionedDocumentProvider.GetOpenApiDocumentForVersionAsync(OpenApiSpecVersion.OpenApi3_2, default);
+
+        Assert.Equal([OpenApiSpecVersion.OpenApi3_0, OpenApiSpecVersion.OpenApi3_2], observedVersions);
     }
 
     [Fact]

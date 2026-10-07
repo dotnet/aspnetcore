@@ -1,0 +1,7 @@
+count=30
+elapsed_median_ns=87896200
+elapsed_mean_ns=92394933
+elapsed_stdev_ns=16429295
+allocated_median_bytes=91312
+allocated_mean_bytes=91312
+allocated_stdev_bytes=0

@@ -1,0 +1,23 @@
+Deterministic rebuild status
+============================
+
+The retained generated files currently hash to:
+  8bf1dcf1c1e152864b408807468fea1cf3082dfbd3e51410070732f3dd13a28a  flagship.bundle.json
+  8bf1dcf1c1e152864b408807468fea1cf3082dfbd3e51410070732f3dd13a28a  flagship.manifest.json
+  0c79cfe3d63f3bd4124262ec4899c940b0ae649cb751c02cb4dc30be30a0b0c3  flagship.schema.json
+  d34305df3eabf6c150969fad54242c250739dee169afac525a0a4c8eb075bf08  flagship.generated.props
+  9cf68fe8005ecc2d6f486b2cbaf13f61514e8432fbcfd4d162b86fdb9a42a123  FlagshipCorvusProgramImage.g.cs
+
+A new two-clean-build comparison was not run. The exact unpublished prototype
+package recorded by this evidence has SHA-256:
+  5cd990f735218993a2a2322b86032db27685f66f62ece536a4ff940115f6adee
+
+That package is no longer available in the workspace. The only local package,
+built from the same bounded fork at upstream commit
+ff430467e33e54d56537954fae73dbdda2c95246, has SHA-256:
+  be28585ad6b737f883a8fbc5e460faf62664aee32acf207ff569e2a33b307a0a
+
+Substituting an unverified package would invalidate the recorded provenance.
+The retained prior clean-build hashes therefore remain historical evidence, and
+current replayability is Partial until the exact package is published or
+restored.

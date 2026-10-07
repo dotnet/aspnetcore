@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>GeneratedSchemaInspection.GenerationBenchmarks-20260925-130432</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.0, OS=ubuntu 22.04
+13th Gen Intel Core i7-13800H, 1 CPU, 20 logical and 10 physical cores
+.NET SDK=11.0.100-rc.1.26420.103
+  [Host] : .NET 11.0.0 (11.0.26.45408), X64 RyuJIT
+  Dry    : .NET 11.0.0 (11.0.26.42103), X64 RyuJIT
+</code></pre>
+<pre><code>Job=Dry  IterationCount=1  LaunchCount=1
+RunStrategy=ColdStart  UnrollFactor=1  WarmupCount=1
+</code></pre>
+
+<table>
+<thead><tr><th>              Method</th><th>Mean</th><th>Error</th><th>Ratio</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>WarmStaticFieldAccess</td><td>260.1 &mu;s</td><td>NA</td><td>1.00</td><td>-</td><td>-</td><td>-</td><td>2 KB</td>
+</tr><tr><td>RebuildNativeResourceGraph</td><td>1,481.7 &mu;s</td><td>NA</td><td>5.70</td><td>-</td><td>-</td><td>-</td><td>60 KB</td>
+</tr><tr><td>SerializeRootOnly</td><td>352.7 &mu;s</td><td>NA</td><td>1.36</td><td>-</td><td>-</td><td>-</td><td>2 KB</td>
+</tr><tr><td>CopyManualCanonicalBundle</td><td>464.8 &mu;s</td><td>NA</td><td>1.79</td><td>-</td><td>-</td><td>-</td><td>2 KB</td>
+</tr><tr><td>CreateSupportedBundle</td><td>855.4 &mu;s</td><td>NA</td><td>3.29</td><td>-</td><td>-</td><td>-</td><td>64 KB</td>
+</tr><tr><td>ParseSupportedBundle</td><td>768.7 &mu;s</td><td>NA</td><td>2.96</td><td>-</td><td>-</td><td>-</td><td>59 KB</td>
+</tr><tr><td>CompileCorvusFromBundle</td><td>311.1 &mu;s</td><td>NA</td><td>1.20</td><td>-</td><td>-</td><td>-</td><td>5 KB</td>
+</tr><tr><td>NativeValid</td><td>786.7 &mu;s</td><td>NA</td><td>3.02</td><td>-</td><td>-</td><td>-</td><td>22 KB</td>
+</tr><tr><td>NativeInvalid</td><td>790.1 &mu;s</td><td>NA</td><td>3.04</td><td>-</td><td>-</td><td>-</td><td>28 KB</td>
+</tr><tr><td>ParsedBundleValid</td><td>790.7 &mu;s</td><td>NA</td><td>3.04</td><td>-</td><td>-</td><td>-</td><td>27 KB</td>
+</tr><tr><td>ParsedBundleInvalid</td><td>1,596.5 &mu;s</td><td>NA</td><td>6.14</td><td>-</td><td>-</td><td>-</td><td>35 KB</td>
+</tr><tr><td>CorvusBundleValid</td><td>727.8 &mu;s</td><td>NA</td><td>2.80</td><td>-</td><td>-</td><td>-</td><td>2 KB</td>
+</tr><tr><td>CorvusBundleInvalid</td><td>342.3 &mu;s</td><td>NA</td><td>1.32</td><td>-</td><td>-</td><td>-</td><td>2 KB</td>
+</tr></tbody></table>
+</body>
+</html>

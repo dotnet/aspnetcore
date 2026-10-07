@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "corvus.json.cli": {
+      "version": "5.6.1",
+      "commands": [
+        "corvusjson"
+      ],
+      "rollForward": true
+    }
+  }
+}

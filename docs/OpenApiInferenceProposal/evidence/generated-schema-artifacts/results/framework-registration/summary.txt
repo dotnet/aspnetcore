@@ -1,0 +1,59 @@
+Generated framework and registration benchmarks
+===============================================
+
+Project:
+  src/OpenApi/perf/Microbenchmarks/Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj
+
+Source:
+  src/OpenApi/perf/Microbenchmarks/ValidatedJsonSchemaBenchmarks.cs
+
+Selected methods:
+  PassThrough
+  ValidatedFrameworkOnly
+  ValidatedFrameworkOnlyResponse
+  GeneratedValidatedFrameworkOnly
+  GeneratedValidatedFrameworkOnlyResponse
+  ValidatedJsonSchemaRegistrationBenchmarks.RuntimeRegistration
+  ValidatedJsonSchemaRegistrationBenchmarks.GeneratedRegistration
+
+Exact invocation (replace JOB with Dry, then Short; omit the --job pair for
+the final configured default job):
+  dotnet run -c Release --no-build --project \
+    src/OpenApi/perf/Microbenchmarks/Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj -- \
+    --job JOB --noOverwrite --exporters csv --artifacts <stage-directory> \
+    --filter \
+    "Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks.PassThrough" \
+    "Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks.ValidatedFrameworkOnly" \
+    "Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks.ValidatedFrameworkOnlyResponse" \
+    "Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks.GeneratedValidatedFrameworkOnly" \
+    "Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks.GeneratedValidatedFrameworkOnlyResponse" \
+    "*ValidatedJsonSchemaRegistrationBenchmarks*"
+
+Validation sequence:
+  Dry:    passed all 7 selected methods
+  Short:  passed all 7 selected methods
+  Default: passed all 7 selected methods
+
+Default-job environment:
+  BenchmarkDotNet 0.13.0
+  .NET SDK 11.0.100-rc.1.26420.103
+  .NET 11.0.0, Linux x64, server GC
+  Ubuntu 22.04, Intel Core i7-13800H
+
+Default-job results:
+  PassThrough:                              13.18 ns, 0 B/op
+  ValidatedFrameworkOnly:                  131.17 ns, 0 B/op
+  ValidatedFrameworkOnlyResponse:          201.43 ns, 0 B/op
+  GeneratedValidatedFrameworkOnly:         117.10 ns, 0 B/op
+  GeneratedValidatedFrameworkOnlyResponse: 186.25 ns, 0 B/op
+  RuntimeRegistration:                   3,010.09 ns, 4,088 B/op
+  GeneratedRegistration:                   23.04 ns, 80 B/op
+
+Final reports:
+  default/20261002-112028/Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks-report-github.md
+  default/20261002-112028/Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks-report.csv
+  default/20261002-112028/Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks.ValidatedJsonSchemaRegistrationBenchmarks-report-github.md
+  default/20261002-112028/Microsoft.AspNetCore.OpenApi.Microbenchmarks.ValidatedJsonSchemaBenchmarks.ValidatedJsonSchemaRegistrationBenchmarks-report.csv
+
+BenchmarkDotNet renders an empty Allocated cell when no managed allocation was
+measured; the 0 B/op values above map to those rows.

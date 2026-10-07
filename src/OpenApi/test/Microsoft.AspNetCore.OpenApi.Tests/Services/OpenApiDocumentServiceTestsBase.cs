@@ -166,13 +166,16 @@ public abstract class OpenApiDocumentServiceTestBase
             new ServiceProviderIsService());
     }
 
-    internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null, JsonNumberHandling numberHandling = JsonNumberHandling.Strict)
+    internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null, JsonNumberHandling? numberHandling = JsonNumberHandling.Strict)
     {
         serviceCollection ??= new ServiceCollection();
-        serviceCollection.ConfigureHttpJsonOptions(options =>
+        if (numberHandling is { } configuredNumberHandling)
         {
-            options.SerializerOptions.NumberHandling = numberHandling;
-        });
+            serviceCollection.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.NumberHandling = configuredNumberHandling;
+            });
+        }
         var serviceProvider = new TestServiceProvider();
         serviceProvider.SetInternalServiceProvider(serviceCollection);
         return new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));

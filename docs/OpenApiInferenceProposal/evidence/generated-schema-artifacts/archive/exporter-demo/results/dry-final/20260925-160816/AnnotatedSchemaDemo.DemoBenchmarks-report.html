@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>AnnotatedSchemaDemo.DemoBenchmarks-20260925-160837</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.0, OS=ubuntu 22.04
+13th Gen Intel Core i7-13800H, 1 CPU, 20 logical and 10 physical cores
+.NET SDK=11.0.100-rc.1.26420.103
+  [Host] : .NET 11.0.0 (11.0.26.45408), X64 RyuJIT
+  Dry    : .NET 11.0.0 (11.0.26.42103), X64 RyuJIT
+</code></pre>
+<pre><code>Job=Dry  IterationCount=1  LaunchCount=1
+RunStrategy=ColdStart  UnrollFactor=1  WarmupCount=1
+</code></pre>
+
+<table>
+<thead><tr><th>              Method</th><th>Mean</th><th>Error</th><th>Ratio</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>ExportSupportedBundle</td><td>19.499 ms</td><td>NA</td><td>12.88</td><td>-</td><td>-</td><td>-</td><td>95 KB</td>
+</tr><tr><td>CompileCorvus</td><td>1.514 ms</td><td>NA</td><td>1.00</td><td>-</td><td>-</td><td>-</td><td>73 KB</td>
+</tr><tr><td>LoadCorvusImage</td><td>1.178 ms</td><td>NA</td><td>0.78</td><td>-</td><td>-</td><td>-</td><td>53 KB</td>
+</tr><tr><td>JsonSchemaNetNativeValid</td><td>38.142 ms</td><td>NA</td><td>25.20</td><td>-</td><td>-</td><td>-</td><td>18 KB</td>
+</tr><tr><td>JsonSchemaNetNativeInvalid</td><td>32.667 ms</td><td>NA</td><td>21.58</td><td>-</td><td>-</td><td>-</td><td>16 KB</td>
+</tr><tr><td>JsonSchemaNetBundleValid</td><td>26.536 ms</td><td>NA</td><td>17.53</td><td>-</td><td>-</td><td>-</td><td>20 KB</td>
+</tr><tr><td>JsonSchemaNetBundleInvalid</td><td>25.454 ms</td><td>NA</td><td>16.82</td><td>-</td><td>-</td><td>-</td><td>19 KB</td>
+</tr><tr><td>CorvusImageValid</td><td>8.117 ms</td><td>NA</td><td>5.36</td><td>-</td><td>-</td><td>-</td><td>1 KB</td>
+</tr><tr><td>CorvusImageInvalid</td><td>7.683 ms</td><td>NA</td><td>5.08</td><td>-</td><td>-</td><td>-</td><td>1 KB</td>
+</tr><tr><td>CorvusBindingValid</td><td>9.581 ms</td><td>NA</td><td>6.33</td><td>-</td><td>-</td><td>-</td><td>1 KB</td>
+</tr></tbody></table>
+</body>
+</html>

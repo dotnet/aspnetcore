@@ -1,0 +1,9 @@
+baseline_median_ns=113778019
+baseline_mean_ns=114496277
+baseline_stdev_ns=9175305
+generated_median_ns=174636768
+generated_mean_ns=172049395
+generated_stdev_ns=14947052
+delta_median_ns=56897389
+delta_mean_ns=57553118
+delta_stdev_ns=11519820

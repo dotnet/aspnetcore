@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <EvidenceRepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../../../../../'))</EvidenceRepoRoot>
+    <BaseOutputPath>$(EvidenceRepoRoot)artifacts/bin/CorvusImageDeployment/</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(EvidenceRepoRoot)artifacts/obj/CorvusImageDeployment/</BaseIntermediateOutputPath>
+  </PropertyGroup>
+</Project>

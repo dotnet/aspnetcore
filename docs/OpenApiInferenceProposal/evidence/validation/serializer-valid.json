@@ -1,0 +1,11 @@
+{
+  "small": "-12",
+  "amount": "123.45",
+  "data": "AAEC/w==",
+  "identifier": "00112233-4455-6677-8899-aabbccddeeff",
+  "relativeUri": "relative/path",
+  "name": "sample",
+  "extension": {
+    "nested": true
+  }
+}
