@@ -275,6 +275,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
             StreamingRenderingForm.MapEndpoints(endpoints);
             InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
+            Components.TestServer.RazorComponents.Pages.Initializers.BrowserConfigurationStreaming.MapEndpoints(endpoints);
 
             MapEnhancedNavigationEndpoints(endpoints);
             endpoints.MapAutoPauseTestEndpoints();
