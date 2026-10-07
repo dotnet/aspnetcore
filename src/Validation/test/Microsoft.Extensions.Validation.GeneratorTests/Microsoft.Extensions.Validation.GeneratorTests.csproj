@@ -12,8 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Verify.SourceGenerators" />
     <PackageReference Include="Verify.XUnit" />
 

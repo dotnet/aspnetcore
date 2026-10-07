@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
 
     <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
