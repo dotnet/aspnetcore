@@ -1,9 +1,12 @@
 @* View to test static assets fingerprinting *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 <!DOCTYPE html>
 <html>
 <head>
     <title>Static Assets Test</title>
     <link id="test-css" rel="stylesheet" href="~/styles/site.css" />
+    <script type="importmap"></script>
+    <script id="test-js" src="~/styles/site.js"></script>
 </head>
 <body>
     <h1>Static Assets Test Page</h1>

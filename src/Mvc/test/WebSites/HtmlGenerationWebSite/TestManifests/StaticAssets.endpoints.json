@@ -2,6 +2,23 @@
   "Version": 1,
   "Endpoints": [
     {
+      "Route": "styles/site.fingerprint123.js",
+      "AssetFile": "styles/site.js",
+      "Selectors": [],
+      "EndpointProperties": [
+        {
+          "Name": "label",
+          "Value": "styles/site.js"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "ETag",
+          "Value": "\"fingerprint123\""
+        }
+      ]
+    },
+    {
       "Route": "styles/site.fingerprint123.css",
       "AssetFile": "styles/site.css",
       "Selectors": [],

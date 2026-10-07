@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
 /// <summary>
-/// Functional tests that verify static assets work correctly with MapControllerRoute and WithStaticAssets.
+/// Functional tests that verify static assets work correctly with conventional controller routes.
 /// </summary>
 public class StaticAssetsWithMvcTest : LoggedTest
 {
@@ -21,7 +21,6 @@ public class StaticAssetsWithMvcTest : LoggedTest
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
         Factory = new MvcTestFixture<HtmlGenerationWebSite.StartupWithStaticAssets>(LoggerFactory)
             .WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = Factory.CreateDefaultClient();
     }
 
     public override void Dispose()
@@ -31,24 +30,29 @@ public class StaticAssetsWithMvcTest : LoggedTest
     }
 
     public WebApplicationFactory<HtmlGenerationWebSite.StartupWithStaticAssets> Factory { get; private set; }
-    public HttpClient Client { get; private set; }
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<HtmlGenerationWebSite.StartupWithStaticAssets>();
 
-    [Fact]
-    public async Task StaticAssets_WithMapControllerRoute_RendersFingerprintedUrl()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StaticAssets_WithConventionalRoute_RendersFingerprintedUrlsAndImportMap(bool useDefaultControllerRoute)
     {
-        // Arrange & Act
-        var response = await Client.GetAsync("http://localhost/HtmlGeneration_Home/StaticAssets");
+        using var factory = Factory.WithWebHostBuilder(builder =>
+            builder.UseSetting("UseDefaultControllerRoute", useDefaultControllerRoute.ToString()));
+        using var client = factory.CreateDefaultClient();
+        using var response = await client.GetAsync("http://localhost/HtmlGeneration_Home/StaticAssets");
 
-        // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-        var content = await response.Content.ReadAsStringAsync();
+        var document = await response.GetHtmlDocumentAsync();
 
-        // The CSS link should have a fingerprinted URL
-        // The manifest maps styles/site.css -> styles/site.fingerprint123.css
-        Assert.Contains("styles/site.fingerprint123.css", content);
-        Assert.DoesNotContain("href=\"/styles/site.css\"", content);
+        Assert.Equal("/styles/site.fingerprint123.css", document.RequiredQuerySelector("#test-css").GetAttribute("href"));
+        Assert.Equal("/styles/site.fingerprint123.js", document.RequiredQuerySelector("#test-js").GetAttribute("src"));
+
+        var importMap = document.RequiredQuerySelector("head script[type=importmap]");
+        using var json = JsonDocument.Parse(importMap.TextContent);
+        Assert.Equal("./styles/site.fingerprint123.js",
+            json.RootElement.GetProperty("imports").GetProperty("./styles/site.js").GetString());
     }
 }

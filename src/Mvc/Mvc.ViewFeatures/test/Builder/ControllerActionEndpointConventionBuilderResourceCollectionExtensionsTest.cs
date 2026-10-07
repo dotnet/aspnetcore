@@ -287,8 +287,8 @@ public class ControllerActionEndpointConventionBuilderResourceCollectionExtensio
 
         // Assert - Check that conventional route endpoints for HomeController have static assets
         var endpoints = endpointBuilder.DataSources.Skip(1).First().Endpoints;
-        var homeEndpoint = endpoints.FirstOrDefault(e => e.DisplayName?.Contains("HomeController") == true);
-        Assert.NotNull(homeEndpoint);
+        var homeEndpoint = Assert.Single(endpoints, e =>
+            e.Metadata.GetMetadata<ControllerActionDescriptor>() is { ControllerName: "Home", ActionName: "Index" });
 
         var metadata = homeEndpoint.Metadata.GetMetadata<ResourceAssetCollection>();
         Assert.NotNull(metadata);
@@ -310,8 +310,8 @@ public class ControllerActionEndpointConventionBuilderResourceCollectionExtensio
 
         // Assert - Check that conventional route endpoints for HomeController have static assets
         var endpoints = endpointBuilder.DataSources.Skip(1).First().Endpoints;
-        var homeEndpoint = endpoints.FirstOrDefault(e => e.DisplayName?.Contains("HomeController") == true);
-        Assert.NotNull(homeEndpoint);
+        var homeEndpoint = Assert.Single(endpoints, e =>
+            e.Metadata.GetMetadata<ControllerActionDescriptor>() is { ControllerName: "Home", ActionName: "Index" });
 
         var metadata = homeEndpoint.Metadata.GetMetadata<ResourceAssetCollection>();
         Assert.NotNull(metadata);
@@ -335,8 +335,8 @@ public class ControllerActionEndpointConventionBuilderResourceCollectionExtensio
 
         // Assert - Check that conventional route endpoints for HomeController have static assets
         var endpoints = endpointBuilder.DataSources.Skip(1).First().Endpoints;
-        var homeEndpoint = endpoints.FirstOrDefault(e => e.DisplayName?.Contains("HomeController") == true);
-        Assert.NotNull(homeEndpoint);
+        var homeEndpoint = Assert.Single(endpoints, e =>
+            e.Metadata.GetMetadata<ControllerActionDescriptor>() is { ControllerName: "Home", ActionName: "Index" });
 
         var metadata = homeEndpoint.Metadata.GetMetadata<ResourceAssetCollection>();
         Assert.NotNull(metadata);
