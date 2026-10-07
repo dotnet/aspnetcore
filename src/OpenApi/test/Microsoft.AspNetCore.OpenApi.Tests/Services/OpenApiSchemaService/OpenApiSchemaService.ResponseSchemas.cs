@@ -120,16 +120,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         var expected = """
             {
-              "openapi": "3.1.0",
+              "openapi": "3.1.1",
               "info": {
                 "title": "OpenApiDocumentServiceTests | Test",
                 "version": "1.0.0"
               },
-              "tags": [
-                {
-                  "name": "OpenApiDocumentServiceTests"
-                }
-              ],
               "paths": {
                 "/api": {
                   "get": {
@@ -142,31 +137,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                         "content": {
                           "application/json": {
                             "schema": {
-                              "required": [
-                                "temperatureF"
-                              ],
-                              "type": "object",
-                              "properties": {
-                                "temperatureF": {
-                                  "format": "double",
-                                  "anyOf": [
-                                    {
-                                      "type": [
-                                        "number",
-                                        "string"
-                                      ],
-                                      "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$"
-                                    },
-                                    {
-                                      "enum": [
-                                        "NaN",
-                                        "Infinity",
-                                        "-Infinity"
-                                      ]
-                                    }
-                                  ]
-                                }
-                              }
+                              "$ref": "#/components/schemas/FloatingPointResponse"
                             }
                           }
                         }
@@ -174,7 +145,39 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     }
                   }
                 }
-              }
+              },
+              "components": {
+                "schemas": {
+                  "FloatingPointResponse": {
+                    "required": [
+                      "temperatureF"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "temperatureF": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "enum": [
+                              "NaN",
+                              "Infinity",
+                              "-Infinity"
+                            ]
+                          }
+                        ],
+                        "format": "double"
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
             }
             """;
 
