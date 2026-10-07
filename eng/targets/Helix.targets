@@ -129,7 +129,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="XunitXml.TestLogger" Version="2.1.26" />
+    <PackageReference Include="XunitXml.TestLogger" />
   </ItemGroup>
 
   <Choose>

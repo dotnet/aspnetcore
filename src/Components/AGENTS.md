@@ -16,7 +16,7 @@ A pure source, project, or package relocation with intentionally unchanged runti
 - Run the existing tests and builds affected by the relocated files.
 - Exercise direct source-consumption paths so a successful package build cannot hide a stale source path.
 - Validate generated project metadata, NuGet and npm package outputs, and every affected area or repository build entry point.
-- Follow the [project relocation checklist](../../docs/ReferenceResolution.md#adding-moving-or-removing-a-project) for added, moved, or removed projects.
+- Follow the [project relocation checklist](../../docs/AddingNewProjects.md#adding-moving-or-removing-a-project) for added, moved, or removed projects.
 
 If the change alters behavior, or validation reveals a behavioral regression, follow the normal sample-to-E2E workflow in this guide.
 

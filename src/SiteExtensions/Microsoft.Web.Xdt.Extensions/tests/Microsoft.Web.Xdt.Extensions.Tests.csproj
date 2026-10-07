@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Web.Xdt.Extensions" />
+    <ProjectReference Include="$(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

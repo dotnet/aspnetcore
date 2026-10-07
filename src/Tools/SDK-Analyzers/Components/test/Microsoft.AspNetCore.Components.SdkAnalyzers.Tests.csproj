@@ -9,11 +9,12 @@
 
   <ItemGroup>
     <!-- This is set to a ProjectReference because analyzers cannot be referenced via Reference.  -->
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.Components.SdkAnalyzers.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Tools\SDK-Analyzers\Components\src\Microsoft.AspNetCore.Components.SdkAnalyzers.csproj" />
 
-    <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
   </ItemGroup>
 
   <ItemGroup>
