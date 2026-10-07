@@ -18,10 +18,13 @@ issue. These correspond to Case A and Case B in
 2. A full-history trusted checkout and
    `collect_case_a_eligibility.py` produce
    `test-quarantine-case-a-eligibility.json`. Each test receipt records exact
-   source resolution, method/class/assembly quarantine state, quarantine
+   source resolution, data-row/method/class/assembly quarantine state, quarantine
    history category, regression status, raw/excluded/post-cutoff build sets,
-   the conservative freshness cutoff, exact evidence identity, and the
-   `origin/main` history commit used for the decision. Assembly history is
+   the conservative freshness cutoff, build-source ancestry against the
+   history cutoff commit, exact evidence identity, and the `origin/main`
+   history commit used for the decision. The receipt also identifies Case B
+   tests with at least one post-cutoff failure whose source snapshot contains
+   the unquarantine commit. Assembly history is
    reconstructed across the resolved test project, including deleted
    quarantine files. Same-project partial declarations are also evaluated as a
    logical type for type-level quarantine history, so sibling declaration
@@ -38,29 +41,66 @@ issue. These correspond to Case A and Case B in
    method freshness cutoff and Source B pull-request file checks, which still
    key off the resolved declaring method and inherited runner files rather than
    every partial sibling declaration.
-3. The pre-activation job uploads both files as the one-day
+3. `collect_requarantine_history.py` enumerates every current data-row-,
+   method-, type-, and assembly-level quarantine target from trusted source. It
+   classifies the exact first-parent history from project-wide commit/parent
+   source snapshots as `first-quarantine`, `re-quarantined`, or `ambiguous`;
+   method and partial
+   type moves between files preserve their logical history, and issue-URL-only
+   replacements are not remove/add transitions. Automated unquarantine requires an exact
+   `first-quarantine` match and fails closed otherwise.
+4. The pre-activation job uploads all three files as the one-day
    `test-quarantine-evidence-<run-id>` artifact.
-4. The agent may choose a new-quarantine candidate only from the deterministic
-   eligible-test list injected into its prompt.
-5. `create_quarantine_issue` verifies the receipt's Part 1 SHA-256,
+5. The agent may choose a new-quarantine or re-quarantine candidate only from
+   the corresponding deterministic eligible-test list injected into its
+   prompt.
+6. `create_quarantine_issue` verifies the receipt's Part 1 SHA-256,
    repository, ref, commit, minimum new-quarantine predicates, exact test,
-   matcher, and build/run/result identity.
-6. The handler creates or reuses the quarantine issue and returns the
+   matcher, and build/run/result identity. It rejects any test whose trusted
+   receipt is not Case A, so a Case B re-quarantine cannot create a duplicate
+   ordinary issue.
+7. The handler creates or reuses the quarantine issue and returns the
    temporary-ID mapping used by `add_comment` and `create_pull_request`. Reuse
    is resolved by paginating `GET /repos/{owner}/{repo}/issues` with
    `state=open`, `labels=test-failure`, and `per_page=100`, then comparing
    titles exactly and discarding pull requests. The strongly consistent list
    endpoint is used instead of the issue search API, whose index is eventually
    consistent and can miss an issue created by a recent run.
+8. Before the built-in `create_pull_request` handler runs,
+   `validate_pull_request_outputs.py` applies each authoritative format-patch
+   to the receipt-bound `origin/main` snapshot and derives its exact quarantine
+   target changes. It rejects unrelated edits, mixed additions/removals,
+   duplicate targets, stale project source, additions that do not match an
+   eligible Case A or Case B receipt, and removals whose exact current history
+   is not `first-quarantine`.
 
 Agent-provided log excerpts and URLs are for human display only. They are not
 accepted as validation evidence.
 
-Part 1 still aggregates by normalized test name, not by assembly-qualified
-identity. The collector therefore fails closed on ambiguous runner names rather
-than using the representative assembly field to choose a project. This does not
-redesign aggregation or method-level, file-based quarantine history. Unresolved
-historical inheritance is unproven, not evidence that a test was never inherited.
+Part 1 aggregates by exact test-case name, preserving theory argument lists,
+but not by assembly-qualified identity. The collector correlates those arguments
+to an unambiguous `InlineData` row on a `ConditionalTheory`, or an existing
+`QuarantinedTestData` row, when possible and
+otherwise retains method-level behavior. It fails closed on ambiguous runner or
+data-row identities rather than using representative metadata to guess.
+Boolean and integer inline constants are normalized to their rendered argument
+values while retaining the original source arguments for patch validation.
+A `ConditionalTheory` with inline rows that cannot be matched exactly (including
+missing argument lists or unsupported constant expressions) is unproven, not a
+method-level quarantine candidate. Trailing attribute comments do not hide rows.
+Row mapping also fails closed when other method attributes could provide data:
+`MemberData`, `ClassData`, and unrecognized attributes can produce the same
+rendered arguments as an inline row. Only the recognized theory, inline/data
+quarantine, method quarantine, xUnit trait, and known repository non-data condition
+attributes (including `MsQuicSupported`, `OSSkipCondition`, and
+`FrameworkSkipCondition`) are accepted for automatic row mapping. The known
+conditions derive directly from `Attribute`, not `DataAttribute`; implementing
+`ITestCondition` alone is not sufficient. Unknown attributes are not assumed to
+be non-data metadata.
+Matching inline and quarantined rows with identical arguments are ambiguous too.
+Renamed row owners receive the same conservative history checks as method targets.
+Unresolved historical inheritance is unproven, not evidence that a test was
+never inherited.
 
 ## Build Insights behavior
 
@@ -75,12 +115,13 @@ new-quarantine eligibility, the matcher and duplicate search validate, and the
 repository variable `TEST_QUARANTINE_ENABLE_KBE` is exactly `true`. The variable
 is intentionally disabled by default until a post-merge canary is explicitly approved.
 
-Missing, contradictory, ineligible, or unproven receipts and incomplete, broad,
-colliding, or unverifiable matchers produce the ordinary quarantine issue
-without a KBE JSON block or KBE label. An individual test found only in
-deterministic Source C crash blocks can also receive an ordinary issue, but
-cannot activate a KBE because it has no collector-authored new-quarantine
-receipt or exact VSTMR test-run/result identity.
+A trusted Case A receipt that is ineligible for KBE activation, or an
+incomplete, broad, colliding, or unverifiable matcher, produces the ordinary
+quarantine issue without a KBE JSON block or KBE label. Missing,
+identity-mismatched, non-Case-A, or absent per-test receipts reject issue
+creation. An individual test found only in deterministic Source C crash blocks
+can receive an ordinary issue when its trusted receipt identifies it as Case A,
+but cannot activate a KBE without exact VSTMR test-run/result identity.
 
 This is intentionally stricter than runtime's current `ci-failure-scan`.
 Runtime is prior art for the Build Insights JSON and automatic-label behavior;
@@ -92,10 +133,41 @@ into a KBE.
 ## Safety properties
 
 - One exact fully qualified test per new-quarantine issue and PR.
+- Row-level quarantine changes preserve the original inline data arguments and
+  are accepted only when the deterministic receipt resolves that exact row.
+- An exact `InlineData` candidate on a `ConditionalTheory` is always row-scoped;
+  the validator never permits broadening it to a method quarantine. Ordinary
+  xUnit theories remain method-scoped because they cannot consume quarantine
+  row metadata.
+- The collector recognizes multiline quarantine/data attributes, but automated
+  row rewrites are deliberately limited to one-line attributes so patch
+  validation never has to infer unchanged argument lines from diff context.
+  One-line row replacements may retain trailing line or block comments. The
+  validator ignores comment brackets when parsing, but requires the exact
+  comment to remain attached to the same data arguments in the same diff hunk.
 - The agent cannot author or override new-quarantine eligibility facts.
+- Every quarantine or unquarantine PR is mechanically bound to deterministic
+  receipts before the privileged PR handler runs. An unquarantine PR may
+  remove multiple targets only when they share one issue and every target is a
+  verified first quarantine.
+- A post-cutoff failure is rejected when its source commit does not contain
+  the history-derived cutoff commit, including stale PR merge snapshots that
+  started after an unquarantine landed.
 - At least two distinct post-cutoff failures, exact current quarantine state,
   regression exclusion, and the new-quarantine category are enforced before
   KBE rendering.
+- Quarantine additions are bound to a deterministic operating-system set.
+  A subset is emitted only when every retained incident has an unambiguous
+  platform identity; otherwise the receipt requires all supported platforms.
+  Source A/B retain per-build `queues` for every distinct result, including
+  multiple platforms in one build. These come from the Helix job API's `QueueId`,
+  not the OS-neutral work-item name. Source C records carry the selected job's
+  `queue`. Job lookups (including failures) are cached across all three sources.
+  Additional result-detail calls are bounded per source; missing identities,
+  failed lookups, and budget exhaustion leave explicit unknown entries rather
+  than borrowing the representative result's OS. Older payloads without queue
+  metadata also require all supported platforms.
+  Existing partially scoped targets are not automatically widened or narrowed.
 - An assembly quarantine removal is treated as a prior unquarantine only if the
   runner actually inherited or declared the test at that transition. Ambiguous
   project or historical source association fails closed as unproven.
@@ -117,11 +189,7 @@ into a KBE.
 
 ## Validation
 
-The `Quarantine workflow checks` pull-request workflow runs both suites below
-when the quarantine workflow, matcher instructions, skill, or supporting scripts
-change. It uses a disposable GitHub-hosted runner with read-only permissions,
-does not persist checkout credentials, and has no secrets or artifact handoff
-to the privileged quarantine workflow.
+The [`Workflow tests`](../../workflow-tests.yml) pull-request workflow runs these suites when workflow or skill files change; the commands below also support local validation.
 
 These fixtures use synthetic evidence, mock GitHub requests, and temporary Git
 repositories. They do not create issues or pull requests, run an agent, or prove
@@ -140,7 +208,13 @@ Run the deterministic collector fixtures:
 python3 -B .github/workflows/scripts/test-quarantine/test_collect_case_a_eligibility.py
 ```
 
-Validate the source with the repository's gh-aw v0.88.2 toolchain:
+Run the pull-request action-boundary fixtures:
+
+```bash
+python3 -B .github/workflows/scripts/test-quarantine/test_validate_pull_request_outputs.py
+```
+
+Validate the source with the repository's gh-aw toolchain:
 
 ```bash
 gh aw compile test-quarantine --no-emit --strict

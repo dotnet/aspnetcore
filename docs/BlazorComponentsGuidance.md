@@ -1,9 +1,9 @@
 # Blazor Components guidance
 
-This guidance covers ASP.NET Core Blazor and Razor Components work under `src/Components/**` and
-`src/JSInterop/**` — rendering, lifecycle, render modes, JS interop, navigation, forms, and
-interactive Server circuits. Consult the relevant sections alongside the requested task and
-applicable repository and area instructions.
+This guidance covers ASP.NET Core Blazor and Razor Components work under `src/Components/**` —
+rendering, lifecycle, render modes, JS interop, navigation, forms, and interactive Server circuits.
+Consult the relevant sections alongside the requested task and applicable repository and area
+instructions.
 
 The [Blazor Components architecture](../src/Components/ARCHITECTURE.md) is the canonical composition
 and ownership model for `src/Components`. This guide complements it with task-oriented change and
