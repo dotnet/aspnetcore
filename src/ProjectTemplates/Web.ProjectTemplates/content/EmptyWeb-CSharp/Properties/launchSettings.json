@@ -6,7 +6,7 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       //#if (LocalhostTld)
-      "applicationUrl": "http://company_webapplication1.dev.localhost:5000",
+      "applicationUrl": "http://LocalhostTldHostNamePrefix.dev.localhost:5000",
       //#else
       "applicationUrl": "http://localhost:5000",
       //#endif
@@ -24,7 +24,7 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       //#if (LocalhostTld)
-      "applicationUrl": "https://company_webapplication1.dev.localhost:5001;http://company_webapplication1.dev.localhost:5000",
+      "applicationUrl": "https://LocalhostTldHostNamePrefix.dev.localhost:5001;http://LocalhostTldHostNamePrefix.dev.localhost:5000",
       //#else
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       //#endif

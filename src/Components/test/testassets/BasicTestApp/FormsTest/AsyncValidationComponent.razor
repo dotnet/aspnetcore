@@ -1,0 +1,142 @@
+﻿@using System.Threading
+@using Microsoft.AspNetCore.Components.Forms
+@implements IDisposable
+
+@* Exercises the async form validation APIs end to end with deterministic timing. Both the per-field
+   validator (registered via EditContext.RegisterAsyncFieldValidator on field change) and the form-level
+   validator (registered via ValidationRequestedEventArgs.AddAsyncValidator on validation request)
+   block on a TaskCompletionSource gate that the test releases by clicking a button, so the
+   pending -> settled transition is observable without relying on time delays. The field value
+   selects the outcome: "error" faults, "taken" is invalid, "reserved" is rejected by the form-level
+   check, anything else is valid. *@
+
+<EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+    <p class="user-name">
+        User name: <InputText @bind-Value="_model.Username" />
+    </p>
+
+    <div class="username-status">
+        @if (_editContext.IsValidationPending(() => _model.Username))
+        {
+            <span id="username-pending">pending</span>
+        }
+        else if (_editContext.IsValidationFaulted(() => _model.Username))
+        {
+            <span id="username-faulted">faulted</span>
+        }
+        else
+        {
+            @foreach (var message in _editContext.GetValidationMessages(_editContext.Field(nameof(TestModel.Username))))
+            {
+                <span class="username-message">@message</span>
+            }
+        }
+    </div>
+
+    <button type="submit" id="submit" disabled="@_editContext.IsValidationPending()">Submit</button>
+</EditForm>
+
+<div class="form-status">
+    @if (_editContext.IsValidationPending())
+    {
+        <span id="form-pending">form-pending</span>
+    }
+    else if (_editContext.IsValidationFaulted())
+    {
+        <span id="form-faulted">faulted</span>
+    }
+</div>
+
+<p>
+    <button type="button" id="release-field" @onclick="@(() => _fieldGate.TrySetResult())">Release field</button>
+    <button type="button" id="release-form" @onclick="@(() => _formGate.TrySetResult())">Release form</button>
+</p>
+
+@if (_lastCallback is not null)
+{
+    <span id="last-callback">@_lastCallback</span>
+}
+
+@code {
+    private readonly TestModel _model = new();
+    private EditContext _editContext = default!;
+    private ValidationMessageStore _messages = default!;
+    private readonly TaskCompletionSource _fieldGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _formGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private string _lastCallback;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+        _messages = new ValidationMessageStore(_editContext);
+        _editContext.OnFieldChanged += OnFieldChanged;
+        _editContext.OnValidationRequested += OnValidationRequested;
+        _editContext.OnValidationStateChanged += OnValidationStateChanged;
+    }
+
+    private void OnFieldChanged(object sender, FieldChangedEventArgs e)
+    {
+        if (e.FieldIdentifier.FieldName == nameof(TestModel.Username))
+        {
+            _editContext.RegisterAsyncFieldValidator(e.FieldIdentifier, ValidateUsernameAsync);
+        }
+    }
+
+    private async Task ValidateUsernameAsync(CancellationToken token)
+    {
+        var field = _editContext.Field(nameof(TestModel.Username));
+        _messages.Clear(field);
+
+        // Block until the test releases the gate (or this validation is superseded/cancelled).
+        await _fieldGate.Task.WaitAsync(token);
+
+        if (string.Equals(_model.Username, "error", StringComparison.Ordinal))
+        {
+            // Surfaced as a faulted field via IsValidationFaulted, not a message.
+            throw new InvalidOperationException("Username service unavailable");
+        }
+
+        if (string.Equals(_model.Username, "taken", StringComparison.Ordinal))
+        {
+            _messages.Add(field, "Username is taken");
+        }
+
+        _editContext.NotifyValidationStateChanged();
+    }
+
+    private void OnValidationRequested(object sender, ValidationRequestedEventArgs e)
+        => e.AddAsyncValidator(ValidateFormAsync);
+
+    private async Task ValidateFormAsync(CancellationToken token)
+    {
+        var field = _editContext.Field(nameof(TestModel.Username));
+
+        await _formGate.Task.WaitAsync(token);
+
+        if (string.Equals(_model.Username, "reserved", StringComparison.Ordinal))
+        {
+            _messages.Add(field, "Username is reserved");
+        }
+
+        _editContext.NotifyValidationStateChanged();
+    }
+
+    private void OnValidationStateChanged(object sender, ValidationStateChangedEventArgs e)
+        => InvokeAsync(StateHasChanged);
+
+    private void HandleValidSubmit() => _lastCallback = "OnValidSubmit";
+
+    private void HandleInvalidSubmit() => _lastCallback = "OnInvalidSubmit";
+
+    public void Dispose()
+    {
+        _editContext.OnFieldChanged -= OnFieldChanged;
+        _editContext.OnValidationRequested -= OnValidationRequested;
+        _editContext.OnValidationStateChanged -= OnValidationStateChanged;
+    }
+
+    private sealed class TestModel
+    {
+        public string Username { get; set; }
+    }
+}

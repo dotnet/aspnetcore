@@ -31,8 +31,8 @@ Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext.MessageRe
 Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext.Token.get -> string?
 Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext.Token.set -> void
 Microsoft.Extensions.DependencyInjection.BearerTokenExtensions
-static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions!>! configure) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions!>! configure) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 virtual Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.MessageReceivedAsync(Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext! context) -> System.Threading.Tasks.Task!

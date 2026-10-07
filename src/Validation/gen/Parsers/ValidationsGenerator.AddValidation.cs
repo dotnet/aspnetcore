@@ -11,10 +11,10 @@ namespace Microsoft.Extensions.Validation;
 
 public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
-    internal bool FindAddValidation(SyntaxNode syntaxNode, CancellationToken cancellationToken)
+    internal static bool FindAddValidation(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
-        if (syntaxNode is InvocationExpressionSyntax
-            && syntaxNode.TryGetMapMethodName(out var method)
+        if (syntaxNode is InvocationExpressionSyntax invocationExpressionSyntax
+            && invocationExpressionSyntax.TryGetMapMethodName(out var method)
             && method == "AddValidation")
         {
             return true;
@@ -22,7 +22,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return false;
     }
 
-    internal InterceptableLocation? TransformAddValidation(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+    internal static InterceptableLocation? TransformAddValidation(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
         var node = (InvocationExpressionSyntax)context.Node;
         var semanticModel = context.SemanticModel;

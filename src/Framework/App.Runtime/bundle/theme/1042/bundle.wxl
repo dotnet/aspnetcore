@@ -1,55 +1,78 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[BundleNameFull] 설치</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">버전 [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>
-  <String Id="HelpHeader">설치 도움말</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]디렉터리[\]] - 디렉터리에 번들의 전체 로컬 복사본을
-   설치, 복구, 제거 또는 작성합니다. 설치가 기본값입니다.
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] 설치"/>
+  
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  
+  
+  <String Id="InstallVersion" Value="버전 [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="취소하시겠습니까?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="이전 버전"/>
+  <String Id="HelpHeader" Value="설치 도움말"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - 설치, 복구, 제거 또는
+   디렉터리에 번들의 전체 로컬 복사본을 만듭니다. 설치가 기본값입니다.
 
-/passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및
-   프롬프트를 표시하지 않습니다. 기본값으로 UI와 모든 프롬프트가 표시됩니다.
+/passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI와
+   프롬프트를 표시하지 않습니다. 기본적으로 UI와 모든 프롬프트가 표시됩니다.
 
-/norestart   - 다시 시작하지 않게 합니다. 기본값으로 UI에서는 다시 시작하기 전에 묻는 메시지를 표시합니다.
-/log log.txt - 특정 파일에 기록합니다. 기본값으로 로그 파일은 %TEMP%에 만들어집니다.</String>
-  <String Id="HelpCloseButton">닫기(&amp;C)</String>
-  <String Id="InstallAcceptCheckbox">동의함(&amp;A)</String>
-  <String Id="InstallInstallButton">설치(&amp;I)</String>
-  <String Id="InstallCloseButton">닫기(&amp;C)</String>
-  <String Id="ProgressHeader">설치 진행률</String>
-  <String Id="ProgressLabel">처리 중:</String>
-  <String Id="OverallProgressPackageText">초기화 중...</String>
-  <String Id="ProgressCancelButton">취소(&amp;C)</String>
-  <String Id="ModifyHeader">설치 수정</String>
-  <String Id="ModifyRepairButton">복구(&amp;R)</String>
-  <String Id="ModifyUninstallButton">제거(&amp;U)</String>
-  <String Id="ModifyCloseButton">닫기(&amp;C)</String>
-  <String Id="SuccessRepairHeader">복구 완료됨</String>
-  <String Id="SuccessUninstallHeader">제거 완료됨</String>
-  <String Id="SuccessInstallHeader">설치 완료됨</String>
-  <String Id="SuccessHeader">설치 완료</String>
-  <String Id="SuccessLaunchButton">시작(&amp;L)</String>
-  <String Id="SuccessRestartText">소프트웨어를 사용하려면 먼저 컴퓨터를 다시 시작해야 합니다.</String>
-  <String Id="SuccessRestartButton">다시 시작(&amp;R)</String>
-  <String Id="SuccessCloseButton">닫기(&amp;C)</String>
-  <String Id="FailureHeader">설치 실패</String>
-  <String Id="FailureInstallHeader">설치 실패</String>
-  <String Id="FailureUninstallHeader">제거 실패</String>
-  <String Id="FailureRepairHeader">복구 실패</String>
-  <String Id="FailureHyperlinkLogText">하나 이상의 문제가 발생하여 설치하지 못했습니다. 문제를 해결한 다음 설치를 다시 시도하십시오. 자세한 내용은 &lt;a href="#"&gt;로그 파일&lt;/a&gt;을 참조하십시오.</String>
-  <String Id="FailureRestartText">소프트웨어 롤백을 완료하려면 컴퓨터를 다시 시작해야 합니다.</String>
-  <String Id="FailureRestartButton">다시 시작(&amp;R)</String>
-  <String Id="FailureCloseButton">닫기(&amp;C)</String>
-  <String Id="FilesInUseHeader">사용 중인 파일</String>
-  <String Id="FilesInUseLabel">다음의 응용 프로그램이 업데이트해야 할 파일을 사용 중입니다.</String>
-  <String Id="FilesInUseCloseRadioButton">응용 프로그램을 닫고 다시 시작합니다(&amp;A).</String>
-  <String Id="FilesInUseDontCloseRadioButton">응용 프로그램을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다.</String>
-  <String Id="FilesInUseOkButton">확인(&amp;O)</String>
-  <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
+/norestart   - 다시 시작 시도를 억제합니다. 기본적으로 UI는 다시 시작하기 전에 메시지를 표시합니다.
+/log log.txt - 특정 파일에 로그합니다. 기본적으로 로그 파일은 %TEMP%에 만들어집니다."/>
+  <String Id="HelpCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="InstallAcceptCheckbox" Value="라이선스 사용 약관에 동의합니다(&amp;A)."/>
+  <String Id="InstallInstallButton" Value="설치(&amp;I)"/>
+  <String Id="InstallCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="ProgressHeader" Value="설치 진행률"/>
+  <String Id="ProgressLabel" Value="처리하는 중:"/>
+  <String Id="OverallProgressPackageText" Value="초기화하는 중..."/>
+  <String Id="ProgressCancelButton" Value="취소(&amp;C)"/>
+  <String Id="ModifyHeader" Value="설치 수정"/>
+  <String Id="ModifyRepairButton" Value="복구(&amp;R)"/>
+  <String Id="ModifyUninstallButton" Value="제거(&amp;U)"/>
+  <String Id="ModifyCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="SuccessCacheHeader" Value="캐시가 완료됨"/>
+  <String Id="SuccessModifyHeader" Value="수정 완료됨"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="제거 완료됨"/>
+  <String Id="SuccessLayoutHeader" Value="레이아웃 완료됨"/>
+  <String Id="SuccessRepairHeader" Value="복구 완료됨"/>
+  <String Id="SuccessUninstallHeader" Value="제거 완료됨"/>
+  <String Id="SuccessInstallHeader" Value="설치 완료됨"/>
+  <String Id="SuccessHeader" Value="설치 완료"/>
+  <String Id="SuccessLaunchButton" Value="시작(&amp;L)"/>
+  <String Id="SuccessRestartText" Value="소프트웨어를 사용하려면 먼저 컴퓨터를 다시 시작해야 합니다."/>
+  <String Id="SuccessUninstallRestartText" Value="소프트웨어 제거를 완료하려면 컴퓨터를 다시 시작해야 합니다."/>
+  <String Id="SuccessRestartButton" Value="다시 시작(&amp;R)"/>
+  <String Id="SuccessCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="FailureHeader" Value="설치 실패"/>
+  <String Id="FailureCacheHeader" Value="캐시 실패"/>
+  <String Id="FailureLayoutHeader" Value="레이아웃 실패"/>
+  <String Id="FailureInstallHeader" Value="설치 실패"/>
+  <String Id="FailureUninstallHeader" Value="제거 실패"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="제거 실패"/>
+  <String Id="FailureRepairHeader" Value="복구 실패"/>
+  <String Id="FailureModifyHeader" Value="수정 실패"/>
+  <String Id="FailureHyperlinkLogText" Value="하나 이상의 문제로 인해 설치가 실패했습니다. 문제를 해결한 후 설치를 다시 시도하세요. 자세한 내용은 &lt;a href=&quot;#&quot;&gt;로그 파일&lt;/a&gt;을 참조하세요."/>
+  <String Id="FailureRestartText" Value="소프트웨어 롤백을 완료하려면 먼저 컴퓨터를 다시 시작해야 합니다."/>
+  <String Id="FailureRestartButton" Value="다시 시작(&amp;R)"/>
+  <String Id="FailureCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="FilesInUseHeader" Value="사용 중인 파일"/>
+  <String Id="FilesInUseLabel" Value="다음의 응용 프로그램이 업데이트해야 할 파일을 사용 중입니다."/>
+  <String Id="FilesInUseCloseRadioButton" Value="애플리케이션을 닫고 다시 시작합니다(&amp;A)."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="애플리케이션을 닫지 마세요(&amp;D). 다시 부팅해야 합니다."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="애플리케이션을 닫습니다(&amp;A)."/>
+  <String Id="FilesInUseOkButton" Value="확인(&amp;O)"/>
+  <String Id="FilesInUseCancelButton" Value="취소(&amp;C)"/>
+  <String Id="FilesInUseRetryButton" Value="다시 시도(&amp;R)"/>
+  <String Id="FilesInUseIgnoreButton" Value="무시(&amp;I)"/>
+  <String Id="FilesInUseExitButton" Value="끝내기(&amp;X)"/>
+  <String Id="FilesInUseTitle" Value="사용 중인 파일"/>
+  <String Id="LicenseAssent" Value="설치를 클릭하면 다음 사용 약관에 동의하는 것입니다."/>
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;개인정보처리방침&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET에 대한 라이선싱 정보&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;원격 분석 수집 및 옵트아웃&lt;/A&gt;"/>
 
-  <String Id="Welcome">[WixBundleName] 설치를 시작합니다.</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;사용 조건&lt;/a&gt; 및 &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;개인정보처리방침&lt;/a&gt;.</String>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;사용 조건&lt;/a&gt;과 &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;개인정보 처리방침&lt;/a&gt;."/>
 </WixLocalization>

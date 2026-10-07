@@ -31,7 +31,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
 
     public JsonPatchDocument()
     {
-        Operations = new List<Operation<TModel>>();
+        Operations = [];
         ContractResolver = new DefaultContractResolver();
     }
 
@@ -660,7 +660,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
     internal string GetPath<TProp>(Expression<Func<TModel, TProp>> expr, string position)
     {
         var segments = GetPathSegments(expr.Body);
-        var path = String.Join("/", segments);
+        var path = string.Join("/", segments);
         if (position != null)
         {
             path += "/" + position;
@@ -712,8 +712,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
 
     private string GetPropertyNameFromMemberExpression(MemberExpression memberExpression)
     {
-        var jsonObjectContract = ContractResolver.ResolveContract(memberExpression.Expression.Type) as JsonObjectContract;
-        if (jsonObjectContract != null)
+        if (ContractResolver.ResolveContract(memberExpression.Expression.Type) is JsonObjectContract jsonObjectContract)
         {
             return jsonObjectContract.Properties
                 .First(jsonProperty => jsonProperty.UnderlyingName == memberExpression.Member.Name)

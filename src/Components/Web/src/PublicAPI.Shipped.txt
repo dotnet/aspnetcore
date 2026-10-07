@@ -124,6 +124,10 @@ Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs.File.get -> Micro
 Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs.FileCount.get -> int
 Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs.GetMultipleFiles(int maximumFileCount = 10) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>!
 Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs.InputFileChangeEventArgs(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>! files) -> void
+Microsoft.AspNetCore.Components.Forms.InputHidden
+Microsoft.AspNetCore.Components.Forms.InputHidden.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
+Microsoft.AspNetCore.Components.Forms.InputHidden.Element.set -> void
+Microsoft.AspNetCore.Components.Forms.InputHidden.InputHidden() -> void
 Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>
 Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.Element.set -> void
@@ -306,16 +310,16 @@ Microsoft.AspNetCore.Components.Web.HeadContent.HeadContent() -> void
 Microsoft.AspNetCore.Components.Web.HeadOutlet
 Microsoft.AspNetCore.Components.Web.HeadOutlet.HeadOutlet() -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>() -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.Dispose() -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.HtmlRenderer(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
@@ -343,6 +347,7 @@ Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.Interactive
 Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.InteractiveWebAssemblyRenderMode(bool prerender) -> void
 Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.Prerender.get -> bool
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime
+Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string!
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore
@@ -543,6 +548,8 @@ override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.OnParametersSet
 override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.InputFile.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputFile.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.Forms.InputHidden.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Forms.InputHidden.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.FormatValueAsString(TValue? value) -> string?
 override Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) -> bool
@@ -575,17 +582,17 @@ override Microsoft.AspNetCore.Components.Routing.NavLink.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.Routing.NavLink.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.OnErrorAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
-static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference) -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference, bool preventScroll) -> System.Threading.Tasks.ValueTask
+static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference) -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWidth, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 static Microsoft.AspNetCore.Components.Forms.EditContextFieldClassExtensions.FieldCssClass(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> string!
 static Microsoft.AspNetCore.Components.Forms.EditContextFieldClassExtensions.FieldCssClass<TField>(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> string!
 static Microsoft.AspNetCore.Components.Forms.EditContextFieldClassExtensions.SetFieldCssClassProvider(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, Microsoft.AspNetCore.Components.Forms.FieldCssClassProvider! fieldCssClassProvider) -> void
 static Microsoft.AspNetCore.Components.Forms.Mapping.SupplyParameterFromFormServiceCollectionExtensions.AddSupplyValueFromFormProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, System.Type! componentType, string! identifier) -> void
 static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, System.Type! componentType, string! identifier, string! javaScriptInitializer) -> void
-static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier) -> void
+static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, System.Type! componentType, string! identifier) -> void
 static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier, string! javaScriptInitializer) -> void
+static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier) -> void
 static Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveAuto.get -> Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode!
 static Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer.get -> Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode!
 static Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveWebAssembly.get -> Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode!
@@ -619,5 +626,6 @@ virtual Microsoft.AspNetCore.Components.Forms.ValidationSummary.Dispose(bool dis
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.RenderChildComponent(System.IO.TextWriter! output, ref Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame componentFrame) -> void
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.WriteComponentHtml(int componentId, System.IO.TextWriter! output) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.WebRenderer.GetWebRendererId() -> int
+virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool
 virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
 virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.RemoveRootComponent(int componentId) -> void

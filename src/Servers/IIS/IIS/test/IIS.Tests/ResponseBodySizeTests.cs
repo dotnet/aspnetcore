@@ -8,7 +8,6 @@ namespace IIS.Tests;
 
 [SkipIfHostableWebCoreNotAvailable]
 [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "https://github.com/aspnet/IISIntegration/issues/866")]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ResponseBodySizeTests : LoggedTest
 {
     [ConditionalFact]

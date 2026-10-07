@@ -1,3 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Connections.IMemoryPoolFactory<T>
-Microsoft.AspNetCore.Connections.IMemoryPoolFactory<T>.Create() -> System.Buffers.MemoryPool<T>!
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.InitialTokenLifetime.get -> System.TimeSpan?
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.RefreshAuthenticationAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.TimeSpan?>!

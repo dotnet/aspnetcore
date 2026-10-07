@@ -8,13 +8,12 @@
   "symbols/iisHttpPort/description": "要用于 launchSettings.json 中 IIS Express HTTP 终结点的端口号。",
   "symbols/iisHttpsPort/description": "要用于 launchSettings.json 中 IIS Express HTTPS 终结点的端口号。仅当不使用参数 no-https 时，此选项才适用(如果使用 IndividualAuth 或 OrganizationalAuth，则将忽略 no-https)。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net10.0/description": "目标 net10.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 Individual、IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
   "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",
-  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the aplication URL",
-  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345.",
+  "symbols/LocalhostTld/displayName": "在应用程序 URL 中使用 .dev.localhost TLD",
+  "symbols/LocalhostTld/description": "是否在应用程序 URL 中将项目名称与 .dev.localhost TLD 合并以用于本地开发，例如 https://myapp.dev.localhost:12345。",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }

@@ -49,7 +49,7 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
             goto Finished;
         }
 
-        // set appliction info here instead of inside Populate()
+        // set application info here instead of inside Populate()
         // as the destructor will delete the backend process
         hr = pRequestHandlerConfig->QueryApplicationPath()->Copy(pHttpApplication->GetApplicationId());
         if (FAILED(hr))
@@ -299,7 +299,7 @@ REQUESTHANDLER_CONFIG::Populate(
         &strHostingModel);
     if (FAILED(hr))
     {
-        // Swallow this error for backward compatability
+        // Swallow this error for backward compatibility
         // Use default behavior for empty string
         hr = S_OK;
     }

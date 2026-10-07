@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Internal;
 using static Microsoft.AspNetCore.Identity.UserManagerMetrics;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -14,35 +16,62 @@ internal sealed class UserManagerMetrics : IDisposable
 {
     public const string MeterName = "Microsoft.AspNetCore.Identity";
 
-    public const string CreateCounterName = "aspnetcore.identity.user.create";
-    public const string UpdateCounterName = "aspnetcore.identity.user.update";
-    public const string DeleteCounterName = "aspnetcore.identity.user.delete";
-    public const string CheckPasswordCounterName = "aspnetcore.identity.user.check_password";
-    public const string VerifyTokenCounterName = "aspnetcore.identity.user.verify_token";
-    public const string GenerateTokenCounterName = "aspnetcore.identity.user.generate_token";
+    public const string CreateDurationName = "aspnetcore.identity.user.create.duration";
+    public const string UpdateDurationName = "aspnetcore.identity.user.update.duration";
+    public const string DeleteDurationName = "aspnetcore.identity.user.delete.duration";
+    public const string CheckPasswordAttemptsCounterName = "aspnetcore.identity.user.check_password_attempts";
+    public const string VerifyTokenAttemptsCounterName = "aspnetcore.identity.user.verify_token_attempts";
+    public const string GenerateTokensCounterName = "aspnetcore.identity.user.generated_tokens";
 
     private readonly Meter _meter;
-    private readonly Counter<long> _createCounter;
-    private readonly Counter<long> _updateCounter;
-    private readonly Counter<long> _deleteCounter;
-    private readonly Counter<long> _checkPasswordCounter;
-    private readonly Counter<long> _verifyTokenCounter;
-    private readonly Counter<long> _generateTokenCounter;
+    private readonly Histogram<double> _createDuration;
+    private readonly Histogram<double> _updateDuration;
+    private readonly Histogram<double> _deleteDuration;
+    private readonly Counter<long> _checkPasswordAttemptsCounter;
+    private readonly Counter<long> _verifyTokenAttemptsCounter;
+    private readonly Counter<long> _generateTokensCounter;
 
     public UserManagerMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
-        _createCounter = _meter.CreateCounter<long>(CreateCounterName, "count", "The number of users created.");
-        _updateCounter = _meter.CreateCounter<long>(UpdateCounterName, "count", "The number of user updates.");
-        _deleteCounter = _meter.CreateCounter<long>(DeleteCounterName, "count", "The number of users deleted.");
-        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts. Only checks whether the password is valid and not whether the user account is in a state that can log in.");
-        _verifyTokenCounter = _meter.CreateCounter<long>(VerifyTokenCounterName, "count", "The number of token verification attempts.");
-        _generateTokenCounter = _meter.CreateCounter<long>(GenerateTokenCounterName, "count", "The number of token generation attempts.");
+
+        _createDuration = _meter.CreateHistogram<double>(
+            CreateDurationName,
+            unit: "s",
+            description: "The duration of user creation operations.",
+            advice: new() { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _updateDuration = _meter.CreateHistogram<double>(
+            UpdateDurationName,
+            unit: "s",
+            description: "The duration of user update operations.",
+            advice: new() { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _deleteDuration = _meter.CreateHistogram<double>(
+            DeleteDurationName,
+            unit: "s",
+            description: "The duration of user deletion operations.",
+            advice: new() { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _checkPasswordAttemptsCounter = _meter.CreateCounter<long>(
+            CheckPasswordAttemptsCounterName,
+            unit: "{attempt}",
+            description: "The total number of check password attempts. Only checks whether the password is valid and not whether the user account is in a state that can log in.");
+
+        _verifyTokenAttemptsCounter = _meter.CreateCounter<long>(
+            VerifyTokenAttemptsCounterName,
+            unit: "{attempt}",
+            description: "The total number of token verification attempts.");
+
+        _generateTokensCounter = _meter.CreateCounter<long>(
+            GenerateTokensCounterName,
+            unit: "{count}",
+            description: "The total number of token generations.");
     }
 
-    internal void CreateUser(string userType, IdentityResult? result, Exception? exception = null)
+    internal void CreateUser(string userType, IdentityResult? result, long startTimestamp, Exception? exception = null)
     {
-        if (!_createCounter.Enabled)
+        if (!_createDuration.Enabled)
         {
             return;
         }
@@ -52,14 +81,15 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType }
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception, result: result);
 
-        _createCounter.Add(1, tags);
+        var duration = GetElapsedTime(startTimestamp);
+        _createDuration.Record(duration.TotalSeconds, tags);
     }
 
-    internal void UpdateUser(string userType, IdentityResult? result, UserUpdateType updateType, Exception? exception = null)
+    internal void UpdateUser(string userType, IdentityResult? result, UserUpdateType updateType, long startTimestamp, Exception? exception = null)
     {
-        if (!_updateCounter.Enabled)
+        if (!_updateDuration.Enabled)
         {
             return;
         }
@@ -70,14 +100,15 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user.update_type", GetUpdateType(updateType) },
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception, result: result);
 
-        _updateCounter.Add(1, tags);
+        var duration = GetElapsedTime(startTimestamp);
+        _updateDuration.Record(duration.TotalSeconds, tags);
     }
 
-    internal void DeleteUser(string userType, IdentityResult? result, Exception? exception = null)
+    internal void DeleteUser(string userType, IdentityResult? result, long startTimestamp, Exception? exception = null)
     {
-        if (!_deleteCounter.Enabled)
+        if (!_deleteDuration.Enabled)
         {
             return;
         }
@@ -87,14 +118,15 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType }
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception, result: result);
 
-        _deleteCounter.Add(1, tags);
+        var duration = GetElapsedTime(startTimestamp);
+        _deleteDuration.Record(duration.TotalSeconds, tags);
     }
 
     internal void CheckPassword(string userType, bool? userMissing, PasswordVerificationResult? result, Exception? exception = null)
     {
-        if (!_checkPasswordCounter.Enabled)
+        if (!_checkPasswordAttemptsCounter.Enabled)
         {
             return;
         }
@@ -105,16 +137,16 @@ internal sealed class UserManagerMetrics : IDisposable
         };
         if (userMissing != null || result != null)
         {
-            tags.Add("aspnetcore.identity.user.password_result", GetPasswordResult(result, passwordMissing: null, userMissing));
+            tags.Add("aspnetcore.identity.password_check_result", GetPasswordResult(result, passwordMissing: null, userMissing));
         }
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
-        _checkPasswordCounter.Add(1, tags);
+        _checkPasswordAttemptsCounter.Add(1, tags);
     }
 
     internal void VerifyToken(string userType, bool? result, string purpose, Exception? exception = null)
     {
-        if (!_verifyTokenCounter.Enabled)
+        if (!_verifyTokenAttemptsCounter.Enabled)
         {
             return;
         }
@@ -128,14 +160,14 @@ internal sealed class UserManagerMetrics : IDisposable
         {
             tags.Add("aspnetcore.identity.token_verified", result == true ? "success" : "failure");
         }
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
-        _verifyTokenCounter.Add(1, tags);
+        _verifyTokenAttemptsCounter.Add(1, tags);
     }
 
     internal void GenerateToken(string userType, string purpose, Exception? exception = null)
     {
-        if (!_generateTokenCounter.Enabled)
+        if (!_generateTokensCounter.Enabled)
         {
             return;
         }
@@ -145,14 +177,19 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.token_purpose", GetTokenPurpose(purpose) },
         };
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
-        _generateTokenCounter.Add(1, tags);
+        _generateTokensCounter.Add(1, tags);
+    }
+
+    private static TimeSpan GetElapsedTime(long startTimestamp)
+    {
+        return ValueStopwatch.GetElapsedTime(startTimestamp, Stopwatch.GetTimestamp());
     }
 
     private static string GetTokenPurpose(string purpose)
     {
-        // Purpose could be any value and can't be used as a tag value. However, there are known purposes
+        // Purpose could be any value and can't be used directly as a tag value. However, there are known purposes
         // on UserManager that we can detect and use as a tag value. Some could have a ':' in them followed by user data.
         // We need to trim them to content before ':' and then match to known values.
         ReadOnlySpan<char> trimmedPurpose = purpose;
@@ -161,7 +198,8 @@ internal sealed class UserManagerMetrics : IDisposable
         {
             trimmedPurpose = purpose.AsSpan(0, colonIndex);
         }
-        
+
+        // These are known purposes that are specified in ASP.NET Core Identity.
         return trimmedPurpose switch
         {
             "ResetPassword" => "reset_password",
@@ -169,7 +207,7 @@ internal sealed class UserManagerMetrics : IDisposable
             "EmailConfirmation" => "email_confirmation",
             "ChangeEmail" => "change_email",
             "TwoFactor" => "two_factor",
-            _ => "_UNKNOWN"
+            _ => "_OTHER"
         };
     }
 
@@ -183,15 +221,16 @@ internal sealed class UserManagerMetrics : IDisposable
         tags.Add("aspnetcore.identity.result", result.Succeeded ? "success" : "failure");
         if (!result.Succeeded && result.Errors.FirstOrDefault()?.Code is { Length: > 0 } code)
         {
-            tags.Add("aspnetcore.identity.result_error_code", code);
+            tags.Add("aspnetcore.identity.error_code", code);
         }
     }
 
-    private static void AddExceptionTags(ref TagList tags, Exception? exception)
+    private static void AddErrorTag(ref TagList tags, Exception? exception, IdentityResult? result = null)
     {
-        if (exception != null)
+        var value = exception?.GetType().FullName ?? result?.Errors.FirstOrDefault()?.Code;
+        if (value != null)
         {
-            tags.Add("error.type", exception.GetType().FullName!);
+            tags.Add("error.type", value);
         }
     }
 
@@ -204,7 +243,7 @@ internal sealed class UserManagerMetrics : IDisposable
             (PasswordVerificationResult.Failed, false, false) => "failure",
             (null, true, false) => "password_missing",
             (null, false, true) => "user_missing",
-            _ => "_UNKNOWN"
+            _ => "_OTHER"
         };
     }
 
@@ -213,10 +252,10 @@ internal sealed class UserManagerMetrics : IDisposable
         return updateType switch
         {
             UserUpdateType.Update => "update",
-            UserUpdateType.UserName => "user_name",
+            UserUpdateType.SetUserName => "set_user_name",
             UserUpdateType.AddPassword => "add_password",
             UserUpdateType.ChangePassword => "change_password",
-            UserUpdateType.SecurityStamp => "security_stamp",
+            UserUpdateType.UpdateSecurityStamp => "update_security_stamp",
             UserUpdateType.ResetPassword => "reset_password",
             UserUpdateType.RemoveLogin => "remove_login",
             UserUpdateType.AddLogin => "add_login",
@@ -235,16 +274,16 @@ internal sealed class UserManagerMetrics : IDisposable
             UserUpdateType.SetTwoFactorEnabled => "set_two_factor_enabled",
             UserUpdateType.SetLockoutEnabled => "set_lockout_enabled",
             UserUpdateType.SetLockoutEndDate => "set_lockout_end_date",
-            UserUpdateType.AccessFailed => "access_failed",
+            UserUpdateType.IncrementAccessFailed => "increment_access_failed",
             UserUpdateType.ResetAccessFailedCount => "reset_access_failed_count",
             UserUpdateType.SetAuthenticationToken => "set_authentication_token",
             UserUpdateType.RemoveAuthenticationToken => "remove_authentication_token",
             UserUpdateType.ResetAuthenticatorKey => "reset_authenticator_key",
             UserUpdateType.GenerateNewTwoFactorRecoveryCodes => "generate_new_two_factor_recovery_codes",
             UserUpdateType.RedeemTwoFactorRecoveryCode => "redeem_two_factor_recovery_code",
-            UserUpdateType.SetPasskey => "set_passkey",
+            UserUpdateType.AddOrUpdatePasskey => "add_or_update_passkey",
             UserUpdateType.RemovePasskey => "remove_passkey",
-            _ => "_UNKNOWN"
+            _ => "_OTHER"
         };
     }
 

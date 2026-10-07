@@ -16,14 +16,14 @@
 
 @code{
     [Parameter]
-    public bool StartStreaming { get; set; } = false;
+    public bool PerformAsyncOperationBeforeSettingNotFound { get; set; } = false;
 
     [Parameter]
     public bool WaitForInteractivity { get; set; } = false;
 
     private async Task HandleSubmit()
     {
-        if (StartStreaming)
+        if (PerformAsyncOperationBeforeSettingNotFound)
         {
             await Task.Yield();
         }

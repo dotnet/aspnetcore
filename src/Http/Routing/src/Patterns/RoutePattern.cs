@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
@@ -34,8 +33,6 @@ internal sealed class RoutePattern
     {
         return object.ReferenceEquals(RequiredValueAny, value);
     }
-
-    private const string SeparatorString = "/";
 
     internal RoutePattern(
         string? rawText,
@@ -158,10 +155,7 @@ internal sealed class RoutePattern
     // 1. RoutePattern debug string.
     // 2. Default IRouteDiagnosticsMetadata value.
     // 3. RouteEndpoint display name.
-    internal string DebuggerToString()
-    {
-        return RawText ?? string.Join(SeparatorString, PathSegments.Select(s => s.DebuggerToString()));
-    }
+    internal string DebuggerToString() => RoutePatternDebugStringFormatter.Format(this);
 
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     private sealed class RequiredValueAnySentinal

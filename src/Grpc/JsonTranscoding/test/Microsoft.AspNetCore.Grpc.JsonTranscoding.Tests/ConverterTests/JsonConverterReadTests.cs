@@ -11,6 +11,7 @@ using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages;
 using Transcoding;
 using Xunit.Abstractions;
 
@@ -56,6 +57,40 @@ public class JsonConverterReadTests
 }";
 
         var m = AssertReadJson<HelloRequest>(json);
+        Assert.Equal("A field name", m.FieldName);
+    }
+
+    [Fact]
+    public void NonJsonName_CaseInsensitive()
+    {
+        var json = @"{
+  ""HIDING_FIELD_NAME"": ""A field name""
+}";
+
+        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
+        Assert.Equal("A field name", m.HidingFieldName);
+    }
+
+    [Fact]
+    public void HidingJsonName_CaseInsensitive()
+    {
+        var json = @"{
+  ""FIELD_NAME"": ""A field name""
+}";
+
+        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
+        Assert.Equal("", m.FieldName);
+        Assert.Equal("A field name", m.HidingFieldName);
+    }
+
+    [Fact]
+    public void JsonCustomizedName_CaseInsensitive()
+    {
+        var json = @"{
+  ""JSON_CUSTOMIZED_NAME"": ""A field name""
+}";
+
+        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
         Assert.Equal("A field name", m.FieldName);
     }
 
@@ -229,17 +264,52 @@ public class JsonConverterReadTests
     }
 
     [Theory]
-    [InlineData("FOO")]
-    [InlineData("BAR")]
-    [InlineData("NEG")]
-    public void Enum_ReadString(string value)
+    [InlineData("FOO", HelloRequest.Types.DataTypes.Types.NestedEnum.Foo)]
+    [InlineData("BAR", HelloRequest.Types.DataTypes.Types.NestedEnum.Bar)]
+    [InlineData("NEG", HelloRequest.Types.DataTypes.Types.NestedEnum.Neg)]
+    public void Enum_ReadString(string value, HelloRequest.Types.DataTypes.Types.NestedEnum expectedValue)
     {
         var serviceDescriptorRegistry = new DescriptorRegistry();
         serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
 
         var json = @$"{{ ""singleEnum"": ""{value}"" }}";
 
-        AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
+        var result = AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
+        Assert.Equal(expectedValue, result.SingleEnum);
+    }
+
+    [Theory]
+    [InlineData("UNSPECIFIED", PrefixEnumType.Types.PrefixEnum.Unspecified)]
+    [InlineData("PREFIX_ENUM_UNSPECIFIED", PrefixEnumType.Types.PrefixEnum.Unspecified)]
+    [InlineData("FOO", PrefixEnumType.Types.PrefixEnum.Foo)]
+    [InlineData("PREFIX_ENUM_FOO", PrefixEnumType.Types.PrefixEnum.Foo)]
+    [InlineData("BAR", PrefixEnumType.Types.PrefixEnum.Bar)]
+    public void Enum_RemovePrefix_ReadString(string value, PrefixEnumType.Types.PrefixEnum expectedValue)
+    {
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        var json = @$"{{ ""singleEnum"": ""{value}"" }}";
+
+        var result = AssertReadJson<PrefixEnumType>(json, descriptorRegistry: serviceDescriptorRegistry, serializeOld: false, settings: new GrpcJsonSettings { RemoveEnumPrefix = true });
+        Assert.Equal(expectedValue, result.SingleEnum);
+    }
+
+    [Theory]
+    [InlineData("UNSPECIFIED", CollisionPrefixEnumType.Types.CollisionPrefixEnum.Unspecified)]
+    [InlineData("COLLISION_PREFIX_ENUM_UNSPECIFIED", CollisionPrefixEnumType.Types.CollisionPrefixEnum.Unspecified)]
+    [InlineData("FOO", CollisionPrefixEnumType.Types.CollisionPrefixEnum.Foo)]
+    [InlineData("COLLISION_PREFIX_ENUM_FOO", CollisionPrefixEnumType.Types.CollisionPrefixEnum.CollisionPrefixEnumFoo)] // Match exact rather than fallback.
+    [InlineData("COLLISION_PREFIX_ENUM_COLLISION_PREFIX_ENUM_FOO", CollisionPrefixEnumType.Types.CollisionPrefixEnum.CollisionPrefixEnumFoo)]
+    public void Enum_RemovePrefix_Collision_ReadString(string value, CollisionPrefixEnumType.Types.CollisionPrefixEnum expectedValue)
+    {
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        var json = @$"{{ ""singleEnum"": ""{value}"" }}";
+
+        var result = AssertReadJson<CollisionPrefixEnumType>(json, descriptorRegistry: serviceDescriptorRegistry, serializeOld: false, settings: new GrpcJsonSettings { RemoveEnumPrefix = true });
+        Assert.Equal(expectedValue, result.SingleEnum);
     }
 
     [Fact]
@@ -439,6 +509,23 @@ public class JsonConverterReadTests
     }
 
     [Fact]
+    public void MapMessages_CaseInsensitive()
+    {
+        var json = @"{
+  ""mapMessage"": {
+    ""name1"": {
+      ""SUBFIELD"": ""value1""
+    },
+    ""name2"": {
+      ""SUBFIELD"": ""value2""
+    }
+  }
+}";
+
+        AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
+    }
+
+    [Fact]
     public void MapKeyBool()
     {
         var json = @"{
@@ -449,6 +536,21 @@ public class JsonConverterReadTests
 }";
 
         AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
+    public void MapKeyBool_CaseInsensitive()
+    {
+        var json = @"{
+  ""mapKeybool"": {
+    ""TRUE"": ""value1"",
+    ""FALSE"": ""value2""
+  }
+}";
+
+        // Note: JSON property names here are keys in a dictionary, not fields. So FieldNamesCaseInsensitive doesn't apply.
+        // The new serializer supports converting true/false to boolean keys while ignoring case.
+        AssertReadJson<HelloRequest>(json, serializeOld: false);
     }
 
     [Fact]
@@ -475,6 +577,16 @@ public class JsonConverterReadTests
     }
 
     [Fact]
+    public void OneOf_CaseInsensitive_Success()
+    {
+        var json = @"{
+  ""ONEOFNAME1"": ""test""
+}";
+
+        AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
+    }
+
+    [Fact]
     public void OneOf_Failure()
     {
         var json = @"{
@@ -483,6 +595,17 @@ public class JsonConverterReadTests
 }";
 
         AssertReadJsonError<HelloRequest>(json, ex => Assert.Equal("Multiple values specified for oneof oneof_test", ex.Message.TrimEnd('.')));
+    }
+
+    [Fact]
+    public void OneOf_CaseInsensitive_Failure()
+    {
+        var json = @"{
+  ""ONEOFNAME1"": ""test"",
+  ""ONEOFNAME2"": ""test""
+}";
+
+        AssertReadJsonError<HelloRequest>(json, ex => Assert.Equal("Multiple values specified for oneof oneof_test", ex.Message.TrimEnd('.')), deserializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
     }
 
     [Fact]
@@ -528,7 +651,46 @@ public class JsonConverterReadTests
   ""bytesValue"": ""SGVsbG8gd29ybGQ=""
 }";
 
-        AssertReadJson<HelloRequest.Types.Wrappers>(json);
+        var result = AssertReadJson<HelloRequest.Types.Wrappers>(json);
+        Assert.Equal("A string", result.StringValue);
+    }
+
+    [Fact]
+    public void NullableWrappers_CaseInsensitive()
+    {
+        var json = @"{
+  ""STRINGVALUE"": ""A string"",
+  ""INT32VALUE"": 1,
+  ""INT64VALUE"": ""2"",
+  ""FLOATVALUE"": 1.2,
+  ""DOUBLEVALUE"": 1.1,
+  ""BOOLVALUE"": true,
+  ""UINT32VALUE"": 3,
+  ""UINT64VALUE"": ""4"",
+  ""BYTESVALUE"": ""SGVsbG8gd29ybGQ=""
+}";
+
+        var result = AssertReadJson<HelloRequest.Types.Wrappers>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
+        Assert.Equal("A string", result.StringValue);
+    }
+
+    [Fact]
+    public void NullableWrappers_Type()
+    {
+        var json = @"{
+  ""stringValue"": ""A string"",
+  ""int32Value"": 1,
+  ""int64Value"": ""2"",
+  ""floatValue"": 1.2,
+  ""doubleValue"": 1.1,
+  ""boolValue"": true,
+  ""uint32Value"": 3,
+  ""uint64Value"": ""4"",
+  ""bytesValue"": ""SGVsbG8gd29ybGQ=""
+}";
+
+        var result = AssertReadJson<WrappersMessage>(json, serializeOld: false);
+        Assert.Equal("A string", result.StringValue.Value);
     }
 
     [Fact]
@@ -609,8 +771,19 @@ public class JsonConverterReadTests
     {
         var json = @"{""b"":10,""a"":20,""d"":30}";
 
-        // TODO: Current Google.Protobuf version doesn't have fix. Update when available. 3.23.0 or later?
-        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false);
+        var m = AssertReadJson<Issue047349Message>(json);
+
+        Assert.Equal(10, m.A);
+        Assert.Equal(20, m.B);
+        Assert.Equal(30, m.C);
+    }
+
+    [Fact]
+    public void JsonNamePriority_CaseInsensitive_JsonName()
+    {
+        var json = @"{""B"":10,""A"":20,""D"":30}";
+
+        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
 
         Assert.Equal(10, m.A);
         Assert.Equal(20, m.B);
@@ -622,12 +795,42 @@ public class JsonConverterReadTests
     {
         var json = @"{""b"":10,""a"":20,""c"":30}";
 
-        // TODO: Current Google.Protobuf version doesn't have fix. Update when available. 3.23.0 or later?
-        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false);
+        var m = AssertReadJson<Issue047349Message>(json);
 
         Assert.Equal(10, m.A);
         Assert.Equal(20, m.B);
         Assert.Equal(30, m.C);
+    }
+
+    [Fact]
+    public void JsonNamePriority_CaseInsensitive_FieldNameFallback()
+    {
+        var json = @"{""B"":10,""A"":20,""C"":30}";
+
+        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
+
+        Assert.Equal(10, m.A);
+        Assert.Equal(20, m.B);
+        Assert.Equal(30, m.C);
+    }
+
+    [Fact]
+    public void FieldNameCase_Success()
+    {
+        var json = @"{""a"":10,""A"":20}";
+
+        var m = AssertReadJson<FieldNameCaseMessage>(json);
+
+        Assert.Equal(10, m.A);
+        Assert.Equal(20, m.B);
+    }
+
+    [Fact]
+    public void FieldNameCase_CaseInsensitive_Failure()
+    {
+        var json = @"{""a"":10,""A"":20}";
+
+        AssertReadJsonError<FieldNameCaseMessage>(json, ex => Assert.Equal("The JSON property name for 'Transcoding.FieldNameCaseMessage.A' collides with another property.", ex.Message), deserializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
     }
 
     private TValue AssertReadJson<TValue>(string value, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null, bool serializeOld = true) where TValue : IMessage, new()

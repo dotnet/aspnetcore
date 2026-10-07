@@ -3,12 +3,21 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components.RenderTree;
 
 internal static class EventArgsTypeCache
 {
     private static readonly ConcurrentDictionary<MethodInfo, Type> Cache = new ConcurrentDictionary<MethodInfo, Type>();
+
+    static EventArgsTypeCache()
+    {
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += Cache.Clear;
+        }
+    }
 
     public static Type GetEventArgsType(MethodInfo methodInfo)
     {

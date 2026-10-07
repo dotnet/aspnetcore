@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.AspNetCore.Identity;
 
 namespace IdentitySample.PasskeyConformance.Data;
 
@@ -13,4 +12,11 @@ internal sealed class ServerPublicKeyCredentialCreationOptionsRequest(string use
     public AuthenticatorSelectionCriteria? AuthenticatorSelection { get; set; }
     public JsonElement? Extensions { get; set; }
     public string? Attestation { get; set; } = "none";
+
+    internal sealed class AuthenticatorSelectionCriteria
+    {
+        public string? ResidentKey { get; set; }
+        public string? AuthenticatorAttachment { get; set; }
+        public string? UserVerification { get; set; }
+    }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Validation;
 
 namespace BasicTestApp.ValidationModels;
 
@@ -14,5 +15,9 @@ public class CustomerModel
     [EmailAddress(ErrorMessage = "Invalid Email Address.")]
     public string Email { get; set; }
 
+    public AddressModel PaymentAddress { get; set; } = new AddressModel();
+
+    [SkipValidation]
     public AddressModel ShippingAddress { get; set; } = new AddressModel();
+
 }

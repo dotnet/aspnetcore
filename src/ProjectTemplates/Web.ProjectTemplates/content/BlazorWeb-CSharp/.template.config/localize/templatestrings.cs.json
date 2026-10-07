@@ -3,7 +3,6 @@
   "name": "Webová aplikace Blazor",
   "description": "Šablona projektu pro vytvoření webové aplikace Blazor, která podporuje vykreslování na straně serveru i interaktivitu klienta. Tato šablona se dá použít pro webové aplikace s bohatými dynamickými uživatelskými rozhraními (UI).",
   "symbols/Framework/description": "Cílová architektura pro projekt",
-  "symbols/Framework/choices/net10.0/description": "Cíl net10.0",
   "symbols/UserSecretsId/description": "ID, které se má použít pro tajné kódy (používá se s individuálním ověřováním).",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/ExcludeLaunchSettings/description": "Určuje, jestli se má z vygenerované šablony vyloučit soubor launchSettings.json.",
@@ -39,8 +38,8 @@
   "symbols/NoHttps/description": "Určuje, jestli se má vypnout protokol HTTPS. Tato možnost platí jenom v případě, že se pro --auth nepoužívá jednotlivec.",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
-  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the aplication URL",
-  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345.",
+  "symbols/LocalhostTld/displayName": "Použití TLD .dev.localhost v adrese URL aplikace",
+  "symbols/LocalhostTld/description": "Určuje, jestli se má název projektu zkombinovat s TLD .dev.localhost v adrese URL aplikace pro místní vývoj, například https://myapp.dev.localhost:12345.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore"
 }

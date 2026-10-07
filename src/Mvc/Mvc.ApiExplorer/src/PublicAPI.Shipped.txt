@@ -73,6 +73,8 @@ Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType (forwarded, contained in Mi
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ApiResponseFormats.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ApiResponseFormats.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ApiResponseType() -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Description.get -> string? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Description.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.IsDefaultResponse.get -> bool (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.IsDefaultResponse.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)

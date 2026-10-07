@@ -3,7 +3,6 @@
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -15,6 +14,7 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
 {
     private readonly JsonOptions _jsonOptions;
     private readonly ILogger<SystemTextJsonInputFormatter> _logger;
+    private readonly bool _useStreamJsonOverload;
 
     /// <summary>
     /// Initializes a new instance of <see cref="SystemTextJsonInputFormatter"/>.
@@ -35,6 +35,11 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
         SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
         SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
         SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
+
+        // Fallback to the stream-based overloads for JsonSerializer.DeserializeAsync
+        // This is to give users with custom JsonConverter implementations the chance to update their
+        // converters to support ReadOnlySequence<T> if needed while still keeping their apps working.
+        _useStreamJsonOverload = AppContext.TryGetSwitch("Microsoft.AspNetCore.UseStreamBasedJsonParsing", out var isEnabled) && isEnabled;
     }
 
     /// <summary>
@@ -58,12 +63,27 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
         ArgumentNullException.ThrowIfNull(encoding);
 
         var httpContext = context.HttpContext;
-        var (inputStream, usesTranscodingStream) = GetInputStream(httpContext, encoding);
 
         object? model;
+        Stream? inputStream = null;
         try
         {
-            model = await JsonSerializer.DeserializeAsync(inputStream, context.ModelType, SerializerOptions);
+            if (encoding.CodePage == Encoding.UTF8.CodePage)
+            {
+                if (_useStreamJsonOverload)
+                {
+                    model = await JsonSerializer.DeserializeAsync(httpContext.Request.Body, context.ModelType, SerializerOptions);
+                }
+                else
+                {
+                    model = await JsonSerializer.DeserializeAsync(httpContext.Request.BodyReader, context.ModelType, SerializerOptions);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(httpContext.Request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                model = await JsonSerializer.DeserializeAsync(inputStream, context.ModelType, SerializerOptions);
+            }
         }
         catch (JsonException jsonException)
         {
@@ -89,7 +109,7 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
         }
         finally
         {
-            if (usesTranscodingStream)
+            if (inputStream is not null)
             {
                 await inputStream.DisposeAsync();
             }
@@ -121,17 +141,6 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
         // InputFormatterException specifies that the message is safe to return to a client, it will
         // be added to model state.
         return new InputFormatterException(jsonException.Message, jsonException);
-    }
-
-    private static (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding encoding)
-    {
-        if (encoding.CodePage == Encoding.UTF8.CodePage)
-        {
-            return (httpContext.Request.Body, false);
-        }
-
-        var inputStream = Encoding.CreateTranscodingStream(httpContext.Request.Body, encoding, Encoding.UTF8, leaveOpen: true);
-        return (inputStream, true);
     }
 
     private static partial class Log

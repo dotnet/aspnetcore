@@ -1,6 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Test;
 
@@ -25,6 +31,7 @@ public class HostingTests
             .Returns(Mock.Of<IKeyRing>())
             .Callback(() => tcs.TrySetResult());
 
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         var builder = new WebHostBuilder()
             .UseStartup<TestStartup>()
             .ConfigureServices(s =>
@@ -33,8 +40,11 @@ public class HostingTests
                 .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
                 .AddSingleton<IServer>(
                     new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))));
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
         using (var host = builder.Build())
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
         {
             await host.StartAsync();
         }
@@ -128,3 +138,5 @@ public class HostingTests
         }
     }
 }
+
+#endif

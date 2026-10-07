@@ -1,10 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?include ..\AspNetCoreModule-Setup\IIS-Setup\include.wxi ?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.Version)" 
-             Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCode)">
-        <Package InstallerVersion="$(var.InstallerVersion)" Compressed="yes" InstallScope="perMachine" />
-
+﻿<?include ..\AspNetCoreModule-Setup\IIS-Setup\include.wxi ?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package Name="$(ProductName)" Language="1033" Version="$(Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(UpgradeCode)" InstallerVersion="$(InstallerVersion)" ProductCode="$(ProductCode)">
+        
         <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
         <Media Id="1" />
 
@@ -20,26 +17,24 @@
             <!-- First option is to use user input, if they passed any (if they explicitly set an option to the empty string, we convert that to 0 here). -->
             <!-- Second option is to use registry values, if present. -->
             <!-- Third option is to set the options all to 0, which we do here. -->
-            <Custom Action="Set_OPT_NO_ANCM" After="AppSearch">NOT OPT_NO_ANCM OR OPT_NO_ANCM=""</Custom>
-            <Custom Action="Set_OPT_NO_SHAREDFX" After="AppSearch">NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=""</Custom>
-            <Custom Action="Set_OPT_NO_RUNTIME" After="AppSearch">NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=""</Custom>
-            <Custom Action="Set_OPT_NO_X86" After="AppSearch">NOT OPT_NO_X86 OR OPT_NO_X86=""</Custom>
-            <Custom Action="Set_OPT_NO_SHARED_CONFIG_CHECK" After="AppSearch">NOT OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK=""</Custom>
+            <Custom Action="Set_OPT_NO_ANCM" After="AppSearch" Condition="NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;&quot;" />
+            <Custom Action="Set_OPT_NO_SHAREDFX" After="AppSearch" Condition="NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=&quot;&quot;" />
+            <Custom Action="Set_OPT_NO_RUNTIME" After="AppSearch" Condition="NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;&quot;" />
+            <Custom Action="Set_OPT_NO_X86" After="AppSearch" Condition="NOT OPT_NO_X86 OR OPT_NO_X86=&quot;&quot;" />
+            <Custom Action="Set_OPT_NO_SHARED_CONFIG_CHECK" After="AppSearch" Condition="NOT OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK=&quot;&quot;" />
         </InstallExecuteSequence>
 
         <Feature Id="ProductFeature" Title="HostOptions" Level="1">
             <ComponentGroupRef Id="ProductComponents" />
         </Feature>
-    </Product>
+    </Package>
 
     <Fragment>
-        <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="$(var.ProgramFilesFolder)">
-                <Directory Id="INSTALLFOLDER" Name="dotnet">
-                    <Directory Id="MM" Name="$(var.MajorVersion).$(var.MinorVersion)" />
-                </Directory>
+        <StandardDirectory Id="ProgramFiles6432Folder">
+            <Directory Id="INSTALLFOLDER" Name="dotnet">
+                <Directory Id="MM" Name="$(MajorVersion).$(MinorVersion)" />
             </Directory>
-        </Directory>
+        </StandardDirectory>
     </Fragment>
 
     <Fragment>
@@ -49,10 +44,10 @@
             <?undef ProductOptionsKey?>
             <?endif?>
 
-            <?define ProductOptionsKey=SOFTWARE\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)?>
+            <?define ProductOptionsKey=SOFTWARE\Microsoft\dotnet\host\options\$(MajorVersion).$(MinorVersion)?>
 
-            <Component Id="OPT" Guid="*">
-                <RegistryKey Root="HKLM" Key="$(var.ProductOptionsKey)">
+            <Component Id="OPT">
+                <RegistryKey Root="HKLM" Key="$(ProductOptionsKey)">
                     <RegistryValue Name="OPT_NO_ANCM" Type="integer" Value="[OPT_NO_ANCM]" KeyPath="yes" />
                     <RegistryValue Name="OPT_NO_SHAREDFX" Type="integer" Value="[OPT_NO_SHAREDFX]" />
                     <RegistryValue Name="OPT_NO_RUNTIME" Type="integer" Value="[OPT_NO_RUNTIME]" />

@@ -16,8 +16,8 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(EmptyComponent);
         var serviceProvider = GetServiceProvider();
-        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new TestRenderer());
-        
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new DefaultComponentPropertyActivator(), new TestRenderer());
+
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
 
@@ -32,8 +32,8 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(List<string>);
         var serviceProvider = GetServiceProvider();
-        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new TestRenderer());
-        
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new DefaultComponentPropertyActivator(), new TestRenderer());
+
         // Assert
         var ex = Assert.Throws<ArgumentException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null, null));
         Assert.StartsWith($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", ex.Message);
@@ -44,7 +44,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(EmptyComponent);
-        var factory = new ComponentFactory(new CustomComponentActivator<ComponentWithInjectProperties>(), new TestRenderer());
+        var factory = new ComponentFactory(new CustomComponentActivator<ComponentWithInjectProperties>(), new DefaultComponentPropertyActivator(), new TestRenderer());
 
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
@@ -65,7 +65,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(EmptyComponent);
-        var factory = new ComponentFactory(new NullResultComponentActivator(), new TestRenderer());
+        var factory = new ComponentFactory(new NullResultComponentActivator(), new DefaultComponentPropertyActivator(), new TestRenderer());
 
         // Act
         var ex = Assert.Throws<InvalidOperationException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null, null));
@@ -77,7 +77,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(DerivedComponent);
-        var factory = new ComponentFactory(new CustomComponentActivator<DerivedComponent>(), new TestRenderer());
+        var factory = new ComponentFactory(new CustomComponentActivator<DerivedComponent>(), new DefaultComponentPropertyActivator(), new TestRenderer());
 
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
@@ -94,6 +94,8 @@ public class ComponentFactoryTest
         Assert.Null(component.Property4);
         // Property on the base type with the [Inject] attribute should
         Assert.NotNull(((ComponentWithInjectProperties)component).Property4);
+        // Property on derived type with [Inject] should be assigned
+        Assert.NotNull(component.Property5);
     }
 
     [Fact]
@@ -102,7 +104,7 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(ComponentWithNonInjectableProperties);
         var serviceProvider = GetServiceProvider();
-        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new TestRenderer());
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new DefaultComponentPropertyActivator(), new TestRenderer());
 
         // Act
         var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
@@ -123,7 +125,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(
             /* won't be used */ new ComponentWithRenderMode());
         var serviceProvider = GetServiceProvider();
-        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), renderer);
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new DefaultComponentPropertyActivator(), renderer);
 
         // Act
         var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
@@ -142,7 +144,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var serviceProvider = GetServiceProvider();
         var componentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(componentActivator, renderer);
+        var factory = new ComponentFactory(componentActivator, new DefaultComponentPropertyActivator(), renderer);
 
         // Act
         var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(serviceProvider, componentType, null, 1234);
@@ -174,7 +176,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var serviceProvider = GetServiceProvider();
         var componentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(componentActivator, renderer);
+        var factory = new ComponentFactory(componentActivator, new DefaultComponentPropertyActivator(), renderer);
 
         // Act/Assert
         Assert.Throws<AmbiguousMatchException>(
@@ -193,7 +195,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var serviceProvider = GetServiceProvider();
         var componentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(componentActivator, renderer);
+        var factory = new ComponentFactory(componentActivator, new DefaultComponentPropertyActivator(), renderer);
 
         // Act
         var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(serviceProvider, componentType, callSiteRenderMode, 1234);
@@ -216,7 +218,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var serviceProvider = GetServiceProvider();
         var componentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(componentActivator, renderer);
+        var factory = new ComponentFactory(componentActivator, new DefaultComponentPropertyActivator(), renderer);
 
         // Even though the two rendermodes are literally the same object, we don't allow specifying any nonnull
         // rendermode at the callsite if there's a nonnull fixed rendermode
@@ -237,7 +239,7 @@ public class ComponentFactoryTest
         var resolvedComponent = new ComponentWithInjectProperties();
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var defaultComponentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(defaultComponentActivator, renderer);
+        var factory = new ComponentFactory(defaultComponentActivator, new DefaultComponentPropertyActivator(), renderer);
 
         // Act
         var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
@@ -248,6 +250,227 @@ public class ComponentFactoryTest
         Assert.NotNull(component.Property1);
         Assert.NotNull(component.Property2);
         Assert.NotNull(component.Property3); // Property injection should still work.
+    }
+
+    [Fact]
+    public void InstantiateComponent_WithCustomPropertyActivator_UsesCustomActivator()
+    {
+        // Arrange
+        var componentType = typeof(ComponentWithInjectProperties);
+        var serviceProvider = GetServiceProvider();
+        var customPropertyActivator = new CustomPropertyActivator();
+        var factory = new ComponentFactory(
+            new DefaultComponentActivator(serviceProvider),
+            customPropertyActivator,
+            new TestRenderer());
+
+        // Act
+        var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
+
+        // Assert
+        Assert.NotNull(instance);
+        var component = Assert.IsType<ComponentWithInjectProperties>(instance);
+        Assert.True(customPropertyActivator.GetActivatorCalled);
+        Assert.Equal(componentType, customPropertyActivator.RequestedType);
+        Assert.True(customPropertyActivator.ActivatorInvoked);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WithCustomPropertyActivator_ReceivesCorrectServiceProvider()
+    {
+        // Arrange
+        var componentType = typeof(ComponentWithInjectProperties);
+        var serviceProvider = GetServiceProvider();
+        var customPropertyActivator = new CustomPropertyActivator();
+        var factory = new ComponentFactory(
+            new DefaultComponentActivator(serviceProvider),
+            customPropertyActivator,
+            new TestRenderer());
+
+        // Act
+        factory.InstantiateComponent(serviceProvider, componentType, null, null);
+
+        // Assert
+        Assert.Same(serviceProvider, customPropertyActivator.ReceivedServiceProvider);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WithCustomPropertyActivator_WhenActivatorReturnsDifferentType_StillUsesCustomActivator()
+    {
+        // Arrange
+        // The component activator returns a different type than requested
+        var requestedType = typeof(EmptyComponent);
+        var actualType = typeof(ComponentWithInjectProperties);
+        var serviceProvider = GetServiceProvider();
+        var customPropertyActivator = new CustomPropertyActivator();
+        var factory = new ComponentFactory(
+            new CustomComponentActivator<ComponentWithInjectProperties>(),
+            customPropertyActivator,
+            new TestRenderer());
+
+        // Act
+        var instance = factory.InstantiateComponent(serviceProvider, requestedType, null, null);
+
+        // Assert
+        Assert.IsType<ComponentWithInjectProperties>(instance);
+        // The property activator should be called with the actual type, not the requested type
+        Assert.True(customPropertyActivator.GetActivatorCalled);
+        // Since the types differ, GetActivator is called twice (once for requested, once for actual)
+        // But the activator should have been invoked for the actual component type
+        Assert.True(customPropertyActivator.ActivatorInvoked);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WhenActivatorReturnsSubtype_InjectsAllSubtypeProperties()
+    {
+        // Arrange
+        // Request base type but activator returns derived type
+        var requestedType = typeof(ComponentWithInjectProperties);
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(
+            new CustomComponentActivator<DerivedComponent>(),
+            new DefaultComponentPropertyActivator(),
+            new TestRenderer());
+
+        // Act
+        var instance = factory.InstantiateComponent(serviceProvider, requestedType, null, null);
+
+        // Assert
+        var component = Assert.IsType<DerivedComponent>(instance);
+        
+        // All base type properties with [Inject] should be injected
+        Assert.NotNull(component.Property1);
+        Assert.NotNull(component.GetProperty2());
+        Assert.NotNull(component.Property3);
+        Assert.NotNull(((ComponentWithInjectProperties)component).Property4);
+        Assert.NotNull(component.KeyedProperty);
+        
+        // Derived type properties with [Inject] should also be injected
+        Assert.NotNull(component.Property5);
+        
+        // Derived type property without [Inject] should not be injected
+        Assert.Null(component.Property4);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WhenActivatorReturnsExactType_InjectsPropertiesIdenticallyToSubtype()
+    {
+        // Arrange
+        // This test validates that there's no difference in property injection behavior
+        // whether the activator returns the exact type or a subtype
+        var requestedType = typeof(DerivedComponent);
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(
+            new CustomComponentActivator<DerivedComponent>(),
+            new DefaultComponentPropertyActivator(),
+            new TestRenderer());
+
+        // Act
+        var instance = factory.InstantiateComponent(serviceProvider, requestedType, null, null);
+
+        // Assert
+        var component = Assert.IsType<DerivedComponent>(instance);
+        
+        // All base type properties with [Inject] should be injected
+        Assert.NotNull(component.Property1);
+        Assert.NotNull(component.GetProperty2());
+        Assert.NotNull(component.Property3);
+        Assert.NotNull(((ComponentWithInjectProperties)component).Property4);
+        Assert.NotNull(component.KeyedProperty);
+        
+        // Derived type properties with [Inject] should also be injected
+        Assert.NotNull(component.Property5);
+        
+        // Derived type property without [Inject] should not be injected
+        Assert.Null(component.Property4);
+    }
+
+    [Fact]
+    public void DefaultComponentPropertyActivator_GetActivator_ReturnsActivatorThatInjectsProperties()
+    {
+        // Arrange
+        var componentType = typeof(ComponentWithInjectProperties);
+        var serviceProvider = GetServiceProvider();
+        var propertyActivator = new DefaultComponentPropertyActivator();
+        var component = new ComponentWithInjectProperties();
+
+        // Act
+        var activator = propertyActivator.GetActivator(componentType);
+        activator(serviceProvider, component);
+
+        // Assert
+        Assert.NotNull(component.Property1);
+        Assert.NotNull(component.GetProperty2());
+        Assert.NotNull(component.Property3);
+        Assert.NotNull(component.Property4);
+        Assert.NotNull(component.KeyedProperty);
+    }
+
+    [Fact]
+    public void DefaultComponentPropertyActivator_GetActivator_CachesActivator()
+    {
+        // Arrange
+        var componentType = typeof(ComponentWithInjectProperties);
+        var propertyActivator = new DefaultComponentPropertyActivator();
+
+        // Act
+        var activator1 = propertyActivator.GetActivator(componentType);
+        var activator2 = propertyActivator.GetActivator(componentType);
+
+        // Assert
+        Assert.Same(activator1, activator2);
+    }
+
+    [Fact]
+    public void DefaultComponentPropertyActivator_GetActivator_ReturnsNoOpForComponentWithoutInjectableProperties()
+    {
+        // Arrange
+        var componentType = typeof(EmptyComponent);
+        var serviceProvider = GetServiceProvider();
+        var propertyActivator = new DefaultComponentPropertyActivator();
+        var component = new EmptyComponent();
+
+        // Act
+        var activator = propertyActivator.GetActivator(componentType);
+
+        // Should not throw
+        activator(serviceProvider, component);
+
+        // Assert - nothing to verify, just ensuring no exception
+    }
+
+    [Fact]
+    public void DefaultComponentPropertyActivator_GetActivator_ThrowsForMissingService()
+    {
+        // Arrange
+        var componentType = typeof(ComponentWithInjectProperties);
+        var serviceProvider = new ServiceCollection().BuildServiceProvider(); // Empty provider
+        var propertyActivator = new DefaultComponentPropertyActivator();
+        var component = new ComponentWithInjectProperties();
+
+        // Act
+        var activator = propertyActivator.GetActivator(componentType);
+        var ex = Assert.Throws<InvalidOperationException>(() => activator(serviceProvider, component));
+
+        // Assert
+        Assert.Contains("There is no registered service of type", ex.Message);
+    }
+
+    [Fact]
+    public void DefaultComponentPropertyActivator_GetActivator_ThrowsForMissingKeyedService()
+    {
+        // Arrange
+        var componentType = typeof(ComponentWithOnlyKeyedProperty);
+        var serviceProvider = new ServiceCollection().BuildServiceProvider(); // Empty provider
+        var propertyActivator = new DefaultComponentPropertyActivator();
+        var component = new ComponentWithOnlyKeyedProperty();
+
+        // Act
+        var activator = propertyActivator.GetActivator(componentType);
+        var ex = Assert.Throws<InvalidOperationException>(() => activator(serviceProvider, component));
+
+        // Assert
+        Assert.Contains("registered keyed service", ex.Message);
     }
 
     private const string KeyedServiceKey = "my-keyed-service";
@@ -359,6 +582,22 @@ public class ComponentFactoryTest
     public class TestService2 { }
     public class TestService3 { }
 
+    private class ComponentWithOnlyKeyedProperty : IComponent
+    {
+        [Inject(Key = KeyedServiceKey)]
+        public TestService3 KeyedProperty { get; set; }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     private class CustomComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
     {
         public IComponent CreateInstance(Type componentType)
@@ -372,6 +611,31 @@ public class ComponentFactoryTest
         public IComponent CreateInstance(Type componentType)
         {
             return null;
+        }
+    }
+
+    private class CustomPropertyActivator : IComponentPropertyActivator
+    {
+        public bool GetActivatorCalled { get; private set; }
+        public Type RequestedType { get; private set; }
+        public bool ActivatorInvoked { get; private set; }
+        public IServiceProvider ReceivedServiceProvider { get; private set; }
+
+        public Action<IServiceProvider, IComponent> GetActivator(Type componentType)
+        {
+            GetActivatorCalled = true;
+            RequestedType = componentType;
+
+            // Return an activator that tracks invocation and delegates to the default
+            var defaultActivator = new DefaultComponentPropertyActivator();
+            var defaultAction = defaultActivator.GetActivator(componentType);
+
+            return (sp, component) =>
+            {
+                ActivatorInvoked = true;
+                ReceivedServiceProvider = sp;
+                defaultAction(sp, component);
+            };
         }
     }
 

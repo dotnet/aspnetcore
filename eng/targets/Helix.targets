@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup Condition="'$(TestDependsOnJava)' == 'true'">
-    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="call RunPowershell.cmd InstallJdk.ps1 11.0.3 %25HELIX_CORRELATION_PAYLOAD%25\jdk &amp;&amp; set %22JAVA_HOME=%25HELIX_CORRELATION_PAYLOAD%25\jdk%22" />
-    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true' AND '$(IsMacHelixQueue)' != 'true'" Include="./installjdk.sh 10.0.2 x64 &amp;&amp; if [ &quot;%24JAVA_HOME&quot; = &quot;&quot; ]%3B then export JAVA_HOME=%24PWD/java%3B fi" />
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="call RunPowershell.cmd InstallJdk.ps1 21.0.5 %25HELIX_CORRELATION_PAYLOAD%25\jdk &amp;&amp; set %22JAVA_HOME=%25HELIX_CORRELATION_PAYLOAD%25\jdk%22" />
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true' AND '$(IsMacHelixQueue)' != 'true'" Include="./installjdk.sh 21.0.5 x64 &amp;&amp; if [ &quot;%24JAVA_HOME&quot; = &quot;&quot; ]%3B then export JAVA_HOME=%24PWD/java%3B fi" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(IsArm64HelixQueue)' != 'true'">
@@ -20,14 +20,23 @@
       $(HelixQueueAlpine);
       $(HelixQueueAzureLinux);
       $(HelixQueueDebian);
-      $(HelixQueueFedora40);
-      Ubuntu.2004.Amd64.Open;
+      $(HelixQueueFedora);
+      Ubuntu.2404.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TestDependsOnPlaywright)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
     <HelixPreCommand Include="call RunPowershell.cmd installPlaywrightReqs.ps1 || exit /b 1" />
+  </ItemGroup>
+
+  <!-- Test assets that remain on the bootstrap shared framework need to run in the
+       repository's next-major testhost during early branding. -->
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
+      '$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)' AND
+      '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' == 'true'">
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="set %22DOTNET_ROLL_FORWARD=Major%22" />
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="export DOTNET_ROLL_FORWARD=Major" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnIIS)' == 'true' AND '$(IsWindowsOnlyTest)' == 'true'">
@@ -62,6 +71,9 @@
   <ItemGroup>
     <!-- Grab all shipping packages. -->
     <HelixContent Include="$(ArtifactsShippingPackagesDir)*$(SharedFxVersion).nupkg"
+        Condition=" $(TestDependsOnAspNetPackages) "/>
+    <!-- Template packages are nonshipping but are still required by template tests. -->
+    <HelixContent Include="$(ArtifactsNonShippingPackagesDir)*Templates*$(SharedFxVersion).nupkg"
         Condition=" $(TestDependsOnAspNetPackages) "/>
     <!-- Grab just the App.Ref and App.Runtime packages. -->
     <HelixContent Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.App.*$(SharedFxVersion).nupkg"
@@ -117,7 +129,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="XunitXml.TestLogger" Version="2.1.26" />
+    <PackageReference Include="XunitXml.TestLogger" />
   </ItemGroup>
 
   <Choose>
@@ -162,7 +174,8 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
+  <Target Name="_CreateHelixWorkItem"
+      Condition="$(BuildHelixPayload) AND '$(ExcludeFromBuild)' != 'true'">
     <PropertyGroup>
       <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
       <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
@@ -217,12 +230,21 @@
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
+        <SkipHelixWorkItemBatching Condition="'$(TestDependsOnIIS)' == 'true' OR '$(TestDependsOnPlaywright)' == 'true' OR '$(TestDependsOnJava)' == 'true' OR '$(TestDependsOnNode)' == 'true' OR '$(TestDependsOnMssql)' == 'true' OR '$(SkipHelixWorkItemBatching)' == 'true' OR '$(HelixTimeout)' != '$(DefaultHelixTimeout)'">true</SkipHelixWorkItemBatching>
+        <TargetFrameworkMoniker>$(TargetFramework)</TargetFrameworkMoniker>
+        <RuntimeVersion>$(SharedFxVersion)</RuntimeVersion>
+        <QueueName>$(_HelixFriendlyNameTargetQueue)</QueueName>
+        <TestingArchitecture>$(_TestingArchitecture)</TestingArchitecture>
+        <RunQuarantined>$(RunQuarantinedTests)</RunQuarantined>
+        <InstallPlaywright>$(TestDependsOnPlaywright)</InstallPlaywright>
         <!--
           When the targeting pack builds, it has exactly the same version as the shared framework. Passing
           SharedFxVersion because that's needed even when the targeting pack isn't building.
+          All items use @targets.txt format; for non-batched items, targets.txt contains a single entry.
+          The BatchSmallWorkItems target in helix.proj writes the targets.txt file.
         -->
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd @targets.txt $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh @targets.txt $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
         <Command Condition="'$(HelixCommand)' != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>

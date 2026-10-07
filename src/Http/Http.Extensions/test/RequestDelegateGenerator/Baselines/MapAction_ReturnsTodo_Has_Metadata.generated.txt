@@ -70,6 +70,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), contentTypes: GeneratedMetadataConstants.JsonContentType));
+                DisableCookieRedirectMetadata.AddMetadataIfMissing(options.EndpointBuilder);
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -218,6 +219,22 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+    file sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
+    {
+        public static readonly DisableCookieRedirectMetadata Instance = new();
+
+        private DisableCookieRedirectMetadata()
+        {
+        }
+
+        public static void AddMetadataIfMissing(EndpointBuilder builder)
+        {
+            if (!builder.Metadata.Any(m => m is IDisableCookieRedirectMetadata))
+            {
+                builder.Metadata.Add(Instance);
+            }
+        }
+    }
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {

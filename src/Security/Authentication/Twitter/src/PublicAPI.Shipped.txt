@@ -7,10 +7,10 @@
 ~override Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.HandleRemoteAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult>
 ~static Microsoft.AspNetCore.Authentication.Twitter.RequestTokenSerializer.Read(System.IO.BinaryReader reader) -> Microsoft.AspNetCore.Authentication.Twitter.RequestToken
 ~static Microsoft.AspNetCore.Authentication.Twitter.RequestTokenSerializer.Write(System.IO.BinaryWriter writer, Microsoft.AspNetCore.Authentication.Twitter.RequestToken token) -> void
-~static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 ~static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, string displayName, System.Action<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 ~static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 ~static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, System.Action<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
+~static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 ~static readonly Microsoft.AspNetCore.Authentication.Twitter.TwitterDefaults.DisplayName -> string
 ~virtual Microsoft.AspNetCore.Authentication.Twitter.RequestTokenSerializer.Deserialize(byte[] data) -> Microsoft.AspNetCore.Authentication.Twitter.RequestToken
 ~virtual Microsoft.AspNetCore.Authentication.Twitter.RequestTokenSerializer.Serialize(Microsoft.AspNetCore.Authentication.Twitter.RequestToken model) -> byte[]
@@ -53,8 +53,8 @@ Microsoft.AspNetCore.Authentication.Twitter.TwitterEvents.TwitterEvents() -> voi
 Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler
 Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.Events.get -> Microsoft.AspNetCore.Authentication.Twitter.TwitterEvents!
 Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.Events.set -> void
-Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.TwitterHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.TwitterHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
+Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.TwitterHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions
 Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.ClaimActions.get -> Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection!
 Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.ConsumerKey.get -> string?
@@ -80,10 +80,10 @@ override Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.HandleRemote
 override Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.Validate() -> void
 static Microsoft.AspNetCore.Authentication.Twitter.RequestTokenSerializer.Read(System.IO.BinaryReader! reader) -> Microsoft.AspNetCore.Authentication.Twitter.RequestToken?
 static Microsoft.AspNetCore.Authentication.Twitter.RequestTokenSerializer.Write(System.IO.BinaryWriter! writer, Microsoft.AspNetCore.Authentication.Twitter.RequestToken! token) -> void
-static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string! displayName, System.Action<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.TwitterExtensions.AddTwitter(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static readonly Microsoft.AspNetCore.Authentication.Twitter.TwitterDefaults.DisplayName -> string!
 virtual Microsoft.AspNetCore.Authentication.Twitter.RequestTokenSerializer.Deserialize(byte[]! data) -> Microsoft.AspNetCore.Authentication.Twitter.RequestToken?
 virtual Microsoft.AspNetCore.Authentication.Twitter.RequestTokenSerializer.Serialize(Microsoft.AspNetCore.Authentication.Twitter.RequestToken! model) -> byte[]!

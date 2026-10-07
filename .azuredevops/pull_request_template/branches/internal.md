@@ -40,6 +40,6 @@ Fixes #{bug number} (in this specific format)
 
 ----
 
-## When servicing release/2.1
+## When servicing release/2.3
 
 - [ ] Make necessary changes in eng/PatchConfig.props

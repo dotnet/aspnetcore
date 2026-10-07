@@ -8,6 +8,7 @@ using System.Linq;
 #endif
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -191,26 +192,30 @@ namespace BasicViews
 
         public static void Main(string[] args)
         {
-            var host = CreateWebHostBuilder(args)
+            using var host = CreateHost(args)
                 .Build();
 
             host.Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        public static IHostBuilder CreateHost(string[] args)
         {
             var configuration = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
                 .AddCommandLine(args)
                 .Build();
 
-            return new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://+:5000")
-                .UseConfiguration(configuration)
-                .UseIISIntegration()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>();
+            return new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://+:5000")
+                        .UseConfiguration(configuration)
+                        .UseIISIntegration()
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .UseStartup<Startup>();
+                });
         }
     }
 }

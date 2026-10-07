@@ -93,8 +93,16 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
         var sawCandidateWithoutMetadata = false;
         var sawValidCandidate = false;
         var bestMatchIndex = -1;
+        var bestMatchScore = -1;
         var bestQualitySoFar = 0.0;
         var bestEndpointQualitySoFar = 0.0;
+        // Track where the current score tier starts. Since candidates are sorted by ascending score,
+        // all candidates in [0, scoreTierStart) have a strictly lower score than candidates in the current tier.
+        // This lets us bound backward sweeps in EvaluateCandidate without per-element score comparisons.
+        // currentTierScore tracks the score value in a separate variable because SetValidity bitwise-negates
+        // the Score field, which would corrupt a tier-boundary check that reads candidates[scoreTierStart].Score.
+        var scoreTierStart = 0;
+        var currentTierScore = int.MinValue;
         for (var i = 0; i < candidates.Count; i++)
         {
             if (!candidates.IsValidCandidate(i))
@@ -104,6 +112,15 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
             }
 
             sawValidCandidate = true;
+
+            // candidates[i].Score is always non-negative here (candidate is valid).
+            // Since candidates are sorted by ascending score, a new score value means a new tier.
+            var candidateScore = candidates[i].Score;
+            if (candidateScore != currentTierScore)
+            {
+                scoreTierStart = i;
+                currentTierScore = candidateScore;
+            }
 
             ref var candidate = ref candidates[i];
             var metadata = GetMetadataValue(candidate.Endpoint);
@@ -120,7 +137,8 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
                 if (MemoryExtensions.Equals(metadata.AsSpan(), value.Value.AsSpan(), StringComparison.OrdinalIgnoreCase))
                 {
                     found = true;
-                    EvaluateCandidate(candidates, ref bestMatchIndex, ref bestQualitySoFar, ref bestEndpointQualitySoFar, i, value);
+                    EvaluateCandidate(candidates, ref bestMatchIndex, ref bestQualitySoFar, ref bestEndpointQualitySoFar, i, scoreTierStart, value);
+                    bestMatchScore = candidates[bestMatchIndex].Score;
                     break;
                 }
             }
@@ -129,6 +147,13 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
             {
                 // We already have at least a candidate, and the default value was not part of the header, so we won't be considering it
                 // at a later stage as a fallback.
+                // However, don't invalidate candidates with strictly better routing priority (lower score) than the current best match.
+                // Since candidates are sorted by ascending score, once i reaches the best match's score tier,
+                // all subsequent candidates have equal or worse priority.
+                if (bestMatchIndex >= 0 && candidates[i].Score < bestMatchScore)
+                {
+                    continue;
+                }
                 candidates.SetValidity(i, false);
             }
         }
@@ -150,6 +175,7 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
         ref double bestQualitySoFar,
         ref double bestEndpointQualitySoFar,
         int currentIndex,
+        int scoreTierStart,
         StringWithQualityHeaderValue value)
     {
         var quality = value.Quality ?? 1.0;
@@ -161,7 +187,10 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
             bestEndpointQualitySoFar = GetMetadataQuality(candidates[currentIndex].Endpoint) ?? 1.0;
 
             // Since we found a better match, we can invalidate all the candidates from the current position to the new one.
-            for (var j = bestMatchIndex; j < currentIndex; j++)
+            // Only invalidate within the same score tier — candidates before scoreTierStart have strictly
+            // better routing priority and represent different resources that should not be eliminated by
+            // encoding preference. Since candidates are sorted by ascending score, this is a simple bound.
+            for (var j = Math.Max(bestMatchIndex, scoreTierStart); j < currentIndex; j++)
             {
                 candidates.SetValidity(j, false);
             }
@@ -181,7 +210,7 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
             if ((endpointQuality - bestEndpointQualitySoFar) > double.Epsilon)
             {
                 // Since we found a better match, we can invalidate all the candidates from the current position to the new one.
-                for (var j = bestMatchIndex; j < currentIndex; j++)
+                for (var j = Math.Max(bestMatchIndex, scoreTierStart); j < currentIndex; j++)
                 {
                     candidates.SetValidity(j, false);
                 }

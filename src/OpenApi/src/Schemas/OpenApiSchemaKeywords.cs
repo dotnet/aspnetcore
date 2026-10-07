@@ -10,18 +10,23 @@ internal class OpenApiSchemaKeywords
     public const string AdditionalPropertiesKeyword = "additionalProperties";
     public const string RequiredKeyword = "required";
     public const string AnyOfKeyword = "anyOf";
+    public const string OneOfKeyword = "oneOf";
     public const string EnumKeyword = "enum";
     public const string DefaultKeyword = "default";
     public const string DescriptionKeyword = "description";
     public const string DiscriminatorKeyword = "discriminatorName";
     public const string DiscriminatorMappingKeyword = "discriminatorMapping";
+    public const string DiscriminatorDefaultMappingKeyword = "discriminatorDefaultMapping";
     public const string MinLengthKeyword = "minLength";
     public const string MaxLengthKeyword = "maxLength";
     public const string PatternKeyword = "pattern";
     public const string MinimumKeyword = "minimum";
+    public const string ExclusiveMinimum = "exclusiveMinimum";
     public const string MaximumKeyword = "maximum";
+    public const string ExclusiveMaximum = "exclusiveMaximum";
     public const string MinItemsKeyword = "minItems";
     public const string MaxItemsKeyword = "maxItems";
     public const string RefKeyword = "$ref";
     public const string ConstKeyword = "const";
+    public const string DeprecatedKeyword = "deprecated";
 }

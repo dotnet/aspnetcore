@@ -374,7 +374,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     [Fact]
     public void CanUseFocusExtensionToFocusElement()
     {
-        Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
+        Browser.SetWindowSize(100, 300);
         var appElement = Browser.MountTestComponent<ElementFocusComponent>();
 
         // y scroll position before click
@@ -408,7 +408,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     [Fact]
     public void CanUseFocusExtensionToFocusSvgElement()
     {
-        Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
+        Browser.SetWindowSize(100, 300);
         var appElement = Browser.MountTestComponent<SvgFocusComponent>();
 
         var buttonElement = appElement.FindElement(By.Id("focus-button"));
@@ -430,7 +430,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     [Fact]
     public void CanUseFocusExtensionToFocusElementPreventScroll()
     {
-        Browser.Manage().Window.Size = new System.Drawing.Size(600, 600);
+        Browser.SetWindowSize(600, 600);
         var appElement = Browser.MountTestComponent<ElementFocusComponent>();
 
         var buttonElement = Browser.Exists(By.Id("focus-button-prevented"));

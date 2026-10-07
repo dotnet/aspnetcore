@@ -1,35 +1,30 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Collections.Immutable;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.IO.Pipelines;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
-using Xunit;
 
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
@@ -44,49 +39,99 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
 
     internal static Task Verify(string source, out Compilation compilation)
     {
-        var references = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
-                .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
-                .Concat(
-                [
-                    MetadataReference.CreateFromFile(typeof(WebApplicationBuilder).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(EndpointRouteBuilderExtensions).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(IApplicationBuilder).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Mvc.ControllerBase).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(MvcCoreMvcBuilderExtensions).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(TypedResults).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(System.Text.Json.Nodes.JsonArray).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(IFormFileCollection).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(PipeReader).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.ValidationAttribute).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(RouteData).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(IFeatureCollection).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(ValidateOptionsResult).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(IHttpMethodMetadata).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(IResult).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(HttpJsonServiceExtensions).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(IValidatableInfoResolver).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(EndpointFilterFactoryContext).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(ValidationServiceCollectionExtensions).Assembly.Location),
-                ]);
+        var references = GetMetadataReferences();
         var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
+        var programEmitResult = inputCompilation.Emit(Stream.Null);
+        if (!programEmitResult.Success)
+        {
+            throw new InvalidOperationException($"Failed to compile Program.cs: {string.Join(Environment.NewLine, programEmitResult.Diagnostics)}");
+        }
+
         var generator = new ValidationsGenerator();
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
-            .UseDirectory(SkipOnHelixAttribute.OnHelix() && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") is { } workItemRoot
-                ? Path.Combine(workItemRoot, "snapshots")
-                : "snapshots");
+            .UseDirectory(SkipOnHelixAttribute.OnHelix()
+                ? Path.Combine(AppContext.BaseDirectory, "snapshots")
+                : "snapshots")
+            // Tests are parameterized on useAsync which is not relevant for the snapshot.
+            // We produce a single snapshot for both cases, so we need to disable the unique prefix requirement.
+            .DisableRequireUniquePrefix();
     }
 
-    internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<ValidationOptions, Type> verifyFunc)
+    private static IEnumerable<MetadataReference> GetMetadataReferences()
+        => AppDomain.CurrentDomain.GetAssemblies()
+            .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
+            .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
+            .Concat(
+            [
+                MetadataReference.CreateFromFile(typeof(WebApplicationBuilder).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(EndpointRouteBuilderExtensions).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IApplicationBuilder).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Mvc.ControllerBase).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(MvcCoreMvcBuilderExtensions).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(TypedResults).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Text.Json.Nodes.JsonArray).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IFormFileCollection).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(PipeReader).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.ValidationAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.ComponentModel.DisplayNameAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(RouteData).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IFeatureCollection).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ValidateOptionsResult).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IHttpMethodMetadata).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IResult).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(HttpJsonServiceExtensions).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IValidatableInfoResolver).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(EndpointFilterFactoryContext).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ValidationServiceCollectionExtensions).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Localization.IStringLocalizerFactory).Assembly.Location),
+            ]);
+
+    internal static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source, string filePath = "Program.cs", IEnumerable<MetadataReference> additionalReferences = null)
+    {
+        var references = GetMetadataReferences();
+        if (additionalReferences is not null)
+        {
+            references = references.Concat(additionalReferences);
+        }
+
+        var compilation = CSharpCompilation.Create("ValidationsAnalyzerSample",
+            [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: filePath)],
+            references,
+            new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
+        var compilationWithAnalyzers = compilation.WithAnalyzers([new ValidationsDiagnosticAnalyzer(), new ValidatableTypeInGeneratedCodeDiagnosticAnalyzer()]);
+        var diagnostics = await compilationWithAnalyzers.GetAllDiagnosticsAsync();
+        return [.. diagnostics.Where(d => d.Severity != DiagnosticSeverity.Hidden).OrderBy(d => d.Id).ThenBy(d => d.Location.SourceSpan.Start)];
+    }
+
+    internal static MetadataReference CompileToMetadataReference(string source, string assemblyName)
+    {
+        var compilation = CSharpCompilation.Create(assemblyName,
+            [CSharpSyntaxTree.ParseText(source, options: ParseOptions)],
+            GetMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        using var peStream = new MemoryStream();
+        var emitResult = compilation.Emit(peStream);
+        Assert.True(
+            emitResult.Success,
+            $"Failed to compile referenced assembly '{assemblyName}':{Environment.NewLine}{string.Join(Environment.NewLine, emitResult.Diagnostics)}");
+
+        peStream.Seek(0, SeekOrigin.Begin);
+        return MetadataReference.CreateFromStream(peStream);
+    }
+
+    internal static async Task VerifyValidatableType(Compilation compilation, string typeName, Func<ValidationOptions, Type, Task> verifyFunc)
     {
         if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.Extensions.Validation", typeName: "Microsoft.Extensions.Validation.ValidationOptions", out var services, out var serviceType, out var outputAssemblyName) is false)
         {
@@ -103,7 +148,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
         // Then access the Value property
         var valueProperty = optionsType.GetProperty("Value");
         var service = (ValidationOptions)valueProperty.GetValue(optionsInstance) ?? throw new InvalidOperationException("Could not resolve ValidationOptions.");
-        verifyFunc(service, type);
+        await verifyFunc(service, type);
     }
 
     internal static async Task VerifyEndpoint(Compilation compilation, string routePattern, Func<Endpoint, IServiceProvider, Task> verifyFunc)
@@ -493,7 +538,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
 
             public void OnCompleted()
             {
-                _disposable.Dispose();
+                _disposable?.Dispose();
             }
 
             public void OnError(Exception error)

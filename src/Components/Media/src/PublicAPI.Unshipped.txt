@@ -1,0 +1,42 @@
+#nullable enable
+Microsoft.AspNetCore.Components.Media.FileDownload
+Microsoft.AspNetCore.Components.Media.FileDownload.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Media.FileDownloadContext!>?
+Microsoft.AspNetCore.Components.Media.FileDownload.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Media.FileDownload.FileDownload() -> void
+Microsoft.AspNetCore.Components.Media.FileDownload.FileName.get -> string!
+Microsoft.AspNetCore.Components.Media.FileDownload.FileName.set -> void
+Microsoft.AspNetCore.Components.Media.FileDownload.Text.get -> string?
+Microsoft.AspNetCore.Components.Media.FileDownload.Text.set -> void
+Microsoft.AspNetCore.Components.Media.FileDownloadContext
+Microsoft.AspNetCore.Components.Media.FileDownloadContext.FileDownloadContext() -> void
+Microsoft.AspNetCore.Components.Media.FileDownloadContext.FileName.get -> string!
+Microsoft.AspNetCore.Components.Media.FileDownloadContext.InvokeAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Media.Image
+Microsoft.AspNetCore.Components.Media.Image.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Media.MediaContext!>?
+Microsoft.AspNetCore.Components.Media.Image.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Media.Image.Image() -> void
+Microsoft.AspNetCore.Components.Media.MediaComponentBase
+Microsoft.AspNetCore.Components.Media.MediaComponentBase.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.Media.MediaComponentBase.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.Media.MediaComponentBase.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Media.MediaComponentBase.MediaComponentBase() -> void
+Microsoft.AspNetCore.Components.Media.MediaComponentBase.Source.get -> Microsoft.AspNetCore.Components.Media.MediaSource!
+Microsoft.AspNetCore.Components.Media.MediaComponentBase.Source.set -> void
+Microsoft.AspNetCore.Components.Media.MediaContext
+Microsoft.AspNetCore.Components.Media.MediaContext.Element.get -> Microsoft.AspNetCore.Components.ElementReference
+Microsoft.AspNetCore.Components.Media.MediaContext.Element.set -> void
+Microsoft.AspNetCore.Components.Media.MediaContext.HasError.get -> bool
+Microsoft.AspNetCore.Components.Media.MediaContext.IsLoading.get -> bool
+Microsoft.AspNetCore.Components.Media.MediaContext.MediaContext() -> void
+Microsoft.AspNetCore.Components.Media.MediaContext.ObjectUrl.get -> string?
+Microsoft.AspNetCore.Components.Media.MediaSource
+Microsoft.AspNetCore.Components.Media.MediaSource.CacheKey.get -> string!
+Microsoft.AspNetCore.Components.Media.MediaSource.Length.get -> long?
+Microsoft.AspNetCore.Components.Media.MediaSource.MediaSource(byte[]! data, string! mimeType, string! cacheKey) -> void
+Microsoft.AspNetCore.Components.Media.MediaSource.MediaSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
+Microsoft.AspNetCore.Components.Media.MediaSource.MimeType.get -> string!
+Microsoft.AspNetCore.Components.Media.MediaSource.Stream.get -> System.IO.Stream!
+Microsoft.AspNetCore.Components.Media.Video
+Microsoft.AspNetCore.Components.Media.Video.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Media.MediaContext!>?
+Microsoft.AspNetCore.Components.Media.Video.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Media.Video.Video() -> void

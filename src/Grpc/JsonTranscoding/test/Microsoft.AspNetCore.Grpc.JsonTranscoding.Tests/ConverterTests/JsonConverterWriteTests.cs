@@ -11,6 +11,7 @@ using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages;
 using Transcoding;
 using Xunit.Abstractions;
 using Type = System.Type;
@@ -196,6 +197,25 @@ public class JsonConverterWriteTests
             StringValue = "A string",
             Uint32Value = 3U,
             Uint64Value = 4UL
+        };
+
+        AssertWrittenJson(wrappers);
+    }
+
+    [Fact]
+    public void NullableWrappers_Types()
+    {
+        var wrappers = new WrappersMessage
+        {
+            BoolValue = new BoolValue { Value = true },
+            BytesValue = new BytesValue { Value = ByteString.CopyFrom(Encoding.UTF8.GetBytes("Hello world")) },
+            DoubleValue = new DoubleValue { Value = 1.1 },
+            FloatValue = new FloatValue { Value = 1.2f },
+            Int32Value = new Int32Value { Value = 1 },
+            Int64Value = new Int64Value { Value = 2L },
+            StringValue = new StringValue { Value = "A string" },
+            Uint32Value = new UInt32Value { Value = 3U },
+            Uint64Value = new UInt64Value { Value = 4UL }
         };
 
         AssertWrittenJson(wrappers);
@@ -469,33 +489,83 @@ public class JsonConverterWriteTests
     }
 
     [Theory]
-    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Unspecified)]
-    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Bar)]
-    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Neg)]
-    [InlineData((HelloRequest.Types.DataTypes.Types.NestedEnum)100)]
-    public void Enum(HelloRequest.Types.DataTypes.Types.NestedEnum value)
+    [InlineData(PrefixEnumType.Types.PrefixEnum.Unspecified, @"""UNSPECIFIED""")]
+    [InlineData(PrefixEnumType.Types.PrefixEnum.Foo, @"""FOO""")]
+    [InlineData(PrefixEnumType.Types.PrefixEnum.Bar, @"""BAR""")]
+    [InlineData(PrefixEnumType.Types.PrefixEnum.Baz, @"""BAZ""")]
+    [InlineData(PrefixEnumType.Types.PrefixEnum._123, @"""_123""")]
+    [InlineData((PrefixEnumType.Types.PrefixEnum)100, "100")]
+    public void Enum_RemovePrefix(PrefixEnumType.Types.PrefixEnum value, string expectedString)
     {
-        var dataTypes = new HelloRequest.Types.DataTypes
+        var dataTypes = new PrefixEnumType
         {
             SingleEnum = value
         };
 
-        AssertWrittenJson(dataTypes);
+        var json = AssertWrittenJson(dataTypes, settings: new GrpcJsonSettings { RemoveEnumPrefix = true }, compareOldNew: false);
+        Assert.Equal(@$"{{""singleEnum"":{expectedString}}}", json);
     }
 
     [Theory]
-    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Unspecified)]
-    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Bar)]
-    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Neg)]
-    [InlineData((HelloRequest.Types.DataTypes.Types.NestedEnum)100)]
-    public void Enum_WriteNumber(HelloRequest.Types.DataTypes.Types.NestedEnum value)
+    [InlineData(PrefixEnumType.Types.PrefixEnum.Unspecified, @"""PREFIX_ENUM_UNSPECIFIED""")]
+    [InlineData(PrefixEnumType.Types.PrefixEnum.Foo, @"""PREFIX_ENUM_FOO""")]
+    [InlineData(PrefixEnumType.Types.PrefixEnum.Bar, @"""BAR""")]
+    [InlineData(PrefixEnumType.Types.PrefixEnum._123, @"""PREFIX_ENUM_123""")]
+    public void Enum_NoRemovePrefix(PrefixEnumType.Types.PrefixEnum value, string expectedString)
+    {
+        var dataTypes = new PrefixEnumType
+        {
+            SingleEnum = value
+        };
+
+        var json = AssertWrittenJson(dataTypes, compareOldNew: false);
+        Assert.Equal(@$"{{""singleEnum"":{expectedString}}}", json);
+    }
+
+    [Theory]
+    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Unspecified, null)]
+    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Bar, @"""BAR""")]
+    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Neg, @"""NEG""")]
+    [InlineData((HelloRequest.Types.DataTypes.Types.NestedEnum)100, "100")]
+    public void Enum(HelloRequest.Types.DataTypes.Types.NestedEnum value, string? expectedString)
     {
         var dataTypes = new HelloRequest.Types.DataTypes
         {
             SingleEnum = value
         };
 
-        AssertWrittenJson(dataTypes, new GrpcJsonSettings { WriteEnumsAsIntegers = true, IgnoreDefaultValues = true });
+        var json = AssertWrittenJson(dataTypes, settings: new GrpcJsonSettings { IgnoreDefaultValues = true });
+        if (expectedString != null)
+        {
+            Assert.Equal(@$"{{""singleEnum"":{expectedString}}}", json);
+        }
+        else
+        {
+            Assert.Equal("{}", json);
+        }
+    }
+
+    [Theory]
+    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Unspecified, null)]
+    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Bar, "2")]
+    [InlineData(HelloRequest.Types.DataTypes.Types.NestedEnum.Neg, "-1")]
+    [InlineData((HelloRequest.Types.DataTypes.Types.NestedEnum)100, "100")]
+    public void Enum_WriteNumber(HelloRequest.Types.DataTypes.Types.NestedEnum value, string? expectedString)
+    {
+        var dataTypes = new HelloRequest.Types.DataTypes
+        {
+            SingleEnum = value
+        };
+
+        var json = AssertWrittenJson(dataTypes, new GrpcJsonSettings { WriteEnumsAsIntegers = true, IgnoreDefaultValues = true });
+        if (expectedString != null)
+        {
+            Assert.Equal(@$"{{""singleEnum"":{expectedString}}}", json);
+        }
+        else
+        {
+            Assert.Equal("{}", json);
+        }
     }
 
     [Fact]
@@ -517,7 +587,7 @@ public class JsonConverterWriteTests
         Assert.Equal(@"{""b"":10,""a"":20,""d"":30}", json);
     }
 
-    private string AssertWrittenJson<TValue>(TValue value, GrpcJsonSettings? settings = null, bool? compareRawStrings = null) where TValue : IMessage
+    private string AssertWrittenJson<TValue>(TValue value, GrpcJsonSettings? settings = null, bool? compareRawStrings = null, bool? compareOldNew = null) where TValue : IMessage
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
@@ -543,11 +613,14 @@ public class JsonConverterWriteTests
         _output.WriteLine("New:");
         _output.WriteLine(jsonNew);
 
-        using var doc1 = JsonDocument.Parse(jsonNew);
-        using var doc2 = JsonDocument.Parse(jsonOld);
+        if (compareOldNew ?? true)
+        {
+            using var doc1 = JsonDocument.Parse(jsonNew);
+            using var doc2 = JsonDocument.Parse(jsonOld);
 
-        var comparer = new JsonElementComparer(maxHashDepth: -1, compareRawStrings: compareRawStrings ?? false);
-        Assert.True(comparer.Equals(doc1.RootElement, doc2.RootElement));
+            var comparer = new JsonElementComparer(maxHashDepth: -1, compareRawStrings: compareRawStrings ?? false);
+            Assert.True(comparer.Equals(doc1.RootElement, doc2.RootElement));
+        }
 
         return jsonNew;
     }

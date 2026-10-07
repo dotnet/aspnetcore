@@ -56,10 +56,16 @@ public class WebTransportHandshakeTests : Http3TestBase
             H3Datagram = 1,
         };
 
-        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
+        var nonDefaultSettings = settings.GetNonProtocolDefaults();
+        await controlStream.SendSettingsAsync(nonDefaultSettings);
         var response1 = await controlStream2.ExpectSettingsAsync();
 
-        await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        // Drain all received settings before sending the CONNECT request to avoid a race
+        // where the server processes the request before all settings (e.g. H3Datagram) are applied.
+        for (var i = 0; i < nonDefaultSettings.Count; i++)
+        {
+            await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        }
 
         Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
 
@@ -122,10 +128,16 @@ public class WebTransportHandshakeTests : Http3TestBase
             H3Datagram = 1,
         };
 
-        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
+        var nonDefaultSettings = settings.GetNonProtocolDefaults();
+        await controlStream.SendSettingsAsync(nonDefaultSettings);
         var response1 = await controlStream2.ExpectSettingsAsync();
 
-        await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        // Drain all received settings before sending the CONNECT request to avoid a race
+        // where the server processes the request before all settings (e.g. H3Datagram) are applied.
+        for (var i = 0; i < nonDefaultSettings.Count; i++)
+        {
+            await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        }
 
         Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
 

@@ -373,17 +373,17 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
-file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
-{
-    public static readonly IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
-
-    public AntiforgeryMetadata(bool requiresValidation)
+    file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
     {
-        RequiresValidation = requiresValidation;
-    }
+        public static readonly IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
 
-    public bool RequiresValidation { get; }
-}
+        public AntiforgeryMetadata(bool requiresValidation)
+        {
+            RequiresValidation = requiresValidation;
+        }
+
+        public bool RequiresValidation { get; }
+    }
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {

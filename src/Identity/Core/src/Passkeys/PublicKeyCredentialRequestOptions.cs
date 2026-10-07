@@ -36,7 +36,7 @@ internal sealed class PublicKeyCredentialRequestOptions
     /// <summary>
     /// Gets or sets the user verification requirement for the request.
     /// </summary>
-    public string UserVerification { get; init; } = "preferred";
+    public string? UserVerification { get; init; }
 
     /// <summary>
     /// Gets or sets hints that guide the user agent in interacting with the user.

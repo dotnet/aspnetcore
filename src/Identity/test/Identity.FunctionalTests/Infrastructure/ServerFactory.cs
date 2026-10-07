@@ -63,6 +63,7 @@ public class ServerFactory<TStartup, TContext> : WebApplicationFactory<TStartup>
         return result;
     }
 
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008")]
     protected override TestServer CreateServer(IWebHostBuilder builder)
     {
         var result = base.CreateServer(builder);

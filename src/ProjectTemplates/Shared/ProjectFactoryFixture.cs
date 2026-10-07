@@ -39,7 +39,22 @@ public class ProjectFactoryFixture : IDisposable
         return project;
     }
 
-    private Project CreateProjectImpl(ITestOutputHelper output)
+    public async Task<Project> CreateProject(ITestOutputHelper output, string projectName)
+    {
+        await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
+
+        var project = CreateProjectImpl(output, projectName);
+
+        var projectKey = Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant();
+        if (!_projects.TryAdd(projectKey, project))
+        {
+            throw new InvalidOperationException($"Project key collision in {nameof(ProjectFactoryFixture)}.{nameof(CreateProject)}!");
+        }
+
+        return project;
+    }
+
+    private Project CreateProjectImpl(ITestOutputHelper output, string projectName = null)
     {
         var project = new Project
         {
@@ -49,11 +64,20 @@ public class ProjectFactoryFixture : IDisposable
             // declarations (i.e. make it more stable for testing)
             ProjectGuid = GetRandomLetter() + Path.GetRandomFileName().Replace(".", string.Empty)
         };
-        project.ProjectName = $"AspNet.{project.ProjectGuid}";
+        
+        if (string.IsNullOrEmpty(projectName))
+        {
+            project.ProjectName = $"AspNet.{project.ProjectGuid}";
+        }
+        else
+        {
+            project.ProjectName = projectName;
+        }
 
         var assemblyPath = GetType().Assembly;
         var basePath = GetTemplateFolderBasePath(assemblyPath);
-        project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
+        // Use ProjectGuid for directory to avoid filesystem issues with invalid characters in projectName
+        project.TemplateOutputDir = Path.Combine(basePath, $"AspNet.{project.ProjectGuid}");
 
         return project;
     }

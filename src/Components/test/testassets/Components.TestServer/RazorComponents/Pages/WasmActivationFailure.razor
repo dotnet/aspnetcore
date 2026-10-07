@@ -1,0 +1,6 @@
+@page "/wasm-activation-failure"
+@using Microsoft.AspNetCore.Components.Web
+
+<h1 id="wasm-activation-failure">WebAssembly activation failure</h1>
+
+<TestContentPackage.WebAssemblyActivationThrowingComponent @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: false))" />

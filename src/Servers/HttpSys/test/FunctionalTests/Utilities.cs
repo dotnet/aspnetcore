@@ -53,10 +53,10 @@ internal static class Utilities
         return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, configureOptions, app, loggerFactory);
     }
 
-    internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app, ILoggerFactory loggerFactory)
+    internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app, Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory)
     {
         string baseAddress;
-        return CreateDynamicHttpServer(path, out root, out baseAddress, options => { }, app, loggerFactory);
+        return CreateDynamicHttpServer(path, out root, out baseAddress, configureOptions, app, loggerFactory);
     }
 
     internal static IServer CreateHttpAuthServer(AuthenticationSchemes authType, bool allowAnonymous, out string baseAddress, RequestDelegate app, ILoggerFactory loggerFactory)

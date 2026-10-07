@@ -4,23 +4,39 @@ Param(
   [string] $task,
   [string] $verbosity = 'minimal',
   [string] $msbuildEngine = $null,
-  [switch] $restore,
+  # Restore defaults to on; -restore is retained only so existing consumers that pass it don't break. Use -norestore to opt out.
+  [switch] $restore = $true,
+  [switch] $norestore,
   [switch] $prepareMachine,
   [switch][Alias('nobl')]$excludeCIBinaryLog,
+  [switch]$noWarnAsError,
   [switch] $help,
+  [string] $runtimeSourceFeed = '',
+  [string] $runtimeSourceFeedKey = '',
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
 $ci = $true
 $binaryLog = if ($excludeCIBinaryLog) { $false } else { $true }
-$warnAsError = $true
+$warnAsError = if ($noWarnAsError) { $false } else { $true }
+
+# Reconcile the restore state before importing tools.ps1: it reads $restore at import time to
+# decide whether toolset/SDK acquisition installs. -norestore must win so that skipping restore
+# also skips toolset initialization, not just the explicit Restore build below.
+if ($norestore) { $restore = $false }
+
+# sdk-task runs a standalone Arcade SDK task and does not need repo-specific toolset setup.
+# Skip importing configure-toolset.ps1 so its side effects (e.g. a repo's configure-toolset.ps1
+# calling exit) don't terminate this script before the task runs.
+$disableConfigureToolsetImport = $true
 
 . $PSScriptRoot\tools.ps1
 
 function Print-Usage() {
   Write-Host "Common settings:"
-  Write-Host "  -task <value>           Name of Arcade task (name of a project in SdkTasks directory of the Arcade SDK package)"
-  Write-Host "  -restore                Restore dependencies"
+  Write-Host "  -task <value>           Name of Arcade task (name of a project in toolset directory of the Arcade SDK package)"
+  Write-Host "  -restore                (Legacy) Restore runs by default; retained for backward compatibility. Use -norestore to skip"
+  Write-Host "  -norestore              Skip restoring dependencies"
   Write-Host "  -verbosity <value>      Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]"
   Write-Host "  -help                   Print help and exit"
   Write-Host ""
@@ -63,20 +79,7 @@ try {
 
   if( $msbuildEngine -eq "vs") {
     # Ensure desktop MSBuild is available for sdk tasks.
-    if( -not ($GlobalJson.tools.PSObject.Properties.Name -contains "vs" )) {
-      $GlobalJson.tools | Add-Member -Name "vs" -Value (ConvertFrom-Json "{ `"version`": `"16.5`" }") -MemberType NoteProperty
-    }
-    if( -not ($GlobalJson.tools.PSObject.Properties.Name -match "xcopy-msbuild" )) {
-      $GlobalJson.tools | Add-Member -Name "xcopy-msbuild" -Value "17.13.0" -MemberType NoteProperty
-    }
-    if ($GlobalJson.tools."xcopy-msbuild".Trim() -ine "none") {
-        $xcopyMSBuildToolsFolder = InitializeXCopyMSBuild $GlobalJson.tools."xcopy-msbuild" -install $true
-    }
-    if ($xcopyMSBuildToolsFolder -eq $null) {
-      throw 'Unable to get xcopy downloadable version of msbuild'
-    }
-
-    $global:_MSBuildExe = "$($xcopyMSBuildToolsFolder)\MSBuild\Current\Bin\MSBuild.exe"
+    $global:_MSBuildExe = InitializeVisualStudioMSBuild
   }
 
   $taskProject = GetSdkTaskProject $task

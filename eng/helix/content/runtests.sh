@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# First arg is always @targets.txt
+targetsFile="${1#@}"
+
 helixQueue="$3"
 installPlaywright="$7"
 
@@ -9,8 +12,6 @@ YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Prevent fallback to global .NET locations. This ensures our tests use the shared frameworks we specify and don't rollforward to something else that might be installed on the machine
-export DOTNET_MULTILEVEL_LOOKUP=0
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
@@ -78,8 +79,8 @@ sync
 
 exit_code=0
 
-echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
-dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright
+echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --targets-file $targetsFile --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
+dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --targets-file "$targetsFile" --runtime "$2" --queue "$helixQueue" --arch "$4" --quarantined "$5" --helixTimeout "$6" --playwright "$installPlaywright"
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

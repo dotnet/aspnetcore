@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components;
@@ -12,18 +13,23 @@ namespace Microsoft.AspNetCore.Components;
 internal class ComponentsActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.Components";
-    internal const string OnRouteName = $"{Name}.RouteChange";
+    internal const string OnRouteName = $"{Name}.Navigate";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
     private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
     private ComponentsActivityLinkStore? _componentsActivityLinkStore;
+
+    // there is no System.Diagnostics.ActivitySource.IsSupported yet
+    [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+    internal static bool IsSupported { get; } =
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : true;
 
     public void Init(ComponentsActivityLinkStore store)
     {
         _componentsActivityLinkStore = store;
     }
 
-    public ComponentsActivityHandle StartRouteActivity(string componentType, string route)
+    public ComponentsActivityHandle StartNavigateActivity(string componentType, string route)
     {
         var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
@@ -54,12 +60,12 @@ internal class ComponentsActivitySource
         return default;
     }
 
-    public void StopRouteActivity(ComponentsActivityHandle activityHandle, Exception? ex)
+    public void StopNavigateActivity(ComponentsActivityHandle activityHandle, Exception? ex)
     {
         StopComponentActivity(ComponentsActivityLinkStore.Route, activityHandle, ex);
     }
 
-    public static ComponentsActivityHandle StartEventActivity(string? componentType, string? methodName, string? attributeName)
+    public static ComponentsActivityHandle StartHandleEventActivity(string? componentType, string? methodName, string? attributeName)
     {
         var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Internal, parentId: null, null, null);
 
@@ -78,7 +84,7 @@ internal class ComponentsActivitySource
                 }
                 if (methodName != null)
                 {
-                    activity.SetTag("aspnetcore.components.method", methodName);
+                    activity.SetTag("code.function.name", methodName);
                 }
                 if (attributeName != null)
                 {
@@ -91,21 +97,21 @@ internal class ComponentsActivitySource
         return default;
     }
 
-    public void StopEventActivity(ComponentsActivityHandle activityHandle, Exception? ex)
+    public void StopHandleEventActivity(ComponentsActivityHandle activityHandle, Exception? ex)
     {
         StopComponentActivity(ComponentsActivityLinkStore.Event, activityHandle, ex);
     }
 
-    public async Task CaptureEventStopAsync(Task task, ComponentsActivityHandle activityHandle)
+    public async Task CaptureHandleEventStopAsync(Task task, ComponentsActivityHandle activityHandle)
     {
         try
         {
             await task;
-            StopEventActivity(activityHandle, null);
+            StopHandleEventActivity(activityHandle, null);
         }
         catch (Exception ex)
         {
-            StopEventActivity(activityHandle, ex);
+            StopHandleEventActivity(activityHandle, ex);
         }
     }
 

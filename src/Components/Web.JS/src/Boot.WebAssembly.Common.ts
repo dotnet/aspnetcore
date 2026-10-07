@@ -8,13 +8,14 @@ import * as Environment from './Environment';
 import { monoPlatform, dispatcher, getInitializer } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
+import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { WebAssemblyComponentDescriptor, WebAssemblyServerOptions, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from './JSInterop/Microsoft.JSInterop';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
@@ -98,17 +99,6 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   });
 
-  // obsolete:
-  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined, updatedTypes?: number[]) => {
-    dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta, updatedTypes ?? null);
-  };
-
-  Blazor._internal.applyHotReloadDeltas = (deltas: { moduleId: string, metadataDelta: string, ilDelta: string, pdbDelta: string, updatedTypes: number[] }[], loggingLevel: number) => {
-    return dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel) ?? [];
-  };
-
-  Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities') ?? '';
-
   // Configure JS interop
   Blazor._internal.invokeJSJson = invokeJSJson;
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
@@ -130,6 +120,13 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     } finally {
       heapLock.release();
     }
+  };
+
+  Blazor._internal.renderBatchOutOfProcess = (browserRendererId: number, batchData: Uint8Array): void => {
+    // No heap lock needed — batchData is a self-contained byte[] copy,
+    // not a pointer into the .NET managed heap.
+    // Uses UTF-16LE string table encoding to avoid UTF-8 transcoding on both sides.
+    renderBatch(browserRendererId, new OutOfProcessRenderBatch(batchData, /* useUtf16StringTable */ true));
   };
 
   Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
@@ -167,8 +164,9 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
 
   Blazor._internal.getInitialComponentsUpdate = () => initialUpdatePromise;
 
-  Blazor._internal.updateRootComponents = (operations: string) =>
-    Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations);
+  Blazor._internal.updateRootComponents = (operations: string, webAssemblyState: string) => {
+    Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations, webAssemblyState);
+  };
 
   Blazor._internal.endUpdateRootComponents = (batchId: number) =>
     components.onAfterUpdateRootComponents?.(batchId);
@@ -207,7 +205,7 @@ export function waitForBootConfigLoaded(): Promise<MonoConfig> {
   return bootConfigPromise;
 }
 
-export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblyServerOptions | undefined): Promise<void> {
+export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblyServerOptions | undefined, justDownload?: boolean): Promise<void> {
   platformLoadPromise ??= (async () => {
     await initializersPromise;
     const finalOptions = options ?? {};
@@ -217,6 +215,9 @@ export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblySe
     const existingConfig = options?.configureRuntime;
     finalOptions.configureRuntime = (config) => {
       existingConfig?.(config);
+      if (justDownload) {
+        config.withConfig({ maxParallelDownloads: 1 });
+      }
       if (serverOptions?.environmentVariables) {
         config.withEnvironmentVariables(serverOptions.environmentVariables);
       }
@@ -224,8 +225,10 @@ export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblySe
         config.withEnvironmentVariable('__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS', 'true');
       }
     };
-    await monoPlatform.load(finalOptions, resolveBootConfigPromise);
-    loadedWebAssemblyPlatform = true;
+    await monoPlatform.load(finalOptions, resolveBootConfigPromise, justDownload);
+    if (!justDownload) {
+      loadedWebAssemblyPlatform = true;
+    }
   })();
   return platformLoadPromise;
 }
@@ -238,7 +241,7 @@ export function hasLoadedWebAssemblyPlatform(): boolean {
   return loadedWebAssemblyPlatform;
 }
 
-export function updateWebAssemblyRootComponents(operations: string): void {
+export function updateWebAssemblyRootComponents(operations: string, webAssemblyState: string): void {
   if (!startPromise) {
     throw new Error('Blazor WebAssembly has not started.');
   }
@@ -248,20 +251,20 @@ export function updateWebAssemblyRootComponents(operations: string): void {
   }
 
   if (!started) {
-    scheduleAfterStarted(operations);
+    scheduleAfterStarted(operations, webAssemblyState);
   } else {
-    Blazor._internal.updateRootComponents(operations);
+    Blazor._internal.updateRootComponents(operations, webAssemblyState);
   }
 }
 
-async function scheduleAfterStarted(operations: string): Promise<void> {
+async function scheduleAfterStarted(operations: string, webAssemblyState: string): Promise<void> {
   await startPromise;
 
   if (!Blazor._internal.updateRootComponents) {
     throw new Error('Blazor WebAssembly has not initialized.');
   }
 
-  Blazor._internal.updateRootComponents(operations);
+  Blazor._internal.updateRootComponents(operations, webAssemblyState);
 }
 
 function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number, callType: number): string | null {

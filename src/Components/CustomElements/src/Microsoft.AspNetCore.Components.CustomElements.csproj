@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -54,5 +54,12 @@
       <FileWrites Include="$(_JsBuildOutput)" />
     </ItemGroup>
   </Target>
+
+  <!-- Exclude JavaScript configuration files from being packaged as Content -->
+  <ItemGroup>
+    <Content Remove="js\babel.config.json" />
+    <Content Remove="js\package.json" />
+    <Content Remove="js\tsconfig.json" />
+  </ItemGroup>
 
 </Project>

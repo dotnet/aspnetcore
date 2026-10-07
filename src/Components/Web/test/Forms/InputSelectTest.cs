@@ -1,10 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
+
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputSelectTest
 {
+    private readonly TestRenderer _testRenderer = new TestRenderer();
+
     [Fact]
     public async Task ParsesCurrentValueWhenUsingNotNullableEnumWithNotEmptyValue()
     {
@@ -164,7 +170,7 @@ public class InputSelectTest
     }
 
     [Fact]
-    public async Task ValidationErrorUsesDisplayAttributeName()
+    public async Task ValidationErrorUsesExplicitDisplayName()
     {
         // Arrange
         var model = new TestModel();
@@ -190,6 +196,24 @@ public class InputSelectTest
     }
 
     [Fact]
+    public async Task ValidationErrorUsesDisplayAttributeOnModel()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<int, TestInputSelect<int>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NotNullableInt,
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.NotNullableInt);
+        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputSelectComponent.SetCurrentValueAsStringAsync("invalidNumber");
+
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Contains("The Number from attribute field is not valid.", validationMessages);
+    }
+
+    [Fact]
     public async Task InputElementIsAssignedSuccessfully()
     {
         // Arrange
@@ -206,6 +230,49 @@ public class InputSelectTest
 
         // Assert
         Assert.NotNull(inputSelectComponent.Element);
+    }
+
+    [Fact]
+    public async Task RendersIdAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NotNullableEnum,
+        };
+
+        var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        Assert.Equal("model_NotNullableEnum", idAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task ExplicitIdOverridesGenerated()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NotNullableEnum,
+            AdditionalAttributes = new Dictionary<string, object> { { "id", "custom-select-id" } }
+        };
+
+        var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        Assert.Equal("custom-select-id", idAttribute.AttributeValue);
+    }
+
+    private async Task<int> RenderAndGetInputSelectComponentIdAsync<TValue>(TestInputHostComponent<TValue, TestInputSelect<TValue>> hostComponent)
+    {
+        var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
+        await _testRenderer.RenderRootComponentAsync(hostComponentId);
+        var batch = _testRenderer.Batches.Single();
+        return batch.GetComponentFrames<TestInputSelect<TValue>>().Single().ComponentId;
     }
 
     enum TestEnum
@@ -225,6 +292,7 @@ public class InputSelectTest
 
         public Guid? NullableGuid { get; set; }
 
+        [Display(Name = "Number from attribute")]
         public int NotNullableInt { get; set; }
 
         public int? NullableInt { get; set; }

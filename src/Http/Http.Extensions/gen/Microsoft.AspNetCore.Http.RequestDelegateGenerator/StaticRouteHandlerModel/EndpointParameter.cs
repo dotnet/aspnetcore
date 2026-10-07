@@ -147,13 +147,13 @@ internal class EndpointParameter
         else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
         {
             Source = EndpointParameterSource.Service;
-            if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+            if (attributes.TryGetAttributeInheritingFrom(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
             {
                 var location = endpoint.Operation.Syntax.GetLocation();
                 endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.KeyedAndNotKeyedServiceAttributesNotSupported, location));
             }
         }
-        else if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+        else if (attributes.TryGetAttributeInheritingFrom(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
         {
             Source = EndpointParameterSource.KeyedService;
             var constructorArgument = keyedServicesAttribute.ConstructorArguments.FirstOrDefault();
@@ -596,25 +596,22 @@ internal class EndpointParameter
         obj is EndpointParameter other &&
         other.Source == Source &&
         other.SymbolName == SymbolName &&
+        other.LookupName == LookupName &&
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
         SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
         other.KeyedServiceKey == KeyedServiceKey;
 
-    public bool SignatureEquals(object obj) =>
-        obj is EndpointParameter other &&
-        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
-        // The name of the parameter matters when we are querying for a specific parameter using
-        // an indexer, like `context.Request.RouteValues["id"]` or `context.Request.Query["id"]`
-        // and when generating log messages for required bodies or services.
-        other.SymbolName == SymbolName &&
-        other.KeyedServiceKey == KeyedServiceKey;
-
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
+        hashCode.Add(Source);
         hashCode.Add(SymbolName);
+        hashCode.Add(LookupName);
+        hashCode.Add(Ordinal);
+        hashCode.Add(IsOptional);
         hashCode.Add(Type, SymbolEqualityComparer.IncludeNullability);
+        hashCode.Add(KeyedServiceKey);
         return hashCode.ToHashCode();
     }
 }

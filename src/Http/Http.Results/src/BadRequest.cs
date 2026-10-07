@@ -52,5 +52,6 @@ public sealed class BadRequest : IResult, IEndpointMetadataProvider, IStatusCode
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, typeof(void)));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

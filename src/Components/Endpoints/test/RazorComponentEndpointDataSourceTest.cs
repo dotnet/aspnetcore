@@ -2,17 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Endpoints.Tests;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
@@ -24,6 +28,11 @@ public class RazorComponentEndpointDataSourceTest
     public void RegistersEndpoints()
     {
         var endpointDataSource = CreateDataSource<App>();
+        endpointDataSource.ComponentApplicationBuilderActions.Add(builder =>
+        {
+            var assembly = typeof(App).Assembly;
+            IRazorComponentApplication.GetBuilderForAssembly(builder, assembly);
+        });
 
         var endpoints = endpointDataSource.Endpoints;
 
@@ -33,14 +42,66 @@ public class RazorComponentEndpointDataSourceTest
     [Fact]
     public void NoDiscoveredModesDefaultsToStatic()
     {
-
-        var builder = CreateBuilder();
         var services = CreateServices(typeof(ServerEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services);
+
+        endpointDataSource.ComponentApplicationBuilderActions.Add(builder =>
+        {
+            builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
+                "TestAssembly",
+                Array.Empty<PageComponentBuilder>(), Array.Empty<ComponentBuilder>()));
+        });
 
         var endpoints = endpointDataSource.Endpoints;
 
         Assert.Single(endpoints);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("true")]
+    public async Task BrowserToolsHotReloadSettings_ReturnsDisabledSettings_InDevelopment(string dotNetWatch)
+    {
+        var services = CreateServices(Environments.Development, dotNetWatch);
+        var endpointDataSource = CreateDataSource<App>(services);
+        var endpoint = Assert.Single(
+            endpointDataSource.Endpoints,
+            endpoint => ((RouteEndpoint)endpoint).RoutePattern.RawText == BrowserToolsHotReloadSettings.Path);
+
+        var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
+        Assert.Equal(int.MaxValue, routeEndpoint.Order);
+        Assert.Equal([HttpMethods.Get], Assert.Single(routeEndpoint.Metadata.GetOrderedMetadata<IHttpMethodMetadata>()).HttpMethods);
+
+        var context = new DefaultHttpContext
+        {
+            RequestServices = services,
+            Response =
+            {
+                Body = new MemoryStream(),
+            },
+        };
+
+        await routeEndpoint.RequestDelegate(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal("application/json", context.Response.ContentType);
+        Assert.Equal("no-store", context.Response.Headers.CacheControl);
+        Assert.False(context.Response.Headers.ContainsKey("Content-Encoding"));
+        Assert.Equal(
+            Encoding.UTF8.GetBytes("""{ "hotReload": false }"""),
+            ((MemoryStream)context.Response.Body).ToArray());
+    }
+
+    [Theory]
+    [InlineData("Development", "1")]
+    [InlineData("Production", null)]
+    public void BrowserToolsHotReloadSettings_IsNotMapped_WhenDisabled(string environment, string dotNetWatch)
+    {
+        var endpointDataSource = CreateDataSource<App>(CreateServices(environment, dotNetWatch));
+
+        Assert.DoesNotContain(
+            endpointDataSource.Endpoints,
+            endpoint => ((RouteEndpoint)endpoint).RoutePattern.RawText == BrowserToolsHotReloadSettings.Path);
     }
 
     // renderModes, providers, components, expectedEndpoints
@@ -199,23 +260,10 @@ public class RazorComponentEndpointDataSourceTest
             },
         };
 
-    private ComponentApplicationBuilder CreateBuilder(params Type[] types)
-    {
-        var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "TestAssembly",
-            Array.Empty<PageComponentBuilder>(),
-            types.Select(t => new ComponentBuilder
-            {
-                AssemblyName = "TestAssembly",
-                ComponentType = t,
-                RenderMode = t.GetCustomAttribute<RenderModeAttribute>()
-            }).ToArray()));
-
-        return builder;
-    }
-
     private IServiceProvider CreateServices(params Type[] types)
+        => CreateServices("TestEnvironment", dotNetWatch: null, types);
+
+    private IServiceProvider CreateServices(string environment, string dotNetWatch, params Type[] types)
     {
         var services = new ServiceCollection();
         foreach (var type in types)
@@ -223,19 +271,26 @@ public class RazorComponentEndpointDataSourceTest
             services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(RenderModeEndpointProvider), type));
         }
 
-        services.AddSingleton<IWebHostEnvironment, TestWebHostEnvironment>();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["DOTNET_WATCH"] = dotNetWatch,
+            })
+            .Build());
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment
+        {
+            EnvironmentName = environment,
+        });
         services.AddLogging();
 
         return services.BuildServiceProvider();
     }
 
     private RazorComponentEndpointDataSource<TComponent> CreateDataSource<TComponent>(
-        ComponentApplicationBuilder builder = null,
         IServiceProvider services = null,
         IComponentRenderMode[] renderModes = null)
     {
         var result = new RazorComponentEndpointDataSource<TComponent>(
-            builder ?? DefaultRazorComponentApplication<TComponent>.Instance.GetBuilder(),
             services?.GetService<IEnumerable<RenderModeEndpointProvider>>() ?? Enumerable.Empty<RenderModeEndpointProvider>(),
             new TestEndpointRouteBuilder(services ?? CreateServices()),
             new RazorComponentEndpointFactory(),

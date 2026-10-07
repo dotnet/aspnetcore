@@ -4,6 +4,7 @@
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Connections.Features;
@@ -164,6 +165,95 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "tls-server-end-point format is well-defined on Windows; other platforms may return null or a different shape.")]
+    public async Task TlsConnectionFeatureExposesEndpointChannelBinding()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        };
+
+        await using (var server = new TestServer(context =>
+        {
+            var feature = context.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(feature);
+
+            Assert.True(feature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var bytes));
+
+            // The buffer is a SEC_CHANNEL_BINDINGS struct (32-byte header) followed by the
+            // application data: ASCII "tls-server-end-point:" + SHA-256 of the server cert.
+            var raw = bytes.Span;
+            Assert.True(raw.Length >= 32, "Buffer should be at least the header size.");
+
+            var appDataLength = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(24, 4));
+            var appDataOffset = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(28, 4));
+            Assert.True(appDataOffset + appDataLength <= raw.Length, "Application data must lie within the buffer.");
+
+            var appData = raw.Slice((int)appDataOffset, (int)appDataLength);
+            var prefix = "tls-server-end-point:"u8;
+            Assert.True(appData.StartsWith(prefix), "Application data must begin with 'tls-server-end-point:'.");
+
+            var expectedHash = System.Security.Cryptography.SHA256.HashData(_x509Certificate2.RawData);
+            Assert.True(appData.Slice(prefix.Length).SequenceEqual(expectedHash), "Channel binding hash must match SHA-256 of server certificate.");
+
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+    }
+
+    [Fact]
+    public async Task TryGetChannelBindingBytesReturnsFalseForUnsupportedKind()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        };
+
+        await using (var server = new TestServer(context =>
+        {
+            var feature = context.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(feature);
+            Assert.False(feature.TryGetChannelBindingBytes(ChannelBindingKind.Unknown, out var bytes));
+            Assert.True(bytes.IsEmpty);
+
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "tls-server-end-point format is well-defined on Windows; other platforms may return null or a different shape.")]
+    public async Task TryGetChannelBindingBytesReturnsConsistentBytesOnRepeatedCalls()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        };
+
+        await using (var server = new TestServer(context =>
+        {
+            var feature = context.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(feature);
+
+            Assert.True(feature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var first));
+            Assert.True(feature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var second));
+            Assert.True(first.Span.SequenceEqual(second.Span));
+
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+    }
+
     [Fact]
     public async Task HandshakeDetailsAreAvailableAfterAsyncCallback()
     {
@@ -200,6 +290,154 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
             Assert.Equal("hello world", result);
         }
+    }
+
+    [Fact]
+    public async Task HandshakeExceptionIsAvailableAfterHandshakeFailure()
+    {
+        var handshakeFeatureTcs = new TaskCompletionSource<ITlsHandshakeFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            // Outer middleware wraps the HTTPS middleware and can inspect the feature after it returns.
+            listenOptions.Use(next => async connectionContext =>
+            {
+                await next(connectionContext);
+
+                var feature = connectionContext.Features.Get<ITlsHandshakeFeature>();
+                handshakeFeatureTcs.TrySetResult(feature);
+            });
+
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        }
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            using var connection = server.CreateConnection();
+            await using var sslStream = new SslStream(connection.Stream);
+
+            var clientAuthOptions = new SslClientAuthenticationOptions
+            {
+                TargetHost = "localhost",
+                // Only enabling an obsolete protocol should cause a handshake failure.
+#pragma warning disable CS0618 // Type or member is obsolete
+                EnabledSslProtocols = SslProtocols.Ssl2,
+#pragma warning restore CS0618
+            };
+
+            using var handshakeCts = new CancellationTokenSource(TestConstants.DefaultTimeout);
+            await Assert.ThrowsAnyAsync<Exception>(() => sslStream.AuthenticateAsClientAsync(clientAuthOptions, handshakeCts.Token));
+
+            var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
+            Assert.NotNull(handshakeFeature);
+            Assert.NotNull(handshakeFeature.Exception);
+        }
+    }
+
+    [Fact]
+    public async Task HandshakeFeaturePropertiesAreAccessibleAfterHandshakeTimeout()
+    {
+        var handshakeFeatureTcs = new TaskCompletionSource<ITlsHandshakeFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.Use(next => async connectionContext =>
+            {
+                await next(connectionContext);
+
+                var feature = connectionContext.Features.Get<ITlsHandshakeFeature>();
+                handshakeFeatureTcs.TrySetResult(feature);
+            });
+
+            listenOptions.UseHttps(o =>
+            {
+                o.ServerCertificate = _x509Certificate2;
+                o.HandshakeTimeout = TimeSpan.FromSeconds(2);
+            });
+        }
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            using var connection = server.CreateConnection();
+            // Don't send any TLS data — let the handshake time out.
+            Assert.Equal(0, await connection.Stream.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
+
+            var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
+            Assert.NotNull(handshakeFeature);
+            Assert.IsAssignableFrom<OperationCanceledException>(handshakeFeature.Exception);
+        }
+    }
+
+    [Fact]
+    public async Task HandshakeExceptionIsNullOnSuccessfulHandshake()
+    {
+        ITlsHandshakeFeature capturedFeature = null;
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        }
+
+        await using (var server = new TestServer(context =>
+        {
+            capturedFeature = context.Features.Get<ITlsHandshakeFeature>();
+            Assert.NotNull(capturedFeature);
+            Assert.Null(capturedFeature.Exception);
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+
+        Assert.NotNull(capturedFeature);
+    }
+
+    [Fact]
+    public async Task SnapshotPreservesAllPropertiesAfterConnectionClose()
+    {
+        var handshakeFeatureTcs = new TaskCompletionSource<ITlsHandshakeFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            // Outer middleware captures the feature AFTER the HTTPS middleware returns,
+            // which is when Snapshot() has been called and the SslStream may be disposed.
+            listenOptions.Use(next => async connectionContext =>
+            {
+                await next(connectionContext);
+
+                var handshakeFeature = connectionContext.Features.Get<ITlsHandshakeFeature>();
+                handshakeFeatureTcs.TrySetResult(handshakeFeature);
+            });
+
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        }
+
+        await using (var server = new TestServer(context =>
+        {
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+
+        var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
+        Assert.NotNull(handshakeFeature);
+
+        // Verify all snapshotted properties are accessible after connection close.
+        Assert.Null(handshakeFeature.Exception);
+        Assert.True(handshakeFeature.Protocol > SslProtocols.None);
+        Assert.True(handshakeFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL);
+
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
+        Assert.True(handshakeFeature.CipherAlgorithm > CipherAlgorithmType.Null);
+        Assert.True(handshakeFeature.CipherStrength > 0);
+        Assert.True(handshakeFeature.HashAlgorithm >= HashAlgorithmType.None);
+        Assert.True(handshakeFeature.HashStrength >= 0);
+        Assert.True(handshakeFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None);
+        Assert.True(handshakeFeature.KeyExchangeStrength >= 0);
+#pragma warning restore SYSLIB0058
     }
 
     [Fact]
@@ -1212,8 +1450,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             using (var connection = server.CreateConnection())
             {
                 var stream = OpenSslStreamWithCert(connection.Stream);
-                await stream.AuthenticateAsClientAsync("localhost");
-                await AssertConnectionResult(stream, false);
+                await AssertConnectionRejected(stream);
             }
         }
     }
@@ -1237,8 +1474,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             using (var connection = server.CreateConnection())
             {
                 var stream = OpenSslStreamWithCert(connection.Stream);
-                await stream.AuthenticateAsClientAsync("localhost");
-                await AssertConnectionResult(stream, false);
+                await AssertConnectionRejected(stream);
             }
         }
     }
@@ -1515,6 +1751,24 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     {
         return new SslStream(rawStream, false, (sender, certificate, chain, errors) => true,
             (sender, host, certificates, certificate, issuers) => clientCertificate ?? _x509Certificate2);
+    }
+
+    private static async Task AssertConnectionRejected(SslStream stream)
+    {
+        // The server is expected to reject the connection because of the client certificate.
+        // Depending on the platform and runtime, this surfaces in one of two ways: either the TLS
+        // handshake fails directly (the peer sends a fatal certificate alert, e.g. macOS since
+        // https://github.com/dotnet/runtime/pull/128316), or the handshake completes and the server
+        // closes the connection immediately afterward. Both outcomes are valid rejections.
+        try
+        {
+            await stream.AuthenticateAsClientAsync("localhost");
+        }
+        catch (AuthenticationException)
+        {
+            return;
+        }
+        await AssertConnectionResult(stream, false);
     }
 
     private static async Task AssertConnectionResult(SslStream stream, bool success, string body = null)

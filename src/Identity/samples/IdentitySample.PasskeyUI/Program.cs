@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
+#pragma warning disable ASP0039 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 using IdentitySample.PasskeyUI;
 using IdentitySample.PasskeyUI.Components;
 using Microsoft.AspNetCore.Identity;
@@ -38,12 +39,19 @@ builder.Services.AddIdentityCore<PocoUser>()
 builder.Services.AddSingleton<IUserStore<PocoUser>, InMemoryUserStore<PocoUser>>();
 builder.Services.AddSingleton<IUserPasskeyStore<PocoUser>, InMemoryUserStore<PocoUser>>();
 
+// Advertises where passkeys can be created at /.well-known/passkey-endpoints so that credential
+// managers can offer to upgrade a saved password to a passkey. This sample has no passkey
+// management page, so only "enroll" is advertised and "manage" is omitted from the document.
+// See https://w3c.github.io/webappsec-passkey-endpoints/.
+builder.Services.AddPasskeyEndpoints(options => options.Enroll = "/");
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
+app.MapWellKnownPasskeyEndpoints();
 
 app.MapPost("attestation/options", async (
     [FromServices] UserManager<PocoUser> userManager,
@@ -51,20 +59,14 @@ app.MapPost("attestation/options", async (
     [FromBody] PublicKeyCredentialCreationOptionsRequest request) =>
 {
     var userId = (await userManager.FindByNameAsync(request.Username) ?? new PocoUser()).Id;
-    var userEntity = new PasskeyUserEntity(userId, request.Username, null);
-    var creationArgs = new PasskeyCreationArgs(userEntity)
+    var userEntity = new PasskeyUserEntity
     {
-        AuthenticatorSelection = request.AuthenticatorSelection,
-        Extensions = request.Extensions,
+        Id = userId,
+        Name = request.Username,
+        DisplayName = request.Username
     };
-
-    if (!string.IsNullOrEmpty(request.Attestation))
-    {
-        creationArgs.Attestation = request.Attestation;
-    }
-
-    var options = await signInManager.ConfigurePasskeyCreationOptionsAsync(creationArgs);
-    return Results.Content(options.AsJson(), contentType: "application/json");
+    var optionsJson = await signInManager.MakePasskeyCreationOptionsAsync(userEntity);
+    return Results.Content(optionsJson, contentType: "application/json");
 });
 
 app.MapPost("assertion/options", async (
@@ -72,23 +74,9 @@ app.MapPost("assertion/options", async (
     [FromServices] SignInManager<PocoUser> signInManager,
     [FromBody] PublicKeyCredentialGetOptionsRequest request) =>
 {
-    var user = !string.IsNullOrEmpty(request.Username)
-        ? await userManager.FindByNameAsync(request.Username)
-        : null;
-
-    var requestArgs = new PasskeyRequestArgs<PocoUser>
-    {
-        User = user,
-        Extensions = request.Extensions,
-    };
-
-    if (!string.IsNullOrEmpty(request.UserVerification))
-    {
-        requestArgs.UserVerification = request.UserVerification;
-    }
-
-    var options = await signInManager.ConfigurePasskeyRequestOptionsAsync(requestArgs);
-    return Results.Content(options.AsJson(), contentType: "application/json");
+    var user = !string.IsNullOrEmpty(request.Username) ? await userManager.FindByNameAsync(request.Username) : null;
+    var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
+    return Results.Content(optionsJson, contentType: "application/json");
 });
 
 app.MapPost("account/logout", async (
@@ -100,17 +88,12 @@ app.MapPost("account/logout", async (
 
 app.Run();
 
-sealed class PublicKeyCredentialCreationOptionsRequest(string username)
+sealed class PublicKeyCredentialCreationOptionsRequest
 {
-    public string Username { get; } = username;
-    public AuthenticatorSelectionCriteria? AuthenticatorSelection { get; set; }
-    public JsonElement? Extensions { get; set; }
-    public string? Attestation { get; set; } = "none";
+    public required string Username { get; set; }
 }
 
 sealed class PublicKeyCredentialGetOptionsRequest
 {
     public string? Username { get; set; }
-    public string? UserVerification { get; set; }
-    public JsonElement? Extensions { get; set; }
 }

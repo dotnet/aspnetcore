@@ -411,7 +411,6 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     HandleWrapper<InvalidHandleTraits>     hThread;
     CComBSTR            pwzDotnetName = nullptr;
     DWORD               dwFilePointer = 0;
-    BOOL                fIsCurrentProcess64Bit = FALSE;
     DWORD               dwExitCode = 0;
     STRU                struDotnetSubstring;
     STRU                struDotnetLocationsString;
@@ -426,6 +425,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     securityAttributes.bInheritHandle = TRUE;
 
     LOG_INFO(L"Invoking where.exe to find dotnet.exe");
+    auto currentProcessArch = Environment::GetCurrentProcessArchitecture();
 
     // Create a read/write pipe that will be used for reading the result of where.exe
     FINISHED_LAST_ERROR_IF(!CreatePipe(&hStdOutReadPipe, &hStdOutWritePipe, &securityAttributes, 0));
@@ -499,13 +499,9 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     }
 
     FINISHED_IF_FAILED(struDotnetLocationsString.CopyA(pzFileContents, dwNumBytesRead));
-
     LOG_INFOF(L"where.exe invocation returned: '%ls'", struDotnetLocationsString.QueryStr());
 
-    fIsCurrentProcess64Bit = Environment::IsRunning64BitProcess();
-
-    LOG_INFOF(L"Current process bitness type detected as isX64=%d", fIsCurrentProcess64Bit);
-
+    // Look for a dotnet.exe that matches the current process architecture
     while (TRUE)
     {
         index = struDotnetLocationsString.IndexOf(L"\r\n", prevIndex);
@@ -518,12 +514,21 @@ HostFxrResolver::InvokeWhereToFindDotnet()
         // \r\n is two wchars, so add 2 here.
         prevIndex = index + 2;
 
-        LOG_INFOF(L"Processing entry '%ls'", struDotnetSubstring.QueryStr());
-
-        if (fIsCurrentProcess64Bit == IsX64(struDotnetSubstring.QueryStr()))
+        ProcessorArchitecture dotnetArch = GetFileProcessorArchitecture(struDotnetSubstring.QueryStr());
+        if (dotnetArch == currentProcessArch)
         {
-            // The bitness of dotnet matched with the current worker process bitness.
+            LOG_INFOF(L"Found dotnet.exe matching current process architecture (%ls) '%ls'",
+                ProcessorArchitectureToString(dotnetArch),
+                struDotnetSubstring.QueryStr());
+
             return std::make_optional(struDotnetSubstring.QueryStr());
+        }
+        else
+        {
+            LOG_INFOF(L"Skipping dotnet.exe with non-matching architecture %ls (need %ls). '%ls'",
+                ProcessorArchitectureToString(dotnetArch),
+                ProcessorArchitectureToString(currentProcessArch),
+                struDotnetSubstring.QueryStr());
         }
     }
 
@@ -531,15 +536,16 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     return result;
 }
 
-BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
+// Reads the PE header of the binary to determine its architecture.
+ProcessorArchitecture HostFxrResolver::GetFileProcessorArchitecture(const WCHAR* binaryPath)
 {
     // Errors while reading from the file shouldn't throw unless
     // file.exception(bits) is set
-    std::ifstream file(dotnetPath, std::ios::binary);
+    std::ifstream file(binaryPath, std::ios::binary);
     if (!file.is_open())
     {
-        LOG_TRACEF(L"Failed to open file %ls", dotnetPath);
-        return false;
+        LOG_TRACEF(L"Failed to open file %ls", binaryPath);
+        return ProcessorArchitecture::Unknown;
     }
 
     // Read the DOS header
@@ -547,8 +553,8 @@ BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
     file.read(reinterpret_cast<char*>(&dosHeader), sizeof(dosHeader));
     if (dosHeader.e_magic != IMAGE_DOS_SIGNATURE) // 'MZ'
     {
-        LOG_TRACEF(L"%ls is not a valid executable file (missing MZ header).", dotnetPath);
-        return false;
+        LOG_TRACEF(L"%ls is not a valid executable file (missing MZ header).", binaryPath);
+        return ProcessorArchitecture::Unknown;
     }
 
     // Seek to the PE header
@@ -559,32 +565,30 @@ BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
     file.read(reinterpret_cast<char*>(&peSignature), sizeof(peSignature));
     if (peSignature != IMAGE_NT_SIGNATURE) // 'PE\0\0'
     {
-        LOG_TRACEF(L"%ls is not a valid PE file (missing PE header).", dotnetPath);
-        return false;
+        LOG_TRACEF(L"%ls is not a valid PE file (missing PE header).", binaryPath);
+        return ProcessorArchitecture::Unknown;
     }
 
     // Read the file header
     IMAGE_FILE_HEADER fileHeader{};
     file.read(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
 
-    // Read the optional header magic field
-    WORD magic{};
-    file.read(reinterpret_cast<char*>(&magic), sizeof(magic));
-
-    // Determine the architecture based on the magic value
-    if (magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+    // Determine the architecture based on the machine type
+    switch (fileHeader.Machine)
     {
-        LOG_INFOF(L"%ls is 32-bit", dotnetPath);
-        return false;
+        case IMAGE_FILE_MACHINE_I386:
+            LOG_INFOF(L"%ls is x86 (32-bit)", binaryPath);
+            return ProcessorArchitecture::x86;
+        case IMAGE_FILE_MACHINE_AMD64:
+            LOG_INFOF(L"%ls is AMD64 (x64)", binaryPath);
+            return ProcessorArchitecture::AMD64;
+        case IMAGE_FILE_MACHINE_ARM64:
+            LOG_INFOF(L"%ls is ARM64", binaryPath);
+            return ProcessorArchitecture::ARM64;
+        default:
+            LOG_INFOF(L"%ls has unknown architecture (machine type: 0x%X)", binaryPath, fileHeader.Machine);
+            return ProcessorArchitecture::Unknown;
     }
-    else if (magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
-    {
-        LOG_INFOF(L"%ls is 64-bit", dotnetPath);
-        return true;
-    }
-
-    LOG_INFOF(L"%ls is unknown architecture %i", dotnetPath, fileHeader.Machine);
-    return false;
 }
 
 std::optional<fs::path>

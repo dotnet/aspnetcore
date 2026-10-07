@@ -35,6 +35,7 @@ public static class IdentityServiceCollectionExtensions
     {
         // Services identity depends on
         services.AddOptions().AddLogging();
+        services.AddMetrics();
 
         // Services used by identity
         services.TryAddScoped<IUserValidator<TUser>, UserValidator<TUser>>();

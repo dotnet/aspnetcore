@@ -15,8 +15,10 @@ namespace Microsoft.AspNetCore.Builder;
 public class StatusCodePagesOptions
 {
     /// <summary>
-    /// Creates a default <see cref="StatusCodePagesOptions"/> which produces a plaintext response
-    /// containing the status code and the reason phrase.
+    /// Creates a default <see cref="StatusCodePagesOptions"/> whose handler attempts to generate a
+    /// <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> response using <see cref="IProblemDetailsService"/>, and falls back
+    /// to a plaintext response containing the status code and reason phrase when that service is unavailable
+    /// or cannot write a response.
     /// </summary>
     public StatusCodePagesOptions()
     {
@@ -52,7 +54,10 @@ public class StatusCodePagesOptions
     }
 
     /// <summary>
-    /// The handler that generates the response body for the given <see cref="StatusCodeContext"/>. By default this produces a plain text response that includes the status code.
+    /// The handler that generates the response body for the given <see cref="StatusCodeContext"/>.
+    /// By default this attempts to generate a <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> response
+    /// using <see cref="IProblemDetailsService"/> and falls back to a plain text response that includes the
+    /// status code.
     /// </summary>
     public Func<StatusCodeContext, Task> HandleAsync { get; set; }
 
@@ -61,7 +66,7 @@ public class StatusCodePagesOptions
     /// replace it on <see cref="HttpContext.RequestServices"/> when re-executing the request.
     /// </summary>
     /// <remarks>The default value is <see langword="false"/>.</remarks>
-    public bool CreateScopeForErrors { get; set; }
+    public bool CreateScopeForStatusCodePages { get; set; }
 
     internal string? PathFormat { get; set; }
 }

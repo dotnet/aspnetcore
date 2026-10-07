@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.1.1",
+  "openapi": "3.1.2",
   "info": {
     "title": "Sample | v2",
     "contact": {
@@ -60,10 +60,10 @@
   },
   "tags": [
     {
-      "name": "users"
+      "name": "Sample"
     },
     {
-      "name": "Sample"
+      "name": "users"
     }
   ]
 }

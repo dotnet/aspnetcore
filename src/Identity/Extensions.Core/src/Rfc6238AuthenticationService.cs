@@ -53,7 +53,15 @@ internal static class Rfc6238AuthenticationService
         Debug.Assert(res);
         Debug.Assert(written == hash.Length);
 #else
-        var hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifierBytes));
+        byte[] hash;
+        if (modifierBytes is null)
+        {
+            hash = hashAlgorithm.ComputeHash(timestepAsBytes);
+        }
+        else
+        {
+            hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifierBytes));
+        }
 #endif
 
         // Generate DT string
@@ -67,7 +75,7 @@ internal static class Rfc6238AuthenticationService
         return binaryCode % Mod;
     }
 
-    private static byte[] ApplyModifier(Span<byte> input, byte[] modifierBytes)
+    private static byte[] ApplyModifier(ReadOnlySpan<byte> input, byte[] modifierBytes)
     {
         var combined = new byte[checked(input.Length + modifierBytes.Length)];
         input.CopyTo(combined);

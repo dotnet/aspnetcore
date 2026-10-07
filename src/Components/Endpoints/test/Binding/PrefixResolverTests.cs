@@ -80,6 +80,40 @@ public class PrefixResolverTests
     }
 
     [Theory]
+    [InlineData("Model")]
+    [InlineData("Model.Model")]
+    [InlineData("Model[0].Model")]
+    public void ContainsPrefix_HasEntries(string prefix)
+    {
+        // Arrange - Simulating the exact scenario from debugging
+        var keys = new string[] { "__RequestVerificationToken", "_handler", "Model.Name", "Model.Model.Name", "Model[0].Model.Name", "Model[0].Name" };
+        var container = new PrefixResolver(GetKeys(keys), keys.Length);
+
+        // Act
+        var result = container.HasPrefix(prefix.AsMemory());
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData("Model")]
+    [InlineData("Model.Model")]
+    [InlineData("Model[0].Model")]
+    public void ContainsPrefix_DoesNotHaveEntries(string prefix)
+    {
+        // Arrange - Simulating the exact scenario from debugging
+        var keys = new string[] { "__RequestVerificationToken", "_handler" };
+        var container = new PrefixResolver(GetKeys(keys), keys.Length);
+
+        // Act
+        var result = container.HasPrefix(prefix.AsMemory());
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Theory]
     [InlineData("a")]
     [InlineData("b")]
     [InlineData("b.xy")]

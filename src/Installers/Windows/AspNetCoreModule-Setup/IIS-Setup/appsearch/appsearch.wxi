@@ -1,17 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+﻿<!--
     Copyright (c) Microsoft Corporation. All rights reserved.
     Licensed under the MIT license.
 -->
 
 <!-- Be sure to include the common setup include file in your project if using this file! 
 
-<?include $(var.PROJECT_ROOT)\setup\include.wxi ?>
+<?include $(PROJECT_ROOT)\setup\include.wxi ?>
 
 -->
 
-<Include>
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
         <!-- 
           all these properties are marked secure because that is the mechanism by 
           which they can be passed from the client side of msiexec to the server
@@ -23,36 +21,36 @@
 
         <!-- iis installation lookup -->
         <Property Id="IISINSTALLPATH" Admin="no" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_IISINSTALLPATH" Type="raw" Root="HKLM" Key="Software\Microsoft\InetStp" Name="InstallPath" Win64="$(var.IsWin64)" />
+            <RegistrySearch Id="RegistrySearch_IISINSTALLPATH" Type="raw" Root="HKLM" Key="Software\Microsoft\InetStp" Name="InstallPath" Bitness="$(Bitness)" />
         </Property>
 
         <!-- iis features lookup -->
         <Property Id="IISCOREWEBENGINEINSTALLED" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_IISCOREWEBENGINEINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="CoreWebEngine" Win64="$(var.IsWin64)" />
+            <RegistrySearch Id="RegistrySearch_IISCOREWEBENGINEINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="CoreWebEngine" Bitness="$(Bitness)" />
         </Property>
         <Property Id="IISW3SVCINSTALLED" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_IISW3SVCINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="W3SVC" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_IISW3SVCINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="W3SVC" Bitness="$(Bitness)" />
         </Property>
         <Property Id="IISADMINSERVICEINSTALLED" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_IISADMINSERVICEINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="AdminService" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_IISADMINSERVICEINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="AdminService" Bitness="$(Bitness)" />
         </Property>
         <Property Id="IISMANAGEMENTCONSOLEINSTALLED" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_IISMANAGEMENTCONSOLEINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="ManagementConsole" Win64="$(var.IsWin64)" />
+            <RegistrySearch Id="RegistrySearch_IISMANAGEMENTCONSOLEINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="ManagementConsole" Bitness="$(Bitness)" />
         </Property>
         <Property Id="IISNETFXEXTENSIBILITYINSTALLED" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_IISNETFXEXTENSIBILITYINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="NetFxExtensibility" Win64="$(var.IsWin64)" />
+            <RegistrySearch Id="RegistrySearch_IISNETFXEXTENSIBILITYINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="NetFxExtensibility" Bitness="$(Bitness)" />
         </Property>
         <Property Id="IISASPNET" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_IISASPNETINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="ASPNET" Win64="$(var.IsWin64)" />
+            <RegistrySearch Id="RegistrySearch_IISASPNETINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Name="ASPNET" Bitness="$(Bitness)" />
         </Property>
 
         <Property Id="IISMETABASEIMAGEPATH" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_IISMETABASEIMAGEPATH" Type="raw" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\IISADMIN" Name="ImagePath" Win64="$(var.IsWin64)" />
+            <RegistrySearch Id="RegistrySearch_IISMETABASEIMAGEPATH" Type="raw" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\IISADMIN" Name="ImagePath" Bitness="$(Bitness)" />
         </Property>
 
         <!-- UI features lookup -->
         <Property Id="IISREMOTECHANNELINSTALLED" Secure="yes">
-            <RegistrySearch Id ="RegistrySearch_IISREMOTECHANNELINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\Inetmgr\7.0" Name="RemoteChannel" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_IISREMOTECHANNELINSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\Inetmgr\7.0" Name="RemoteChannel" Bitness="$(Bitness)" />
         </Property>
 
         <!--
@@ -63,36 +61,36 @@
             (NOT NETFRAMEWORK20) Or (NETFRAMEWORK20_SP_LEVEL ~>= "#1") Or Installed
         -->
         <Property Id="NETFRAMEWORK20" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_NETFRAMEWORK20" Type="raw" Root="HKLM" Key="Software\Microsoft\NET Framework Setup\NDP\v2.0.50727" Name="Install" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_NETFRAMEWORK20" Type="raw" Root="HKLM" Key="Software\Microsoft\NET Framework Setup\NDP\v2.0.50727" Name="Install" Bitness="$(Bitness)" />
         </Property>
         <Property Id="NETFRAMEWORK20_SP_LEVEL" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_NETFRAMEWORK20_SP_LEVEL" Type="raw" Root="HKLM" Key="Software\Microsoft\NET Framework Setup\NDP\v2.0.50727" Name="SP" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_NETFRAMEWORK20_SP_LEVEL" Type="raw" Root="HKLM" Key="Software\Microsoft\NET Framework Setup\NDP\v2.0.50727" Name="SP" Bitness="$(Bitness)" />
         </Property>
         <Property Id="NETFRAMEWORK35_SP_LEVEL" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_NETFRAMEWORK35_SP_LEVEL" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\NET Framework Setup\NDP\v3.5" Name="SP" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_NETFRAMEWORK35_SP_LEVEL" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\NET Framework Setup\NDP\v3.5" Name="SP" Bitness="$(Bitness)" />
         </Property>
 
         <!-- search for powershell v1 -->
         <Property Id="POWERSHELLINSTALLED" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_POWERSHELLINSTALLED" Type="raw" Root="HKLM" Key="Software\Microsoft\PowerShell\1" Name="Install" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_POWERSHELLINSTALLED" Type="raw" Root="HKLM" Key="Software\Microsoft\PowerShell\1" Name="Install" Bitness="$(Bitness)" />
         </Property>
 
         <!-- Read the start type for the Windows Update service -->
         <Property Id="WINDOWSUPDATE_START_TYPE" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_WINDOWSUPDATE_START_TYPE" Type="raw" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\wuauserv" Name="Start" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_WINDOWSUPDATE_START_TYPE" Type="raw" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\wuauserv" Name="Start" Bitness="$(Bitness)" />
         </Property>
 
         <!-- Figure out the windows sku -->
         <Property Id="WINDOWSEDITION" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_WINDOWSEDITION" Type="raw" Root="HKLM" Key="Software\Microsoft\Windows NT\CurrentVersion" Name="EditionID" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_WINDOWSEDITION" Type="raw" Root="HKLM" Key="Software\Microsoft\Windows NT\CurrentVersion" Name="EditionID" Bitness="$(Bitness)" />
         </Property>
 
         <!-- search for web pi -->
         <Property Id="WEBPI3INSTALLED" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_WEBPI3INSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\WebPlatformInstaller\3" Name="Install" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_WEBPI3INSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\WebPlatformInstaller\3" Name="Install" Bitness="$(Bitness)" />
         </Property>
 
         <Property Id="WEBPI4INSTALLED" Secure="yes">
-            <RegistrySearch Id="RegistrySearch_WEBPI4INSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\WebPlatformInstaller\4" Name="Install" Win64="$(var.IsWin64)"/>
+            <RegistrySearch Id="RegistrySearch_WEBPI4INSTALLED" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\WebPlatformInstaller\4" Name="Install" Bitness="$(Bitness)" />
         </Property>
 </Include>

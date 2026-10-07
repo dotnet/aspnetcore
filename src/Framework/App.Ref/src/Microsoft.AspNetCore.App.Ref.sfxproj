@@ -30,8 +30,6 @@
     <DotnetTargetingPackDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetTargetingPackDependencyVersion>
     <DotnetTargetingPackDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetTargetingPackDependencyMajorMinorVersion>
 
-    <!-- TODO: Try to remove this disable property -->
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
@@ -42,26 +40,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
-    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" />
+    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" />
     <LinuxPackageDependency Include="dotnet-targeting-pack-$(DotnetTargetingPackDependencyMajorMinorVersion)" Version="$(DotnetTargetingPackDependencyVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
-    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
+    <ProjectReference Include="@(AspNetCoreAppReference->'%(ProjectPath)');@(AspNetCoreAppReferenceAndPackage->'%(ProjectPath)')" />
+    <PackageReference Include="@(ExternalAspNetCoreAppReference)" Version="" />
 
-    <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Framework\AspNetCoreAnalyzers\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj"
       Private="false"
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
 
-    <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Framework\AspNetCoreAnalyzers\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj"
       Private="false"
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
 
-    <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\SourceGenerators\Microsoft.AspNetCore.App.SourceGenerators.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Framework\AspNetCoreAnalyzers\src\SourceGenerators\Microsoft.AspNetCore.App.SourceGenerators.csproj"
       Private="false"
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
@@ -100,17 +99,6 @@
   <ItemGroup>
     <PackageOverridesFile Include="$(ReferencePackageOverridesPath)" />
   </ItemGroup>
-
-  <!--
-    COMPAT: Remove the System.Security.Cryptography.Pkcs reference from the project.
-    We don't package System.Security.Cryptography.Pkcs into the reference pack for ASP.NET Core.
-  -->
-  <Target Name="_RemovePkcsReference" AfterTargets="ResolveReferences">
-    <ItemGroup>
-      <ReferencePath Remove="@(ReferencePath)" Condition="'%(FileName)' == 'System.Security.Cryptography.Pkcs'" />
-      <IgnoredReference Include="System.Security.Cryptography.Pkcs" />
-    </ItemGroup>
-  </Target>
 
   <Target Name="_AddAnalyzersToRefPack" BeforeTargets="GetFilesToPackage">
     <ItemGroup>
@@ -173,6 +161,13 @@
 
       <!-- Include Microsoft.AspNetCore.App for Package Pruning -->
       <_AspNetCoreAppPackageOverrides Include="$(SharedFrameworkName)|$(ReferencePackSharedFxVersion)" />
+
+      <!--
+        Exclude Microsoft.Extensions.FileProviders.Embedded from pruning because it contains build logic
+        required to generate the embedded files manifest. The package's build targets are not in the SDK,
+        so they must be available from the package itself. See https://github.com/dotnet/aspnetcore/issues/63719
+      -->
+      <_AspNetCoreAppPackageOverrides Remove="Microsoft.Extensions.FileProviders.Embedded|$(ReferencePackSharedFxVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile
@@ -181,9 +176,44 @@
         Overwrite="true" />
   </Target>
 
-  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="PublishToDisk"
-             Properties="OutputPath=$(TargetingPackLayoutRoot)" />
+  <!--
+    Publish the targeting pack to the layout root by copying the already-built files instead of invoking
+    PublishToDisk through a nested <MSBuild> call that overrides OutputPath. Overriding OutputPath forks a
+    new project configuration that rebuilds the pack's assemblies a second time. See
+    https://github.com/dotnet/msbuild/issues/12927.
+
+    We run AfterTargets="Build" and call _GetAllSharedFrameworkFiles to retrieve its already-resolved file
+    list. We do NOT depend on GetFilesToPublish directly, because
+    GetFilesToPublish populates the project-global FilesToPackage/_FilesToPackage items that arcade's Pack
+    path (_AddFilesToNuGetPackage) also consumes; resolving them in this configuration adds every assembly
+    to the package twice and trips NU5118. CallTarget evaluates the requested target in a separate scope,
+    so its packaging item mutations do not flow back into this target; only TargetOutputs are captured into
+    a private item. It also stays in the current project configuration without global property overrides,
+    reusing the already-computed file list without an extra compile. The layout TargetPath transform below
+    mirrors arcade's GetFilesToPublish for a TargetingPack.
+  -->
+  <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build">
+    <CallTarget Targets="_GetAllSharedFrameworkFiles">
+      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackLayoutPackagedFile" />
+    </CallTarget>
+
+    <ItemGroup>
+      <_TargetingPackLayoutFileToPublish Include="@(_TargetingPackLayoutPackagedFile)"
+          Condition="'%(_TargetingPackLayoutPackagedFile.PackOnly)' != 'true' and '%(_TargetingPackLayoutPackagedFile.TargetPath)' != ''">
+        <LayoutTargetPath>packs/$(PackageId)/$(Version)/%(_TargetingPackLayoutPackagedFile.TargetPath)/</LayoutTargetPath>
+      </_TargetingPackLayoutFileToPublish>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_TargetingPackLayoutFileToPublish)"
+          DestinationFolder="$(TargetingPackLayoutRoot)%(_TargetingPackLayoutFileToPublish.LayoutTargetPath)%(_TargetingPackLayoutFileToPublish.Culture)"
+          Condition="'%(_TargetingPackLayoutFileToPublish.IsSymbolFile)' != 'true' or '%(_TargetingPackLayoutFileToPublish.IncludeAlways)' == 'true'"
+          OverwriteReadOnlyFiles="true"
+          SkipUnchangedFiles="true" />
+
+    <!-- Fix file permissions in the layout dir, matching arcade's PublishToDisk target. -->
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(TargetingPackLayoutRoot)" -type f -name "*" -exec chmod 644 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(TargetingPackLayoutRoot)" -type f -name "*.dylib" -exec chmod 755 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(TargetingPackLayoutRoot)" -type f -name "*.so" -exec chmod 755 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(TargetingPackLayoutRoot)" -type f ! -name "*.*" -exec chmod 755 {} \;' />
   </Target>
 </Project>

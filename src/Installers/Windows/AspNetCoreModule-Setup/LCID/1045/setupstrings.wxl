@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Moduł platformy Microsoft ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Moduł w wersji 2 platformy Microsoft ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="Środowisko uruchomieniowe programu IIS na platformie ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="Dodaje obsługę aplikacji platformy ASP.NET Core do programu IIS."/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="Moduł platformy Microsoft ASP.NET Core dla programu IIS Express"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="Moduł w wersji 2 platformy Microsoft ASP.NET Core dla programu IIS Express"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="Program IIS Express w wersji 8.0 lub nowszej nie jest zainstalowany."/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="Na tym komputerze znajduje się niezgodny produkt [CONFLICTING_PRODUCT_NAME]. Nie można kontynuować instalacji produktu [ProductName]. Aby zainstalować ten produkt, użyj przycisku Dodaj/Usuń programy w obszarze Panel sterowania, aby usunąć [CONFLICTING_PRODUCT_NAME]."/>
+  <String Id="AdminRequired" Overridable="yes" Value="Do zainstalowania produktu [ProductName] jest wymagane uprawnienie administratora."/>
+  <String Id="IIS7Only" Overridable="yes" Value="Do korzystania z produktu [ProductName] jest wymagany program IIS w wersji 7.0."/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="Do zainstalowania produktu [ProductName] jest wymagany program IIS w wersji 7.0 lub nowszej."/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="Do zainstalowania produktu [ProductName] jest wymagany program IIS w wersji 7.5 lub nowszej."/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="Do zainstalowania produktu [ProductName] jest wymagany program IIS w wersji 7 lub 7.5."/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="Do zainstalowania produktu [ProductName] jest wymagany program IIS w wersji 8.0 lub nowszej."/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="Na tym komputerze znaleziono wersję beta produktu [ProductName]."/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="Na tym komputerze znaleziono nowszą wersję produktu [ProductName]."/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="Instalator nie może kontynuować, ponieważ na tym komputerze jest już zainstalowane inne wystąpienie produktu [ProductName]. Najpierw odinstaluj je, a następnie uruchom ponownie tę instalację."/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="Aby korzystać z produktu [ProductName], należy zainstalować funkcje programu IIS 7.0 CoreWebEngine i W3SVC."/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="Konsola zarządzania programu IIS musi być zainstalowana, aby można było korzystać z produktu [ProductName]."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="Przed zainstalowaniem produktu [ProductName] zatrzymaj obie usługi: Usługa aktywacji procesów systemu Windows (WAS) i Usługa zarządzania Siecią Web (WMSvc). Usługi należy uruchomić po zainstalowaniu produktu [ProductName]."/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="Do zainstalowania produktu [ProductName] jest wymagana metabaza programu IIS."/>
+  <String Id="LaunchCondition_32BIT" Value="Nie można zainstalować 64-bitowej wersji produktu [ProductName] w 32-bitowej wersji systemu Microsoft Windows."/>
+  <String Id="LaunchCondition_64BIT" Value="Nie można zainstalować 32-bitowej wersji produktu [ProductName] w 64-bitowej wersji systemu Microsoft Windows."/>
+  <String Id="NetFX2OrGreaterRequired" Value="Do zainstalowania produktu [ProductName] jest wymagana platforma Microsoft .NET Framework w wersji 2.0 lub nowszej."/>
+  <String Id="NetFX35OrGreaterRequired" Value="Do zainstalowania produktu [ProductName] jest wymagany program Microsoft .NET Framework w wersji 3.5 lub nowszej. Użyj opcji „Dodaj funkcje” w Menedżerze serwera, aby zainstalować program Microsoft .Net w wersji 3.5."/>
+  <String Id="NetFX4OrGreaterRequired" Value="Do zainstalowania produktu [ProductName] jest wymagany program Microsoft .NET Framework w wersji 4.0 lub nowszej."/>
+  <String Id="NetFX20SP1IsRequired" Value="Przed zainstalowaniem programu [ProductName] zainstaluj program Microsoft .NET Framework w wersji 2.0 z dodatkiem Service Pack 1 (lub nowszym)."/>
+  <String Id="WindowsUpdateEnabled" Value="Nie można wyłączyć usługi Windows Update (wuauserv). Jest ona wymagana do zainstalowania produktu [ProductName]."/>
+  <String Id="GetFromOSforWin7" Value="Przystawka programu PowerShell jest częścią systemu operacyjnego Windows. Zainstaluj ją za pośrednictwem opcji „Programy i funkcje” lub „Menedżer serwera”."/>
+  <String Id="WebPI3OrGreaterRequired" Value="Instalator platformy Microsoft Web w wersji 3.0 lub nowszej jest wymagany do zainstalowania produktu [ProductName]."/>
+
+  <String Id="Error30001" Overridable="yes" Value="Instalator nie wykrył konfiguracji udostępnionej."/>
+  <String Id="Error30002" Overridable="yes" Value="Konfiguracja udostępniona jest włączona dla programu IIS. Instalowanie produktu [ProductName] nie jest obsługiwane w przypadku korzystania z konfiguracji udostępnionej. Przed zainstalowaniem tej funkcji wyłącz konfigurację udostępnioną."/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="Przed zainstalowaniem produktu [ProductName] zatrzymaj usługę publikowania w sieci World Wide Web (W3SVC). Należy uruchomić usługę po instalacji."/>
+  <String Id="IISPowershellConsole" Value="Konsola zarządzania IIS PowerShell"/>
+  <String Id="IISPowershellSnapin" Value="Przystawka IIS PowerShell"/>
+  <String Id="PowerShellRequired" Value="Przystawka IIS PowerShell wymaga zainstalowanego programu PowerShell w wersji 1.0 lub 2.0"/>
+  <String Id="WasAndConfigRequired" Value="Przystawka IIS PowerShell wymaga zainstalowanej usługi WAS i konfiguracji"/>
+  <String Id="TestBogusString" Overridable="yes" Value="To jest fałszywy ciąg."/>
+
+</WixLocalization>

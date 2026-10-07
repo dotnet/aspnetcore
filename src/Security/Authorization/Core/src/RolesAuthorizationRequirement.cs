@@ -63,7 +63,10 @@ public class RolesAuthorizationRequirement : AuthorizationHandler<RolesAuthoriza
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns a string representation of the requirement.
+    /// </summary>
+    /// <returns>A description of the allowed roles.</returns>
     public override string ToString()
     {
         var roles = $"User.IsInRole must be true for one of the following roles: ({string.Join("|", AllowedRoles)})";

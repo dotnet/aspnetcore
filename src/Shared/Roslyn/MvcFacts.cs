@@ -70,7 +70,8 @@ internal static class MvcFacts
         }
 
         // Overridden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
-        if (GetDeclaringType(method).SpecialType == SpecialType.System_Object)
+        var declaringType = GetDeclaringType(method);
+        if (declaringType == null || declaringType.SpecialType == SpecialType.System_Object)
         {
             return false;
         }
@@ -98,13 +99,13 @@ internal static class MvcFacts
         return method.DeclaredAccessibility == Accessibility.Public;
     }
 
-    private static INamedTypeSymbol GetDeclaringType(IMethodSymbol method)
+    private static INamedTypeSymbol? GetDeclaringType(IMethodSymbol method)
     {
         while (method.IsOverride)
         {
             if (method.OverriddenMethod == null)
             {
-                throw new InvalidOperationException($"{nameof(method.OverriddenMethod)} cannot be null.");
+                return null;
             }
 
             method = method.OverriddenMethod;

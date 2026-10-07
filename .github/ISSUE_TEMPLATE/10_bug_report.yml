@@ -1,5 +1,6 @@
 name: 🐞 Bug Report
 description: Create a report about something that is not working
+type: Bug
 body:
 - type: markdown
   attributes:

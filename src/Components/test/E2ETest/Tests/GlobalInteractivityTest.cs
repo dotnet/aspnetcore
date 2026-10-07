@@ -41,10 +41,12 @@ public class GlobalInteractivityTest(
         }
         else
         {
-            var bodyText = Browser.FindElement(By.TagName("body")).Text;
-            Assert.Contains("There's nothing here", bodyText);
+            AssertNotFoundContentNotRendered();
         }
     }
+
+    private void AssertNotFoundContentNotRendered() =>
+        Browser.Equal("Any content", () => Browser.FindElement(By.Id("test-info")).Text);
 
     [Fact]
     public async Task CanSetNotFoundStatus()
@@ -170,14 +172,7 @@ public class GlobalInteractivityTest(
     {
         string streamingPath = streamingStarted ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/set-not-found-ssr{streamingPath}");
-        if (streamingStarted)
-        {
-            AssertReExecutedPageRendered();
-        }
-        else
-        {
-            AssertNotFoundFragmentRendered();
-        }
+        AssertReExecutedPageRendered();
     }
 
     [Theory]
@@ -185,8 +180,8 @@ public class GlobalInteractivityTest(
     [InlineData("WebAssemblyNonPrerendered")]
     public void DoesNotReExecuteIf404WasHandled_Interactive(string renderMode)
     {
-        Navigate($"{ServerPathBase}/reexecution/set-not-found?renderMode={renderMode}");
-        AssertNotFoundFragmentRendered();
+        Navigate($"{ServerPathBase}/reexecution/set-not-found?useCustomNotFoundPage=true&renderMode={renderMode}");
+        AssertNotFoundPageRendered();
     }
 
     private void AssertNotFoundFragmentRendered() =>
@@ -200,4 +195,21 @@ public class GlobalInteractivityTest(
     }
     private void AssertReExecutedPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
+
+    [Fact]
+    public async Task HeadRequestReturnsSuccessWithNoBody()
+    {
+        // Arrange
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var request = new HttpRequestMessage(HttpMethod.Head, "/subdir/globally-interactive");
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType?.ToString());
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Empty(body);
+    }
 }

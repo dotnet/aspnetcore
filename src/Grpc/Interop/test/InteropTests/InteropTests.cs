@@ -23,11 +23,9 @@ public class InteropTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61057")]
     public Task EmptyUnary() => InteropTestCase("empty_unary");
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61057")]
     public Task LargeUnary() => InteropTestCase("large_unary");
 
     [Fact]
@@ -40,7 +38,6 @@ public class InteropTests
     public Task PingPong() => InteropTestCase("ping_pong");
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61051")]
     public Task EmptyStream() => InteropTestCase("empty_stream");
 
     [Fact]
@@ -59,14 +56,12 @@ public class InteropTests
     public Task StatusCodeAndMessage() => InteropTestCase("status_code_and_message");
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60245")]
     public Task SpecialStatusMessage() => InteropTestCase("special_status_message");
 
     [Fact]
     public Task UnimplementedService() => InteropTestCase("unimplemented_service");
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55652")]
     public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
     [Fact]
@@ -79,7 +74,6 @@ public class InteropTests
     public Task ServerCompressedUnary() => InteropTestCase("server_compressed_unary");
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60903")]
     public Task ServerCompressedStreaming() => InteropTestCase("server_compressed_streaming");
 
     private async Task InteropTestCase(string name)

@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.TestHost.Tests;
 
@@ -19,22 +20,31 @@ public class WebSocketClientTests
         string capturedHost = null;
         string capturedPath = null;
 
-        using (var testServer = new TestServer(new WebHostBuilder()
-            .Configure(app =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                app.Run(ctx =>
-                {
-                    if (ctx.Request.Path.StartsWithSegments("/connect"))
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        capturedScheme = ctx.Request.Scheme;
-                        capturedHost = ctx.Request.Host.Value;
-                        capturedPath = ctx.Request.Path;
-                    }
-                    return Task.FromResult(0);
-                });
-            })))
-        {
-            var client = testServer.CreateWebSocketClient();
+                        app.Run(ctx =>
+                        {
+                            if (ctx.Request.Path.StartsWithSegments("/connect"))
+                            {
+                                capturedScheme = ctx.Request.Scheme;
+                                capturedHost = ctx.Request.Host.Value;
+                                capturedPath = ctx.Request.Path;
+                            }
+                            return Task.FromResult(0);
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+
+        var testServer = host.GetTestServer();
+        var client = testServer.CreateWebSocketClient();
 
             try
             {
@@ -46,7 +56,6 @@ public class WebSocketClientTests
             {
                 // An exception will be thrown because our dummy endpoint does not implement a full Web socket server
             }
-        }
 
         Assert.Equal("http", capturedScheme);
         Assert.Equal(expectedHost, capturedHost);
@@ -56,72 +65,88 @@ public class WebSocketClientTests
     [Fact]
     public async Task CanAcceptWebSocket()
     {
-        using (var testServer = new TestServer(new WebHostBuilder()
-            .Configure(app =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                app.UseWebSockets();
-                app.Run(async ctx =>
-                {
-                    if (ctx.Request.Path.StartsWithSegments("/connect"))
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        if (ctx.WebSockets.IsWebSocketRequest)
+                        app.UseWebSockets();
+                        app.Run(async ctx =>
                         {
-                            using var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
-                            var buffer = new byte[1000];
-                            var res = await websocket.ReceiveAsync(buffer, default);
-                            await websocket.SendAsync(buffer.AsMemory(0, res.Count), System.Net.WebSockets.WebSocketMessageType.Binary, true, default);
-                            await websocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, null, default);
-                        }
-                    }
-                });
-            })))
-        {
-            var client = testServer.CreateWebSocketClient();
+                            if (ctx.Request.Path.StartsWithSegments("/connect"))
+                            {
+                                if (ctx.WebSockets.IsWebSocketRequest)
+                                {
+                                    using var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
+                                    var buffer = new byte[1000];
+                                    var res = await websocket.ReceiveAsync(buffer, default);
+                                    await websocket.SendAsync(buffer.AsMemory(0, res.Count), System.Net.WebSockets.WebSocketMessageType.Binary, true, default);
+                                    await websocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, null, default);
+                                }
+                            }
+                        });
+                    });
+            })
+            .Build();
 
-            using var socket = await client.ConnectAsync(
-                uri: new Uri("http://localhost/connect"),
-                cancellationToken: default);
+        await host.StartAsync();
 
-            await socket.SendAsync(new byte[10], System.Net.WebSockets.WebSocketMessageType.Binary, true, default);
-            var res = await socket.ReceiveAsync(new byte[100], default);
-            Assert.Equal(10, res.Count);
-            Assert.True(res.EndOfMessage);
+        var testServer = host.GetTestServer();
+        var client = testServer.CreateWebSocketClient();
 
-            await socket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, null, default);
-        }
+        using var socket = await client.ConnectAsync(
+            uri: new Uri("http://localhost/connect"),
+            cancellationToken: default);
+
+        await socket.SendAsync(new byte[10], System.Net.WebSockets.WebSocketMessageType.Binary, true, default);
+        var res = await socket.ReceiveAsync(new byte[100], default);
+        Assert.Equal(10, res.Count);
+        Assert.True(res.EndOfMessage);
+
+        await socket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, null, default);
     }
 
     [Fact]
     public async Task VerifyWebSocketAndUpgradeFeatures()
     {
-        using (var testServer = new TestServer(new WebHostBuilder()
-            .Configure(app =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                app.Run(async c =>
-                {
-                    var upgradeFeature = c.Features.Get<IHttpUpgradeFeature>();
-                    Assert.NotNull(upgradeFeature);
-                    Assert.False(upgradeFeature.IsUpgradableRequest);
-                    await Assert.ThrowsAsync<NotSupportedException>(() => upgradeFeature.UpgradeAsync());
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(async c =>
+                        {
+                            var upgradeFeature = c.Features.Get<IHttpUpgradeFeature>();
+                            Assert.NotNull(upgradeFeature);
+                            Assert.False(upgradeFeature.IsUpgradableRequest);
+                            await Assert.ThrowsAsync<NotSupportedException>(() => upgradeFeature.UpgradeAsync());
 
-                    var webSocketFeature = c.Features.Get<IHttpWebSocketFeature>();
-                    Assert.NotNull(webSocketFeature);
-                    Assert.True(webSocketFeature.IsWebSocketRequest);
-                });
-            })))
+                            var webSocketFeature = c.Features.Get<IHttpWebSocketFeature>();
+                            Assert.NotNull(webSocketFeature);
+                            Assert.True(webSocketFeature.IsWebSocketRequest);
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+
+        var testServer = host.GetTestServer();
+        var client = testServer.CreateWebSocketClient();
+
+        try
         {
-            var client = testServer.CreateWebSocketClient();
-
-            try
-            {
-                using var socket = await client.ConnectAsync(
-                    uri: new Uri("http://localhost/connect"),
-                    cancellationToken: default);
-            }
-            catch
-            {
-                // An exception will be thrown because our endpoint does not accept the websocket
-            }
+            using var socket = await client.ConnectAsync(
+                uri: new Uri("http://localhost/connect"),
+                cancellationToken: default);
+        }
+        catch
+        {
+            // An exception will be thrown because our endpoint does not accept the websocket
         }
     }
 }

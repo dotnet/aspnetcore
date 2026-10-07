@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Microsoft ASP.NET Core モジュール"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Microsoft ASP.NET Core モジュール V2"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="ASP.NET Core IIS ランタイム"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="ASP.NET Core アプリケーションのサポートを IIS に追加します。"/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="IIS Express 用の Microsoft ASP.NET Core モジュール"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="IIS Express 用の Microsoft ASP.NET Core モジュール V2"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="IIS Express 8.0 以降がインストールされていません。"/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="互換性のない製品 [CONFLICTING_PRODUCT_NAME] がこのコンピューター上にあります。[ProductName] のインストールを続行できません。この製品をインストールするには、コントロール パネルの \\[プログラムの追加と削除\\] を使用して [CONFLICTING_PRODUCT_NAME] を削除します。"/>
+  <String Id="AdminRequired" Overridable="yes" Value="[ProductName] をインストールするには管理者権限が必要です。"/>
+  <String Id="IIS7Only" Overridable="yes" Value="[ProductName] を使用するには、IIS バージョン 7.0 が必要です。"/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="[ProductName] をインストールするには、IIS バージョン 7.0 以降が必要です。"/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="[ProductName] をインストールするには、IIS バージョン 7.5 以降が必要です。"/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="[ProductName] をインストールするには、IIS バージョン 7 または 7.5 が必要です。"/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="[ProductName] をインストールするには、IIS バージョン 8.0 以降が必要です。"/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="[ProductName] のベータ版がこのコンピューターで見つかりました。"/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="[ProductName] の新しいバージョンがこのコンピューターで見つかりました。"/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="[ProductName] の別のインスタンスがこのコンピューターに既にインストールされているため、セットアップを続行できません。最初にアンインストールしてから、このインストールを再起動してください。"/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="[ProductName] を使用するには、IIS 7.0 CoreWebEngine および W3SVC 機能をインストールする必要があります。"/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="[ProductName] を使用するには、IIS 管理コンソールをインストールする必要があります。"/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="[ProductName] をインストールする前に、Windows プロセス アクティブ化サービス (WAS) と Web 管理サービス (WMSvc) の両方のサービスを停止してください。[ProductName] のインストール後にサービスを開始する必要があります。"/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="[ProductName] をインストールするには、IIS メタベースが必要です。"/>
+  <String Id="LaunchCondition_32BIT" Value="64 ビット版の [ProductName] を 32 ビット版の Microsoft Windows にインストールすることはできません。"/>
+  <String Id="LaunchCondition_64BIT" Value="32 ビット版の [ProductName] を 64 ビット版の Microsoft Windows にインストールすることはできません。"/>
+  <String Id="NetFX2OrGreaterRequired" Value="[ProductName] をインストールするには、Microsoft .NET Framework バージョン 2.0 以降が必要です。"/>
+  <String Id="NetFX35OrGreaterRequired" Value="[ProductName] をインストールするには、Microsoft .NET Framework バージョン 3.5 以降が必要です。Microsoft .Net バージョン 3.5 をインストールするには、サーバー マネージャーの 機能の追加を使用します。"/>
+  <String Id="NetFX4OrGreaterRequired" Value="[ProductName] をインストールするには、Microsoft .NET Framework バージョン 4.0 以降が必要です。"/>
+  <String Id="NetFX20SP1IsRequired" Value="[ProductName] をインストールする前に、Microsoft .NET Framework バージョン 2.0 Service Pack 1 (またはそれ以降の Service Pack) をインストールしてください。"/>
+  <String Id="WindowsUpdateEnabled" Value="Windows Update (wuauserv) サービスを無効にすることはできません。[ProductName] をインストールする必要があります。"/>
+  <String Id="GetFromOSforWin7" Value="PowerShell スナップインは、Windows オペレーティング システムの一部です。'プログラムと機能' または 'サーバー マネージャー' を使用してインストールしてください。"/>
+  <String Id="WebPI3OrGreaterRequired" Value="[ProductName] をインストールするには、Microsoft Web Platform Installer バージョン 3.0 以降が必要です。"/>
+
+  <String Id="Error30001" Overridable="yes" Value="共有構成を検出するためのセットアップに失敗しました。"/>
+  <String Id="Error30002" Overridable="yes" Value="IIS に対して共有構成が有効になっています。共有構成を使用する場合、[ProductName] のインストールはサポートされていません。この機能をインストールする前に、共有構成を無効にしてください。"/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="[ProductName] をインストールする前に、World Wide Web 発行サービス (W3SVC) を停止してください。インストール後にサービスを開始する必要があります。"/>
+  <String Id="IISPowershellConsole" Value="IIS PowerShell 管理コンソール"/>
+  <String Id="IISPowershellSnapin" Value="IIS PowerShell スナップイン"/>
+  <String Id="PowerShellRequired" Value="IIS PowerShell スナップインには、PowerShell v1.0 または v2.0 がインストールされている必要があります"/>
+  <String Id="WasAndConfigRequired" Value="IIS PowerShell スナップインには、WAS と構成のインストールが必要です"/>
+  <String Id="TestBogusString" Overridable="yes" Value="これは偽の文字列です。"/>
+
+</WixLocalization>

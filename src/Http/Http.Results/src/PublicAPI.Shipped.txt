@@ -186,6 +186,9 @@ Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.Permanent.get ->
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.PreserveMethod.get -> bool
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteName.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.HttpResults.SignInHttpResult
 Microsoft.AspNetCore.Http.HttpResults.SignInHttpResult.AuthenticationScheme.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.SignInHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
@@ -231,6 +234,7 @@ Microsoft.AspNetCore.Http.IResultExtensions
 Microsoft.AspNetCore.Http.Results
 Microsoft.AspNetCore.Http.TypedResults
 static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+static Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult.IsLocalUrl(string? url) -> bool
 static Microsoft.AspNetCore.Http.Results.Accepted(string? uri = null, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Accepted<TValue>(string? uri = null, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
@@ -282,6 +286,9 @@ static Microsoft.AspNetCore.Http.Results.Problem(string? detail, string? instanc
 static Microsoft.AspNetCore.Http.Results.Redirect(string! url, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.RedirectToRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents(System.Collections.Generic.IAsyncEnumerable<string!>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<System.Net.ServerSentEvents.SseItem<T>>! values) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<T>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.SignIn(System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, string? authenticationScheme = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.SignOut(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.StatusCode(int statusCode) -> Microsoft.AspNetCore.Http.IResult!
@@ -346,6 +353,9 @@ static Microsoft.AspNetCore.Http.TypedResults.Problem(string? detail, string? in
 static Microsoft.AspNetCore.Http.TypedResults.Redirect(string! url, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.RedirectToRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents(System.Collections.Generic.IAsyncEnumerable<string!>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<string!>!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<System.Net.ServerSentEvents.SseItem<T>>! values) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<T>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>!
 static Microsoft.AspNetCore.Http.TypedResults.SignIn(System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, string? authenticationScheme = null) -> Microsoft.AspNetCore.Http.HttpResults.SignInHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.SignOut(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.HttpResults.SignOutHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.StatusCode(int statusCode) -> Microsoft.AspNetCore.Http.HttpResults.StatusCodeHttpResult!

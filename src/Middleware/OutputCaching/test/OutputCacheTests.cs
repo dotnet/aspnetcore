@@ -1,10 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
@@ -1027,6 +1031,190 @@ public class OutputCacheTests
             {
                 throw new InvalidOperationException($"Client {id} failed; payload '{s}', failure: {ex.Message}", ex);
             }
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AuthenticatedRequestsAreNotCached(bool authMiddlewareBeforeCache)
+    {
+        int finalEndpointHitCount = 0;
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddOutputCache(outputCachingOptions =>
+                    {
+                        outputCachingOptions.BasePolicies = [new OutputCachePolicyBuilder().Build()];
+                    });
+                })
+                .Configure(app =>
+                {
+                    if (authMiddlewareBeforeCache)
+                    {
+                        AddAuth(app);
+                    }
+
+                    app.UseOutputCache();
+
+                    if (!authMiddlewareBeforeCache)
+                    {
+                        AddAuth(app);
+                    }
+
+                    app.Run(async context =>
+                    {
+                        finalEndpointHitCount++;
+                        if (context.User.Identity?.IsAuthenticated == true)
+                        {
+                            await context.Response.WriteAsync(context.User.Identity.Name ?? "anonymous (authenticated)");
+                        }
+                        else
+                        {
+                            await context.Response.WriteAsync(context.User.Identity?.Name ?? "anonymous");
+                        }
+                    });
+                });
+            });
+
+        using var host = builder.Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+
+        var iterations = 10;
+        for (int i = 0; i < iterations; i++)
+        {
+            await RunClient(server, i);
+        }
+
+        // RunClient sends two requests per iteration
+        Assert.Equal(iterations * 2, finalEndpointHitCount);
+
+        // Unauthenticated request, check it still works
+        var client = server.CreateClient();
+        var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
+        Assert.Equal("anonymous", await resp.Content.ReadAsStringAsync());
+
+        var resp2 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
+        Assert.Equal("anonymous", await resp2.Content.ReadAsStringAsync());
+        // Smoke test that unauthenticated request can be served from cache.
+        Assert.True(resp2.Headers.Contains(HeaderNames.Age));
+
+        static async Task RunClient(TestServer server, int i)
+        {
+            var client = server.CreateClient();
+            // Use headers for name since default vary-by uses query and we want the requests to look the same to the caching middleware
+            var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "") { Headers = { { "name", $"{i}" } } });
+            Assert.Equal($"{i}", await resp.Content.ReadAsStringAsync());
+
+            var resp2 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "") { Headers = { { "name", $"{i}" } } });
+            Assert.Equal($"{i}", await resp2.Content.ReadAsStringAsync());
+            // Smoke test that authenticated request isn't served from cache.
+            Assert.False(resp2.Headers.Contains(HeaderNames.Age));
+        }
+
+        static void AddAuth(IApplicationBuilder app)
+        {
+            app.Use((c, n) =>
+            {
+                if (c.Request.Headers.ContainsKey("name"))
+                {
+                    c.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, c.Request.Headers["name"]) }, authenticationType: "custom"));
+                    Assert.True(c.User.Identity?.IsAuthenticated);
+                }
+
+                return n(c);
+            });
+        }
+    }
+
+    // This is a negative test to show that if auth middleware is after caching, the auth middleware won't run if a cache entry exists
+    // which is why we recommend putting auth before caching so that you don't accidentally serve anonymous cached content to an authenticated user.
+    [Fact]
+    public async Task AuthMiddlewareAfterCachingNotRunIfCacheEntryExists()
+    {
+        int finalEndpointHitCount = 0;
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddOutputCache(outputCachingOptions =>
+                    {
+                        outputCachingOptions.BasePolicies = [new OutputCachePolicyBuilder().Build()];
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseOutputCache();
+                    // Auth middleware
+                    app.Use((c, n) =>
+                    {
+                        if (c.Request.Headers.ContainsKey("name"))
+                        {
+                            c.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, c.Request.Headers["name"]) }, authenticationType: "custom"));
+                        }
+
+                        return n(c);
+                    });
+                    app.Run(async context =>
+                    {
+                        finalEndpointHitCount++;
+                        if (context.User.Identity?.IsAuthenticated == true)
+                        {
+                            await context.Response.WriteAsync(context.User.Identity.Name ?? "anonymous (authenticated)");
+                        }
+                        else
+                        {
+                            await context.Response.WriteAsync(context.User.Identity?.Name ?? "anonymous");
+                        }
+                    });
+                });
+            });
+
+        using var host = builder.Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+
+        // Make an unauthenticated request first to add a cache entry.
+        var client = server.CreateClient();
+        var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
+        Assert.Equal("anonymous", await resp.Content.ReadAsStringAsync());
+
+        var resp2 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
+        Assert.Equal("anonymous", await resp2.Content.ReadAsStringAsync());
+        // Smoke test that unauthenticated request is served from cache.
+        Assert.True(resp2.Headers.Contains(HeaderNames.Age));
+
+        var iterations = 10;
+        for (int i = 0; i < iterations; i++)
+        {
+            await RunClient(server, i);
+        }
+
+        // Endpoint only hit once, for first request that doesn't have auth.
+        Assert.Equal(1, finalEndpointHitCount);
+
+        static async Task RunClient(TestServer server, int i)
+        {
+            var client = server.CreateClient();
+            // Use headers for name since default vary-by uses query and we want the requests to look the same to the caching middleware
+            var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "") { Headers = { { "name", $"{i}" } } });
+
+            // Because the output cache middleware is before auth, these requests will serve a cached response if it exists (and we made one exist for this test)
+            // While this isn't ideal, we recommend app developers put caching after the auth middleware where we will skip the cache layer.
+            Assert.Equal("anonymous", await resp.Content.ReadAsStringAsync());
+            Assert.True(resp.Headers.Contains(HeaderNames.Age));
         }
     }
 

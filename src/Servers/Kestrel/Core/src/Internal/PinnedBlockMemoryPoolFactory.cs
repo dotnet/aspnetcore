@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -12,22 +11,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, IHeartbeatHandler
 {
-    private readonly IMeterFactory _meterFactory;
+    private readonly MemoryPoolMetrics _metrics;
     private readonly ILogger? _logger;
     private readonly TimeProvider _timeProvider;
     // micro-optimization: Using nuint as the value type to avoid GC write barriers; could replace with ConcurrentHashSet if that becomes available
     private readonly ConcurrentDictionary<PinnedBlockMemoryPool, nuint> _pools = new();
 
-    public PinnedBlockMemoryPoolFactory(IMeterFactory meterFactory, TimeProvider? timeProvider = null, ILogger<PinnedBlockMemoryPoolFactory>? logger = null)
+    public PinnedBlockMemoryPoolFactory(MemoryPoolMetrics metrics, TimeProvider? timeProvider = null, ILogger<PinnedBlockMemoryPoolFactory>? logger = null)
     {
         _timeProvider = timeProvider ?? TimeProvider.System;
-        _meterFactory = meterFactory;
+        _metrics = metrics;
         _logger = logger;
     }
 
-    public MemoryPool<byte> Create()
+    public MemoryPool<byte> Create(MemoryPoolOptions? options = null)
     {
-        var pool = new PinnedBlockMemoryPool(_meterFactory, _logger);
+        var pool = new PinnedBlockMemoryPool(options?.Owner, _metrics, _logger);
 
         _pools.TryAdd(pool, nuint.Zero);
 

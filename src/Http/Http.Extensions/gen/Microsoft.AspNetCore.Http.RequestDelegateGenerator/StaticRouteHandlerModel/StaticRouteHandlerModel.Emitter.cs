@@ -205,7 +205,7 @@ internal static class StaticRouteHandlerModelEmitter
             return;
         }
 
-        if (!endpoint.Response.IsAwaitable && (response.HasNoResponse || response.IsIResult))
+        if (response.HasNoResponse || response.IsIResult)
         {
             return;
         }
@@ -215,13 +215,10 @@ internal static class StaticRouteHandlerModelEmitter
         {
             codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
         }
-        else if (response.IsAwaitable && response.ResponseType == null)
-        {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(void), contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
-        }
         else if (response.ResponseType is { } responseType)
         {
             codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof({{responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), contentTypes: GeneratedMetadataConstants.JsonContentType));""");
+            codeWriter.WriteLine("DisableCookieRedirectMetadata.AddMetadataIfMissing(options.EndpointBuilder);");
         }
     }
 
@@ -339,13 +336,15 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.WriteLine("if (!serviceProviderIsService.IsService(type))");
             codeWriter.StartBlock();
             codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);");
             codeWriter.WriteLine("break;");
             codeWriter.EndBlock();
             codeWriter.EndBlock();
         }
         else
         {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);");
         }
     }
 
@@ -449,7 +448,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            // The null suppression operator on the GetArgument(...) call here is required because we'll occassionally be
+            // The null suppression operator on the GetArgument(...) call here is required because we'll occasionally be
             // dealing with nullable types here. We could try to do fancy things to branch the logic here depending on
             // the nullability, but at the end of the day we are going to call GetArguments(...) - at runtime the nullability
             // suppression operator doesn't come into play - so its not worth worrying about.

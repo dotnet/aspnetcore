@@ -120,4 +120,7 @@
   <data name="Message" xml:space="preserve">
     <value>Hello!</value>
   </data>
+  <data name="ProductName" xml:space="preserve">
+    <value>Product Name</value>
+  </data>
 </root>

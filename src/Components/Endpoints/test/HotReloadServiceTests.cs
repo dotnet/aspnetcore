@@ -23,9 +23,8 @@ public class HotReloadServiceTests
     public void UpdatesEndpointsWhenHotReloadChangeTokenTriggered()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
         var invoked = false;
 
         // Act
@@ -41,9 +40,8 @@ public class HotReloadServiceTests
     public void AddNewEndpointWhenDataSourceChanges()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
 
         // Assert - 1
         var endpoint = Assert.IsType<RouteEndpoint>(
@@ -52,15 +50,17 @@ public class HotReloadServiceTests
         Assert.Equal("/server", endpoint.RoutePattern.RawText);
 
         // Act - 2
-        endpointDataSource.Builder.Pages.AddFromLibraryInfo("TestAssembly2", new[]
-        {
-            new PageComponentBuilder
+        endpointDataSource.ComponentApplicationBuilderActions.Add(
+            b => b.Pages.AddFromLibraryInfo("TestAssembly2", new[]
             {
-                AssemblyName = "TestAssembly2",
-                PageType = typeof(StaticComponent),
-                RouteTemplates = new List<string> { "/app/test" }
-            }
-        });
+                new PageComponentBuilder
+                {
+                    AssemblyName = "TestAssembly2",
+                    PageType = typeof(StaticComponent),
+                    RouteTemplates = new List<string> { "/app/test" }
+                }
+            }));
+
         HotReloadService.UpdateApplication(null);
 
         // Assert - 2
@@ -76,9 +76,8 @@ public class HotReloadServiceTests
     public void RemovesEndpointWhenDataSourceChanges()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
 
         // Assert - 1
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints,
@@ -87,7 +86,7 @@ public class HotReloadServiceTests
         Assert.Equal("/server", endpoint.RoutePattern.RawText);
 
         // Act - 2
-        endpointDataSource.Builder.RemoveLibrary("TestAssembly");
+        endpointDataSource.ComponentApplicationBuilderActions.Add(b => b.RemoveLibrary("TestAssembly"));
         endpointDataSource.Options.ConfiguredRenderModes.Clear();
         HotReloadService.UpdateApplication(null);
 
@@ -100,9 +99,8 @@ public class HotReloadServiceTests
     public void ModifiesEndpointWhenDataSourceChanges()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
 
         // Assert - 1
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints, e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
@@ -124,9 +122,8 @@ public class HotReloadServiceTests
     public void NotifiesCompositeEndpointDataSource()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
         var compositeEndpointDataSource = new CompositeEndpointDataSource(
             new[] { endpointDataSource });
 
@@ -137,7 +134,7 @@ public class HotReloadServiceTests
         Assert.Equal("/server", compositeEndpoint.RoutePattern.RawText);
 
         // Act - 2
-        endpointDataSource.Builder.Pages.RemoveFromAssembly("TestAssembly");
+        endpointDataSource.ComponentApplicationBuilderActions.Add(b => b.Pages.RemoveFromAssembly("TestAssembly"));
         endpointDataSource.Options.ConfiguredRenderModes.Clear();
         HotReloadService.UpdateApplication(null);
 
@@ -148,37 +145,14 @@ public class HotReloadServiceTests
         Assert.Empty(compositePageEndpoints);
     }
 
-    private sealed class WrappedChangeTokenDisposable : IDisposable
-    {
-        public bool IsDisposed { get; private set; }
-        private readonly IDisposable _innerDisposable;
-
-        public WrappedChangeTokenDisposable(IDisposable innerDisposable)
-        { 
-            _innerDisposable = innerDisposable;
-        }
-
-        public void Dispose()
-        { 
-             IsDisposed = true;
-             _innerDisposable.Dispose();
-        }
-    }
-
     [Fact]
     public void ConfirmChangeTokenDisposedHotReload()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        WrappedChangeTokenDisposable wrappedChangeTokenDisposable = null;
-
-        endpointDataSource.SetDisposableChangeTokenAction = (IDisposable disposableChangeToken) => {
-            wrappedChangeTokenDisposable = new WrappedChangeTokenDisposable(disposableChangeToken); 
-            return wrappedChangeTokenDisposable;
-        };
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder, null);
+        var changeTokenSource = endpointDataSource.ChangeTokenSource;
+        var changeToken = endpointDataSource.GetChangeToken();
 
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints, e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
         Assert.Equal("/server", endpoint.RoutePattern.RawText);
@@ -187,18 +161,21 @@ public class HotReloadServiceTests
         // Make a modification and then perform a hot reload.
         endpointDataSource.Conventions.Add(builder =>
             builder.Metadata.Add(new TestMetadata()));
+
         HotReloadService.UpdateApplication(null);
         HotReloadService.ClearCache(null);
 
         // Confirm the change token is disposed after ClearCache
-        Assert.True(wrappedChangeTokenDisposable.IsDisposed);
+        Assert.True(changeToken.HasChanged);
+        Assert.Throws<ObjectDisposedException>(() => changeTokenSource.Token);
     }
 
     private class TestMetadata { }
 
-    private ComponentApplicationBuilder CreateBuilder(params Type[] types)
+    private class TestAssembly : Assembly;
+
+    private static void ConfigureBuilder(ComponentApplicationBuilder builder, params Type[] types)
     {
-        var builder = new ComponentApplicationBuilder();
         builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "TestAssembly",
             Array.Empty<PageComponentBuilder>(),
@@ -208,8 +185,11 @@ public class HotReloadServiceTests
                 ComponentType = t,
                 RenderMode = t.GetCustomAttribute<RenderModeAttribute>()
             }).ToArray()));
+    }
 
-        return builder;
+    private static void ConfigureServerComponentBuilder(ComponentApplicationBuilder builder)
+    {
+        ConfigureBuilder(builder, typeof(ServerComponent));
     }
 
     private IServiceProvider CreateServices(params Type[] types)
@@ -227,16 +207,21 @@ public class HotReloadServiceTests
     }
 
     private static RazorComponentEndpointDataSource<TComponent> CreateDataSource<TComponent>(
-        ComponentApplicationBuilder builder,
         IServiceProvider services,
-        IComponentRenderMode[] renderModes = null)
+        Action<ComponentApplicationBuilder> configureBuilder = null,
+        IComponentRenderMode[] renderModes = null,
+        HotReloadService hotReloadService = null)
     {
         var result = new RazorComponentEndpointDataSource<TComponent>(
-            builder,
             new[] { new MockEndpointProvider() },
             new TestEndpointRouteBuilder(services),
             new RazorComponentEndpointFactory(),
-            new HotReloadService() { MetadataUpdateSupported = true });
+            hotReloadService ?? new HotReloadService() { MetadataUpdateSupported = true });
+
+        if (configureBuilder is not null)
+        {
+            result.ComponentApplicationBuilderActions.Add(configureBuilder);
+        }
 
         if (renderModes != null)
         {

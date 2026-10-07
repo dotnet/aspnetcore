@@ -1,6 +1,4 @@
 variables:
-  - group: Publish-Build-Assets
-
   # Whether the build is internal or not
   - name: IsInternalBuild
     value: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
@@ -11,8 +9,6 @@ variables:
   - name: MaestroApiVersion
     value: "2020-02-20"
 
-  - name: SourceLinkCLIVersion
-    value: 3.0.0
   - name: SymbolToolVersion
     value: 1.0.1
   - name: BinlogToolVersion

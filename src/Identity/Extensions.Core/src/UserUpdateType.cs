@@ -6,10 +6,10 @@ namespace Microsoft.AspNetCore.Identity;
 internal enum UserUpdateType
 {
     Update,
-    UserName,
+    SetUserName,
     AddPassword,
     ChangePassword,
-    SecurityStamp,
+    UpdateSecurityStamp,
     ResetPassword,
     RemoveLogin,
     AddLogin,
@@ -28,13 +28,13 @@ internal enum UserUpdateType
     SetTwoFactorEnabled,
     SetLockoutEnabled,
     SetLockoutEndDate,
-    AccessFailed,
+    IncrementAccessFailed,
     ResetAccessFailedCount,
     SetAuthenticationToken,
     RemoveAuthenticationToken,
     ResetAuthenticatorKey,
     GenerateNewTwoFactorRecoveryCodes,
     RedeemTwoFactorRecoveryCode,
-    SetPasskey,
+    AddOrUpdatePasskey,
     RemovePasskey
 }

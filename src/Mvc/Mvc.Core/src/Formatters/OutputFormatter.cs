@@ -30,7 +30,7 @@ public abstract class OutputFormatter : IOutputFormatter, IApiResponseTypeMetada
 
     /// <inheritdoc />
     public virtual IReadOnlyList<string>? GetSupportedContentTypes(
-        string contentType,
+        string? contentType,
         Type objectType)
     {
         if (SupportedMediaTypes.Count == 0)

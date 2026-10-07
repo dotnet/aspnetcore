@@ -11,6 +11,8 @@ internal sealed class RazorRuntimeCompilationHostingStartup : IHostingStartup
     public void Configure(IWebHostBuilder builder)
     {
         // Add Razor services
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         builder.ConfigureServices(RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices);
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     }
 }

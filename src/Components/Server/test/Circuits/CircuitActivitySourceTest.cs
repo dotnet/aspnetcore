@@ -54,12 +54,11 @@ public class CircuitActivitySourceTest
         Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
         Assert.Equal(circuitId, activity.GetTagItem("aspnetcore.components.circuit.id"));
-        Assert.Empty(activity.Links);
+        Assert.Contains(activity.Links, link => link.Context == httpContext);
         Assert.False(activity.IsStopped);
 
         circuitActivitySource.StopCircuitActivity(activityHandle, null);
         Assert.True(activity.IsStopped);
-        Assert.Contains(activity.Links, link => link.Context == httpContext);
     }
 
     [Fact]

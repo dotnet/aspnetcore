@@ -33,18 +33,6 @@ internal static class PasskeyExceptionExtensions
         public static PasskeyException NotBackupEligibleYetBackedUp()
             => new("The credential is backed up, but the authenticator data flags did not have the 'BackupEligible' flag.");
 
-        public static PasskeyException BackupEligibilityDisallowedYetBackupEligible()
-            => new("Credential backup eligibility is disallowed, but the credential was eligible for backup.");
-
-        public static PasskeyException BackupEligibilityRequiredYetNotBackupEligible()
-            => new("Credential backup eligibility is required, but the credential was not eligible for backup.");
-
-        public static PasskeyException BackupDisallowedYetBackedUp()
-            => new("Credential backup is disallowed, but the credential was backed up.");
-
-        public static PasskeyException BackupRequiredYetNotBackedUp()
-            => new("Credential backup is required, but the credential was not backed up.");
-
         public static PasskeyException MissingAttestedCredentialData()
             => new("No attested credential data was provided by the authenticator.");
 
@@ -62,9 +50,6 @@ internal static class PasskeyExceptionExtensions
 
         public static PasskeyException CredentialAlreadyRegistered()
             => new("The credential is already registered for a user.");
-
-        public static PasskeyException CredentialNotAllowed()
-            => new("The provided credential ID was not in the list of allowed credentials.");
 
         public static PasskeyException CredentialDoesNotBelongToUser()
             => new("The provided credential does not belong to the specified user.");
@@ -123,23 +108,11 @@ internal static class PasskeyExceptionExtensions
         public static PasskeyException InvalidAttestationCredentialJsonFormat(JsonException ex)
             => new($"The attestation credential JSON had an invalid format: {ex.Message}", ex);
 
-        public static PasskeyException NullOriginalCreationOptionsJson()
-            => new("The original passkey creation options were unexpectedly null.");
-
-        public static PasskeyException InvalidOriginalCreationOptionsJsonFormat(JsonException ex)
-            => new($"The original passkey creation options had an invalid format: {ex.Message}", ex);
-
         public static PasskeyException NullAssertionCredentialJson()
             => new("The assertion credential JSON was unexpectedly null.");
 
         public static PasskeyException InvalidAssertionCredentialJsonFormat(JsonException ex)
             => new($"The assertion credential JSON had an invalid format: {ex.Message}", ex);
-
-        public static PasskeyException NullOriginalRequestOptionsJson()
-            => new("The original passkey request options were unexpectedly null.");
-
-        public static PasskeyException InvalidOriginalRequestOptionsJsonFormat(JsonException ex)
-            => new($"The original passkey request options had an invalid format: {ex.Message}", ex);
 
         public static PasskeyException NullClientDataJson()
             => new("The client data JSON was unexpectedly null.");
@@ -149,5 +122,17 @@ internal static class PasskeyExceptionExtensions
 
         public static PasskeyException InvalidCredentialPublicKey(Exception ex)
             => new($"The credential public key was invalid.", ex);
+
+        public static PasskeyException NullAttestationStateJson()
+            => new("the assertion state json was unexpectedly null.");
+
+        public static PasskeyException NullAssertionStateJson()
+            => new("the assertion state json was unexpectedly null.");
+
+        public static PasskeyException InvalidAttestationStateJsonFormat(JsonException ex)
+            => new($"The attestation state JSON had an invalid format: {ex.Message}", ex);
+
+        public static PasskeyException InvalidAssertionStateJsonFormat(JsonException ex)
+            => new($"The assertion state JSON had an invalid format: {ex.Message}", ex);
     }
 }

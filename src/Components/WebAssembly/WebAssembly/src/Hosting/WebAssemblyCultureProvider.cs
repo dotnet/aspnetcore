@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -16,23 +17,19 @@ internal partial class WebAssemblyCultureProvider
     internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
 
     // For unit testing.
-    internal WebAssemblyCultureProvider(CultureInfo initialCulture, CultureInfo initialUICulture)
+    internal WebAssemblyCultureProvider(CultureInfo initialCulture)
     {
         InitialCulture = initialCulture;
-        InitialUICulture = initialUICulture;
     }
 
     public static WebAssemblyCultureProvider? Instance { get; private set; }
 
     public CultureInfo InitialCulture { get; }
 
-    public CultureInfo InitialUICulture { get; }
-
     internal static void Initialize()
     {
         Instance = new WebAssemblyCultureProvider(
-            initialCulture: CultureInfo.CurrentCulture,
-            initialUICulture: CultureInfo.CurrentUICulture);
+            initialCulture: CultureInfo.GetCultureInfo(WebAssemblyCultureProviderInterop.GetApplicationCulture() ?? CultureInfo.InvariantCulture.Name));
     }
 
     public void ThrowIfCultureChangeIsUnsupported()
@@ -47,8 +44,7 @@ internal partial class WebAssemblyCultureProvider
         // The current method is invoked as part of WebAssemblyHost.RunAsync i.e. after user code in Program.MainAsync has run
         // thus allows us to detect if the culture was changed by user code.
         if (Environment.GetEnvironmentVariable("__BLAZOR_SHARDED_ICU") == "1" &&
-            ((!CultureInfo.CurrentCulture.Name.Equals(InitialCulture.Name, StringComparison.Ordinal) ||
-              !CultureInfo.CurrentUICulture.Name.Equals(InitialUICulture.Name, StringComparison.Ordinal))))
+            (!CultureInfo.CurrentCulture.Name.Equals(InitialCulture.Name, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException("Blazor detected a change in the application's culture that is not supported with the current project configuration. " +
                 "To change culture dynamically during startup, set <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData> in the application's project file.");
@@ -62,7 +58,7 @@ internal partial class WebAssemblyCultureProvider
             throw new PlatformNotSupportedException("This method is only supported in the browser.");
         }
 
-        var culturesToLoad = GetCultures(CultureInfo.CurrentCulture);
+        var culturesToLoad = GetCultures(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
         if (culturesToLoad.Length == 0)
         {
@@ -72,33 +68,53 @@ internal partial class WebAssemblyCultureProvider
         await WebAssemblyCultureProviderInterop.LoadSatelliteAssemblies(culturesToLoad);
     }
 
-    internal static string[] GetCultures(CultureInfo cultureInfo)
+    internal static string[] GetCultures(CultureInfo cultureInfo, CultureInfo? uiCultureInfo = null)
     {
-        var culturesToLoad = new List<string>();
-
         // Once WASM is ready, we have to use .NET's assembly loading to load additional assemblies.
         // First calculate all possible cultures that the application might want to load. We do this by
         // starting from the current culture and walking up the graph of parents.
         // At the end of the the walk, we'll have a list of culture names that look like
         // [ "fr-FR", "fr" ]
-        while (cultureInfo != null && cultureInfo != CultureInfo.InvariantCulture)
+
+        var culturesToLoad = GetCultureHierarchy(cultureInfo);
+        if (cultureInfo != uiCultureInfo)
         {
-            culturesToLoad.Add(cultureInfo.Name);
-
-            if (cultureInfo.Parent == cultureInfo)
+            foreach (var culture in GetCultureHierarchy(uiCultureInfo))
             {
-                break;
+                if (!culturesToLoad.Contains(culture))
+                {
+                    culturesToLoad = culturesToLoad.Append(culture);
+                }
+                // If the culture is in the list, we can break because we found the common parent.
+                else
+                {
+                    break;
+                }
             }
-
-            cultureInfo = cultureInfo.Parent;
         }
 
         return culturesToLoad.ToArray();
+    }
+
+    private static IEnumerable<string> GetCultureHierarchy(CultureInfo? culture)
+    {
+        while (culture != CultureInfo.InvariantCulture && culture != null)
+        {
+            yield return culture.Name;
+            if (culture == culture.Parent)
+            {
+                break;
+            }
+            culture = culture.Parent;
+        }
     }
 
     private partial class WebAssemblyCultureProviderInterop
     {
         [JSImport("INTERNAL.loadSatelliteAssemblies")]
         public static partial Task LoadSatelliteAssemblies(string[] culturesToLoad);
+
+        [JSImport("Blazor._internal.getApplicationCulture", "blazor-internal")]
+        public static partial string GetApplicationCulture();
     }
 }

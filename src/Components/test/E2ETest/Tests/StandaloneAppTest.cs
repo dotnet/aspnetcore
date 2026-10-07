@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
 public class StandaloneAppTest
-    : ServerTestBase<BlazorWasmTestAppFixture<StandaloneApp.Program>>, IDisposable
+    : ServerTestBase<BlazorWasmTestAppFixture<StandaloneApp.Program>>
 {
     public StandaloneAppTest(
         BrowserFixture browserFixture,
@@ -22,6 +22,12 @@ public class StandaloneAppTest
 
     protected override void InitializeAsyncCore()
     {
+        // The sidebar is hidden if the screen is too narrow.
+        // Without setting the window size explicitly, visibility-sensitive properties (e.g. IWebElement.Text)
+        // and element finders (e.g. By.LinkText) can behave unexpectedly, causing assertions to fail.
+        // In particular, this happens in the headless mode (used when running without debugger).
+        Browser.SetWindowSize(1920, 1080);
+
         Navigate("/");
         WaitUntilLoaded();
     }
@@ -126,10 +132,12 @@ public class StandaloneAppTest
         Browser.NotEqual("Loading...", () => app.Text);
     }
 
-    public void Dispose()
+    public override Task DisposeAsync()
     {
         // Make the tests run faster by navigating back to the home page when we are done
         // If we don't, then the next test will reload the whole page before it starts
         Browser.Exists(By.LinkText("Home")).Click();
+
+        return base.DisposeAsync();
     }
 }

@@ -19,6 +19,9 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+[*.resx]
+trim_trailing_whitespace = false
+
 [*.cs]
 indent_size = 4
 dotnet_sort_system_directives_first = true
@@ -463,12 +466,6 @@ dotnet_diagnostic.IDE0161.severity = silent
 [{**/Shared/**.cs,**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
 # IDE0005: Remove unused usings. Ignore for shared src files since imports for those depend on the projects in which they are included.
 dotnet_diagnostic.IDE0005.severity = silent
-
-[{**/microsoft.dotnet.hotreload.agent*/**.cs}]
-# IDE0005: Remove unused usings. Ignore for shared src files coming from nuget package.
-dotnet_diagnostic.IDE0005.severity = silent
-# IDE0073: A source file is missing a required header. Ignore for shared src files coming from nuget package.
-dotnet_diagnostic.IDE0073.severity = silent
 
 
 # Verify settings

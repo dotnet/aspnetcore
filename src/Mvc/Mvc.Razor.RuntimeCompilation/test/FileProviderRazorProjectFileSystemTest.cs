@@ -243,10 +243,12 @@ public class FileProviderRazorProjectFileSystemTest
         TestFileProvider fileProvider,
         string contentRootPath = "BasePath")
     {
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         var options = Options.Create(new MvcRazorRuntimeCompilationOptions
         {
             FileProviders = { fileProvider }
         });
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
         var compilationFileProvider = new RuntimeCompilationFileProvider(options);
         var fileSystem = new FileProviderRazorProjectFileSystem(
             compilationFileProvider,

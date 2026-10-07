@@ -11,8 +11,8 @@ Microsoft.AspNetCore.Builder.HstsServicesExtensions
 Microsoft.AspNetCore.Builder.HttpsPolicyBuilderExtensions
 Microsoft.AspNetCore.Builder.HttpsRedirectionServicesExtensions
 Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware
-Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware.HstsMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HstsOptions!>! options) -> void
 Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware.HstsMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HstsOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware.HstsMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HstsOptions!>! options) -> void
 Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.HttpsPolicy.HstsOptions
 Microsoft.AspNetCore.HttpsPolicy.HstsOptions.ExcludedHosts.get -> System.Collections.Generic.IList<string!>!
@@ -24,8 +24,8 @@ Microsoft.AspNetCore.HttpsPolicy.HstsOptions.MaxAge.set -> void
 Microsoft.AspNetCore.HttpsPolicy.HstsOptions.Preload.get -> bool
 Microsoft.AspNetCore.HttpsPolicy.HstsOptions.Preload.set -> void
 Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware
-Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware.HttpsRedirectionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions!>! options, Microsoft.Extensions.Configuration.IConfiguration! config, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware.HttpsRedirectionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions!>! options, Microsoft.Extensions.Configuration.IConfiguration! config, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature! serverAddressesFeature) -> void
+Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware.HttpsRedirectionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions!>! options, Microsoft.Extensions.Configuration.IConfiguration! config, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions
 Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions.HttpsPort.get -> int?

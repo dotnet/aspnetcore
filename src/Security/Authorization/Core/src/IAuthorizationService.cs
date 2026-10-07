@@ -22,8 +22,8 @@ public interface IAuthorizationService
     /// </param>
     /// <param name="requirements">The requirements to evaluate.</param>
     /// <returns>
-    /// A flag indicating whether authorization has succeeded.
-    /// This value is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether authorization has succeeded.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     /// <remarks>
     /// Resource is an optional parameter and may be null. Please ensure that you check it is not
@@ -41,9 +41,8 @@ public interface IAuthorizationService
     /// </param>
     /// <param name="policyName">The name of the policy to check against a specific context.</param>
     /// <returns>
-    /// A flag indicating whether authorization has succeeded.
-    /// Returns a flag indicating whether the user, and optional resource has fulfilled the policy.
-    /// <c>true</c> when the policy has been fulfilled; otherwise <c>false</c>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether authorization has succeeded.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the policy has been fulfilled; otherwise <c>false</c>.
     /// </returns>
     /// <remarks>
     /// Resource is an optional parameter and may be null. Please ensure that you check it is not

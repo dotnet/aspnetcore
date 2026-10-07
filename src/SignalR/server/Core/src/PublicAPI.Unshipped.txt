@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.SignalR.Hub.OnAuthenticationRefreshedAsync() -> System.Threading.Tasks.Task!

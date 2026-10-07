@@ -1565,7 +1565,9 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             selector.Object,
             diagnosticListener ?? new DiagnosticListener("Microsoft.AspNetCore"),
             logger ?? NullLogger.Instance,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
             ActionContextAccessor.Null,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
             new ActionResultTypeMapper(),
             pageContext,
             filters ?? Array.Empty<IFilterMetadata>(),

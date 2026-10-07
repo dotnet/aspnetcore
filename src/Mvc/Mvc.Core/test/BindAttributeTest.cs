@@ -14,19 +14,19 @@ public class BindAttributeTest
     [InlineData("Password", false)]
     [InlineData("LastName", true)]
     [InlineData("MiddleName", true)]
-    [InlineData(" ", false)]
-    [InlineData("foo", true)]
-    [InlineData("bar", true)]
+    // Include list contains a whitespace token; this verifies unrelated properties remain excluded.
+    [InlineData("TestProperty", false)]
+    [InlineData("Foo", true)]
+    [InlineData("Bar", true)]
     public void BindAttribute_Include(string property, bool isIncluded)
     {
         // Arrange
-        var bind = new BindAttribute(new string[] { "UserName", "FirstName", "LastName, MiddleName,  ,foo,bar " });
+        var bind = new BindAttribute(new string[] { "UserName", "FirstName", "LastName, MiddleName,  ,Foo,Bar " });
 
         var context = new DefaultModelBindingContext();
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        var identity = ModelMetadataIdentity.ForProperty(typeof(int), property, typeof(string));
-#pragma warning restore CS0618 // Type or member is obsolete
+        var propertyInfo = typeof(TestContainer).GetProperty(property);
+        var identity = ModelMetadataIdentity.ForProperty(propertyInfo!, typeof(int), typeof(TestContainer));
         context.ModelMetadata = new Mock<ModelMetadata>(identity).Object;
 
         // Act
@@ -34,5 +34,17 @@ public class BindAttributeTest
 
         // Assert
         Assert.Equal(isIncluded, propertyFilter(context.ModelMetadata));
+    }
+
+    private sealed class TestContainer
+    {
+        public int UserName { get; set; }
+        public int Username { get; set; }
+        public int Password { get; set; }
+        public int LastName { get; set; }
+        public int MiddleName { get; set; }
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public int TestProperty { get; set; }
     }
 }

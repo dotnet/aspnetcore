@@ -221,7 +221,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     /// <param name="id">The id to convert.</param>
     /// <returns>An instance of <typeparamref name="TKey"/> representing the provided <paramref name="id"/>.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "TKey is annoated with RequiresUnreferencedCodeAttribute.All.")]
+        Justification = "TKey is annotated with RequiresUnreferencedCodeAttribute.All.")]
     public virtual TKey? ConvertIdFromString(string? id)
     {
         if (id == null)
@@ -988,7 +988,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TRole">The type representing a role.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>

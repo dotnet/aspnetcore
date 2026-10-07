@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,9 +22,12 @@ namespace Microsoft.AspNetCore.Identity;
 public class SignInManager<TUser> where TUser : class
 {
     private const string LoginProviderKey = "LoginProvider";
-    private const string PasskeyCreationOptionsKey = "PasskeyCreationOptions";
-    private const string PasskeyRequestOptionsKey = "PasskeyRequestOptions";
     private const string XsrfKey = "XsrfId";
+    private const string PasskeyOperationKey = "PasskeyOperation";
+    private const string PasskeyStateKey = "PasskeyState";
+
+    private static readonly bool AlwaysResetLockoutOnSuccess =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
 
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IAuthenticationSchemeProvider _schemes;
@@ -33,8 +36,7 @@ public class SignInManager<TUser> where TUser : class
     private readonly SignInManagerMetrics? _metrics;
     private HttpContext? _context;
     private TwoFactorAuthenticationInfo? _twoFactorInfo;
-    private PasskeyCreationOptions? _passkeyCreationOptions;
-    private PasskeyRequestOptions? _passkeyRequestOptions;
+    private PasskeyAuthenticationInfo? _passkeyInfo;
 
     /// <summary>
     /// Creates a new instance of <see cref="SignInManager{TUser}"/>.
@@ -65,33 +67,9 @@ public class SignInManager<TUser> where TUser : class
         Logger = logger;
         _schemes = schemes;
         _confirmation = confirmation;
-        _metrics = userManager.ServiceProvider?.GetService<SignInManagerMetrics>();
-    }
-
-    /// <summary>
-    /// Creates a new instance of <see cref="SignInManager{TUser}"/>.
-    /// </summary>
-    /// <param name="userManager">An instance of <see cref="UserManager"/> used to retrieve users from and persist users.</param>
-    /// <param name="contextAccessor">The accessor used to access the <see cref="HttpContext"/>.</param>
-    /// <param name="claimsFactory">The factory to use to create claims principals for a user.</param>
-    /// <param name="optionsAccessor">The accessor used to access the <see cref="IdentityOptions"/>.</param>
-    /// <param name="logger">The logger used to log messages, warnings and errors.</param>
-    /// <param name="schemes">The scheme provider that is used enumerate the authentication schemes.</param>
-    /// <param name="confirmation">The <see cref="IUserConfirmation{TUser}"/> used check whether a user account is confirmed.</param>
-    /// <param name="passkeyHandler">The <see cref="IPasskeyHandler{TUser}"/> used when performing passkey attestation and assertion.</param>
-    public SignInManager(UserManager<TUser> userManager,
-        IHttpContextAccessor contextAccessor,
-        IUserClaimsPrincipalFactory<TUser> claimsFactory,
-        IOptions<IdentityOptions> optionsAccessor,
-        ILogger<SignInManager<TUser>> logger,
-        IAuthenticationSchemeProvider schemes,
-        IUserConfirmation<TUser> confirmation,
-        IPasskeyHandler<TUser> passkeyHandler)
-        : this(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
-    {
-        ArgumentNullException.ThrowIfNull(passkeyHandler);
-
-        _passkeyHandler = passkeyHandler;
+        // SignInManagerMetrics created from constructor because of difficulties registering internal type.
+        _metrics = userManager.ServiceProvider?.GetService<IMeterFactory>() is { } factory ? new SignInManagerMetrics(factory) : null;
+        _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
     }
 
     /// <summary>
@@ -143,6 +121,11 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Gets a value indicating whether the configured passkey handler supports conditionally mediated passkey creation.
+    /// </summary>
+    public virtual bool SupportsPasskeyConditionalCreation => _passkeyHandler?.SupportsConditionalCreation ?? false;
+
+    /// <summary>
     /// Creates a <see cref="ClaimsPrincipal"/> for the specified <paramref name="user"/>, as an asynchronous operation.
     /// </summary>
     /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> for.</param>
@@ -190,22 +173,27 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Signs in the specified <paramref name="user"/>, whilst preserving the existing
+    /// Refreshes the sign-in for the specified <paramref name="user"/>, whilst preserving the existing
     /// AuthenticationProperties of the current signed-in user like rememberMe, as an asynchronous operation.
     /// </summary>
-    /// <param name="user">The user to sign-in.</param>
+    /// <remarks>
+    /// The user must already be signed in, and the user ID must match the currently authenticated user.
+    /// If the user is not signed in, use <see cref="SignInAsync(TUser, bool, string?)"/> instead.
+    /// </remarks>
+    /// <param name="user">The user to refresh the sign-in for.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var (success, isPersistent) = await RefreshSignInCoreAsync(user);
             var signInResult = success ? SignInResult.Success : SignInResult.Failed;
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, signInResult, SignInType.Refresh, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, signInResult, SignInType.Refresh, isPersistent, startTimestamp);
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Refresh, isPersistent: null, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Refresh, isPersistent: null, startTimestamp, ex);
             throw;
         }
     }
@@ -228,8 +216,8 @@ public class SignInManager<TUser> where TUser : class
         }
 
         IList<Claim> claims = Array.Empty<Claim>();
-        var authenticationMethod = auth.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
-        var amr = auth.Principal?.FindFirst("amr");
+        var authenticationMethod = auth.Principal.FindFirst(ClaimTypes.AuthenticationMethod);
+        var amr = auth.Principal.FindFirst("amr");
 
         if (authenticationMethod != null || amr != null)
         {
@@ -245,7 +233,7 @@ public class SignInManager<TUser> where TUser : class
         }
 
         await SignInWithClaimsAsync(user, auth.Properties, claims);
-        return (true, auth.Properties?.IsPersistent ?? false);
+        return (true, auth.Properties?.IsPersistent);
     }
 
     /// <summary>
@@ -419,6 +407,7 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> PasswordSignInAsync(TUser user, string password,
         bool isPersistent, bool lockoutOnFailure)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ArgumentNullException.ThrowIfNull(user);
@@ -427,13 +416,13 @@ public class SignInManager<TUser> where TUser : class
             var result = attempt.Succeeded
                 ? await SignInOrTwoFactorAsync(user, isPersistent)
                 : attempt;
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -451,10 +440,11 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> PasswordSignInAsync(string userName, string password,
         bool isPersistent, bool lockoutOnFailure)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         var user = await UserManager.FindByNameAsync(userName);
         if (user == null)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent, startTimestamp);
             return SignInResult.Failed;
         }
 
@@ -497,7 +487,7 @@ public class SignInManager<TUser> where TUser : class
 
         if (await UserManager.CheckPasswordAsync(user, password))
         {
-            var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
+            var alwaysLockout = AlwaysResetLockoutOnSuccess;
             // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
             if (alwaysLockout || !await IsTwoFactorEnabledAsync(user) || await IsTwoFactorClientRememberedAsync(user))
             {
@@ -534,27 +524,244 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Performs passkey attestation for the given <paramref name="credentialJson"/> and <paramref name="options"/>.
+    /// Generates passkey creation options for the specified <paramref name="userEntity"/>.
     /// </summary>
-    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.create()</c> JavaScript function.</param>
-    /// <param name="options">The original passkey creation options provided to the browser.</param>
+    /// <remarks>
+    /// A passkey is a permanent credential. When adding one as another credential to an existing
+    /// account, callers should require the user to confirm their identity with a credential the account
+    /// already holds before calling this method. This does not apply when registering a new account,
+    /// where the passkey is the account's initial credential.
+    /// </remarks>
+    /// <param name="userEntity">The user entity for which to create passkey options.</param>
+    /// <returns>A JSON string representing the created passkey options.</returns>
+    public virtual async Task<string> MakePasskeyCreationOptionsAsync(PasskeyUserEntity userEntity)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeCreationOptionsAsync(userEntity, Context);
+        await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Attestation, result.AttestationState);
+
+        return result.CreationOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates passkey creation options for the specified <paramref name="userEntity"/>.
+    /// </summary>
+    /// <param name="userEntity">The user entity for which to create passkey options.</param>
+    /// <param name="isConditionallyMediated">
+    /// <see langword="true"/> if the passkey will be created with conditional mediation; otherwise, <see langword="false"/>.
+    /// </param>
+    /// <returns>A JSON string representing the created passkey options.</returns>
+    /// <remarks>
+    /// Conditional mediation lets a passkey be created without a user gesture, typically immediately
+    /// after the user signs in with a password. The corresponding <c>navigator.credentials.create()</c>
+    /// call must specify <c>mediation: "conditional"</c>.
+    /// The caller must only request conditional mediation after a recent successful password authentication.
+    /// An existing authenticated session by itself is not sufficient authorization to add a new passkey.
+    /// The protected attestation state prevents the client from changing the mediation mode after options
+    /// are issued, but it does not authorize issuing conditional options.
+    /// </remarks>
+    public virtual async Task<string> MakePasskeyCreationOptionsAsync(PasskeyUserEntity userEntity, bool isConditionallyMediated)
+    {
+        if (!isConditionallyMediated)
+        {
+            return await MakePasskeyCreationOptionsAsync(userEntity);
+        }
+
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeCreationOptionsAsync(userEntity, isConditionallyMediated, Context);
+        await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Attestation, result.AttestationState);
+
+        return result.CreationOptionsJson;
+    }
+
+    /// <summary>
+    /// Creates passkey assertion options for the specified <paramref name="user"/>.
+    /// </summary>
+    /// <param name="user">The user for whom to create passkey assertion options.</param>
+    /// <returns>A JSON string representing the created passkey assertion options.</returns>
+    public virtual async Task<string> MakePasskeyRequestOptionsAsync(TUser? user)
+    {
+        ThrowIfNoPasskeyHandler();
+
+        var result = await _passkeyHandler.MakeRequestOptionsAsync(user, Context);
+        await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Assertion, result.AssertionState);
+        return result.RequestOptionsJson;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the registered <see cref="IPasskeyHandler{TUser}"/> supports
+    /// generating passkey signal options.
+    /// </summary>
+    /// <remarks>
+    /// Check this before calling <see cref="MakeAllAcceptedCredentialsSignalOptionsAsync(TUser)"/> or
+    /// <see cref="MakeCurrentUserDetailsSignalOptionsAsync(TUser, PasskeyUserEntity)"/>, which throw
+    /// when the handler does not support passkey signal options.
+    /// </remarks>
+    public virtual bool SupportsPasskeySignalOptions => _passkeyHandler?.SupportsPasskeySignalOptions ?? false;
+
+    /// <summary>
+    /// Generates the options used to signal the credentials that are currently registered for a user.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalAllAcceptedCredentials()</c>
+    /// JavaScript API, which lets an authenticator stop offering passkeys that were removed from the server.
+    /// </para>
+    /// <para>
+    /// The authenticator treats the signaled list as authoritative: any passkey it holds for this user that is
+    /// not in the list may be hidden or permanently removed. Only call this when the list returned by
+    /// <see cref="UserManager{TUser}.GetPasskeysAsync(TUser)"/> is known to be complete. If a valid credential is
+    /// omitted, signaling a complete list as soon as possible may restore it if the authenticator supports recovery.
+    /// </para>
+    /// <para>
+    /// Because the options reveal how many passkeys a user has, only call this when the user is authenticated.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose passkeys should be signaled.</param>
+    /// <returns>A JSON string representing the all accepted credentials signal options.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="user"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support passkey signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalAllAcceptedCredentials?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakeAllAcceptedCredentialsSignalOptionsAsync(TUser user)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(user);
+
+        var result = await _passkeyHandler.MakeAllAcceptedCredentialsSignalOptionsAsync(user, Context);
+        return result.SignalOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates the options used to signal the current details of a user.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalCurrentUserDetails()</c>
+    /// JavaScript API, which keeps the user's details up to date on the authenticator.
+    /// </para>
+    /// <para>
+    /// Because the options reveal the user's details, only call this when the user is authenticated.
+    /// The <paramref name="userEntity"/> must have the same <see cref="PasskeyUserEntity.Id"/> that was passed to
+    /// <see cref="MakePasskeyCreationOptionsAsync(PasskeyUserEntity)"/> when the passkeys were created,
+    /// otherwise the authenticator will not recognize the user and the signal will have no effect.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose details should be signaled.</param>
+    /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
+    /// <returns>A JSON string representing the current user details signal options.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="user"/> or <paramref name="userEntity"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support passkey signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalCurrentUserDetails?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakeCurrentUserDetailsSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeCurrentUserDetailsSignalOptionsAsync(user, userEntity, Context);
+        return result.SignalOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates options used to signal that a passkey credential is unknown to the server.
+    /// </summary>
+    /// <remarks>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalUnknownCredential()</c>
+    /// JavaScript API. Calling that API permanently deletes the passkey from the browser's passkey provider.
+    /// This method only returns options when no user on the server has the credential.
+    /// </remarks>
+    /// <param name="credentialJson">The JSON representation of the passkey credential.</param>
     /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyAttestationResult"/>.
+    /// A JSON string representing the unknown credential signal options when the credential is unknown to the server,
+    /// otherwise <see langword="null"/>.
     /// </returns>
-    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync(string credentialJson, PasskeyCreationOptions options)
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="credentialJson"/> is <see langword="null"/> or empty.</exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalUnknownCredential?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
-        ArgumentNullException.ThrowIfNull(options);
 
-        var context = new PasskeyAttestationContext<TUser>
+        var result = await _passkeyHandler.MakeUnknownCredentialSignalOptionsAsync(credentialJson, Context);
+        return result?.SignalOptionsJson;
+    }
+
+    /// <summary>
+    /// Performs passkey attestation for the given <paramref name="credentialJson"/>.
+    /// </summary>
+    /// <remarks>
+    /// The <paramref name="credentialJson"/> should be obtained by JSON-serializing the result of the
+    /// <c>navigator.credentials.create()</c> JavaScript API. The argument to <c>navigator.credentials.create()</c>
+    /// should be obtained by calling <see cref="MakePasskeyCreationOptionsAsync(PasskeyUserEntity)"/>.
+    /// </remarks>
+    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.create()</c> JavaScript function.</param>
+    /// <returns>
+    /// A task object representing the asynchronous operation containing the <see cref="PasskeyAttestationResult"/>.
+    /// </returns>
+    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+
+        var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync()
+            ?? throw new PasskeyAuthenticationStateException(
+                "No passkey attestation is underway. " +
+                $"Make sure to call '{nameof(SignInManager<>)}.{nameof(MakePasskeyCreationOptionsAsync)}()' to initiate a passkey attestation.");
+        if (!string.Equals(PasskeyOperations.Attestation, passkeyInfo.Operation, StringComparison.Ordinal))
+        {
+            throw new PasskeyAuthenticationStateException(
+                $"Expected passkey operation '{PasskeyOperations.Attestation}', but got '{passkeyInfo.Operation}'. " +
+                $"This may indicate that you have not previously called '{nameof(SignInManager<>)}.{nameof(MakePasskeyCreationOptionsAsync)}()'.");
+        }
+        var context = new PasskeyAttestationContext
         {
             CredentialJson = credentialJson,
-            OriginalOptionsJson = options.AsJson(),
-            UserManager = UserManager,
+            AttestationState = passkeyInfo.State,
             HttpContext = Context,
         };
-        var result = await _passkeyHandler.PerformAttestationAsync(context).ConfigureAwait(false);
+        var result = await _passkeyHandler.PerformAttestationAsync(context);
         if (!result.Succeeded)
         {
             Logger.LogDebug(EventIds.PasskeyAttestationFailed, "Passkey attestation failed: {message}", result.Failure.Message);
@@ -564,26 +771,29 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Performs passkey assertion for the given <paramref name="credentialJson"/> and <paramref name="options"/>.
+    /// Performs passkey assertion for the given <paramref name="credentialJson"/>.
     /// </summary>
+    /// <remarks>
+    /// The <paramref name="credentialJson"/> should be obtained by JSON-serializing the result of the
+    /// <c>navigator.credentials.get()</c> JavaScript API. The argument to <c>navigator.credentials.get()</c>
+    /// should be obtained by calling <see cref="MakePasskeyRequestOptionsAsync(TUser)"/>.
+    /// Upon success, the <see cref="PasskeyAssertionResult{TUser}.Passkey"/> should be stored on the
+    /// <see cref="PasskeyAssertionResult{TUser}.User"/> using <see cref="UserManager{TUser}.AddOrUpdatePasskeyAsync(TUser, UserPasskeyInfo)"/>.
+    /// </remarks>
     /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
-    /// <param name="options">The original passkey creation options provided to the browser.</param>
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAssertionResult{TUser}"/>.
     /// </returns>
-    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync(string credentialJson, PasskeyRequestOptions options)
+    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
-        ArgumentNullException.ThrowIfNull(options);
 
-        var user = options.UserId is { Length: > 0 } userId ? await UserManager.FindByIdAsync(userId) : null;
-        var context = new PasskeyAssertionContext<TUser>
+        var passkeyInfo = await GetPasskeyAssertionInfoAsync();
+        var context = new PasskeyAssertionContext
         {
-            User = user,
             CredentialJson = credentialJson,
-            OriginalOptionsJson = options.AsJson(),
-            UserManager = UserManager,
+            AssertionState = passkeyInfo.State,
             HttpContext = Context,
         };
         var result = await _passkeyHandler.PerformAssertionAsync(context);
@@ -593,6 +803,112 @@ public class SignInManager<TUser> where TUser : class
         }
 
         return result;
+    }
+
+    internal async Task<PasskeyAuthenticationInfo> GetPasskeyAssertionInfoAsync()
+    {
+        var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync()
+            ?? throw new PasskeyAuthenticationStateException(
+                "No passkey assertion is underway. " +
+                $"Make sure to call '{nameof(SignInManager<>)}.{nameof(MakePasskeyRequestOptionsAsync)}()' to initiate a passkey assertion.");
+        if (!string.Equals(PasskeyOperations.Assertion, passkeyInfo.Operation, StringComparison.Ordinal))
+        {
+            throw new PasskeyAuthenticationStateException(
+                $"Expected passkey operation '{PasskeyOperations.Assertion}', but got '{passkeyInfo.Operation}'. " +
+                $"This may indicate that you have not previously called '{nameof(SignInManager<>)}.{nameof(MakePasskeyRequestOptionsAsync)}()'.");
+        }
+
+        return passkeyInfo;
+    }
+
+    /// <summary>
+    /// Performs a passkey assertion and attempts to sign in the user.
+    /// </summary>
+    /// <remarks>
+    /// The <paramref name="credentialJson"/> should be obtained by JSON-serializing the result of the
+    /// <c>navigator.credentials.get()</c> JavaScript API. The argument to <c>navigator.credentials.get()</c>
+    /// should be obtained by calling <see cref="MakePasskeyRequestOptionsAsync(TUser)"/>.
+    /// </remarks>
+    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
+    /// <returns>
+    /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
+    /// for the sign-in attempt.
+    /// </returns>
+    public virtual Task<SignInResult> PasskeySignInAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
+        => PasskeySignInAsync(credentialJson, isPersistent: false);
+
+    /// <summary>
+    /// Performs a passkey assertion and attempts to sign in the user.
+    /// </summary>
+    /// <remarks>
+    /// The <paramref name="credentialJson"/> should be obtained by JSON-serializing the result of the
+    /// <c>navigator.credentials.get()</c> JavaScript API. The argument to <c>navigator.credentials.get()</c>
+    /// should be obtained by calling <see cref="MakePasskeyRequestOptionsAsync(TUser)"/>.
+    /// </remarks>
+    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
+    /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
+    /// <returns>
+    /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
+    /// for the sign-in attempt.
+    /// </returns>
+    public virtual async Task<SignInResult> PasskeySignInAsync(
+        [StringSyntax(StringSyntaxAttribute.Json)] string credentialJson,
+        bool isPersistent)
+    {
+        var startTimestamp = Stopwatch.GetTimestamp();
+        try
+        {
+            var result = await PasskeySignInCoreAsync(credentialJson, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent, startTimestamp);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent, startTimestamp, ex);
+            throw;
+        }
+    }
+
+    private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson, bool isPersistent)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+
+        var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync();
+        if (passkeyInfo is null)
+        {
+            return SignInResult.Failed;
+        }
+
+        if (!string.Equals(PasskeyOperations.Assertion, passkeyInfo.Operation, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Expected passkey operation '{PasskeyOperations.Assertion}', but got '{passkeyInfo.Operation}'. " +
+                $"This may indicate that you have not previously called '{nameof(SignInManager<>)}.{nameof(MakePasskeyRequestOptionsAsync)}()'.");
+        }
+
+        var assertionResult = await PerformPasskeyAssertionAsync(credentialJson);
+        if (!assertionResult.Succeeded)
+        {
+            return SignInResult.Failed;
+        }
+
+        var error = await PreSignInCheck(assertionResult.User);
+        if (error != null)
+        {
+            return error;
+        }
+
+        // After a successful assertion, we need to update the passkey so that it has the latest
+        // sign count and authenticator data.
+        var setPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(assertionResult.User, assertionResult.Passkey);
+        if (!setPasskeyResult.Succeeded)
+        {
+            return SignInResult.Failed;
+        }
+
+        return await SignInOrTwoFactorAsync(assertionResult.User, isPersistent, bypassTwoFactor: true);
     }
 
     [MemberNotNull(nameof(_passkeyHandler))]
@@ -605,296 +921,42 @@ public class SignInManager<TUser> where TUser : class
         }
     }
 
-    /// <summary>
-    /// Performs a passkey assertion and attempts to sign in the user.
-    /// </summary>
-    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
-    /// <param name="options">The original passkey request options provided to the browser.</param>
-    /// <returns>
-    /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
-    /// for the sign-in attempt.
-    /// </returns>
-    public virtual async Task<SignInResult> PasskeySignInAsync(string credentialJson, PasskeyRequestOptions options)
+    private async Task StorePasskeyAuthenticationInfoAsync(string operation, string? state)
     {
-        try
-        {
-            var result = await PasskeySignInCoreAsync(credentialJson, options);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent: false);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent: false, ex);
-            throw;
-        }
-    }
-
-    private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson, PasskeyRequestOptions options)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
-
-        var assertionResult = await PerformPasskeyAssertionAsync(credentialJson, options);
-        if (!assertionResult.Succeeded)
-        {
-            return SignInResult.Failed;
-        }
-
-        // After a successful assertion, we need to update the passkey so that it has the latest
-        // sign count and authenticator data.
-        var setPasskeyResult = await UserManager.SetPasskeyAsync(assertionResult.User, assertionResult.Passkey);
-        if (!setPasskeyResult.Succeeded)
-        {
-            return SignInResult.Failed;
-        }
-
-        return await SignInOrTwoFactorAsync(assertionResult.User, isPersistent: false, bypassTwoFactor: true);
-    }
-
-    /// <summary>
-    /// Generates a <see cref="PasskeyCreationOptions"/> and stores it in the current <see cref="HttpContext"/> for later retrieval.
-    /// </summary>
-    /// <param name="creationArgs">Args for configuring the <see cref="PasskeyCreationOptions"/>.</param>
-    /// <remarks>
-    /// The returned options should be passed to the <c>navigator.credentials.create()</c> JavaScript function.
-    /// The credentials returned from that function can then be passed to the <see cref="PerformPasskeyAttestationAsync"/>.
-    /// </remarks>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyCreationOptions"/>.
-    /// </returns>
-    public virtual async Task<PasskeyCreationOptions> ConfigurePasskeyCreationOptionsAsync(PasskeyCreationArgs creationArgs)
-    {
-        ArgumentNullException.ThrowIfNull(creationArgs);
-
-        var options = await GeneratePasskeyCreationOptionsAsync(creationArgs);
-
         var props = new AuthenticationProperties();
-        props.Items[PasskeyCreationOptionsKey] = options.AsJson();
+        props.Items[PasskeyOperationKey] = operation;
+        props.Items[PasskeyStateKey] = state;
         var claimsIdentity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
-        claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, options.UserEntity.Id));
-        claimsIdentity.AddClaim(new Claim(ClaimTypes.Email, options.UserEntity.Name));
-        claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, options.UserEntity.DisplayName));
         var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
         await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, claimsPrincipal, props);
-
-        return options;
     }
 
-    /// <summary>
-    /// Generates a <see cref="PasskeyCreationOptions"/> to create a new passkey for a user.
-    /// </summary>
-    /// <param name="creationArgs">Args for configuring the <see cref="PasskeyCreationOptions"/>.</param>
-    /// <remarks>
-    /// The returned options should be passed to the <c>navigator.credentials.create()</c> JavaScript function.
-    /// The credentials returned from that function can then be passed to the <see cref="PerformPasskeyAttestationAsync"/>.
-    /// </remarks>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyCreationOptions"/>.
-    /// </returns>
-    public virtual async Task<PasskeyCreationOptions> GeneratePasskeyCreationOptionsAsync(PasskeyCreationArgs creationArgs)
+    private async Task<PasskeyAuthenticationInfo?> RetrievePasskeyAuthenticationInfoAsync()
     {
-        ArgumentNullException.ThrowIfNull(creationArgs);
+        return _passkeyInfo ??= await RetrievePasskeyInfoCoreAsync();
 
-        var excludeCredentials = await GetExcludeCredentialsAsync();
-        var serverDomain = Options.Passkey.ServerDomain ?? Context.Request.Host.Host;
-        var rpEntity = new PublicKeyCredentialRpEntity
+        async Task<PasskeyAuthenticationInfo?> RetrievePasskeyInfoCoreAsync()
         {
-            Name = serverDomain,
-            Id = serverDomain,
-        };
-        var userEntity = new PublicKeyCredentialUserEntity
-        {
-            Id = BufferSource.FromString(creationArgs.UserEntity.Id),
-            Name = creationArgs.UserEntity.Name,
-            DisplayName = creationArgs.UserEntity.DisplayName,
-        };
-        var challenge = RandomNumberGenerator.GetBytes(Options.Passkey.ChallengeSize);
-        var options = new PublicKeyCredentialCreationOptions
-        {
-            Rp = rpEntity,
-            User = userEntity,
-            Challenge = BufferSource.FromBytes(challenge),
-            Timeout = (uint)Options.Passkey.Timeout.TotalMilliseconds,
-            ExcludeCredentials = excludeCredentials,
-            PubKeyCredParams = PublicKeyCredentialParameters.AllSupportedParameters,
-            AuthenticatorSelection = creationArgs.AuthenticatorSelection,
-            Attestation = creationArgs.Attestation,
-            Extensions = creationArgs.Extensions,
-        };
-        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions);
-        return new(creationArgs.UserEntity, optionsJson);
+            var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
+            await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
 
-        async Task<PublicKeyCredentialDescriptor[]> GetExcludeCredentialsAsync()
-        {
-            var existingUser = await UserManager.FindByIdAsync(creationArgs.UserEntity.Id);
-            if (existingUser is null)
+            if (result.Properties is not { } properties)
             {
-                return [];
+                return null;
             }
 
-            var passkeys = await UserManager.GetPasskeysAsync(existingUser);
-            var excludeCredentials = passkeys
-                .Select(p => new PublicKeyCredentialDescriptor
-                {
-                    Type = "public-key",
-                    Id = BufferSource.FromBytes(p.CredentialId),
-                    Transports = p.Transports ?? [],
-                });
-            return [.. excludeCredentials];
-        }
-    }
-
-    /// <summary>
-    /// Generates a <see cref="PasskeyRequestOptions"/> and stores it in the current <see cref="HttpContext"/> for later retrieval.
-    /// </summary>
-    /// <param name="requestArgs">Args for configuring the <see cref="PasskeyRequestOptions"/>.</param>
-    /// <remarks>
-    /// The returned options should be passed to the <c>navigator.credentials.get()</c> JavaScript function.
-    /// The credentials returned from that function can then be passed to the <see cref="PasskeySignInAsync"/> or
-    /// <see cref="PerformPasskeyAssertionAsync"/> methods.
-    /// </remarks>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
-    /// </returns>
-    public virtual async Task<PasskeyRequestOptions> ConfigurePasskeyRequestOptionsAsync(PasskeyRequestArgs<TUser> requestArgs)
-    {
-        ArgumentNullException.ThrowIfNull(requestArgs);
-
-        var options = await GeneratePasskeyRequestOptionsAsync(requestArgs);
-
-        var props = new AuthenticationProperties();
-        props.Items[PasskeyRequestOptionsKey] = options.AsJson();
-        var claimsIdentity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
-
-        if (options.UserId is { } userId)
-        {
-            claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
-        }
-
-        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-        await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, claimsPrincipal, props);
-        return options;
-    }
-
-    /// <summary>
-    /// Generates a <see cref="PasskeyRequestOptions"/> to request an existing passkey for a user.
-    /// </summary>
-    /// <param name="requestArgs">Args for configuring the <see cref="PasskeyRequestOptions"/>.</param>
-    /// <remarks>
-    /// The returned options should be passed to the <c>navigator.credentials.get()</c> JavaScript function.
-    /// The credentials returned from that function can then be passed to the <see cref="PerformPasskeyAssertionAsync"/> method.
-    /// </remarks>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
-    /// </returns>
-    public virtual async Task<PasskeyRequestOptions> GeneratePasskeyRequestOptionsAsync(PasskeyRequestArgs<TUser> requestArgs)
-    {
-        ArgumentNullException.ThrowIfNull(requestArgs);
-
-        var allowCredentials = await GetAllowCredentialsAsync();
-        var serverDomain = Options.Passkey.ServerDomain ?? Context.Request.Host.Host;
-        var challenge = RandomNumberGenerator.GetBytes(Options.Passkey.ChallengeSize);
-        var options = new PublicKeyCredentialRequestOptions
-        {
-            Challenge = BufferSource.FromBytes(challenge),
-            RpId = serverDomain,
-            Timeout = (uint)Options.Passkey.Timeout.TotalMilliseconds,
-            AllowCredentials = allowCredentials,
-            UserVerification = requestArgs.UserVerification,
-            Extensions = requestArgs.Extensions,
-        };
-        var userId = requestArgs?.User is { } user
-            ? await UserManager.GetUserIdAsync(user).ConfigureAwait(false)
-            : null;
-        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PublicKeyCredentialRequestOptions);
-        return new(userId, optionsJson);
-
-        async Task<PublicKeyCredentialDescriptor[]> GetAllowCredentialsAsync()
-        {
-            if (requestArgs?.User is not { } user)
+            if (!properties.Items.TryGetValue(PasskeyOperationKey, out var operation) ||
+                !properties.Items.TryGetValue(PasskeyStateKey, out var state))
             {
-                return [];
+                return null;
             }
 
-            var passkeys = await UserManager.GetPasskeysAsync(user);
-            var allowCredentials = passkeys
-                .Select(p => new PublicKeyCredentialDescriptor
-                {
-                    Type = "public-key",
-                    Id = BufferSource.FromBytes(p.CredentialId),
-                    Transports = p.Transports ?? [],
-                });
-            return [.. allowCredentials];
+            return new()
+            {
+                Operation = operation,
+                State = state,
+            };
         }
-    }
-
-    /// <summary>
-    /// Retrieves the <see cref="PasskeyCreationOptions"/> stored in the current <see cref="HttpContext"/>.
-    /// </summary>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyCreationOptions"/>.
-    /// </returns>
-    public virtual async Task<PasskeyCreationOptions?> RetrievePasskeyCreationOptionsAsync()
-    {
-        if (_passkeyCreationOptions is not null)
-        {
-            return _passkeyCreationOptions;
-        }
-
-        var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
-        await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
-
-        if (result?.Principal == null || result.Properties is not { } properties)
-        {
-            return null;
-        }
-
-        if (!properties.Items.TryGetValue(PasskeyCreationOptionsKey, out var optionsJson) || optionsJson is null)
-        {
-            return null;
-        }
-
-        if (result.Principal.FindFirstValue(ClaimTypes.NameIdentifier) is not { Length: > 0 } userId ||
-            result.Principal.FindFirstValue(ClaimTypes.Email) is not { Length: > 0 } userName ||
-            result.Principal.FindFirstValue(ClaimTypes.Name) is not { Length: > 0 } userDisplayName)
-        {
-            return null;
-        }
-
-        var userEntity = new PasskeyUserEntity(userId, userName, userDisplayName);
-        _passkeyCreationOptions = new(userEntity, optionsJson);
-        return _passkeyCreationOptions;
-    }
-
-    /// <summary>
-    /// Retrieves the <see cref="PasskeyRequestOptions"/> stored in the current <see cref="HttpContext"/>.
-    /// </summary>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
-    /// </returns>
-    public virtual async Task<PasskeyRequestOptions?> RetrievePasskeyRequestOptionsAsync()
-    {
-        if (_passkeyRequestOptions is not null)
-        {
-            return _passkeyRequestOptions;
-        }
-
-        var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
-        await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
-
-        if (result?.Principal == null || result.Properties is not { } properties)
-        {
-            return null;
-        }
-
-        if (!properties.Items.TryGetValue(PasskeyRequestOptionsKey, out var optionsJson) || optionsJson is null)
-        {
-            return null;
-        }
-
-        var userId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        _passkeyRequestOptions = new(userId, optionsJson);
-        return _passkeyRequestOptions;
     }
 
     /// <summary>
@@ -966,16 +1028,17 @@ public class SignInManager<TUser> where TUser : class
     /// <returns></returns>
     public virtual async Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorRecoveryCodeSignInCoreAsync(recoveryCode);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, startTimestamp, ex);
             throw;
         }
     }
@@ -1047,16 +1110,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorAuthenticatorSignInCoreAsync(code, isPersistent, rememberClient);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -1111,16 +1175,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorSignInCoreAsync(provider, code, isPersistent, rememberClient);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -1200,16 +1265,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await ExternalLoginSignInCoreAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -1330,16 +1396,22 @@ public class SignInManager<TUser> where TUser : class
     /// <summary>
     /// Creates a claims principal for the specified 2fa information.
     /// </summary>
-    /// <param name="userId">The user whose is logging in via 2fa.</param>
-    /// <param name="loginProvider">The 2fa provider.</param>
+    /// <param name="user">The user who is logging in via 2fa.</param>
+    /// <param name="loginProvider">The external login provider used to complete sign-in after 2FA (if applicable).</param>
     /// <returns>A <see cref="ClaimsPrincipal"/> containing the user 2fa information.</returns>
-    internal static ClaimsPrincipal StoreTwoFactorInfo(string userId, string? loginProvider)
+    internal async Task<ClaimsPrincipal> StoreTwoFactorInfo(TUser user, string? loginProvider)
     {
+        var userId = await UserManager.GetUserIdAsync(user);
         var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
         identity.AddClaim(new Claim(ClaimTypes.Name, userId));
         if (loginProvider != null)
         {
             identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, loginProvider));
+        }
+        if (UserManager.SupportsUserSecurityStamp)
+        {
+            var stamp = await UserManager.GetSecurityStampAsync(user);
+            identity.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType, stamp));
         }
         return new ClaimsPrincipal(identity);
     }
@@ -1394,9 +1466,8 @@ public class SignInManager<TUser> where TUser : class
 
                 if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
                 {
-                    // Store the userId for use after two factor check
-                    var userId = await UserManager.GetUserIdAsync(user);
-                    await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(userId, loginProvider));
+                    // Store the user for use after two factor check
+                    await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, await StoreTwoFactorInfo(user, loginProvider));
                 }
 
                 return SignInResult.TwoFactorRequired;
@@ -1431,13 +1502,9 @@ public class SignInManager<TUser> where TUser : class
             return null;
         }
 
-        var userId = result.Principal.FindFirstValue(ClaimTypes.Name);
-        if (userId == null)
-        {
-            return null;
-        }
-
-        var user = await UserManager.FindByIdAsync(userId);
+        // Validate the security stamp embedded in the two-factor principal so that a stale
+        // two-factor cookie (e.g. issued before a password reset) can no longer complete sign in.
+        var user = await ValidateTwoFactorSecurityStampAsync(result.Principal);
         if (user == null)
         {
             return null;
@@ -1571,5 +1638,18 @@ public class SignInManager<TUser> where TUser : class
     {
         public required TUser User { get; init; }
         public string? LoginProvider { get; init; }
+    }
+
+    internal sealed class PasskeyAuthenticationInfo
+    {
+        public required string? Operation { get; init; }
+        public required string? State { get; init; }
+
+    }
+
+    private static class PasskeyOperations
+    {
+        public const string Attestation = "Attestation";
+        public const string Assertion = "Assertion";
     }
 }

@@ -49,5 +49,5 @@ static Microsoft.AspNetCore.Builder.SpaProxyingExtensions.UseProxyToSpaDevelopme
 static Microsoft.AspNetCore.SpaServices.AngularCli.AngularCliMiddlewareExtensions.UseAngularCliServer(this Microsoft.AspNetCore.SpaServices.ISpaBuilder! spaBuilder, string! npmScript) -> void
 static Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer.ReactDevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer(this Microsoft.AspNetCore.SpaServices.ISpaBuilder! spaBuilder, string! npmScript) -> void
 static Microsoft.Extensions.DependencyInjection.SpaStaticFilesExtensions.AddSpaStaticFiles(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.SpaServices.StaticFiles.SpaStaticFilesOptions!>? configuration = null) -> void
-static Microsoft.Extensions.DependencyInjection.SpaStaticFilesExtensions.UseSpaStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder) -> void
 static Microsoft.Extensions.DependencyInjection.SpaStaticFilesExtensions.UseSpaStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder, Microsoft.AspNetCore.Builder.StaticFileOptions! options) -> void
+static Microsoft.Extensions.DependencyInjection.SpaStaticFilesExtensions.UseSpaStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder) -> void

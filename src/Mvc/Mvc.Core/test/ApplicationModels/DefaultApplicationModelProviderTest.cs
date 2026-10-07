@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -1277,9 +1278,29 @@ public class DefaultApplicationModelProviderTest
 
         // Assert
         Assert.NotNull(selector.EndpointMetadata);
-        Assert.Single(selector.EndpointMetadata);
-        Assert.IsType<ProducesResponseTypeMetadata>(selector.EndpointMetadata.Single()); 
+        Assert.Equal(2, selector.EndpointMetadata.Count);
+        Assert.Single(selector.EndpointMetadata.OfType<ProducesResponseTypeMetadata>());
+        Assert.Single(selector.EndpointMetadata.OfType<IDisableCookieRedirectMetadata>());
         Assert.Equal(200, ((ProducesResponseTypeMetadata)selector.EndpointMetadata[0]).StatusCode);
+    }
+
+    [Fact]
+    public void AddReturnTypeMetadata_ExtractsMetadataFromResultsUnionReturnType()
+    {
+        // Arrange
+        var selector = new SelectorModel();
+        var selectors = new List<SelectorModel> { selector };
+        var actionMethod = typeof(TypedResultsReturningActionsController).GetMethod(nameof(TypedResultsReturningActionsController.GetUnion));
+
+        // Act
+        DefaultApplicationModelProvider.AddReturnTypeMetadata(selectors, actionMethod);
+
+        // Assert
+        Assert.NotNull(selector.EndpointMetadata);
+        var responseMetadata = selector.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().ToArray();
+        Assert.Equal(2, responseMetadata.Length);
+        Assert.Single(responseMetadata, m => m.StatusCode == 200);
+        Assert.Single(responseMetadata, m => m.StatusCode == 401);
     }
 
     [Fact]
@@ -1753,7 +1774,11 @@ public class DefaultApplicationModelProviderTest
     private class TypedResultsReturningActionsController : Controller
     {
         [HttpGet]
-        public Http.HttpResults.Ok<Foo> Get() => TypedResults.Ok<Foo>(new Foo { Info = "Hello" });
+        public Http.HttpResults.Ok<Foo> Get() => TypedResults.Ok(new Foo { Info = "Hello" });
+
+        [HttpGet]
+        public Http.HttpResults.Results<Http.HttpResults.Ok<Foo>, Http.HttpResults.UnauthorizedHttpResult, Http.HttpResults.ProblemHttpResult> GetUnion()
+            => TypedResults.Ok(new Foo { Info = "Hello" });
     }
 
     public class Foo {

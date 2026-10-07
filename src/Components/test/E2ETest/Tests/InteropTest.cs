@@ -78,6 +78,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["testDtoAsync"] = "Same",
             ["returnPrimitiveAsync"] = "123",
             ["returnArrayAsync"] = "first,second",
+            ["elementReference"] = "Success",
             ["jsObjectReference.identity"] = "Invoked from JSObjectReference",
             ["jsObjectReference.nested.add"] = "5",
             ["addViaJSObjectReference"] = "5",
@@ -89,8 +90,6 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeVoidAsyncReturnsWithoutSerializing"] = "Success",
             ["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success",
             ["invokeAsyncThrowsSerializingCircularStructure"] = "Success",
-            ["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success",
-            ["invokeAsyncThrowsNullJSObjectReference"] = "Success",
             ["disposeJSObjectReferenceAsync"] = "Success",
             // GetValue tests
             ["getValueFromDataPropertyAsync"] = "10",
@@ -108,7 +107,12 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeConstructorWithClassConstructorAsync.function"] = "6",
             ["invokeConstructorWithNonConstructorAsync"] = "Success",
             // Function reference tests
-            ["changeFunctionViaObjectReferenceAsync"] = "42"
+            ["changeFunctionViaObjectReferenceAsync"] = "42",
+            // JS Object Nullable reference tests
+            ["invokeAsyncUndefinedJSObjectReference"] = "Success",
+            ["invokeAsyncNullJSObjectReference"] = "Success",
+            ["invokeAsyncNullFromVariableJSObjectReference"] = "Success",
+            ["invokeAsyncNonExistentJSObjectReference"] = "Success",
         };
 
         var expectedSyncValues = new Dictionary<string, string>
@@ -148,8 +152,6 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = "Success",
             ["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = "Success",
             ["invokeThrowsSerializingCircularStructure"] = "Success",
-            ["invokeThrowsUndefinedJSObjectReference"] = "Success",
-            ["invokeThrowsNullJSObjectReference"] = "Success",
             ["stringValueUpperSync"] = "MY STRING",
             ["testDtoNonSerializedValueSync"] = "99999",
             ["testDtoSync"] = "Same",
@@ -174,7 +176,12 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeConstructorWithClassConstructor.function"] = "6",
             ["invokeConstructorWithNonConstructor"] = "Success",
             // Function reference tests
-            ["changeFunctionViaObjectReference"] = "42"
+            ["changeFunctionViaObjectReference"] = "42",
+            // JS Object Nullable reference tests
+            ["invokeUndefinedJSObjectReference"] = "Success",
+            ["invokeNullJSObjectReference"] = "Success",
+            ["invokeNullFromVariableJSObjectReference"] = "Success",
+            ["invokeNonExistentJSObjectReference"] = "Success",
         };
 
         // Include the sync assertions only when running under WebAssembly

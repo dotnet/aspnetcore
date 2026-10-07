@@ -43,7 +43,7 @@ public class UserOnlyStore<TUser, TContext> : UserOnlyStore<TUser, TContext, str
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
     where TUser : IdentityUser<TKey>
     where TContext : DbContext
@@ -62,7 +62,7 @@ public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContex
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
@@ -88,7 +88,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
@@ -566,16 +566,19 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         {
             UserId = user.Id,
             CredentialId = passkey.CredentialId,
-            PublicKey = passkey.PublicKey,
-            Name = passkey.Name,
-            CreatedAt = passkey.CreatedAt,
-            Transports = passkey.Transports,
-            SignCount = passkey.SignCount,
-            IsUserVerified = passkey.IsUserVerified,
-            IsBackupEligible = passkey.IsBackupEligible,
-            IsBackedUp = passkey.IsBackedUp,
-            AttestationObject = passkey.AttestationObject,
-            ClientDataJson = passkey.ClientDataJson,
+            Data = new IdentityPasskeyData()
+            {
+                PublicKey = passkey.PublicKey,
+                Name = passkey.Name,
+                CreatedAt = passkey.CreatedAt,
+                Transports = passkey.Transports,
+                SignCount = passkey.SignCount,
+                IsUserVerified = passkey.IsUserVerified,
+                IsBackupEligible = passkey.IsBackupEligible,
+                IsBackedUp = passkey.IsBackedUp,
+                AttestationObject = passkey.AttestationObject,
+                ClientDataJson = passkey.ClientDataJson,
+            },
         };
     }
 
@@ -586,7 +589,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     /// <param name="credentialId">The credential id to search for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The user passkey if it exists.</returns>
-    protected virtual Task<TUserPasskey?> FindUserPasskeyAsync(TKey userId, byte[] credentialId, CancellationToken cancellationToken)
+    private Task<TUserPasskey?> FindUserPasskeyAsync(TKey userId, byte[] credentialId, CancellationToken cancellationToken)
     {
         return UserPasskeys.SingleOrDefaultAsync(
             userPasskey => userPasskey.UserId.Equals(userId) && userPasskey.CredentialId.SequenceEqual(credentialId),
@@ -599,7 +602,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     /// <param name="credentialId">The credential id to search for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The user passkey if it exists.</returns>
-    protected virtual Task<TUserPasskey?> FindUserPasskeyByIdAsync(byte[] credentialId, CancellationToken cancellationToken)
+    private Task<TUserPasskey?> FindUserPasskeyByIdAsync(byte[] credentialId, CancellationToken cancellationToken)
     {
         return UserPasskeys.SingleOrDefaultAsync(userPasskey => userPasskey.CredentialId.SequenceEqual(credentialId), cancellationToken);
     }
@@ -612,7 +615,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     /// <param name="passkey"></param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual async Task SetPasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+    public virtual async Task AddOrUpdatePasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -622,10 +625,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         var userPasskey = await FindUserPasskeyByIdAsync(passkey.CredentialId, cancellationToken).ConfigureAwait(false);
         if (userPasskey != null)
         {
-            userPasskey.Name = passkey.Name;
-            userPasskey.SignCount = passkey.SignCount;
-            userPasskey.IsBackedUp = passkey.IsBackedUp;
-            userPasskey.IsUserVerified = passkey.IsUserVerified;
+            userPasskey.UpdateFromUserPasskeyInfo(passkey);
             UserPasskeys.Update(userPasskey);
         }
         else
@@ -652,18 +652,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         var userId = user.Id;
         var passkeys = await UserPasskeys
             .Where(p => p.UserId.Equals(userId))
-            .Select(p => new UserPasskeyInfo(
-                p.CredentialId,
-                p.PublicKey,
-                p.Name,
-                p.CreatedAt,
-                p.SignCount,
-                p.Transports,
-                p.IsUserVerified,
-                p.IsBackupEligible,
-                p.IsBackedUp,
-                p.AttestationObject,
-                p.ClientDataJson))
+            .Select(p => p.ToUserPasskeyInfo())
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -703,24 +692,10 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(credentialId);
 
         var passkey = await FindUserPasskeyAsync(user.Id, credentialId, cancellationToken).ConfigureAwait(false);
-        if (passkey != null)
-        {
-            return new UserPasskeyInfo(
-                passkey.CredentialId,
-                passkey.PublicKey,
-                passkey.Name,
-                passkey.CreatedAt,
-                passkey.SignCount,
-                passkey.Transports,
-                passkey.IsUserVerified,
-                passkey.IsBackupEligible,
-                passkey.IsBackedUp,
-                passkey.AttestationObject,
-                passkey.ClientDataJson);
-        }
-        return null;
+        return passkey?.ToUserPasskeyInfo();
     }
 
     /// <summary>
@@ -758,7 +733,8 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
             throw new InvalidOperationException(
                 $"This operation is not permitted because the underlying '{nameof(DbContext)}' does not include '{typeof(TUserPasskey).Name}' in its model. " +
                 $"When using '{nameof(IdentityDbContext)}', make sure that '{nameof(IdentityOptions)}.{nameof(IdentityOptions.Stores)}.{nameof(StoreOptions.SchemaVersion)}' " +
-                $"is set to '{nameof(IdentitySchemaVersions)}.{nameof(IdentitySchemaVersions.Version3)}' or higher.");
+                $"is set to '{nameof(IdentitySchemaVersions)}.{nameof(IdentitySchemaVersions.Version3)}' or higher. " +
+                $"See https://aka.ms/aspnet/passkeys for more information.");
         }
     }
 }

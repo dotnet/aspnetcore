@@ -198,4 +198,12 @@ public class QueryHelperTests
         var result = QueryHelpers.AddQueryString(uri, queryStrings);
         Assert.Equal(expectedUri, result);
     }
+
+    [Fact]
+    public void ParseQueryNullInputReturnsCaseInsensitiveDictionary()
+    {
+        var collection = QueryHelpers.ParseQuery(null);
+        collection["AbC"] = "value";
+        Assert.True(collection.Remove("abc"));
+    }
 }

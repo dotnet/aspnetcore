@@ -174,6 +174,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
 
         var cookieOptions = Options.StateCookie.Build(Context, TimeProvider.GetUtcNow());
 
+        // codeql[SM02373] - By design the short-lived Twitter OAuth state cookie uses SameAsRequest, so it is Secure whenever the request is HTTPS.
         Response.Cookies.Append(Options.StateCookie.Name!, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
         var redirectContext = new RedirectContext<TwitterOptions>(Context, Scheme, Options, properties, twitterAuthenticationEndpoint);

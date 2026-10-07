@@ -149,6 +149,7 @@ message HelloRequest {
   message SubMessage {
     string subfield = 1;
     repeated string subfields = 2;
+    string sub_field_name = 3 [json_name="subFieldNameJson"];
   }
   message DataTypes {
     enum NestedEnum {
@@ -190,6 +191,10 @@ message HelloRequest {
     google.protobuf.UInt64Value uint64_value = 8;
     google.protobuf.BytesValue bytes_value = 9;
   }
+  message RecursiveMessage {
+    string value = 1;
+    RecursiveMessage child = 2;
+  }
   string name = 1;
   SubMessage sub = 2;
   DataTypes data = 3;
@@ -218,6 +223,8 @@ message HelloRequest {
   string hiding_field_name = 24 [json_name="field_name"];
   repeated SubMessage repeated_messages = 25;
   map<int32, int32> map_keyint_valueint = 26;
+  SubMessage sub_data = 27;
+  RecursiveMessage recursive = 28;
 }
 
 message HelloReply {
@@ -234,4 +241,29 @@ message HelloReply {
 
 message NullValueContainer {
   google.protobuf.NullValue null_value = 1;
+}
+
+message FieldNameCaseMessage {
+  int32 a = 1;
+  int32 b = 2  [json_name="A"];
+}
+
+message PrefixEnumType {
+  enum PrefixEnum {
+    PREFIX_ENUM_UNSPECIFIED = 0;
+    PREFIX_ENUM_FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+    PREFIX_ENUM_123 = 4;
+  }
+  PrefixEnum single_enum = 1;
+}
+
+message CollisionPrefixEnumType {
+  enum CollisionPrefixEnum {
+    COLLISION_PREFIX_ENUM_UNSPECIFIED = 0;
+    COLLISION_PREFIX_ENUM_FOO = 1;
+    COLLISION_PREFIX_ENUM_COLLISION_PREFIX_ENUM_FOO = 2;
+  }
+  CollisionPrefixEnum single_enum = 1;
 }

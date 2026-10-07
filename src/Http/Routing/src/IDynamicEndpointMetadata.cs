@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// <para>
 /// Using dynamic endpoints can be useful because the default matcher implementation does not
 /// supply extensibility for how URLs are processed. Routing implementations that have dynamic
-/// behavior can apply their dynamic logic after URL processing, by replacing a endpoints as
+/// behavior can apply their dynamic logic after URL processing, by replacing endpoints as
 /// part of a <see cref="CandidateSet"/>.
 /// </para>
 /// </remarks>

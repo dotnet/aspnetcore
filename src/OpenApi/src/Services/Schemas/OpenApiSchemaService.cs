@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text.Json;
@@ -12,9 +13,10 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -58,9 +60,12 @@ internal sealed class OpenApiSchemaService(
         TransformSchemaNode = (context, schema) =>
         {
             var type = context.TypeInfo.Type;
-            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, and PipeReader
+            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
+            // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
             // that appear as properties within complex types.
-            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader))
+            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
+                || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
+                || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
             {
                 schema = new JsonObject
                 {
@@ -82,6 +87,10 @@ internal sealed class OpenApiSchemaService(
                     }
                 };
             }
+            else if (type.IsJsonPatchDocument())
+            {
+                schema = CreateSchemaForJsonPatch();
+            }
             // STJ uses `true` in place of an empty object to represent a schema that matches
             // anything (like the `object` type) or types with user-defined converters. We override
             // this default behavior here to match the format expected in OpenAPI v3.
@@ -90,39 +99,156 @@ internal sealed class OpenApiSchemaService(
                 schema = new JsonObject();
             }
             var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
-            schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
+            schema.ApplyPrimitiveFormats(context);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
             schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
             if (context.PropertyInfo is { } jsonPropertyInfo)
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
+            var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
+            var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
+            if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            {
+                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+            }
+            if (typeAttributes.OfType<ObsoleteAttribute>().Any())
+            {
+                schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+            }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
+                var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
+                if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);
                 }
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DefaultValueAttribute>().LastOrDefault() is DefaultValueAttribute defaultValueAttribute)
+                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
                 {
                     schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
                 }
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is DescriptionAttribute descriptionAttribute)
+                var isInlinedSchema = !schema.WillBeComponentized();
+                if (isInlinedSchema)
                 {
-                    schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    {
+                        schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                    }
+                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    {
+                        schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+                    }
+                }
+                else
+                {
+                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    {
+                        schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                    }
+                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    {
+                        schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
+                    }
                 }
             }
-
+            schema.PruneNullTypeForComponentizedTypes();
             return schema;
         }
     };
 
+    private static JsonObject CreateSchemaForJsonPatch()
+    {
+        var addReplaceTest = new JsonObject()
+        {
+            [OpenApiSchemaKeywords.TypeKeyword] = "object",
+            [OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false,
+            [OpenApiSchemaKeywords.RequiredKeyword] = JsonArray(["op", "path", "value"]),
+            [OpenApiSchemaKeywords.PropertiesKeyword] = new JsonObject
+            {
+                ["op"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                    [OpenApiSchemaKeywords.EnumKeyword] = JsonArray(["add", "replace", "test"]),
+                },
+                ["path"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string"
+                },
+                ["value"] = new JsonObject()
+            }
+        };
+
+        var moveCopy = new JsonObject()
+        {
+            [OpenApiSchemaKeywords.TypeKeyword] = "object",
+            [OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false,
+            [OpenApiSchemaKeywords.RequiredKeyword] = JsonArray(["op", "path", "from"]),
+            [OpenApiSchemaKeywords.PropertiesKeyword] = new JsonObject
+            {
+                ["op"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                    [OpenApiSchemaKeywords.EnumKeyword] = JsonArray(["move", "copy"]),
+                },
+                ["path"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string"
+                },
+                ["from"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string"
+                },
+            }
+        };
+
+        var remove = new JsonObject()
+        {
+            [OpenApiSchemaKeywords.TypeKeyword] = "object",
+            [OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false,
+            [OpenApiSchemaKeywords.RequiredKeyword] = JsonArray(["op", "path"]),
+            [OpenApiSchemaKeywords.PropertiesKeyword] = new JsonObject
+            {
+                ["op"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                    [OpenApiSchemaKeywords.EnumKeyword] = JsonArray(["remove"])
+                },
+                ["path"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string"
+                },
+            }
+        };
+
+        return new JsonObject
+        {
+            [OpenApiConstants.SchemaId] = "JsonPatchDocument",
+            [OpenApiSchemaKeywords.TypeKeyword] = "array",
+            [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+            {
+                [OpenApiSchemaKeywords.OneOfKeyword] = JsonArray([addReplaceTest, moveCopy, remove])
+            },
+        };
+
+        // Using JsonArray inline causes the compile to pick the generic Add<T>() overload
+        // which then generates native AoT warnings without adding a cost. To Avoid that use
+        // this helper method that uses JsonNode to pick the native AoT compatible overload instead.
+        static JsonArray JsonArray(ReadOnlySpan<JsonNode> values)
+        {
+            var array = new JsonArray();
+
+            foreach (var value in values)
+            {
+                array.Add(value);
+            }
+
+            return array;
+        }
+    }
+
     internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
-        var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
-            && parameterDescription.ModelMetadata.PropertyName is null
-            ? new OpenApiSchemaKey(type, parameterInfoDescription.ParameterInfo) : new OpenApiSchemaKey(type, null);
-        var schemaAsJsonObject = CreateSchema(key);
+        var schemaAsJsonObject = CreateSchema(type);
         if (parameterDescription is not null)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
@@ -138,7 +264,47 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
+        // For non-body enum parameters, check if a naming policy transforms the enum values.
+        // If so, skip componentization and return an inline schema with the original C# member
+        // names (which Enum.TryParse accepts). The component schema keeps the naming-policy
+        // values for body serialization.
+        var inlineEnumParam = false;
+        if (parameterDescription is { Source: { } source, Type: { } paramType }
+            && IsNonBodyBindingSource(source)
+            && (Nullable.GetUnderlyingType(paramType) ?? paramType) is { IsEnum: true } enumType)
+        {
+            var rawNode = CreateSchema(type);
+            if (rawNode[OpenApiSchemaKeywords.EnumKeyword] is JsonArray rawEnum && rawEnum.Count > 0)
+            {
+                var memberNames = Enum.GetNames(enumType);
+                for (var i = 0; i < memberNames.Length && i < rawEnum.Count; i++)
+                {
+                    if (rawEnum[i]?.GetValue<string>() != memberNames[i])
+                    {
+                        inlineEnumParam = true;
+                        break;
+                    }
+                }
+            }
+        }
+
         var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+
+        if (inlineEnumParam)
+        {
+            // The schema was originally tagged for componentization (x-schema-id was set),
+            // so ApplyDefaultValue stored the default in the x-ref-default metadata annotation
+            // instead of the "default" keyword. Since we're now inlining this schema, promote
+            // the annotation to the schema's Default property.
+            if (schema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out var refDefault) == true
+                && refDefault is JsonNode defaultNode)
+            {
+                schema.Default = defaultNode;
+                schema.Metadata.Remove(OpenApiConstants.RefDefaultAnnotation);
+            }
+
+            return schema;
+        }
 
         // Cache the root schema IDs since we expect to be called
         // on the same type multiple times within an API
@@ -151,27 +317,78 @@ internal sealed class OpenApiSchemaService(
         return ResolveReferenceForSchema(document, schema, baseSchemaId);
     }
 
+    private static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
+        || bindingSource == BindingSource.Query
+        || bindingSource == BindingSource.Path
+        || bindingSource == BindingSource.Form
+        || bindingSource == BindingSource.FormFile;
+
     internal static IOpenApiSchema ResolveReferenceForSchema(OpenApiDocument document, IOpenApiSchema inputSchema, string? rootSchemaId, string? baseSchemaId = null)
     {
         var schema = UnwrapOpenApiSchema(inputSchema);
 
-        if (schema.Metadata is not null &&
-            schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var resolvedBaseSchemaId))
+        var isComponentizedSchema = schema.IsComponentizedSchema(out var schemaId);
+
+        // When we register it, this will be the resulting reference
+        OpenApiSchemaReference? resultSchemaReference = null;
+        if (inputSchema is OpenApiSchema && isComponentizedSchema)
         {
-            if (schema.AnyOf is { Count: > 0 })
+            // STJ's JsonSchemaExporter omits "type": "object" on object branches of an anyOf
+            // when EVERY branch is an object - factoring the keyword onto the parent instead.
+            //
+            // Since we lift the branch into a top-level #/components/schemas/* entry and replace it with a $ref
+            // we need to ensure the schema has an explicit "type": "object" to avoid losing that information in the translation.
+            if (schema.Type is null && schema.Properties is { Count: > 0 })
             {
-                for (var i = 0; i < schema.AnyOf.Count; i++)
+                schema.Type = JsonSchemaType.Object;
+            }
+
+            var targetReferenceId = baseSchemaId is not null
+                ? $"{baseSchemaId}{schemaId}"
+                : schemaId;
+            if (!string.IsNullOrEmpty(targetReferenceId))
+            {
+                if (!document.AddOpenApiSchemaByReference(targetReferenceId, schema, out resultSchemaReference))
                 {
-                    schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, resolvedBaseSchemaId?.ToString());
+                    // We already added this schema, so it has already been resolved.
+                    return resultSchemaReference;
                 }
             }
         }
 
+        if (schema.AnyOf is { Count: > 0 })
+        {
+            // For union types, do not prefix branch components with the union's name.
+            // Union case schemas are structurally identical to the standalone case type
+            // (no `$type` discriminator like polymorphism adds), so they should reuse the
+            // standalone component name (e.g. "Kitten") instead of producing a duplicate
+            // component (e.g. "UnionPetKitten") with the same content.
+            var branchPrefix = schema.IsUnion() ? null : schemaId;
+            for (var i = 0; i < schema.AnyOf.Count; i++)
+            {
+                schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, branchPrefix);
+            }
+        }
+
+        ResolveDiscriminatorReferences(document, schema);
+
         if (schema.Properties is not null)
         {
-            foreach (var property in schema.Properties)
+            // Materialize the collection first because IDictionary<TKey, TValue> implementations
+            // (e.g. SortedDictionary) may disallow modifying the collection while enumerating it.
+            foreach (var (key, propertyValue) in schema.Properties.ToList())
             {
-                schema.Properties[property.Key] = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
+                var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
+                if (propertyValue is OpenApiSchema targetSchema &&
+                    targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
+                    isNullableProperty is true)
+                {
+                    schema.Properties[key] = resolvedProperty.CreateOneOfNullableWrapper();
+                }
+                else
+                {
+                    schema.Properties[key] = resolvedProperty;
+                }
             }
         }
 
@@ -206,42 +423,49 @@ internal sealed class OpenApiSchemaService(
             schema.Not = ResolveReferenceForSchema(document, schema.Not, rootSchemaId);
         }
 
-        // Handle schemas where the references have been inlined by the JsonSchemaExporter. In this case,
-        // the `#` ID is generated by the exporter since it has no base document to baseline against. In this
-        // case we we want to replace the reference ID with the schema ID that was generated by the
-        // `CreateSchemaReferenceId` method in the OpenApiSchemaService.
-        if (schema.Metadata is not null &&
-            schema.Metadata.TryGetValue(OpenApiConstants.RefId, out var refId) &&
-            refId is string refIdString)
+        if (resultSchemaReference is not null)
         {
-            if (schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var schemaId) &&
-                schemaId is string schemaIdString)
-            {
-                return document.AddOpenApiSchemaByReference(schemaIdString, schema);
-            }
-            var relativeSchemaId = $"#/components/schemas/{rootSchemaId}{refIdString.Replace("#", string.Empty)}";
-            return new OpenApiSchemaReference(relativeSchemaId, document);
-        }
-
-        // If we're resolving schemas for a top-level schema being referenced in the `components.schema` property
-        // we don't want to replace the top-level inline schema with a reference to itself. We want to replace
-        // inline schemas to reference schemas for all schemas referenced in the top-level schema though (such as
-        // `allOf`, `oneOf`, `anyOf`, `items`, `properties`, etc.) which is why `isTopLevel` is only set once.
-        if (schema is OpenApiSchema && schema.Metadata is not null &&
-            !schema.Metadata.ContainsKey(OpenApiConstants.RefId) &&
-            schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var referenceId) &&
-            referenceId is string referenceIdString)
-        {
-            var targetReferenceId = baseSchemaId is not null
-                ? $"{baseSchemaId}{referenceIdString}"
-                : referenceIdString;
-            if (!string.IsNullOrEmpty(targetReferenceId))
-            {
-                return document.AddOpenApiSchemaByReference(targetReferenceId, schema);
-            }
+            return resultSchemaReference;
         }
 
         return schema;
+    }
+
+    private static void ResolveDiscriminatorReferences(OpenApiDocument document, OpenApiSchema schema)
+    {
+        if (schema.Discriminator is not { } discriminator)
+        {
+            return;
+        }
+
+        if (discriminator.DefaultMapping is { } defaultMapping)
+        {
+            discriminator.DefaultMapping = ResolveSchemaReference(document, defaultMapping);
+        }
+
+        if (discriminator.Mapping is not null)
+        {
+            foreach (var mapping in discriminator.Mapping.ToArray())
+            {
+                discriminator.Mapping[mapping.Key] = ResolveSchemaReference(document, mapping.Value);
+            }
+        }
+    }
+
+    private static OpenApiSchemaReference ResolveSchemaReference(OpenApiDocument document, OpenApiSchemaReference schemaReference)
+    {
+        if (schemaReference.Reference.Id is not { } referenceId)
+        {
+            return schemaReference;
+        }
+
+        const string componentsSchemasReferencePrefix = "#/components/schemas/";
+        if (referenceId.StartsWith(componentsSchemasReferencePrefix, StringComparison.Ordinal))
+        {
+            referenceId = referenceId[componentsSchemasReferencePrefix.Length..];
+        }
+
+        return new OpenApiSchemaReference(referenceId, document);
     }
 
     private static OpenApiSchema UnwrapOpenApiSchema(IOpenApiSchema sourceSchema)
@@ -320,9 +544,10 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        if (schema.Items is not null)
+        // If the schema is an array but uses AnyOf or OneOf then ElementType is null
+        if (schema.Items is not null && jsonTypeInfo.ElementType is not null)
         {
-            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType!);
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
             await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, null, context, transformer, cancellationToken);
         }
 
@@ -345,6 +570,221 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    private JsonNode CreateSchema(OpenApiSchemaKey key)
-        => JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+    private JsonNode CreateSchema(Type type)
+    {
+        // We always create a oneOf nullable wrapper ourselves manually.
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, underlyingType, _configuration);
+        return ResolveReferences(schema, schema);
+    }
+
+    private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
+    {
+        return ResolveReferencesRecursive(node, rootSchema);
+    }
+
+    private static JsonNode ResolveReferencesRecursive(JsonNode node, JsonNode rootSchema)
+    {
+        if (node is JsonObject jsonObject)
+        {
+            if (jsonObject.TryGetPropertyValue(OpenApiConstants.RefKeyword, out var refNode) &&
+                refNode is JsonValue refValue &&
+                refValue.TryGetValue<string>(out var refString) &&
+                refString.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
+            {
+                try
+                {
+                    // Resolve the reference path to the actual schema content
+                    // to avoid relative references
+                    var resolvedNode = ResolveReference(refString, rootSchema);
+                    if (resolvedNode != null)
+                    {
+                        return resolvedNode.DeepClone();
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // If resolution fails due to invalid path, return the original reference
+                    // This maintains backward compatibility while preventing crashes
+                }
+
+                // If resolution fails, return the original reference
+                return node;
+            }
+
+            // Process all properties recursively
+            var newObject = new JsonObject();
+            foreach (var property in jsonObject)
+            {
+                if (property.Value != null)
+                {
+                    var processedValue = ResolveReferencesRecursive(property.Value, rootSchema);
+                    newObject[property.Key] = processedValue?.DeepClone();
+                }
+                else
+                {
+                    newObject[property.Key] = null;
+                }
+            }
+            return newObject;
+        }
+        else if (node is JsonArray jsonArray)
+        {
+            var newArray = new JsonArray();
+            for (var i = 0; i < jsonArray.Count; i++)
+            {
+                if (jsonArray[i] != null)
+                {
+                    var processedValue = ResolveReferencesRecursive(jsonArray[i]!, rootSchema);
+                    newArray.Add(processedValue?.DeepClone());
+                }
+                else
+                {
+                    newArray.Add(null);
+                }
+            }
+            return newArray;
+        }
+
+        // Return non-$ref nodes as-is
+        return node;
+    }
+
+    private static JsonNode? ResolveReference(string refPath, JsonNode rootSchema)
+    {
+        // The refPath is expected to be a JSON Pointer (RFC 6901)
+        // https://www.rfc-editor.org/info/rfc6901/
+        // It follows the URI Fragment Identifier Representation.
+        if (string.IsNullOrWhiteSpace(refPath))
+        {
+            throw new InvalidOperationException("Reference path cannot be null or empty.");
+        }
+
+        if (!refPath.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"Only fragment references (starting with '{OpenApiConstants.RefPrefix}') are supported. Found: {refPath}");
+        }
+
+        // We already checked that the path starts with '#'.
+        var currentPath = refPath.AsSpan().Slice(OpenApiConstants.RefPrefix.Length);
+        var currentNode = rootSchema;
+
+        while (currentPath.Length > 0)
+        {
+            // https://www.rfc-editor.org/info/rfc6901/#section-3
+            // json-pointer    = *( "/" reference-token )
+            if (currentPath[0] != '/')
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{refPath}'. Expected '{currentPath}' to start with '/'");
+            }
+
+            var currentPathWithoutSlash = currentPath.Slice(1);
+            var indexOfNextPath = currentPathWithoutSlash.IndexOf('/');
+
+            var currentReferenceToken =
+                indexOfNextPath == -1
+                ? currentPathWithoutSlash
+                : currentPathWithoutSlash.Slice(0, indexOfNextPath);
+
+            var unescapedReferenceToken = ParseReferenceToken(currentReferenceToken);
+            currentNode = EvaluateReferenceToken(unescapedReferenceToken, currentNode, refPath);
+
+            currentPath = indexOfNextPath == -1
+                ? ReadOnlySpan<char>.Empty
+                : currentPathWithoutSlash.Slice(indexOfNextPath);
+        }
+
+        return currentNode;
+    }
+
+    private static string ParseReferenceToken(ReadOnlySpan<char> referenceToken)
+    {
+        // https://www.rfc-editor.org/info/rfc6901/#section-6
+        var unescapedReferenceToken = Uri.UnescapeDataString(referenceToken.ToString());
+
+        // https://www.rfc-editor.org/info/rfc6901/#section-4
+        // Evaluation of each reference token begins by decoding any escaped
+        // character sequence.  This is performed by first transforming any
+        // occurrence of the sequence '~1' to '/', and then transforming any
+        // occurrence of the sequence '~0' to '~'.  By performing the
+        // substitutions in this order, an implementation avoids the error of
+        // turning '~01' first into '~1' and then into '/', which would be
+        // incorrect (the string '~01' correctly becomes '~1' after
+        // transformation).
+        //
+        // NOTE: we unescape the possibly percent-encoded value even if
+        // STJ doesn't correctly percent-encode the ref today.
+        // See https://github.com/dotnet/runtime/issues/130162
+        if (unescapedReferenceToken.Contains('~'))
+        {
+            // Not common case, performance isn't super important.
+            return unescapedReferenceToken.Replace("~1", "/").Replace("~0", "~");
+        }
+
+        return unescapedReferenceToken;
+    }
+
+    private static JsonNode EvaluateReferenceToken(string unescapedReferenceToken, JsonNode currentNode, string fullJsonPointer)
+    {
+        if (currentNode is JsonObject currentObject)
+        {
+            // https://www.rfc-editor.org/info/rfc6901/#section-4
+            // If the currently referenced value is a JSON object, the new
+            // referenced value is the object member with the name identified by
+            // the reference token.  The member name is equal to the token if it
+            // has the same number of Unicode characters as the token and their
+            // code points are byte-by-byte equal.  No Unicode character
+            // normalization is performed.  If a referenced member name is not
+            // unique in an object, the member that is referenced is undefined
+            // and evaluation fails (see below).
+            if (!currentObject.TryGetPropertyValue(unescapedReferenceToken, out var referencedValue) ||
+                referencedValue is null)
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': property '{unescapedReferenceToken}' not found.");
+            }
+
+            return referencedValue;
+        }
+
+        if (currentNode is JsonArray currentArray)
+        {
+            // https://www.rfc-editor.org/info/rfc6901/#section-4
+            // If the currently referenced value is a JSON array, the reference
+            // token MUST contain either:
+            //   - characters comprised of digits (see ABNF below; note that
+            //     leading zeros are not allowed) that represent an unsigned
+            //     base-10 integer value, making the new referenced value the
+            //     array element with the zero-based index identified by the
+            //     token, or
+            //   - exactly the single character "-", making the new referenced
+            //     value the (nonexistent) member after the last array element.
+            //
+            // The ABNF syntax for array indices is:
+            // array-index = %x30 / ( %x31-39 *(%x30-39) )
+            //               ; "0", or digits without a leading "0"
+            //
+            // Note that the use of the "-" character to index an array will always
+            // result in such an error condition because by definition it refers to
+            // a nonexistent array element.  Thus, applications of JSON Pointer need
+            // to specify how that character is to be handled, if it is to be
+            // useful.
+            //
+            // In our case, "-" doesn't seem to be useful so we will throw.
+            if (!int.TryParse(unescapedReferenceToken, NumberStyles.None, CultureInfo.InvariantCulture, out var arrayIndex))
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': cannot navigate an array when the current token '{unescapedReferenceToken}' isn't a valid number");
+            }
+
+            if (unescapedReferenceToken.StartsWith('0', StringComparison.Ordinal) && unescapedReferenceToken.Length > 1)
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': array index '{unescapedReferenceToken}' has a leading zero, which is not allowed.");
+            }
+
+            return currentArray[arrayIndex]
+                ?? throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': array index '{arrayIndex}' was not found.");
+        }
+
+        throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': Unexpected JsonNode '{currentNode.GetType()}'");
+    }
 }

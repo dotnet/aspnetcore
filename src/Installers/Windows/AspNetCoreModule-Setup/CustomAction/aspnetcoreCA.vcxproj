@@ -63,12 +63,13 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/guard:cf /Qspectre</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>httpapi.lib;shlwapi.lib;ahadmin.lib;xmllite.lib;msi.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>aspnetcoreCA.def</ModuleDefinitionFile>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
-      <AdditionalOptions>/NODEFAULTLIB:MSVCRT %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/NODEFAULTLIB:MSVCRT /guard:cf %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -84,12 +85,21 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="$(IIS-Setup)iisca\lib\iisca.vcxproj">
-      <Project>{7324770c-0871-4d73-be3d-5e2f3e9e1b1e}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(IIS-Common)lib\IISSetup.CommonLib.vcxproj">
       <Project>{b54a8f61-60de-4ad9-87ca-d102f230678e}</Project>
     </ProjectReference>
+    <ProjectReference Include="$(IIS-Setup)iisca\lib\iisca.vcxproj">
+      <Project>{7324770c-0871-4d73-be3d-5e2f3e9e1b1e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <Target Name="_CopySymbolsToPublishDir" AfterTargets="Build" >
+    <ItemGroup>
+      <_BuiltPdbPath Include="$([System.IO.Path]::ChangeExtension($(TargetPath), '.pdb'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)$(TargetName)\$(TargetName).pdb" />
+    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)IISCustomActionDll\IISCustomActionDll.pdb" />
+  </Target>
 </Project>

@@ -47,9 +47,6 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
         // See OpenApiServiceCollectionExtensions.cs for more info.
         var lowercasedDocumentName = documentName.ToLowerInvariant();
 
-        // Microsoft.OpenAPI does not provide async APIs for writing the JSON
-        // document to a file. See https://github.com/microsoft/OpenAPI.NET/issues/421 for
-        // more info.
         var targetDocumentService = serviceProvider.GetRequiredKeyedService<OpenApiDocumentService>(lowercasedDocumentName);
         using var scopedService = serviceProvider.CreateScope();
         var document = await targetDocumentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
@@ -67,6 +64,13 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
         // This type tracks registered document names.
         // See https://github.com/dotnet/runtime/issues/100105 for more info.
         var documentServices = serviceProvider.GetServices<NamedService<OpenApiDocumentService>>();
-        return documentServices.Select(docService => docService.Name);
+        var documentNames = documentServices.Select(docService => docService.Name);
+
+        foreach (var additionalDocumentNamesResolver in serviceProvider.GetServices<IAdditionalOpenApiDocumentNameResolver>())
+        {
+            documentNames = documentNames.Concat(additionalDocumentNamesResolver.ResolveDocumentNames());
+        }
+
+        return documentNames.Distinct();
     }
 }

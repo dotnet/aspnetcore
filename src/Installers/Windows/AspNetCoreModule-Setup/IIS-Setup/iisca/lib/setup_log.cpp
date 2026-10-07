@@ -336,7 +336,7 @@ IISLogInitialize(
 {
     HRESULT hr  = S_OK; 
   
-    //debug assert that it is always null. becaues previous custom action should have cleaned it up
+    //debug assert that it is always null. because previous custom action should have cleaned it up
     DBG_ASSERT( g_pSetupLog == NULL );
     
     if ( g_pSetupLog == NULL )

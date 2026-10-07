@@ -590,8 +590,8 @@ static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageN
 static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthentication.get -> string!
 static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthenticationAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext! viewContext) -> string?
 static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthenticationNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext! viewContext) -> string?
-static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionUIExtensions.AddDefaultIdentity<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
 static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionUIExtensions.AddDefaultIdentity<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configureOptions) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionUIExtensions.AddDefaultIdentity<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
 static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.AuthenticationAppKeyReset -> Microsoft.Extensions.Logging.EventId
 static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.InvalidAuthenticatorCode -> Microsoft.Extensions.Logging.EventId
 static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.InvalidRecoveryCode -> Microsoft.Extensions.Logging.EventId

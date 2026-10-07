@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'com.microsoft.signalr.messagepack'
+group = 'com.microsoft.signalr.messagepack'
 
 java
 {
@@ -13,8 +13,8 @@ java
 
 dependencies {
     implementation project(':core')
-    implementation 'org.msgpack:msgpack-core:0.8.20'
-    implementation 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
+    implementation 'org.msgpack:msgpack-core:0.9.11'
+    implementation 'org.msgpack:jackson-dataformat-msgpack:0.9.11'
 }
 
 base {
@@ -26,7 +26,7 @@ publishing {
         release(MavenPublication) {
             from components.java
 
-            artifactId 'signalr-messagepack'
+            artifactId = 'signalr-messagepack'
 
             pom {
                 packaging = 'jar'

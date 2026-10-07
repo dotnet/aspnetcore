@@ -49,6 +49,10 @@ public static class HttpMethods
     /// </summary>
     public static readonly string Put = "PUT";
     /// <summary>
+    /// HTTP "QUERY" method.
+    /// </summary>
+    public static readonly string Query = "QUERY";
+    /// <summary>
     /// HTTP "TRACE" method.
     /// </summary>
     public static readonly string Trace = "TRACE";
@@ -150,6 +154,18 @@ public static class HttpMethods
     }
 
     /// <summary>
+    /// Returns a value that indicates if the HTTP request method is QUERY.
+    /// </summary>
+    /// <param name="method">The HTTP request method.</param>
+    /// <returns>
+    /// <see langword="true" /> if the method is QUERY; otherwise, <see langword="false" />.
+    /// </returns>
+    public static bool IsQuery(string method)
+    {
+        return Equals(Query, method);
+    }
+
+    /// <summary>
     /// Returns a value that indicates if the HTTP request method is TRACE.
     /// </summary>
     /// <param name="method">The HTTP request method.</param>
@@ -175,6 +191,7 @@ public static class HttpMethods
         string _ when IsOptions(method) => Options,
         string _ when IsHead(method) => Head,
         string _ when IsPatch(method) => Patch,
+        string _ when IsQuery(method) => Query,
         string _ when IsTrace(method) => Trace,
         string _ when IsConnect(method) => Connect,
         string _ => method

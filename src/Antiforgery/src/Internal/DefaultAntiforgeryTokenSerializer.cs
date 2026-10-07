@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Buffers.Text;
+using System.Text;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.ObjectPool;
+using Microsoft.AspNetCore.Shared;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -12,47 +15,58 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
     private const string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
     private const byte TokenVersion = 0x01;
 
-    private readonly IDataProtector _cryptoSystem;
-    private readonly ObjectPool<AntiforgerySerializationContext> _pool;
+    private readonly IDataProtector _defaultCryptoSystem;
+    private readonly ISpanDataProtector? _perfCryptoSystem;
 
-    public DefaultAntiforgeryTokenSerializer(
-        IDataProtectionProvider provider,
-        ObjectPool<AntiforgerySerializationContext> pool)
+    public DefaultAntiforgeryTokenSerializer(IDataProtectionProvider provider)
     {
         ArgumentNullException.ThrowIfNull(provider);
-        ArgumentNullException.ThrowIfNull(pool);
 
-        _cryptoSystem = provider.CreateProtector(Purpose);
-        _pool = pool;
+        _defaultCryptoSystem = provider.CreateProtector(Purpose);
+        _perfCryptoSystem = _defaultCryptoSystem as ISpanDataProtector;
     }
 
     public AntiforgeryToken Deserialize(string serializedToken)
     {
-        var serializationContext = _pool.Get();
-
+        byte[]? tokenBytesRent = null;
         Exception? innerException = null;
         try
         {
-            var count = serializedToken.Length;
-            var charsRequired = WebEncoders.GetArraySizeRequiredToDecode(count);
-            var chars = serializationContext.GetChars(charsRequired);
-            var tokenBytes = WebEncoders.Base64UrlDecode(
-                serializedToken,
-                offset: 0,
-                buffer: chars,
-                bufferOffset: 0,
-                count: count);
+            var maxTokenDecodedSize = Base64Url.GetMaxDecodedLength(serializedToken.Length);
 
-            var unprotectedBytes = _cryptoSystem.Unprotect(tokenBytes);
-            var stream = serializationContext.Stream;
-            stream.Write(unprotectedBytes, offset: 0, count: unprotectedBytes.Length);
-            stream.Position = 0L;
+            var rent = maxTokenDecodedSize <= 256
+                ? stackalloc byte[256]
+                : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(maxTokenDecodedSize));
+            var tokenBytes = rent[..maxTokenDecodedSize];
 
-            var reader = serializationContext.Reader;
-            var token = Deserialize(reader);
-            if (token != null)
+            var bytesWritten = WebEncoders.Base64UrlDecode(serializedToken, tokenBytes);
+            var tokenBytesDecoded = tokenBytes[..bytesWritten];
+
+            if (_perfCryptoSystem is not null)
             {
-                return token;
+                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
+                try
+                {
+                    _perfCryptoSystem.Unprotect(tokenBytesDecoded, ref protectBuffer);
+                    var token = Deserialize(protectBuffer.WrittenSpan);
+                    if (token is not null)
+                    {
+                        return token;
+                    }
+                }
+                finally
+                {
+                    protectBuffer.Dispose();
+                }
+            }
+            else
+            {
+                var unprotectedBytes = _defaultCryptoSystem.Unprotect(tokenBytesDecoded.ToArray());
+                var token = Deserialize(unprotectedBytes);
+                if (token is not null)
+                {
+                    return token;
+                }
             }
         }
         catch (Exception ex)
@@ -62,7 +76,10 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         }
         finally
         {
-            _pool.Return(serializationContext);
+            if (tokenBytesRent is not null)
+            {
+                ArrayPool<byte>.Shared.Return(tokenBytesRent);
+            }
         }
 
         // if we reached this point, something went wrong deserializing
@@ -81,39 +98,84 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
      *   |    `- Username: UTF-8 string with 7-bit integer length prefix
      *   `- AdditionalData: UTF-8 string with 7-bit integer length prefix
      */
-    private static AntiforgeryToken? Deserialize(BinaryReader reader)
+    private static AntiforgeryToken? Deserialize(ReadOnlySpan<byte> tokenBytes)
     {
-        // we can only consume tokens of the same serialized version that we generate
-        var embeddedVersion = reader.ReadByte();
+        // Minimum lengths:
+        // - Cookie token: 1 (version) + 16 (securityToken) + 1 (isCookieToken) = 18 bytes
+        // - Request token (username): 18 + 1 (isClaimsBased) + 1 (username prefix) + 1 (additionalData prefix) = 21 bytes
+        // - Request token (claims): 18 + 1 (isClaimsBased) + 32 (claimUid) + 1 (additionalData prefix) = 52 bytes
+        const int minCookieTokenLength = 1 + (AntiforgeryToken.SecurityTokenBitLength / 8) + 1; // 18 bytes
+        const int minRequestTokenPayloadLength = 1 + 1 + 1; // 3 bytes: isClaimsBased + username prefix + additionalData prefix
+
+        if (tokenBytes.Length < minCookieTokenLength)
+        {
+            return null;
+        }
+
+        var embeddedVersion = tokenBytes[0];
+        tokenBytes = tokenBytes[1..];
+
         if (embeddedVersion != TokenVersion)
         {
             return null;
         }
 
         var deserializedToken = new AntiforgeryToken();
-        var securityTokenBytes = reader.ReadBytes(AntiforgeryToken.SecurityTokenBitLength / 8);
-        deserializedToken.SecurityToken =
-            new BinaryBlob(AntiforgeryToken.SecurityTokenBitLength, securityTokenBytes);
-        deserializedToken.IsCookieToken = reader.ReadBoolean();
+
+        // Read SecurityToken (16 bytes)
+        const int securityTokenByteLength = AntiforgeryToken.SecurityTokenBitLength / 8;
+
+        deserializedToken.SecurityToken = new BinaryBlob(
+            AntiforgeryToken.SecurityTokenBitLength,
+            tokenBytes[..securityTokenByteLength].ToArray());
+        tokenBytes = tokenBytes[securityTokenByteLength..];
+
+        // Read IsCookieToken (1 byte)
+        deserializedToken.IsCookieToken = tokenBytes[0] != 0;
+        tokenBytes = tokenBytes[1..];
 
         if (!deserializedToken.IsCookieToken)
         {
-            var isClaimsBased = reader.ReadBoolean();
+            // Validate minimum length for request token payload (after header has been consumed)
+            if (tokenBytes.Length < minRequestTokenPayloadLength)
+            {
+                return null;
+            }
+
+            // Read IsClaimsBased (1 byte)
+            var isClaimsBased = tokenBytes[0] != 0;
+            tokenBytes = tokenBytes[1..];
+
             if (isClaimsBased)
             {
-                var claimUidBytes = reader.ReadBytes(AntiforgeryToken.ClaimUidBitLength / 8);
-                deserializedToken.ClaimUid = new BinaryBlob(AntiforgeryToken.ClaimUidBitLength, claimUidBytes);
+                // Read ClaimUid (32 bytes)
+                const int claimUidByteLength = AntiforgeryToken.ClaimUidBitLength / 8;
+                if (tokenBytes.Length < claimUidByteLength + 1) // +1 for additionalData prefix
+                {
+                    return null;
+                }
+
+                deserializedToken.ClaimUid = new BinaryBlob(
+                    AntiforgeryToken.ClaimUidBitLength,
+                    tokenBytes[..claimUidByteLength].ToArray());
+                tokenBytes = tokenBytes[claimUidByteLength..];
             }
             else
             {
-                deserializedToken.Username = reader.ReadString();
+                // Read Username (7-bit encoded length prefix + UTF-8 string)
+                var usernameLength = tokenBytes.Read7BitEncodedString(out var username);
+                tokenBytes = tokenBytes[usernameLength..];
+
+                deserializedToken.Username = username;
             }
 
-            deserializedToken.AdditionalData = reader.ReadString();
+            var additionalDataLength = tokenBytes.Read7BitEncodedString(out var additionalData);
+            tokenBytes = tokenBytes[additionalDataLength..];
+            deserializedToken.AdditionalData = additionalData;
         }
 
-        // if there's still unconsumed data in the stream, fail
-        if (reader.BaseStream.ReadByte() != -1)
+        // if there's still unconsumed data in the span, fail
+        if (tokenBytes.Length != 0)
         {
             return null;
         }
@@ -126,50 +188,87 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        var serializationContext = _pool.Get();
+        var securityTokenBytes = token.SecurityToken.GetData();
+        var claimUidBytes = token.ClaimUid?.GetData();
+
+        var totalSize =
+            1 // TokenVersion
+            + securityTokenBytes.Length + // SecurityToken
+            + 1; // IsCookieToken
+        if (!token.IsCookieToken)
+        {
+            totalSize += 1; // isClaimsBased
+
+            if (token.ClaimUid is not null)
+            {
+                totalSize += claimUidBytes!.Length;
+            }
+            else
+            {
+                var usernameByteCount = Encoding.UTF8.GetByteCount(token.Username!);
+                totalSize += usernameByteCount.Measure7BitEncodedUIntLength() + usernameByteCount;
+            }
+
+            var additionalDataByteCount = Encoding.UTF8.GetByteCount(token.AdditionalData);
+            totalSize += additionalDataByteCount.Measure7BitEncodedUIntLength() + additionalDataByteCount;
+        }
+
+        byte[]? tokenBytesRent = null;
+
+        var rent = totalSize < 256
+            ? stackalloc byte[256]
+            : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(totalSize));
+        var tokenBytes = rent[..totalSize];
 
         try
         {
-            var writer = serializationContext.Writer;
-            writer.Write(TokenVersion);
-            writer.Write(token.SecurityToken!.GetData());
-            writer.Write(token.IsCookieToken);
+            var offset = 0;
+            tokenBytes[offset++] = TokenVersion;
+            securityTokenBytes.CopyTo(tokenBytes.Slice(offset, securityTokenBytes.Length));
+            offset += securityTokenBytes.Length;
+            tokenBytes[offset++] = token.IsCookieToken ? (byte)1 : (byte)0;
 
             if (!token.IsCookieToken)
             {
                 if (token.ClaimUid != null)
                 {
-                    writer.Write(true /* isClaimsBased */);
-                    writer.Write(token.ClaimUid.GetData());
+                    tokenBytes[offset++] = 1; // isClaimsBased
+                    claimUidBytes!.CopyTo(tokenBytes.Slice(offset, claimUidBytes!.Length));
+                    offset += claimUidBytes.Length;
                 }
                 else
                 {
-                    writer.Write(false /* isClaimsBased */);
-                    writer.Write(token.Username!);
+                    tokenBytes[offset++] = 0; // isClaimsBased
+                    offset += tokenBytes[offset..].Write7BitEncodedString(token.Username!);
                 }
-
-                writer.Write(token.AdditionalData);
+                offset += tokenBytes[offset..].Write7BitEncodedString(token.AdditionalData);
             }
 
-            writer.Flush();
-            var stream = serializationContext.Stream;
-            var bytes = _cryptoSystem.Protect(stream.ToArray());
-
-            var count = bytes.Length;
-            var charsRequired = WebEncoders.GetArraySizeRequiredToEncode(count);
-            var chars = serializationContext.GetChars(charsRequired);
-            var outputLength = WebEncoders.Base64UrlEncode(
-                bytes,
-                offset: 0,
-                output: chars,
-                outputOffset: 0,
-                count: count);
-
-            return new string(chars, startIndex: 0, length: outputLength);
+            if (_perfCryptoSystem is not null)
+            {
+                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
+                try
+                {
+                    _perfCryptoSystem.Protect(tokenBytes, ref protectBuffer);
+                    return Base64Url.EncodeToString(protectBuffer.WrittenSpan);
+                }
+                finally
+                {
+                    protectBuffer.Dispose();
+                }
+            }
+            else
+            {
+                var protectedBytes = _defaultCryptoSystem.Protect(tokenBytes.ToArray());
+                return Base64Url.EncodeToString(protectedBytes);
+            }
         }
         finally
         {
-            _pool.Return(serializationContext);
+            if (tokenBytesRent is not null)
+            {
+                ArrayPool<byte>.Shared.Return(tokenBytesRent);
+            }
         }
     }
 }

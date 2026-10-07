@@ -63,6 +63,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     internal HttpContext? HttpContext => _httpContext;
+    internal NotFoundEventArgs? NotFoundEventArgs { get; private set; }
+
+    internal ArrayRange<RenderTreeFrame> GetRenderTreeFrames(int componentId)
+        => GetCurrentRenderTreeFrames(componentId);
 
     internal void SetHttpContext(HttpContext httpContext)
     {
@@ -83,12 +87,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         IFormCollection? form = null)
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request), OnNavigateTo);
+        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
+            GetContextBaseUri(httpContext.Request),
+            GetFullUri(httpContext.Request),
+            uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
-        navigationManager?.OnNotFound += (sender, args) =>
-        {
-            _ = GetErrorHandledTask(SetNotFoundResponseAsync(navigationManager.BaseUri, args));
-        };
+        navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)
@@ -121,11 +125,21 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             antiforgery.SetRequestContext(httpContext);
         }
 
+        if (httpContext.RequestServices.GetService<TempDataCascadingValueSupplier>() is { } tempDataSupplier)
+        {
+            tempDataSupplier.SetRequestContext(httpContext);
+        }
+
+        if (httpContext.RequestServices.GetService<SessionCascadingValueSupplier>() is { } sessionSupplier)
+        {
+            sessionSupplier.SetRequestContext(httpContext);
+        }
+
         // It's important that this is initialized since a component might try to restore state during prerendering
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         componentApplicationLifetime.SetPlatformRenderMode(RenderMode.InteractiveAuto);
-        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
+        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore(), RestoreContext.InitialValue);
 
         if (componentType != null)
         {
@@ -167,11 +181,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override void AddPendingTask(ComponentState? componentState, Task task)
     {
-        if (_isReExecuted)
-        {
-            return;
-        }
-
         var streamRendering = componentState is null
             ? false
             : ((EndpointComponentState)componentState).StreamRendering;

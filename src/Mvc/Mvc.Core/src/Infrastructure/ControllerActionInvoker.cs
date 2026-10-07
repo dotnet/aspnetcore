@@ -30,7 +30,9 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
     internal ControllerActionInvoker(
         ILogger logger,
         DiagnosticListener diagnosticListener,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         IActionContextAccessor actionContextAccessor,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
         IActionResultTypeMapper mapper,
         ControllerContext controllerContext,
         ControllerActionInvokerCacheEntry cacheEntry,

@@ -24,7 +24,8 @@ internal class StaticAssetEndpointFactory(IServiceProvider serviceProvider)
             // Static resources always take precedence over default routes to mimic the behavior of UseStaticFiles.
             // We give a -100 order to ensure that they are selected under normal circumstances, but leave a small lee-way
             // for the user to override this if they want to.
-            -100);
+            // If the endpoint has an explicit order (e.g., SPA fallback endpoints), use that instead.
+            !string.IsNullOrEmpty(resource.Order) && int.TryParse(resource.Order, CultureInfo.InvariantCulture, out var order) ? order : -100);
 
         foreach (var selector in resource.Selectors)
         {
