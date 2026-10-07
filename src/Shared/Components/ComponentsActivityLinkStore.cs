@@ -41,6 +41,64 @@ internal class ComponentsActivityLinkStore
         _store[category] = new CategoryLink(activityLink, tag);
     }
 
+    public bool TryGetActivityContext(string category, out ActivityContext activityLink, out KeyValuePair<string, object?>? tag)
+    {
+        if (_store.TryGetValue(category, out var link))
+        {
+            activityLink = link.Item1;
+            tag = link.Item2;
+            return true;
+        }
+
+        activityLink = default;
+        tag = default;
+        return false;
+    }
+
+    public void RemoveActivityContext(string category)
+    {
+        _store.Remove(category);
+    }
+
+    public bool TryCreatePersistentRouteState(out ComponentsActivityPersistentState? state)
+    {
+        if (TryGetActivityContext(Route, out var context, out var tag) &&
+            context != default &&
+            tag is { } routeTag &&
+            routeTag.Key == "aspnetcore.components.route" &&
+            routeTag.Value is string route)
+        {
+            state = new ComponentsActivityPersistentState(
+                $"00-{context.TraceId}-{context.SpanId}-{(byte)context.TraceFlags:x2}",
+                context.TraceState,
+                context.IsRemote,
+                route);
+            return true;
+        }
+
+        state = null;
+        return false;
+    }
+
+    public void RestorePersistentRouteState(ComponentsActivityPersistentState state)
+    {
+        if (ActivityContext.TryParse(
+            state.TraceParent,
+            state.TraceState,
+            state.IsRemote,
+            out var context))
+        {
+            SetActivityContext(
+                Route,
+                context,
+                new KeyValuePair<string, object?>("aspnetcore.components.route", state.Route));
+        }
+        else
+        {
+            RemoveActivityContext(Route);
+        }
+    }
+
     public void AddActivityContexts(string exceptCategory, Activity targetActivity)
     {
         foreach (var kvp in _store)
@@ -64,3 +122,11 @@ internal class ComponentsActivityLinkStore
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_ActivityLinksStore")]
     static extern object GetActivityLinksStore(Renderer instance);
 }
+
+internal sealed record ComponentsActivityPersistentState(
+    string TraceParent,
+    string? TraceState,
+    bool IsRemote,
+    string Route);
+
+internal sealed record ComponentsActivityPersistentStateUpdate(ComponentsActivityPersistentState? Route);
