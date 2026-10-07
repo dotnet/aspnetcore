@@ -8,9 +8,8 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>8</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>32</AspNetCorePatchVersion>
-    <PreReleaseVersionIteration>
-    </PreReleaseVersionIteration>
+    <AspNetCorePatchVersion>33</AspNetCorePatchVersion>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">7.7.3</IdentityModelVersion>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">7.*</IdentityModelVersion>
     <!--
@@ -161,13 +160,13 @@
     <NuGetVersioningVersion>6.2.4</NuGetVersioningVersion>
     <NuGetFrameworksVersion>6.2.4</NuGetFrameworksVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersVersion>8.0.0-beta.26431.7</MicrosoftDotNetBuildTasksInstallersVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.26431.7</MicrosoftDotNetBuildTasksTemplatingVersion>
-    <MicrosoftDotNetRemoteExecutorVersion>8.0.0-beta.26431.7</MicrosoftDotNetRemoteExecutorVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>8.0.0-beta.26468.3</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.26468.3</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetRemoteExecutorVersion>8.0.0-beta.26468.3</MicrosoftDotNetRemoteExecutorVersion>
     <!-- Packages from dotnet/source-build-externals -->
     <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>8.0.0-alpha.1.26501.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
     <!-- Packages from dotnet/source-build-assets -->
-    <MicrosoftSourceBuildIntermediatesourcebuildassetsVersion>8.0.0-alpha.1.26451.1</MicrosoftSourceBuildIntermediatesourcebuildassetsVersion>
+    <MicrosoftSourceBuildIntermediatesourcebuildassetsVersion>8.0.0-alpha.1.26501.1</MicrosoftSourceBuildIntermediatesourcebuildassetsVersion>
     <!-- Packages from dotnet/symreader -->
     <MicrosoftSourceBuildIntermediatesymreaderVersion>2.0.0-beta-23228-03</MicrosoftSourceBuildIntermediatesymreaderVersion>
     <!-- Packages from dotnet/runtime -->
