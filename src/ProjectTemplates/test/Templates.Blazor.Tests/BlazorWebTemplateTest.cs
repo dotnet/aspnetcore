@@ -434,6 +434,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
         var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"], onlyCreate: true);
         AddRemovePasswordTestEndpoint(project);
+        AddExternalLoginTestProvider(project);
         await project.RunDotNetBuildAsync();
 
         using var aspNetProcess = project.StartBuiltProjectAsync();
@@ -495,6 +496,42 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 ["Input.Email"] = userName,
                 ["Input.Password"] = password,
             }));
+
+        await page.GotoAsync($"{listeningUri}Account/Manage/ExternalLogins", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.WaitForSelectorAsync("text=Confirm it's you");
+        Assert.Equal(0, await page.Locator("button:has-text(\"Contoso\")").CountAsync());
+
+        var linkWithoutReauthentication = await page.EvaluateAsync<JsonElement>(
+            """
+            async () => {
+                const form = document.querySelector('form[action="Account/Manage/LinkExternalLogin"]');
+                const body = new FormData(form);
+                body.set('provider', 'Contoso');
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body,
+                });
+                return {
+                    status: response.status,
+                    text: await response.text(),
+                };
+            }
+            """);
+        Assert.Equal(400, linkWithoutReauthentication.GetProperty("status").GetInt32());
+        Assert.Contains(
+            "You must confirm your identity before adding an external login.",
+            linkWithoutReauthentication.GetProperty("text").GetString());
+
+        await page.FillAsync("[name=\"Input.Password\"]", password);
+        await page.ClickAsync("text=Confirm password");
+        await page.WaitForSelectorAsync("button:has-text(\"Contoso\")");
+        await Task.WhenAll(
+            page.WaitForSelectorAsync("text=The external login was added."),
+            page.ClickAsync("button:has-text(\"Contoso\")"));
+        Assert.Equal(
+            200,
+            await page.EvaluateAsync<int>(
+                "async () => (await fetch('/test/clear-reauthentication', { method: 'POST' })).status"));
 
         await page.GotoAsync($"{listeningUri}Account/Manage/Passkeys", new() { WaitUntil = WaitUntilState.NetworkIdle });
         await page.WaitForSelectorAsync("text=Confirm it's you");
@@ -573,7 +610,70 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                     : Results.BadRequest();
             }).RequireAuthorization();
 
+            app.MapPost("/test/clear-reauthentication", (HttpContext context) =>
+            {
+                context.Response.Cookies.Delete("Identity.Reauthentication", new CookieOptions { Path = "/" });
+                return Results.Ok();
+            }).RequireAuthorization();
+
             app.Run();
+            """,
+            StringComparison.Ordinal);
+
+        Assert.NotEqual(program, updatedProgram);
+        File.WriteAllText(programPath, updatedProgram);
+    }
+
+    private static void AddExternalLoginTestProvider(Project project)
+    {
+        File.WriteAllText(
+            Path.Combine(project.TemplateOutputDir, "TestExternalAuthenticationHandler.cs"),
+            """
+            using System.Security.Claims;
+            using System.Text.Encodings.Web;
+            using Microsoft.AspNetCore.Authentication;
+            using Microsoft.AspNetCore.Identity;
+            using Microsoft.Extensions.Options;
+
+            internal sealed class TestExternalAuthenticationHandler(
+                IOptionsMonitor<AuthenticationSchemeOptions> options,
+                ILoggerFactory logger,
+                UrlEncoder encoder)
+                : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+            {
+                protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+                    => Task.FromResult(AuthenticateResult.NoResult());
+
+                protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+                {
+                    var identity = new ClaimsIdentity(
+                    [
+                        new Claim(ClaimTypes.NameIdentifier, "contoso-user"),
+                        new Claim(ClaimTypes.Name, "Contoso User"),
+                    ], Scheme.Name);
+
+                    await Context.SignInAsync(
+                        IdentityConstants.ExternalScheme,
+                        new ClaimsPrincipal(identity),
+                        properties);
+                    Response.Redirect(properties.RedirectUri!);
+                }
+            }
+            """);
+
+        var programPath = Path.Combine(project.TemplateOutputDir, "Program.cs");
+        var program = File.ReadAllText(programPath);
+        const string marker = "var app = builder.Build();";
+        var updatedProgram = program.Replace(
+            marker,
+            """
+            builder.Services.AddAuthentication()
+                .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestExternalAuthenticationHandler>(
+                    "Contoso",
+                    "Contoso",
+                    _ => { });
+
+            var app = builder.Build();
             """,
             StringComparison.Ordinal);
 

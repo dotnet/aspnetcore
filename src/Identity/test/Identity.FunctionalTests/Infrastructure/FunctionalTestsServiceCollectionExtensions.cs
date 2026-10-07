@@ -28,6 +28,19 @@ public static class FunctionalTestsServiceCollectionExtensions
             .AddContosoAuthentication(o => o.SignInScheme = IdentityConstants.ExternalScheme)
             .Services;
 
+    public static IServiceCollection SetupTestThirdPartyLogins(this IServiceCollection services) =>
+        services.AddAuthentication()
+            .AddContosoAuthentication(o => o.SignInScheme = IdentityConstants.ExternalScheme)
+            .AddScheme<ContosoAuthenticationOptions, ContosoAuthenticationHandler>(
+                "Fabrikam",
+                "Fabrikam",
+                o =>
+                {
+                    o.SignInScheme = IdentityConstants.ExternalScheme;
+                    o.RemoteLoginPath = "/Contoso/Login";
+                })
+            .Services;
+
     public static IServiceCollection SetupTestEmailSender(this IServiceCollection services, IEmailSender sender) =>
         services.AddSingleton(sender);
 

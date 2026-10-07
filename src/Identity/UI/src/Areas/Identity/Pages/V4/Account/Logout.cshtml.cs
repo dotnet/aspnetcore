@@ -44,6 +44,7 @@ internal sealed class LogoutModel<TUser> : LogoutModel where TUser : class
 
     public override async Task<IActionResult> OnPost(string? returnUrl = null)
     {
+        ReauthenticationMarker.Clear(HttpContext);
         await _signInManager.SignOutAsync();
         _logger.LogInformation(LoggerEventIds.UserLoggedOut, "User logged out.");
         if (returnUrl != null)

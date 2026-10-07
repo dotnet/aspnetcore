@@ -237,12 +237,13 @@ public class UserStories
         return await setPassword.SetPasswordAsync(newPassword);
     }
 
-    internal static async Task<ManageExternalLogin> LinkExternalLoginAsync(Index index, string loginEmail)
+    internal static async Task<ManageExternalLogin> LinkExternalLoginAsync(Index index, string loginEmail, string password)
     {
         var manage = await index.ClickManageLinkWithExternalLoginAsync();
         var linkLogin = await manage.ClickLinkLoginAsync();
+        linkLogin = await linkLogin.ConfirmPasswordAsync(password);
 
-        return await linkLogin.LinkExternalLoginAsync(loginEmail);
+        return await linkLogin.BeginLinkExternalLoginAsync();
     }
 
     internal static async Task<RemoveExternalLogin> RemoveExternalLoginAsync(ManageExternalLogin manageExternalLogin, string loginEmail)
