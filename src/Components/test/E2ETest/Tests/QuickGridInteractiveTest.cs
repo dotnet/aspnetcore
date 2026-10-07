@@ -49,6 +49,26 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
+    public void RefreshDataAsyncFromTimerUpdatesRenderedItems()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-timer-refresh");
+
+        Browser.Equal("Ready", () => Browser.FindElement(By.Id("refresh-status")).Text);
+        Browser.Equal("1", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
+        Browser.Equal("First before refresh", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
+        Browser.Equal("2", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(2) > td:nth-child(1)")).Text);
+        Browser.Equal("Second before refresh", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(2) > td:nth-child(2)")).Text);
+
+        Browser.Click(By.Id("refresh-from-timer"));
+
+        Browser.Equal("Refreshed", () => Browser.FindElement(By.Id("refresh-status")).Text);
+        Browser.Equal("1", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
+        Browser.Equal("First after refresh", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
+        Browser.Equal("2", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(2) > td:nth-child(1)")).Text);
+        Browser.Equal("Second after refresh", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(2) > td:nth-child(2)")).Text);
+    }
+
+    [Fact]
     public void CanColumnSortByString()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");

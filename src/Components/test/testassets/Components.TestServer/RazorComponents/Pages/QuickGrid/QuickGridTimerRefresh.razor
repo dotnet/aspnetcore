@@ -1,0 +1,82 @@
+@page "/quickgrid-timer-refresh"
+@rendermode RenderMode.InteractiveServer
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<button id="refresh-from-timer" disabled="@refreshStarted" @onclick="StartTimerRefresh">Refresh from timer</button>
+<p id="refresh-status">@refreshStatus</p>
+
+<div id="timer-grid">
+    <QuickGrid @ref="grid" Items="@items.AsQueryable()">
+        <PropertyColumn Property="@(item => item.Id)" />
+        <PropertyColumn Property="@(item => item.Name)" />
+    </QuickGrid>
+</div>
+
+@code {
+    private readonly TaskCompletionSource refreshCanStart = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly List<Item> items =
+    [
+        new(1, "First before refresh"),
+        new(2, "Second before refresh"),
+    ];
+
+    private QuickGrid<Item> grid = default!;
+    private Timer? timer;
+    private bool refreshStarted;
+    private string refreshStatus = "Ready";
+
+    private void StartTimerRefresh()
+    {
+        refreshStarted = true;
+        refreshStatus = "Waiting";
+        timer = new Timer(_ => _ = RefreshFromTimerAsync(), null, TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (refreshStarted)
+        {
+            refreshCanStart.TrySetResult();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task RefreshFromTimerAsync()
+    {
+        await refreshCanStart.Task;
+
+        try
+        {
+            items[0] = new(1, "First after refresh");
+            items[1] = new(2, "Second after refresh");
+
+            await grid.RefreshDataAsync();
+            await InvokeAsync(() =>
+            {
+                refreshStatus = "Refreshed";
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            await InvokeAsync(() =>
+            {
+                refreshStatus = $"Failed: {ex.Message}";
+                StateHasChanged();
+            });
+        }
+        finally
+        {
+            Interlocked.Exchange(ref timer, null)?.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Interlocked.Exchange(ref timer, null)?.Dispose();
+    }
+
+    private sealed record Item(int Id, string Name);
+}

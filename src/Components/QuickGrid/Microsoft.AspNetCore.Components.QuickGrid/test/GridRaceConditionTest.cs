@@ -107,7 +107,7 @@ public class GridRaceConditionTest
     public async Task ShowColumnOptionsAsyncDoesNotThrowWhenCalledFromTimerAction()
     {
         var testComponent = await RenderSimpleTestComponentAsync();
-        var exception = await ExecuteTimerActionAsync(() => testComponent.NotFailingGrid.ShowColumnOptionsAsync(testComponent.NameColumn));
+        var exception = await ExecuteTimerActionAsync(() => testComponent.NotFailingGrid.ShowColumnOptionsAsync(testComponent.IdColumn));
 
         Assert.Null(exception);
     }
@@ -188,7 +188,7 @@ internal abstract class BaseTestComponent<TGrid> : ComponentBase
     protected TGrid _grid;
     public TGrid Grid => _grid;
 
-    protected PropertyColumn<Person, string> _nameColumn = default!;
+    protected PropertyColumn<Person, int> _idColumn = default!;
 
     private readonly List<Person> _people = [
         new() { Id = 1, Name = "John" },
@@ -201,9 +201,9 @@ internal abstract class BaseTestComponent<TGrid> : ComponentBase
         builder.AddAttribute(1, "Items", _people.AsQueryable());
         builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
         {
-            b.OpenComponent<PropertyColumn<Person, string>>(0);
-            b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, string>>)(p => p.Name));
-            b.AddComponentReferenceCapture(2, component => _nameColumn = (PropertyColumn<Person, string>)component);
+            b.OpenComponent<PropertyColumn<Person, int>>(0);
+            b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Id));
+            b.AddComponentReferenceCapture(2, component => _idColumn = (PropertyColumn<Person, int>)component);
             b.CloseComponent();
         }));
         builder.AddComponentReferenceCapture(3, component => _grid = (TGrid)component);
@@ -214,7 +214,7 @@ internal abstract class BaseTestComponent<TGrid> : ComponentBase
 internal class SimpleTestComponent : BaseTestComponent<NotFailingGrid<Person>>
 {
     public NotFailingGrid<Person> NotFailingGrid => Grid;
-    public PropertyColumn<Person, string> NameColumn => _nameColumn;
+    public PropertyColumn<Person, int> IdColumn => _idColumn;
 }
 
 internal class FailingGridTestComponent : BaseTestComponent<FailingQuickGrid<Person>>
