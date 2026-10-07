@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,14 +45,14 @@ public class Startup
                 try
                 {
                     addresses.Add(toAdd);
-                    await context.Response.WriteAsync("Added: <a href=\"" + toAdd + "\">" + toAdd + "</a>");
+                    await context.Response.WriteAsync($"Added: <a href=\"{HtmlEncode(toAdd)}\">{HtmlEncode(toAdd)}</a>");
                 }
                 catch (Exception ex)
                 {
-                    await context.Response.WriteAsync("Error adding: " + toAdd + "<br>");
-                    await context.Response.WriteAsync(ex.ToString().Replace(Environment.NewLine, "<br>"));
+                    await context.Response.WriteAsync($"Error adding: {HtmlEncode(toAdd)}<br>");
+                    await context.Response.WriteAsync(HtmlEncode(ex.ToString()).Replace(Environment.NewLine, "<br>"));
                 }
-                await context.Response.WriteAsync("<br><a href=\"" + context.Request.PathBase.ToUriComponent() + "\">back</a>");
+                await context.Response.WriteAsync("<br><a href=\"" + HtmlEncode(context.Request.PathBase.ToUriComponent()) + "\">back</a>");
                 await context.Response.WriteAsync("</body></html>");
                 return;
             }
@@ -69,13 +70,13 @@ public class Startup
                 await context.Response.WriteAsync("<html><body>");
                 if (addresses.Remove(toRemove))
                 {
-                    await context.Response.WriteAsync("Removed: " + toRemove);
+                    await context.Response.WriteAsync($"Removed: {HtmlEncode(toRemove)}");
                 }
                 else
                 {
-                    await context.Response.WriteAsync("Not found: " + toRemove);
+                    await context.Response.WriteAsync($"Not found: {HtmlEncode(toRemove)}");
                 }
-                await context.Response.WriteAsync("<br><a href=\"" + context.Request.PathBase.ToUriComponent() + "\">back</a>");
+                await context.Response.WriteAsync("<br><a href=\"" + HtmlEncode(context.Request.PathBase.ToUriComponent()) + "\">back</a>");
                 await context.Response.WriteAsync("</body></html>");
                 return;
             }
@@ -89,10 +90,11 @@ public class Startup
             await context.Response.WriteAsync("Listening on these prefixes: <br>");
             foreach (var prefix in addresses)
             {
-                await context.Response.WriteAsync("<a href=\"" + prefix + "\">" + prefix + "</a> <a href=\"?remove=" + prefix + "\">(remove)</a><br>");
+                var fullPrefix = prefix.FullPrefix;
+                await context.Response.WriteAsync($"<a href=\"{HtmlEncode(fullPrefix)}\">{HtmlEncode(fullPrefix)}</a> <a href=\"?remove={UrlEncode(fullPrefix)}\">(remove)</a><br>");
             }
 
-            await context.Response.WriteAsync("<form action=\"" + context.Request.PathBase.ToUriComponent() + "\" method=\"GET\">");
+            await context.Response.WriteAsync("<form action=\"" + HtmlEncode(context.Request.PathBase.ToUriComponent()) + "\" method=\"GET\">");
             await context.Response.WriteAsync("<input type=\"text\" name=\"add\" value=\"http://localhost:12348\" >");
             await context.Response.WriteAsync("<input type=\"submit\" value=\"Add\">");
             await context.Response.WriteAsync("</form>");
@@ -115,4 +117,10 @@ public class Startup
 
         return host.RunAsync();
     }
+
+    private static string HtmlEncode(string content) =>
+        string.IsNullOrEmpty(content) ? string.Empty : HtmlEncoder.Default.Encode(content);
+
+    private static string UrlEncode(string content) =>
+        string.IsNullOrEmpty(content) ? string.Empty : UrlEncoder.Default.Encode(content);
 }

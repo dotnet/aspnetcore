@@ -374,8 +374,8 @@ export type WebAssemblyComponentDescriptor = WebAssemblyComponentMarker & Descri
 export type AutoComponentDescriptor = AutoComponentMarker & DescriptorData;
 
 export type WebAssemblyServerOptions = {
-  environmentName: string,
-  environmentVariables: { [i: string]: string; }
+  environmentName?: string,
+  environmentVariables?: { [i: string]: string; }
 };
 
 type DescriptorData = {
@@ -434,6 +434,7 @@ export type BrowserConfigurationOptions = {
     reconnectionMaxRetries?: number;
     reconnectionRetryIntervalMilliseconds?: number;
     reconnectionDialogId?: string;
+    [libraryExtensionKey: string]: unknown;
   };
   ssr?: {
     disableDomPreservation?: boolean;

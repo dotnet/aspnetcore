@@ -1,0 +1,38 @@
+{
+  "calls": [
+    {
+      "prompt": "Tell me about Blazor",
+      "frames": [
+        {
+          "name": "partial",
+          "chunks": [
+            "Blazor ",
+            "renders "
+          ]
+        },
+        {
+          "name": "complete",
+          "chunks": [
+            "interactive ",
+            "web UI ",
+            "with C#."
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "And what about streaming",
+      "frames": [
+        {
+          "name": "complete",
+          "chunks": [
+            "Streaming ",
+            "updates ",
+            "arrive ",
+            "token by token."
+          ]
+        }
+      ]
+    }
+  ]
+}

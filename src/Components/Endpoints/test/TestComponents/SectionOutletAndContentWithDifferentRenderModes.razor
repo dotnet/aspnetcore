@@ -1,0 +1,8 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Sections
+
+<SectionOutlet SectionName="cross-render-mode-section" />
+
+<SectionContent SectionName="cross-render-mode-section" @rendermode="RenderMode.InteractiveServer">
+    <p>Content provided from an InteractiveServer render mode</p>
+</SectionContent>

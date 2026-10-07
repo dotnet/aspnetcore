@@ -24,14 +24,19 @@ internal sealed class ListCommand
 
             cmd.OnExecute(() =>
             {
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), showTokensOption.HasValue(), cmd.OutputOption.Value());
+                if (!cmd.TryGetProjectOrFilePath(out var projectPath, out var isFileBasedApp))
+                {
+                    return 1;
+                }
+
+                return Execute(cmd.Reporter, projectPath, isFileBasedApp, showTokensOption.HasValue(), cmd.OutputOption.Value());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, bool showTokens, string outputFormat)
+    private static int Execute(IReporter reporter, string projectPath, bool isFileBasedApp, bool showTokens, string outputFormat)
     {
-        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, isFileBasedApp, reporter, out var project, out var userSecretsId))
         {
             return 1;
         }

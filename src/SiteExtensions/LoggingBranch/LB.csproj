@@ -4,7 +4,6 @@
     <title>ASP.NET Core Extensions</title>
     <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
     <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
     <ContentTargetFolders>content</ContentTargetFolders>
     <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
@@ -16,7 +15,6 @@
     <IncludeSymbols>false</IncludeSymbols>
     <NoSemVer20>true</NoSemVer20>
     <IsShippingPackage>false</IsShippingPackage>
-
     <!-- No source files -->
     <NoWarn>$(NoWarn);CS2008</NoWarn>
   </PropertyGroup>
@@ -25,7 +23,7 @@
     <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="$(TargetRuntimeIdentifier)" />
 
     <!-- Make sure App.Ref layout is available - not necessary if this is Pass 2 of a VMR build -->
-    <ProjectReference Include="..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"

@@ -164,7 +164,14 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
             context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
             context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-            context.Response.StatusCode = _options.StatusCodeSelector?.Invoke(edi.SourceException) ?? DefaultStatusCode;
+            var is404FromBadHttpRequestException = edi.SourceException is
+                BadHttpRequestException { StatusCode: StatusCodes.Status404NotFound };
+            context.Response.StatusCode = _options.StatusCodeSelector?.Invoke(edi.SourceException)
+                ?? (edi.SourceException switch
+                {
+                    BadHttpRequestException badHttpRequestException => badHttpRequestException.StatusCode,
+                    _ => DefaultStatusCode,
+                });
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
             string? handlerTag = null;
@@ -215,7 +222,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                 }
             }
 
-            if (result != ExceptionHandledType.Unhandled || _options.StatusCodeSelector != null || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+            if (result != ExceptionHandledType.Unhandled || _options.StatusCodeSelector is not null || is404FromBadHttpRequestException || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
                 var suppressDiagnostics = false;
 

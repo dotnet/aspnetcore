@@ -1,0 +1,37 @@
+@page "/forms/client-validation/interactive-validation"
+@rendermode RenderMode.InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2 id="page-title">Interactive client-side validation</h2>
+
+<style>
+    .validation-message { color: red; }
+
+</style>
+
+<EditForm Model="Form" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <div>
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="Form.Name" />
+        <ValidationMessage For="() => Form.Name" />
+    </div>
+    <button type="submit" id="submit">Submit</button>
+</EditForm>
+
+@code {
+    private InteractiveModel Form { get; set; } = new();
+
+    private void HandleValidSubmit()
+    {
+        // No-op: the page exists only to assert that interactive render modes emit no
+        // <blazor-client-validation-data> carrier.
+    }
+
+    public class InteractiveModel
+    {
+        [Required(ErrorMessage = "Name is required.")]
+        public string? Name { get; set; }
+    }
+}

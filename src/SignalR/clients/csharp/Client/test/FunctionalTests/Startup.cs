@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Claims;
@@ -45,6 +46,11 @@ public class Startup
                 policy.AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme);
                 policy.RequireClaim(ClaimTypes.Name);
             });
+            options.AddPolicy("AuthenticationRefreshScope", policy =>
+            {
+                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                policy.RequireClaim("scope", "signalr:invoke");
+            });
         });
 
         services.AddAuthentication(NegotiateDefaults.AuthenticationScheme).AddNegotiate();
@@ -52,8 +58,10 @@ public class Startup
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters =
+                        // codeql[SM04554] - By design: this functional-test host validates self-issued test tokens, so no external issuer is configured. codeql[SM04555] - By design: issuer validation is intentionally disabled in the test host.
                         new TokenValidationParameters
                         {
+                            // codeql[SM04387] - By design: functional-test host signs tokens with a test key, so disabling audience/issuer validation is safe.
                             ValidateAudience = false,
                             ValidateIssuer = false,
                             ValidateActor = false,
@@ -102,6 +110,13 @@ public class Startup
             endpoints.MapHub<HubWithAuthorization2>("/windowsauthhub")
                   .RequireAuthorization(new AuthorizeAttribute(NegotiateDefaults.AuthenticationScheme));
 
+            endpoints.MapHub<AuthenticationRefreshHub>("/authRefreshHub", o =>
+            {
+                o.EnableAuthenticationRefresh = true;
+                o.AllowStatefulReconnects = true;
+            })
+                  .RequireAuthorization(new AuthorizeAttribute(JwtBearerDefaults.AuthenticationScheme));
+
             endpoints.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
 
             endpoints.MapHub<TestHub>("/negotiateProtocolVersion12", options =>
@@ -119,6 +134,14 @@ public class Startup
                 return context.Response.WriteAsync(GenerateJwtToken(name ?? "testuser"));
             });
 
+            // Like /generateJwtToken but optionally includes the "scope" claim required by the
+            // AuthenticationRefreshScope policy. Pass ?scope=false to omit it (used to exercise auth changes on refresh).
+            endpoints.MapGet("/generateJwtTokenWithScope/{name?}", (HttpContext context, string name) =>
+            {
+                var includeScope = context.Request.Query["scope"] != "false";
+                return context.Response.WriteAsync(GenerateJwtToken(name ?? "testuser", includeScope));
+            });
+
             endpoints.Map("/redirect/{*anything}", context =>
             {
                 return context.Response.WriteAsync(JsonConvert.SerializeObject(new
@@ -130,9 +153,13 @@ public class Startup
         });
     }
 
-    private string GenerateJwtToken(string name = "testuser")
+    private string GenerateJwtToken(string name = "testuser", bool includeScopeClaim = false)
     {
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, name) };
+        var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, name) };
+        if (includeScopeClaim)
+        {
+            claims.Add(new Claim("scope", "signalr:invoke"));
+        }
         var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.Now.AddSeconds(5), signingCredentials: credentials);
         return JwtTokenHandler.WriteToken(token);

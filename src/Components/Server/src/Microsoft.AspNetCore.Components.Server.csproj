@@ -13,37 +13,40 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.SignalR" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
-    <Reference Include="Microsoft.AspNetCore.WebSockets" />
-    <Reference Include="Microsoft.Extensions.Features" />
-    <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Caching.Memory" />
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Net.Http.Headers" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Extensions\Features\src\Microsoft.Extensions.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Headers\src\Microsoft.Net.Http.Headers.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\common\Http.Connections\src\Microsoft.AspNetCore.Http.Connections.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\common\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\server\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
     <!-- Required for S.T.J source generation -->
-    <Reference Include="System.Text.Json" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+
+    <PackageReference Include="System.Text.Json" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
 
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentsActivityLinkStore.cs" LinkBase="Shared" />
 
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
@@ -86,21 +89,22 @@
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\TryGetReturnType.cs" LinkBase="BlazorPack" />
 
     <!-- MessagePack -->
-    <Compile Include="$(MessagePackRoot)BufferWriter.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)ExtensionHeader.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)ExtensionResult.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)MessagePackCode.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)MessagePackReader.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)T4\MessagePackReader.Integers.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)MessagePackSerializationException.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)MessagePackWriter.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)Nil.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)Internal\DateTimeConstants.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)StringEncoding.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)SequencePool.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)SequenceReader.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)Utilities.cs" LinkBase="BlazorPack\MessagePack" />
+    <_MessagePackSource Include="$(MessagePackRoot)BufferWriter.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)ExtensionHeader.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)ExtensionResult.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)MessagePackCode.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)MessagePackReader.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)T4\MessagePackReader.Integers.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)MessagePackSerializationException.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)MessagePackWriter.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)Nil.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)Internal\DateTimeConstants.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)StringEncoding.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)SequencePool.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)SequenceReader.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)SequenceReaderExtensions.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)Utilities.cs" />
+    <Compile Include="@(_MessagePackSource)" LinkBase="BlazorPack\MessagePack" />
 
     <!-- Shared descriptor infrastructure with MVC -->
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentMarker.cs" />
@@ -120,4 +124,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Properties\ILLink.Substitutions.xml" LogicalName="ILLink.Substitutions.xml" />
   </ItemGroup>
+
+  <Target Name="ValidateMessagePackSources" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_MissingMessagePackSource Include="@(_MessagePackSource)" Condition="!Exists('%(Identity)')" />
+    </ItemGroup>
+    <Error Condition="'@(_MissingMessagePackSource->Count())' != '0'"
+           Text="MessagePack-CSharp source files are missing. If the submodule is not initialized, run from the repository root: git submodule update --init src/submodules/MessagePack-CSharp" />
+  </Target>
 </Project>

@@ -4,9 +4,8 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace BasicTestApp.ValidationModels;
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-[ValidatableType]
-#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+[Microsoft.Extensions.Validation.ValidatableType]
 public class OrderModel
 {
     [Required(ErrorMessage = "Order Name is required.")]

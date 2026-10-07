@@ -1,0 +1,327 @@
+<!--
+This file contains a list of all the external dependencies used in ASP.NET Core. These dependencies
+are expressed as central `<PackageVersion>` items.
+
+-->
+<Project>
+  <PropertyGroup Condition="'$(AspNetCoreMajorMinorVersion)' != ''">
+    <ManagePackageVersionsCentrally Condition="'$(ManagePackageVersionsCentrally)' == ''">true</ManagePackageVersionsCentrally>
+    <CentralPackageFloatingVersionsEnabled Condition="'$(IsIdentityModelTestJob)' == 'true'">true</CentralPackageFloatingVersionsEnabled>
+    <!-- Dependency flow adds feeds dynamically; this migration does not change package source mapping. -->
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition="'$(ManagePackageVersionsCentrally)' == 'true'">
+      <PropertyGroup>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+      </PropertyGroup>
+
+      <ItemGroup Label=".NET team dependencies">
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion)" />
+        <PackageVersion Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguageVersion)" />
+        <PackageVersion Include="Microsoft.Azure.SignalR" Version="$(MicrosoftAzureSignalRVersion)" />
+        <PackageVersion Include="Microsoft.Bcl.Cryptography" Version="$(MicrosoftBclCryptographyVersion)" />
+        <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(MicrosoftBclHashCodeVersion)" />
+        <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(MicrosoftCodeAnalysisCSharpCodeFixTestingVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.Features.ExternalAccess" Version="$(MicrosoftCodeAnalysisFeaturesExternalAccessVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorVersion)" />
+        <PackageVersion Include="Microsoft.CSharp" Version="$(MicrosoftCSharpVersion)" />
+        <PackageVersion Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="$(MicrosoftExtensionsCachingHybridVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLineVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsConfigurationFileExtensionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsConfigurationIniVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftExtensionsConfigurationUserSecretsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Xml" Version="$(MicrosoftExtensionsConfigurationXmlVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="$(MicrosoftExtensionsDiagnosticsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.Abstractions" Version="$(MicrosoftExtensionsDiagnosticsAbstractionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="$(MicrosoftExtensionsDiagnosticsTestingVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositeVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.HostFactoryResolver.Sources" Version="$(MicrosoftExtensionsHostFactoryResolverSourcesVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsLoggingDebugVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="$(MicrosoftExtensionsLoggingEventLogVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="$(MicrosoftExtensionsLoggingEventSourceVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="$(MicrosoftExtensionsLoggingTraceSourceVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(MicrosoftExtensionsOptionsDataAnnotationsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(MicrosoftExtensionsTimeProviderTestingVersion)" />
+        <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="$(MicrosoftIdentityModelJsonWebTokensVersion)" />
+        <PackageVersion Include="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)" />
+        <PackageVersion Include="Microsoft.OpenApi" Version="$(MicrosoftOpenApiVersion)" />
+        <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="$(MicrosoftOpenApiYamlReaderVersion)" />
+        <PackageVersion Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryVersion)" />
+        <PackageVersion Include="System.Buffers" Version="$(SystemBuffersVersion)" />
+        <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomVersion)" />
+        <PackageVersion Include="System.CommandLine.Experimental" Version="$(SystemCommandLineExperimentalVersion)" />
+        <PackageVersion Include="System.ComponentModel" Version="$(SystemComponentModelVersion)" />
+        <PackageVersion Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsVersion)" />
+        <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
+        <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourceVersion)" />
+        <PackageVersion Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogVersion)" />
+        <PackageVersion Include="System.DirectoryServices.Protocols" Version="$(SystemDirectoryServicesProtocolsVersion)" />
+        <PackageVersion Include="System.Formats.Cbor" Version="$(SystemFormatsCborVersion)" />
+        <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtVersion)" />
+        <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelinesVersion)" />
+        <PackageVersion Include="System.Memory" Version="$(SystemMemoryVersion)" />
+        <PackageVersion Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
+        <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonVersion)" />
+        <PackageVersion Include="System.Net.ServerSentEvents" Version="$(SystemNetServerSentEventsVersion)" />
+        <PackageVersion Include="System.Net.Sockets" Version="$(SystemNetSocketsVersion)" />
+        <PackageVersion Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
+        <PackageVersion Include="System.Runtime.Caching" Version="$(SystemRuntimeCachingVersion)" />
+        <PackageVersion Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationVersion)" />
+        <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsVersion)" />
+        <PackageVersion Include="System.Security.Cryptography.X509Certificates" Version="$(SystemSecurityCryptographyX509CertificatesVersion)" />
+        <PackageVersion Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlVersion)" />
+        <PackageVersion Include="System.Security.Permissions" Version="$(SystemSecurityPermissionsVersion)" />
+        <PackageVersion Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsVersion)" />
+        <PackageVersion Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebVersion)" />
+        <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
+        <PackageVersion Include="System.Threading.AccessControl" Version="$(SystemThreadingAccessControlVersion)" />
+        <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsVersion)" />
+        <PackageVersion Include="System.Threading.RateLimiting" Version="$(SystemThreadingRateLimitingVersion)" />
+        <PackageVersion Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
+
+        <!-- Runtime packages required for crossgen -->
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.win-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.win-x86" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.win-arm" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.win-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.osx-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.osx-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-arm" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.freebsd-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.openbsd-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.openbsd-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.illumos-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.solaris-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.haiku-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true'" />
+
+        <!-- Crossgen2 compiler -->
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.win-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.win-x86" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.win-arm" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.osx-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.osx-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-arm" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.freebsd-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.openbsd-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.openbsd-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.illumos-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.solaris-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.haiku-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true' " />
+
+        <!-- Remove duplicates potentially introduced by the 'unknown' target runtime identifier in source-only modes. -->
+        <PackageVersion Include="@(_RuntimePackageVersion->Distinct())" Version="$(MicrosoftNETCoreAppRefVersion)" />
+      </ItemGroup>
+
+      <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+        <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientVersion)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version)" />
+        <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesVersion)" />
+        <PackageVersion Include="Microsoft.DotNet.RemoteExecutor" Version="$(MicrosoftDotNetRemoteExecutorVersion)" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreDesignVersion)" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryVersion)" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion)" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion)" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(MicrosoftEntityFrameworkCoreToolsVersion)" />
+        <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(MicrosoftIdentityModelProtocolsOpenIdConnectVersion)" />
+        <PackageVersion Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="$(MicrosoftIdentityModelProtocolsWsFederationVersion)" />
+        <PackageVersion Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllVersion)" />
+        <PackageVersion Include="Microsoft.NETCore.BrowserDebugHost.Transport" Version="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)" />
+        <PackageVersion Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesVersion)" />
+        <PackageVersion Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingVersion)" />
+        <PackageVersion Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationVersion)" />
+        <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtVersion)" />
+        <PackageVersion Include="NETStandard.Library" Version="$(NETStandardLibraryVersion)" />
+        <PackageVersion Include="System.Net.Experimental.MsQuic" Version="$(SystemNetExperimentalMsQuicVersion)" />
+        <PackageVersion Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerVersion)" />
+        <PackageVersion Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerVersion)" />
+        <PackageVersion Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsVersion)" />
+      </ItemGroup>
+      <ItemGroup Label="MSBuild">
+        <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
+        <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
+        <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
+        <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
+      </ItemGroup>
+
+      <ItemGroup Label="External dependencies available in source build" >
+        <PackageVersion Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
+      </ItemGroup>
+
+      <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+        <PackageVersion Include="AngleSharp" Version="$(AngleSharpVersion)" />
+        <PackageVersion Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
+        <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
+        <PackageVersion Include="CommandLineParser" Version="$(CommandLineParserVersion)" />
+        <PackageVersion Include="FSharp.Core" Version="$(FSharpCoreVersion)" />
+        <PackageVersion Include="Google.Api.CommonProtos" Version="$(GoogleApiCommonProtosVersion)" />
+        <PackageVersion Include="Google.Protobuf" Version="$(GoogleProtobufVersion)" />
+        <PackageVersion Include="Grpc.AspNetCore" Version="$(GrpcAspNetCoreVersion)" />
+        <PackageVersion Include="Grpc.AspNetCore.Server" Version="$(GrpcAspNetCoreServerVersion)" />
+        <PackageVersion Include="Grpc.Auth" Version="$(GrpcAuthVersion)" />
+        <PackageVersion Include="Grpc.Net.Client" Version="$(GrpcNetClientVersion)" />
+        <PackageVersion Include="Grpc.Tools" Version="$(GrpcToolsVersion)" />
+        <PackageVersion Include="MessagePack" Version="$(MessagePackVersion)" />
+        <PackageVersion Include="MessagePackAnalyzer" Version="$(MessagePackAnalyzerVersion)" />
+        <PackageVersion Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion)" />
+        <PackageVersion Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="$(MicrosoftDataSqlClientExtensionsAzureVersion)" />
+        <PackageVersion Include="Microsoft.Playwright" Version="$(MicrosoftPlaywrightVersion)" />
+        <PackageVersion Include="Microsoft.Playwright.TestAdapter" Version="$(MicrosoftPlaywrightTestAdapterVersion)" />
+        <PackageVersion Include="Microsoft.Windows.CsWin32" Version="$(MicrosoftWindowsCsWin32Version)" />
+        <PackageVersion Include="ModelContextProtocol" Version="$(ModelContextProtocolVersion)" />
+        <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="$(ModelContextProtocolAspNetCoreVersion)" />
+        <PackageVersion Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
+        <PackageVersion Include="Mono.TextTemplating" Version="$(MonoTextTemplatingVersion)" />
+        <PackageVersion Include="Moq" Version="$(MoqVersion)" />
+        <PackageVersion Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonVersion)" />
+        <PackageVersion Include="NSwag.ApiDescription.Client" Version="$(NSwagApiDescriptionClientVersion)" />
+        <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetFrameworksVersion)" />
+        <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersioningVersion)" />
+        <PackageVersion Include="Photino.NET" Version="$(PhotinoNETVersion)" />
+        <PackageVersion Include="Polly" Version="$(PollyVersion)" />
+        <PackageVersion Include="Polly.Extensions.Http" Version="$(PollyExtensionsHttpVersion)" />
+        <PackageVersion Include="Selenium.Support" Version="$(SeleniumSupportVersion)" />
+        <PackageVersion Include="Selenium.WebDriver" Version="$(SeleniumWebDriverVersion)" />
+        <PackageVersion Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingVersion)" />
+        <PackageVersion Include="Serilog.Sinks.File" Version="$(SerilogSinksFileVersion)" />
+        <PackageVersion Include="SharpFuzz" Version="$(SharpFuzzVersion)" />
+        <PackageVersion Include="StackExchange.Redis" Version="$(StackExchangeRedisVersion)" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="$(SwashbuckleAspNetCoreVersion)" />
+        <PackageVersion Include="System.Reactive.Linq" Version="$(SystemReactiveLinqVersion)" />
+        <PackageVersion Include="Verify.SourceGenerators" Version="$(VerifySourceGeneratorsVersion)" />
+        <PackageVersion Include="Verify.Xunit" Version="$(VerifyXunitVersion)" />
+        <PackageVersion Include="xunit.abstractions" Version="$(xunitabstractionsVersion)" />
+        <PackageVersion Include="xunit.analyzers" Version="$(xunitanalyzersVersion)" />
+        <PackageVersion Include="xunit.assert" Version="$(xunitassertVersion)" />
+        <PackageVersion Include="xunit.extensibility.core" Version="$(xunitextensibilitycoreVersion)" />
+        <PackageVersion Include="xunit.extensibility.execution" Version="$(xunitextensibilityexecutionVersion)" />
+        <PackageVersion Include="xunit.v3" Version="$(xunitv3Version)" />
+        <PackageVersion Include="xunit.v3.extensibility.core" Version="$(xunitv3extensibilitycoreVersion)" />
+        <!-- Components.Testing (MSTest on MTP + Playwright + YARP) -->
+        <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="$(MicrosoftExtensionsServiceDiscoveryVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="$(MicrosoftExtensionsServiceDiscoveryYarpVersion)" />
+        <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
+        <PackageVersion Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
+        <PackageVersion Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
+        <!-- Components.AI (Microsoft.Extensions.AI) -->
+        <PackageVersion Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIOpenAIVersion)" />
+        <!-- Components.AI dojo test assets (AG-UI protocol client and server) -->
+        <PackageVersion Include="AGUI.Abstractions" Version="$(AGUIAbstractionsVersion)" />
+        <PackageVersion Include="AGUI.Client" Version="$(AGUIClientVersion)" />
+        <PackageVersion Include="AGUI.Formatting" Version="$(AGUIFormattingVersion)" />
+        <PackageVersion Include="AGUI.Server" Version="$(AGUIServerVersion)" />
+        <!-- Components.Gateway OpenTelemetry + resilience dependencies -->
+        <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
+        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
+      </ItemGroup>
+
+      <!-- Replicates the same overriding of versions that occurs on Roslyn package versions for source only builds -->
+      <ItemGroup Label="Source only build overrides" Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+        <PackageVersion Update="Microsoft.CodeAnalysis.Common">
+          <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+        </PackageVersion>
+        <PackageVersion Update="Microsoft.CodeAnalysis.CSharp">
+          <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+        </PackageVersion>
+        <PackageVersion Update="Microsoft.CodeAnalysis.CSharp.Workspaces">
+          <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+        </PackageVersion>
+        <PackageVersion Update="Microsoft.CodeAnalysis.Features.ExternalAccess">
+          <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+        </PackageVersion>
+        <PackageVersion Update="Microsoft.CodeAnalysis.Razor">
+          <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+        </PackageVersion>
+      </ItemGroup>
+      <ItemGroup Label="Build and project-specific dependencies">
+        <PackageVersion Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" />
+        <PackageVersion Include="Microsoft.AspNetCore.Hosting" Version="2.2.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.6" />
+        <PackageVersion Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+        <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
+        <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+        <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" />
+        <PackageVersion Include="Microsoft.NETCore.App.Host.win-arm64" Version="[$(LibNetHostAppPackVersion)]" Condition="'$(LibNetHostAppPackVersion)' != ''" />
+        <PackageVersion Include="Microsoft.NETCore.App.Host.win-x64" Version="[$(LibNetHostAppPackVersion)]" Condition="'$(LibNetHostAppPackVersion)' != ''" />
+        <PackageVersion Include="Microsoft.NETCore.App.Host.win-x86" Version="[$(LibNetHostAppPackVersion)]" Condition="'$(LibNetHostAppPackVersion)' != ''" />
+        <PackageVersion Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" />
+        <PackageVersion Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
+        <PackageVersion Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
+        <PackageVersion Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetSdkVersion)" />
+        <PackageVersion Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
+        <PackageVersion Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
+        <PackageVersion Include="MySqlConnector" Version="0.43.0" />
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.1.1" />
+        <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.1" />
+        <PackageVersion Include="System.CommandLine" Version="2.0.0-beta1.20158.1" />
+        <PackageVersion Include="XunitXml.TestLogger" Version="2.1.26" />
+      </ItemGroup>
+    </When>
+  </Choose>
+</Project>

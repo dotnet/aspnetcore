@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -28,15 +29,16 @@ using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
 public abstract class OpenApiDocumentServiceTestBase
 {
-    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument)
+    public static async Task<OpenApiDocument> VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument)
         => await VerifyOpenApiDocument(builder, new OpenApiOptions(), verifyOpenApiDocument);
 
-    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
+    public static async Task<OpenApiDocument> VerifyOpenApiDocument(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
     {
         var documentService = CreateDocumentService(builder, openApiOptions);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null, cancellationToken);
         verifyOpenApiDocument(document);
+        return document;
     }
 
     public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
@@ -164,12 +166,12 @@ public abstract class OpenApiDocumentServiceTestBase
             new ServiceProviderIsService());
     }
 
-    internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null)
+    internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null, JsonNumberHandling numberHandling = JsonNumberHandling.Strict)
     {
         serviceCollection ??= new ServiceCollection();
         serviceCollection.ConfigureHttpJsonOptions(options =>
         {
-            options.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+            options.SerializerOptions.NumberHandling = numberHandling;
         });
         var serviceProvider = new TestServiceProvider();
         serviceProvider.SetInternalServiceProvider(serviceCollection);

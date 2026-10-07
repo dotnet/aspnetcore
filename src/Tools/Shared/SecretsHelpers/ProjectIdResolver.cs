@@ -49,6 +49,11 @@ internal sealed class ProjectIdResolver
             ? configuration
             : DefaultConfig;
 
+        if (IsFileBasedApp(projectFile))
+        {
+            return ResolveFileBasedApp(projectFile, configuration);
+        }
+
         var outputFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         try
         {
@@ -131,6 +136,100 @@ internal sealed class ProjectIdResolver
         }
     }
 
+    private string ResolveFileBasedApp(string projectFile, string configuration)
+    {
+        var outputFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = DotNetMuxer.MuxerPathOrDefault(),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                ArgumentList =
+                    {
+                        "build",
+                        projectFile,
+                        "--nologo",
+                        "--disable-build-servers",
+                        "--no-restore",
+                        "-getProperty=UserSecretsId",
+                        "-getResultOutputFile=" + outputFile,
+                        "/p:Configuration=" + configuration,
+                    }
+            };
+            DisableBuildServerReuse(psi);
+
+#if DEBUG
+            _reporter.Verbose($"Invoking '{psi.FileName} {string.Join(' ', psi.ArgumentList)}'");
+#endif
+
+            using var process = new Process()
+            {
+                StartInfo = psi,
+            };
+
+            var outputBuilder = new StringBuilder();
+            var errorBuilder = new StringBuilder();
+            process.OutputDataReceived += (_, d) =>
+            {
+                if (!string.IsNullOrEmpty(d.Data))
+                {
+                    outputBuilder.AppendLine(d.Data);
+                }
+            };
+            process.ErrorDataReceived += (_, d) =>
+            {
+                if (!string.IsNullOrEmpty(d.Data))
+                {
+                    errorBuilder.AppendLine(d.Data);
+                }
+            };
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                _reporter.Verbose(outputBuilder.ToString());
+                _reporter.Verbose(errorBuilder.ToString());
+                _reporter.Error($"Exit code: {process.ExitCode}");
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectFailedToLoad(projectFile));
+                return null;
+            }
+
+            if (!File.Exists(outputFile))
+            {
+                _reporter.Verbose(outputBuilder.ToString());
+                _reporter.Verbose(errorBuilder.ToString());
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
+                return null;
+            }
+
+            var id = File.ReadAllText(outputFile).Trim();
+            if (string.IsNullOrEmpty(id))
+            {
+                _reporter.Verbose(outputBuilder.ToString());
+                _reporter.Verbose(errorBuilder.ToString());
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
+                return null;
+            }
+            return id;
+        }
+        finally
+        {
+            TryDelete(outputFile);
+        }
+    }
+
+    internal static bool IsFileBasedApp(string projectFile) =>
+        string.Equals(Path.GetExtension(projectFile), ".cs", StringComparison.OrdinalIgnoreCase);
+
+    private static void DisableBuildServerReuse(ProcessStartInfo psi) =>
+        psi.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+
     [UnconditionalSuppressMessage(
         "SingleFile",
         "IL3000:Avoid accessing Assembly file path when publishing as a single file",
@@ -156,7 +255,7 @@ internal sealed class ProjectIdResolver
         }
 
         var targetPath = searchPaths.Select(p => Path.Combine(p, "SecretManager.targets")).FirstOrDefault(File.Exists);
-        if (targetPath == null)
+        if (targetPath is null)
         {
             _reporter.Error("Fatal error: could not find SecretManager.targets");
             return null;

@@ -18,7 +18,7 @@ public class TemplateValuesResult
     /// </summary>
     /// <remarks>
     /// This combines implicit (ambient) values from the <see cref="RouteData"/> of the current request
-    /// (if applicable), explictly provided values, and default values for parameters that appear in
+    /// (if applicable), explicitly provided values, and default values for parameters that appear in
     /// the route template.
     ///
     /// Implicit (ambient) values which are invalidated due to changes in values lexically earlier in the

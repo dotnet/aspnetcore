@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Authentication.ExtendedProtection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
@@ -23,9 +25,62 @@ builder.WebHost.UseHttpSys(options =>
     options.UrlPrefixes.Add("https://*:6000");
     options.Authentication.Schemes = AuthenticationSchemes.None;
     options.Authentication.AllowAnonymous = true;
+
+    // Expose the RFC 5929 TLS channel binding token
+    options.HttpAuthenticationHardeningLevel = HttpAuthenticationHardeningLevel.Medium;
 });
 
 var app = builder.Build();
+
+// Example middleware using ITlsConnectionFeature.TryGetChannelBindingBytes to load the channel binding token bytes and parse them.
+app.Use(async (context, next) =>
+{
+    var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+    if (tlsFeature is not null && tlsFeature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var bytes))
+    {
+        // Parse the SEC_CHANNEL_BINDINGS header so we can see the RFC 5929 (https://datatracker.ietf.org/doc/html/rfc5929)
+        // application data ("tls-server-end-point:" + SHA-256 of the cert).
+        var span = bytes.Span;
+        if (span.Length < 32)
+        {
+            await context.Response.WriteAsync("\tITlsConnectionFeature.TryGetChannelBindingBytes(Endpoint) returned an unexpected payload (< 32 bytes).\n\n");
+            await next(context);
+            return;
+        }
+
+        var appLen = BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(24, 4));
+        var appOff = BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(28, 4));
+        if (appOff + appLen > (uint)span.Length)
+        {
+            await context.Response.WriteAsync("\tITlsConnectionFeature.TryGetChannelBindingBytes(Endpoint) returned an unexpected payload (appdata outside buffer).\n\n");
+            await next(context);
+            return;
+        }
+
+        var app = span.Slice((int)appOff, (int)appLen);
+        var asciiPrefix = System.Text.Encoding.ASCII.GetString(app[..Math.Min(21, app.Length)]);
+        var hash = Convert.ToHexString(app[Math.Min(21, app.Length)..]);
+
+        await context.Response.WriteAsync(
+            $"""
+                ITlsConnectionFeature.TryGetChannelBindingBytes(Endpoint)
+                ----------------------------------------------------------
+                raw length      = {bytes.Length} bytes (SEC_CHANNEL_BINDINGS header + appdata)
+                appdata length  = {appLen}
+                appdata offset  = {appOff}
+                ASCII prefix    = "{asciiPrefix}"
+                cert hash (hex) = {hash}
+
+
+            """);
+    }
+    else
+    {
+        await context.Response.WriteAsync("\tITlsConnectionFeature.TryGetChannelBindingBytes(Endpoint) returned false \n\n");
+    }
+
+    await next(context);
+});
 
 // Example middleware using TryGetTlsClientHello API to query TLS Client Hello raw bytes.
 app.Use(async (context, next) =>

@@ -77,7 +77,7 @@ internal sealed class PageActionInvokerProvider : IActionInvokerProvider
 
         if (page.CompiledPageDescriptor == null)
         {
-            // With legacy routing, we're forced to perform a blocking call. The exceptation is that
+            // With legacy routing, we're forced to perform a blocking call. The expectation is that
             // in the most common case - build time views or successsively cached runtime views - this should finish synchronously.
             page.CompiledPageDescriptor = _pageLoader.LoadAsync(page, EndpointMetadataCollection.Empty).GetAwaiter().GetResult();
         }

@@ -38,8 +38,6 @@
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
 
-    <!-- TODO: Try to remove this disable property -->
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
@@ -58,15 +56,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
-        Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
         ExcludeAssets="All"
         GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
+    <ProjectReference Include="@(AspNetCoreAppReference->'%(ProjectPath)');@(AspNetCoreAppReferenceAndPackage->'%(ProjectPath)')">
       <IncludeAssets>Runtime;Native</IncludeAssets>
-    </Reference>
+    </ProjectReference>
+
+    <PackageReference Include="@(ExternalAspNetCoreAppReference)" Version="">
+      <IncludeAssets>Runtime;Native</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -74,7 +75,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" />
     <LinuxPackageDependency Include="dotnet-runtime-$(DotnetRuntimeDependencyMajorMinorVersion)" Version="$(DotnetRuntimeDependencyVersion)" />
   </ItemGroup>
 
@@ -116,7 +117,6 @@
           Exclude="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.ni.pdb" />
 
       <!-- Dedupe System.Security.Cryptography.Pkcs.pdb based on RID -->
-      <!-- If we get rid of our custom reference resolution here, we can let nuget handle this -->
       <_TransportPdbs Remove="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\lib\**\System.Security.Cryptography.Pkcs.pdb"
           Condition="'$(TargetOsName)' == 'win'" />
 
@@ -135,11 +135,47 @@
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
   </Target>
 
-  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
-    <!-- Set _PublishingToLayout=true to differentiate global properties for this nested MSBuild call and avoid an intermittent circular dependency involving GetFilesToPublish. -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="PublishToDisk"
-             Properties="OutputPath=$(SharedFrameworkLayoutRoot);_PublishingToLayout=true" />
+  <!--
+    Publish the shared framework to the layout root by copying the already-built files, rather than
+    invoking PublishToDisk through a nested <MSBuild> call that overrides OutputPath. Overriding
+    OutputPath (a well-known global property) forks a new project configuration, and resolving the file
+    list under that forked configuration rebuilds the framework's assemblies a second time, causing the
+    intermittent MSB3030 PDB copy race described in https://github.com/dotnet/msbuild/issues/12927.
+
+    Instead we run AfterTargets="Build" (so the framework's files are already built) and call
+    _GetAllSharedFrameworkFiles to retrieve its already-resolved file list. We do
+    NOT depend on GetFilesToPublish directly, because GetFilesToPublish populates the project-global
+    FilesToPackage/_FilesToPackage items that arcade's Pack path (_AddFilesToNuGetPackage) also consumes;
+    resolving them in this configuration adds every assembly to the package twice (the plain and the R2R
+    copy) and trips NU5118. CallTarget evaluates the requested target in a separate scope, so its packaging
+    item mutations do not flow back into this target; only TargetOutputs are captured into a private item.
+    It also stays in the current project configuration without global property overrides, reusing the
+    already-computed file list without an extra compile. The layout TargetPath transform below mirrors
+    arcade's GetFilesToPublish for a RuntimePack.
+  -->
+  <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build">
+    <CallTarget Targets="_GetAllSharedFrameworkFiles">
+      <Output TaskParameter="TargetOutputs" ItemName="_SharedLayoutPackagedFile" />
+    </CallTarget>
+
+    <ItemGroup>
+      <_SharedLayoutFileToPublish Include="@(_SharedLayoutPackagedFile)"
+          Condition="'%(_SharedLayoutPackagedFile.PackOnly)' != 'true' and ($([System.String]::new('%(_SharedLayoutPackagedFile.TargetPath)').StartsWith('runtimes/')) or '%(_SharedLayoutPackagedFile.PublishOnly)' == 'true')">
+        <LayoutTargetPath>shared/$(SharedFrameworkName)/$(Version)/</LayoutTargetPath>
+      </_SharedLayoutFileToPublish>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_SharedLayoutFileToPublish)"
+          DestinationFolder="$(SharedFrameworkLayoutRoot)%(_SharedLayoutFileToPublish.LayoutTargetPath)%(_SharedLayoutFileToPublish.Culture)"
+          Condition="'%(_SharedLayoutFileToPublish.IsSymbolFile)' != 'true' or '%(_SharedLayoutFileToPublish.IncludeAlways)' == 'true'"
+          OverwriteReadOnlyFiles="true"
+          SkipUnchangedFiles="true" />
+
+    <!-- Fix file permissions in the layout dir, matching arcade's PublishToDisk target. -->
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(SharedFrameworkLayoutRoot)" -type f -name "*" -exec chmod 644 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(SharedFrameworkLayoutRoot)" -type f -name "*.dylib" -exec chmod 755 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(SharedFrameworkLayoutRoot)" -type f -name "*.so" -exec chmod 755 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(SharedFrameworkLayoutRoot)" -type f ! -name "*.*" -exec chmod 755 {} \;' />
   </Target>
 
   <Target Name="ReturnProductVersion" Returns="$(Version)" />

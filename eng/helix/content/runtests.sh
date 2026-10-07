@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# First arg is always @targets.txt
+targetsFile="${1#@}"
+
 helixQueue="$3"
 installPlaywright="$7"
 
@@ -10,8 +13,6 @@ MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-export DOTNET_NOLOGO=1
-export DOTNET_GENERATE_ASPNET_CERTIFICATE=false
 
 # Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
 unset ASPNETCORE_ENVIRONMENT
@@ -78,8 +79,8 @@ sync
 
 exit_code=0
 
-echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
-dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright
+echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --targets-file $targetsFile --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
+dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --targets-file "$targetsFile" --runtime "$2" --queue "$helixQueue" --arch "$4" --quarantined "$5" --helixTimeout "$6" --playwright "$installPlaywright"
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

@@ -43,6 +43,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private const byte ByteLF = (byte)'\n';
     private const byte ByteAsterisk = (byte)'*';
     private const byte ByteForwardSlash = (byte)'/';
+    private const byte ByteBackSlash = (byte)'\\';
     private const string Asterisk = "*";
     private const string ForwardSlash = "/";
 
@@ -68,6 +69,12 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     // Tracks whether a HTTP/2 preface was detected during the first request.
     private bool _http2PrefaceDetected;
+
+    // Tracks whether a bare LF line terminator was seen for the current request
+    private bool _sawBareLineFeedTerminator;
+
+    // Tracks whether a chunked extension was seen for the current request
+    private bool _sawChunkedExtension;
 
     public Http1Connection(HttpConnectionContext context)
     {
@@ -390,6 +397,43 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
     }
 
+    public void OnChunkedExtension(bool rejected)
+    {
+        // Only record the log once per request, even if multiple chunk extensions are present.
+        // We intentionally didn't introduce a metric for this. We think the scenario is very
+        // unlikely to occur in practice and isn't worth adding a metric for.
+        if (_sawChunkedExtension)
+        {
+            return;
+        }
+
+        _sawChunkedExtension = true;
+
+        Log.Http1ChunkedExtension(ConnectionId, rejected);
+    }
+
+    public void OnBareLineFeedTerminator(bool rejected)
+    {
+        // Only record the metric and log once per request even if multiple lines use a bare LF terminator.
+        if (_sawBareLineFeedTerminator)
+        {
+            return;
+        }
+
+        _sawBareLineFeedTerminator = true;
+
+        // Bare LF terminators only exist in HTTP/1.x. The per-request version is not always known yet
+        // (e.g. when the request line itself is rejected), so fall back to the representative HTTP/1.x value.
+        var httpVersion = _httpVersion switch
+        {
+            Http.HttpVersion.Http10 => KestrelMetrics.Http10,
+            _ => KestrelMetrics.Http11,
+        };
+
+        Log.Http1BareLineFeedTerminator(ConnectionId, httpVersion, rejected);
+        ServiceContext.Metrics.BareLineFeedRequest(MetricsContext, rejected, httpVersion);
+    }
+
     public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
     {
         // Null characters are not allowed and should have been checked by HttpParser before calling this method
@@ -662,6 +706,16 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             // should not be sending this form anyways, so perf optimization
             // not high priority
 
+            // System.Uri treats '\' as a path separator (a Windows/WinINet compatibility
+            // behavior) and collapses dot-segments around it, so uri.AbsolutePath (and thus
+            // Path) would be silently normalized in a way RawTarget doesn't reflect. Per
+            // RFC 3986, '\' is not a valid URI path character, so reject the request instead.
+            // Only the target before the query string is checked (query is target[targetPath.Length..]).
+            if (target[..targetPath.Length].Contains(ByteBackSlash))
+            {
+                ThrowRequestTargetRejected(target);
+            }
+
             if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
             {
                 ThrowRequestTargetRejected(target);
@@ -816,6 +870,8 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTargetForm = HttpRequestTarget.Unknown;
         _absoluteRequestTarget = null;
         _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
+        _sawBareLineFeedTerminator = false;
+        _sawChunkedExtension = false;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 

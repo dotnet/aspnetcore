@@ -3,33 +3,31 @@
 
 import { ValidationContext, ValidationResult, Validator, pass, fail } from '../ValidationTypes';
 
-// Validates credit card numbers using the Luhn algorithm (same as .NET CreditCardAttribute).
-// Strips dashes and spaces before validation. Requires 13-19 digits.
+// Validates credit card numbers using the Luhn algorithm, matching .NET's CreditCardAttribute
+// exactly: iterate the value right-to-left, skip '-' and ' ' (ASCII space only), fail on any
+// other non-ASCII-digit character, and accept when the Luhn checksum is a multiple of 10.
 export const creditCardValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
     return pass();
   }
 
-  // Strip dashes and spaces
-  const stripped = value.replace(/[\s-]/g, '');
-
-  // Only digits allowed after stripping
-  if (!/^\d+$/.test(stripped)) {
-    return fail();
-  }
-
-  // Valid card numbers are 13-19 digits
-  if (stripped.length < 13 || stripped.length > 19) {
-    return fail();
-  }
-
-  // Luhn algorithm
   let checksum = 0;
-  let doubleDigit = false;
-  for (let i = stripped.length - 1; i >= 0; i--) {
-    let digitValue = (stripped.charCodeAt(i) - 48) * (doubleDigit ? 2 : 1);
-    doubleDigit = !doubleDigit;
+  let evenDigit = false;
+
+  for (let i = value.length - 1; i >= 0; i--) {
+    const char = value[i];
+
+    if (char < '0' || char > '9') {
+      if (char === '-' || char === ' ') {
+        continue;
+      }
+      return fail();
+    }
+
+    let digitValue = (char.charCodeAt(0) - 48) * (evenDigit ? 2 : 1);
+    evenDigit = !evenDigit;
+
     while (digitValue > 0) {
       checksum += digitValue % 10;
       digitValue = Math.floor(digitValue / 10);

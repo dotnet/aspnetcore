@@ -10,9 +10,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>annotations</Nullable>
 
+    <!-- blazor.webview.js ships as a normal package static web asset under _framework/.
+         blazor.modules.json is handled specially (see below + StaticWebAssets.Groups.targets). -->
     <StaticWebAssetBasePath>/_framework</StaticWebAssetBasePath>
-    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
-    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,12 +37,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
-    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
-    <Reference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj" />
   </ItemGroup>
 
   <!-- This workaround is required when referencing FileProviders.Embedded as a project -->
@@ -63,22 +64,15 @@
     <Content Include="$(_BlazorWebViewJSContentRoot)\blazor.webview.js" Link="wwwroot\blazor.webview.js" ContentRoot="$(_BlazorWebViewJSContentRoot)\" />
   </ItemGroup>
 
-  <!-- blazor.modules.json is a fallback for WebView apps that don't have JS library modules.
-       It is tagged with the BlazorWebViewModules=fallback group so it can be conditionally
-       included via a deferred group when the consumer has no JS library modules. -->
+  <!-- blazor.modules.json is an EMPTY ([]) fallback. It is shipped RAW (not as a package
+       static web asset, so it never appears in PackageAssets.json and never auto-flows) and is
+       materialized as the consumer's own static web asset by StaticWebAssets.Groups.targets
+       ONLY when the app contributes no JS library modules of its own. When the app DOES have
+       modules, the SDK generates _framework/blazor.modules.json and we add nothing, so the two
+       never collide. -->
   <ItemGroup>
     <Content Remove="blazor.modules.json" />
-    <Content Include="blazor.modules.json" Link="wwwroot\blazor.modules.json"
-      AssetTraitName="JSModule" AssetTraitValue="JSModuleManifest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <StaticWebAssetGroupDefinition Include="BlazorWebView"
-      Value="enabled" SourceId="$(PackageId)" Order="0"
-      IncludePattern="**" ExcludePattern="**/blazor.modules.json" />
-    <StaticWebAssetGroupDefinition Include="BlazorWebViewModules"
-      Value="fallback" SourceId="$(PackageId)" Order="1"
-      IncludePattern="**/blazor.modules.json" />
+    <None Include="blazor.modules.json" Pack="true" PackagePath="build\blazor.modules.json" />
   </ItemGroup>
 
   <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Warn if not. -->

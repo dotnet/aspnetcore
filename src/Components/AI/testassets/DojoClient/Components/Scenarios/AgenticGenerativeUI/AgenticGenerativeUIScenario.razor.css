@@ -1,0 +1,45 @@
+.agentic-generative-ui {
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+}
+
+.agentic-generative-ui .dojo-chat-panel {
+    height: 100%;
+}
+
+.plan-content {
+    min-width: 0;
+}
+
+.plan-content ::deep .sc-ai-message-list__footer {
+    display: block;
+}
+
+.plan-content ::deep .plan-activity {
+    max-width: var(--sc-ai-max-width, 48rem);
+    width: calc(100% - 2 * var(--sc-ai-spacing-lg, 1.5rem));
+    margin: 0 auto var(--sc-ai-spacing-md, 1rem);
+}
+
+.plan-content ::deep .plan-activity__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    color: #4b5563;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.plan-content ::deep .plan-activity__status {
+    border-radius: 999px;
+    padding: 3px 9px;
+    background: #eef2ff;
+    color: #4338ca;
+}
+
+.plan-content ::deep .plan-activity[data-task-status="done"] .plan-activity__status {
+    background: #dcfce7;
+    color: #166534;
+}

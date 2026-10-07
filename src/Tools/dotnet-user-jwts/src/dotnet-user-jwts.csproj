@@ -13,10 +13,14 @@
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+  <PropertyGroup Condition="'$(DotNetBuildUseMonoRuntime)' != 'true' and '$(NativeAotSupported)' == 'true'">
     <PublishAot>true</PublishAot>
-    <RuntimeIdentifiers>$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true'">$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(DotNetBuild)' == 'true' and '$(RuntimeIdentifier)' == ''">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
+
+  <Import Project="..\..\NativeAot\AspNetCoreTools.NativeAot.props" />
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" LinkBase="Shared" />
@@ -33,10 +37,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.IdentityModel.Tokens.Jwt" />
-    <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
-    <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Bcl.Cryptography" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
 
   <ItemGroup>

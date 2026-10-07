@@ -20,6 +20,8 @@ public class Project : IDisposable
 {
     private const string _urlsNoHttps = "http://127.0.0.1:0";
     private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
+    // Generated projects run with a copied SDK. Do not let the parent MSBuild process redirect that host back to the repository SDK.
+    private const string _msBuildSdksPathEnvironmentVariable = "MSBuildSDKsPath";
 
     public static string ArtifactsLogDir
     {
@@ -79,7 +81,7 @@ public class Project : IDisposable
 
         var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
         var argString = $"new {templateName} {hiveArg}";
-        environmentVariables ??= new Dictionary<string, string>();
+        environmentVariables = AddBootstrapSdkEnvironmentVariables(environmentVariables);
         if (!isItemTemplate)
         {
             argString += " --no-restore";
@@ -161,13 +163,20 @@ public class Project : IDisposable
     internal async Task RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
     {
         Output.WriteLine("Publishing ASP.NET Core application...");
+        packageOptions = AddBootstrapSdkEnvironmentVariables(packageOptions);
 
         // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
         // should avoid any global contention and we can execute a build or publish in a lock-free way
 
         var restoreArgs = noRestore ? "--no-restore" : null;
 
-        using var execution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
+        using var execution = ProcessEx.Run(
+            Output,
+            TemplateOutputDir,
+            DotNetMuxer.MuxerPathOrDefault(),
+            $"publish {restoreArgs} -c Release /bl {additionalArgs}",
+            packageOptions,
+            envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await execution.Exited;
 
         var result = new ProcessResult(execution);
@@ -186,11 +195,18 @@ public class Project : IDisposable
     internal async Task RunDotNetBuildAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool errorOnBuildWarning = true)
     {
         Output.WriteLine("Building ASP.NET Core application...");
+        packageOptions = AddBootstrapSdkEnvironmentVariables(packageOptions);
 
         // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
         // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-        using var execution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
+        using var execution = ProcessEx.Run(
+            Output,
+            TemplateOutputDir,
+            DotNetMuxer.MuxerPathOrDefault(),
+            $"build --no-restore -c Debug /bl {additionalArgs}",
+            packageOptions,
+            envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await execution.Exited;
 
         var result = new ProcessResult(execution);
@@ -204,6 +220,18 @@ public class Project : IDisposable
         CaptureBinLogOnFailure(execution);
 
         Assert.True(0 == result.ExitCode, ErrorMessages.GetFailedProcessMessage("build", this, result));
+    }
+
+    private static IDictionary<string, string> AddBootstrapSdkEnvironmentVariables(IDictionary<string, string> environmentVariables)
+    {
+        environmentVariables ??= new Dictionary<string, string>();
+
+        // The Helix payload places Directory.Build.props outside the generated projects' parent
+        // directory hierarchy, so pass the bootstrap SDK pruning workarounds to child processes.
+        environmentVariables["LoadPrunePackageDataFromNearestFramework"] = "true";
+        environmentVariables["AllowMissingPrunePackageData"] = "true";
+
+        return environmentVariables;
     }
 
     internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null, bool noHttps = false)
@@ -239,27 +267,29 @@ public class Project : IDisposable
 
     internal (ProcessEx process, string listeningUri) ServePublishedStandaloneApp(ITestOutputHelper output)
     {
-        var publishDir = Path.Combine(TemplatePublishDir, "wwwroot");
+        output.WriteLine("Running blazor-gateway on published output...");
 
-        output.WriteLine("Running dotnet serve on published output...");
-        var command = DotNetMuxer.MuxerPathOrDefault();
-        string args;
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
-        {
-            args = "serve";
-        }
-        else
-        {
-            command = "dotnet-serve";
-            args = "--roll-forward LatestMajor";
-        }
+        var gatewayAssemblyPath = ResolveGatewayAssemblyPath();
+        var endpointsManifestPath = Path.Combine(TemplatePublishDir, $"{ProjectName}.staticwebassets.endpoints.json");
+        Assert.True(File.Exists(gatewayAssemblyPath), $"Expected the gateway assembly to exist at '{gatewayAssemblyPath}'.");
+        Assert.True(File.Exists(endpointsManifestPath), $"Expected the static web assets endpoints manifest to exist at '{endpointsManifestPath}'.");
 
-        var serveProcess = ProcessEx.Run(output, publishDir, command, args);
+        var args = string.Join(
+            " ",
+            $"\"{gatewayAssemblyPath}\"",
+            "--urls http://127.0.0.1:0",
+            "--environment Development",
+            $"--contentRoot \"{TemplatePublishDir}\"",
+            $"--ClientApps:app:EndpointsManifest \"{endpointsManifestPath}\"",
+            "--ClientApps:app:PathPrefix \"\"");
+
+        var serveProcess = ProcessEx.Run(output, TemplatePublishDir, DotNetMuxer.MuxerPathOrDefault(), args);
         var listeningUri = ResolveListeningUrl(serveProcess);
         return (serveProcess, listeningUri);
 
         static string ResolveListeningUrl(ProcessEx process)
         {
+            const string listeningMessagePrefix = "Now listening on: ";
             var buffer = new List<string>();
             try
             {
@@ -268,10 +298,15 @@ public class Project : IDisposable
                     if (line != null)
                     {
                         buffer.Add(line);
-                        if (line.Trim().Contains("https://", StringComparison.Ordinal) ||
-                            line.Trim().Contains("http://", StringComparison.Ordinal))
+                        var trimmedLine = line.Trim();
+                        var prefixIndex = trimmedLine.IndexOf(listeningMessagePrefix, StringComparison.Ordinal);
+                        if (prefixIndex >= 0)
                         {
-                            return line.Trim();
+                            var listeningUri = trimmedLine[(prefixIndex + listeningMessagePrefix.Length)..];
+                            if (Uri.TryCreate(listeningUri, UriKind.Absolute, out _))
+                            {
+                                return listeningUri;
+                            }
                         }
                     }
                 }
@@ -283,6 +318,32 @@ public class Project : IDisposable
             throw new InvalidOperationException(
                 $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
         }
+    }
+
+    private static string ResolveGatewayAssemblyPath()
+    {
+        var packageRoot = ProcessEx.NuGetPackagesRestorePath;
+        if (!string.IsNullOrEmpty(packageRoot))
+        {
+            var gatewayPackageRoot = Path.Combine(packageRoot, "microsoft.aspnetcore.components.gateway");
+            if (Directory.Exists(gatewayPackageRoot))
+            {
+                var matchingVersion = Directory.EnumerateDirectories(gatewayPackageRoot)
+                    .OrderByDescending(Path.GetFileName)
+                    .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(matchingVersion))
+                {
+                    var candidate = Path.Combine(matchingVersion, "tools", "blazor-gateway.dll");
+                    if (File.Exists(candidate))
+                    {
+                        return candidate;
+                    }
+                }
+            }
+        }
+
+        throw new FileNotFoundException("Could not locate the built Blazor gateway assembly. Ensure the package has been restored and the gateway package exists in the NuGet cache.");
     }
 
     internal async Task RunDotNetEfCreateMigrationAsync(string migrationName)

@@ -27,14 +27,14 @@
     <Compile Include="$(KestrelSharedSourceRoot)\TransportMultiplexedConnection.cs" Link="Internal\TransportMultiplexedConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportMultiplexedConnection.Generated.cs" Link="Internal\TransportMultiplexedConnection.Generated.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportMultiplexedConnection.FeatureCollection.cs" Link="Internal\TransportMultiplexedConnection.FeatureCollection.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\RuntimeAsyncMethodGenerationAttribute.cs" Link="Internal\RuntimeAsyncMethodGenerationAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

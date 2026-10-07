@@ -4,6 +4,13 @@
 using TestApp.Components;
 using TestApp.Services;
 
+if (Environment.GetEnvironmentVariable("E2E_FAIL_ON_STARTUP") is "1")
+{
+    Console.WriteLine("Intentional startup failure stdout");
+    Console.Error.WriteLine("Intentional startup failure stderr");
+    throw new InvalidOperationException("Intentional startup failure");
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
@@ -15,7 +22,9 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+#pragma warning disable ASPDEPR011 // UseWebAssemblyDebugging is obsolete
     app.UseWebAssemblyDebugging();
+#pragma warning restore ASPDEPR011
 }
 
 app.UseAntiforgery();
