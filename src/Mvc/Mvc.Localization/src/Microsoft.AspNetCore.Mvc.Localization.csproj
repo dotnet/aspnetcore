@@ -13,19 +13,20 @@ Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-    <Reference Include="Microsoft.AspNetCore.Localization" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Localization" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Html.Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.DataAnnotations\src\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.TagHelpers\src\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
   </ItemGroup>
 
   <ItemGroup>

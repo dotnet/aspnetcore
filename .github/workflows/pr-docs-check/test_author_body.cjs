@@ -65,12 +65,12 @@ test('malformed sections and invalid identities fail without replacing human tex
   assert.throws(() => authorBody(original, author, 'other/repo', 42), /Invalid source identity/);
 });
 
-for (const action of ['created', 'updated']) {
+for (const action of ['created', 'updated', 'unchanged']) {
   test(`trusted notification step updates ${action} draft descriptions, not comments`, async () => {
     const workflow = process.env.WORKFLOW_BASELINE_REF
       ? execFileSync('git', ['show', `${process.env.WORKFLOW_BASELINE_REF}:.github/workflows/pr-docs-check.md`], { encoding: 'utf8' })
       : fs.readFileSync(path.join(__dirname, '..', 'pr-docs-check.md'), 'utf8');
-    const step = workflow.split('- name: Notify source author on docs pull request')[1].split('\npre-agent-steps:')[0];
+    const step = workflow.split('- name: Notify source author on docs pull request')[1].split(/\n(?:jobs:|pre-agent-steps:)/)[0];
     const script = step.split('script: |\n')[1].split('\n').map(line => line.replace(/^ {14}/, '')).join('\n');
     const run = new Function('github', 'core', 'require', `return (async () => {${script}\n})();`);
     const saved = { ...process.env };

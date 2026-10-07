@@ -8,19 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\testassets\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj" />
-    <ProjectReference Include="..\testassets\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj" />
-    <ProjectReference Include="..\testassets\ExceptionHandlerSample\ExceptionHandlerSample.csproj" />
-    <ProjectReference Include="..\testassets\StatusCodePagesSample\StatusCodePagesSample.csproj" />
-    <ProjectReference Include="..\testassets\WelcomePageSample\WelcomePageSample.csproj" />
-    <ProjectReference Include="..\..\..\MiddlewareAnalysis\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\test\testassets\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\test\testassets\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\test\testassets\ExceptionHandlerSample\ExceptionHandlerSample.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\test\testassets\StatusCodePagesSample\StatusCodePagesSample.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\test\testassets\WelcomePageSample\WelcomePageSample.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\MiddlewareAnalysis\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\TestHost\src\Microsoft.AspNetCore.TestHost.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
   </ItemGroup>
 
 </Project>

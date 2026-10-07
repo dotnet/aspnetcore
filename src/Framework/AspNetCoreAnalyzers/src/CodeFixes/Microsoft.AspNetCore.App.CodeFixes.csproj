@@ -18,8 +18,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
-    <ProjectReference Include="..\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+
+    <ProjectReference Include="$(RepoRoot)src\Framework\AspNetCoreAnalyzers\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
