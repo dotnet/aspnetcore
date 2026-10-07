@@ -68,7 +68,8 @@ public class HttpsConnectionAdapterOptions
 
     /// <summary>
     /// Specifies a callback for client certificate validation that will be invoked during authentication. Setting this callback replaces the
-    /// default certificate policy check. This will be ignored if <see cref="AllowAnyClientCertificate"/> is called after this callback is set.
+    /// default check that requires <see cref="SslPolicyErrors.None"/>. This callback will be ignored if <see cref="AllowAnyClientCertificate"/>
+    /// is called after this callback is set.
     /// </summary>
     public Func<X509Certificate2, X509Chain?, SslPolicyErrors, bool>? ClientCertificateValidation { get; set; }
 
