@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
@@ -169,6 +172,65 @@ public class ProblemDetailsFactoryTest
            });
     }
 
+    [Fact]
+    public void CreateProblemDetails_IncludesExceptionFromExceptionHandlerFeature()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/65697
+        // CustomizeProblemDetails should receive the exception when one is available.
+        Exception? receivedException = null;
+        var expectedException = new InvalidOperationException("BOOM!");
+
+        var options = new ApiBehaviorOptions();
+        new ApiBehaviorOptionsSetup().Configure(options);
+
+        var problemDetailsOptions = new ProblemDetailsOptions
+        {
+            CustomizeProblemDetails = context =>
+            {
+                receivedException = context.Exception;
+            }
+        };
+
+        var factory = new DefaultProblemDetailsFactory(
+            Options.Create(options),
+            Options.Create(problemDetailsOptions));
+
+        var httpContext = GetHttpContext();
+        httpContext.Features.Set<IExceptionHandlerFeature>(
+            new ExceptionHandlerFeature { Error = expectedException });
+
+        factory.CreateProblemDetails(httpContext, statusCode: 500);
+
+        Assert.Same(expectedException, receivedException);
+    }
+
+    [Fact]
+    public void CreateProblemDetails_ExceptionIsNullWhenNoExceptionHandlerFeature()
+    {
+        Exception? receivedException = new Exception("should be overwritten");
+
+        var options = new ApiBehaviorOptions();
+        new ApiBehaviorOptionsSetup().Configure(options);
+
+        var problemDetailsOptions = new ProblemDetailsOptions
+        {
+            CustomizeProblemDetails = context =>
+            {
+                receivedException = context.Exception;
+            }
+        };
+
+        var factory = new DefaultProblemDetailsFactory(
+            Options.Create(options),
+            Options.Create(problemDetailsOptions));
+
+        var httpContext = GetHttpContext();
+
+        factory.CreateProblemDetails(httpContext, statusCode: 400);
+
+        Assert.Null(receivedException);
+    }
+
     private static DefaultHttpContext GetHttpContext()
     {
         return new DefaultHttpContext
@@ -182,5 +244,10 @@ public class ProblemDetailsFactoryTest
         var options = new ApiBehaviorOptions();
         new ApiBehaviorOptionsSetup().Configure(options);
         return new DefaultProblemDetailsFactory(Options.Create(options));
+    }
+
+    private sealed class ExceptionHandlerFeature : IExceptionHandlerFeature
+    {
+        public Exception Error { get; init; } = default!;
     }
 }
