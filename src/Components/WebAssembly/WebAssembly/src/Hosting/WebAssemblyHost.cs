@@ -194,26 +194,26 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                     var count = rootComponents.Count;
                     var initialOperationCount = initialOperationBatch?.Operations.Length ?? 0;
                     var pendingRenders = new List<Task>(count + initialOperationCount);
-                    renderer.BeginInitialRootComponentRender();
-                    try
+                    for (var i = 0; i < count; i++)
                     {
-                        for (var i = 0; i < count; i++)
-                        {
-                            var rootComponent = rootComponents[i];
-                            pendingRenders.Add(renderer.AddComponentAsync(
-                                rootComponent.ComponentType,
-                                rootComponent.Parameters,
-                                rootComponent.Selector));
-                        }
+                        var rootComponent = rootComponents[i];
+                        pendingRenders.Add(renderer.AddComponentAsync(
+                            rootComponent.ComponentType,
+                            rootComponent.Parameters,
+                            rootComponent.Selector));
+                    }
 
-                        if (initialOperationBatch is not null)
+                    if (initialOperationBatch is not null)
+                    {
+                        renderer.BeginInitialRootComponentRender();
+                        try
                         {
                             AddWebRootComponents(renderer, initialOperationBatch, pendingRenders);
                         }
-                    }
-                    finally
-                    {
-                        renderer.EndInitialRootComponentRender();
+                        finally
+                        {
+                            renderer.EndInitialRootComponentRender();
+                        }
                     }
 
                     if (initialOperationBatch is not null)
