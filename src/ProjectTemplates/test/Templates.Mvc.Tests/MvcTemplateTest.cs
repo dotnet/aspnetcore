@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 using Xunit.Abstractions;
@@ -43,22 +44,38 @@ public class MvcTemplateTest : LoggedTest
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
-    [Fact]
-    public async Task MvcTemplate_NameWithSpaces_ReferencesScopedCssBundle()
+    [Theory]
+    [InlineData("My Web App")]
+    [InlineData("My  Web App")]
+    [InlineData("MyWebApp")]
+    [InlineData("My.Web.App")]
+    public async Task MvcTemplate_ReferencesScopedCssBundle(string projectName)
     {
-        var project = await ProjectFactory.CreateProject(Output);
+        var project = await ProjectFactory.CreateProject(Output, projectName);
 
-        await project.RunDotNetNewAsync("mvc", args: new[] { "--name \"My Web App\"" });
+        await project.RunDotNetNewAsync("mvc", noHttps: true);
 
         var layoutContents = project.ReadFile("Views/Shared/_Layout.cshtml");
-        Assert.Contains("href=\"~/My_Web_App.styles.css\"", layoutContents);
+        Assert.Contains($"href=\"~/{projectName}.styles.css\"", layoutContents);
         Assert.DoesNotContain("href=\"~/Company.WebApplication1.styles.css\"", layoutContents);
 
         await project.RunDotNetBuildAsync();
 
-        project.AssertFileExists(
-            Path.Combine("obj", "Debug", project.TargetFramework, "scopedcss", "bundle", "My_Web_App.bundle.scp.css"),
-            shouldExist: true);
+        var bundlePath = Path.Combine("obj", "Debug", project.TargetFramework, "scopedcss", "bundle", $"{projectName}.styles.css");
+        project.AssertFileExists(bundlePath, shouldExist: true);
+        Assert.Contains("a.navbar-brand", project.ReadFile(bundlePath));
+
+        using var aspNetProcess = project.StartBuiltProjectAsync(noHttps: true);
+        using var pageResponse = await aspNetProcess.SendRequest("/");
+        pageResponse.EnsureSuccessStatusCode();
+
+        var document = await new HtmlParser().ParseDocumentAsync(await pageResponse.Content.ReadAsStringAsync());
+        var styleSheet = document.QuerySelector("link[href*='.styles.css']");
+        Assert.NotNull(styleSheet);
+
+        using var styleResponse = await aspNetProcess.SendRequest(styleSheet.GetAttribute("href"));
+        styleResponse.EnsureSuccessStatusCode();
+        Assert.Contains("a.navbar-brand", await styleResponse.Content.ReadAsStringAsync());
     }
 
     [ConditionalFact]
