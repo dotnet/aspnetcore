@@ -107,6 +107,11 @@ public sealed class Storage : IInternalAsyncDisposal
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        return _referenceTask ??= _jsRuntime.GetValueAsync<IJSObjectReference>(_propertyName).AsTask();
+        if (_referenceTask is null || _referenceTask.IsFaulted || _referenceTask.IsCanceled)
+        {
+            _referenceTask = _jsRuntime.GetValueAsync<IJSObjectReference>(_propertyName).AsTask();
+        }
+
+        return _referenceTask;
     }
 }

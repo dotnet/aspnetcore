@@ -27,6 +27,7 @@ public class StorageTest
         Assert.Same(browser.Window, browser.Window);
         Assert.Same(browser.Window.LocalStorage, browser.Window.LocalStorage);
         Assert.Same(browser.Window.SessionStorage, browser.Window.SessionStorage);
+        Assert.NotSame(browser.Window.LocalStorage, browser.Window.SessionStorage);
         Assert.Equal(0, jsRuntime.GetValueCallCount);
     }
 
@@ -56,6 +57,20 @@ public class StorageTest
             invocation => AssertInvocation(invocation, "setItem", "name", "value"),
             invocation => AssertInvocation(invocation, "removeItem", "name"),
             invocation => AssertInvocation(invocation, "clear"));
+    }
+
+    [Fact]
+    public async Task LocalStorage_ReacquiresReferenceAfterAcquisitionIsCanceled()
+    {
+        var jsRuntime = new RecordingJSRuntime { CancelNextGetValue = true };
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var storage = provider.GetRequiredService<IBrowserPlatform>().Window.LocalStorage;
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => storage.GetLengthAsync().AsTask());
+        var length = await storage.GetLengthAsync();
+
+        Assert.Equal(2u, length);
+        Assert.Equal(2, jsRuntime.GetValueCallCount);
     }
 
     [Fact]
@@ -132,6 +147,8 @@ public class StorageTest
 
         public string? RequestedProperty { get; private set; }
 
+        public bool CancelNextGetValue { get; set; }
+
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
             throw new NotSupportedException();
@@ -149,6 +166,13 @@ public class StorageTest
         {
             GetValueCallCount++;
             RequestedProperty = identifier;
+
+            if (CancelNextGetValue)
+            {
+                CancelNextGetValue = false;
+
+                return ValueTask.FromCanceled<TValue>(new CancellationToken(canceled: true));
+            }
 
             return ValueTask.FromResult((TValue)(object)ObjectReference);
         }
