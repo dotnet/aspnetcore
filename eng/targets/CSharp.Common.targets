@@ -61,7 +61,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND $(AddPublicApiAnalyzers) ">
-    <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
   </ItemGroup>
   <Target Name="_CheckIgnoredPublicApiFiles"
       BeforeTargets="Build;Restore"
