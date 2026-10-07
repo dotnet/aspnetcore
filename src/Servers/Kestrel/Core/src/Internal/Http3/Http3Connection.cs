@@ -42,6 +42,18 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly Dictionary<long, WebTransportSession>? _webtransportSessions;
 
+    // Internal for testing.
+    internal int WebTransportSessionCount
+    {
+        get
+        {
+            lock (_webtransportSessions!)
+            {
+                return _webtransportSessions.Count;
+            }
+        }
+    }
+
     private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
     private bool _aborted;
     private int _gracefulCloseInitiator;
@@ -171,15 +183,15 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         if (_webtransportSessions is not null)
         {
-            foreach (var session in _webtransportSessions)
+            foreach (var session in GetWebTransportSessions())
             {
                 if (ex.InnerException is not null)
                 {
-                    session.Value.Abort(new ConnectionAbortedException(ex.Message, ex.InnerException), errorCode);
+                    session.Abort(new ConnectionAbortedException(ex.Message, ex.InnerException), errorCode);
                 }
                 else
                 {
-                    session.Value.Abort(new ConnectionAbortedException(ex.Message), errorCode);
+                    session.Abort(new ConnectionAbortedException(ex.Message), errorCode);
                 }
             }
         }
@@ -535,7 +547,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                 if (_webtransportSessions is not null)
                 {
-                    foreach (var session in _webtransportSessions.Values)
+                    foreach (var session in GetWebTransportSessions())
                     {
                         session.OnClientConnectionClosed();
                     }
@@ -937,6 +949,28 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             _webtransportSessions[http3Stream.StreamId] = session;
         }
         return session;
+    }
+
+    internal void RemoveWebTransportSession(WebTransportSession session)
+    {
+        lock (_webtransportSessions!)
+        {
+            if (_webtransportSessions.TryGetValue(session.SessionId, out var existingSession) &&
+                ReferenceEquals(existingSession, session))
+            {
+                _webtransportSessions.Remove(session.SessionId);
+            }
+        }
+    }
+
+    private WebTransportSession[] GetWebTransportSessions()
+    {
+        lock (_webtransportSessions!)
+        {
+            var sessions = new WebTransportSession[_webtransportSessions.Count];
+            _webtransportSessions.Values.CopyTo(sessions, 0);
+            return sessions;
+        }
     }
 
     private static class GracefulCloseInitiator

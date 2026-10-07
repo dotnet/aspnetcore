@@ -62,6 +62,32 @@ public class WebTransportSessionTests : Http3TestBase
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WebTransportSession_Closed_RemovedFromConnection(bool abortSession)
+    {
+        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
+
+        var exitTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var session = await WebTransportTestUtilities.GenerateSession(Http3Api, exitTcs);
+
+        Assert.Equal(1, Http3Api.Connection.WebTransportSessionCount);
+
+        if (abortSession)
+        {
+            session.Abort(new(), System.Net.Http.Http3ErrorCode.InternalError);
+        }
+        else
+        {
+            session.OnClientConnectionClosed();
+        }
+
+        Assert.Equal(0, Http3Api.Connection.WebTransportSessionCount);
+
+        exitTcs.SetResult();
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
