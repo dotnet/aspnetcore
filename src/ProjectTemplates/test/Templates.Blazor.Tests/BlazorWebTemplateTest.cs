@@ -17,16 +17,33 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     [InlineData(BrowserKind.Chromium, "WebAssembly")]
     [InlineData(BrowserKind.Chromium, "Auto")]
     [InlineData(BrowserKind.Chromium, "None", "Individual")]
-    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None")
+    [InlineData(BrowserKind.Chromium, "Server", "Individual")]
+    [InlineData(BrowserKind.Chromium, "WebAssembly", "Individual")]
+    [InlineData(BrowserKind.Chromium, "Auto", "Individual")]
+    [InlineData(BrowserKind.Chromium, "Server", "None", true)]
+    [InlineData(BrowserKind.Chromium, "WebAssembly", "None", true)]
+    [InlineData(BrowserKind.Chromium, "Auto", "None", true)]
+    [InlineData(BrowserKind.Chromium, "Server", "Individual", true)]
+    [InlineData(BrowserKind.Chromium, "WebAssembly", "Individual", true)]
+    [InlineData(BrowserKind.Chromium, "Auto", "Individual", true)]
+    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None", bool allInteractive = false)
     {
         var project = await CreateBuildPublishAsync(
-            args: ["-int", interactivityOption, "-au", authOption],
+            args: ["-int", interactivityOption, "-au", authOption, "-ai", allInteractive ? "true" : "false"],
             getTargetProject: GetTargetProject);
 
-        var routesPath = Path.Combine(project.TemplateOutputDir, "Components", "Routes.razor");
-        var routes = await File.ReadAllTextAsync(routesPath);
+        var routesDirectory = HasClientProject() && allInteractive
+            ? Path.Combine(project.TemplateOutputDir, "..", $"{project.ProjectName}.Client")
+            : Path.Combine(project.TemplateOutputDir, "Components");
+        var routes = await File.ReadAllTextAsync(Path.Combine(routesDirectory, "Routes.razor"));
         Assert.Contains("DefaultLayout=\"typeof(MainLayout)\"", routes);
         Assert.DoesNotContain("DefaultLayout=\"typeof(Layout.MainLayout)\"", routes);
+
+        var imports = await File.ReadAllTextAsync(Path.Combine(routesDirectory, "_Imports.razor"));
+        var layoutNamespace = HasClientProject() && allInteractive
+            ? $"{project.ProjectName}.Client.Layout"
+            : $"{project.ProjectName}.Components.Layout";
+        Assert.Contains($"@using {layoutNamespace}", imports);
 
         // There won't be a counter page when the 'None' interactivity option is used
         var pagesToExclude = interactivityOption is "None"
