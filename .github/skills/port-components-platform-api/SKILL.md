@@ -27,8 +27,8 @@ Create one reviewable vertical slice: a typed projection and a real adoption.
   context, so only one thread runs at a time.
 - Use direct constructor, property, and method interop before adding a JavaScript module.
 - Wrap identity-bearing objects and preserve identity. `Window` owns the wrapper and hands the same
-  one to every caller, so implement `IAsyncDisposable` explicitly and let disposal release the
-  reference without leaving the instance unusable.
+  one to every caller, so never implement `IAsyncDisposable` or a public `DisposeAsync`. Implement
+  the internal `IInternalAsyncDisposal` explicitly, and let `Window` call it when the scope ends.
 - Add cancellation only when it maps to `AbortSignal`. Never pass a token just to have one, because
   any token turns off the default timeout that `JSRuntime` applies.
 

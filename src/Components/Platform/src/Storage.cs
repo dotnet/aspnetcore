@@ -8,11 +8,12 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// <summary>
 /// Represents a browser Web Storage object.
 /// </summary>
-public sealed class Storage : IAsyncDisposable
+public sealed class Storage : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly string _propertyName;
     private Task<IJSObjectReference>? _referenceTask;
+    private bool _disposed;
 
     internal Storage(IJSRuntime jsRuntime, string propertyName)
     {
@@ -84,23 +85,28 @@ public sealed class Storage : IAsyncDisposable
         await storage.InvokeVoidAsync("clear").ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    async ValueTask IAsyncDisposable.DisposeAsync()
+    async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
     {
-        // Window owns this instance and hands the same one to every caller, so releasing the
-        // reference must not poison it. A later call acquires a new reference.
-        var referenceTask = _referenceTask;
-        _referenceTask = null;
-
-        if (referenceTask is null || referenceTask.IsCanceled || referenceTask.IsFaulted)
+        if (_disposed)
         {
             return;
         }
 
-        var reference = await referenceTask.ConfigureAwait(false);
+        _disposed = true;
+
+        if (_referenceTask is null || _referenceTask.IsCanceled || _referenceTask.IsFaulted)
+        {
+            return;
+        }
+
+        var reference = await _referenceTask.ConfigureAwait(false);
         await reference.DisposeAsync().ConfigureAwait(false);
     }
 
     private Task<IJSObjectReference> GetReferenceAsync()
-        => _referenceTask ??= _jsRuntime.GetValueAsync<IJSObjectReference>(_propertyName).AsTask();
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        return _referenceTask ??= _jsRuntime.GetValueAsync<IJSObjectReference>(_propertyName).AsTask();
+    }
 }

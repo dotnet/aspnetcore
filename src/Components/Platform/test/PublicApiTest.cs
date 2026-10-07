@@ -22,6 +22,16 @@ public class PublicApiTest
         Assert.Empty(exposedTypes);
     }
 
+    [Theory]
+    [InlineData(typeof(Window))]
+    [InlineData(typeof(Storage))]
+    public void SharedInstances_CannotBeDisposedByApplicationCode(Type type)
+    {
+        Assert.False(typeof(IAsyncDisposable).IsAssignableFrom(type));
+        Assert.False(typeof(IDisposable).IsAssignableFrom(type));
+        Assert.Null(type.GetMethod("DisposeAsync", BindingFlags.Public | BindingFlags.Instance));
+    }
+
     [Fact]
     public void LiveBrowserObjectMethods_AreAsynchronous()
     {

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// <summary>
 /// Represents the active browser window.
 /// </summary>
-public sealed class Window : IAsyncDisposable
+public sealed class Window : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
@@ -67,8 +67,7 @@ public sealed class Window : IAsyncDisposable
         return created;
     }
 
-    /// <inheritdoc />
-    async ValueTask IAsyncDisposable.DisposeAsync()
+    async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
     {
         if (_disposed)
         {
@@ -81,9 +80,9 @@ public sealed class Window : IAsyncDisposable
 
         foreach (var feature in features)
         {
-            if (feature is IAsyncDisposable disposable)
+            if (feature is IInternalAsyncDisposal disposable)
             {
-                await disposable.DisposeAsync().ConfigureAwait(false);
+                await disposable.InternalDisposeAsync().ConfigureAwait(false);
             }
         }
     }
