@@ -249,6 +249,19 @@ class PrepareContextTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "does not match"):
             source_preflight("dotnet/aspnetcore", "42", pr)
 
+    def test_docs_lookup_paginates_with_only_the_explicit_docs_token(self):
+        with patch("prepare_context.subprocess.run") as run:
+            run.return_value = subprocess.CompletedProcess([], 0, json.dumps([[{"number": 9}], [{"number": 10}]]), "")
+            self.assertEqual(
+                [{"number": 9}, {"number": 10}],
+                github_api("/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100", "docs-token"),
+            )
+            self.assertIn("--paginate", run.call_args.args[0])
+            self.assertEqual("docs-token", run.call_args.kwargs["env"]["GH_TOKEN"])
+            run.return_value = subprocess.CompletedProcess([], 1, "", "HTTP 403")
+            with self.assertRaisesRegex(RuntimeError, "HTTP 403"):
+                github_api("/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100", "docs-token")
+
 
 if __name__ == "__main__":
     unittest.main()
