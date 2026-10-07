@@ -45,6 +45,7 @@ public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
     }
 
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Input file initialization uses the framework's fixed ElementReference and DotNetObjectReference converters.")]
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -72,6 +73,7 @@ public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
             maxAllowedSize,
             cancellationToken);
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Image conversion uses the framework's fixed ElementReference converter and primitive arguments.")]
     internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
     {
         var imageFile = await JSRuntime.InvokeAsync<BrowserFile>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
