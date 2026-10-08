@@ -36,7 +36,7 @@ public interface IHttpSysRequestPropertyFeature
 
     /// <summary>
     /// Reads an arbitrary HTTP_REQUEST_PROPERTY value from HTTP.SYS using the
-    /// <see href="https://learn.microsoft.com/windows/win32/api/http/nf-http-httpqueryrequestqueueproperty">HttpQueryRequestQueueProperty</see> Windows API.
+    /// <see href="https://learn.microsoft.com/windows/win32/http/http/nf-http-httpqueryrequestproperty">HttpQueryRequestProperty</see> Windows API.
     /// </summary>
     /// <param name="propertyId">
     /// The HTTP_REQUEST_PROPERTY identifier to query. The set of supported values is defined by the
