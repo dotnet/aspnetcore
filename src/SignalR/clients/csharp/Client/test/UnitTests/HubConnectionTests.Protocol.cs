@@ -4,6 +4,7 @@
 using System.Threading.Channels;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
@@ -854,6 +855,43 @@ public partial class HubConnectionTests
             {
                 await hubConnection.DisposeAsync().DefaultTimeout();
                 await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Theory]
+        [InlineData(new object[] { new object[0] })]
+        [InlineData(new object[] { new object[] { 42 } })]
+        public async Task InvocationOfNonexistentMethodLogsWarningWithoutError(object[] arguments)
+        {
+            // No expectedErrorsFilter: a server invocation of a method the client doesn't handle is intentional
+            // and must not produce an error log, otherwise StartVerifiableLog would fail the test.
+            using (StartVerifiableLog())
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    await connection.ReceiveJsonMessage(new { type = 1, target = "NonexistentMethod", arguments }).DefaultTimeout();
+
+                    // A follow-up invocation proves the connection survived and, since messages are processed in order,
+                    // guarantees the previous message was fully handled before we inspect the log.
+                    var handlerCalled = new TaskCompletionSource();
+                    hubConnection.On("Bar", () => handlerCalled.TrySetResult());
+                    await connection.ReceiveJsonMessage(new { type = 1, target = "Bar", arguments = new object[0] }).DefaultTimeout();
+                    await handlerCalled.Task.DefaultTimeout();
+
+                    // The missing method surfaces as a warning, not an error.
+                    var write = Assert.Single(TestSink.Writes.Where(w => w.EventId.Name == "MissingHandler"));
+                    Assert.Equal(LogLevel.Warning, write.LogLevel);
+                    Assert.DoesNotContain(TestSink.Writes, w => w.EventId.Name == "ArgumentBindingFailure");
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
             }
         }
 

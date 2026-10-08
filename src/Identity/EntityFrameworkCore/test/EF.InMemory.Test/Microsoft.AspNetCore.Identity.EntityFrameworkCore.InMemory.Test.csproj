@@ -9,19 +9,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authentication" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
-    <Reference Include="Microsoft.AspNetCore.Identity" />
-    <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-    <Reference Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Identity\Core\src\Microsoft.AspNetCore.Identity.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Identity\Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj" />
   </ItemGroup>
 
 </Project>
