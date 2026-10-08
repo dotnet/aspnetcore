@@ -276,7 +276,7 @@ public class RemoteJSDataStreamTest
     }
 
     [Fact]
-    public async Task ReceiveData_WithBackpressureRetries_TimesOutWhenNoProgressIsMade()
+    public async Task ReceiveData_WithBackpressureRetries_RefreshesTimeout()
     {
         var unhandledExceptionRaisedTask = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
         var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -308,10 +308,10 @@ public class RemoteJSDataStreamTest
         {
             await Task.Delay(25);
             var result = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, acceptedChunks, new byte[chunkSize], error: null).DefaultTimeout();
-            Assert.True(result is RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure or RemoteJSDataStreamResult.StreamDisposed);
+            Assert.Equal(RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure, result);
+            Assert.False(unhandledExceptionRaisedTask.Task.IsCompleted);
         }
 
-        Assert.True(unhandledExceptionRaisedTask.Task.IsCompleted);
         var exception = await unhandledExceptionRaisedTask.Task.DefaultTimeout();
         Assert.IsType<TimeoutException>(exception);
     }

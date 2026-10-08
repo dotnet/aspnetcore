@@ -128,6 +128,7 @@ internal sealed class RemoteJSDataStream : Stream
                 if (!_pendingFlushTask.IsCompleted)
                 {
                     _backpressureObserved = true;
+                    _lastDataReceivedTime = DateTimeOffset.UtcNow;
                     return RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure;
                 }
 
