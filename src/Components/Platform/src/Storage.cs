@@ -94,12 +94,22 @@ public sealed class Storage : IInternalAsyncDisposal
 
         _disposed = true;
 
-        if (_referenceTask is null || _referenceTask.IsCanceled || _referenceTask.IsFaulted)
+        if (_referenceTask is null)
         {
             return;
         }
 
-        var reference = await _referenceTask.ConfigureAwait(false);
+        IJSObjectReference reference;
+        try
+        {
+            reference = await _referenceTask.ConfigureAwait(false);
+        }
+        catch
+        {
+            // The acquisition can fail while disposal waits for it, and then there is nothing to release.
+            return;
+        }
+
         await reference.DisposeAsync().ConfigureAwait(false);
     }
 

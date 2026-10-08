@@ -113,6 +113,25 @@ public class StorageTest
     }
 
     [Fact]
+    public async Task ScopeDisposal_DisposesOtherStorageWhenAcquisitionFailsWhileItWaits()
+    {
+        var pending = new TaskCompletionSource<IJSObjectReference>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var jsRuntime = new RecordingJSRuntime { PendingNextGetValue = pending };
+        var provider = CreateServiceProvider(jsRuntime);
+        var window = provider.GetRequiredService<IBrowserPlatform>().Window;
+
+        // Window disposes features in access order, so the failing LocalStorage goes first.
+        _ = window.LocalStorage.GetLengthAsync();
+        await window.SessionStorage.GetLengthAsync();
+
+        var disposal = provider.DisposeAsync();
+        pending.SetException(new JSException("Acquisition failed."));
+        await disposal;
+
+        Assert.True(jsRuntime.SessionStorageReference.Disposed);
+    }
+
+    [Fact]
     public async Task ScopeDisposal_BeforeUseDoesNotAcquireReference()
     {
         var jsRuntime = new RecordingJSRuntime();
@@ -143,11 +162,15 @@ public class StorageTest
     {
         public RecordingJSObjectReference ObjectReference { get; } = new();
 
+        public RecordingJSObjectReference SessionStorageReference { get; } = new();
+
         public int GetValueCallCount { get; private set; }
 
         public string? RequestedProperty { get; private set; }
 
         public bool CancelNextGetValue { get; set; }
+
+        public TaskCompletionSource<IJSObjectReference>? PendingNextGetValue { get; set; }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
@@ -174,7 +197,16 @@ public class StorageTest
                 return ValueTask.FromCanceled<TValue>(new CancellationToken(canceled: true));
             }
 
-            return ValueTask.FromResult((TValue)(object)ObjectReference);
+            if (PendingNextGetValue is { } pending)
+            {
+                PendingNextGetValue = null;
+
+                return new ValueTask<TValue>((Task<TValue>)(object)pending.Task);
+            }
+
+            var reference = identifier == "sessionStorage" ? SessionStorageReference : ObjectReference;
+
+            return ValueTask.FromResult((TValue)(object)reference);
         }
     }
 
