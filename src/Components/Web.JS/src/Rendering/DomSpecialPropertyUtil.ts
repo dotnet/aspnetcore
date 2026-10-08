@@ -40,7 +40,7 @@ function tryApplyTypeProperty(element: Element, value: string | null): boolean {
     inputElement.removeAttribute('type');
   }
 
-  if (deferredValue !== undefined) {
+  if (deferredValue !== undefined && (inputElement.type !== 'file' || deferredValue === '' || deferredValue === null)) {
     setDeferredElementValue(inputElement, deferredValue);
   }
 

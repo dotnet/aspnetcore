@@ -36,6 +36,24 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
+    public void CanChangeInputTypeToFileWithNonemptyValue()
+    {
+        var fileInput = Browser.Exists(By.Id("dynamic-file-input"));
+        var nonFileInput = Browser.Exists(By.Id("dynamic-non-file-input"));
+
+        Browser.Equal("hello", () => fileInput.GetDomProperty("value"));
+        Browser.Equal("hello", () => nonFileInput.GetDomProperty("value"));
+
+        Browser.Exists(By.Id("change-dynamic-input-types")).Click();
+
+        Browser.Equal("file", () => Browser.Exists(By.Id("dynamic-file-input-type")).Text);
+        Browser.Equal("file", () => fileInput.GetDomProperty("type"));
+        Browser.Equal(string.Empty, () => fileInput.GetDomProperty("value"));
+        Browser.Equal("password", () => nonFileInput.GetDomProperty("type"));
+        Browser.Equal("hello", () => nonFileInput.GetDomProperty("value"));
+    }
+
+    [Fact]
     public void CanUploadSingleSmallFile()
     {
         // Create a temporary text file
