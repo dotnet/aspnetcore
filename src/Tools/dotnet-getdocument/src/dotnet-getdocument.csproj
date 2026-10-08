@@ -19,6 +19,6 @@
     <Compile Include="../../GetDocumentInsider/src/ProgramBase.cs" />
     <Compile Include="../../GetDocumentInsider/src/ReporterExtensions.cs" />
 
-    <Reference Include="Newtonsoft.Json" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>
