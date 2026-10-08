@@ -26,7 +26,7 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 ## Adding to the rest of the repo
 1. VS should have already registered your `.csproj` in [`AspNetCore.slnx`](../AspNetCore.slnx) and the corresponding solution filter (`*.slnf`) files.
   - If VS has not already modified these files, open the `.slnf` you want to add the project to. Create a solution folder for your project if doesn't exist already. Then right click solution folder -> Add -> Existing Project... -> follow the wizard.
-1. Complete the [project addition, move, or removal checklist](ReferenceResolution.md#adding-moving-or-removing-a-project), including both project-list generation passes and `CodeCheck.ps1`.
+1. Complete the [project addition, move, or removal checklist](#adding-moving-or-removing-a-project), including both project-list generation passes and `CodeCheck.ps1`.
 
 **Note:** If you are adding a new project to the root `src` directory, you will also need to add a reference in both the `ProjectsWithTestsSubsetN` and `DotNetProjects` lists of the `eng/Build.props` file. The `ProjectsWithTestsSubsetN` lists (the one with condition `'$(BuildMainlyReferenceProviders)' != 'true'"`) has items in the format of:
   ```XML
@@ -40,6 +40,22 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
                         $(RepoRoot)src\[YOUR FOLDER]\**\src\*.csproj;
                         ...
   ```
+
+## Adding, moving, or removing a project
+
+Adding, moving, or removing a project changes generated repository metadata and may affect multiple solution filters.
+Complete this checklist for every structural project change:
+
+1. Create, move, or remove the project files.
+2. Update `AspNetCore.slnx` and every `*.slnf` that references the project. A project referenced by a solution
+   filter must also exist in `AspNetCore.slnx`.
+3. Run `eng/scripts/GenerateProjectList.ps1` (or `build.cmd /t:GenerateProjectList`) and review all generated
+   `eng/*.props` changes, including ordering and grouping changes.
+4. Run project-list generation a second time and confirm that it produces no further changes.
+5. For a move or removal, run `git grep -n -- '<old-project-path>'` and resolve every remaining tracked reference
+   that is not intentionally historical documentation.
+6. Run `eng/scripts/CodeCheck.ps1`. This checks that solution filters reference only projects in
+   `AspNetCore.slnx` and reruns project-list generation to detect stale generated metadata.
 
 ## (OPTIONAL) Including your project in SharedFx
 1. Add the following line to the `.csproj`'s `PropertyGroup` to include your project in the SharedFx API:

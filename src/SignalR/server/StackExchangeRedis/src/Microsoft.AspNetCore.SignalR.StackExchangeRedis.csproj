@@ -17,9 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="StackExchange.Redis" />
-    <Reference Include="MessagePack" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="StackExchange.Redis" />
+
+    <ProjectReference Include="$(RepoRoot)src\SignalR\server\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
