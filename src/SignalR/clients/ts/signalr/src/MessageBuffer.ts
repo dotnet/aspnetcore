@@ -137,6 +137,13 @@ export class MessageBuffer {
     }
 
     public _resetSequence(message: SequenceMessage): void {
+        // Sequence IDs start at 1. A smaller value is never valid and would cause following messages to be dropped as duplicates.
+        if (message.sequenceId < 1) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._connection.stop(new Error("Sequence ID must be greater than 0."));
+            return;
+        }
+
         if (message.sequenceId > this._nextReceivingSequenceId) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._connection.stop(new Error("Sequence ID greater than amount of messages we've received."));

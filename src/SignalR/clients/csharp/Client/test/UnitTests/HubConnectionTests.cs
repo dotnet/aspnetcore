@@ -961,7 +961,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
         var hubConnection = builder.Build();
-        var closedEventTcs = new TaskCompletionSource<Exception>();
+        var closedEventTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
         hubConnection.Closed += e =>
         {
             closedEventTcs.SetResult(e);
