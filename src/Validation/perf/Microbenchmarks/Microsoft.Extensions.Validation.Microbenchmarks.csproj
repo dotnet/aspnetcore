@@ -8,9 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Validation" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+
+    <ProjectReference Include="$(RepoRoot)src\Validation\src\Microsoft.Extensions.Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

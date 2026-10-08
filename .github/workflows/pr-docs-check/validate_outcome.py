@@ -74,6 +74,61 @@ def _validate_update_targets(payload: Any, expected_number: int) -> None:
         actual_number = _positive_int(item.get("pull_request_number"), f"{item_type} pull_request_number")
         if actual_number != expected_number:
             raise OutcomeValidationError(f"{item_type} targeted {actual_number}; expected {expected_number}.")
+        if item_type == "update_pull_request" and "body" in item:
+            raise OutcomeValidationError("Docs PR updates must preserve the existing body; omit body.")
+
+
+def _validate_unchanged(payload: Any, draft: Any, evidence: Any) -> None:
+    if (
+        not isinstance(draft, dict) or draft.get("found") is not True
+        or draft.get("blocked") is not False
+    ):
+        raise OutcomeValidationError("Unchanged outcomes require a trusted existing draft.")
+    selected = draft.get("selected")
+    sha = selected.get("head_sha") if isinstance(selected, dict) else None
+    if (
+        not isinstance(sha, str) or re.fullmatch(r"[a-f0-9]{40}", sha) is None
+        or not isinstance(evidence, dict) or evidence.get("clean") is not True
+        or evidence.get("base_sha") != sha or evidence.get("head_sha") != sha
+    ):
+        raise OutcomeValidationError("Unchanged outcomes require a clean workspace at the trusted draft head.")
+    if (
+        len(_items(payload)) != 2 or _count(payload, "noop") != 1
+        or _count(payload, "notify_source_pr") != 1
+    ):
+        raise OutcomeValidationError("Unchanged outcomes require exactly one noop and one notification, with no mutations.")
+
+
+def _validate_source_preflight(payload: Any, source_pr_number: int, preflight: Any) -> None:
+    if preflight is None:
+        return
+    if (
+        not isinstance(preflight, dict)
+        or preflight.get("source_repository") != "dotnet/aspnetcore"
+        or preflight.get("source_pr_number") != source_pr_number
+        or preflight.get("status") not in {"eligible", "restricted", "ineligible", "invalid"}
+    ):
+        raise OutcomeValidationError("Source preflight does not match the requested pull request.")
+    status = preflight["status"]
+    if status == "eligible":
+        return
+    if status == "invalid":
+        if len(_items(payload)) != 1 or _count(payload, "noop") != 1:
+            raise OutcomeValidationError("Invalid source requests require only one noop.")
+        return
+    notification = _one_item(payload, "notify_source_pr")
+    expected_result = "restricted" if status == "restricted" else "skipped"
+    if (
+        notification.get("result") != expected_result
+        or notification.get("docs_pr_action") != "none"
+        or _confidence(notification) != 0
+        or any(notification.get(f"{key}_required") is not False for key in (
+            "conceptual", "migration", "breaking_change",
+        ))
+        or _count(payload, "noop") != 1
+        or any(item.get("type") not in {"noop", "notify_source_pr"} for item in _items(payload))
+    ):
+        raise OutcomeValidationError(f"Source preflight requires the {expected_result} no-documentation outcome.")
 
 
 def _validate_docs_pr(
@@ -144,7 +199,10 @@ def build_outcome(
     docs_pr_author: str = "",
     safe_outputs_result: str = "success",
     safe_outputs_items_failed: Any = 0,
+    source_preflight: Any | None = None,
+    workspace_evidence: Any | None = None,
 ) -> dict[str, Any]:
+    _validate_source_preflight(payload, source_pr_number, source_preflight)
     notification = _one_item(payload, "notify_source_pr")
     notification_source_pr_number = _positive_int(
         notification.get("source_pr_number"),
@@ -160,7 +218,7 @@ def build_outcome(
     confidence = _confidence(notification)
     if result not in {"drafted", "skipped", "draft_failed", "restricted"}:
         raise OutcomeValidationError(f"Unsupported result: {result!r}.")
-    if action not in {"none", "created", "updated"}:
+    if action not in {"none", "created", "updated", "unchanged"}:
         raise OutcomeValidationError(f"Unsupported docs_pr_action: {action!r}.")
     summary = str(notification.get("summary") or "").strip()
     if not summary or len(summary) > 2000:
@@ -235,17 +293,20 @@ def build_outcome(
     if action == "created":
         if create_count != 1 or push_count != 0 or update_count != 0:
             raise OutcomeValidationError("Creating a draft requires one create_pull_request and no update outputs.")
-    elif action == "updated":
-        if create_count != 0 or push_count != 1 or update_count != 1:
+    elif action in {"updated", "unchanged"}:
+        if action == "unchanged":
+            _validate_unchanged(payload, expected_existing_draft, workspace_evidence)
+        elif create_count != 0 or push_count != 1 or update_count != 1:
             raise OutcomeValidationError(
                 "Updating a draft requires one push_to_pull_request_branch, one update_pull_request, and no create output."
             )
         number = _positive_int(notification.get("existing_docs_pr_number"), "existing_docs_pr_number")
-        _validate_update_targets(payload, number)
+        if action == "updated":
+            _validate_update_targets(payload, number)
         if created_pr_url:
             raise OutcomeValidationError("Updating an existing draft must not report a newly created PR URL.")
     else:
-        raise OutcomeValidationError("Drafted outcomes must use docs_pr_action created or updated.")
+        raise OutcomeValidationError("Drafted outcomes must use docs_pr_action created, updated, or unchanged.")
 
     safe_outputs_failed = (
         safe_outputs_result != "success"
@@ -277,6 +338,8 @@ def build_outcome(
         source_pr_number,
         docs_pr_author,
     )
+    if action == "unchanged" and docs_pr_metadata["head"].get("sha") != workspace_evidence["base_sha"]:
+        raise OutcomeValidationError("The docs draft head changed after workspace validation.")
     return canonical
 
 
@@ -303,18 +366,18 @@ def _validate_expected_draft_contract(
 
     code_output_count = create_count + push_count + update_count
     if blocked and code_output_count:
-        raise OutcomeValidationError("A matching non-draft docs PR exists and must not be modified or replaced.")
+        raise OutcomeValidationError("A matching non-draft or untrusted docs PR exists and must not be modified or replaced.")
     if result != "drafted":
         return None
     if blocked:
-        raise OutcomeValidationError("A drafted outcome is not allowed while a matching non-draft docs PR exists.")
+        raise OutcomeValidationError("A drafted outcome is not allowed while a matching non-draft or untrusted docs PR exists.")
     if found:
         selected = expected_existing_draft.get("selected")
         expected_number = _positive_int(
             selected.get("number") if isinstance(selected, dict) else None,
             "Selected existing docs PR number",
         )
-        if action != "updated":
+        if action not in {"updated", "unchanged"}:
             raise OutcomeValidationError(
                 f"Existing docs PR #{expected_number} must be updated instead of creating a duplicate."
             )
@@ -327,7 +390,7 @@ def _validate_expected_draft_contract(
                 f"Existing docs PR #{expected_number} must be updated instead of creating a duplicate."
             )
         return expected_number
-    elif action == "updated":
+    elif action in {"updated", "unchanged"}:
         raise OutcomeValidationError("The agent attempted to update a docs PR when no trusted draft was found.")
     return None
 
@@ -336,7 +399,12 @@ def validate_preflight(
     payload: Any,
     source_pr_number: int,
     expected_existing_draft: Any,
+    source_preflight: Any | None = None,
+    workspace_evidence: Any | None = None,
 ) -> None:
+    _validate_source_preflight(payload, source_pr_number, source_preflight)
+    if isinstance(source_preflight, dict) and source_preflight.get("status") == "invalid":
+        return
     notification = _one_item(payload, "notify_source_pr")
     notification_source_pr_number = _positive_int(
         notification.get("source_pr_number"),
@@ -351,7 +419,7 @@ def validate_preflight(
     confidence = _confidence(notification)
     if result not in {"drafted", "skipped", "draft_failed", "restricted"}:
         raise OutcomeValidationError(f"Unsupported result: {result!r}.")
-    if action not in {"none", "created", "updated"}:
+    if action not in {"none", "created", "updated", "unchanged"}:
         raise OutcomeValidationError(f"Unsupported docs_pr_action: {action!r}.")
 
     create_count = _count(payload, "create_pull_request")
@@ -390,36 +458,61 @@ def validate_preflight(
         if expected_draft_number is None:
             raise OutcomeValidationError("The agent attempted to update a docs PR when no trusted draft was found.")
         _validate_update_targets(payload, expected_draft_number)
+    elif action == "unchanged":
+        _validate_unchanged(payload, expected_existing_draft, workspace_evidence)
     else:
-        raise OutcomeValidationError("Drafted outcomes must use docs_pr_action created or updated.")
+        raise OutcomeValidationError("Drafted outcomes must use docs_pr_action created, updated, or unchanged.")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--agent-output", required=True, type=Path)
     parser.add_argument("--source-repository", required=True)
-    parser.add_argument("--source-pr-number", required=True, type=int)
+    parser.add_argument("--source-pr-number", required=True)
     parser.add_argument("--created-pr-url", default="")
     parser.add_argument("--docs-pr-metadata", type=Path)
     parser.add_argument("--docs-pr-author", default="")
     parser.add_argument("--safe-outputs-result", default="success")
     parser.add_argument("--safe-outputs-items-failed", default="0")
     parser.add_argument("--expected-existing-draft", type=Path)
+    parser.add_argument("--source-preflight", type=Path)
+    parser.add_argument("--workspace-evidence", type=Path)
     parser.add_argument("--preflight", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
 
     try:
         payload = _load_json(args.agent_output)
+        source_preflight = _load_json(args.source_preflight) if args.source_preflight else None
+        if isinstance(source_preflight, dict) and source_preflight.get("status") == "invalid":
+            if not args.preflight:
+                raise OutcomeValidationError("Invalid source requests cannot notify a source PR.")
+            if (
+                source_preflight.get("source_repository") != args.source_repository
+                or source_preflight.get("requested_pr_number") != args.source_pr_number
+            ):
+                raise OutcomeValidationError("Invalid source preflight does not match the request.")
+            if len(_items(payload)) != 1 or _count(payload, "noop") != 1:
+                raise OutcomeValidationError("Invalid source requests require only one noop.")
+            return 0
+        source_pr_number = _positive_int(
+            int(args.source_pr_number) if args.source_pr_number.isdigit() else None,
+            "Source PR number",
+        )
+        if args.source_repository != "dotnet/aspnetcore":
+            raise OutcomeValidationError("Unexpected source repository.")
         expected_existing_draft = (
             _load_json(args.expected_existing_draft)
             if args.expected_existing_draft
             else None
         )
+        workspace_evidence = _load_json(args.workspace_evidence) if args.workspace_evidence else None
         if args.preflight:
             if expected_existing_draft is None:
                 raise OutcomeValidationError("--expected-existing-draft is required with --preflight.")
-            validate_preflight(payload, args.source_pr_number, expected_existing_draft)
+            validate_preflight(
+                payload, source_pr_number, expected_existing_draft, source_preflight, workspace_evidence,
+            )
             return 0
         if args.output is None:
             raise OutcomeValidationError("--output is required unless --preflight is used.")
@@ -427,13 +520,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         outcome = build_outcome(
             payload,
             args.source_repository,
-            args.source_pr_number,
+            source_pr_number,
             args.created_pr_url,
             metadata,
             expected_existing_draft,
             args.docs_pr_author,
             args.safe_outputs_result,
             args.safe_outputs_items_failed,
+            source_preflight,
+            workspace_evidence,
         )
     except OutcomeValidationError as error:
         if args.preflight:

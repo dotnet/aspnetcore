@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.JSInterop" />
+    <ProjectReference Include="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
   </ItemGroup>
 
   <ItemGroup>

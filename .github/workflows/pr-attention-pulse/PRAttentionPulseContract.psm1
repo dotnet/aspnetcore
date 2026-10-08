@@ -1,5 +1,8 @@
 Set-StrictMode -Version Latest
 
+# Hard ceiling for the whole published issue body, kept safely under GitHub's issue-body limit.
+$script:PulseMaxBodyLength = 65000
+
 function Assert-PulseSnapshotRun
 {
     param([string]$Repository, [string]$ServerUrl, [string]$RunId, [string]$RunAttempt)
@@ -70,11 +73,16 @@ function Read-PulseSnapshotInput
     {
         $sha256.Dispose()
     }
-    $json = [Text.UTF8Encoding]::new($false, $true).GetString($bytes).TrimStart([char]0xFEFF)
+    $json = [Text.UTF8Encoding]::new($false, $true).GetString($bytes)
+    if ($json.StartsWith([char]0xFEFF))
+    {
+        throw "The Pulse snapshot input must not start with a UTF-8 BOM."
+    }
 
     return [pscustomobject]@{
         Pulse = $json | ConvertFrom-Json -Depth 100
         Sha256 = $hash
+        Json = $json
     }
 }
 
@@ -168,19 +176,41 @@ function Assert-PulseSnapshotBinding
     }
 }
 
+function Get-PulseJsonFenceLength
+{
+    param([Parameter(Mandatory)][AllowEmptyString()][string]$Json)
+
+    $longestRun = 0
+    foreach ($match in [regex]::Matches($Json, '`+'))
+    {
+        if ($match.Length -gt $longestRun)
+        {
+            $longestRun = $match.Length
+        }
+    }
+
+    # A closing fence must be at least as long as the longest run of backticks the
+    # content contains, so embedded backticks can never terminate the fence early.
+    return [Math]::Max(3, $longestRun + 1)
+}
+
 function ConvertTo-PulseSnapshotBlock
 {
-    param([Parameter(Mandatory)][object]$SnapshotContext)
+    param(
+        [Parameter(Mandatory)][object]$SnapshotContext,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Json,
+        [Parameter(Mandatory)][int]$MaxSnapshotLength
+    )
 
     Assert-PulseSnapshotContext -SnapshotContext $SnapshotContext
     $runUrl = "https://github.com/dotnet/aspnetcore/actions/runs/$($SnapshotContext.runId)/attempts/$($SnapshotContext.runAttempt)"
 
-    return @(
+    $header = @(
         "## Snapshot"
         ""
         "Snapshot generated: ``$($SnapshotContext.generatedAt)``. [Producing workflow run]($runUrl)."
         "Artifact: ``pulse-publication-evidence``; files: ``pulse-input.json``, ``pulse-body.md``."
-        "Capped report results, not the full queue. Authenticated ZIP artifact; retained for seven days."
+        "Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence."
         ""
         "<details>"
         "<summary>Snapshot identity</summary>"
@@ -190,6 +220,38 @@ function ConvertTo-PulseSnapshotBlock
         ""
         "</details>"
     ) -join "`n"
+
+    $fence = "``" * (Get-PulseJsonFenceLength -Json $Json)
+    $embeddedOpen = @(
+        "<details>"
+        "<summary>Snapshot JSON (exact sanitized bytes)</summary>"
+        ""
+        "${fence}json"
+    ) -join "`n"
+    $embeddedBlock = $header + "`n`n" + $embeddedOpen + "`n" + $Json + "`n" + $fence + "`n`n</details>"
+
+    if ($embeddedBlock.Length -le $MaxSnapshotLength)
+    {
+        return $embeddedBlock
+    }
+
+    # Fail closed on size: never truncate the JSON or claim an embedded snapshot that
+    # is not actually present. The artifact remains the sole source of the exact bytes.
+    $fallbackBlock = $header + "`n`n" + (@(
+        "<details>"
+        "<summary>Snapshot JSON</summary>"
+        ""
+        "The exact JSON does not fit within the issue body size limit for this snapshot and is not embedded here."
+        "Retrieve the identical bytes from the ``pulse-publication-evidence`` artifact and verify them against the checksum above."
+        ""
+        "</details>"
+    ) -join "`n")
+    if ($fallbackBlock.Length -gt $MaxSnapshotLength)
+    {
+        throw "The Pulse snapshot identity block alone exceeds the configured issue body size limit."
+    }
+
+    return $fallbackBlock
 }
 
 function Get-PulseMergeInteger
@@ -778,15 +840,10 @@ function Add-PulseArea
     $Lines.Add("</details>")
 }
 
-function ConvertTo-PRAttentionPulseBody
+function Get-PulseBodyPrefix
 {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][object]$Pulse,
-        [Parameter(Mandatory)][object]$SnapshotContext
-    )
+    param([Parameter(Mandatory)][object]$Pulse)
 
-    $snapshot = ConvertTo-PulseSnapshotBlock -SnapshotContext $SnapshotContext
     $areas = @(Get-PulseAreas -Pulse $Pulse)
     $lines = [Collections.Generic.List[string]]::new()
     $lines.Add("> [!IMPORTANT]")
@@ -808,10 +865,25 @@ function ConvertTo-PRAttentionPulseBody
     {
         Add-PulseArea -Lines $lines -Area $area
     }
-    $lines.Add("")
-    $lines.Add($snapshot)
 
     return $lines -join "`n"
+}
+
+function ConvertTo-PRAttentionPulseBody
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$Pulse,
+        [Parameter(Mandatory)][object]$SnapshotContext,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Json
+    )
+
+    $prefix = Get-PulseBodyPrefix -Pulse $Pulse
+    $separator = "`n`n"
+    $snapshot = ConvertTo-PulseSnapshotBlock -SnapshotContext $SnapshotContext -Json $Json `
+        -MaxSnapshotLength ($script:PulseMaxBodyLength - $prefix.Length - $separator.Length)
+
+    return $prefix + $separator + $snapshot
 }
 
 function Assert-PRAttentionPulseOutput
@@ -821,6 +893,7 @@ function Assert-PRAttentionPulseOutput
         [Parameter(Mandatory)][object]$AgentOutput,
         [Parameter(Mandatory)][object]$Pulse,
         [Parameter(Mandatory)][object]$SnapshotContext,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Json,
         [Parameter(Mandatory)][string]$ExpectedBody,
         [Parameter(Mandatory)]
         [ValidateRange(1, [int]::MaxValue)]
@@ -889,12 +962,16 @@ function Assert-PRAttentionPulseOutput
     }
 
     $body = $item.body
-    if ($body.Length -lt 200 -or $body.Length -gt 65000)
+    if ($body.Length -lt 200 -or $body.Length -gt $script:PulseMaxBodyLength)
     {
         throw "The issue body is outside the allowed size range."
     }
 
-    $snapshotSuffix = "`n`n" + (ConvertTo-PulseSnapshotBlock -SnapshotContext $SnapshotContext)
+    $prefix = Get-PulseBodyPrefix -Pulse $Pulse
+    $separator = "`n`n"
+    $expectedSnapshot = ConvertTo-PulseSnapshotBlock -SnapshotContext $SnapshotContext -Json $Json `
+        -MaxSnapshotLength ($script:PulseMaxBodyLength - $prefix.Length - $separator.Length)
+    $snapshotSuffix = $separator + $expectedSnapshot
     if (-not $body.EndsWith($snapshotSuffix, [StringComparison]::Ordinal) -or
         [regex]::Matches($body, "(?m)^## Snapshot$").Count -ne 1)
     {
