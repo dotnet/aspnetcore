@@ -43,19 +43,20 @@
   <Target Name="_SkipGetPublishAssetsForTrimmedBuild" />
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <Reference Include="Microsoft.AspNetCore.Components.CustomElements" />
-    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Components.Media" />
-    <Reference Include="Microsoft.AspNetCore.Components.QuickGrid" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
-    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
-    <Reference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
+    <PackageReference Include="Newtonsoft.Json" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\CustomElements\src\Microsoft.AspNetCore.Components.CustomElements.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Media\src\Microsoft.AspNetCore.Components.Media.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid\src\Microsoft.AspNetCore.Components.QuickGrid.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
-    <ProjectReference Include="..\LazyTestContentPackage\LazyTestContentPackage.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\LazyTestContentPackage\LazyTestContentPackage.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\TestContentPackage\TestContentPackage.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false" />
