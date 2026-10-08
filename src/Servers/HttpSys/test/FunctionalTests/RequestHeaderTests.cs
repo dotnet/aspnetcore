@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -159,6 +160,75 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 });
                 var response = await SendRequestAsync(address, headerDictionary);
                 var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+                Assert.Equal("200", responseStatusCode);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task RequestHeaders_ClientSendTransferEncodingAndContentLengthAndXContentLength_PreservesXContentLength()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                var requestHeaders = httpContext.Request.Headers;
+                var request = httpContext.Features.Get<RequestContext>().Request;
+
+                Assert.Single(requestHeaders["Transfer-Encoding"]);
+                Assert.Equal("gzip, chunked", requestHeaders["Transfer-Encoding"]);
+
+                Assert.Null(request.ContentLength);
+                Assert.True(request.HasEntityBody);
+
+                Assert.False(requestHeaders.ContainsKey("Content-Length"));
+                Assert.Null(requestHeaders.ContentLength);
+
+                Assert.Single(requestHeaders["X-Content-Length"]);
+                Assert.Equal("123", requestHeaders["X-Content-Length"]);
+
+                return Task.FromResult(0);
+            }))
+            {
+                var headers = new HeaderDictionary(new Dictionary<string, StringValues>
+                {
+                    { "Transfer-Encoding", new[] { "gzip", "chunked" } },
+                    { "Content-Length", "1" },
+                    { "X-Content-Length", "123" },
+                });
+
+                var response = await SendRequestAsync(address, headers);
+                var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+
+                Assert.Equal("200", responseStatusCode);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task RequestHeaders_ClientSendsContentLengthZero_RequestIsProcessed()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                var requestHeaders = httpContext.Request.Headers;
+                var request = httpContext.Features.Get<RequestContext>().Request;
+
+                Assert.Equal(0, request.ContentLength);
+                Assert.False(request.HasEntityBody);
+
+                Assert.True(requestHeaders.ContainsKey("Content-Length"));
+                Assert.Equal(0, requestHeaders.ContentLength);
+                Assert.Equal("0", requestHeaders["Content-Length"]);
+
+                return Task.FromResult(0);
+            }))
+            {
+                var headers = new HeaderDictionary(new Dictionary<string, StringValues>
+                {
+                    { "Content-Length", "0" },
+                });
+
+                var response = await SendRequestAsync(address, headers);
+                var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+
                 Assert.Equal("200", responseStatusCode);
             }
         }

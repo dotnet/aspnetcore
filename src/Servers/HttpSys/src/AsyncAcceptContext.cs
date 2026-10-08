@@ -70,6 +70,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     HttpSysListener server = asyncResult.Server;
                     if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                     {
+                        var requestId = asyncResult._nativeRequestContext.RequestId;
+
                         // at this point we have received an unmanaged HTTP_REQUEST and memoryBlob
                         // points to it we need to hook up our authentication handling code here.
                         try
@@ -83,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         }
                         catch (Exception)
                         {
-                            server.SendError(asyncResult._nativeRequestContext.RequestId, StatusCodes.Status400BadRequest);
+                            server.SendError(requestId, StatusCodes.Status400BadRequest);
                             throw;
                         }
                         finally
