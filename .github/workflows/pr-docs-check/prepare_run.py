@@ -10,6 +10,34 @@ from prepare_context import github_api, prepare_analysis, prepare_context, write
 from validate_outcome import _validate_docs_pr, _validate_docs_pr_topology
 
 
+def resolve_request(event_name: str, event: dict[str, Any], repository: str) -> tuple[str, str, str]:
+    if repository != "dotnet/aspnetcore":
+        raise ValueError("Documentation checks must run in dotnet/aspnetcore.")
+    if event_name == "pull_request_target":
+        pr = event.get("pull_request") or {}
+        base = pr.get("base") or {}
+        if (
+            event.get("action") != "closed" or pr.get("merged") is not True
+            or base.get("ref") != "main" or (base.get("repo") or {}).get("full_name") != repository
+        ):
+            raise ValueError("Automatic documentation checks require a source PR merged into main.")
+        number = pr.get("number")
+        if type(number) is not int or number <= 0:
+            raise ValueError("The merged event has an invalid source PR number.")
+        return repository, str(number), "skip"
+    if event_name == "workflow_dispatch":
+        inputs = event.get("inputs") or {}
+        source_repository = inputs.get("source_repository", repository)
+        number = inputs.get("pr_number", "")
+        mode = inputs.get("existing_draft", "skip")
+        if source_repository != repository or not isinstance(number, str) or not re.fullmatch(r"[1-9][0-9]*", number):
+            raise ValueError("The dispatch must identify a source PR in dotnet/aspnetcore.")
+        if mode not in {"skip", "refresh"}:
+            raise ValueError("Existing draft mode must be skip or refresh.")
+        return source_repository, number, mode
+    raise ValueError(f"Unsupported documentation check event: {event_name}.")
+
+
 def prepare_run(
     repository: str, number: str, directory: Path, existing_draft: str, author: str,
     source_api: Callable[[str], Any] = github_api,
@@ -65,19 +93,32 @@ def prepare_run(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source-repository", required=True)
-    parser.add_argument("--source-pr-number", required=True)
+    parser.add_argument("--source-repository")
+    parser.add_argument("--source-pr-number")
+    parser.add_argument("--event-path", type=Path)
+    parser.add_argument("--event-name")
+    parser.add_argument("--workflow-repository")
     parser.add_argument("--output-directory", required=True, type=Path)
     parser.add_argument("--existing-draft", choices=("skip", "refresh"), default="skip")
     parser.add_argument("--allowed-author", required=True)
     args = parser.parse_args()
+    if args.event_path is not None:
+        if args.source_repository is not None or args.source_pr_number is not None:
+            parser.error("Event requests cannot also specify a source PR.")
+        repository, number, mode = resolve_request(
+            args.event_name, json.loads(args.event_path.read_text(encoding="utf-8")), args.workflow_repository,
+        )
+    else:
+        if args.source_repository is None or args.source_pr_number is None:
+            parser.error("Specify an event request or a source repository and PR number.")
+        repository, number, mode = args.source_repository, args.source_pr_number, args.existing_draft
     result = prepare_run(
-        args.source_repository, args.source_pr_number, args.output_directory,
-        args.existing_draft, args.allowed_author,
+        repository, number, args.output_directory, mode, args.allowed_author,
     )
     with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
         output.write(f"analyze={str(result['analyze']).lower()}\nhead_sha={result['head_sha']}\n")
         output.write(f"docs_pr_number={result['docs_pr_number']}\n")
+        output.write(f"source_repository={repository}\nsource_pr_number={number}\n")
     if result["summary"]:
         with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as summary:
             summary.write(result["summary"])
