@@ -522,7 +522,9 @@ internal sealed partial class Request
         // We should remove the Content-Length request header in this case, for compatibility
         // reasons, include x-Content-Length so that the original Content-Length is still available.
         IHeaderDictionary headerDictionary = Headers;
-        headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
+
+        // if user already passed X-Content-Length, we won't overwrite it
+        headerDictionary.TryAdd("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
         Headers.ContentLength = StringValues.Empty;
 
         if (!AllowKeepAliveAfterCLTE)
