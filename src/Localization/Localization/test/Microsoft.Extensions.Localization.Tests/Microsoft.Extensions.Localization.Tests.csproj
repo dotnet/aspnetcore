@@ -6,17 +6,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Localization" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+
+    <ProjectReference Include="$(RepoRoot)src\Localization\Abstractions\src\Microsoft.Extensions.Localization.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.Primitives" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 
 </Project>

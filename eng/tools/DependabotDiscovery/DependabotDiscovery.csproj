@@ -20,117 +20,117 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="$(AngleSharpVersion)" />
-    <PackageReference Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
-    <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
-    <PackageReference Include="CommandLineParser" Version="$(CommandLineParserVersion)" />
-    <PackageReference Include="FSharp.Core" Version="$(FSharpCoreVersion)" />
-    <PackageReference Include="Google.Api.CommonProtos" Version="$(GoogleApiCommonProtosVersion)" />
-    <PackageReference Include="Google.Protobuf" Version="$(GoogleProtobufVersion)" />
-    <PackageReference Include="Grpc.Auth" Version="$(GrpcAuthVersion)" />
-    <PackageReference Include="Grpc.Net.Client" Version="$(GrpcNetClientVersion)" />
-    <PackageReference Include="Grpc.Tools" Version="$(GrpcToolsVersion)" />
-    <PackageReference Include="MessagePack" Version="$(MessagePackVersion)" />
-    <PackageReference Include="MessagePackAnalyzer" Version="$(MessagePackAnalyzerVersion)" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version)" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version)" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version)" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version)" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version)" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguageVersion)" />
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="$(MicrosoftAzureSignalRVersion)" />
-    <PackageReference Include="Microsoft.Bcl.HashCode" Version="$(MicrosoftBclHashCodeVersion)" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
-    <PackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(MicrosoftCodeAnalysisCSharpCodeFixTestingVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorVersion)" />
-    <PackageReference Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserVersion)" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion)" />
-    <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="$(MicrosoftDataSqlClientExtensionsAzureVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
-    <PackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllVersion)" />
-    <PackageReference Include="Microsoft.OpenApi" Version="$(MicrosoftOpenApiVersion)" />
-    <PackageReference Include="Microsoft.OpenApi.YamlReader" Version="$(MicrosoftOpenApiYamlReaderVersion)" />
-    <PackageReference Include="Microsoft.Playwright" Version="$(MicrosoftPlaywrightVersion)" />
-    <PackageReference Include="Microsoft.Playwright.TestAdapter" Version="$(MicrosoftPlaywrightTestAdapterVersion)" />
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
-    <PackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationVersion)" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryVersion)" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="$(MicrosoftWindowsCsWin32Version)" />
-    <PackageReference Include="ModelContextProtocol" Version="$(ModelContextProtocolVersion)" />
-    <PackageReference Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
-    <PackageReference Include="Mono.TextTemplating" Version="$(MonoTextTemplatingVersion)" />
-    <PackageReference Include="Moq" Version="$(MoqVersion)" />
-    <PackageReference Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
-    <PackageReference Include="NSwag.ApiDescription.Client" Version="$(NSwagApiDescriptionClientVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonVersion)" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
-    <PackageReference Include="Polly" Version="$(PollyVersion)" />
-    <PackageReference Include="Polly.Extensions.Http" Version="$(PollyExtensionsHttpVersion)" />
-    <PackageReference Include="Selenium.Support" Version="$(SeleniumSupportVersion)" />
-    <PackageReference Include="Selenium.WebDriver" Version="$(SeleniumWebDriverVersion)" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingVersion)" />
-    <PackageReference Include="Serilog.Sinks.File" Version="$(SerilogSinksFileVersion)" />
-    <PackageReference Include="SharpFuzz" Version="$(SharpFuzzVersion)" />
-    <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisVersion)" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="$(SwashbuckleAspNetCoreVersion)" />
-    <PackageReference Include="System.Buffers" Version="$(SystemBuffersVersion)" />
-    <PackageReference Include="System.CodeDom" Version="$(SystemCodeDomVersion)" />
-    <PackageReference Include="System.CommandLine.Experimental" Version="$(SystemCommandLineExperimentalVersion)" />
-    <PackageReference Include="System.ComponentModel" Version="$(SystemComponentModelVersion)" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsVersion)" />
-    <PackageReference Include="System.Memory" Version="$(SystemMemoryVersion)" />
-    <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
-    <PackageReference Include="System.Net.Sockets" Version="$(SystemNetSocketsVersion)" />
-    <PackageReference Include="System.Reactive.Linq" Version="$(SystemReactiveLinqVersion)" />
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationVersion)" />
-    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="$(SystemSecurityCryptographyX509CertificatesVersion)" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsVersion)" />
-    <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
-    <PackageReference Include="Verify.SourceGenerators" Version="$(VerifySourceGeneratorsVersion)" />
-    <PackageReference Include="Verify.Xunit" Version="$(VerifyXunitVersion)" />
-    <PackageReference Include="xunit.abstractions" Version="$(xunitabstractionsVersion)" />
-    <PackageReference Include="xunit.analyzers" Version="$(xunitanalyzersVersion)" />
-    <PackageReference Include="xunit.assert" Version="$(xunitassertVersion)" />
-    <PackageReference Include="xunit.extensibility.core" Version="$(xunitextensibilitycoreVersion)" />
-    <PackageReference Include="xunit.extensibility.execution" Version="$(xunitextensibilityexecutionVersion)" />
-    <PackageReference Include="xunit.v3" Version="$(XunitV3Version)" />
-    <PackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
+    <PackageReference Include="AngleSharp" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="CommandLineParser" />
+    <PackageReference Include="FSharp.Core" />
+    <PackageReference Include="Google.Api.CommonProtos" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Auth" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools" />
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="MessagePackAnalyzer" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" />
+    <PackageReference Include="Microsoft.Azure.SignalR" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" />
+    <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor" />
+    <PackageReference Include="Microsoft.CSharp" />
+    <PackageReference Include="Microsoft.Css.Parser" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" />
+    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
+    <PackageReference Include="Microsoft.OpenApi" />
+    <PackageReference Include="Microsoft.OpenApi.YamlReader" />
+    <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="Microsoft.Playwright.TestAdapter" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <PackageReference Include="Microsoft.Web.Administration" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" />
+    <PackageReference Include="ModelContextProtocol" />
+    <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="Mono.TextTemplating" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Newtonsoft.Json.Bson" />
+    <PackageReference Include="NSwag.ApiDescription.Client" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Polly.Extensions.Http" />
+    <PackageReference Include="Selenium.Support" />
+    <PackageReference Include="Selenium.WebDriver" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="SharpFuzz" />
+    <PackageReference Include="StackExchange.Redis" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="System.Buffers" />
+    <PackageReference Include="System.CodeDom" />
+    <PackageReference Include="System.CommandLine.Experimental" />
+    <PackageReference Include="System.ComponentModel" />
+    <PackageReference Include="System.ComponentModel.Annotations" />
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Net.Sockets" />
+    <PackageReference Include="System.Reactive.Linq" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" />
+    <PackageReference Include="System.Security.Principal.Windows" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
+    <PackageReference Include="System.ValueTuple" />
+    <PackageReference Include="Verify.SourceGenerators" />
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="xunit.abstractions" />
+    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.assert" />
+    <PackageReference Include="xunit.extensibility.core" />
+    <PackageReference Include="xunit.extensibility.execution" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <!-- Microsoft.Owin.* only ship a net45 asset; the default TFM above can't restore them. -->
-    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesVersion)" />
-    <PackageReference Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingVersion)" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" />
+    <PackageReference Include="Microsoft.Owin.Testing" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">
     <!-- These packages only support netcoreapp TFMs; net472 above can't restore them. -->
-    <PackageReference Include="AGUI.Abstractions" Version="$(AGUIAbstractionsVersion)" />
-    <PackageReference Include="AGUI.Client" Version="$(AGUIClientVersion)" />
-    <PackageReference Include="AGUI.Formatting" Version="$(AGUIFormattingVersion)" />
-    <PackageReference Include="AGUI.Server" Version="$(AGUIServerVersion)" />
-    <PackageReference Include="Grpc.AspNetCore" Version="$(GrpcAspNetCoreVersion)" />
-    <PackageReference Include="Grpc.AspNetCore.Server" Version="$(GrpcAspNetCoreServerVersion)" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
-    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIOpenAIVersion)" />
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="$(ModelContextProtocolAspNetCoreVersion)" />
-    <PackageReference Include="Photino.NET" Version="$(PhotinoNETVersion)" />
-    <PackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
+    <PackageReference Include="AGUI.Abstractions" />
+    <PackageReference Include="AGUI.Client" />
+    <PackageReference Include="AGUI.Formatting" />
+    <PackageReference Include="AGUI.Server" />
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.Server" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
+    <PackageReference Include="Photino.NET" />
+    <PackageReference Include="Yarp.ReverseProxy" />
   </ItemGroup>
 
 </Project>

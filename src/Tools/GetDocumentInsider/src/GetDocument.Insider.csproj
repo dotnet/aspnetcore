@@ -11,22 +11,22 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
-    <Reference Include="Microsoft.CSharp" />
+    <PackageReference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
-    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.OpenApi" />
-    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
+    <PackageReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" IncludeAssets="ContentFiles;Build" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.OpenApi" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
   </ItemGroup>
@@ -40,6 +40,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 </Project>
