@@ -301,6 +301,13 @@
     <span id="checkbox-initially-checked-value">@checkboxInitiallyCheckedValue</span>
     <button id="checkbox-initially-checked-invert" @onclick="@(() => { checkboxInitiallyCheckedValue = !checkboxInitiallyCheckedValue; })">Invert</button>
 </p>
+<p>
+    Dynamic type initially checked:
+    <input id="checkbox-dynamic-type" type="@checkboxInputType" @bind="checkboxDynamicTypeValue" />
+    <span id="checkbox-dynamic-type-value">@checkboxDynamicTypeValue</span>
+    <button id="checkbox-dynamic-type-invert" @onclick="@(() => { checkboxDynamicTypeValue = !checkboxDynamicTypeValue; })">Invert</button>
+    <input id="checkbox-literal-type" type="checkbox" @bind="checkboxLiteralTypeValue" />
+</p>
 
 <h2>Select</h2>
 <p>
@@ -482,6 +489,9 @@
     bool? checkboxInitiallyNullValue = null;
     bool checkboxInitiallyUncheckedValue = false;
     bool checkboxInitiallyCheckedValue = true;
+    string checkboxInputType = "checkbox";
+    bool checkboxDynamicTypeValue = true;
+    bool checkboxLiteralTypeValue = true;
 
     int textboxIntValue = -42;
     int? textboxNullableIntValue = null;
