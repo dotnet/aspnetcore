@@ -196,6 +196,65 @@ InvalidContentDispositionValue +
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public async Task ReadFormAsync_MultipartRepeatedHeadersCountExceeded_Throws(bool bufferRequest)
+    {
+        var body = MultipartFormField.Replace("\r\n\r\n",
+            "\r\nCustom-header: first\r\ncustom-HEADER: second\r\n\r\n") + MultipartFormEnd;
+        var context = new DefaultHttpContext();
+        var responseFeature = new FakeResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(responseFeature);
+        context.Request.ContentType = MultipartContentType;
+        context.Request.Body = new NonSeekableReadStream(Encoding.UTF8.GetBytes(body));
+        context.Features.Set<IFormFeature>(new FormFeature(context.Request, new FormOptions
+        {
+            BufferBody = bufferRequest,
+            MultipartHeadersCountLimit = 2,
+        }));
+
+        try
+        {
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
+            Assert.Equal("Multipart headers count limit 2 exceeded.", exception.Message);
+        }
+        finally
+        {
+            await responseFeature.CompleteAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReadFormAsync_MultipartRepeatedHeadersAtCountLimit_ReturnsParsedFormCollection(bool bufferRequest)
+    {
+        var body = MultipartFormField.Replace("\r\n\r\n",
+            "\r\nCustom-header: first\r\ncustom-HEADER: second\r\n\r\n") + MultipartFormEnd;
+        var context = new DefaultHttpContext();
+        var responseFeature = new FakeResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(responseFeature);
+        context.Request.ContentType = MultipartContentType;
+        context.Request.Body = new NonSeekableReadStream(Encoding.UTF8.GetBytes(body));
+        context.Features.Set<IFormFeature>(new FormFeature(context.Request, new FormOptions
+        {
+            BufferBody = bufferRequest,
+            MultipartHeadersCountLimit = 3,
+        }));
+
+        try
+        {
+            var form = await context.Request.ReadFormAsync();
+            Assert.Single(form);
+            Assert.Equal("Foo", form["description"]);
+        }
+        finally
+        {
+            await responseFeature.CompleteAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task ReadForm_EmptyMultipart_ReturnsParsedFormCollection(bool bufferRequest)
     {
         var formContent = Encoding.UTF8.GetBytes(EmptyMultipartForm);
