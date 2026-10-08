@@ -967,4 +967,4 @@ if ([Text.Encoding]::UTF8.GetByteCount($json) -gt $MaxOutputBytes)
     $json = $result | ConvertTo-Json -Depth 10 -Compress
 }
 
-[IO.File]::WriteAllText($OutputPath, $json + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+[IO.File]::WriteAllText($OutputPath, $json + "`n", [Text.UTF8Encoding]::new($false))

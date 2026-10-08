@@ -1,5 +1,259 @@
 Set-StrictMode -Version Latest
 
+# Hard ceiling for the whole published issue body, kept safely under GitHub's issue-body limit.
+$script:PulseMaxBodyLength = 65000
+
+function Assert-PulseSnapshotRun
+{
+    param([string]$Repository, [string]$ServerUrl, [string]$RunId, [string]$RunAttempt)
+
+    if ($Repository -cne "dotnet/aspnetcore" -or $ServerUrl -cne "https://github.com")
+    {
+        throw "The Pulse snapshot requires the trusted dotnet/aspnetcore repository and https://github.com server."
+    }
+    foreach ($identifier in @($RunId, $RunAttempt))
+    {
+        if ($identifier -cnotmatch "\A[1-9][0-9]*\z")
+        {
+            throw "Pulse snapshot run ID and attempt must be positive decimal strings."
+        }
+    }
+}
+
+function Assert-PulseSnapshotContext
+{
+    param([Parameter(Mandatory)][object]$SnapshotContext)
+
+    $properties = @("artifactName", "bodyFileName", "generatedAt", "inputFileName", "inputSha256", "repository", "runAttempt", "runId", "serverUrl")
+    if ((@($SnapshotContext.PSObject.Properties.Name | Sort-Object) -join ",") -cne ($properties -join ","))
+    {
+        throw "The frozen Pulse snapshot context has missing or unexpected fields."
+    }
+    foreach ($name in $properties)
+    {
+        if ($SnapshotContext.$name -isnot [string] -or [string]::IsNullOrEmpty($SnapshotContext.$name))
+        {
+            throw "The frozen Pulse snapshot field '$name' must be a nonempty string."
+        }
+    }
+    Assert-PulseSnapshotRun -Repository $SnapshotContext.repository -ServerUrl $SnapshotContext.serverUrl `
+        -RunId $SnapshotContext.runId -RunAttempt $SnapshotContext.runAttempt
+    if ($SnapshotContext.artifactName -cne "pulse-publication-evidence" -or
+        $SnapshotContext.inputFileName -cne "pulse-input.json" -or $SnapshotContext.bodyFileName -cne "pulse-body.md")
+    {
+        throw "The frozen Pulse snapshot artifact and file names are invalid."
+    }
+    $timestamp = [datetime]::MinValue
+    if (-not [datetime]::TryParseExact(
+        $SnapshotContext.generatedAt, "yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'",
+        [Globalization.CultureInfo]::InvariantCulture,
+        [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal,
+        [ref]$timestamp))
+    {
+        throw "The frozen Pulse snapshot generation time must be an invariant UTC ISO-8601 timestamp."
+    }
+    if ($SnapshotContext.inputSha256 -cnotmatch "\A[0-9a-f]{64}\z")
+    {
+        throw "The frozen Pulse snapshot checksum must be a full lowercase SHA-256."
+    }
+}
+
+function Read-PulseSnapshotInput
+{
+    param([Parameter(Mandatory)][string]$InputPath)
+
+    # Hash and parse one read, including the BOM and final newline in the checksum.
+    $bytes = [IO.File]::ReadAllBytes($InputPath)
+    $sha256 = [Security.Cryptography.SHA256]::Create()
+    try
+    {
+        $hash = [BitConverter]::ToString($sha256.ComputeHash($bytes)).Replace("-", "").ToLowerInvariant()
+    }
+    finally
+    {
+        $sha256.Dispose()
+    }
+    $json = [Text.UTF8Encoding]::new($false, $true).GetString($bytes)
+    if ($json.StartsWith([char]0xFEFF))
+    {
+        throw "The Pulse snapshot input must not start with a UTF-8 BOM."
+    }
+
+    return [pscustomobject]@{
+        Pulse = $json | ConvertFrom-Json -Depth 100
+        Sha256 = $hash
+        Json = $json
+    }
+}
+
+function New-PulseSnapshotContext
+{
+    param(
+        [string]$Repository, [string]$ServerUrl, [string]$RunId, [string]$RunAttempt,
+        [string]$GeneratedAt, [string]$InputSha256
+    )
+
+    $context = [pscustomobject][ordered]@{
+        repository = $Repository
+        serverUrl = $ServerUrl
+        runId = $RunId
+        runAttempt = $RunAttempt
+        generatedAt = $GeneratedAt
+        artifactName = "pulse-publication-evidence"
+        inputFileName = "pulse-input.json"
+        bodyFileName = "pulse-body.md"
+        inputSha256 = $InputSha256
+    }
+    Assert-PulseSnapshotContext -SnapshotContext $context
+
+    return $context
+}
+
+function Read-PulseSnapshotContext
+{
+    param([string]$Path)
+
+    if ([string]::IsNullOrEmpty($Path) -or -not (Test-Path -LiteralPath $Path -PathType Leaf))
+    {
+        throw "The frozen Pulse snapshot context is missing."
+    }
+    $json = [IO.File]::ReadAllText($Path)
+    try
+    {
+        $document = [Text.Json.JsonDocument]::Parse($json)
+    }
+    catch [Text.Json.JsonException]
+    {
+        throw "The frozen Pulse snapshot context is malformed JSON: $($_.Exception.Message)"
+    }
+    try
+    {
+        if ($document.RootElement.ValueKind -ne [Text.Json.JsonValueKind]::Object)
+        {
+            throw "The frozen Pulse snapshot context must be an object."
+        }
+        $fields = [ordered]@{}
+        foreach ($property in $document.RootElement.EnumerateObject())
+        {
+            if ($property.Value.ValueKind -ne [Text.Json.JsonValueKind]::String -or $fields.Contains($property.Name))
+            {
+                throw "The frozen Pulse snapshot context must contain unique string fields."
+            }
+            # Preserve the timestamp string rather than ConvertFrom-Json's automatic date conversion.
+            $fields.Add($property.Name, $property.Value.GetString())
+        }
+        $context = [pscustomobject]$fields
+        Assert-PulseSnapshotContext -SnapshotContext $context
+
+        return $context
+    }
+    finally
+    {
+        $document.Dispose()
+    }
+}
+
+function Assert-PulseSnapshotBinding
+{
+    param(
+        [Parameter(Mandatory)][object]$SnapshotContext,
+        [Parameter(Mandatory)][string]$InputSha256,
+        [string]$ExpectedRepository, [string]$ExpectedServerUrl,
+        [string]$ExpectedRunId, [string]$ExpectedRunAttempt
+    )
+
+    Assert-PulseSnapshotContext -SnapshotContext $SnapshotContext
+    Assert-PulseSnapshotRun -Repository $ExpectedRepository -ServerUrl $ExpectedServerUrl `
+        -RunId $ExpectedRunId -RunAttempt $ExpectedRunAttempt
+    if ($SnapshotContext.repository -cne $ExpectedRepository -or $SnapshotContext.serverUrl -cne $ExpectedServerUrl -or
+        $SnapshotContext.runId -cne $ExpectedRunId -or $SnapshotContext.runAttempt -cne $ExpectedRunAttempt)
+    {
+        throw "The frozen Pulse snapshot does not match the current Actions repository, run ID, and attempt."
+    }
+    if ($SnapshotContext.inputSha256 -cne $InputSha256)
+    {
+        throw "The frozen Pulse snapshot checksum does not match the exact input file bytes."
+    }
+}
+
+function Get-PulseJsonFenceLength
+{
+    param([Parameter(Mandatory)][AllowEmptyString()][string]$Json)
+
+    $longestRun = 0
+    foreach ($match in [regex]::Matches($Json, '`+'))
+    {
+        if ($match.Length -gt $longestRun)
+        {
+            $longestRun = $match.Length
+        }
+    }
+
+    # A closing fence must be at least as long as the longest run of backticks the
+    # content contains, so embedded backticks can never terminate the fence early.
+    return [Math]::Max(3, $longestRun + 1)
+}
+
+function ConvertTo-PulseSnapshotBlock
+{
+    param(
+        [Parameter(Mandatory)][object]$SnapshotContext,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Json,
+        [Parameter(Mandatory)][int]$MaxSnapshotLength
+    )
+
+    Assert-PulseSnapshotContext -SnapshotContext $SnapshotContext
+    $runUrl = "https://github.com/dotnet/aspnetcore/actions/runs/$($SnapshotContext.runId)/attempts/$($SnapshotContext.runAttempt)"
+
+    $header = @(
+        "## Snapshot"
+        ""
+        "Snapshot generated: ``$($SnapshotContext.generatedAt)``. [Producing workflow run]($runUrl)."
+        "Artifact: ``pulse-publication-evidence``; files: ``pulse-input.json``, ``pulse-body.md``."
+        "Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence."
+        ""
+        "<details>"
+        "<summary>Snapshot identity</summary>"
+        ""
+        "Repository: ``dotnet/aspnetcore``; run ID: ``$($SnapshotContext.runId)``; attempt: ``$($SnapshotContext.runAttempt)``."
+        "JSON SHA-256: ``$($SnapshotContext.inputSha256)``."
+        ""
+        "</details>"
+    ) -join "`n"
+
+    $fence = "``" * (Get-PulseJsonFenceLength -Json $Json)
+    $embeddedOpen = @(
+        "<details>"
+        "<summary>Snapshot JSON (exact sanitized bytes)</summary>"
+        ""
+        "${fence}json"
+    ) -join "`n"
+    $embeddedBlock = $header + "`n`n" + $embeddedOpen + "`n" + $Json + "`n" + $fence + "`n`n</details>"
+
+    if ($embeddedBlock.Length -le $MaxSnapshotLength)
+    {
+        return $embeddedBlock
+    }
+
+    # Fail closed on size: never truncate the JSON or claim an embedded snapshot that
+    # is not actually present. The artifact remains the sole source of the exact bytes.
+    $fallbackBlock = $header + "`n`n" + (@(
+        "<details>"
+        "<summary>Snapshot JSON</summary>"
+        ""
+        "The exact JSON does not fit within the issue body size limit for this snapshot and is not embedded here."
+        "Retrieve the identical bytes from the ``pulse-publication-evidence`` artifact and verify them against the checksum above."
+        ""
+        "</details>"
+    ) -join "`n")
+    if ($fallbackBlock.Length -gt $MaxSnapshotLength)
+    {
+        throw "The Pulse snapshot identity block alone exceeds the configured issue body size limit."
+    }
+
+    return $fallbackBlock
+}
+
 function Get-PulseMergeInteger
 {
     param([object]$Object, [string]$Name)
@@ -586,9 +840,8 @@ function Add-PulseArea
     $Lines.Add("</details>")
 }
 
-function ConvertTo-PRAttentionPulseBody
+function Get-PulseBodyPrefix
 {
-    [CmdletBinding()]
     param([Parameter(Mandatory)][object]$Pulse)
 
     $areas = @(Get-PulseAreas -Pulse $Pulse)
@@ -616,12 +869,31 @@ function ConvertTo-PRAttentionPulseBody
     return $lines -join "`n"
 }
 
+function ConvertTo-PRAttentionPulseBody
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$Pulse,
+        [Parameter(Mandatory)][object]$SnapshotContext,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Json
+    )
+
+    $prefix = Get-PulseBodyPrefix -Pulse $Pulse
+    $separator = "`n`n"
+    $snapshot = ConvertTo-PulseSnapshotBlock -SnapshotContext $SnapshotContext -Json $Json `
+        -MaxSnapshotLength ($script:PulseMaxBodyLength - $prefix.Length - $separator.Length)
+
+    return $prefix + $separator + $snapshot
+}
+
 function Assert-PRAttentionPulseOutput
 {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][object]$AgentOutput,
         [Parameter(Mandatory)][object]$Pulse,
+        [Parameter(Mandatory)][object]$SnapshotContext,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Json,
         [Parameter(Mandatory)][string]$ExpectedBody,
         [Parameter(Mandatory)]
         [ValidateRange(1, [int]::MaxValue)]
@@ -690,10 +962,23 @@ function Assert-PRAttentionPulseOutput
     }
 
     $body = $item.body
-    if ($body.Length -lt 200 -or $body.Length -gt 65000)
+    if ($body.Length -lt 200 -or $body.Length -gt $script:PulseMaxBodyLength)
     {
         throw "The issue body is outside the allowed size range."
     }
+
+    $prefix = Get-PulseBodyPrefix -Pulse $Pulse
+    $separator = "`n`n"
+    $expectedSnapshot = ConvertTo-PulseSnapshotBlock -SnapshotContext $SnapshotContext -Json $Json `
+        -MaxSnapshotLength ($script:PulseMaxBodyLength - $prefix.Length - $separator.Length)
+    $snapshotSuffix = $separator + $expectedSnapshot
+    if (-not $body.EndsWith($snapshotSuffix, [StringComparison]::Ordinal) -or
+        [regex]::Matches($body, "(?m)^## Snapshot$").Count -ne 1)
+    {
+        throw "The body must contain exactly the trusted Pulse snapshot section."
+    }
+    # Exempt only the complete regenerated suffix, not arbitrary Actions links, filenames or details.
+    $body = $body.Substring(0, $body.Length - $snapshotSuffix.Length)
 
     $linkPattern = [regex]::new(
         "\[dotnet/aspnetcore#(?<label>[1-9][0-9]*)\]\(https://github\.com/dotnet/aspnetcore/pull/(?<target>[1-9][0-9]*)\)",
@@ -794,4 +1079,4 @@ function Assert-PRAttentionPulseOutput
     }
 }
 
-Export-ModuleMember -Function ConvertTo-PRAttentionPulseBody, Assert-PRAttentionPulseOutput, Assert-PulseMergeAssessment, New-PulseUnassessedMergeAssessment, Resolve-PulseMergeArea
+Export-ModuleMember -Function ConvertTo-PRAttentionPulseBody, Assert-PRAttentionPulseOutput, Assert-PulseMergeAssessment, New-PulseUnassessedMergeAssessment, Resolve-PulseMergeArea, Read-PulseSnapshotInput, New-PulseSnapshotContext, Read-PulseSnapshotContext, Assert-PulseSnapshotBinding, ConvertTo-PulseSnapshotBlock
