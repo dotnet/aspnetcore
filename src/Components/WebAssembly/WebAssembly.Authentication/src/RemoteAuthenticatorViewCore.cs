@@ -264,7 +264,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 break;
             case RemoteAuthenticationStatus.OperationCompleted:
                 Log.NavigatingToUrl(Logger, ApplicationPaths.LogInPath);
-                Navigation.NavigateTo(ApplicationPaths.LogInPath, AuthenticationNavigationOptions)
+                Navigation.NavigateTo(ApplicationPaths.LogInPath, AuthenticationNavigationOptions);
                 break;
             case RemoteAuthenticationStatus.Failure:
                 Log.LoginCallbackFailed(Logger, result.ErrorMessage!);
