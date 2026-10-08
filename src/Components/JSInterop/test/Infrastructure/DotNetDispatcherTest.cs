@@ -104,7 +104,9 @@ public class DotNetDispatcherTest
     public void CannotInvokeAsyncMethodSynchronously(string methodIdentifier, bool hasArguments)
     {
         var jsRuntime = new TestJSRuntime();
-        var targetReference = DotNetObjectReference.Create(new SomePublicType());
+        var target = new SomePublicType();
+        target.DidInvokeAsyncMethod = false;
+        var targetReference = DotNetObjectReference.Create(target);
         var argumentReference = DotNetObjectReference.Create(new TestDTO());
         jsRuntime.Invoke<object>("unimportant", targetReference, argumentReference);
 
@@ -116,6 +118,7 @@ public class DotNetDispatcherTest
             DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, methodIdentifier, targetReference.ObjectId, default), argsJson));
 
         Assert.Equal($"The JSInvokable method '{methodIdentifier}' returns an asynchronous value. Use 'invokeMethodAsync' to invoke it.", exception.Message);
+        Assert.False(target.DidInvokeAsyncMethod);
     }
 
     [Fact]
@@ -958,6 +961,7 @@ public class DotNetDispatcherTest
     {
         public static bool DidInvokeMyInvocableStaticVoid;
         public bool DidInvokeMyInvocableInstanceVoid;
+        public bool DidInvokeAsyncMethod;
 
         [JSInvokable("PrivateMethod")] private static void MyPrivateMethod() { }
         [JSInvokable("ProtectedMethod")] protected static void MyProtectedMethod() { }
@@ -1028,6 +1032,7 @@ public class DotNetDispatcherTest
         [JSInvokable]
         public async Task<InvokableAsyncMethodResult> InvokableAsyncMethod(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
         {
+            DidInvokeAsyncMethod = true;
             await Task.Delay(50);
             var dtoByRef = dtoByRefWrapper.Value;
             return new InvokableAsyncMethodResult
