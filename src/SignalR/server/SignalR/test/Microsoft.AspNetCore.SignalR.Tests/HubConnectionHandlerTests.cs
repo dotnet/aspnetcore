@@ -5440,6 +5440,41 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task NonPositiveSequenceIdClosesConnectionWithError(long sequenceId)
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s =>
+            {
+                s.AddSingleton(state);
+                s.AddSignalR(options => options.EnableDetailedErrors = true);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+            var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+            client.Connection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            await client.SendHubMessageAsync(new SequenceMessage(sequenceId)).DefaultTimeout();
+
+            var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("Connection closed with an error. InvalidOperationException: Sequence ID must be greater than 0.", closeMessage.Error);
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            var exception = Assert.IsType<InvalidOperationException>(state.DisconnectedException);
+            Assert.Equal("Sequence ID must be greater than 0.", exception.Message);
+        }
+    }
+
     public enum CloseScenario
     {
         PingTimeout,
