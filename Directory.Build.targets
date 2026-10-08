@@ -95,7 +95,7 @@
         !$(IsTestProject) AND
         '$(IsMicrobenchmarksProject)' != 'true' ">true</IsImplementationProject>
 
-    <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
+    <!-- This determines whether a project belongs in the generated reference inventories. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND
         ( '$(IsImplementationProject)' == 'true' OR '$(IsSpecificationTestProject)' == 'true' ) ">true</IsProjectReferenceProvider>
 

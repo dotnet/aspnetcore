@@ -6,12 +6,13 @@
 
   <!-- These references are used when running locally -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
+
+    <ProjectReference Include="..\..\..\..\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <ProjectReference Include="..\..\..\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReference Include="..\..\..\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <ProjectReference Include="..\..\..\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
   </ItemGroup>
 
   <ItemGroup>

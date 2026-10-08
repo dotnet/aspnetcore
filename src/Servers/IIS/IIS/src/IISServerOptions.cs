@@ -48,6 +48,8 @@ public class IISServerOptions
 
     internal string[] ServerAddresses { get; set; } = default!; // Set by configuration.
 
+    internal string? VirtualPath { get; set; } // Set by configuration.
+
     // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
     // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
     private long? _maxRequestBodySize = 30000000;

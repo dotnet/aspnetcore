@@ -21,6 +21,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
-    <Reference Include="System.Memory" />
+    <PackageReference Include="System.Memory" />
   </ItemGroup>
 </Project>
