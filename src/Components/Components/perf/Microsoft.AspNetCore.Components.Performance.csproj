@@ -8,9 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>

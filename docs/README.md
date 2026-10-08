@@ -20,7 +20,6 @@ The table below outlines the different docs in this folder and what they are hel
 | [Issue management](IssueManagementPolicies.md) | Overview of policies in place to manage issues| Community members and collaborators looking to understand how we handle closed issues, issues that need author feedback, etc |
 | [Preparing a patch update](PreparingPatchUpdates.md)        | Documentation on how to setup for a patch release of ASP.NET Core       | Anyone looking to publish servicing updates         |
 | [Project properties](ProjectProperties.md)     | Overview of configurable MSBuild properties on the repo    | Anyone looking to modify how a project is packaged   |
-| [How references are resolved](ReferenceResolution.md)       | Overview of dependency reference setup in the repo         | Anyone looking to understand how package references are configured in the repo |
 | [Servicing changes](Servicing.md) | Documentation on how to submit servicing PRs to previous releases       | Anyone to submit patches or backports to prior releases, contains the "Shiproom Template"  |
 | [Shared framework](SharedFramework.md)         | Overview of the ASP.NET Core Shared framework | Anyone looking to understand the policies in place for managing the code of the shared framework         |
 | [Submodules](Submodules.md)           | Documentation on working with submodules in Git     |   Anyone working with submodules in the repo     |

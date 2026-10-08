@@ -26,10 +26,22 @@ USING_LINE = "using Microsoft.AspNetCore.InternalTesting;"
 ATTRIBUTE_LINE = re.compile(
     r"^\[\s*(?:assembly\s*:\s*)?"
     r"(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
-    r"QuarantinedTest(?:Attribute)?\s*\(\s*"
+    r"(?P<attribute>QuarantinedTest(?:Data)?)(?:Attribute)?\s*\(\s*"
     r'"https://github\.com/dotnet/aspnetcore/issues/'
-    r'(?P<reference>\d+|#aw_[A-Za-z0-9_]{3,12})"\s*\)\s*\]$'
+    r'(?P<reference>\d+|#aw_[A-Za-z0-9_]{3,12})"\s*'
+    r'(?:,\s*(?P<operating_systems>OperatingSystems\.[A-Za-z]+'
+    r'(?:\s*\|\s*OperatingSystems\.[A-Za-z]+)*))?'
+    r'(?:,\s*(?P<data>.*))?\)\s*\]$'
 )
+INLINE_DATA_LINE = re.compile(
+    r"^\[\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
+    r"InlineData(?:Attribute)?\s*\((?P<data>.*)\)\s*\]$"
+)
+OPERATING_SYSTEMS = {
+    "OperatingSystems.Linux",
+    "OperatingSystems.MacOSX",
+    "OperatingSystems.Windows",
+}
 
 
 class ValidationError(ValueError):
@@ -110,6 +122,7 @@ def changed_patch_lines(patch):
     changed = []
     attributes = []
     in_hunk = False
+    hunk = 0
     for line in patch.splitlines():
         if line.startswith("diff --git "):
             in_hunk = False
@@ -118,6 +131,7 @@ def changed_patch_lines(patch):
             continue
         if line.startswith("@@"):
             in_hunk = True
+            hunk += 1
             continue
         if not in_hunk:
             continue
@@ -126,17 +140,137 @@ def changed_patch_lines(patch):
         if not line.startswith(("+", "-")):
             continue
         content = line[1:].strip()
-        changed.append((line[0], content))
-    for operation, content in changed:
+        changed.append((line[0], content, hunk))
+    logical_changes = []
+    current_operation = None
+    current_lines = []
+    bracket_depth = 0
+    current_hunk = None
+    for operation, content, hunk in changed:
+        syntax = ELIGIBILITY.sanitize_csharp(content)
+        if current_lines:
+            if operation != current_operation or hunk != current_hunk:
+                raise ValidationError(
+                    "Patch splits one attribute across add/remove operations"
+                )
+            current_lines.append(content)
+            bracket_depth += ELIGIBILITY.square_bracket_delta(syntax)
+            if bracket_depth == 0:
+                logical_changes.append((
+                    current_operation,
+                    " ".join(current_lines),
+                    len(current_lines),
+                    current_hunk,
+                ))
+                current_operation = None
+                current_lines = []
+            continue
+        if content.startswith("["):
+            bracket_depth = ELIGIBILITY.square_bracket_delta(syntax)
+            if bracket_depth > 0:
+                current_operation = operation
+                current_hunk = hunk
+                current_lines = [content]
+                continue
+        logical_changes.append((operation, content, 1, hunk))
+    if current_lines:
+        raise ValidationError("Patch contains an incomplete attribute")
+
+    row_comments = []
+    for operation, content, physical_line_count, hunk in logical_changes:
+        comment = ""
+        syntax = ELIGIBILITY.sanitize_csharp(content)
+        closing = syntax.rfind("]") + 1
+        if closing and not syntax[closing:].strip():
+            suffix = content[closing:]
+            if suffix.strip() and re.fullmatch(
+                r"\s*(?:/\*.*?\*/\s*)*(?://[^\n]*)?", suffix
+            ):
+                comment = suffix
+                content = content[:closing]
         attribute = ATTRIBUTE_LINE.fullmatch(content)
         if attribute:
-            attributes.append((operation, attribute.group("reference")))
+            attribute_name = attribute.group("attribute")
+            operating_systems = attribute.group("operating_systems")
+            data = attribute.group("data")
+            if attribute_name == "QuarantinedTestData" and data is None:
+                raise ValidationError(
+                    "QuarantinedTestData must include one or more data values"
+                )
+            if (
+                attribute_name == "QuarantinedTestData"
+                and operating_systems is None
+            ):
+                raise ValidationError(
+                    "QuarantinedTestData must include operating systems"
+                )
+            if attribute_name == "QuarantinedTest" and data is not None:
+                raise ValidationError(
+                    "QuarantinedTest does not accept test data values"
+                )
+            if (
+                attribute_name == "QuarantinedTestData"
+                and physical_line_count != 1
+            ):
+                raise ValidationError(
+                    "Automated data-row rewrites require one-line attributes"
+                )
+            if comment and attribute_name != "QuarantinedTestData":
+                raise ValidationError(
+                    "Trailing comments are supported only on data-row replacements"
+                )
+            if operating_systems is not None:
+                values = [
+                    value.strip()
+                    for value in operating_systems.split("|")
+                ]
+                if (
+                    len(values) != len(set(values))
+                    or any(value not in OPERATING_SYSTEMS for value in values)
+                ):
+                    raise ValidationError(
+                        "Quarantine operating systems must be unique supported "
+                        "OperatingSystems flags"
+                    )
+            attributes.append((
+                operation,
+                attribute.group("reference"),
+                "data" if data is not None else "quarantine",
+                data,
+            ))
+            if data is not None:
+                row_comments.append((operation, hunk, data, comment))
+            continue
+        inline_data = INLINE_DATA_LINE.fullmatch(content)
+        if inline_data:
+            if physical_line_count != 1:
+                raise ValidationError(
+                    "Automated data-row rewrites require one-line attributes"
+                )
+            attributes.append((
+                operation,
+                None,
+                "inline",
+                inline_data.group("data"),
+            ))
+            row_comments.append((operation, hunk, inline_data.group("data"), comment))
             continue
         if operation == "+" and content == USING_LINE:
             continue
         raise ValidationError(
             f"Patch contains a non-quarantine change: {operation}{content}"
         )
+    if any(comment for _, _, _, comment in row_comments):
+        removed_comments = collections.Counter(
+            (hunk, data, comment) for operation, hunk, data, comment in row_comments
+            if operation == "-"
+        )
+        added_comments = collections.Counter(
+            (hunk, data, comment) for operation, hunk, data, comment in row_comments
+            if operation == "+"
+        )
+        if removed_comments != added_comments:
+            raise ValidationError("Data-row replacements must preserve trailing comments")
     return attributes
 
 
@@ -146,7 +280,27 @@ def target_key(target):
         target["path"],
         target.get("type"),
         target.get("method"),
+        target.get("data"),
     )
+
+
+def target_operating_systems(target):
+    operating_systems = target.get("operating_systems")
+    if not isinstance(operating_systems, list):
+        return None
+    return tuple(operating_systems)
+
+
+def validate_operating_systems(target, record, key):
+    expected = record.get("quarantine_operating_systems")
+    if (
+        not isinstance(expected, list)
+        or tuple(expected) != target_operating_systems(target)
+    ):
+        raise ValidationError(
+            "Quarantine operating systems do not match deterministic "
+            f"failure evidence: {key}"
+        )
 
 
 def target_map(root, source_index):
@@ -191,11 +345,21 @@ def exact_source_target(test_name, record):
     source = record.get("source_resolution")
     if not isinstance(source, dict) or source.get("status") != "exact":
         return None
+    inline_data = source.get("matching_inline_data")
+    if isinstance(inline_data, dict):
+        return (
+            "data",
+            source.get("path"),
+            source.get("declaring_type") or source.get("type"),
+            source.get("method"),
+            inline_data.get("data"),
+        )
     return (
         "method",
         source.get("path"),
         source.get("declaring_type") or source.get("type"),
         source.get("method"),
+        None,
     )
 
 
@@ -237,6 +401,7 @@ def validate_addition(target, eligibility, issue_items):
             raise ValidationError(
                 f"Case A addition is not bound to an exact eligible test: {key}"
             )
+        validate_operating_systems(target, record, key)
         return ("case-a", test_name)
 
     if not reference.isdigit():
@@ -259,6 +424,7 @@ def validate_addition(target, eligibility, issue_items):
         raise ValidationError(
             f"Case B addition is not bound to one exact eligible test: {key}"
         )
+    validate_operating_systems(target, tests[matches[0]], key)
     return ("case-b", matches[0])
 
 
@@ -540,11 +706,21 @@ def validate_outputs(
                 )
                 removed = {
                     key: target for key, target in before.items()
-                    if key not in after or after[key]["reference"] != target["reference"]
+                    if (
+                        key not in after
+                        or after[key]["reference"] != target["reference"]
+                        or target_operating_systems(after[key])
+                        != target_operating_systems(target)
+                    )
                 }
                 added = {
                     key: target for key, target in after.items()
-                    if key not in before or before[key]["reference"] != target["reference"]
+                    if (
+                        key not in before
+                        or before[key]["reference"] != target["reference"]
+                        or target_operating_systems(before[key])
+                        != target_operating_systems(target)
+                    )
                 }
                 if removed and added:
                     raise ValidationError(
@@ -598,8 +774,31 @@ def validate_outputs(
                         eligibility,
                         issue_items,
                     )
-                    reference = next(iter(added.values()))["reference"]
-                    if attribute_changes != [("+", reference)]:
+                    added_target = next(iter(added.values()))
+                    reference = added_target["reference"]
+                    expected_changes = [
+                        (
+                            "+",
+                            reference,
+                            (
+                                "data"
+                                if added_target["scope"] == "data"
+                                else "quarantine"
+                            ),
+                            added_target.get("data"),
+                        )
+                    ]
+                    if added_target["scope"] == "data":
+                        expected_changes.insert(
+                            0,
+                            (
+                                "-",
+                                None,
+                                "inline",
+                                added_target["data"],
+                            ),
+                        )
+                    if attribute_changes != expected_changes:
                         raise ValidationError(
                             "Quarantine pull request attribute lines do not "
                             "match its one derived target"
@@ -612,10 +811,25 @@ def validate_outputs(
                         "test": test_name,
                     })
                 else:
-                    expected_attributes = collections.Counter(
-                        ("-", target["reference"])
-                        for target in removed.values()
-                    )
+                    expected_attributes = collections.Counter()
+                    for target in removed.values():
+                        expected_attributes.update([(
+                            "-",
+                            target["reference"],
+                            (
+                                "data"
+                                if target["scope"] == "data"
+                                else "quarantine"
+                            ),
+                            target.get("data"),
+                        )])
+                        if target["scope"] == "data":
+                            expected_attributes.update([(
+                                "+",
+                                None,
+                                "inline",
+                                target["data"],
+                            )])
                     if collections.Counter(attribute_changes) != expected_attributes:
                         raise ValidationError(
                             "Unquarantine pull request attribute lines do not "

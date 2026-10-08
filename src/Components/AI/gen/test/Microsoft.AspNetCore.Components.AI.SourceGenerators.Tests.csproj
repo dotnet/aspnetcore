@@ -7,13 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.AI" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
-    <Reference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\AI\src\Microsoft.AspNetCore.Components.AI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\AI\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj" />
   </ItemGroup>
 
 </Project>

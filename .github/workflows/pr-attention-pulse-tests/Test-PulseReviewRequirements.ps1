@@ -73,7 +73,7 @@ Invoke-Control "DetectorUsesSelectedPatPool" {
     Assert-True ($agentCredential.Count -eq 1 -and $detectorCredential.Count -eq 1) "Each inference job must bind exactly one provider credential."
     $selectedPat = $agentCredential[0].Groups[1].Value.Trim()
     Assert-True ($selectedPat.Contains("needs.pat_pool.outputs.pat_number") -and $selectedPat.Contains("secrets.COPILOT_PAT_")) "The main agent must retain the existing PAT-pool selector."
-    Assert-True ($detectorCredential[0].Groups[1].Value.Trim() -ceq $selectedPat) "The inline detector must use the main agent's selected PAT-pool expression, not the standalone COPILOT_GITHUB_TOKEN secret."
+    Assert-True ($detectorCredential[0].Groups[1].Value.Trim() -ceq $selectedPat) "The detector must use the main agent's selected PAT-pool expression, not the standalone COPILOT_GITHUB_TOKEN secret."
 }
 
 Invoke-Control "DetectorPoolDependencyAndEnvironment" {
@@ -86,12 +86,18 @@ Invoke-Control "DetectorPoolDependencyAndEnvironment" {
     }
 }
 
-Invoke-Control "InlineDetectorFailsClosed" {
+Invoke-Control "ExternalDetectorFailsClosed" {
     $detector = Get-CompiledJob "detection"
-    Assert-True ($workflow -match "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must remain enabled."
-    Assert-True ($detector.Contains("copilot_harness.cjs") -and $detector.Contains("parse_threat_detection_results.cjs")) "The generated detector must execute and parse inline detection."
+    Assert-True ($workflow -notmatch "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must be removed."
+    $installer = [regex]::Matches($detector, '(?m)^          bash "[^"\r\n]+/install_threat_detect_binary\.sh" v0\.5\.2 [^\r\n]+')
+    Assert-True ($installer.Count -eq 1) "The generated detector must install the fixed v0.5.2 release exactly once."
+    Assert-True ($installer[0].Value -cmatch ' --sha256-amd64 b4ecda6a8f1ee09913c40b58e5e9d3337d2173618d41b1bfdef9207e4e7959b9(?: |$)') "The detector installer must receive the reviewed v0.5.2 Linux amd64 digest."
+    Assert-True ($installer[0].Value -cmatch ' --sha256-arm64 f6260a0f9ad72bcb67c7af19c4ce262ca34e2c3d5ccbf912832a8bd277200904(?: |$)') "The detector installer must receive the reviewed v0.5.2 Linux arm64 digest."
+    Assert-True ($detector.Contains("steps.threat_detect_install.outcome == 'success'")) "Detection must require successful installation."
+    Assert-True ($detector.Contains("threat-detect --engine copilot --output /tmp/gh-aw/threat-detection/detection_result.json")) "The external detector must write the expected result file."
+    Assert-True ($detector.Contains('conclude_threat_detection.sh" /tmp/gh-aw/threat-detection/detection_result.json')) "The generated detector must conclude using the external result file."
     $continueOnError = [regex]::Matches($detector, '(?m)^          GH_AW_DETECTION_CONTINUE_ON_ERROR: "([^"]+)"\r?$')
-    Assert-True ($continueOnError.Count -eq 2) "Both detection setup and result parsing must declare failure handling."
+    Assert-True ($continueOnError.Count -eq 3) "Detection setup, execution, and conclusion must declare failure handling."
     foreach ($match in $continueOnError)
     {
         Assert-True ($match.Groups[1].Value -ceq "false") "Detection errors must not be accepted."
@@ -101,14 +107,14 @@ Invoke-Control "InlineDetectorFailsClosed" {
 
 Invoke-Control "DetectorModelPolicy" {
     $detector = Get-CompiledJob "detection"
-    Assert-True ($detector -match "(?m)^          COPILOT_MODEL: gpt-5\.6-sol\r?$") "Inline detection must retain the pinned model."
+    Assert-True ($detector -match "(?m)^          COPILOT_MODEL: gpt-5\.6-sol\r?$") "Detection must retain the pinned model."
     $config = [regex]::Match($detector, "printf '%s\\n' '(?<config>\{.+\})' >")
-    Assert-True $config.Success "The generated inline detector AWF configuration could not be read."
+    Assert-True $config.Success "The generated detector AWF configuration could not be read."
     $apiProxy = ($config.Groups["config"].Value | ConvertFrom-Json -Depth 50).apiProxy
-    Assert-True (@($apiProxy.allowedModels).Count -eq 1 -and ($apiProxy.allowedModels -join ",") -ceq "gpt-5.6-sol") "The inline detector must enforce the singleton gpt-5.6-sol model policy."
-    foreach ($name in @("enableTokenSteering", "maxAiCredits", "modelFallback"))
+    Assert-True ($null -eq $apiProxy.PSObject.Properties["allowedModels"]) "The detector model is pinned by COPILOT_MODEL rather than a duplicated API proxy allowlist."
+    foreach ($name in @("allowedModels", "enableTokenSteering", "maxAiCredits", "modelFallback"))
     {
-        Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Inline detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
+        Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
     }
 }
 
@@ -165,7 +171,7 @@ Invoke-Control "EffectiveModelVisibleBoundary" {
             ForEach-Object { $_.Groups["command"].Value }
     )
     $expectedShellTools = @("cat", "date", "echo", "grep", "head", "ls", "printf", "pwd", "safeoutputs:*", "sort", "tail", "uniq", "wc", "yq")
-    Assert-True ([string]::Equals(($actualShellTools -join ","), ($expectedShellTools -join ","), [StringComparison]::Ordinal)) "The effective v0.88.7 shell surface changed; actual: $($actualShellTools -join ',')."
+    Assert-True ([string]::Equals(($actualShellTools -join ","), ($expectedShellTools -join ","), [StringComparison]::Ordinal)) "The effective compiled shell surface changed; actual: $($actualShellTools -join ',')."
     Assert-True (-not $toolComment.Contains("shell(jq)")) "The model must not receive jq."
     Assert-True ($agentStep.Contains("--add-dir /tmp/gh-aw/") -and $agentStep.Contains('--add-dir "${GITHUB_WORKSPACE}"')) "The regression control must account for both broad model-visible mounts."
     foreach ($path in @("/tmp/gh-aw/base", "/tmp/gh-aw/.github/agents", "/tmp/gh-aw/.github/skills"))
@@ -219,7 +225,8 @@ Invoke-Control "SnapshotPrivateContextBoundary" {
         Assert-True ([regex]::Matches($boundary, [regex]::Escape(".pr-attention-pulse/$file")).Count -eq 2) "The boundary must still list and verify '$file'."
     }
     Assert-True ([regex]::Matches($lock, 'Remove-Item \.pr-attention-pulse/pulse-snapshot-context\.json -Force').Count -eq 2) "Both pre-inference staging and final cleanup must remove the workspace context."
-    Assert-True ($lock.Contains('Remove-Item "${{ runner.temp }}/pr-attention-pulse-validator" -Recurse -Force')) "The existing private-directory cleanup must also remove frozen identity."
+    Assert-True ($lock.Contains('EXPR_RUNNER_TEMP: ${{ runner.temp }}') -and
+        $lock.Contains('Remove-Item "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator" -Recurse -Force')) "The private-directory cleanup must remove frozen identity through the compiler-generated environment binding."
 }
 
 Invoke-Control "SnapshotNonOverwritingEvidenceAndGates" {
@@ -297,7 +304,7 @@ Invoke-Control "DeterministicClickableReferences" {
     Import-Module -Scope Local -Force $contractPath
     $pulse = Get-Content -LiteralPath $publishedFixturePath -Raw | ConvertFrom-Json -Depth 100
     $pulse | Add-Member -NotePropertyName scope -NotePropertyValue "repository-wide"
-    $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse -SnapshotContext (Get-FixtureSnapshotContext -Pulse $pulse)
+    $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse -Json (Get-FixtureSnapshotJson -Pulse $pulse) -SnapshotContext (Get-FixtureSnapshotContext -Pulse $pulse)
     $pulse = Resolve-PulseMergeArea -Area $pulse
     $expectedNumbers = @(
         foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))

@@ -154,11 +154,15 @@ function Invoke-SnapshotValidation
         -ExpectedBodyPath $Publication.BodyPath -SnapshotContextPath $Publication.ContextPath `
         -SanitizerModulePath $collectorSanitizerPath -ExpectedIssueNumber 69328 @expected 2>&1)
     $exitCode = $LASTEXITCODE
+    $messageText = [regex]::Replace(
+        (($messages -join " ") -replace "$([char]27)\[[0-9;]*[A-Za-z]", ""),
+        "\s+",
+        " ")
     $retained = Get-Content -LiteralPath $Publication.AgentOutputPath -Raw | ConvertFrom-Json -Depth 100
     if ($ExpectedFailure)
     {
         Assert-True ($exitCode -ne 0) "The real private validator unexpectedly accepted the invalid snapshot."
-        Assert-True (($messages -join " ").Contains($ExpectedFailure, [StringComparison]::Ordinal)) "Expected '$ExpectedFailure'; actual: $($messages -join ' ')"
+        Assert-True ($messageText.Contains($ExpectedFailure, [StringComparison]::Ordinal)) "Expected '$ExpectedFailure'; actual: $messageText"
         Assert-True (($retained | ConvertTo-Json -Compress) -ceq '{"items":[],"errors":[]}') "Rejection must disarm the exact collected output envelope."
         Assert-True (-not (Test-Path $rawOutputPath) -and -not (Test-Path "$($Publication.AgentOutputPath).rejected")) "Rejection must remove raw and quarantined output."
         $rejectedPublications.Add([pscustomobject]@{
@@ -177,8 +181,9 @@ function Invoke-SnapshotValidation
 New-Item -ItemType Directory -Path $tempRoot | Out-Null
 try
 {
+    $compiledGhAwVersion = Get-CompiledGhAwVersion -LockPath (Join-Path $testRoot "..\pr-attention-pulse.lock.yml")
     $version = (& gh aw --version 2>&1) -join "`n"
-    Assert-True ($LASTEXITCODE -eq 0 -and $version.Contains("v0.88.7")) "Snapshot coverage requires the reviewed gh-aw v0.88.7."
+    Assert-True ($LASTEXITCODE -eq 0 -and $version.Contains($compiledGhAwVersion)) "Snapshot coverage requires the gh-aw $compiledGhAwVersion installation used to compile the lock."
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
     $blazor = Invoke-RealQueueFixture -FixtureName "pull-requests.json" -Scope blazor
     $repositoryWide = Invoke-RealQueueFixture -FixtureName "pull-requests.json" -Scope repository-wide
@@ -210,7 +215,7 @@ try
             $hash = (Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash.ToLowerInvariant()
             Assert-True ((Get-FileHash $publication.InputPath).Hash.ToLowerInvariant() -ceq $hash) "The private upload source must preserve the exact combined bytes."
             Assert-True ([regex]::Matches($body, "(?m)^## Snapshot$").Count -eq 1 -and
-                [regex]::Matches($body, "(?m)^<details>$").Count -eq 3) "Exactly one snapshot must accompany both collapsed areas."
+                [regex]::Matches($body, "(?m)^<details>$").Count -eq 4) "Exactly one snapshot, both collapsed areas, and the collapsed JSON/identity blocks must accompany the body."
             foreach ($text in @(
                 'Snapshot generated: `2026-09-23T19:30:00.0000000Z`.',
                 '[Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1)',
@@ -221,6 +226,10 @@ try
             {
                 Assert-True ($body.Contains($text, [StringComparison]::Ordinal)) "The canonical snapshot lost '$text'."
             }
+            $jsonMatch = [regex]::Match($body, '(?s)<summary>Snapshot JSON \(exact sanitized bytes\)</summary>\n\n(?<fence>`{3,})json\n(?<json>.*?)\n\k<fence>\n\n</details>')
+            Assert-True $jsonMatch.Success "The small combined snapshot must embed the exact JSON in a collapsed section."
+            $rawJson = [IO.File]::ReadAllText($inputPath)
+            Assert-True ($jsonMatch.Groups["json"].Value -ceq $rawJson) "The embedded JSON must be the exact sanitized combined bytes, not a reformatted or truncated copy."
             $expectedStatus = if ($name -like "partial-*") { "partial" } elseif ($name -eq "unavailable") { "unavailable" } else { "complete" }
             Assert-True ($pulse.schemaVersion -ceq "2.0.0" -and $pulse.status -ceq $expectedStatus) "Snapshot identity must not alter the combined data state."
             foreach ($area in $pulse.areas)
@@ -255,6 +264,54 @@ try
             }
         }
     }
+    Invoke-SnapshotCase "PublishedSnapshot/sanitizer-stable-unicode" {
+        $unicodeFixturePath = Join-Path $tempRoot "unicode-pull-requests.json"
+        $unicodeQueueFixture = Get-Content -LiteralPath (Join-Path $queueFixtureRoot "pull-requests.json") -Raw |
+            ConvertFrom-Json -Depth 100
+        $unicodeTitle = "Handle Cyrillic $([char]0x0430), zero-width $([char]0x200B), bidi $([char]0x202E), and tag $([char]::ConvertFromUtf32(0xE0061)) input"
+        $unicodeQueueFixture[0].title = $unicodeTitle
+        Write-JsonFile -Value $unicodeQueueFixture -Path $unicodeFixturePath
+
+        $blazorQueuePath = Join-Path $tempRoot "unicode-blazor-queue.json"
+        & $queueScript -Repository dotnet/aspnetcore -Preset blazor -DisablePersonalInbox `
+            -InputPath $unicodeFixturePath -Now $queueSnapshot -OutputFormat Json > $blazorQueuePath
+        Assert-True $? "The real Blazor queue producer must accept the Unicode-title fixture."
+        $unicodeBlazor = Invoke-Sanitizer -SourcePath $blazorQueuePath -Scope blazor
+
+        $repositoryQueuePath = Join-Path $tempRoot "unicode-repository-queue.json"
+        & $queueScript -Repository dotnet/aspnetcore -AllRepo -DisablePersonalInbox `
+            -InputPath $unicodeFixturePath -Now $queueSnapshot -OutputFormat Json > $repositoryQueuePath
+        Assert-True $? "The real repository-wide queue producer must accept the Unicode-title fixture."
+        $unicodeRepository = Invoke-Sanitizer -SourcePath $repositoryQueuePath -Scope repository-wide
+
+        $unicodeInputPath = Join-Path $tempRoot "unicode-pulse-input.json"
+        Write-SnapshotCombinedInput -Areas @($unicodeBlazor, $unicodeRepository) -OutputPath $unicodeInputPath
+        $publication = New-SnapshotPublication -Name "sanitizer-stable-unicode" -InputPath $unicodeInputPath
+        $pulseInputJson = [IO.File]::ReadAllText($publication.InputPath)
+        $pulseInputBytes = [IO.File]::ReadAllBytes($publication.InputPath)
+        $pulseInput = $pulseInputJson | ConvertFrom-Json -Depth 100
+        Assert-True ($pulseInputJson -notmatch "[^\x00-\x7F]") "Combined snapshot JSON must escape Unicode to remain stable through pinned sanitization."
+        Assert-True ($pulseInputBytes[-1] -eq 10 -and $pulseInputBytes[-2] -ne 13) "Combined snapshot JSON must end with LF on every platform."
+        $publishedTitles = @(
+            foreach ($area in $pulseInput.areas)
+            {
+                foreach ($view in $area.views.PSObject.Properties)
+                {
+                    foreach ($item in @($view.Value))
+                    {
+                        $item.title
+                    }
+                }
+            })
+        Assert-True ($publishedTitles -ccontains $unicodeTitle) "Escaped JSON must preserve the selected PR title when parsed."
+
+        $body = [IO.File]::ReadAllText($publication.BodyPath)
+        $collected = Invoke-PinnedCollector -Body $body
+        Invoke-SnapshotValidation -Publication $publication -AgentOutput $collected
+        & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseSnapshotRetrieval.ps1") `
+            -PulseInputPath $publication.InputPath -PublishedBodyPath $publication.BodyPath
+        Assert-True ($LASTEXITCODE -eq 0) "The documented consumer must retrieve and verify the sanitizer-stable embedded Unicode snapshot."
+    }
     $publicationA = $publications.complete
     $bodyA = [IO.File]::ReadAllText($publicationA.BodyPath)
     $outputA = Invoke-PinnedCollector -Body $bodyA
@@ -283,6 +340,14 @@ try
             $parsedBefore = $json | ConvertFrom-Json -Depth 100 | ConvertTo-Json -Depth 100 -Compress
             $parsedAfter = Get-Content -LiteralPath $publication.InputPath -Raw | ConvertFrom-Json -Depth 100 | ConvertTo-Json -Depth 100 -Compress
             Assert-True ($parsedBefore -ceq $parsedAfter) "The byte mutation must leave parsed PR data identical."
+            if ($variant -eq "bom")
+            {
+                Invoke-SnapshotValidation $publication $outputA "must not start with a UTF-8 BOM"
+                Assert-Throws {
+                    New-SnapshotPublication -Name "regenerated-$variant" -InputPath $publication.InputPath
+                } "A BOM-prefixed snapshot input must fail closed." "must not start with a UTF-8 BOM"
+                return
+            }
             Invoke-SnapshotValidation $publication $outputA "checksum does not match the exact input file bytes"
             $fresh = New-SnapshotPublication -Name "regenerated-$variant" -InputPath $publication.InputPath
             $freshBody = [IO.File]::ReadAllText($fresh.BodyPath)
@@ -429,6 +494,7 @@ try
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
     $contextA = Read-PulseSnapshotContext -Path $publicationA.ContextPath
     $pulseA = Get-Content -LiteralPath $publicationA.InputPath -Raw | ConvertFrom-Json -Depth 100
+    $jsonA = [IO.File]::ReadAllText($publicationA.InputPath)
     $bodyMutations = [ordered]@{
         run = { param($body) $body.Replace("34643961191", "34643961192") }
         attempt = { param($body) $body.Replace("/attempts/1", "/attempts/2").Replace('attempt: `1`', 'attempt: `2`') }
@@ -449,7 +515,7 @@ try
             $tampered = & $bodyMutations[$name] $bodyA
             Assert-True ($tampered -cne $bodyA) "The body mutation must exercise its intended field."
             Assert-Throws {
-                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $tampered) -Pulse $pulseA `
+                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $tampered) -Pulse $pulseA -Json $jsonA `
                     -SnapshotContext $contextA -ExpectedBody $tampered -ExpectedIssueNumber 69328
             } "Only the one regenerated snapshot may be exempted." "exactly the trusted Pulse snapshot section"
             $publication = Copy-SnapshotPublication $publicationA "body-$name"
@@ -469,7 +535,7 @@ try
         Invoke-SnapshotCase "Restrictions/$($case.Name)" {
             $tampered = $bodyA.Replace("## Snapshot", "$($case.Text)`n`n## Snapshot")
             Assert-Throws {
-                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $tampered) -Pulse $pulseA `
+                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $tampered) -Pulse $pulseA -Json $jsonA `
                     -SnapshotContext $contextA -ExpectedBody $tampered -ExpectedIssueNumber 69328
             } "General body restrictions must remain enforced." $case.Error
             $publication = Copy-SnapshotPublication $publicationA "restriction-$($case.Name)"
@@ -500,12 +566,37 @@ try
             $archive.Dispose()
         }
     }
+    Invoke-SnapshotCase "SnapshotBlockLimit/exact-fit" {
+        $maxSnapshotLength = 65000
+        $emptyBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json "" -MaxSnapshotLength $maxSnapshotLength
+        $json = "x" * ($maxSnapshotLength - $emptyBlock.Length)
+        $block = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
+        Assert-True ($block.Length -eq $maxSnapshotLength) "Embedded snapshot content exactly at the limit must be retained."
+        Assert-True ($block.Contains("Snapshot JSON (exact sanitized bytes)", [StringComparison]::Ordinal)) "The exact-fit snapshot must use the embedded form."
+    }
+    Invoke-SnapshotCase "SnapshotBlockLimit/one-over-fallback" {
+        $maxSnapshotLength = 65000
+        $emptyBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json "" -MaxSnapshotLength $maxSnapshotLength
+        $json = "x" * ($maxSnapshotLength - $emptyBlock.Length + 1)
+        $block = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
+        Assert-True ($block.Length -le $maxSnapshotLength) "The fallback snapshot block must fit within the configured limit."
+        Assert-True ($block.Contains("is not embedded here.", [StringComparison]::Ordinal)) "Content one character over the limit must use the fallback form."
+        Assert-True (-not $block.Contains($json, [StringComparison]::Ordinal)) "The fallback form must not include oversized JSON."
+    }
+    Invoke-SnapshotCase "SnapshotBlockLimit/fallback-does-not-fit" {
+        $maxSnapshotLength = 65000
+        $json = "x" * $maxSnapshotLength
+        $fallbackBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
+        Assert-Throws {
+            ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength ($fallbackBlock.Length - 1)
+        } "A fallback block that exceeds the configured limit must fail closed." "identity block alone exceeds"
+    }
     foreach ($length in @(65000, 65001))
     {
         Invoke-SnapshotCase "BodyLimit/$length" {
             $body = ("x" * ($length - $bodyA.Length)) + $bodyA
             $action = {
-                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $body) -Pulse $pulseA `
+                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $body) -Pulse $pulseA -Json $jsonA `
                     -SnapshotContext $contextA -ExpectedBody $body -ExpectedIssueNumber 69328
             }
             if ($length -eq 65000)
