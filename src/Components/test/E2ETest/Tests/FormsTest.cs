@@ -737,6 +737,26 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void NullOptionsOutsideSingleSelectPreserveTextFallback()
+    {
+        var appElement = Browser.MountTestComponent<SelectNullableOptionsComponent>();
+
+        var optgroupSelect = new SelectElement(appElement.FindElement(By.Id("select-nullable-multiple-optgroup")));
+        var optgroupOption = optgroupSelect.Options[0];
+        Browser.Equal("Multiple optgroup null option", () => optgroupOption.GetDomProperty("value"));
+        EnsureAttributeNotRendered(optgroupOption, "data-blazor-null-option");
+
+        var fragmentSelect = new SelectElement(appElement.FindElement(By.Id("select-nullable-multiple-fragment")));
+        var fragmentOption = fragmentSelect.Options[0];
+        Browser.Equal("Fragment null option", () => fragmentOption.GetDomProperty("value"));
+        EnsureAttributeNotRendered(fragmentOption, "data-blazor-null-option");
+
+        var datalistOption = appElement.FindElement(By.CssSelector("#nullable-datalist-fragment option"));
+        Browser.Equal("Fragment null option", () => datalistOption.GetDomProperty("value"));
+        EnsureAttributeNotRendered(datalistOption, "data-blazor-null-option");
+    }
+
+    [Fact]
     public void SelectWithoutNullOption_NothingSelected_ChangeEvent_ReportsEmptyString()
     {
         var appElement = Browser.MountTestComponent<SelectNullableOptionsComponent>();

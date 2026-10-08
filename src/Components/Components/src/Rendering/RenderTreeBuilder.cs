@@ -829,10 +829,10 @@ public sealed class RenderTreeBuilder : IDisposable
         frame.AttributeValueField = value;
     }
 
-    // Returns true when the current open element is an <option> whose null "value" attribute should emit a marker, excluding <select multiple> and <datalist> to preserve the browser's text-content fallback.
+    // Returns true when the current open element is an <option> within a single <select>.
     private bool IsOptionElementValueAttribute(string name)
     {
-        if (!string.Equals(name, "value", StringComparison.Ordinal))
+        if (!string.Equals(name, "value", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -849,44 +849,53 @@ public sealed class RenderTreeBuilder : IDisposable
             return false;
         }
 
-        return !IsWithinDatalistOrMultipleSelectElement(optionFrameIndex);
+        return IsWithinSingleSelectElement(optionFrameIndex);
     }
 
-    // Determines whether the <option> frame at optionFrameIndex is a direct child of a <datalist>, or of a <select multiple>; relies on attribute frames always following an element's opening frame.
-    private bool IsWithinDatalistOrMultipleSelectElement(int optionFrameIndex)
+    private bool IsWithinSingleSelectElement(int optionFrameIndex)
     {
-        if (_openElementIndices.Count < 2)
+        var isOptionFrame = true;
+        foreach (var ancestorFrameIndex in _openElementIndices)
         {
-            return false;
-        }
+            if (isOptionFrame)
+            {
+                Debug.Assert(ancestorFrameIndex == optionFrameIndex);
+                isOptionFrame = false;
+                continue;
+            }
 
-        var indices = _openElementIndices.ToArray();
-        var parentFrameIndex = indices[1];
-        ref var parentFrame = ref _entries.Buffer[parentFrameIndex];
+            ref var ancestorFrame = ref _entries.Buffer[ancestorFrameIndex];
+            if (ancestorFrame.FrameTypeField != RenderTreeFrameType.Element)
+            {
+                continue;
+            }
 
-        if (string.Equals(parentFrame.ElementNameField, "datalist", StringComparison.OrdinalIgnoreCase))
-        {
+            if (string.Equals(ancestorFrame.ElementNameField, "datalist", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!string.Equals(ancestorFrame.ElementNameField, "select", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            for (var i = ancestorFrameIndex + 1; i < optionFrameIndex; i++)
+            {
+                ref var frame = ref _entries.Buffer[i];
+                if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
+                {
+                    break;
+                }
+
+                if (frame.AttributeValueField is not null &&
+                    string.Equals(frame.AttributeNameField, "multiple", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
             return true;
-        }
-
-        if (!string.Equals(parentFrame.ElementNameField, "select", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        for (var i = parentFrameIndex + 1; i < optionFrameIndex; i++)
-        {
-            ref var frame = ref _entries.Buffer[i];
-            if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
-            {
-                break;
-            }
-
-            if (frame.AttributeValueField is not null &&
-                string.Equals(frame.AttributeNameField, "multiple", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
         }
 
         return false;
@@ -956,7 +965,7 @@ public sealed class RenderTreeBuilder : IDisposable
                     // A null option's marker and empty value are one logical attribute, so discard both together.
                     if (isOptionElement &&
                         i > first &&
-                        string.Equals(frame.AttributeNameField, "value", StringComparison.Ordinal) &&
+                        string.Equals(frame.AttributeNameField, "value", StringComparison.OrdinalIgnoreCase) &&
                         frame.AttributeValueField is string { Length: 0 } &&
                         buffer[i - 1].FrameTypeField == RenderTreeFrameType.Attribute &&
                         string.Equals(buffer[i - 1].AttributeNameField, NullValueOptionMarkerAttributeName, StringComparison.Ordinal) &&
