@@ -35,6 +35,19 @@ public class BlazorWasmTemplateTest : LoggedTest
     }
 
     [Fact]
+    public async Task BlazorWasm_Help_ShowsCorrectB2CInstanceDefault()
+    {
+        await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(Output);
+        using var result = await TemplatePackageInstaller.RunDotNetNew(Output, "blazorwasm --help");
+
+        Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
+        Assert.Matches(
+            @"--aad-b2c-instance <aad-b2c-instance>\s+[^-]*?Default:\s+https://aadB2CInstance\.b2clogin\.com/",
+            result.Output);
+        Assert.DoesNotContain("https:////aadB2CInstance.b2clogin.com/", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task BlazorWasm_IndividualB2C_DefaultInstance_PreservesTenantPlaceholder()
     {
         var project = await ProjectFactory.CreateProject(Output);
