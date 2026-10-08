@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <PackageId>Microsoft.McpServer.ProjectTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
+    <PackageId>Microsoft.McpServer.ProjectTemplates</PackageId>
+    <IsShippingPackage>false</IsShippingPackage>
     <Description>MCP Server Template Pack for Microsoft Template Engine</Description>
   </PropertyGroup>
 
