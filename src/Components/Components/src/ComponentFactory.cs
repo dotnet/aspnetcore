@@ -89,12 +89,10 @@ internal sealed class ComponentFactory
         return component;
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Component types are preserved by the component activation contract.")]
     private void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
     {
-        // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
-#pragma warning disable IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'IComponentPropertyActivator.GetActivator(Type)'.
         var propertyActivator = _propertyActivator.GetActivator(instance.GetType());
-#pragma warning restore IL2072
 
         propertyActivator(serviceProvider, instance);
     }

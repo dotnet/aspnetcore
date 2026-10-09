@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -41,6 +42,7 @@ internal partial class TempDataCascadingValueSupplier
         return new TempDataSubscription(this, tempDataKey, parameterInfo.PropertyType, valueGetter);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2080", Justification = "Properties of rendered components are preserved by the component activation contract.")]
     private static PropertyGetter PropertyGetterFactory((Type type, string propertyName) key)
     {
         var (type, propertyName) = key;

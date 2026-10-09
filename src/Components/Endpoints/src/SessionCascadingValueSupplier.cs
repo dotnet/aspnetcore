@@ -32,6 +32,7 @@ internal partial class SessionCascadingValueSupplier
         _httpContext = httpContext;
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Session values are restricted to types supported by the stored data serializer.")]
     internal CascadingParameterSubscription CreateSubscription(
         ComponentState componentState,
         SupplyParameterFromSessionAttribute attribute,
@@ -58,6 +59,7 @@ internal partial class SessionCascadingValueSupplier
         return new SessionSubscription(this, sessionKey, parameterInfo.PropertyType, valueGetter);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2080", Justification = "Properties of rendered components are preserved by the component activation contract.")]
     private static PropertyGetter PropertyGetterFactory((Type type, string propertyName) key)
     {
         var (type, propertyName) = key;
