@@ -1,0 +1,24 @@
+#!/bin/sh
+LC_ALL=C
+
+# Get the list of staged files
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cs$')
+
+# Exit if no staged C# files
+[ -z "$staged_files" ] && exit 0
+
+# Stash unstaged changes
+stash_message="pre-commit-$(date +%s)"
+git stash push -k -u -m "$stash_message"
+
+# Run dotnet format on the staged files
+dotnet format --include $(echo "$staged_files" | xargs)
+
+# Add the formatted files back to staging
+git add $staged_files
+
+# Restore unstaged changes
+git stash pop -q $(git stash list | grep "$stash_message" | head -n 1 | awk -F: '{print $1}')
+
+# Exit with success
+exit 0
