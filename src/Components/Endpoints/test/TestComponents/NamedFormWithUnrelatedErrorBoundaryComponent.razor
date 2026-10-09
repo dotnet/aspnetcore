@@ -1,0 +1,20 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<form @formname="Known" @onsubmit="HandleSubmit">
+    <button type="submit">Submit</button>
+</form>
+
+<ErrorBoundary>
+    <ChildContent>
+        <ThrowBeforeNamedForm />
+    </ChildContent>
+    <ErrorContent>
+        <p id="fallback">The error boundary handled an unrelated rendering error.</p>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private void HandleSubmit()
+    {
+    }
+}

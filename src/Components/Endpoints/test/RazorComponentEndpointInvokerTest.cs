@@ -222,6 +222,25 @@ public class RazorComponentEndpointInvokerTest
         Assert.Contains("""<p id="fallback">The custom error boundary handled the form rendering error.</p>""", await ReadBody(context));
     }
 
+    [Fact]
+    public async Task Invoker_PostReturns400_WhenUnknownHandlerIsSubmittedAfterUnrelatedErrorBoundaryHandlesException()
+    {
+        var services = CreateServices();
+
+        var invoker = new RazorComponentEndpointInvoker(
+            new EndpointHtmlRenderer(services, NullLoggerFactory.Instance),
+            NullLogger<RazorComponentEndpointInvoker>.Instance);
+
+        var context = BuildPostContext(services, "_handler=Unknown", typeof(NamedFormWithUnrelatedErrorBoundaryComponent));
+        context.Features.Set<IAntiforgeryValidationFeature>(new ValidAntiforgeryValidationFeature());
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.Equal("text/plain", context.Response.ContentType);
+        Assert.DoesNotContain("""<p id="fallback">""", await ReadBody(context));
+    }
+
     private static ServiceProvider CreateServices(Action<IServiceCollection>? configure = null)
     {
         var services = new ServiceCollection().AddRazorComponents()
