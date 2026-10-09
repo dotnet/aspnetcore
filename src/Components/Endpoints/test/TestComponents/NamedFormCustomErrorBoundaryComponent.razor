@@ -1,0 +1,10 @@
+@using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents
+
+<CustomErrorBoundary>
+    <ChildContent>
+        <ThrowBeforeNamedForm />
+    </ChildContent>
+    <ErrorContent>
+        <p id="fallback">The custom error boundary handled the form rendering error.</p>
+    </ErrorContent>
+</CustomErrorBoundary>

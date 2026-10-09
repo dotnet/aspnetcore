@@ -1215,6 +1215,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 try
                 {
                     errorBoundary.HandleException(error);
+                    OnErrorBoundaryHandled(error);
                 }
                 catch (Exception errorBoundaryException)
                 {
@@ -1230,6 +1231,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         // It's unhandled, so treat as fatal
         HandleException(error);
+    }
+
+    /// <summary>
+    /// Invoked after an error boundary successfully handles an exception.
+    /// </summary>
+    /// <param name="exception">The exception handled by the error boundary.</param>
+    protected virtual void OnErrorBoundaryHandled(Exception exception)
+    {
     }
 
     /// <summary>

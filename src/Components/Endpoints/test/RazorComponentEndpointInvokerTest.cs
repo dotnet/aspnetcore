@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -162,6 +163,95 @@ public class RazorComponentEndpointInvokerTest
         Assert.DoesNotContain("antiforgery token", await ReadBody(context), StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task Invoker_PostPreservesErrorBoundaryContent_WhenComponentThrowsBeforeNamedFormRenders()
+    {
+        var services = CreateServices();
+
+        var invoker = new RazorComponentEndpointInvoker(
+            new EndpointHtmlRenderer(services, NullLoggerFactory.Instance),
+            NullLogger<RazorComponentEndpointInvoker>.Instance);
+
+        var context = BuildPostContext(services, "_handler=RiskyForm", typeof(NamedFormErrorBoundaryComponent));
+        context.Features.Set<IAntiforgeryValidationFeature>(new ValidAntiforgeryValidationFeature());
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
+        Assert.Contains("""<p id="fallback">The error boundary handled the form rendering error.</p>""", await ReadBody(context));
+    }
+
+    [Fact]
+    public async Task Invoker_PostPreservesErrorBoundaryContent_WhenCustomLoggerIsRegistered()
+    {
+        var errorBoundaryLogger = new TestErrorBoundaryLogger();
+        var services = CreateServices(serviceCollection => serviceCollection.AddSingleton<IErrorBoundaryLogger>(errorBoundaryLogger));
+
+        var invoker = new RazorComponentEndpointInvoker(
+            new EndpointHtmlRenderer(services, NullLoggerFactory.Instance),
+            NullLogger<RazorComponentEndpointInvoker>.Instance);
+
+        var context = BuildPostContext(services, "_handler=RiskyForm", typeof(NamedFormErrorBoundaryComponent));
+        context.Features.Set<IAntiforgeryValidationFeature>(new ValidAntiforgeryValidationFeature());
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
+        Assert.Contains("""<p id="fallback">The error boundary handled the form rendering error.</p>""", await ReadBody(context));
+        Assert.IsType<InvalidOperationException>(errorBoundaryLogger.Exception);
+    }
+
+    [Fact]
+    public async Task Invoker_PostPreservesErrorBoundaryContent_WhenCustomOnErrorAsyncDoesNotLog()
+    {
+        var services = CreateServices();
+
+        var invoker = new RazorComponentEndpointInvoker(
+            new EndpointHtmlRenderer(services, NullLoggerFactory.Instance),
+            NullLogger<RazorComponentEndpointInvoker>.Instance);
+
+        var context = BuildPostContext(services, "_handler=RiskyForm", typeof(NamedFormCustomErrorBoundaryComponent));
+        context.Features.Set<IAntiforgeryValidationFeature>(new ValidAntiforgeryValidationFeature());
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
+        Assert.Contains("""<p id="fallback">The custom error boundary handled the form rendering error.</p>""", await ReadBody(context));
+    }
+
+    [Fact]
+    public async Task Invoker_PostReturns400_WhenUnknownHandlerIsSubmittedAfterUnrelatedErrorBoundaryHandlesException()
+    {
+        var services = CreateServices();
+
+        var invoker = new RazorComponentEndpointInvoker(
+            new EndpointHtmlRenderer(services, NullLoggerFactory.Instance),
+            NullLogger<RazorComponentEndpointInvoker>.Instance);
+
+        var context = BuildPostContext(services, "_handler=Unknown", typeof(NamedFormWithUnrelatedErrorBoundaryComponent));
+        context.Features.Set<IAntiforgeryValidationFeature>(new ValidAntiforgeryValidationFeature());
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.Equal("text/plain", context.Response.ContentType);
+        Assert.DoesNotContain("""<p id="fallback">""", await ReadBody(context));
+    }
+
+    private static ServiceProvider CreateServices(Action<IServiceCollection>? configure = null)
+    {
+        var services = new ServiceCollection().AddRazorComponents()
+                       .Services.AddAntiforgery()
+                       .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
+                       .AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
+        configure?.Invoke(services);
+
+        return services.BuildServiceProvider();
+    }
+
     private static async Task<string> ReadBody(HttpContext context)
     {
         context.Response.Body.Position = 0;
@@ -169,16 +259,20 @@ public class RazorComponentEndpointInvokerTest
         return await reader.ReadToEndAsync();
     }
 
-    private static DefaultHttpContext BuildPostContext(IServiceProvider services, string formBody)
+    private static DefaultHttpContext BuildPostContext(
+        IServiceProvider services,
+        string formBody,
+        Type? rootComponentType = null)
     {
+        rootComponentType ??= typeof(SimpleComponent);
         var context = new DefaultHttpContext();
         context.SetEndpoint(new RouteEndpoint(
             ctx => Task.CompletedTask,
             RoutePatternFactory.Parse("/"),
             0,
             new EndpointMetadataCollection(
-                new ComponentTypeMetadata(typeof(SimpleComponent)),
-                new RootComponentMetadata(typeof(SimpleComponent)),
+                new ComponentTypeMetadata(rootComponentType),
+                new RootComponentMetadata(rootComponentType),
                 new ConfiguredRenderModesMetadata(Array.Empty<IComponentRenderMode>())),
             "test"));
         context.Request.Method = "POST";
@@ -204,6 +298,17 @@ public class RazorComponentEndpointInvokerTest
     {
         public bool IsValid => true;
         public Exception? Error => null;
+    }
+
+    private sealed class TestErrorBoundaryLogger : IErrorBoundaryLogger
+    {
+        public Exception? Exception { get; private set; }
+
+        public ValueTask LogErrorAsync(Exception exception)
+        {
+            Exception = exception;
+            return ValueTask.CompletedTask;
+        }
     }
 
     private class TestWebHostEnvironment : IWebHostEnvironment

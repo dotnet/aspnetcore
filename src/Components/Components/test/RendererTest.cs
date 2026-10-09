@@ -4566,6 +4566,7 @@ public class RendererTest
         Assert.Collection(componentFrames.Select(f => (TestErrorBoundary)f.Component),
             component => Assert.Null(component.ReceivedException),
             component => Assert.Same(exception, component.ReceivedException));
+        Assert.Same(exception, Assert.Single(renderer.ErrorBoundaryHandledExceptions));
 
         // The failed subtree is disposed
         Assert.Equal(errorThrowingComponentId, batch.DisposedComponentIDs.Single());
