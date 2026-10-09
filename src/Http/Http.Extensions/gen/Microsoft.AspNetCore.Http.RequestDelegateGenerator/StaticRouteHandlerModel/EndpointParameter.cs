@@ -599,6 +599,8 @@ internal class EndpointParameter
         other.LookupName == LookupName &&
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
+        other.HasDefaultValue == HasDefaultValue &&
+        other.DefaultValue == DefaultValue &&
         SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
         other.KeyedServiceKey == KeyedServiceKey;
 
@@ -610,6 +612,8 @@ internal class EndpointParameter
         hashCode.Add(LookupName);
         hashCode.Add(Ordinal);
         hashCode.Add(IsOptional);
+        hashCode.Add(HasDefaultValue);
+        hashCode.Add(DefaultValue);
         hashCode.Add(Type, SymbolEqualityComparer.IncludeNullability);
         hashCode.Add(KeyedServiceKey);
         return hashCode.ToHashCode();
