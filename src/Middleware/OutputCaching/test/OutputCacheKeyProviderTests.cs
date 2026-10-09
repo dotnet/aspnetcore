@@ -208,6 +208,32 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_EmptyHeaderValueDoesNotCollideWithAbsentHeader()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var absentContext = TestUtils.CreateTestContext();
+        absentContext.CacheVaryByRules.HeaderNames = new string[] { "HeaderA" };
+        var emptyContext = TestUtils.CreateTestContext();
+        emptyContext.HttpContext.Request.Headers["HeaderA"] = string.Empty;
+        emptyContext.CacheVaryByRules.HeaderNames = new string[] { "HeaderA" };
+
+        Assert.NotEqual(cacheKeyProvider.CreateStorageKey(absentContext), cacheKeyProvider.CreateStorageKey(emptyContext));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_EncodesEmptyHeaderValueInSequence()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = string.Empty;
+        context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
+        context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA" };
+
+        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}{KeyNameValueDelimiter}{KeySubDelimiter}ValueA",
+            cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesListedQueryKeysOnly()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -288,6 +314,45 @@ public class OutputCacheKeyProviderTests
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueB{KeySubDelimiter}ValueA",
+            cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_EmptyQueryValueDoesNotCollideWithAbsentQuery()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var absentContext = TestUtils.CreateTestContext();
+        absentContext.CacheVaryByRules.QueryKeys = new string[] { "QueryA" };
+        var emptyContext = TestUtils.CreateTestContext();
+        emptyContext.HttpContext.Request.QueryString = new QueryString("?QueryA=");
+        emptyContext.CacheVaryByRules.QueryKeys = new string[] { "QueryA" };
+
+        Assert.NotEqual(cacheKeyProvider.CreateStorageKey(absentContext), cacheKeyProvider.CreateStorageKey(emptyContext));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_EncodesEmptyExplicitQueryValueInSequence()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=&QueryA=ValueA");
+        context.CacheVaryByRules.QueryKeys = new string[] { "QueryA" };
+
+        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QueryA{KeyNameValueDelimiter}{KeyNameValueDelimiter}{KeySubDelimiter}ValueA",
+            cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Theory]
+    [InlineData("?QueryA=", "\u001d")]
+    [InlineData("?QueryA=&QueryA=ValueA", "\u001d\u001fValueA")]
+    public void OutputCachingKeyProvider_CreateStorageKey_EncodesEmptyWildcardQueryValues(string queryString, string expectedValues)
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString(queryString);
+        context.CacheVaryByRules.QueryKeys = new string[] { "*" };
+
+        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}{expectedValues}",
             cacheKeyProvider.CreateStorageKey(context));
     }
 

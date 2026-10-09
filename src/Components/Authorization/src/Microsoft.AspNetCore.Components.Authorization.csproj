@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Components" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Security\Authorization\Core\src\Microsoft.AspNetCore.Authorization.csproj" />
   </ItemGroup>
 
   <ItemGroup>

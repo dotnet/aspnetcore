@@ -25,6 +25,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <!-- This runtime store manifest has no source or public API to analyze. -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -71,7 +74,6 @@
               RuntimeIdentifier=%(HostingStartupRuntimeStoreTargets.Runtime);
               ComposeDir=$(_RuntimeStoreOutput)\%(HostingStartupRuntimeStoreTargets.Runtime);
               SkipOptimization=true;
-              DisablePackageReferenceRestrictions=true;
               RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
     <!-- Generate deps -->
     <RemoveDir Directories="%(_HostingStartupPackageReference.WorkingDirectory)" />

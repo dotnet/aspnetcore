@@ -277,4 +277,42 @@ public class WebHostBuilderKestrelExtensionsTests
 
         Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<NamedPipeTransportOptions>>().Value.MemoryPoolFactory);
     }
+
+    [Fact]
+    public void MemoryPoolFactoryDoesNotConsumeScopedTimeProvider()
+    {
+        var hostBuilder = new HostBuilder()
+            .UseDefaultServiceProvider(options =>
+            {
+                options.ValidateScopes = true;
+                options.ValidateOnBuild = true;
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddScoped<TimeProvider>(_ => new ThrowingTimeProvider());
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel()
+                    .Configure(app => { });
+            });
+
+        using var host = hostBuilder.Build();
+
+        var factory = Assert.IsType<PinnedBlockMemoryPoolFactory>(host.Services.GetRequiredService<IMemoryPoolFactory<byte>>());
+
+        factory.OnHeartbeat();
+
+        using var scope = host.Services.CreateScope();
+        Assert.IsType<ThrowingTimeProvider>(scope.ServiceProvider.GetRequiredService<TimeProvider>());
+    }
+
+    private sealed class ThrowingTimeProvider : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow()
+        {
+            throw new InvalidOperationException("Kestrel must not use the application's TimeProvider.");
+        }
+    }
 }
