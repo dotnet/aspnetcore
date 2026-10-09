@@ -6,7 +6,7 @@ import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
+import { applyAnyDeferredValue, deferredValuePropname, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -123,6 +123,7 @@ export class BrowserRenderer {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
     let permutationList: PermutationListEntry[] | undefined;
+    let textareasToSynchronize: Set<HTMLTextAreaElement> | undefined;
 
     const arrayBuilderSegmentReader = batch.arrayBuilderSegmentReader;
     const editReader = batch.editReader;
@@ -141,10 +142,12 @@ export class BrowserRenderer {
           const frame = batch.referenceFramesEntry(referenceFrames, frameIndex);
           const siblingIndex = editReader.siblingIndex(edit);
           this.insertFrame(batch, componentId, parent, childIndexAtCurrentDepth + siblingIndex, referenceFrames, frame, frameIndex);
+          textareasToSynchronize = queueTextareaForSynchronization(textareasToSynchronize, parent);
           break;
         }
         case EditType.removeFrame: {
           const siblingIndex = editReader.siblingIndex(edit);
+          textareasToSynchronize = queueTextareaForSynchronization(textareasToSynchronize, parent);
           removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           break;
         }
@@ -168,6 +171,9 @@ export class BrowserRenderer {
           if (element instanceof Element) {
             const attributeName = editReader.removedAttributeName(edit)!;
             this.setOrRemoveAttributeOrProperty(element, attributeName, null);
+            if (attributeName === 'value' && element instanceof HTMLTextAreaElement) {
+              (textareasToSynchronize ??= new Set()).add(element);
+            }
           } else {
             throw new Error('Cannot remove attribute from non-element child');
           }
@@ -179,7 +185,9 @@ export class BrowserRenderer {
           const siblingIndex = editReader.siblingIndex(edit);
           const textNode = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           if (textNode instanceof Text) {
-            textNode.textContent = frameReader.textContent(frame);
+            const newText = frameReader.textContent(frame);
+            textNode.textContent = newText;
+            textareasToSynchronize = queueTextareaForSynchronization(textareasToSynchronize, parent);
           } else {
             throw new Error('Cannot set text content on non-text child');
           }
@@ -191,6 +199,7 @@ export class BrowserRenderer {
           const siblingIndex = editReader.siblingIndex(edit);
           removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           this.insertMarkup(batch, parent, childIndexAtCurrentDepth + siblingIndex, frame);
+          textareasToSynchronize = queueTextareaForSynchronization(textareasToSynchronize, parent);
           break;
         }
         case EditType.stepIn: {
@@ -216,6 +225,7 @@ export class BrowserRenderer {
         }
         case EditType.permutationListEnd: {
           permuteLogicalChildren(parent, permutationList!);
+          textareasToSynchronize = queueTextareaForSynchronization(textareasToSynchronize, parent);
           permutationList = undefined;
           break;
         }
@@ -223,6 +233,23 @@ export class BrowserRenderer {
           const unknownType: never = editType; // Compile-time verification that the switch was exhaustive
           throw new Error(`Unknown edit type: ${unknownType}`);
         }
+      }
+    }
+
+    for (const textarea of textareasToSynchronize ?? []) {
+      // An explicit 'value' frame takes precedence over child content, matching the static renderer.
+      if (deferredValuePropname in textarea) {
+        continue;
+      }
+
+      let fullContent = '';
+      for (const node of Array.from(textarea.childNodes)) {
+        if (node instanceof Text) {
+          fullContent += node.textContent || '';
+        }
+      }
+      if (textarea.value !== fullContent) {
+        textarea.value = fullContent;
       }
     }
   }
@@ -409,6 +436,15 @@ export function setClearContentOnRootComponentRerender(element: LogicalElement):
 
 function shouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement): boolean {
   return element[preserveContentOnDisposalPropname] === true;
+}
+
+function queueTextareaForSynchronization(textareas: Set<HTMLTextAreaElement> | undefined, logicalParent: LogicalElement): Set<HTMLTextAreaElement> | undefined {
+  const parentElement = getClosestDomElement(logicalParent);
+  if (parentElement instanceof HTMLTextAreaElement) {
+    (textareas ??= new Set()).add(parentElement);
+  }
+
+  return textareas;
 }
 
 export interface ComponentDescriptor {
