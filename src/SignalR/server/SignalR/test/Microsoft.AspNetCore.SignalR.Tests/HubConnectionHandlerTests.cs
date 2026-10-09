@@ -2453,6 +2453,45 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    [Theory]
+    [InlineData(nameof(AllowAnonymousHub.AsyncNoAttribute))]
+    [InlineData(nameof(AllowAnonymousHub.AsyncMethodAllowAnonymous))]
+    [InlineData(nameof(AllowAnonymousHub.AsyncOpenPolicy))]
+    [InlineData(nameof(AllowAnonymousHub.SyncNoAttribute))]
+    [InlineData(nameof(AllowAnonymousHub.SyncMethodAllowAnonymous))]
+    [InlineData(nameof(AllowAnonymousHub.UnrelatedAttribute))]
+    public async Task AnonymousConnectionCanInvokeMethodsOnAllowAnonymousHubWithFallbackPolicy(string methodName)
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddAuthorizationBuilder().SetFallbackPolicy(
+                            new AuthorizationPolicyBuilder()
+                                .RequireAuthenticatedUser()
+                                .Build())
+                        .AddPolicy("Open", policy => policy.RequireAssertion(_ => true));
+                }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetRequiredService<HubConnectionHandler<AllowAnonymousHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(methodName).DefaultTimeout();
+
+                Assert.Null(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
     [Fact]
     public async Task HubOptionsCanUseCustomJsonSerializerSettings()
     {
