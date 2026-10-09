@@ -1,0 +1,64 @@
+@using BasicTestApp.FormsTest
+
+<select id="select-nullable-single" @bind="NullableSelectedCity">
+    <option value="@NullValue">(none)</option>
+    <option value="sf">San Francisco</option>
+    <option value="la">Los Angeles</option>
+    <option value="pdx">Portland</option>
+</select>
+
+<span id="selected-nullable-single-label">@NullableSelectedCityLabel</span>
+
+<button id="reset-nullable-single" @onclick="ResetNullableSingle">Reset single</button>
+
+<select id="select-no-null-option" @bind="SelectValueNoNull">
+    <option value="A">Option A</option>
+    <option value="B">Option B</option>
+    <option value="C">Option C</option>
+</select>
+
+<span id="select-no-null-option-label">@SelectValueNoNullLabel</span>
+
+<select id="select-nullable-multiple-optgroup" multiple>
+    <optgroup label="Cities">
+        <option value="@NullValue">Multiple optgroup null option</option>
+    </optgroup>
+</select>
+
+<select id="select-nullable-multiple-fragment" multiple>
+    @NullOptionFragment
+</select>
+
+<input list="nullable-datalist-fragment" />
+<datalist id="nullable-datalist-fragment">
+    @NullOptionFragment
+</datalist>
+
+@code {
+#nullable enable
+    private string? NullValue = null;
+    public string? NullableSelectedCity { get; set; } = "sf";
+    public string? SelectValueNoNull { get; set; } = "B";
+
+    private RenderFragment NullOptionFragment => builder =>
+    {
+        builder.OpenElement(0, "option");
+        builder.AddAttribute(1, "value", NullValue);
+        builder.AddContent(2, "Fragment null option");
+        builder.CloseElement();
+    };
+
+    private string NullableSelectedCityLabel => NullableSelectedCity ?? "(null)";
+
+    private string SelectValueNoNullLabel => SelectValueNoNull switch
+    {
+        null => "(null)",
+        "" => "(empty)",
+        _ => SelectValueNoNull,
+    };
+
+    void ResetNullableSingle()
+    {
+        NullableSelectedCity = null;
+    }
+}
