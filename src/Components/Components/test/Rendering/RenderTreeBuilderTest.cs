@@ -1324,7 +1324,7 @@ public class RenderTreeBuilderTest
     }
 
     [Fact]
-    public void AddAttribute_Element_EventCallbackOfT_WithExplicitReceiverAndNullDelegate_AddsFrame()
+    public void AddAttribute_Element_EventCallbackOfT_WithExplicitReceiverAndNullDelegate_DoesNotAddFrame()
     {
         var builder = new RenderTreeBuilder();
         var receiver = Mock.Of<IHandleEvent>();
@@ -1337,14 +1337,11 @@ public class RenderTreeBuilderTest
         builder.AddAttribute(1, "onmousemove", callback);
         builder.CloseElement();
 
-        Assert.Collection(
-            builder.GetFrames().AsEnumerable(),
-            frame => AssertFrame.Element(frame, "elem", 2, 0),
-            frame => AssertFrame.Attribute(frame, "onmousemove", new EventCallback(callback.Receiver, callback.Delegate), 1));
+        Assert.Collection(builder.GetFrames().AsEnumerable(), frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
     [Fact]
-    public void AddAttribute_Element_EventCallback_WithExplicitReceiverAndNullDelegate_AddsFrame()
+    public void AddAttribute_Element_EventCallback_WithExplicitReceiverAndNullDelegate_DoesNotAddFrame()
     {
         var builder = new RenderTreeBuilder();
         var receiver = Mock.Of<IHandleEvent>();
@@ -1357,10 +1354,7 @@ public class RenderTreeBuilderTest
         builder.AddAttribute(1, "onclick", callback);
         builder.CloseElement();
 
-        Assert.Collection(
-            builder.GetFrames().AsEnumerable(),
-            frame => AssertFrame.Element(frame, "elem", 2, 0),
-            frame => AssertFrame.Attribute(frame, "onclick", callback, 1));
+        Assert.Collection(builder.GetFrames().AsEnumerable(), frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
     [Fact]
@@ -1632,6 +1626,20 @@ public class RenderTreeBuilderTest
     }
 
     [Fact]
+    public void AddAttribute_Element_ObjectEventCallbackWithReceiverAndNullDelegate_DoesNotAddFrame()
+    {
+        var builder = new RenderTreeBuilder();
+        var receiver = Mock.Of<IHandleEvent>();
+        var callback = new EventCallback(receiver, @delegate: null);
+
+        builder.OpenElement(0, "elem");
+        builder.AddAttribute(1, "attr", (object)callback);
+        builder.CloseElement();
+
+        Assert.Collection(builder.GetFrames().AsEnumerable(), frame => AssertFrame.Element(frame, "elem", 1, 0));
+    }
+
+    [Fact]
     public void AddAttribute_Component_ObjectEventCallback_AddsFrame()
     {
         // Arrange
@@ -1706,6 +1714,20 @@ public class RenderTreeBuilderTest
             builder.GetFrames().AsEnumerable(),
             frame => AssertFrame.Element(frame, "elem", 2, 0),
             frame => AssertFrame.Attribute(frame, "attr", new EventCallback(callback.Receiver, callback.Delegate), 1));
+    }
+
+    [Fact]
+    public void AddAttribute_Element_ObjectEventCallbackWithReceiverOfTAndNullDelegate_DoesNotAddFrame()
+    {
+        var builder = new RenderTreeBuilder();
+        var receiver = Mock.Of<IHandleEvent>();
+        var callback = new EventCallback<string>(receiver, @delegate: null);
+
+        builder.OpenElement(0, "elem");
+        builder.AddAttribute(1, "attr", (object)callback);
+        builder.CloseElement();
+
+        Assert.Collection(builder.GetFrames().AsEnumerable(), frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
     [Fact]

@@ -39,7 +39,7 @@
     <h3>Null Optional EventCallback</h3>
     <p id="null_optional_event_callback_render_count">Render Count: @(++nullOptionalEventCallbackRenderCount)</p>
     <button id="toggle_null_optional_event_callback" @onclick="ToggleNullOptionalEventCallback">
-        Toggle Callback: @nullOptionalEventCallbackEnabled
+        Toggle Callback: @(NullOptionalEventCallback is not null)
     </button>
     <button id="null_optional_event_callback_button" @onclick="NullOptionalEventCallback">
         Optional Callback Button
@@ -51,15 +51,12 @@
 
     int buttonComponentCount  = 1; // Avoid CS0649
     int nullOptionalEventCallbackRenderCount;
-    bool nullOptionalEventCallbackEnabled;
 
-    EventCallback NullOptionalEventCallback => nullOptionalEventCallbackEnabled
-        ? EventCallback.Factory.Create(this, OnNullOptionalEventCallback)
-        : default;
+    Action NullOptionalEventCallback { get; set; }
 
     void ToggleNullOptionalEventCallback()
     {
-        nullOptionalEventCallbackEnabled = !nullOptionalEventCallbackEnabled;
+        NullOptionalEventCallback = NullOptionalEventCallback is null ? OnNullOptionalEventCallback : null;
     }
 
     void OnNullOptionalEventCallback()

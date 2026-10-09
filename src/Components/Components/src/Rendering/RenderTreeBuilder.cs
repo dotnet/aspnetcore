@@ -283,7 +283,7 @@ public sealed class RenderTreeBuilder : IDisposable
             // to box.
             _entries.AppendAttribute(sequence, name, value);
         }
-        else if (value.RequiresExplicitReceiver)
+        else if (value.RequiresExplicitReceiver && value.HasDelegate)
         {
             // If we need to preserve the receiver, we just box the EventCallback
             // so we can get it out on the other side.
@@ -297,8 +297,7 @@ public sealed class RenderTreeBuilder : IDisposable
         }
         else
         {
-            // No receiver was supplied and no delegate was provided; there is no event
-            // dispatch to wire up, so elide the frame rather than wire a no-op listener.
+            // Track the attribute name if needed since we elided the frame.
             TrackAttributeName(name);
         }
     }
@@ -328,7 +327,7 @@ public sealed class RenderTreeBuilder : IDisposable
             // to box.
             _entries.AppendAttribute(sequence, name, value);
         }
-        else if (value.RequiresExplicitReceiver)
+        else if (value.RequiresExplicitReceiver && value.HasDelegate)
         {
             // If we need to preserve the receiver - we convert this to an untyped EventCallback. We don't
             // need to preserve the type of an EventCallback<T> when it's invoked from the DOM.
@@ -381,10 +380,9 @@ public sealed class RenderTreeBuilder : IDisposable
             }
             else if (value is IEventCallback callbackValue)
             {
-                var unpackedCallbackValue = callbackValue.UnpackForRenderTree();
-                if (unpackedCallbackValue != null)
+                if (callbackValue.HasDelegate)
                 {
-                    _entries.AppendAttribute(sequence, name, unpackedCallbackValue);
+                    _entries.AppendAttribute(sequence, name, callbackValue.UnpackForRenderTree());
                 }
                 else
                 {
