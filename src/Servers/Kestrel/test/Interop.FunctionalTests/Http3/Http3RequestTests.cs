@@ -445,6 +445,7 @@ public class Http3RequestTests : LoggedTest
     }
 
     // Verify HTTP/2 and HTTP/3 match behavior
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67518")]
     [ConditionalTheory]
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
