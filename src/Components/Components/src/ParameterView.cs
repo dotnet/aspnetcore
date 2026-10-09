@@ -69,8 +69,24 @@ public readonly struct ParameterView
         {
             if (string.Equals(entry.Name, parameterName))
             {
-                result = (TValue)entry.Value;
-                return true;
+                if (entry.Value is TValue typedValue)
+                {
+                    result = typedValue;
+                    return true;
+                }
+
+                try
+                {
+                    result = (TValue)entry.Value!;
+                    return true;
+                }
+                catch (InvalidCastException ex)
+                {
+                    var sourceType = entry.Value?.GetType().FullName ?? "null";
+                    throw new InvalidCastException(
+                        $"Unable to convert parameter '{parameterName}' from type '{sourceType}' to type '{typeof(TValue).FullName}'.",
+                        ex);
+                }
             }
         }
 
