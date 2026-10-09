@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// <summary>
 /// Short circuit the endpoint(s).
 /// The execution of the endpoint will happen in UseRouting middleware.
+/// This prevents other middleware from running, including authorization middleware and its fallback policy.
 /// </summary>
 public interface IShortCircuitMetadata
 {
