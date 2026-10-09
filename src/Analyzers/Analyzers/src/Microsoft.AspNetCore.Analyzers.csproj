@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <Description>CSharp Analyzers for ASP.NET Core.</Description>
     <PackageTags>aspnetcore</PackageTags>
     <!--
