@@ -5,12 +5,17 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -952,25 +957,26 @@ class HubConnectionTest {
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
-        AtomicBoolean onNextCalled = new AtomicBoolean();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
-        result.subscribe((item) -> onNextCalled.set(true),
+        result.subscribe(receivedItems::add,
                 (error) -> {},
                 () -> completed.set(true));
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
-        assertFalse(onNextCalled.get());
+        assertTrue(receivedItems.isEmpty());
 
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
-        assertTrue(onNextCalled.get());
+        assertEquals(Arrays.asList("First"), receivedItems);
 
+        // A stream completion may carry a final result, which is delivered as a last item.
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"hello\"}" + RECORD_SEPARATOR);
         assertTrue(completed.get());
 
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
+        assertEquals(Arrays.asList("First", "hello"), receivedItems);
     }
 
     @Test
@@ -981,9 +987,9 @@ class HubConnectionTest {
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
-        AtomicBoolean onNextCalled = new AtomicBoolean();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
-        result.subscribe((item) -> onNextCalled.set(true),
+        result.subscribe(receivedItems::add,
                 (error) -> {},
                 () -> completed.set(true));
 
@@ -991,18 +997,19 @@ class HubConnectionTest {
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
-        assertFalse(onNextCalled.get());
+        assertTrue(receivedItems.isEmpty());
 
         byte[] secondMessageExpectedBytes = new byte[] { 0x0B, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA5, 0x46, 0x69, 0x72, 0x73, 0x74 };
         mockTransport.receiveMessage(ByteBuffer.wrap(secondMessageExpectedBytes));
 
-        assertTrue(onNextCalled.get());
+        assertEquals(Arrays.asList("First"), receivedItems);
 
         byte[] thirdMessageExpectedBytes = new byte[] { 0x0C, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, (byte) 0xA5, 0x68, 0x65, 0x6C, 0x6C, 0x6F };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
         assertTrue(completed.get());
 
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
+        // A stream completion may carry a final result, which is delivered as a last item.
+        assertEquals(Arrays.asList("First", "hello"), receivedItems);
     }
 
     @Test
@@ -1013,26 +1020,26 @@ class HubConnectionTest {
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
-        AtomicBoolean onNextCalled = new AtomicBoolean();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
-        result.subscribe((item) -> onNextCalled.set(true),
+        result.subscribe(receivedItems::add,
                 (error) -> {},
                 () -> completed.set(true));
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
-        assertFalse(onNextCalled.get());
+        assertTrue(receivedItems.isEmpty());
 
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
-        assertTrue(onNextCalled.get());
+        assertEquals(Arrays.asList("First"), receivedItems);
 
+        // A stream completion may carry a final result, which is delivered as a last item.
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"COMPLETED\"}" + RECORD_SEPARATOR);
         assertTrue(completed.get());
 
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
-        assertEquals("COMPLETED", result.timeout(30, TimeUnit.SECONDS).blockingLast());
+        assertEquals(Arrays.asList("First", "COMPLETED"), receivedItems);
     }
 
     @Test
@@ -1043,9 +1050,9 @@ class HubConnectionTest {
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
-        AtomicBoolean onNextCalled = new AtomicBoolean();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
-        result.subscribe((item) -> onNextCalled.set(true),
+        result.subscribe(receivedItems::add,
                 (error) -> {},
                 () -> completed.set(true));
 
@@ -1053,20 +1060,19 @@ class HubConnectionTest {
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
-        assertFalse(onNextCalled.get());
+        assertTrue(receivedItems.isEmpty());
 
         byte[] secondMessageExpectedBytes = new byte[] { 0x0B, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA5, 0x46, 0x69, 0x72, 0x73, 0x74 };
         mockTransport.receiveMessage(ByteBuffer.wrap(secondMessageExpectedBytes));
 
-        assertTrue(onNextCalled.get());
+        assertEquals(Arrays.asList("First"), receivedItems);
 
         byte[] thirdMessageExpectedBytes = new byte[] { 0x10, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, (byte) 0xA9, 0x43, 0x4F, 0x4D, 0x50,
             0x4C, 0x45, 0x54, 0x45, 0x44 };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
         assertTrue(completed.get());
 
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
-        assertEquals("COMPLETED", result.timeout(30, TimeUnit.SECONDS).blockingLast());
+        assertEquals(Arrays.asList("First", "COMPLETED"), receivedItems);
     }
 
     @Test
@@ -1076,28 +1082,27 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
-        AtomicBoolean onErrorCalled = new AtomicBoolean();
-        AtomicBoolean onNextCalled = new AtomicBoolean();
+        AtomicReference<Throwable> receivedError = new AtomicReference<>();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
-        result.subscribe((item) -> onNextCalled.set(true),
-                (error) -> onErrorCalled.set(true),
+        result.subscribe(receivedItems::add,
+                receivedError::set,
                 () -> {});
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
-        assertFalse(onErrorCalled.get());
-        assertFalse(onNextCalled.get());
+        assertNull(receivedError.get());
+        assertTrue(receivedItems.isEmpty());
 
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
-        assertTrue(onNextCalled.get());
+        assertEquals(Arrays.asList("First"), receivedItems);
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
-        assertTrue(onErrorCalled.get());
 
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
-        Throwable exception = assertThrows(HubException.class, () -> result.timeout(30, TimeUnit.SECONDS).blockingLast());
-        assertEquals("There was an error", exception.getMessage());
+        assertEquals(Arrays.asList("First"), receivedItems);
+        assertTrue(receivedError.get() instanceof HubException);
+        assertEquals("There was an error", receivedError.get().getMessage());
     }
 
     @Test
@@ -1108,23 +1113,23 @@ class HubConnectionTest {
 
             hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
-            AtomicBoolean onNextCalled = new AtomicBoolean();
+            List<Integer> receivedItems = Collections.synchronizedList(new ArrayList<>());
             Observable<Integer> result = hubConnection.stream(Integer.class, "echo", "message");
-            result.subscribe((item) -> onNextCalled.set(true),
+            result.subscribe(receivedItems::add,
                     (error) -> {},
                     () -> {});
 
             assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                     TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
-            assertFalse(onNextCalled.get());
+            assertTrue(receivedItems.isEmpty());
 
             mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"str\"}" + RECORD_SEPARATOR);
 
-            assertFalse(onNextCalled.get());
+            assertTrue(receivedItems.isEmpty());
 
             mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":1}" + RECORD_SEPARATOR);
 
-            assertEquals(1, result.timeout(30, TimeUnit.SECONDS).blockingFirst());
+            assertEquals(Arrays.asList(1), receivedItems);
 
             ILoggingEvent log = logger.assertLog("Failed to bind argument received in stream '1'.");
             assertTrue(log.getThrowableProxy().getClassName().contains("gson.JsonSyntaxException"));
@@ -1138,31 +1143,30 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
-        AtomicBoolean onErrorCalled = new AtomicBoolean();
-        AtomicBoolean onNextCalled = new AtomicBoolean();
+        AtomicReference<Throwable> receivedError = new AtomicReference<>();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
-        result.subscribe((item) -> onNextCalled.set(true),
-                (error) -> onErrorCalled.set(true),
+        result.subscribe(receivedItems::add,
+                receivedError::set,
                 () -> {});
 
         byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
-        assertFalse(onErrorCalled.get());
-        assertFalse(onNextCalled.get());
+        assertNull(receivedError.get());
+        assertTrue(receivedItems.isEmpty());
 
         byte[] secondMessageExpectedBytes = new byte[] { 0x0B, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA5, 0x46, 0x69, 0x72, 0x73, 0x74 };
         mockTransport.receiveMessage(ByteBuffer.wrap(secondMessageExpectedBytes));
 
-        assertTrue(onNextCalled.get());
+        assertEquals(Arrays.asList("First"), receivedItems);
 
         byte[] thirdMessageExpectedBytes = new byte[] { 0x0C, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x01, (byte) 0xA5, 0x45, 0x72, 0x72, 0x6F, 0x72 };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
-        assertTrue(onErrorCalled.get());
 
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
-        Throwable exception = assertThrows(HubException.class, () -> result.timeout(30, TimeUnit.SECONDS).blockingLast());
-        assertEquals("Error", exception.getMessage());
+        assertEquals(Arrays.asList("First"), receivedItems);
+        assertTrue(receivedError.get() instanceof HubException);
+        assertEquals("Error", receivedError.get().getMessage());
     }
 
     @Test
@@ -1173,8 +1177,9 @@ class HubConnectionTest {
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
-        result.subscribe((item) -> {/*OnNext*/ },
+        result.subscribe(receivedItems::add,
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/completed.set(true);});
 
@@ -1186,9 +1191,8 @@ class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Second\"}" + RECORD_SEPARATOR);
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"null\"}" + RECORD_SEPARATOR);
 
-        Iterator<String> resultIterator = result.timeout(30, TimeUnit.SECONDS).blockingIterable().iterator();
-        assertEquals("First", resultIterator.next());
-        assertEquals("Second", resultIterator.next());
+        // "First" and "Second" are stream items; "null" is the completion result, delivered as a last item.
+        assertEquals(Arrays.asList("First", "Second", "null"), receivedItems);
         assertTrue(completed.get());
     }
 
@@ -1200,8 +1204,9 @@ class HubConnectionTest {
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
-        result.subscribe((item) -> {/*OnNext*/ },
+        result.subscribe(receivedItems::add,
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/completed.set(true);});
 
@@ -1216,12 +1221,11 @@ class HubConnectionTest {
         byte[] thirdMessageExpectedBytes = new byte[] { 0x0C, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA6, 0x53, 0x65, 0x63, 0x6F, 0x6E, 0x64 };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
 
+        // A void completion (result kind 2) carries no result, so no final item is delivered.
         byte[] fourthMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x02 };
         mockTransport.receiveMessage(ByteBuffer.wrap(fourthMessageExpectedBytes));
 
-        Iterator<String> resultIterator = result.timeout(30, TimeUnit.SECONDS).blockingIterable().iterator();
-        assertEquals("First", resultIterator.next());
-        assertEquals("Second", resultIterator.next());
+        assertEquals(Arrays.asList("First", "Second"), receivedItems);
         assertTrue(completed.get());
     }
 
@@ -1270,59 +1274,31 @@ class HubConnectionTest {
     }
 
     @Test
-    public void checkCancelIsSentAfterAllSubscriptionsAreDisposed() {
+    public void streamDoesNotRetainDeliveredItems() throws InterruptedException {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
+        AtomicReference<WeakReference<String>> deliveredItem = new AtomicReference<>();
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
-        Disposable subscription = result.subscribe((item) -> {/*OnNext*/ },
-                (error) -> {/*OnError*/},
-                () -> {/*OnCompleted*/});
+        Disposable subscription = result.subscribe((item) -> deliveredItem.compareAndSet(null, new WeakReference<>(item)));
 
-        Disposable secondSubscription = result.subscribe((item) -> {/*OnNext*/ },
-                (error) -> {/*OnError*/},
-                () -> {/*OnCompleted*/});
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
+        assertNotNull(deliveredItem.get());
+
+        assertTrue(awaitCollection(deliveredItem.get()),
+                "The streamed item is still reachable after being delivered, so a long-running stream accumulates every item it has ever received.");
 
         subscription.dispose();
-        assertEquals(2, mockTransport.getSentMessages().length);
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
-                TestUtils.byteBufferToString(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
-
-        secondSubscription.dispose();
-        assertEquals(3, mockTransport.getSentMessages().length);
-        assertEquals("{\"type\":5,\"invocationId\":\"1\"}" + RECORD_SEPARATOR,
-                TestUtils.byteBufferToString(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
     }
 
-    @Test
-    public void checkCancelIsSentAfterAllSubscriptionsAreDisposedWithMessagePack() {
-        MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
-
-        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
-
-        Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
-        Disposable subscription = result.subscribe((item) -> {/*OnNext*/ },
-                (error) -> {/*OnError*/},
-                () -> {/*OnCompleted*/});
-
-        Disposable secondSubscription = result.subscribe((item) -> {/*OnNext*/ },
-                (error) -> {/*OnError*/},
-                () -> {/*OnCompleted*/});
-
-        subscription.dispose();
-        assertEquals(2, mockTransport.getSentMessages().length);
-
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
-            (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
-        assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
-
-        secondSubscription.dispose();
-        assertEquals(3, mockTransport.getSentMessages().length);
-        assertEquals(ByteString.of(new byte[] { 0x05, (byte) 0x93, 0x05, (byte) 0x80, (byte) 0xA1, 0x31 }),
-                ByteString.of(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
+    private static boolean awaitCollection(WeakReference<?> reference) throws InterruptedException {
+        for (int i = 0; i < 20 && reference.get() != null; i++) {
+            System.gc();
+            Thread.sleep(50);
+        }
+        return reference.get() == null;
     }
 
     @Test
@@ -1332,8 +1308,9 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
-        Disposable subscription = result.subscribe((item) -> {/*OnNext*/},
+        Disposable subscription = result.subscribe(receivedItems::add,
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/});
 
@@ -1345,7 +1322,7 @@ class HubConnectionTest {
         subscription.dispose();
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Second\"}" + RECORD_SEPARATOR);
 
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingLast());
+        assertEquals(Arrays.asList("First"), receivedItems);
     }
 
     @Test
@@ -1355,8 +1332,9 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
-        Disposable subscription = result.subscribe((item) -> {/*OnNext*/},
+        Disposable subscription = result.subscribe(receivedItems::add,
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/});
 
@@ -1371,80 +1349,55 @@ class HubConnectionTest {
         byte[] thirdMessageExpectedBytes = new byte[] { 0x0C, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA6, 0x53, 0x65, 0x63, 0x6F, 0x6E, 0x64 };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
 
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingLast());
+        assertEquals(Arrays.asList("First"), receivedItems);
     }
 
     @Test
-    public void checkStreamWithDisposeWithMultipleSubscriptions() {
+    public void checkStreamAllowsOnlyASingleSubscription() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
-        AtomicBoolean completed = new AtomicBoolean();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
-        Disposable subscription = result.subscribe((item) -> {/*OnNext*/},
+        Disposable subscription = result.subscribe(receivedItems::add,
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/});
 
-        Disposable subscription2 = result.subscribe((item) -> {/*OnNext*/},
-                (error) -> {/*OnError*/},
-                () -> {/*OnCompleted*/completed.set(true);});
-
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
-                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
-        assertFalse(completed.get());
+        // The stream is backed by a single-subscriber source, so a second subscription is rejected.
+        AtomicReference<Throwable> secondSubscriptionError = new AtomicReference<>();
+        result.subscribe((item) -> {/*OnNext*/}, secondSubscriptionError::set);
+        assertTrue(secondSubscriptionError.get() instanceof IllegalStateException);
 
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
+        assertEquals(Arrays.asList("First"), receivedItems);
 
         subscription.dispose();
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Second\"}" + RECORD_SEPARATOR);
-
-        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\"}" + RECORD_SEPARATOR);
-        assertTrue(completed.get());
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
-
-        subscription2.dispose();
-        assertEquals("Second", result.timeout(30, TimeUnit.SECONDS).blockingLast());
     }
 
     @Test
-    public void checkStreamWithDisposeWithMultipleSubscriptionsWithMessagePack() {
+    public void checkStreamAllowsOnlyASingleSubscriptionWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
-        AtomicBoolean completed = new AtomicBoolean();
+        List<String> receivedItems = Collections.synchronizedList(new ArrayList<>());
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
-        Disposable subscription = result.subscribe((item) -> {/*OnNext*/},
+        Disposable subscription = result.subscribe(receivedItems::add,
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/});
 
-        Disposable subscription2 = result.subscribe((item) -> {/*OnNext*/},
-                (error) -> {/*OnError*/},
-                () -> {/*OnCompleted*/completed.set(true);});
-
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
-            (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
-        assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
-        assertFalse(completed.get());
+        AtomicReference<Throwable> secondSubscriptionError = new AtomicReference<>();
+        result.subscribe((item) -> {/*OnNext*/}, secondSubscriptionError::set);
+        assertTrue(secondSubscriptionError.get() instanceof IllegalStateException);
 
         byte[] secondMessageExpectedBytes = new byte[] { 0x0B, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA5, 0x46, 0x69, 0x72, 0x73, 0x74 };
         mockTransport.receiveMessage(ByteBuffer.wrap(secondMessageExpectedBytes));
+        assertEquals(Arrays.asList("First"), receivedItems);
 
         subscription.dispose();
-        byte[] thirdMessageExpectedBytes = new byte[] { 0x0C, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA6, 0x53, 0x65, 0x63, 0x6F, 0x6E, 0x64 };
-        mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
-
-        byte[] fourthMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x02 };
-        mockTransport.receiveMessage(ByteBuffer.wrap(fourthMessageExpectedBytes));
-
-        assertTrue(completed.get());
-        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
-
-        subscription2.dispose();
-        assertEquals("Second", result.timeout(30, TimeUnit.SECONDS).blockingLast());
     }
 
     @Test
