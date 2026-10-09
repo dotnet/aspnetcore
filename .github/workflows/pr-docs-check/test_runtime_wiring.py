@@ -1,6 +1,8 @@
 import json
 import os
 import re
+import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -14,6 +16,101 @@ from test_prepare_context import changed_file, pull_request
 
 
 class RuntimeWiringTests(unittest.TestCase):
+    def test_checked_out_workflow_revision_executes_the_matching_preparation_cli(self):
+        helpers = Path(__file__).parent
+        compiled = (helpers.parent / "pr-docs-check.lock.yml").read_text(encoding="utf-8")
+        checkout = compiled.split("- name: Check out trusted workflow helpers\n", 1)[1].split(
+            "- name: Mint ASP.NET Core docs bot token", 1,
+        )[0]
+        ref = re.search(r"^\s+ref: (.+)$", checkout, re.M)[1].strip()
+        command = re.search(
+            r"python3 \.github/workflows/pr-docs-check/prepare_run\.py \\\n(.*?)\n          if grep",
+            compiled, re.S,
+        )[0].rsplit("\n          if grep", 1)[0].replace("\\\n", " ")
+        runner = """
+import json
+import runpy
+import subprocess
+import sys
+from pathlib import Path
+from unittest.mock import patch
+sys.argv = sys.argv[1:]
+sys.path.insert(0, str(Path(sys.argv[0]).parent))
+responses = json.loads(Path('responses.json').read_text())
+def api(command, **kwargs):
+    assert command[:4] == ['gh', 'api', '--method', 'GET'], command
+    return subprocess.CompletedProcess(command, 0, json.dumps(responses[command[-1]]), '')
+with patch('prepare_context.subprocess.run', side_effect=api):
+    runpy.run_path(sys.argv[0], run_name='__main__')
+"""
+        for event_name, head in (
+            ("workflow_dispatch", None),
+            ("pull_request_target", "contributor/aspnetcore"),
+            ("pull_request_target", "dotnet/aspnetcore"),
+        ):
+            with self.subTest(event_name=event_name, head=head), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+
+                def git(*args):
+                    return subprocess.run(
+                        ["git", *args], cwd=root, check=True, capture_output=True, text=True,
+                        env={**os.environ, "GIT_AUTHOR_NAME": "Test", "GIT_AUTHOR_EMAIL": "test@example.com",
+                             "GIT_COMMITTER_NAME": "Test", "GIT_COMMITTER_EMAIL": "test@example.com"},
+                    ).stdout.strip()
+
+                git("init", "-b", "main")
+                destination = root / ".github" / "workflows" / "pr-docs-check"
+                shutil.copytree(helpers, destination, ignore=shutil.ignore_patterns("test_*", "__pycache__"))
+                git("add", ".")
+                git("commit", "-m", "Workflow revision")
+                workflow_sha = git("rev-parse", "HEAD")
+                (destination / "prepare_run.py").write_text(
+                    "raise RuntimeError('Mutable main or source PR head helper selected')\n", encoding="utf-8",
+                )
+                git("add", ".")
+                git("commit", "-m", "Different revision")
+                if ref == "${{ github.event_name == 'workflow_dispatch' && github.workflow_sha || '' }}":
+                    checkout_ref = workflow_sha if event_name == "workflow_dispatch" else ""
+                    selected = checkout_ref or workflow_sha
+                else:
+                    selected = ref
+                git("checkout", "--detach", selected)
+                metadata = fixtures.ValidateOutcomeTests._metadata(9, "docs/aspnetcore-pr-42-abcd")
+                metadata.update(title="Editorial title", body="Editorial body", labels=[])
+                metadata["head"]["sha"] = "a" * 40
+                pr = pull_request()
+                if event_name == "workflow_dispatch":
+                    event = {"inputs": {"source_repository": "dotnet/aspnetcore", "pr_number": "42"}}
+                else:
+                    pr["head"] = {"repo": {"full_name": head}, "sha": git("rev-parse", "main")}
+                    pr["merge_commit_sha"] = workflow_sha
+                    event = {"action": "closed", "pull_request": pr}
+                (root / "event.json").write_text(json.dumps(event), encoding="utf-8")
+                responses = {
+                    "/repos/dotnet/aspnetcore/pulls/42": pr,
+                    "/repos/dotnet/AspNetCore.Docs/pulls?state=open&per_page=100": [[metadata]],
+                    "/repos/dotnet/AspNetCore.Docs/pulls/9": metadata,
+                }
+                (root / "responses.json").write_text(json.dumps(responses), encoding="utf-8")
+                invocation = command
+                for name, value in {
+                    "GITHUB_EVENT_PATH": str(root / "event.json"), "GITHUB_EVENT_NAME": event_name,
+                    "GITHUB_REPOSITORY": "dotnet/aspnetcore", "CONTEXT_DIR": str(root / "context"),
+                    "DOCS_BOT_APP_SLUG": "aspnetcore-docs-bot",
+                }.items():
+                    invocation = invocation.replace("${" + name + "}", value)
+                result = subprocess.run(
+                    [sys.executable, "-c", runner, *shlex.split(invocation)[1:]],
+                    cwd=root, capture_output=True, text=True,
+                    env={**os.environ, "GITHUB_OUTPUT": str(root / "output"),
+                         "GITHUB_STEP_SUMMARY": str(root / "summary"), "DOCS_GITHUB_TOKEN": "fixture"},
+                )
+                self.assertEqual(0, result.returncode, result.stderr)
+                outputs = dict(line.split("=", 1) for line in (root / "output").read_text().splitlines())
+                self.assertEqual("false", outputs["analyze"])
+                self.assertEqual("42", outputs["source_pr_number"])
+                self.assertIn("https://github.com/dotnet/AspNetCore.Docs/pull/9", (root / "summary").read_text())
+
     def test_cli_defaults_to_skip_and_refresh_publishes_only_the_trusted_target(self):
         cases = [("cli", mode, None) for mode in (None, "skip", "refresh")]
         cases += [("workflow_dispatch", mode, None) for mode in (None, "skip", "refresh")]
@@ -167,7 +264,10 @@ class RuntimeWiringTests(unittest.TestCase):
         self.assertIn("default: skip", workflow)
         self.assertIn("- refresh", workflow)
         self.assertIn("github.event.pull_request.number || inputs.pr_number", workflow)
-        self.assertEqual(5, workflow.count("ref: main"))
+        self.assertEqual(2, workflow.count("ref: main"))
+        self.assertEqual(3, workflow.count(
+            "ref: ${{ github.event_name == 'workflow_dispatch' && github.workflow_sha || '' }}",
+        ))
         self.assertNotIn("github.event.inputs.", workflow)
 
 

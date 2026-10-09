@@ -87,3 +87,27 @@ test('compiled concurrency and notifications consume the same event-or-dispatch 
   assert.ok(!triggers.includes('acknowledge-risk'));
   assert.ok(!triggers.includes('allowed-checkouts'));
 });
+
+for (const event of ['workflow_dispatch', 'pull_request_target']) {
+  test(`all helper checkouts follow the workflow execution revision for ${event}`, () => {
+    const github = {
+      ...context('contributor/aspnetcore'),
+      event_name: event,
+      workflow_sha: 'a'.repeat(40),
+      sha: 'b'.repeat(40),
+    };
+    github.event.pull_request.head.sha = 'c'.repeat(40);
+    github.event.pull_request.merge_commit_sha = github.sha;
+    for (const text of [workflow, compiled]) {
+      const checkouts = [...text.matchAll(/- name: (Check out (?:trusted workflow helpers|trusted outcome validator|safe-output preflight validator))\r?\n([\s\S]*?)(?=\r?\n\s*- name:)/g)];
+      assert.equal(checkouts.length, 3);
+      for (const [, name, step] of checkouts) {
+        const ref = step.match(/^\s+ref: (.+)$/m)[1].trim();
+        assert.equal(ref, "${{ github.event_name == 'workflow_dispatch' && github.workflow_sha || '' }}", name);
+        assert.equal(evaluate(ref.slice(3, -2).trim(), github, {}),
+          event === 'workflow_dispatch' ? github.workflow_sha : '', name);
+        assert.ok(!step.includes('repository:'), name);
+      }
+    }
+  });
+}
