@@ -84,6 +84,8 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
         return S_OK;
     }
 
+    std::wstring pExceptionMessage;
+
     try
     {
         const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
@@ -138,29 +140,43 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
         }
         return S_OK;
     }
-    catch (const ConfigurationLoadException &ex)
-    {
-        EventLog::Error(
-            ASPNETCORE_CONFIGURATION_LOAD_ERROR,
-            ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
-            ex.get_message().c_str());
-    }
     catch (...)
     {
         OBSERVE_CAUGHT_EXCEPTION();
+        pExceptionMessage = CaughtExceptionToString();
         EventLog::Error(
             ASPNETCORE_CONFIGURATION_LOAD_ERROR,
             ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
-            L"");
+            pExceptionMessage.c_str());
     }
 
+    ErrorContext errorContext;
+    errorContext.statusCode = 500i16;
+    errorContext.subStatusCode = 30i16;
+    errorContext.generalErrorType = "ASP.NET Core app failed to start - An exception was thrown during startup";
+    if (GetLastError() == ERROR_ACCESS_DENIED)
+    {
+        errorContext.errorReason = "Ensure the application pool process model has write permissions to the shadow copy directory";
+    }
+    // TODO: Depend on show detailed errors or nah?
+    errorContext.detailedErrorContent = to_multi_byte_string(pExceptionMessage, CP_UTF8);
+    auto page = ANCM_ERROR_PAGE;
+
+
+    auto responseContent = FILE_UTILITY::GetHtml(g_hServerModule,
+                                                 page,
+                                                 errorContext.statusCode,
+                                                 errorContext.subStatusCode,
+                                                 errorContext.generalErrorType,
+                                                 errorContext.errorReason,
+                                                 errorContext.detailedErrorContent);
     m_pApplication = make_application<ServerErrorApplication>(
         pHttpApplication,
         E_FAIL,
         false /* disableStartupPage */,
-        "" /* responseContent */,
-        500i16 /* statusCode */,
-        0i16 /* subStatusCode */,
+        responseContent /* responseContent */,
+        errorContext.statusCode /* statusCode */,
+        errorContext.subStatusCode/* subStatusCode */,
         "Internal Server Error");
 
     return S_OK;
@@ -193,7 +209,26 @@ APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOpt
         }
     }
 
-    auto shadowCopyPath = HandleShadowCopy(options, pHttpContext);
+    std::filesystem::path shadowCopyPath;
+
+    // Only support shadow copying for IIS.
+    if (options.QueryShadowCopyEnabled() && !m_pServer.IsCommandLineLaunch())
+    {
+        try
+        {
+            shadowCopyPath = HandleShadowCopy(options, pHttpContext, error);
+        }
+        catch (...)
+        {
+            OBSERVE_CAUGHT_EXCEPTION();
+            throw;
+        }
+
+        if (shadowCopyPath.empty())
+        {
+            return E_FAIL;
+        }
+    }
 
     RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), shadowCopyPath, m_pApplicationFactory, options, error));
     LOG_INFO(L"Creating handler application");
@@ -275,74 +310,116 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
  * we will start a thread that deletes all other folders in that directory.
  */
 std::filesystem::path
-APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext)
+APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext, ErrorContext& error)
 {
-    std::filesystem::path shadowCopyPath;
+    std::filesystem::path shadowCopyPath = options.QueryShadowCopyDirectory();
+    std::wstring physicalPath = pHttpContext.GetApplication()->GetApplicationPhysicalPath();
 
-    // Only support shadow copying for IIS.
-    if (options.QueryShadowCopyEnabled() && !m_pServer.IsCommandLineLaunch())
+    // Make shadow copy path absolute.
+    if (!shadowCopyPath.is_absolute())
     {
-        shadowCopyPath = options.QueryShadowCopyDirectory();
-        std::wstring physicalPath = pHttpContext.GetApplication()->GetApplicationPhysicalPath();
+        shadowCopyPath = std::filesystem::absolute(std::filesystem::path(physicalPath) / shadowCopyPath);
+    }
 
-        // Make shadow copy path absolute.
-        if (!shadowCopyPath.is_absolute())
+    // The shadow copy directory itself isn't copied to directly.
+    // Instead subdirectories with numerically increasing names are created.
+    // This is because on shutdown, the app itself will still have all dlls loaded,
+    // meaning we can't copy to the same subdirectory. Therefore, on shutdown,
+    // we create a directory that is one larger than the previous largest directory number.
+    auto directoryName = 0;
+    std::string directoryNameStr = "0";
+    auto shadowCopyBaseDirectory = std::filesystem::directory_entry(shadowCopyPath);
+    if (!shadowCopyBaseDirectory.exists())
+    {
+        auto ret = CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), nullptr);
+        if (!ret)
         {
-            shadowCopyPath = std::filesystem::absolute(std::filesystem::path(physicalPath) / shadowCopyPath);
-        }
+            auto pathString = to_multi_byte_string(shadowCopyBaseDirectory.path(), CP_UTF8);
+            auto errorCode = std::error_code(GetLastError(), std::system_category());
+            std::string errorMessage = format("Failed to create shadow copy base directory %s. Error: %s",
+                                              pathString.c_str(),
+                                              errorCode.message().c_str());
 
-        // The shadow copy directory itself isn't copied to directly.
-        // Instead subdirectories with numerically increasing names are created.
-        // This is because on shutdown, the app itself will still have all dlls loaded,
-        // meaning we can't copy to the same subdirectory. Therefore, on shutdown,
-        // we create a directory that is one larger than the previous largest directory number.
-        auto directoryName = 0;
-        std::string directoryNameStr = "0";
-        auto shadowCopyBaseDirectory = std::filesystem::directory_entry(shadowCopyPath);
-        if (!shadowCopyBaseDirectory.exists())
-        {
-            CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), nullptr);
-        }
-
-        for (auto& entry : std::filesystem::directory_iterator(shadowCopyPath))
-        {
-            if (entry.is_directory())
-            {
-                try
-                {
-                    auto tempDirName = entry.path().filename().string();
-                    int intFileName = std::stoi(tempDirName);
-                    if (intFileName > directoryName)
-                    {
-                        directoryName = intFileName;
-                        directoryNameStr = tempDirName;
-                    }
-                }
-                catch (...)
-                {
-                    OBSERVE_CAUGHT_EXCEPTION();
-                    // Ignore any folders that can't be converted to an int.
-                }
-            }
-        }
-
-        int copiedFileCount = 0;
-
-        shadowCopyPath = shadowCopyPath / directoryNameStr;
-        LOG_INFOF(L"Copying to shadow copy directory %ls.", shadowCopyPath.c_str());
-
-        // Avoid using canonical for shadowCopyBaseDirectory
-        // It could expand to a network drive, or an expanded link folder path
-        // We already made it an absolute path relative to the physicalPath above
-        HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path(), copiedFileCount);
-
-        LOG_INFOF(L"Finished copying %d files to shadow copy directory %ls.", copiedFileCount, shadowCopyBaseDirectory.path().c_str());
-
-        if (hr != S_OK)
-        {
+            // TODO: Better substatus code
+            error.statusCode = 500i16;
+            error.subStatusCode = 30i16;
+            error.generalErrorType = format("ASP.NET Core app failed to start - Failed to copy to shadow copy directory");
+            error.errorReason = format("Ensure the application pool process model has write permissions for the shadow copy base directory %s",
+                                       pathString.c_str());
+            error.detailedErrorContent = errorMessage;
             return std::wstring();
         }
     }
 
+    for (auto& entry : std::filesystem::directory_iterator(shadowCopyPath))
+    {
+        if (entry.is_directory())
+        {
+            try
+            {
+                auto tempDirName = entry.path().filename().string();
+                int intFileName = std::stoi(tempDirName);
+                if (intFileName > directoryName)
+                {
+                    directoryName = intFileName;
+                    directoryNameStr = tempDirName;
+                }
+            }
+            catch (...)
+            {
+                OBSERVE_CAUGHT_EXCEPTION();
+                // Ignore any folders that can't be converted to an int.
+            }
+        }
+    }
+
+    int copiedFileCount = 0;
+
+    shadowCopyPath = shadowCopyPath / directoryNameStr;
+    LOG_INFOF(L"Copying from %ls to shadow copy directory %ls.", physicalPath.c_str(), shadowCopyPath.c_str());
+
+    // Avoid using canonical for shadowCopyBaseDirectory
+    // It could expand to a network drive, or an expanded link folder path
+    // We already made it an absolute path relative to the physicalPath above
+    try {
+        // CopyToDirectory will succeed or throw exception, so return value can be ignored
+        Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path(), copiedFileCount);
+    }
+    catch (const std::system_error& ex)
+    {
+        auto exWideString = to_wide_string(ex.what(), CP_ACP);
+
+        std::wstring logMessage = format(L"Failed to copy files from %s to shadow copy directory %s. Error: %s",
+                                         physicalPath.c_str(),
+                                         shadowCopyPath.c_str(),
+                                         exWideString.c_str());
+
+        LOG_ERRORF(L"%ls", logMessage.c_str());
+        EventLog::Error(ASPNETCORE_CONFIGURATION_LOAD_ERROR,
+                        ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
+                        logMessage.c_str());
+
+        // TODO: Better substatus code
+        error.statusCode = 500i16;
+        error.subStatusCode = 30i16;
+
+        std::string errorMessage = "Failed to copy to shadow copy directory";
+        auto exceptionCode = ex.code().value();
+        if (exceptionCode == ERROR_ACCESS_DENIED || exceptionCode == ERROR_PATH_NOT_FOUND)
+        {
+            errorMessage = "No permissions to shadow copy directory";
+        }
+
+        error.generalErrorType = format("ASP.NET Core app failed to start - %s", errorMessage.c_str());
+        error.errorReason = format("Ensure the application pool process model has write permissions to the shadow copy directory %ls",
+                                   shadowCopyPath.c_str());
+        if (options.QueryShowDetailedErrors())
+        {
+            error.detailedErrorContent = ex.what();
+        }
+        return std::wstring();
+    }
+
+    LOG_INFOF(L"Finished copying %d files to shadow copy directory %ls.", copiedFileCount, shadowCopyBaseDirectory.path().c_str());
     return shadowCopyPath;
 }
