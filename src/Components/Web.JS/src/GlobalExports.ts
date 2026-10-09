@@ -82,7 +82,7 @@ export interface IBlazor {
     dotNetCriticalError?: any;
     loadLazyAssembly?: any;
     loadSatelliteAssemblies?: any;
-    sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void;
+    sendJSDataStream?: (data: any, streamId: number, chunkSize: number, jsInteropCallTimeoutMilliseconds: number) => void;
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>;
     receiveWebAssemblyDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     receiveWebViewDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
