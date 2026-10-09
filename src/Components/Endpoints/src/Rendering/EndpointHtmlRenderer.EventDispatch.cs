@@ -34,7 +34,7 @@ internal partial class EndpointHtmlRenderer
 
         if (!_namedSubmitEventsByScopeQualifiedName.TryGetValue(handlerName, out var locationsForName) || locationsForName.Count == 0)
         {
-            if (_httpContext.RequestServices.GetService<PrerenderingErrorBoundaryLogger>()?.HasHandledError == true)
+            if (HasHandledError)
             {
                 isBadRequest = false;
                 return Task.CompletedTask;

@@ -20,11 +20,8 @@ internal sealed class PrerenderingErrorBoundaryLogger : IErrorBoundaryLogger
         _logger = logger;
     }
 
-    internal bool HasHandledError { get; private set; }
-
     public ValueTask LogErrorAsync(Exception exception)
     {
-        HasHandledError = true;
         _exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
         return ValueTask.CompletedTask;
     }

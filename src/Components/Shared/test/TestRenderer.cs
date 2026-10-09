@@ -43,6 +43,8 @@ public class TestRenderer : Renderer
 
     public List<Exception> HandledExceptions { get; } = new List<Exception>();
 
+    public List<Exception> ErrorBoundaryHandledExceptions { get; } = new List<Exception>();
+
     public bool ShouldHandleExceptions { get; set; }
 
     public Task NextRenderResultTask { get; set; } = Task.CompletedTask;
@@ -107,6 +109,9 @@ public class TestRenderer : Renderer
         HandledExceptions.Add(exception);
         OnExceptionHandled?.Invoke();
     }
+
+    protected override void OnErrorBoundaryHandled(Exception exception)
+        => ErrorBoundaryHandledExceptions.Add(exception);
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
