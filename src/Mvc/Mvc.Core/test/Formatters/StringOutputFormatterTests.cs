@@ -151,4 +151,22 @@ public class StringOutputFormatterTests
         Assert.Equal(0, memoryStream.Length);
         response.VerifySet(r => r.ContentLength = It.IsAny<long?>(), Times.Never());
     }
+
+    [Fact]
+    public async Task WriteAsync_ReactsToCancellation()
+    {
+        var formatter = new StringOutputFormatter();
+        var httpContext = new DefaultHttpContext();
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        httpContext.RequestAborted = cts.Token;
+
+        var context = new OutputFormatterWriteContext(
+            httpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(string),
+            "test");
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => formatter.WriteAsync(context));
+    }
 }
