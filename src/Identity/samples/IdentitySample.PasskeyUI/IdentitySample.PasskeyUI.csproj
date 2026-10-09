@@ -76,7 +76,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <ProjectReference Include="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj" PrivateAssets="All" />
+    <ProjectReference Include="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)\src\Assets\StaticWebAssets.Groups.targets" />
