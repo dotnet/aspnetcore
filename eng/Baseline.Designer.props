@@ -34,6 +34,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[8.0.11, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.ApplicationInsights.HostingStartup-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApplicationInsights.HostingStartup' ">
@@ -66,6 +67,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.AzureADB2C.UI-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' ">
@@ -76,6 +78,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Cookies-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' ">
@@ -83,6 +86,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Core' ">
@@ -99,6 +103,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Facebook' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Google-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' ">
@@ -106,6 +111,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.JwtBearer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' ">
@@ -114,6 +120,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[5.7.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.MicrosoftAccount-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.MicrosoftAccount' ">
@@ -121,6 +128,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.MicrosoftAccount' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.OAuth-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OAuth' ">
@@ -129,6 +137,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OAuth' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.OpenIdConnect-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' ">
@@ -137,6 +146,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[5.7.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Twitter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Twitter' ">
@@ -144,6 +154,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Twitter' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.WsFederation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' ">
@@ -153,6 +164,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="[5.7.0, )" />
     <BaselinePackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[8.3.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication' ">
@@ -166,6 +178,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.WebEncoders" Version="[8.0.11, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authorization.Policy-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization.Policy' ">
@@ -269,6 +282,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.1, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Redis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Redis' ">
@@ -285,6 +299,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.SystemWeb' AND '$(TargetFramework)' == 'net462' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.1, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' ">
@@ -298,7 +313,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.3, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
     <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Diagnostics.Abstractions-->
@@ -490,6 +505,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Identity" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[2.1.14, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.Specification.Tests-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.Specification.Tests' ">
@@ -500,6 +516,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[8.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.1, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
     <BaselinePackageReference Include="xunit" Version="[2.4.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.UI-->
@@ -512,6 +529,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[8.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' ">
@@ -522,6 +540,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
@@ -639,6 +658,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Localization" Version="[8.0.11, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Razor.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' ">
@@ -701,6 +721,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[8.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="[8.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Testing-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' ">
@@ -725,6 +746,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.WebEncoders" Version="[8.0.11, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
     <BaselinePackageReference Include="Newtonsoft.Json.Bson" Version="[1.0.2, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.WebApiCompatShim-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.WebApiCompatShim' ">
@@ -753,6 +775,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[8.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.1, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.NodeServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' ">
@@ -964,6 +987,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.2, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Client.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' ">
@@ -1039,6 +1063,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[8.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.2, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SpaServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' ">
@@ -1048,6 +1073,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.NodeServices" Version="[2.3.13, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.StaticFiles-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.StaticFiles' ">
@@ -1162,5 +1188,6 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Owin.Security.Interop' AND '$(TargetFramework)' == 'net462' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.Owin.Security" Version="[4.2.2, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.4, )" />
   </ItemGroup>
 </Project>
