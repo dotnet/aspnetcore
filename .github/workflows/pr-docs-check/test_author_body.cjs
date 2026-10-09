@@ -84,12 +84,12 @@ for (const action of ['created', 'updated', 'unchanged']) {
         number: 9,
         state: 'open',
         draft: true,
-        body: original,
-        title: '[docs] Update guidance',
+        body: 'Human description without the original source marker\n',
+        title: 'Human editorial title',
         user: { login: 'aspnetcore-docs-bot[bot]' },
         base: { ref: 'main', repo: { full_name: 'dotnet/AspNetCore.Docs' } },
         head: { ref: 'docs/aspnetcore-pr-42', repo: { full_name: 'dotnet/AspNetCore.Docs.Automation' } },
-        labels: [{ name: 'documentation' }],
+        labels: [],
       };
       const updates = [];
       const comments = [];
@@ -113,19 +113,28 @@ for (const action of ['created', 'updated', 'unchanged']) {
       assert.equal(updates.length, 1, `${action} must update the description`);
       assert.equal(comments.length, 0, `${action} must not add an author comment`);
       assert.ok(updates[0].body.includes('@contributor'));
-      assert.ok(updates[0].body.startsWith(original));
+      assert.ok(updates[0].body.startsWith(metadata.body));
       assert.ok(updates[0].body.includes('Latest human edit'));
       metadata.body = updates[0].body;
       github.rest.pulls.get = async () => ({ data: metadata });
       await run(github, {}, mockRequire);
       assert.equal(updates.length, 1, `${action} repeated attribution must not write again`);
+      github.rest.pulls.get = async () => ({
+        data: { ...metadata, title: 'Another human title', labels: [{ name: 'editorial' }] },
+      });
+      await run(github, {}, mockRequire);
+      assert.equal(updates.length, 1, `${action} title and label edits must not govern refresh`);
+      github.rest.pulls.get = async () => ({ data: { ...metadata, body: null } });
+      await run(github, {}, mockRequire);
+      assert.equal(updates.length, 2, `${action} an emptied body must still accept managed attribution`);
+      assert.ok(updates[1].body.includes('@contributor'));
       github.rest.pulls.get = async () => ({ data: { ...metadata, draft: false } });
       await assert.rejects(run(github, {}, mockRequire), /identity changed after outcome validation/);
-      assert.equal(updates.length, 1, `${action} changed PR identity must not be mutated`);
+      assert.equal(updates.length, 2, `${action} changed PR identity must not be mutated`);
       process.env.SOURCE_AUTHOR = '';
       github.rest.pulls.get = async () => assert.fail('Bot authors must not read or mutate the docs PR');
       await run(github, {}, mockRequire);
-      assert.equal(updates.length, 1);
+      assert.equal(updates.length, 2);
     } finally {
       process.env = saved;
     }
