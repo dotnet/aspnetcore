@@ -39,8 +39,8 @@
     <!-- ANCM always builds every patch as we don't push temporary nuget packages anymore and that ANCM itself is a global singleton -->
     <IsPackageInThisPatch Condition="'$(IsANCMPackage)' == 'true'">true</IsPackageInThisPatch>
 
-    <!-- We shipped every package in 2.3.13 -->
-    <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '13'">true</IsPackageInThisPatch>
+    <!-- We shipped every package in 2.3.14 -->
+    <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '14'">true</IsPackageInThisPatch>
     
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.DataProtection.AzureKeyVault'))">false</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.DataProtection.AzureStorage'))">false</IsPackageInThisPatch>
