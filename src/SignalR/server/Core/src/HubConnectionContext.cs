@@ -67,7 +67,23 @@ public partial class HubConnectionContext
     // Tracks groups that the connection has been added to
     internal HashSet<string> GroupNames { get; } = new HashSet<string>();
 
-    internal Activity? OriginalActivity { get; set; }
+    private Activity? _originalActivity;
+    private ActivityLink[]? _originalActivityLinks;
+
+    internal Activity? OriginalActivity
+    {
+        get => _originalActivity;
+        set
+        {
+            _originalActivity = value;
+            _originalActivityLinks = null;
+        }
+    }
+
+    // Links to OriginalActivity for hub invocation activities. The links are copied when an
+    // activity is created, so the same array can be used by every invocation on the connection.
+    internal ActivityLink[]? OriginalActivityLinks =>
+        _originalActivity is { } originalActivity ? _originalActivityLinks ??= [new ActivityLink(originalActivity.Context)] : null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
