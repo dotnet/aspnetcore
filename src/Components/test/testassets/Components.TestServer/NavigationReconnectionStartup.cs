@@ -8,7 +8,7 @@ namespace TestServer;
 
 public class NavigationReconnectionStartup(IConfiguration configuration) : ServerStartup(configuration)
 {
-    public new void ConfigureServices(IServiceCollection services)
+    public override void ConfigureServices(IServiceCollection services)
     {
         base.ConfigureServices(services);
 
