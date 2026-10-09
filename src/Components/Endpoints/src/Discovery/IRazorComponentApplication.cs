@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -10,6 +11,7 @@ internal interface IRazorComponentApplication
 {
     ComponentApplicationBuilder GetBuilder();
 
+    [UnconditionalSuppressMessage("Trimming", "IL2062", Justification = "Razor component application assemblies are expected to be preserved by the application.")]
     static ComponentApplicationBuilder GetBuilderForAssembly(ComponentApplicationBuilder builder, Assembly assembly)
     {
         var libraryName = assembly.FullName!;
