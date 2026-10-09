@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
 
     <ProjectReference Include="$(RepoRoot)src\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj" />
     <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
