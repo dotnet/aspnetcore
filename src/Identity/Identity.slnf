@@ -3,10 +3,12 @@
     "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
+      "src\\Assets\\Microsoft.AspNetCore.App.Internal.Assets.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
       "src\\Components\\Components\\src\\Microsoft.AspNetCore.Components.csproj",
       "src\\Components\\Endpoints\\src\\Microsoft.AspNetCore.Components.Endpoints.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
+      "src\\Components\\JSInterop\\src\\Microsoft.JSInterop.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
@@ -53,7 +55,6 @@
       "src\\Identity\\test\\Identity.Test\\Microsoft.AspNetCore.Identity.Test.csproj",
       "src\\Identity\\test\\InMemory.Test\\Microsoft.AspNetCore.Identity.InMemory.Test.csproj",
       "src\\Identity\\testassets\\Identity.DefaultUI.WebSite\\Identity.DefaultUI.WebSite.csproj",
-      "src\\Components\\JSInterop\\src\\Microsoft.JSInterop.csproj",
       "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
       "src\\Localization\\Localization\\src\\Microsoft.Extensions.Localization.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
@@ -98,6 +99,7 @@
       "src\\Security\\Authentication\\OpenIdConnect\\src\\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj",
       "src\\Security\\Authentication\\Twitter\\src\\Microsoft.AspNetCore.Authentication.Twitter.csproj",
       "src\\Security\\Authentication\\WsFederation\\src\\Microsoft.AspNetCore.Authentication.WsFederation.csproj",
+      "src\\Security\\Authentication\\samples\\SocialSample\\SocialSample.csproj",
       "src\\Security\\Authentication\\test\\Microsoft.AspNetCore.Authentication.Test.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Security\\Authorization\\Policy\\src\\Microsoft.AspNetCore.Authorization.Policy.csproj",
@@ -113,6 +115,7 @@
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\StaticAssets\\src\\Microsoft.AspNetCore.StaticAssets.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
+      "src\\Validation\\gen\\Microsoft.Extensions.Validation.ValidationsGenerator.csproj",
       "src\\Validation\\src\\Microsoft.Extensions.Validation.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
