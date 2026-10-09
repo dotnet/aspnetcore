@@ -7,6 +7,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 /// <inheritdoc />
 /// <typeparam name="TFilter">The <see cref="Type"/> of filter to create.</typeparam>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 public class TypeFilterAttribute<TFilter> : TypeFilterAttribute where TFilter : IFilterMetadata
 {
     /// <summary>
