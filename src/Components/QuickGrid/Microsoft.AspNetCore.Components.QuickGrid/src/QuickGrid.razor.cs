@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
@@ -307,6 +308,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "These calls serialize only framework-owned references or primitive values and deserialize IJSObjectReference.")]
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -647,6 +649,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     };
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The stop call serializes no arguments.")]
     public async ValueTask DisposeAsync()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;

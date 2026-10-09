@@ -98,6 +98,7 @@ public class RemoteAuthenticationService<
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The URL is a string and the response type uses the JsonSerialized members required by this service.")]
     public virtual async Task<RemoteAuthenticationResult<TRemoteAuthenticationState>> CompleteSignInAsync(
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
@@ -120,6 +121,7 @@ public class RemoteAuthenticationService<
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The URL is a string and the response type uses the JsonSerialized members required by this service.")]
     public virtual async Task<RemoteAuthenticationResult<TRemoteAuthenticationState>> CompleteSignOutAsync(
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
@@ -131,6 +133,7 @@ public class RemoteAuthenticationService<
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The response uses the fixed internal access-token result type.")]
     public virtual async ValueTask<AccessTokenResult> RequestAccessToken()
     {
         await EnsureAuthService();
@@ -150,7 +153,7 @@ public class RemoteAuthenticationService<
     /// <inheritdoc />
     [DynamicDependency(JsonSerialized, typeof(AccessToken))]
     [DynamicDependency(JsonSerialized, typeof(AccessTokenRequestOptions))]
-
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The request and response use the fixed authentication option and access-token types preserved here.")]
     public virtual async ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -172,6 +175,7 @@ public class RemoteAuthenticationService<
 
     // JSRuntime.InvokeAsync does not properly annotate all arguments with DynamicallyAccessedMembersAttribute. https://github.com/dotnet/aspnetcore/issues/39839
     // Calling JsRuntime.InvokeAsync directly results allows the RemoteAuthenticationContext.State getter to be trimmed. https://github.com/dotnet/aspnetcore/issues/49956
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The input and result types require JsonSerialized members, which are preserved by their generic annotations.")]
     private ValueTask<TResult> JSInvokeWithContextAsync<[DynamicallyAccessedMembers(JsonSerialized)] TContext, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(
         string identifier, TContext context) => JsRuntime.InvokeAsync<TResult>(identifier, context);
 
@@ -196,6 +200,7 @@ public class RemoteAuthenticationService<
     /// Gets the current authenticated used using JavaScript interop.
     /// </summary>
     /// <returns>A <see cref="Task{ClaimsPrincipal}"/>that will return the current authenticated user when completes.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "TAccount requires JsonSerialized members through the service's generic type annotation.")]
     protected internal virtual async ValueTask<ClaimsPrincipal> GetAuthenticatedUser()
     {
         await EnsureAuthService();
@@ -206,6 +211,7 @@ public class RemoteAuthenticationService<
     }
 
     [DynamicDependency(JsonSerialized, typeof(RemoteAuthenticationServiceJavaScriptLoggingOptions))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Provider options use JsonSerialized members and logging options are preserved by the dependency above.")]
     private async ValueTask EnsureAuthService()
     {
         if (!_initialized)
