@@ -29,12 +29,11 @@ class ValidateOutcomeTests(unittest.TestCase):
         self.assertEqual("drafted", result["render_kind"])
         self.assertEqual(9, result["docs_pr_number"])
 
-    def test_updated_draft_requires_push_and_metadata_update(self):
+    def test_updated_draft_requires_push_without_metadata_update(self):
         payload = self._payload(
             "drafted",
             "updated",
             {"type": "push_to_pull_request_branch", "pull_request_number": 9},
-            {"type": "update_pull_request", "pull_request_number": 9},
             existing_docs_pr_number=9,
         )
 
@@ -47,7 +46,7 @@ class ValidateOutcomeTests(unittest.TestCase):
             {
                 "found": True,
                 "blocked": False,
-                "selected": {"number": 9},
+                "selected": {"number": 9, "head_sha": "a" * 40},
             },
             "aspnetcore-docs-bot[bot]",
         )
@@ -81,7 +80,6 @@ class ValidateOutcomeTests(unittest.TestCase):
             "drafted",
             "updated",
             {"type": "push_to_pull_request_branch", "pull_request_number": 9},
-            {"type": "update_pull_request", "pull_request_number": 9},
             existing_docs_pr_number=9,
             confidence=75,
         )
@@ -96,19 +94,19 @@ class ValidateOutcomeTests(unittest.TestCase):
             },
         )
 
-    def test_preflight_rejects_replacing_existing_body(self):
-        payload = self._payload(
-            "drafted",
-            "updated",
-            {"type": "push_to_pull_request_branch", "pull_request_number": 9},
-            {"type": "update_pull_request", "pull_request_number": 9, "body": "Replacement"},
-            existing_docs_pr_number=9,
-        )
-
-        with self.assertRaisesRegex(OutcomeValidationError, "preserve the existing body"):
-            validate_preflight(
-                payload, 42, {"found": True, "blocked": False, "selected": {"number": 9}},
-            )
+    def test_preflight_rejects_metadata_updates(self):
+        for field, value in (("body", "Replacement"), ("title", "[docs] Replacement"), ("state", "closed")):
+            with self.subTest(field=field):
+                payload = self._payload(
+                    "drafted", "updated",
+                    {"type": "push_to_pull_request_branch", "pull_request_number": 9},
+                    {"type": "update_pull_request", "pull_request_number": 9, field: value},
+                    existing_docs_pr_number=9,
+                )
+                with self.assertRaisesRegex(OutcomeValidationError, "no metadata"):
+                    validate_preflight(
+                        payload, 42, {"found": True, "blocked": False, "selected": {"number": 9}},
+                    )
 
     def test_trusted_source_gate_rejects_docs_mutations_for_early_paths(self):
         for status in ("ineligible", "restricted"):
@@ -168,7 +166,7 @@ class ValidateOutcomeTests(unittest.TestCase):
                         self.assertEqual(1 if notify else 0, result)
 
     def test_preflight_rejects_update_targeting_another_pull_request(self):
-        for mismatched_type in ("push_to_pull_request_branch", "update_pull_request"):
+        for mismatched_type in ("push_to_pull_request_branch",):
             with self.subTest(mismatched_type=mismatched_type):
                 payload = self._payload(
                     "drafted",
@@ -176,10 +174,6 @@ class ValidateOutcomeTests(unittest.TestCase):
                     {
                         "type": "push_to_pull_request_branch",
                         "pull_request_number": 10 if mismatched_type == "push_to_pull_request_branch" else 9,
-                    },
-                    {
-                        "type": "update_pull_request",
-                        "pull_request_number": 10 if mismatched_type == "update_pull_request" else 9,
                     },
                     existing_docs_pr_number=9,
                 )
@@ -202,7 +196,6 @@ class ValidateOutcomeTests(unittest.TestCase):
                     "drafted",
                     "updated",
                     {"type": "push_to_pull_request_branch", "pull_request_number": 9},
-                    {"type": "update_pull_request", "pull_request_number": 9},
                     existing_docs_pr_number=9,
                 )
 
@@ -385,6 +378,7 @@ class ValidateOutcomeTests(unittest.TestCase):
             },
             "head": {
                 "ref": head_ref,
+                "sha": "b" * 40,
                 "repo": {"full_name": "dotnet/AspNetCore.Docs.Automation"},
             },
             "user": {"login": "aspnetcore-docs-bot[bot]"},
