@@ -1169,6 +1169,27 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
     /// </summary>
     /// <returns>Task</returns>
     [Fact]
+    public async Task LockoutWithMaxTimeSpanDoesNotOverflow()
+    {
+        var mgr = CreateManager();
+        mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.MaxValue;
+        mgr.Options.Lockout.MaxFailedAccessAttempts = 0;
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
+        Assert.True(await mgr.GetLockoutEnabledAsync(user));
+        Assert.False(await mgr.IsLockedOutAsync(user));
+        IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
+        Assert.True(await mgr.IsLockedOutAsync(user));
+        Assert.Equal(DateTimeOffset.MaxValue, await mgr.GetLockoutEndDateAsync(user));
+        IdentityResultAssert.VerifyLogMessage(mgr.Logger, $"User is locked out.");
+        Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
     public async Task TwoFailureLockout()
     {
         var mgr = CreateManager();
