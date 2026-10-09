@@ -17,6 +17,7 @@
     <!-- Also bring in Microsoft.AspNetCore.App.Analyzers. -->
     <ProjectReference Include="$(RepoRoot)src\Framework\AspNetCoreAnalyzers\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Framework\AspNetCoreAnalyzers\src\SourceGenerators\Microsoft.AspNetCore.App.SourceGenerators.csproj" />
+    <ProjectReference Include="testassets\DoNotUseLocalFunctionsInMarkup\DoNotUseLocalFunctionsInMarkup.csproj" ReferenceOutputAssembly="false" />
 
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
 
@@ -58,6 +59,12 @@
     <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
     <ProjectReference Include="$(RepoRoot)src\StaticAssets\src\Microsoft.AspNetCore.StaticAssets.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="$(ArtifactsObjDir)DoNotUseLocalFunctionsInMarkup\$(Configuration)\generated\Microsoft.CodeAnalysis.Razor.Compiler\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\IssueSample_razor.g.cs"
+             Link="IssueSample_razor.g.cs"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
