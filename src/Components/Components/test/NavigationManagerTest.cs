@@ -1102,6 +1102,49 @@ public class NavigationManagerTest
             testNavManager.ResolveRelativeToCurrentPath(null!));
     }
 
+    [Fact]
+    public void Refresh_WithForceReloadFalse_PassesForceLoadFalseToNavigateTo()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.Refresh(forceReload: false);
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal(currentUri, testNavManager.Navigations[0].uri);
+        Assert.False(testNavManager.Navigations[0].options.ForceLoad);
+        Assert.True(testNavManager.Navigations[0].options.ReplaceHistoryEntry);
+    }
+
+    [Fact]
+    public void Refresh_WithForceReloadTrue_PassesForceLoadTrueToNavigateTo()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.Refresh(forceReload: true);
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal(currentUri, testNavManager.Navigations[0].uri);
+        Assert.True(testNavManager.Navigations[0].options.ForceLoad);
+        Assert.True(testNavManager.Navigations[0].options.ReplaceHistoryEntry);
+    }
+
+    [Fact]
+    public void Refresh_WithDefaultParameter_DoesNotForceReload()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.Refresh();
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.False(testNavManager.Navigations[0].options.ForceLoad);
+    }
+
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()
