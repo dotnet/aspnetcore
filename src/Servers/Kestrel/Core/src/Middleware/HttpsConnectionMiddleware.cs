@@ -55,6 +55,15 @@ internal sealed class HttpsConnectionMiddleware
     // Pool for cancellation tokens that cancel the handshake
     private readonly CancellationTokenSourcePool _ctsPool = new();
 
+    // Shared across connections on this endpoint: creating one per connection would throw away
+    // the session cache and make every handshake a full one. Only used on the sans-IO path.
+    // Held as a single reference so a reader cannot observe the context without the options it
+    // was built from, which also removes any question about the two fields being ordered.
+    private SansIoTlsContext? _sansIoContext;
+    private readonly Lock _sansIoContextLock = new();
+
+    private sealed record SansIoTlsContext(TlsContext Context, SslServerAuthenticationOptions Options);
+
     public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, HttpProtocols httpProtocols, KestrelMetrics metrics)
       : this(next, options, httpProtocols, loggerFactory: NullLoggerFactory.Instance, metrics: metrics)
     {
@@ -148,6 +157,12 @@ internal sealed class HttpsConnectionMiddleware
         if (context.Features.Get<ITlsConnectionFeature>() != null)
         {
             await _next(context);
+            return;
+        }
+
+        if (SansIoTlsSupport.IsEnabled && CanUseSansIoTls)
+        {
+            await OnConnectionSansIoAsync(context);
             return;
         }
 
@@ -342,6 +357,181 @@ internal sealed class HttpsConnectionMiddleware
 
         // Return the cert, and it will fail later
         return certificate;
+    }
+
+    /// <summary>
+    /// Mirrors <see cref="OnConnectionAsync"/> but drives TLS through <see cref="TlsSessionDuplexPipe"/>
+    /// rather than SslStream, so there is no Stream shim between the transport pipe and the
+    /// record layer. The feature is built after the handshake here, because its values are read
+    /// from the session rather than from a long-lived stream object.
+    /// </summary>
+    private async Task OnConnectionSansIoAsync(ConnectionContext context)
+    {
+        var metricsTagsFeature = context.Features.Get<IConnectionMetricsTagsFeature>();
+        var metricsContext = context.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
+        var startTimestamp = Stopwatch.GetTimestamp();
+
+        var tlsPipe = new TlsSessionDuplexPipe(context.Transport);
+
+        var feature = new Core.Internal.TlsConnectionFeature(tlsPipe, context, _logger);
+        feature.AllowDelayedClientCertificateNegotation =
+            _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
+        context.Features.Set<ITlsConnectionFeature>(feature);
+        context.Features.Set<ITlsHandshakeFeature>(feature);
+        context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+
+        // Deliberately not set on this path: ISslStreamFeature and the SslStream instance itself
+        // have no meaning without an SslStream. Applications reading either will see them absent.
+
+        try
+        {
+            using var cancellationTokenSource = _ctsPool.Rent();
+            cancellationTokenSource.CancelAfter(_handshakeTimeout);
+
+            if (_tlsListener is not null)
+            {
+                await _tlsListener.OnTlsClientHelloAsync(context, cancellationTokenSource.Token);
+            }
+
+            // Resolve the context first so the start event can report the protocols it was
+            // actually built with, matching what the SslStream path reports from its
+            // per-connection options.
+            var sansIo = GetOrCreateSansIoContext();
+
+            KestrelEventSource.Log.TlsHandshakeStart(context, sansIo.Options);
+            _metrics.TlsHandshakeStart(metricsContext);
+
+            await tlsPipe.HandshakeAsync(
+                sansIo.Context,
+                // Runs the built-in chain build together with the RemoteCertificateValidationCallback
+                // set above, which is how the SslStream path enforces ClientCertificateMode.
+                onCertificateValidation: static session => session.AcceptWithDefaultValidation(),
+                cancellationToken: cancellationTokenSource.Token);
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or IOException or AuthenticationException)
+        {
+            feature.Exception = ex;
+
+            KestrelEventSource.Log.TlsHandshakeFailed(metricsContext.ConnectionContext.ConnectionId);
+            KestrelEventSource.Log.TlsHandshakeStop(metricsContext.ConnectionContext, null);
+            KestrelMetrics.AddConnectionEndReason(metricsTagsFeature, ConnectionEndReason.TlsHandshakeFailed);
+            _metrics.TlsHandshakeStop(metricsContext, startTimestamp, Stopwatch.GetTimestamp(), exception: ex);
+
+            if (ex is OperationCanceledException)
+            {
+                _logger.AuthenticationTimedOut();
+            }
+            else
+            {
+                _logger.AuthenticationFailed(ex);
+            }
+
+            await tlsPipe.DisposeAsync();
+            return;
+        }
+
+        feature.CaptureFromSession();
+
+        var protocol = tlsPipe.Session.NegotiatedProtocol;
+
+        KestrelEventSource.Log.TlsHandshakeStop(context, feature);
+        _metrics.TlsHandshakeStop(metricsContext, startTimestamp, Stopwatch.GetTimestamp(), protocol: protocol);
+        _logger.HttpsConnectionEstablished(context.ConnectionId, protocol);
+
+        if (metricsTagsFeature != null
+            && KestrelMetrics.TryGetHandshakeProtocol(protocol, out var protocolName, out var protocolVersion))
+        {
+            if (protocolName != "tls")
+            {
+                metricsTagsFeature.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.name", protocolName));
+            }
+            metricsTagsFeature.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.version", protocolVersion));
+        }
+
+        var originalTransport = context.Transport;
+
+        try
+        {
+            context.Transport = tlsPipe;
+
+            await using (tlsPipe)
+            {
+                await _next(context);
+            }
+        }
+        finally
+        {
+            context.Transport = originalTransport;
+        }
+    }
+
+    /// <summary>
+    /// The sans-IO path currently covers the static-options case only. SNI selection and the
+    /// TLS callback options both choose a certificate per connection, which maps to resolving a
+    /// TlsContext from the ClientHello; that is supported by the adapter but not wired up here,
+    /// so those configurations stay on SslStream.
+    ///
+    /// <para><see cref="HttpsConnectionAdapterOptions.OnAuthenticate"/> is excluded for a
+    /// different reason. It is documented to run per connection and is handed that connection's
+    /// <see cref="SslServerAuthenticationOptions"/> to modify, but this path resolves one
+    /// <see cref="TlsContext"/> per endpoint and reuses it. Honouring the callback would mean
+    /// building a context per connection, which is exactly the cost the context exists to
+    /// amortise; silently applying the first connection's options to every later connection
+    /// would change behaviour an application can observe. Until per-connection contexts are
+    /// wired up, those configurations stay on SslStream.</para>
+    /// </summary>
+    private bool CanUseSansIoTls
+        => _options is not null
+            && _tlsCallbackOptions is null
+            && _serverCertificateSelector is null
+            && _options.OnAuthenticate is null;
+
+    private SansIoTlsContext GetOrCreateSansIoContext()
+    {
+        if (_sansIoContext is { } existing)
+        {
+            return existing;
+        }
+
+        lock (_sansIoContextLock)
+        {
+            if (_sansIoContext is null)
+            {
+                var sslOptions = BuildServerAuthenticationOptions();
+                _sansIoContext = new SansIoTlsContext(TlsContext.CreateServer(sslOptions), sslOptions);
+            }
+
+            return _sansIoContext;
+        }
+    }
+
+    /// <summary>
+    /// Builds the options backing this endpoint's shared <see cref="TlsContext"/>. Every value
+    /// here comes from the endpoint's configuration rather than from a connection, which is what
+    /// makes the resulting context safe to share; <c>CanUseSansIoTls</c> keeps the per-connection
+    /// configurations off this path.
+    /// </summary>
+    private SslServerAuthenticationOptions BuildServerAuthenticationOptions()
+    {
+        Debug.Assert(_options != null, "Middleware must be created with options.");
+        Debug.Assert(_options.OnAuthenticate is null, "OnAuthenticate is per-connection; CanUseSansIoTls must exclude it.");
+
+        var sslOptions = new SslServerAuthenticationOptions
+        {
+            ServerCertificate = _serverCertificate,
+            ServerCertificateContext = _serverCertificateContext,
+            ClientCertificateRequired = _options.ClientCertificateMode == ClientCertificateMode.AllowCertificate
+                || _options.ClientCertificateMode == ClientCertificateMode.RequireCertificate,
+            EnabledSslProtocols = _options.SslProtocols,
+            CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+            RemoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate
+                ? null
+                : RemoteCertificateValidationCallback,
+        };
+
+        ConfigureAlpn(sslOptions, _httpProtocols);
+
+        return sslOptions;
     }
 
     private Task DoOptionsBasedHandshakeAsync(ConnectionContext context, SslStream sslStream, Core.Internal.TlsConnectionFeature feature, CancellationToken cancellationToken)

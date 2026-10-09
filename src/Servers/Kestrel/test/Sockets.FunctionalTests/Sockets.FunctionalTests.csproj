@@ -51,4 +51,8 @@
     <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(EnableSansIoTls)' == 'true'">
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.EnableSansIoTls" Value="true" />
+  </ItemGroup>
+
 </Project>
