@@ -37,23 +37,23 @@
     <ClCompile Include="filewatcher_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AspNetCore\AspNetCore.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
       <Project>{ec82302f-d2f0-4727-99d1-eabc0dd9dc3b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\\CommonLib\CommonLib.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\CommonLib\CommonLib.vcxproj">
       <Project>{55494e58-e061-4c4c-a0a8-837008e72f85}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\IISLib\IISLib.vcxproj">
-      <Project>{09d9d1d6-2951-4e14-bc35-76a23cf9391a}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\RequestHandlerLib\RequestHandlerLib.vcxproj">
-      <Project>{1533e271-f61b-441b-8b74-59fb61df0552}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\gtest\gtest.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\gtest\gtest.vcxproj">
       <Project>{cac1267b-8778-4257-aac6-caf481723b01}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\IISLib.vcxproj">
+      <Project>{09d9d1d6-2951-4e14-bc35-76a23cf9391a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <Project>{d57ea297-6dc2-4bc0-8c91-334863327863}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\RequestHandlerLib\RequestHandlerLib.vcxproj">
+      <Project>{1533e271-f61b-441b-8b74-59fb61df0552}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

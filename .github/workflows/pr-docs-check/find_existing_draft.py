@@ -28,6 +28,7 @@ def find_existing_draft(
 
     marker = f"Source: {source_repository}#{source_pr_number}"
     matches: list[dict[str, Any]] = []
+    untrusted_matches: list[dict[str, Any]] = []
     expected_branch = re.compile(
         rf"docs/aspnetcore-pr-{source_pr_number}(?:-[a-f0-9]+)?"
     )
@@ -58,14 +59,28 @@ def find_existing_draft(
             and head_repo.get("full_name", "").lower() == head_repository.lower()
             and isinstance(head.get("ref"), str)
             and expected_branch.fullmatch(head["ref"])
-            and "documentation" in label_names
-            and isinstance(pull.get("user"), dict)
-            and pull["user"].get("login") == allowed_author
         ):
+            number = pull.get("number")
+            if (
+                not isinstance(number, int) or isinstance(number, bool) or number <= 0
+                or pull.get("html_url") != f"https://github.com/{target_repository}/pull/{number}"
+            ):
+                raise DraftResolutionError("Matching docs PR has an invalid number or URL.")
+            if (
+                "documentation" not in label_names
+                or not isinstance(pull.get("user"), dict)
+                or pull["user"].get("login") != allowed_author
+                or not isinstance(pull.get("title"), str)
+                or not pull["title"].startswith("[docs] ")
+            ):
+                untrusted_matches.append(pull)
+                continue
             matches.append(pull)
 
     matches.sort(key=lambda pull: (str(pull.get("updated_at") or ""), int(pull.get("number") or 0)), reverse=True)
-    blocked = next((pull for pull in matches if pull.get("draft") is not True), None)
+    blocked = next(iter(untrusted_matches), None) or next(
+        (pull for pull in matches if pull.get("draft") is not True), None,
+    )
     drafts = [pull for pull in matches if pull.get("draft") is True]
     selected = drafts[0] if drafts and blocked is None else None
     return {
@@ -73,7 +88,10 @@ def find_existing_draft(
         "source": marker,
         "found": selected is not None,
         "blocked": blocked is not None,
-        "blocked_reason": "matching_pull_request_is_not_draft" if blocked is not None else None,
+        "blocked_reason": (
+            "matching_pull_request_is_untrusted" if untrusted_matches
+            else "matching_pull_request_is_not_draft" if blocked is not None else None
+        ),
         "blocked_pull_request": None if blocked is None else {
             "number": blocked["number"],
             "url": blocked["html_url"],
@@ -84,6 +102,7 @@ def find_existing_draft(
             "url": selected["html_url"],
             "head_ref": selected["head"]["ref"],
             "base_ref": selected["base"]["ref"],
+            "head_sha": selected["head"].get("sha"),
         },
         "other_matching_pull_requests": [
             {"number": pull["number"], "url": pull["html_url"]}

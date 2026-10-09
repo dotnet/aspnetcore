@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -9,7 +10,7 @@
 
   <ItemGroup>
     <!-- This analyzer is supported in VS 2019 and must use a compatible Microsoft.CodeAnalysis version -->
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" VersionOverride="$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
   </ItemGroup>
 
   <ItemGroup>
