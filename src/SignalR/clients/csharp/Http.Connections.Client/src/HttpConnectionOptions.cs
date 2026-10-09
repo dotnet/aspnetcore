@@ -284,6 +284,19 @@ public class HttpConnectionOptions
     /// </remarks>
     public bool UseStatefulReconnect { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether to log the contents of data sent and received by the transport at Trace level.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <see langword="false"/>. Message contents can contain sensitive application data.
+    /// Each entry records at most the first 1,024 bytes of a transport data chunk, with the original
+    /// length and an indication of truncation. Chunks do not necessarily correspond to complete Hub messages.
+    /// Printable ASCII bytes are displayed directly, backslashes are escaped, and other bytes use
+    /// hexadecimal escapes, preserving binary data and partial UTF-8 characters.
+    /// This option applies to WebSockets, Server-Sent Events, and Long Polling.
+    /// </remarks>
+    public bool LogMessageContent { get; set; }
+
     private static void ThrowIfUnsupportedPlatform()
     {
         if (OperatingSystem.IsBrowser())
