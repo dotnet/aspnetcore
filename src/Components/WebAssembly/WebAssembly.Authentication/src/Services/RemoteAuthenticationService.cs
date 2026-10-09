@@ -30,7 +30,7 @@ public class RemoteAuthenticationService<
     where TAccount : RemoteUserAccount
 {
     private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
-    private bool _initialized;
+    private Task? _initializeTask;
     private readonly RemoteAuthenticationServiceJavaScriptLoggingOptions _loggingOptions;
 
     // This defaults to 1/1/1970
@@ -208,10 +208,22 @@ public class RemoteAuthenticationService<
     [DynamicDependency(JsonSerialized, typeof(RemoteAuthenticationServiceJavaScriptLoggingOptions))]
     private async ValueTask EnsureAuthService()
     {
-        if (!_initialized)
+        // Concurrent callers (for example the authentication state and an access token request
+        // during startup) share a single initialization rather than each calling into JS.
+        // A failed initialization is not cached, so the next caller retries it.
+        var initializeTask = _initializeTask ??= JsRuntime.InvokeVoidAsync("AuthenticationService.init", Options.ProviderOptions, _loggingOptions).AsTask();
+        try
         {
-            await JsRuntime.InvokeVoidAsync("AuthenticationService.init", Options.ProviderOptions, _loggingOptions);
-            _initialized = true;
+            await initializeTask;
+        }
+        catch
+        {
+            if (ReferenceEquals(_initializeTask, initializeTask))
+            {
+                _initializeTask = null;
+            }
+
+            throw;
         }
     }
     private async Task UpdateUserOnSuccess(RemoteAuthenticationResult<TRemoteAuthenticationState> result)

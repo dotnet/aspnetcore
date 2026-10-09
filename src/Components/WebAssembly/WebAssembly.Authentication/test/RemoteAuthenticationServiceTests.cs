@@ -371,6 +371,58 @@ public class RemoteAuthenticationServiceTests
     }
 
     [Fact]
+    public async Task RemoteAuthenticationService_ConcurrentCalls_InitializeJavaScriptServiceOnce()
+    {
+        // Arrange
+        var testJsRuntime = new TestJsRuntime { InitCompletion = new TaskCompletionSource() };
+        var options = CreateOptions();
+        var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
+            testJsRuntime,
+            options,
+            new TestNavigationManager(),
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
+
+        testJsRuntime.GetUserResult = default;
+
+        // Act
+        var first = runtime.GetAuthenticatedUser().AsTask();
+        var second = runtime.GetAuthenticatedUser().AsTask();
+        testJsRuntime.InitCompletion.SetResult();
+        await Task.WhenAll(first, second);
+
+        // Assert
+        var invocations = testJsRuntime.PastInvocations.Select(i => i.identifier).ToArray();
+        Assert.Single(invocations, i => i == "AuthenticationService.init");
+        Assert.Equal(2, invocations.Count(i => i == "AuthenticationService.getUser"));
+    }
+
+    [Fact]
+    public async Task RemoteAuthenticationService_RetriesInitialization_AfterFailure()
+    {
+        // Arrange
+        var testJsRuntime = new TestJsRuntime { InitException = new JSException("init failed") };
+        var options = CreateOptions();
+        var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
+            testJsRuntime,
+            options,
+            new TestNavigationManager(),
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
+
+        testJsRuntime.GetUserResult = default;
+
+        // Act
+        await Assert.ThrowsAsync<JSException>(() => runtime.GetAuthenticatedUser().AsTask());
+        await runtime.GetAuthenticatedUser();
+
+        // Assert
+        Assert.Equal(
+            new[] { "AuthenticationService.init", "AuthenticationService.init", "AuthenticationService.getUser" },
+            testJsRuntime.PastInvocations.Select(i => i.identifier).ToArray());
+    }
+
+    [Fact]
     public async Task RemoteAuthenticationService_GetUser_ReturnsAnonymousClaimsPrincipal_ForUnauthenticatedUsers()
     {
         // Arrange
@@ -531,15 +583,40 @@ public class RemoteAuthenticationServiceTests
 
         public RemoteUserAccount GetUserResult { get; set; }
 
+        // When set, "AuthenticationService.init" doesn't complete until this does.
+        public TaskCompletionSource InitCompletion { get; set; }
+
+        // When set, the next "AuthenticationService.init" fails with this exception.
+        public Exception InitException { get; set; }
+
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
-        {
-            PastInvocations.Add((identifier, args));
-            return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
-        }
+            => Invoke<TValue>(identifier, args);
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+            => Invoke<TValue>(identifier, args);
+
+        private ValueTask<TValue> Invoke<TValue>(string identifier, object[] args)
         {
             PastInvocations.Add((identifier, args));
+
+            if (identifier == "AuthenticationService.init")
+            {
+                if (InitException is { } exception)
+                {
+                    InitException = null;
+                    return ValueTask.FromException<TValue>(exception);
+                }
+
+                if (InitCompletion is { } completion)
+                {
+                    return new ValueTask<TValue>(completion.Task.ContinueWith(
+                        _ => (TValue)GetInvocationResult(identifier),
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default));
+                }
+            }
+
             return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
         }
 
