@@ -8,10 +8,12 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
+    <DefineConstants>$(DefineConstants);MVC_TAGHELPERS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\**\*" />
+    <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
