@@ -56,7 +56,7 @@ public static class DotNetDispatcher
             targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
         }
 
-        var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, out _);
+        var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, out _, isSynchronousInvocation: true);
         if (syncResult == null)
         {
             return null;
@@ -163,7 +163,7 @@ public static class DotNetDispatcher
         jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
     }
 
-    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, out Type? returnType)
+    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, out Type? returnType, bool isSynchronousInvocation = false)
     {
         returnType = null;
         var assemblyName = callInfo.AssemblyName;
@@ -199,6 +199,11 @@ public static class DotNetDispatcher
 
         try
         {
+            if (isSynchronousInvocation && IsAsyncReturnType(returnType))
+            {
+                throw new InvalidOperationException($"The JSInvokable method '{methodIdentifier}' returns an asynchronous value. Use 'invokeMethodAsync' to invoke it.");
+            }
+
             // objectReference will be null if this call invokes a static JSInvokable method.
             return methodInfo.Invoke(objectReference?.Value, suppliedArgs);
         }
@@ -222,6 +227,11 @@ public static class DotNetDispatcher
             jsRuntime.ByteArraysToBeRevived.Clear();
         }
     }
+
+    private static bool IsAsyncReturnType(Type returnType)
+        => typeof(Task).IsAssignableFrom(returnType)
+            || returnType == typeof(ValueTask)
+            || (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(ValueTask<>));
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes)
