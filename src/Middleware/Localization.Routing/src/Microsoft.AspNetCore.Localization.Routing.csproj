@@ -12,9 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Localization" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
   </ItemGroup>
 
 </Project>
