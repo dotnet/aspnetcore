@@ -81,6 +81,7 @@
       "src\\Mvc\\Mvc.RazorPages\\src\\Microsoft.AspNetCore.Mvc.RazorPages.csproj",
       "src\\Mvc\\Mvc.Razor\\src\\Microsoft.AspNetCore.Mvc.Razor.csproj",
       "src\\Mvc\\Mvc.TagHelpers\\src\\Microsoft.AspNetCore.Mvc.TagHelpers.csproj",
+      "src\\Mvc\\Mvc.Testing.Tasks\\src\\Microsoft.AspNetCore.Mvc.Testing.Tasks.csproj",
       "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj",
       "src\\Mvc\\Mvc.ViewFeatures\\src\\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj",
       "src\\Mvc\\Mvc\\src\\Microsoft.AspNetCore.Mvc.csproj",
