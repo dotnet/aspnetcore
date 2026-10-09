@@ -1,0 +1,51 @@
+.NET SDK:
+ Version:           11.0.100-rc.1.26420.103
+ Commit:            1d599674e3
+ Workload version:  11.0.100-manifests.d9992e59
+ MSBuild version:   18.11.0-1.26420.103+1d599674e
+
+Runtime Environment:
+ OS Name:     ubuntu
+ OS Version:  24.04
+ OS Platform: Linux
+ RID:         linux-x64
+ Base Path:   /home/runner/work/aspnetcore/aspnetcore/.dotnet/sdk/11.0.100-rc.1.26420.103
+
+.NET workloads installed:
+There are no installed workloads to display.
+Configured to use workload sets when installing new manifests.
+No workload sets are installed. Run "dotnet workload restore" to install a workload set.
+
+Host:
+  Version:      12.0.0-alpha.1.26473.114
+  Architecture: x64
+  Commit:       c567e8ff13
+
+.NET SDKs installed:
+  11.0.100-rc.1.26420.103 [/home/runner/work/aspnetcore/aspnetcore/.dotnet/sdk]
+  11.0.100-rc.1.26420.103 [/home/runner/work/aspnetcore/aspnetcore/.dotnet/sdk]
+
+.NET runtimes installed:
+  Microsoft.AspNetCore.App 11.0.0-rc.1.26420.103 [/home/runner/work/aspnetcore/aspnetcore/.dotnet/shared/Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 11.0.0-rc.1.26420.103 [/home/runner/work/aspnetcore/aspnetcore/.dotnet/shared/Microsoft.NETCore.App]
+  Microsoft.NETCore.App 12.0.0-alpha.1.26473.114 [/home/runner/work/aspnetcore/aspnetcore/.dotnet/shared/Microsoft.NETCore.App]
+
+Other architectures found:
+  None
+
+Environment variables:
+  DOTNET_MULTILEVEL_LOOKUP                 [0]
+  DOTNET_NOLOGO                            [1]
+  DOTNET_ROOT                              [/home/runner/work/aspnetcore/aspnetcore/.dotnet]
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE        [1]
+  DOTNET_SYSTEM_NET_DISABLEIPV6            [1]
+
+global.json file:
+  /home/runner/work/aspnetcore/aspnetcore/global.json
+
+Learn more:
+  https://aka.ms/dotnet/info
+
+Download .NET:
+  https://aka.ms/dotnet/download
+exit=0

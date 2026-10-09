@@ -1,0 +1,3 @@
+[0;95mEnabled the .NET Core environment. Execute 'deactivate' to exit.[0m
+dotnet = /home/runner/work/aspnetcore/aspnetcore/.dotnet/dotnet
+exit=0

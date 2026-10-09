@@ -1,0 +1,152 @@
+2026-10-09T01:12:39Z
+Build started 10/09/2026 01:12:39.
+Restoring packages for /tmp/NuGetScratchrunner/099e8156fe7f4523a405928ea9bab9af/5ff935f412a14dd29409d393864838f0.proj...
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/82c79e3b-8521-4be7-8d8b-41584286e3df/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/82c79e3b-8521-4be7-8d8b-41584286e3df/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 72ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/d1622942-d16f-48e5-bc83-96f4539e7601/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/d1622942-d16f-48e5-bc83-96f4539e7601/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 90ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/278e57fb-7c6e-4de3-96e6-3224f2148f06/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/278e57fb-7c6e-4de3-96e6-3224f2148f06/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 73ms
+  OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 294ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/12.0.0-beta.26473.114/microsoft.dotnet.arcade.sdk.12.0.0-beta.26473.114.nupkg
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/fa118d70-e738-40db-88b0-d0bf58712957/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/fa118d70-e738-40db-88b0-d0bf58712957/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 74ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/2303eb2b-8177-4b47-977a-e7278e3abf72/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/2303eb2b-8177-4b47-977a-e7278e3abf72/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 90ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a57d0dd1-b586-4233-8880-21626fab1f1a/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a57d0dd1-b586-4233-8880-21626fab1f1a/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 70ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/299b99f1-f3f1-4630-81e2-4fb223c52e70/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/8ea23ec3-b9b2-4976-90d7-7c4a6f529fdc/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/299b99f1-f3f1-4630-81e2-4fb223c52e70/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 113ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a54510f9-4b2c-4e69-b96a-6096683aaa1f/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/8ea23ec3-b9b2-4976-90d7-7c4a6f529fdc/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 90ms
+  OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/12.0.0-beta.26473.114/microsoft.dotnet.arcade.sdk.12.0.0-beta.26473.114.nupkg 559ms
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a54510f9-4b2c-4e69-b96a-6096683aaa1f/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 70ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/3698578c-d33d-473f-9ffc-769cfbd11be7/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/3698578c-d33d-473f-9ffc-769cfbd11be7/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 73ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/49a1bb2b-12b0-475f-adbd-1560fc76be38/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+Installed Microsoft.DotNet.Arcade.Sdk 12.0.0-beta.26473.114 from https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json to /home/runner/.nuget/packages/microsoft.dotnet.arcade.sdk/12.0.0-beta.26473.114 with content hash STNDRKouGnuLdXKznvH8LOPUKpTU4nCoCmSlBYGjwTVUeBiBIf6EEi19oRYDUNedeycp/odeG05eil3cgpcIGA==.
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/49a1bb2b-12b0-475f-adbd-1560fc76be38/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 70ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a65e5cb4-26c0-410f-9457-06db3c5254be/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a65e5cb4-26c0-410f-9457-06db3c5254be/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 70ms
+  GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json
+  NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.dotnet.arcade.sdk/index.json 75ms
+  GET https://data.nuget.org/v3/vulnerabilities/index.json
+  OK https://data.nuget.org/v3/vulnerabilities/index.json 53ms
+  GET https://data.nuget.org/v3-vulnerabilities/2026.10.06.23.47.38/vulnerability.base.json
+  GET https://data.nuget.org/v3-vulnerabilities/2026.10.06.23.47.38/2026.10.08.23.47.53/vulnerability.update.json
+  OK https://data.nuget.org/v3-vulnerabilities/2026.10.06.23.47.38/vulnerability.base.json 53ms
+  OK https://data.nuget.org/v3-vulnerabilities/2026.10.06.23.47.38/2026.10.08.23.47.53/vulnerability.update.json 61ms
+     1>Project "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" on node 1 (Restore target(s)).
+     1>_GetAllRestoreProjectPathItems:
+         Determining projects to restore...
+     1>Project "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" (1) is building "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" (1:6) on node 1 (_GenerateProjectRestoreGraph target(s)).
+     1>AddPrunePackageReferences:
+         Loading prune package data from PrunePackageData folder
+         Failed to load prune package data from PrunePackageData folder, loading from targeting packs instead
+         Looking for targeting packs in /home/runner/work/aspnetcore/aspnetcore/.dotnet/packs/Microsoft.NETCore.App.Ref
+         Pack directories found: /home/runner/work/aspnetcore/aspnetcore/.dotnet/packs/Microsoft.NETCore.App.Ref/11.0.0-rc.1.26420.103
+         Found package overrides file /home/runner/work/aspnetcore/aspnetcore/.dotnet/packs/Microsoft.NETCore.App.Ref/11.0.0-rc.1.26420.103/data/PackageOverrides.txt
+     1>Done Building Project "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" (_GenerateProjectRestoreGraph target(s)).
+     1>Restore:
+         Restoring packages for /home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj...
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/82c79e3b-8521-4be7-8d8b-41584286e3df/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/82c79e3b-8521-4be7-8d8b-41584286e3df/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/d1622942-d16f-48e5-bc83-96f4539e7601/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/278e57fb-7c6e-4de3-96e6-3224f2148f06/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/fa118d70-e738-40db-88b0-d0bf58712957/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/2303eb2b-8177-4b47-977a-e7278e3abf72/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a57d0dd1-b586-4233-8880-21626fab1f1a/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/299b99f1-f3f1-4630-81e2-4fb223c52e70/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/8ea23ec3-b9b2-4976-90d7-7c4a6f529fdc/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a54510f9-4b2c-4e69-b96a-6096683aaa1f/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/3698578c-d33d-473f-9ffc-769cfbd11be7/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/49a1bb2b-12b0-475f-adbd-1560fc76be38/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a65e5cb4-26c0-410f-9457-06db3c5254be/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/d1622942-d16f-48e5-bc83-96f4539e7601/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/278e57fb-7c6e-4de3-96e6-3224f2148f06/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/fa118d70-e738-40db-88b0-d0bf58712957/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/2303eb2b-8177-4b47-977a-e7278e3abf72/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/299b99f1-f3f1-4630-81e2-4fb223c52e70/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a57d0dd1-b586-4233-8880-21626fab1f1a/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/8ea23ec3-b9b2-4976-90d7-7c4a6f529fdc/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a54510f9-4b2c-4e69-b96a-6096683aaa1f/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/3698578c-d33d-473f-9ffc-769cfbd11be7/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/49a1bb2b-12b0-475f-adbd-1560fc76be38/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a65e5cb4-26c0-410f-9457-06db3c5254be/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/82c79e3b-8521-4be7-8d8b-41584286e3df/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 100ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 109ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/2303eb2b-8177-4b47-977a-e7278e3abf72/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 107ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a65e5cb4-26c0-410f-9457-06db3c5254be/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 111ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/299b99f1-f3f1-4630-81e2-4fb223c52e70/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 112ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/49a1bb2b-12b0-475f-adbd-1560fc76be38/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 113ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/278e57fb-7c6e-4de3-96e6-3224f2148f06/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 114ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 114ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/8ea23ec3-b9b2-4976-90d7-7c4a6f529fdc/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 114ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/3698578c-d33d-473f-9ffc-769cfbd11be7/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 115ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 114ms
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/3.3.3/microsoft.codeanalysis.publicapianalyzers.3.3.3.nupkg
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a65e5cb4-26c0-410f-9457-06db3c5254be/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 115ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/82c79e3b-8521-4be7-8d8b-41584286e3df/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 117ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/2303eb2b-8177-4b47-977a-e7278e3abf72/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 117ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/fa118d70-e738-40db-88b0-d0bf58712957/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 118ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/d1622942-d16f-48e5-bc83-96f4539e7601/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 119ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/fa118d70-e738-40db-88b0-d0bf58712957/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 117ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/299b99f1-f3f1-4630-81e2-4fb223c52e70/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 118ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a57d0dd1-b586-4233-8880-21626fab1f1a/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 117ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a57d0dd1-b586-4233-8880-21626fab1f1a/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 119ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/3698578c-d33d-473f-9ffc-769cfbd11be7/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 118ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/8ea23ec3-b9b2-4976-90d7-7c4a6f529fdc/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 121ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a54510f9-4b2c-4e69-b96a-6096683aaa1f/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 124ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/a54510f9-4b2c-4e69-b96a-6096683aaa1f/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 124ms
+           NotFound https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/278e57fb-7c6e-4de3-96e6-3224f2148f06/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 125ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/49a1bb2b-12b0-475f-adbd-1560fc76be38/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 125ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/index.json 228ms
+           GET https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/12.0.0-beta.26473.114/microsoft.dotnet.build.tasks.templating.12.0.0-beta.26473.114.nupkg
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/3.3.3/microsoft.codeanalysis.publicapianalyzers.3.3.3.nupkg 121ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/d1622942-d16f-48e5-bc83-96f4539e7601/nuget/v3/flat2/microsoft.codeanalysis.publicapianalyzers/index.json 262ms
+           OK https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/1a5f89f6-d8da-4080-b15f-242650c914a8/nuget/v3/flat2/microsoft.dotnet.build.tasks.templating/12.0.0-beta.26473.114/microsoft.dotnet.build.tasks.templating.12.0.0-beta.26473.114.nupkg 115ms
+         Installed Microsoft.DotNet.Build.Tasks.Templating 12.0.0-beta.26473.114 from https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json to /home/runner/.nuget/packages/microsoft.dotnet.build.tasks.templating/12.0.0-beta.26473.114 with content hash WIIy11K3bIZkUWHLjr9TyzOzyCtpX5SoYUOX6GrBEWfONgZVNofp415BT25G1SAWMQ/xBBZp93JchYaTmqLUIg==.
+         Installed Microsoft.CodeAnalysis.PublicApiAnalyzers 3.3.3 from https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json to /home/runner/.nuget/packages/microsoft.codeanalysis.publicapianalyzers/3.3.3 with content hash DWLeZtw2jszmzAh/MZXVo/Dy8fD9vcRaCIRZTaf2ppqaug8BGIV81dQdZfaYFlNuw7FyuZLVC5SZPZsCcePZhQ==.
+           CACHE https://data.nuget.org/v3/vulnerabilities/index.json
+           CACHE https://data.nuget.org/v3-vulnerabilities/2026.10.06.23.47.38/vulnerability.base.json
+           CACHE https://data.nuget.org/v3-vulnerabilities/2026.10.06.23.47.38/2026.10.08.23.47.53/vulnerability.update.json
+         Writing assets file to disk. Path: /home/runner/work/aspnetcore/aspnetcore/artifacts/obj/GenerateFiles/project.assets.json
+         Restored /home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj (in 574 ms).
+         
+         NuGet Config files used:
+             /home/runner/work/aspnetcore/aspnetcore/NuGet.config
+             /home/runner/.nuget/NuGet/NuGet.Config
+         
+         Feeds used:
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-extensions-59e1741f-1/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet12/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet12-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet11/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet11-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
+         
+         Installed:
+             2 package(s) to /home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj
+     1>Done Building Project "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" (Restore target(s)).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.29
+exit=0
+2026-10-09T01:12:41Z

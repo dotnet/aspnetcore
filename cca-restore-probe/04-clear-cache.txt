@@ -1,0 +1,6 @@
+Clearing NuGet HTTP cache: /home/runner/.local/share/NuGet/http-cache
+Clearing NuGet global packages folder: /home/runner/.nuget/packages/
+Clearing NuGet Temp cache: /tmp/NuGetScratchrunner
+Clearing NuGet plugins cache: /home/runner/.local/share/NuGet/plugin-cache
+Local resources cleared.
+exit=0

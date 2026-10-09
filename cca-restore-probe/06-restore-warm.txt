@@ -1,0 +1,46 @@
+2026-10-09T01:12:41Z
+Build started 10/09/2026 01:12:41.
+     1>Project "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" on node 1 (Restore target(s)).
+     1>_GetAllRestoreProjectPathItems:
+         Determining projects to restore...
+     1>Project "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" (1) is building "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" (1:6) on node 1 (_GenerateProjectRestoreGraph target(s)).
+     1>AddPrunePackageReferences:
+         Loading prune package data from PrunePackageData folder
+         Failed to load prune package data from PrunePackageData folder, loading from targeting packs instead
+         Looking for targeting packs in /home/runner/work/aspnetcore/aspnetcore/.dotnet/packs/Microsoft.NETCore.App.Ref
+         Pack directories found: /home/runner/work/aspnetcore/aspnetcore/.dotnet/packs/Microsoft.NETCore.App.Ref/11.0.0-rc.1.26420.103
+         Found package overrides file /home/runner/work/aspnetcore/aspnetcore/.dotnet/packs/Microsoft.NETCore.App.Ref/11.0.0-rc.1.26420.103/data/PackageOverrides.txt
+     1>Done Building Project "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" (_GenerateProjectRestoreGraph target(s)).
+     1>Restore:
+         Assets file has not changed. Skipping assets file writing. Path: /home/runner/work/aspnetcore/aspnetcore/artifacts/obj/GenerateFiles/project.assets.json
+         Restored /home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj (in 1 ms).
+         
+         NuGet Config files used:
+             /home/runner/work/aspnetcore/aspnetcore/NuGet.config
+             /home/runner/.nuget/NuGet/NuGet.Config
+         
+         Feeds used:
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-extensions-59e1741f-1/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet12/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet12-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet11/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet11-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8-transport/nuget/v3/index.json
+             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
+         All projects are up-to-date for restore.
+     1>Done Building Project "/home/runner/work/aspnetcore/aspnetcore/eng/tools/GenerateFiles/GenerateFiles.csproj" (Restore target(s)).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.06
+exit=0
+2026-10-09T01:12:41Z

@@ -1,0 +1,2 @@
+curl: (6) Could not resolve host: data.nuget.org
+exit=6
