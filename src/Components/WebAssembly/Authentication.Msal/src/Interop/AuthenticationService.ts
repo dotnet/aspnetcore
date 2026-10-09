@@ -463,17 +463,26 @@ class MsalAuthorizeService implements AuthorizeService {
 export class AuthenticationService {
 
     static _infrastructureKey = 'Microsoft.Authentication.WebAssembly.Msal';
-    static _initialized: boolean;
+    static _initialized: Promise<void> | undefined;
     static instance: MsalAuthorizeService;
 
-    public static async init(settings: AuthorizeServiceConfiguration, jsLoggingOptions: JavaScriptLoggingOptions) {
+    public static init(settings: AuthorizeServiceConfiguration, jsLoggingOptions: JavaScriptLoggingOptions) {
+        // Multiple initializations can start concurrently and we want to avoid that.
+        // Initializing awaits msal.js, so a second call arriving during that await would
+        // otherwise create another instance that also processes the redirect response,
+        // consuming the saved state (such as the return URL) of the instance that wins.
+        // The first call to init starts the initialization and other calls await its promise.
         if (!AuthenticationService._initialized) {
-            AuthenticationService.instance = new MsalAuthorizeService(settings, new Logger(jsLoggingOptions));
-            await AuthenticationService.instance.initialize();
-            AuthenticationService.instance.initializeMsalHandler();
-            AuthenticationService._initialized = true;
+            AuthenticationService._initialized = AuthenticationService.initializeCore(settings, jsLoggingOptions);
         }
-        return Promise.resolve();
+
+        return AuthenticationService._initialized;
+    }
+
+    private static async initializeCore(settings: AuthorizeServiceConfiguration, jsLoggingOptions: JavaScriptLoggingOptions) {
+        AuthenticationService.instance = new MsalAuthorizeService(settings, new Logger(jsLoggingOptions));
+        await AuthenticationService.instance.initialize();
+        AuthenticationService.instance.initializeMsalHandler();
     }
 
     public static getUser() {
