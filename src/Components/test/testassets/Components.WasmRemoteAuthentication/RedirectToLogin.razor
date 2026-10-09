@@ -7,8 +7,38 @@
     {
         var request = new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = Navigation.Uri };
         var extraQueryParams = new Dictionary<string, object> { ["preservedExtraQueryParams"] = "true" };
+        var query = Navigation.ToAbsoluteUri(Navigation.Uri).Query;
+
+        foreach (var key in new[] { "callbackResponseMode", "callbackError", "callbackErrorDescription" })
+        {
+            var value = GetQueryValue(query, key);
+            if (!string.IsNullOrEmpty(value))
+            {
+                extraQueryParams[key] = value;
+            }
+        }
+
         request.TryAddAdditionalParameter("extraQueryParams", extraQueryParams);
 
         Navigation.NavigateToLogin("authentication/login", request);
+    }
+
+    private static string? GetQueryValue(string query, string key)
+    {
+        if (string.IsNullOrEmpty(query))
+        {
+            return null;
+        }
+
+        foreach (var segment in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = segment.Split('=', 2);
+            if (parts.Length > 0 && string.Equals(Uri.UnescapeDataString(parts[0]), key, StringComparison.Ordinal))
+            {
+                return parts.Length == 2 ? Uri.UnescapeDataString(parts[1]) : string.Empty;
+            }
+        }
+
+        return null;
     }
 }
