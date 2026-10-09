@@ -62,6 +62,36 @@ public class RemoteAuthenticationTest :
         Assert.DoesNotContain("Access was denied", messageText);
     }
 
+    [Fact]
+    public void NavigateToLogin_FragmentClient_MapsCallbackErrorCodeToSafeMessage()
+    {
+        // The client is configured with response_mode=fragment, so the callback parameters are in
+        // the URL fragment. The error must be read from there and mapped to a safe message rather
+        // than being missed, which left the user on the login callback page before this change.
+        NavigateWithFreshAuthenticationState("/subdir/test-remote-authentication?oidcClient=fragment&callbackResponseMode=fragment&callbackError=access_denied&callbackErrorDescription=sensitive-provider-message");
+
+        var messageText = "";
+        Browser.Equal(
+            "There was an error trying to log you in: 'Access was denied during sign-in.'",
+            () => messageText = Browser.FindElement(By.TagName("p")).Text);
+        Assert.DoesNotContain("sensitive-provider-message", messageText);
+    }
+
+    [Fact]
+    public void NavigateToLogout_FragmentClient_CompletesLogoutCallbackFromQueryString()
+    {
+        // oidc-client returns the logout state in the query string even when sign-in is configured
+        // with response_mode=fragment, so the logout callback must keep reading the query string.
+        NavigateWithFreshAuthenticationState("/subdir/test-remote-authentication?oidcClient=fragment");
+
+        var heading = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello, Jane Doe!", () => heading.Text);
+
+        Browser.Exists(By.Id("log-out")).Click();
+
+        Browser.Equal("You are logged out.", () => Browser.FindElement(By.TagName("p")).Text);
+    }
+
     // Every test in this class shares one browser session, and oidc-client caches the
     // signed-in user in sessionStorage, which survives same-tab navigation. A test that
     // runs after a successful login would load the app already authenticated and never

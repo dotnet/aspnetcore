@@ -54,6 +54,7 @@ public class RemoteAuthenticationStartup
                         issuer,
                         authorization_endpoint = $"{issuer}/subdir/oidc/authorize",
                         token_endpoint = $"{issuer}/subdir/oidc/token",
+                        end_session_endpoint = $"{issuer}/subdir/oidc/logout",
                     });
                 });
 
@@ -62,21 +63,25 @@ public class RemoteAuthenticationStartup
                     string redirect_uri,
                     string? state,
                     string? prompt,
+                    string? response_mode,
                     bool? preservedExtraQueryParams,
                     string? callbackResponseMode,
                     string? callbackError,
                     string? callbackErrorDescription) =>
                 {
+                    // The client declares where it expects the callback parameters.
+                    var delimiter = string.Equals(response_mode, "fragment", StringComparison.Ordinal) ? "#" : "?";
+
                     // Require interaction so silent sign-in does not skip RedirectToLogin.razor.
                     if (prompt == "none")
                     {
-                        return Results.Redirect($"{redirect_uri}?error=interaction_required&state={state}");
+                        return Results.Redirect($"{redirect_uri}{delimiter}error=interaction_required&state={state}");
                     }
 
                     // Verify that the extra query parameters added by RedirectToLogin.razor are preserved.
                     if (preservedExtraQueryParams != true)
                     {
-                        return Results.Redirect($"{redirect_uri}?error=invalid_request&error_description=extraQueryParams%20not%20preserved&state={state}");
+                        return Results.Redirect($"{redirect_uri}{delimiter}error=invalid_request&error_description=extraQueryParams%20not%20preserved&state={state}");
                     }
 
                     if (!string.IsNullOrEmpty(callbackResponseMode))
@@ -90,11 +95,16 @@ public class RemoteAuthenticationStartup
 
                         var escapedState = Uri.EscapeDataString(state ?? string.Empty);
 
-                        // The client is configured for the authorization code flow, so 'query' is
-                        // where the callback parameters belong for these tests.
+                        // 'query' is where the callback parameters belong for the authorization code
+                        // flow client, 'fragment' for the client configured with response_mode=fragment.
                         if (string.Equals(callbackResponseMode, "query", StringComparison.Ordinal))
                         {
                             return Results.Redirect($"{redirect_uri}?{error}&state={escapedState}");
+                        }
+
+                        if (string.Equals(callbackResponseMode, "fragment", StringComparison.Ordinal))
+                        {
+                            return Results.Redirect($"{redirect_uri}#{error}&state={escapedState}");
                         }
 
                         // Emits a well-formed query callback while also placing an unrelated error in
@@ -108,7 +118,15 @@ public class RemoteAuthenticationStartup
                     }
 
                     lastCode = Random.Shared.Next().ToString(CultureInfo.InvariantCulture);
-                    return Results.Redirect($"{redirect_uri}?code={lastCode}&state={state}");
+                    return Results.Redirect($"{redirect_uri}{delimiter}code={lastCode}&state={state}");
+                });
+
+                oidcEndpoints.MapGet("logout", (string post_logout_redirect_uri, string? state) =>
+                {
+                    // The logout state is returned in the query string regardless of the response
+                    // mode configured for sign-in, as oidc-client expects.
+                    var separator = post_logout_redirect_uri.Contains('?') ? "&" : "?";
+                    return Results.Redirect($"{post_logout_redirect_uri}{separator}state={Uri.EscapeDataString(state ?? string.Empty)}");
                 });
 
                 var jwtHandler = new JsonWebTokenHandler();
