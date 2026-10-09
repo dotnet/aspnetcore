@@ -94,23 +94,11 @@ public sealed class Storage : IInternalAsyncDisposal
 
         _disposed = true;
 
-        if (_referenceTask is null)
+        // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
+        if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
         {
-            return;
+            await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
         }
-
-        IJSObjectReference reference;
-        try
-        {
-            reference = await _referenceTask.ConfigureAwait(false);
-        }
-        catch
-        {
-            // The acquisition can fail while disposal waits for it, and then there is nothing to release.
-            return;
-        }
-
-        await reference.DisposeAsync().ConfigureAwait(false);
     }
 
     private Task<IJSObjectReference> GetReferenceAsync()

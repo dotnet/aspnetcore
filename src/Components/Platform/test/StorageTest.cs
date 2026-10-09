@@ -113,20 +113,18 @@ public class StorageTest
     }
 
     [Fact]
-    public async Task ScopeDisposal_DisposesOtherStorageWhenAcquisitionFailsWhileItWaits()
+    public async Task ScopeDisposal_DoesNotWaitForPendingAcquisition()
     {
-        var pending = new TaskCompletionSource<IJSObjectReference>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var jsRuntime = new RecordingJSRuntime { PendingNextGetValue = pending };
+        var neverCompletes = new TaskCompletionSource<IJSObjectReference>();
+        var jsRuntime = new RecordingJSRuntime { PendingNextGetValue = neverCompletes };
         var provider = CreateServiceProvider(jsRuntime);
         var window = provider.GetRequiredService<IBrowserPlatform>().Window;
 
-        // Window disposes features in access order, so the failing LocalStorage goes first.
+        // Window disposes features in access order, so the pending LocalStorage goes first.
         _ = window.LocalStorage.GetLengthAsync();
         await window.SessionStorage.GetLengthAsync();
 
-        var disposal = provider.DisposeAsync();
-        pending.SetException(new JSException("Acquisition failed."));
-        await disposal;
+        await provider.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.True(jsRuntime.SessionStorageReference.Disposed);
     }
