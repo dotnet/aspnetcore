@@ -31,9 +31,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Manage().Cookies.DeleteCookieNamed(TempDataCookieName);
     }
 
-    [Fact]
-    public void TempDataCanPersistThroughNavigation()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TempDataCanPersistThroughNavigation(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata");
 
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
@@ -41,9 +45,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
     }
 
-    [Fact]
-    public void TempDataCanPersistThroughDifferentPages()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TempDataCanPersistThroughDifferentPages(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata");
 
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
@@ -51,9 +59,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
     }
 
-    [Fact]
-    public void TempDataPeekDoesntDelete()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TempDataPeekDoesntDelete(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata");
 
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
@@ -64,9 +76,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("Peeked value", () => Browser.FindElement(By.Id("peeked-value")).Text);
     }
 
-    [Fact]
-    public void TempDataKeepAllElements()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TempDataKeepAllElements(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata?ValueToKeep=all");
 
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
@@ -78,9 +94,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
     }
 
-    [Fact]
-    public void TempDataKeepOneElement()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TempDataKeepOneElement(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata?ValueToKeep=KeptValue");
 
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
@@ -92,9 +112,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("Kept value", () => Browser.FindElement(By.Id("kept-value")).Text);
     }
 
-    [Fact]
-    public void CanRemoveTheElementWithRemove()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanRemoveTheElementWithRemove(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata");
 
         Browser.Equal("No peeked value", () => Browser.FindElement(By.Id("peeked-value")).Text);
@@ -109,9 +133,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("No peeked value", () => Browser.FindElement(By.Id("peeked-value")).Text);
     }
 
-    [Fact]
-    public void CanCheckIfTempDataContainsKey()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanCheckIfTempDataContainsKey(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata");
 
         Browser.Equal("False", () => Browser.FindElement(By.Id("contains-peeked-value")).Text);
@@ -124,9 +152,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("False", () => Browser.FindElement(By.Id("contains-message")).Text);
     }
 
-    [Fact]
-    public void TempDataPersistWithoutAccessing()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TempDataPersistWithoutAccessing(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata");
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
         Browser.FindElement(By.Id("set-values-not-read")).Click();
@@ -134,9 +166,13 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
     }
 
-    [Fact]
-    public void TempDataPreservesTypedArrays()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TempDataPreservesTypedArrays(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata");
 
         Browser.Equal("Wrong type: null", () => Browser.FindElement(By.Id("string-array")).Text);
@@ -148,13 +184,39 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.Equal("1,2,3", () => Browser.FindElement(By.Id("int-array")).Text);
     }
 
-    [Fact]
-    public void SupplyParameterFromTempDataReadsAndSavesValues()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SupplyParameterFromTempDataReadsAndSavesValues(bool disableThrowNavigationException)
     {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
         Navigate($"{ServerPathBase}/tempdata");
         Browser.Equal("", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
         Browser.FindElement(By.Id("set-supply-from-tempdata")).Click();
         Browser.Equal("Supplied from TempData", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SupplyParameterFromTempDataReadsAndSavesValuesFromEditForm(bool disableThrowNavigationException)
+    {
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
+
+        Navigate($"{ServerPathBase}/tempdata");
+        Browser.Equal("", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
+        Browser.Equal("False", () => Browser.FindElement(By.Id("navigation-manager-returned")).Text);
+
+        Browser.FindElement(By.Id("set-supply-from-tempdata-edit-form")).Click();
+
+        Browser.Equal("Supplied from TempData", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
+
+        // The handler writes this flag only on the line after NavigateTo. It is reached when navigation is
+        // implemented by invoking the endpoint callback, and skipped when NavigateTo throws NavigationException,
+        // so it confirms which control-flow mode actually produced the redirect.
+        var expectedNavigationManagerReturned = disableThrowNavigationException ? "True" : "False";
+        Browser.Equal(expectedNavigationManagerReturned, () => Browser.FindElement(By.Id("navigation-manager-returned")).Text);
     }
 
     [Fact]
