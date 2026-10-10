@@ -347,6 +347,12 @@ function runJest(httpsUrl: string, httpUrl: string) {
         // Check if we got any browsers
         let karmaExit;
         if (config.browsers.length === 0) {
+            // On CI the Linux agent image is expected to have a browser (e.g. Chrome) installed so these tests actually run.
+            // Fail loudly instead of silently skipping, otherwise a misconfigured agent image could hide that the browser tests never ran.
+            if (process.env.TF_BUILD && process.platform === "linux") {
+                console.error("Bail out! No suitable browser was found on this CI agent. The Linux test agent is expected to have a browser (e.g. Chrome) installed.");
+                process.exit(1);
+            }
             console.log("Unable to locate any suitable browsers. Skipping browser functional tests.");
         } else {
             karmaExit = (await runKarma(conf));
