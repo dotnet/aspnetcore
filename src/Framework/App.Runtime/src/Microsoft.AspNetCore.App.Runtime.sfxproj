@@ -38,8 +38,6 @@
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
 
-    <!-- TODO: Try to remove this disable property -->
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
@@ -58,15 +56,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
-        Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
         ExcludeAssets="All"
         GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
+    <ProjectReference Include="@(AspNetCoreAppReference->'%(ProjectPath)');@(AspNetCoreAppReferenceAndPackage->'%(ProjectPath)')">
       <IncludeAssets>Runtime;Native</IncludeAssets>
-    </Reference>
+    </ProjectReference>
+
+    <PackageReference Include="@(ExternalAspNetCoreAppReference)" Version="">
+      <IncludeAssets>Runtime;Native</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -74,7 +75,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" />
     <LinuxPackageDependency Include="dotnet-runtime-$(DotnetRuntimeDependencyMajorMinorVersion)" Version="$(DotnetRuntimeDependencyVersion)" />
   </ItemGroup>
 
@@ -116,7 +117,6 @@
           Exclude="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.ni.pdb" />
 
       <!-- Dedupe System.Security.Cryptography.Pkcs.pdb based on RID -->
-      <!-- If we get rid of our custom reference resolution here, we can let nuget handle this -->
       <_TransportPdbs Remove="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\lib\**\System.Security.Cryptography.Pkcs.pdb"
           Condition="'$(TargetOsName)' == 'win'" />
 

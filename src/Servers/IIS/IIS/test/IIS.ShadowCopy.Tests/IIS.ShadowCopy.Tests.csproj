@@ -11,8 +11,8 @@
   <Import Project="../FunctionalTest.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
-    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\testassets\InProcessWebSite\InProcessWebSite.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -26,17 +26,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="System.Diagnostics.EventLog" />
-    <Reference Include="System.Net.Http.WinHttpHandler" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="System.Diagnostics.EventLog" />
+    <PackageReference Include="System.Net.Http.WinHttpHandler" />
+
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.NamedPipes\src\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
   </ItemGroup>
 
   <ItemGroup>

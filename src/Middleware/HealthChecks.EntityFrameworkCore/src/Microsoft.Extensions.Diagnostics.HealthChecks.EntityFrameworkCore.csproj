@@ -12,9 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+
+    <ProjectReference Include="$(RepoRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
