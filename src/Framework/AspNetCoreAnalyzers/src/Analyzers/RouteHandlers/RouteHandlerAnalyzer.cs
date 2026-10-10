@@ -106,7 +106,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 {
                     var lambda = (IAnonymousFunctionOperation)delegateCreation.Target;
                     DisallowMvcBindArgumentsOnParameters(in context, wellKnownTypes, invocation, lambda.Symbol);
-                    DisallowNonParsableComplexTypesOnParameters(in context, wellKnownTypes, routeUsage, lambda.Symbol);
+                    DisallowNonParsableComplexTypesOnParameters(in context, wellKnownTypes, routeUsage, lambda.Symbol, delegateCreation.Syntax);
                     DisallowReturningActionResultFromMapMethods(in context, wellKnownTypes, invocation, lambda, delegateCreation.Syntax);
                     DetectMisplacedLambdaAttribute(context, lambda);
                     DetectMismatchedParameterOptionality(in context, routeUsage, lambda.Symbol);
@@ -116,7 +116,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 {
                     var methodReference = (IMethodReferenceOperation)delegateCreation.Target;
                     DisallowMvcBindArgumentsOnParameters(in context, wellKnownTypes, invocation, methodReference.Method);
-                    DisallowNonParsableComplexTypesOnParameters(in context, wellKnownTypes, routeUsage, methodReference.Method);
+                    DisallowNonParsableComplexTypesOnParameters(in context, wellKnownTypes, routeUsage, methodReference.Method, delegateCreation.Syntax);
                     DetectMismatchedParameterOptionality(in context, routeUsage, methodReference.Method);
                     AtMostOneFromBodyAttribute(in context, wellKnownTypes, methodReference.Method);
 
