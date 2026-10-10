@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Services;
 
 internal sealed class WebViewRenderer : WebRenderer
 {
+    // Matches the default of CircuitOptions.MaxBufferedUnacknowledgedRenderBatches, which
+    // RemoteRenderer uses for the equivalent backpressure in Blazor Server.
+    internal const int MaxBufferedUnacknowledgedRenderBatches = 10;
+
     private static readonly RendererInfo _componentPlatform = new("WebView", isInteractive: true);
     private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
     private readonly Dispatcher _dispatcher;
@@ -42,6 +46,22 @@ internal sealed class WebViewRenderer : WebRenderer
     {
         // Notify the JS code so it can show the in-app UI
         _ipcSender.NotifyUnhandledException(exception);
+    }
+
+    protected override void ProcessPendingRender()
+    {
+        // Like RemoteRenderer, don't produce new batches while the client has too many
+        // unacknowledged ones. The WebView may have stopped processing messages entirely
+        // (e.g., the OS suspended it while the app is backgrounded), and rendering without
+        // bound would accumulate unbounded retained state per unacknowledged batch. Pending
+        // renders stay queued, and rendering resumes from NotifyRenderCompleted once a batch
+        // gets acknowledged.
+        if (_unacknowledgedRenderBatches.Count >= MaxBufferedUnacknowledgedRenderBatches)
+        {
+            return;
+        }
+
+        base.ProcessPendingRender();
     }
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -81,6 +101,10 @@ internal sealed class WebViewRenderer : WebRenderer
         }
 
         nextUnacknowledgedBatch.CompletionSource.SetResult();
+
+        // The acknowledgement freed a slot in the unacknowledged-batch queue, so produce any
+        // renders that were deferred while it was full.
+        ProcessPendingRender();
     }
 
     protected override IComponent ResolveComponentForRenderMode(
