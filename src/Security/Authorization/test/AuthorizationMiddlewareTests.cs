@@ -323,6 +323,30 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(3, next.CalledCount);
     }
 
+    [Fact]
+    public async Task UseAuthorization_WithoutRouting_DoesNotThrow()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/53332.
+        // A policy provider that allows caching forces the middleware to resolve AuthorizationPolicyCache,
+        // which must not fail when EndpointDataSource (registered by AddRouting) is absent.
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+        policyProvider.Setup(p => p.AllowsCachingPolicies).Returns(true);
+        var next = new TestRequestDelegate();
+
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .BuildServiceProvider();
+
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, services);
+        var context = GetHttpContext(anonymous: true);
+
+        await middleware.Invoke(context);
+
+        Assert.True(next.Called);
+    }
+
     private class TestDefaultPolicyProvider : DefaultAuthorizationPolicyProvider
     {
         public int GetFallbackPolicyCount;
