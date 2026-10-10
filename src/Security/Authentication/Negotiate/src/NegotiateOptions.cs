@@ -51,6 +51,11 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     /// Use LDAP connections used to retrieve claims for the given domain.
     /// This should only be used on Linux systems.
     /// </summary>
+    /// <remarks>
+    /// LDAP group memberships are represented as role claims using each group's common name (CN) as the role value.
+    /// Organizational unit (OU) and other distinguished name (DN) components are not preserved. Role-based authorization
+    /// with duplicate group CNs across organizational units is not supported.
+    /// </remarks>
     public void EnableLdap(string domain)
     {
         ArgumentException.ThrowIfNullOrEmpty(domain);
@@ -63,6 +68,11 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     /// Use LDAP connections used to retrieve claims using the configured settings.
     /// This should only be used on Linux systems.
     /// </summary>
+    /// <remarks>
+    /// LDAP group memberships are represented as role claims using each group's common name (CN) as the role value.
+    /// Organizational unit (OU) and other distinguished name (DN) components are not preserved. Role-based authorization
+    /// with duplicate group CNs across organizational units is not supported.
+    /// </remarks>
     public void EnableLdap(Action<LdapSettings> configureSettings)
     {
         ArgumentNullException.ThrowIfNull(configureSettings);
