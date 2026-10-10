@@ -21,6 +21,8 @@ $fixturePath = Join-Path $PSScriptRoot "fixtures/pull-requests.json"
 $correctnessFixturePath = Join-Path $PSScriptRoot "fixtures/correctness-pull-requests.json"
 $discussionFixturePath = Join-Path $PSScriptRoot "fixtures/discussion-pull-requests.json"
 $inboxFixturePath = Join-Path $PSScriptRoot "fixtures/inbox-pull-requests.json"
+$rerunFixturePath = Join-Path $PSScriptRoot "fixtures/rerun-label-pull-requests.json"
+$policyBotFixturePath = Join-Path $PSScriptRoot "fixtures/policy-bot-pull-requests.json"
 $snapshot = [datetime]"2026-09-03T18:00:00Z"
 
 Import-Module -Scope Local -Force $modulePath
@@ -126,6 +128,12 @@ Assert-True (($correctnessResult.items | Where-Object number -eq 101).bucket -eq
 Assert-True (($correctnessResult.items | Where-Object number -eq 101).reasonCodes -contains "blocked-label") "The no-merge result must identify the blocking label."
 Assert-True (($correctnessResult.items | Where-Object number -eq 102).bucket -eq "WaitingOnCI") "A pending CI rerun must not be ready to merge."
 Assert-True (($correctnessResult.items | Where-Object number -eq 102).reasonCodes -contains "ci-rerun-pending") "The pending rerun must have a stable reason."
+Assert-True (($correctnessResult.items | Where-Object number -eq 102).blockers -contains "CI must be rerun before merge.") "A merge-ready PR with a rerun label must explain the merge gate."
+Assert-True (($correctnessResult.items | Where-Object number -eq 102).reasonCodes -contains "approved") "A rerun merge gate must preserve the otherwise-ready approval reason."
+Assert-True (($correctnessResult.items | Where-Object number -eq 102).nextActor -eq "CI/automation") "A rerun merge gate must assign CI/automation."
+Assert-True (($correctnessResult.items | Where-Object number -eq 102).mergeEligibility -eq "not-candidate") "A rerun merge gate must prevent merge candidacy."
+Assert-True (-not ($correctnessResult.items | Where-Object number -eq 102).shownInMergeVerification) "A rerun merge gate must not enter merge verification."
+Assert-True (($correctnessResult.items | Where-Object number -eq 101).reasonCodes -contains "ci-rerun-pending") "A no-merge label must preserve the informational rerun reason."
 Assert-True (($correctnessResult.items | Where-Object number -eq 103).bucket -eq "WaitingOnCI") "A non-clean merge state must not be ready to merge."
 Assert-True (($correctnessResult.items | Where-Object number -eq 103).reasonCodes -contains "merge-state-not-clean") "The non-clean merge state must have a stable reason."
 Assert-True (($correctnessResult.items | Where-Object number -eq 104).bucket -eq "ReadyToMerge") "An approved clean pull request should be ready to merge."
@@ -135,6 +143,56 @@ Assert-True (($correctnessResult.items | Where-Object number -eq 105).bucket -eq
 Assert-True (($correctnessResult.items | Where-Object number -eq 106).bucket -eq "ReviewNow") "A later author response should return the pull request to review."
 Assert-True (($correctnessResult.items | Where-Object number -eq 107).humanReviewCount -eq 0) "Author-authored reviews must not count as human reviewer activity."
 Assert-True (($correctnessResult.items | Where-Object number -eq 107).bucket -eq "NeedsRescue") "A stale request must remain rescue work when the only review is author-authored."
+
+$rerunJson = & $scriptPath `
+    -InputPath $rerunFixturePath `
+    -Now $snapshot `
+    -OutputFormat Json
+$rerunResult = $rerunJson | ConvertFrom-Json -Depth 100
+$rerunCases = @(
+    [pscustomobject]@{ Number = 301; Bucket = "ReviewNow"; Reason = "review-requested"; Actor = "human reviewer" },
+    [pscustomobject]@{ Number = 302; Bucket = "ReviewNow"; Reason = "needs-first-review"; Actor = "human reviewer" },
+    [pscustomobject]@{ Number = 303; Bucket = "WaitingOnAuthor"; Reason = "changes-requested"; Actor = "author" },
+    [pscustomobject]@{ Number = 304; Bucket = "WaitingOnCI"; Reason = "ci-failed"; Actor = "author/CI investigation" },
+    [pscustomobject]@{ Number = 305; Bucket = "Draft"; Reason = "draft"; Actor = "author" },
+    [pscustomobject]@{ Number = 306; Bucket = "WaitingOnAuthor"; Reason = "merge-conflict"; Actor = "author" },
+    [pscustomobject]@{ Number = 307; Bucket = "WaitingOnAuthor"; Reason = "branch-update-required"; Actor = "author/maintainer" },
+    [pscustomobject]@{ Number = 308; Bucket = "NeedsRescue"; Reason = "never-reviewed"; Actor = "maintainer/triager" },
+    [pscustomobject]@{ Number = 309; Bucket = "Excluded"; Reason = "bot-authored"; Actor = "none" },
+    [pscustomobject]@{ Number = 310; Bucket = "DesignDecision"; Reason = "design-gate"; Actor = "API/design owner" }
+)
+foreach ($case in $rerunCases) {
+    $item = $rerunResult.items | Where-Object number -eq $case.Number
+    Assert-True ($item.bucket -eq $case.Bucket) "Rerun label PR $($case.Number) must retain bucket '$($case.Bucket)'."
+    Assert-True ($item.nextActor -eq $case.Actor) "Rerun label PR $($case.Number) must retain next actor '$($case.Actor)'."
+    Assert-True ($item.reasonCodes -contains $case.Reason) "Rerun label PR $($case.Number) must retain normal reason '$($case.Reason)'."
+    Assert-True (@($item.reasonCodes | Where-Object { $_ -eq "ci-rerun-pending" }).Count -eq 1) "Rerun label PR $($case.Number) must have exactly one informational rerun reason."
+    Assert-True (-not ($item.blockers -contains "CI must be rerun before merge.")) "Rerun label PR $($case.Number) must not acquire a merge-ready rerun blocker."
+    Assert-True ($item.mergeEligibility -eq "not-candidate") "Rerun label PR $($case.Number) must remain outside merge candidacy."
+}
+Assert-True (($rerunResult.items | Where-Object number -eq 304).blockers -contains "The failure is not classified as unrelated or flaky.") "A failed-CI rerun PR must retain the normal CI failure blocker."
+Assert-True (($rerunResult.items | Where-Object number -eq 302).reasonCodes -contains "ci-pending") "A first-review rerun PR must retain the informational pending-check reason."
+
+$policyBotJson = & $scriptPath `
+    -InputPath $policyBotFixturePath `
+    -Now $snapshot `
+    -OutputFormat Json
+$policyBotResult = $policyBotJson | ConvertFrom-Json -Depth 100
+$policyBotItem = $policyBotResult.items | Where-Object number -eq 401
+Assert-True ($policyBotItem.discussionAssessment.state -eq "clear") "A policy-bot-only discussion must be clear."
+Assert-True (-not ($policyBotItem.discussionAssessment.signals -contains "non-author-discussion-requires-verification")) "A policy-bot-only discussion must not require non-author verification."
+Assert-True ($policyBotItem.discussionAssessment.comments[0].actor -eq "automation") "The policy bot's bare login must be attributed to automation."
+Assert-True ($policyBotItem.shownInDigest) "A policy-bot-only discussion must remain in the review digest."
+$policyBotCommunity = $policyBotResult.inbox.community.inventory | Where-Object number -eq 401
+Assert-True ($policyBotCommunity.responseEvidence.complete) "A policy-bot-only inbox fixture must have complete response evidence."
+Assert-True ($policyBotCommunity.responseEvidence.status -eq "no-response") "A policy-bot-only community contribution must have no-response evidence."
+Assert-True (-not $policyBotCommunity.responseEvidence.recordedNonAuthorHumanResponse) "A policy bot must not count as a recorded human response."
+$policyMentionItem = $policyBotResult.items | Where-Object number -eq 402
+Assert-True ($policyMentionItem.discussionAssessment.comments[0].actor -eq "author") "An author mentioning the policy bot must remain an author comment."
+Assert-True ($policyMentionItem.discussionAssessment.comments[0].author -eq "policy-mention-author") "A policy-bot mention must not replace the comment author's login."
+Assert-True ($policyMentionItem.discussionAssessment.comments[0].excerpt -eq "@dotnet-policy-service agree") "The author policy-bot acknowledgement must be assessed unchanged."
+Assert-True (-not ($policyBotResult.inbox.community.inventory | Where-Object number -eq 402).responseEvidence.recordedNonAuthorHumanResponse) "An author policy-bot acknowledgement must not count as a non-author human response."
+Assert-True (($policyBotResult.inbox.community.inventory | Where-Object number -eq 403).responseEvidence.status -eq "unknown") "Truncated policy-bot-only evidence must remain unknown."
 
 $rankingJson = & $scriptPath `
     -InputPath $correctnessFixturePath `

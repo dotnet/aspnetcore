@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <!-- No need to track public APIs of this tool. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>

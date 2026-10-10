@@ -34,46 +34,50 @@ def find_existing_draft(
     for pull in pulls:
         if not isinstance(pull, dict):
             continue
-        body = pull.get("body")
-        base = pull.get("base")
-        base_repo = base.get("repo") if isinstance(base, dict) else None
         head = pull.get("head")
         head_repo = head.get("repo") if isinstance(head, dict) else None
-        labels = pull.get("labels")
-        label_names = {
-            label.get("name")
-            for label in labels
-            if isinstance(label, dict) and isinstance(label.get("name"), str)
-        } if isinstance(labels, list) else set()
         if (
             pull.get("state") == "open"
-            and isinstance(body, str)
-            and marker in body.splitlines()
-            and isinstance(base, dict)
-            and base.get("ref") == "main"
-            and isinstance(base_repo, dict)
-            and base_repo.get("full_name", "").lower() == target_repository.lower()
             and isinstance(head, dict)
             and isinstance(head_repo, dict)
             and head_repo.get("full_name", "").lower() == head_repository.lower()
             and isinstance(head.get("ref"), str)
             and expected_branch.fullmatch(head["ref"])
-            and "documentation" in label_names
-            and isinstance(pull.get("user"), dict)
-            and pull["user"].get("login") == allowed_author
         ):
+            number = pull.get("number")
+            if (
+                not isinstance(number, int) or isinstance(number, bool) or number <= 0
+                or pull.get("html_url") != f"https://github.com/{target_repository}/pull/{number}"
+            ):
+                raise DraftResolutionError("Matching docs PR has an invalid number or URL.")
             matches.append(pull)
 
-    matches.sort(key=lambda pull: (str(pull.get("updated_at") or ""), int(pull.get("number") or 0)), reverse=True)
-    blocked = next((pull for pull in matches if pull.get("draft") is not True), None)
-    drafts = [pull for pull in matches if pull.get("draft") is True]
-    selected = drafts[0] if drafts and blocked is None else None
+    matches.sort(key=lambda pull: pull["number"])
+    candidate = matches[0] if len(matches) == 1 else None
+    blocked_reason = None
+    if len(matches) > 1:
+        blocked_reason = "ambiguous_open_pull_requests"
+    elif candidate is not None:
+        base = candidate.get("base")
+        base_repo = base.get("repo") if isinstance(base, dict) else None
+        if (
+            not isinstance(base, dict) or base.get("ref") != "main"
+            or not isinstance(base_repo, dict)
+            or str(base_repo.get("full_name", "")).lower() != target_repository.lower()
+        ):
+            blocked_reason = "matching_pull_request_has_wrong_base"
+        elif candidate.get("draft") is not True:
+            blocked_reason = "matching_pull_request_is_not_draft"
+        elif not isinstance(candidate.get("user"), dict) or candidate["user"].get("login") != allowed_author:
+            blocked_reason = "matching_pull_request_is_untrusted"
+    blocked = matches[0] if blocked_reason is not None else None
+    selected = candidate if blocked is None else None
     return {
         "schema_version": 1,
         "source": marker,
         "found": selected is not None,
         "blocked": blocked is not None,
-        "blocked_reason": "matching_pull_request_is_not_draft" if blocked is not None else None,
+        "blocked_reason": blocked_reason,
         "blocked_pull_request": None if blocked is None else {
             "number": blocked["number"],
             "url": blocked["html_url"],
@@ -84,10 +88,11 @@ def find_existing_draft(
             "url": selected["html_url"],
             "head_ref": selected["head"]["ref"],
             "base_ref": selected["base"]["ref"],
+            "head_sha": selected["head"].get("sha"),
         },
         "other_matching_pull_requests": [
             {"number": pull["number"], "url": pull["html_url"]}
-            for pull in drafts[1:]
+            for pull in matches[1:]
         ],
     }
 
