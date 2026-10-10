@@ -63,6 +63,9 @@ internal static class ServerVariables
             case "LOCAL_ADDR":
                 managedVariableThunk = () => new LocalAddressSegment();
                 break;
+            case "PATH_INFO":
+                managedVariableThunk = () => new PathInfoSegment();
+                break;
             case "HTTP_PROXY_CONNECTION":
                 managedVariableThunk = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
                 break;
