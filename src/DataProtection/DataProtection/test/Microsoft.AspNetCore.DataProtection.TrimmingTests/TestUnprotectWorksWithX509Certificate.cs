@@ -9,7 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 var keyDirectory = new DirectoryInfo(AppContext.BaseDirectory);
 File.WriteAllText(Path.Combine(keyDirectory.FullName, Constants.KeyRingXmlFileName), Constants.KeyRingXmlContents);
 
-var cert = new X509Certificate2(Convert.FromBase64String(Constants.Key), Constants.Password);
+var cert = X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(Constants.Key), Constants.Password);
 var dpProvider = DataProtectionProvider.Create(keyDirectory, cert);
 var protector = dpProvider.CreateProtector(purpose: "Test trimming");
 
