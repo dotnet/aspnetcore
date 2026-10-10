@@ -109,6 +109,7 @@ public class ComponentState : IAsyncDisposable
         // earlier entry in the render queue. In that case, rendering is a no-op.
         if (_componentWasDisposed)
         {
+            Renderer.Log.SkippingRenderOnDisposedComponent(_renderer.Logger, this);
             return;
         }
 
@@ -244,6 +245,7 @@ public class ComponentState : IAsyncDisposable
         _hasCascadingParameters = remainingCascadingParameters is not null;
         _cascadingParameters = (IReadOnlyList<CascadingParameterState>?)remainingCascadingParameters ?? Array.Empty<CascadingParameterState>();
         _hasSingleDeliveryCascadingParameters = false;
+        Renderer.Log.StoppedSingleDeliveryCascadingParameters(_renderer.Logger, this);
     }
 
     internal void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
@@ -254,6 +256,7 @@ public class ComponentState : IAsyncDisposable
         // values - that only happens when the ComponentState is processed later by the disposal queue.
         if (_componentWasDisposed)
         {
+            Renderer.Log.SkippingCascadingUpdateOnDisposedComponent(_renderer.Logger, this);
             return;
         }
 
@@ -269,6 +272,8 @@ public class ComponentState : IAsyncDisposable
     // a consistent set to the recipient.
     private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
     {
+        Renderer.Log.SupplyingCombinedParameters(_renderer.Logger, this);
+
         var parametersStartTimestamp = ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
 
         // Normalize sync and async exceptions into a Task
