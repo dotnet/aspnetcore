@@ -90,7 +90,9 @@ public class DefaultHttpClientTest {
                 while (!serverSocket.isClosed()) {
                     try {
                         Socket socket = serverSocket.accept();
-                        new Thread(() -> respond(socket, mode)).start();
+                        Thread responseThread = new Thread(() -> respond(socket, mode));
+                        responseThread.setDaemon(true);
+                        responseThread.start();
                     } catch (Exception ex) {
                         return;
                     }
