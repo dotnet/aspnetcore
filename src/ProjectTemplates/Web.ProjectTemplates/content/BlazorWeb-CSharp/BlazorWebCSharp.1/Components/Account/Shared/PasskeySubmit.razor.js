@@ -1,4 +1,4 @@
-﻿const browserSupportsPasskeys =
+const browserSupportsPasskeys =
     typeof navigator.credentials !== 'undefined' &&
     typeof window.PublicKeyCredential !== 'undefined' &&
     typeof window.PublicKeyCredential.parseCreationOptionsFromJSON === 'function' &&
