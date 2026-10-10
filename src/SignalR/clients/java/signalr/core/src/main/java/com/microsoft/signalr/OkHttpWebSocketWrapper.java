@@ -134,11 +134,19 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             logger.error("WebSocket closed from an error.", t);
 
+            Throwable error = t;
+            if (response != null && response.code() != 101) {
+                error = new HttpRequestException(String.format(
+                    "Unexpected status code returned from WebSocket handshake: %d %s.",
+                    response.code(), response.message()), response.code());
+                error.initCause(t);
+            }
+
             boolean isOpen = false;
             try {
                 stateLock.lock();
                 if (!closeSubject.hasComplete()) {
-                    closeSubject.onError(new RuntimeException(t));
+                    closeSubject.onError(new RuntimeException(error));
                 }
 
                 isOpen = startSubject.hasComplete();
@@ -150,7 +158,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
             if (isOpen) {
                 onClose.invoke(null, t.getMessage());
             }
-            checkStartFailure(t);
+            checkStartFailure(error);
         }
 
         private void checkStartFailure(Throwable t) {
@@ -159,7 +167,11 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
                 // If the start task hasn't completed yet, then we need to complete it
                 // exceptionally.
                 if (!startSubject.hasComplete()) {
-                    startSubject.onError(new RuntimeException("There was an error starting the WebSocket transport.", t));
+                    if (t instanceof HttpRequestException) {
+                        startSubject.onError(t);
+                    } else {
+                        startSubject.onError(new RuntimeException("There was an error starting the WebSocket transport.", t));
+                    }
                 }
             } finally {
                 stateLock.unlock();
