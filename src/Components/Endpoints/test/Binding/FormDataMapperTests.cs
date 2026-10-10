@@ -284,7 +284,7 @@ public class FormDataMapperTests
 #nullable disable
 
     [Fact]
-    public void Deserialize_Collections_NoElements_ReturnsNull()
+    public void Deserialize_Array_NoElements_ReturnsEmptyArray()
     {
         // Arrange
         var data = new Dictionary<string, StringValues>() { };
@@ -293,10 +293,147 @@ public class FormDataMapperTests
         var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataMapper.Map<List<int>>(reader, options);
+        var result = FormDataMapper.Map<string[]>(reader, options);
 
         // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void Deserialize_Collections_NoElements_ReturnsNull()
+    {
+        var reader = CreateFormDataReader(new Dictionary<string, StringValues>(), CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
+
+        var result = FormDataMapper.Map<List<int>>(reader, options);
+
         Assert.Null(result);
+    }
+
+    [Fact]
+    public void Deserialize_EmptyDictionary_ReturnsNull()
+    {
+        var reader = CreateFormDataReader(new Dictionary<string, StringValues>(), CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        var result = FormDataMapper.Map<IReadOnlyDictionary<int, int>>(reader, options);
+
+        Assert.Null(result);
+    }
+
+    [Theory]
+    [InlineData(typeof(string[]))]
+    [InlineData(typeof(List<int>))]
+    [InlineData(typeof(Dictionary<int, int>))]
+    public void CanDeserialize_Collections_ComplexElementsWithCollectionProperties_StopAtLastElement(Type collectionType)
+    {
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["[0].Name"] = "first",
+            ["[0].Values[0]"] = "1",
+            ["[1].Name"] = "second",
+        };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        var options = new FormDataMapperOptions();
+        var elementType = typeof(CollectionPropertyModel<>).MakeGenericType(collectionType);
+        var type = typeof(List<>).MakeGenericType(elementType);
+
+        var result = CallDeserialize(reader, options, type);
+
+        Assert.Empty(errors);
+        var elements = Assert.IsAssignableFrom<IList>(result);
+        Assert.Equal(2, elements.Count);
+        Assert.Equal("first", elementType.GetProperty(nameof(CollectionPropertyModel<int>.Name)).GetValue(elements[0]));
+        Assert.Equal("second", elementType.GetProperty(nameof(CollectionPropertyModel<int>.Name)).GetValue(elements[1]));
+        var valuesProperty = elementType.GetProperty(nameof(CollectionPropertyModel<int>.Values));
+        Assert.Single(Assert.IsAssignableFrom<IEnumerable>(valuesProperty.GetValue(elements[0])));
+    }
+
+    [Theory]
+    [InlineData(typeof(string[]))]
+    [InlineData(typeof(List<int>))]
+    [InlineData(typeof(Dictionary<int, int>))]
+    public void CanDeserialize_Collections_NestedCollections_StopAtLastElement(Type collectionType)
+    {
+        var data = new Dictionary<string, StringValues>() { ["[0][0]"] = "1" };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        var options = new FormDataMapperOptions();
+        var type = typeof(List<>).MakeGenericType(collectionType);
+
+        var result = CallDeserialize(reader, options, type);
+
+        Assert.Empty(errors);
+        var element = Assert.Single(Assert.IsAssignableFrom<IEnumerable>(result));
+        Assert.Single(Assert.IsAssignableFrom<IEnumerable>(element));
+    }
+
+    [Theory]
+    [InlineData(typeof(string[]))]
+    [InlineData(typeof(List<int>))]
+    [InlineData(typeof(Dictionary<int, int>))]
+    public void CanDeserialize_ComplexType_AbsentChildWithCollectionProperty_RemainsNull(Type collectionType)
+    {
+        var data = new Dictionary<string, StringValues>() { ["Name"] = "parent" };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+        var type = typeof(CollectionPropertyParent<>).MakeGenericType(collectionType);
+
+        var result = CallDeserialize(reader, options, type);
+
+        Assert.NotNull(result);
+        Assert.Equal("parent", type.GetProperty(nameof(CollectionPropertyParent<int>.Name)).GetValue(result));
+        Assert.Null(type.GetProperty(nameof(CollectionPropertyParent<int>.Child)).GetValue(result));
+    }
+
+    [Theory]
+    [InlineData(typeof(string[]))]
+    [InlineData(typeof(List<int>))]
+    [InlineData(typeof(Dictionary<int, int>))]
+    public void CanDeserialize_ComplexType_MissingRequiredCollectionProperty_ReportsError(Type collectionType)
+    {
+        var data = new Dictionary<string, StringValues>() { ["Name"] = "parent" };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        var options = new FormDataMapperOptions();
+        var type = typeof(RequiredCollectionPropertyModel<>).MakeGenericType(collectionType);
+
+        var result = CallDeserialize(reader, options, type);
+
+        Assert.NotNull(result);
+        var error = Assert.Single(errors);
+        Assert.Equal(nameof(RequiredCollectionPropertyModel<int>.Values), error.Key);
+        Assert.Equal("Missing required value for property 'Values'.", error.Message.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private class CollectionPropertyModel<T>
+    {
+        public string Name { get; set; }
+
+        public T Values { get; set; }
+    }
+
+    private class CollectionPropertyParent<T>
+    {
+        public string Name { get; set; }
+
+        public CollectionPropertyModel<T> Child { get; set; }
+    }
+
+    private class RequiredCollectionPropertyModel<T>
+    {
+        public string Name { get; set; }
+
+        public required T Values { get; set; }
     }
 
     [Fact]
@@ -1035,21 +1172,6 @@ public class FormDataMapperTests
         var dictionary = Assert.IsType<ReadOnlyDictionary<int, int>>(result);
         Assert.Equal(expected.Count, dictionary.Count);
         Assert.Equal(expected.OrderBy(o => o.Key).ToArray(), dictionary.OrderBy(o => o.Key).ToArray());
-    }
-
-    [Fact]
-    public void Deserialize_EmptyDictionary_ReturnsNull()
-    {
-        // Arrange
-        var collection = new Dictionary<string, StringValues>() { };
-        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
-        var options = new FormDataMapperOptions();
-
-        // Act
-        var result = FormDataMapper.Map<IReadOnlyDictionary<int, int>>(reader, options);
-
-        // Assert
-        Assert.Null(result);
     }
 
     [Theory]
@@ -1942,7 +2064,7 @@ public class FormDataMapperTests
         var expected = new RecursiveTree()
         {
             Value = 10,
-            Children = null
+            Children = new List<RecursiveTree>()
         };
 
         for (var i = 10 - 1; i >= 0; i--)
@@ -2001,7 +2123,7 @@ public class FormDataMapperTests
         var expected = new RecursiveDictionaryTree()
         {
             Value = 10,
-            Children = null
+            Children = new Dictionary<int, RecursiveDictionaryTree>()
         };
 
         for (var i = 10 - 1; i >= 0; i--)
