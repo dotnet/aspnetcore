@@ -22,7 +22,7 @@
     "memory-fs": "^0.3.0",
     "require-from-string": "^1.1.0",
     "sha.js": "^2.4.12",
-    "webpack-dev-middleware": "^7.4.3",
+    "webpack-dev-middleware": "^7.4.6",
     "webpack-node-externals": "^1.4.3"
   },
   "devDependencies": {
