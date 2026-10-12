@@ -2433,12 +2433,6 @@ function Get-Classification {
         $reasonCodes.Add("merge-conflict")
         $blockers.Add("The pull request conflicts with its base branch.")
     }
-    elseif ($ciRerunPending) {
-        $bucket = "WaitingOnCI"
-        $nextActor = "CI/automation"
-        $reasonCodes.Add("ci-rerun-pending")
-        $blockers.Add("The pull request is explicitly waiting for CI to be rerun.")
-    }
     elseif ($reviewDecision -eq "CHANGES_REQUESTED" -or
         ($ownershipReview -and $ownershipReview.State -eq "CHANGES_REQUESTED")) {
         if ($authorRespondedAfterReview) {
@@ -2585,6 +2579,17 @@ function Get-Classification {
         $waitingSince = $ownershipReview.SubmittedAt
     }
 
+    if ($ciRerunPending) {
+        if (-not $reasonCodes.Contains("ci-rerun-pending")) {
+            $reasonCodes.Add("ci-rerun-pending")
+        }
+        if ($bucket -eq "ReadyToMerge") {
+            $bucket = "WaitingOnCI"
+            $nextActor = "CI/automation"
+            $blockers.Add("CI must be rerun before merge.")
+        }
+    }
+
     if ($bucket -eq "ReviewNow" -and $checkState -eq "Pending") {
         $reasonCodes.Add("ci-pending")
     }
@@ -2684,7 +2689,7 @@ function Get-DisplayMetadata {
             }
             "ci-rerun-pending" = [pscustomobject]@{
                 label = "CI rerun pending"
-                description = "The repository explicitly marks the pull request as waiting for a CI rerun."
+                description = "An inactivity marker requires CI revalidation before merge; it does not mean CI is running."
             }
             "community-contribution" = [pscustomobject]@{
                 label = "Community contribution"
@@ -2926,11 +2931,13 @@ function Get-ResponseEvidence {
         $commentEvidenceTruncated -or
         -not $complete -or
         $signals.Count -gt 0
+    $onlyAutomationComments = $commentTotalCount -eq $comments.Count -and
+        @($comments | Where-Object { $_.Actor -ne "automation" }).Count -eq 0
 
     $status = if ($recordedResponse) {
         "recorded-response"
     }
-    elseif ($complete -and $commentTotalCount -eq 0 -and -not $hasIncompleteOrAmbiguousEvidence) {
+    elseif ($complete -and $onlyAutomationComments -and -not $hasIncompleteOrAmbiguousEvidence) {
         "no-response"
     }
     else {

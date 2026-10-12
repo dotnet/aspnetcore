@@ -47,7 +47,7 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
 * Add a reference to the new `SiteExtensions` package for the previous Major Version.
   1. Add references to [src/SiteExtensions/LoggingAggregate/src/Microsoft.AspNetCore.AzureAppServices.SiteExtension/Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj](/src/SiteExtensions/LoggingAggregate/src/Microsoft.AspNetCore.AzureAppServices.SiteExtension/Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj) to `Microsoft.AspNetCore.AzureAppServices.SiteExtension.{PreviousMajorVersion}.0.x64` and `Microsoft.AspNetCore.AzureAppServices.SiteExtension.{PreviousMajorVersion}.0.x86`.
   2. Add entries in [eng/Versions.props](/eng/Versions.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/216c92b78bce31d5e81a70b589707ec2ae5ab21a/eng/Versions.props#L224-L226) - the version should be from the latest released build of .Net.
-  3. Add entries in [eng/Dependencies.props](/eng/Dependencies.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/a47c0a58d7002b9a530c67532366b9db96d73cc6/eng/Dependencies.props#L119-L120).
+  3. Add `<PackageVersion>` entries in [Directory.Packages.props](/Directory.Packages.props) for the new SiteExtensions packages.
 * Update AssemblyVersions for dotnet/runtime assemblies in [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs).
 * Update template precedence
   1. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.

@@ -239,6 +239,7 @@ else
             return;
         }
 
+        await SignInManager.RefreshSignInAsync(user);
         IdentityStatusMessage = "Passkey deleted successfully.";
         RedirectManager.RedirectToCurrentPage();
     }
