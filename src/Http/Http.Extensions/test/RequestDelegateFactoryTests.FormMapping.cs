@@ -393,6 +393,48 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsFormFileCollectionInCollectionItemWithOnlyUnrelatedFile(bool includeLabel)
+    {
+        OrderWithFileCollection capturedArgument = default;
+        var handlerInvoked = false;
+        void TestAction([FromForm] OrderWithFileCollection order)
+        {
+            capturedArgument = order;
+            handlerInvoked = true;
+        }
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "unrelated", "file.txt"),
+        };
+        var fields = new Dictionary<string, StringValues>();
+        if (includeLabel)
+        {
+            fields.Add("Lines[0].Label", "A test line");
+        }
+        httpContext.Request.Form = new FormCollection(fields, formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerInvoked);
+        if (includeLabel)
+        {
+            var line = Assert.Single(capturedArgument.Lines);
+            Assert.Equal("A test line", line.Label);
+            Assert.Same(formFiles, line.Attachments);
+        }
+        else
+        {
+            Assert.Null(capturedArgument);
+        }
+    }
+
+    [Theory]
     [InlineData("", "files")]
     [InlineData("docs", "docs")]
     public async Task SupportsRootFormFileList(string name, string fileFieldName)
