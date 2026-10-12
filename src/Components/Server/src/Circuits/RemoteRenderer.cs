@@ -67,7 +67,6 @@ internal partial class RemoteRenderer : WebRenderer
 
     protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveServer;
 
-    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
     public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector)
     {
         var componentId = AddRootComponent(componentType, domElementSelector);

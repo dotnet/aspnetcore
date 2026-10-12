@@ -877,7 +877,6 @@ internal partial class CircuitHost : IAsyncDisposable
         await manager.RestoreStateAsync(store, context);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
     private async ValueTask PerformRootComponentOperations(
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
