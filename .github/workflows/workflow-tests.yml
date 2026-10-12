@@ -1,0 +1,81 @@
+name: Workflow tests
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - '.github/skills/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Python and JavaScript fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+
+      - name: Discover and run workflow test scripts
+        shell: bash
+        run: |
+          shopt -s globstar nullglob
+          tests=(.github/workflows/**/test_*.py .github/workflows/**/test_*.js .github/workflows/**/test_*.cjs)
+          if ((${#tests[@]} == 0)); then
+            echo "::error::No workflow test scripts found."
+            exit 1
+          fi
+          for test in "${tests[@]}"; do
+            echo "::group::$test"
+            case "$test" in
+              *.py) python3 -B "$test" ;;
+              *.js|*.cjs) node "$test" ;;
+            esac
+            echo "::endgroup::"
+          done
+
+  pulse:
+    name: PR attention pulse fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+
+      - name: Install matching gh-aw CLI and runtime sources
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_CONFIG_DIR: ${{ runner.temp }}/pulse-toolchain
+        run: |
+          version=$(python3 -c 'import json; from pathlib import Path; print(json.loads(Path(".github/workflows/pr-attention-pulse.lock.yml").read_text().splitlines()[0].removeprefix("# gh-aw-metadata: "))["compiler_version"])')
+          gh extension install github/gh-aw --pin "$version"
+          git clone --quiet --depth 1 --branch "$version" --filter=blob:none --sparse \
+            https://github.com/github/gh-aw.git "$GH_CONFIG_DIR/extensions/gh-aw"
+          git -C "$GH_CONFIG_DIR/extensions/gh-aw" sparse-checkout set actions/setup/js
+
+      - name: Run PR attention pulse fixtures
+        shell: pwsh
+        env:
+          GH_CONFIG_DIR: ${{ runner.temp }}/pulse-toolchain
+        run: ./.github/workflows/pr-attention-pulse-tests/Test-PRAttentionPulse.ps1

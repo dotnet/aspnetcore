@@ -26,23 +26,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
-    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
-    <Reference Include="System.Security.Cryptography.Xml" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
       '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
       '$(MSBuildRestoreSessionId)' == '' ">
-    <Reference Include="Microsoft.Win32.Registry" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(MSBuildRestoreSessionId)' == ''">
-    <Reference Include="System.Security.Principal.Windows" />
+    <PackageReference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
-    <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,9 +59,9 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>

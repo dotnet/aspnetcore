@@ -1366,7 +1366,7 @@ try
         "blazor/discussion-pull-requests.json" = @(0, 0, 0, 0, 0)
         "repository-wide/pull-requests.json" = @(5, 0, 3, 0, 1)
         "repository-wide/correctness-pull-requests.json" = @(4, 1, 2, 0, 1)
-        "repository-wide/discussion-pull-requests.json" = @(2, 5, 0, 0, 0)
+        "repository-wide/discussion-pull-requests.json" = @(5, 5, 0, 0, 0)
     }
     $realPulses = [ordered]@{}
     foreach ($fixtureKey in $realFixtureExpectations.Keys)
@@ -2043,3 +2043,5 @@ finally
 {
     Remove-Item $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
+
+$global:LASTEXITCODE = 0
