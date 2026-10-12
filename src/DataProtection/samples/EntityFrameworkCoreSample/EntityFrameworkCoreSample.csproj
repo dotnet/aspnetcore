@@ -6,16 +6,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
   </ItemGroup>
 
 </Project>

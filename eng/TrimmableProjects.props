@@ -7,119 +7,119 @@
 -->
 <Project>
   <ItemGroup>
-    <TrimmableProject Include="Microsoft.AspNetCore" />
-    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Cryptography.Internal" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
-    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection" />
-    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
-    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.Extensions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Antiforgery" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Hosting" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Core" />
-    <TrimmableProject Include="Microsoft.Net.Http.Headers" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http.Extensions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http.Features" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http.Results" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Metadata" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Routing" />
-    <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Identity" />
-    <TrimmableProject Include="Microsoft.Extensions.Identity.Core" />
-    <TrimmableProject Include="Microsoft.Extensions.Identity.Stores" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Server.HttpSys" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Server.IIS" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.BearerToken" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Certificate" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Cookies" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Facebook" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Google" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Negotiate" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.OAuth" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Twitter" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.WsFederation" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authorization" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Authorization.Policy" />
-    <TrimmableProject Include="Microsoft.AspNetCore.CookiePolicy" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Cors" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics" />
-    <TrimmableProject Include="Microsoft.AspNetCore.HeaderPropagation" />
-    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
-    <TrimmableProject Include="Microsoft.AspNetCore.HostFiltering" />
-    <TrimmableProject Include="Microsoft.AspNetCore.HttpLogging" />
-    <TrimmableProject Include="Microsoft.AspNetCore.HttpOverrides" />
-    <TrimmableProject Include="Microsoft.AspNetCore.HttpsPolicy" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Localization.Routing" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Localization" />
-    <TrimmableProject Include="Microsoft.AspNetCore.OutputCaching" />
-    <TrimmableProject Include="Microsoft.AspNetCore.RateLimiting" />
-    <TrimmableProject Include="Microsoft.AspNetCore.RequestDecompression" />
-    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching" />
-    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCompression" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Rewrite" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Session" />
-    <TrimmableProject Include="Microsoft.AspNetCore.SpaProxy" />
-    <TrimmableProject Include="Microsoft.AspNetCore.SpaServices.Extensions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.StaticFiles" />
-    <TrimmableProject Include="Microsoft.AspNetCore.WebSockets" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.Core" />
-    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client.Core" />
-    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections.Client" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections.Common" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections" />
-    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
-    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Common" />
-    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Core" />
-    <TrimmableProject Include="Microsoft.AspNetCore.SignalR" />
-    <TrimmableProject Include="Microsoft.AspNetCore.StaticAssets" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.CustomElements" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" />
-    <TrimmableProject Include="Microsoft.JSInterop" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.Media" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.Server.AutoPause" />
-    <TrimmableProject Include="Microsoft.Authentication.WebAssembly.Msal" />
-    <TrimmableProject Include="Microsoft.JSInterop.WebAssembly" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Components.Web" />
-    <TrimmableProject Include="Microsoft.Extensions.FileProviders.Embedded" />
-    <TrimmableProject Include="Microsoft.Extensions.Localization.Abstractions" />
-    <TrimmableProject Include="Microsoft.Extensions.ObjectPool" />
-    <TrimmableProject Include="Microsoft.Extensions.WebEncoders" />
-    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
-    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
-    <TrimmableProject Include="Microsoft.Extensions.Features" />
-    <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" />
-    <TrimmableProject Include="Microsoft.Extensions.Validation" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Antiforgery" ProjectPath="$(RepoRoot)src/Antiforgery/src/Microsoft.AspNetCore.Antiforgery.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" ProjectPath="$(RepoRoot)src/Components/Authorization/src/Microsoft.AspNetCore.Components.Authorization.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepoRoot)src/Components/Components/src/Microsoft.AspNetCore.Components.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.CustomElements" ProjectPath="$(RepoRoot)src/Components/CustomElements/src/Microsoft.AspNetCore.Components.CustomElements.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src/Components/Forms/src/Microsoft.AspNetCore.Components.Forms.csproj" />
+    <TrimmableProject Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src/Components/JSInterop/src/Microsoft.JSInterop.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src/Components/Media/src/Microsoft.AspNetCore.Components.Media.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" ProjectPath="$(RepoRoot)src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter/src/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid" ProjectPath="$(RepoRoot)src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/src/Microsoft.AspNetCore.Components.QuickGrid.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Server.AutoPause" ProjectPath="$(RepoRoot)src/Components/Server.AutoPause/src/Microsoft.AspNetCore.Components.Server.AutoPause.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Web" ProjectPath="$(RepoRoot)src/Components/Web/src/Microsoft.AspNetCore.Components.Web.csproj" />
+    <TrimmableProject Include="Microsoft.Authentication.WebAssembly.Msal" ProjectPath="$(RepoRoot)src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj" />
+    <TrimmableProject Include="Microsoft.JSInterop.WebAssembly" ProjectPath="$(RepoRoot)src/Components/WebAssembly/JSInterop/src/Microsoft.JSInterop.WebAssembly.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly" ProjectPath="$(RepoRoot)src/Components/WebAssembly/WebAssembly/src/Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.Abstractions" ProjectPath="$(RepoRoot)src/DataProtection/Abstractions/src/Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Cryptography.Internal" ProjectPath="$(RepoRoot)src/DataProtection/Cryptography.Internal/src/Microsoft.AspNetCore.Cryptography.Internal.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" ProjectPath="$(RepoRoot)src/DataProtection/Cryptography.KeyDerivation/src/Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection" ProjectPath="$(RepoRoot)src/DataProtection/DataProtection/src/Microsoft.AspNetCore.DataProtection.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" ProjectPath="$(RepoRoot)src/DataProtection/EntityFrameworkCore/src/Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.Extensions" ProjectPath="$(RepoRoot)src/DataProtection/Extensions/src/Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" ProjectPath="$(RepoRoot)src/DataProtection/StackExchangeRedis/src/Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src/DefaultBuilder/src/Microsoft.AspNetCore.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.Features" ProjectPath="$(RepoRoot)src/Extensions/Features/src/Microsoft.Extensions.Features.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.FileProviders.Embedded" ProjectPath="$(RepoRoot)src/FileProviders/Embedded/src/Microsoft.Extensions.FileProviders.Embedded.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepoRoot)src/HealthChecks/Abstractions/src/Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src/HealthChecks/HealthChecks/src/Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Hosting.Abstractions" ProjectPath="$(RepoRoot)src/Hosting/Abstractions/src/Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Hosting" ProjectPath="$(RepoRoot)src/Hosting/Hosting/src/Microsoft.AspNetCore.Hosting.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" ProjectPath="$(RepoRoot)src/Hosting/Server.Abstractions/src/Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Html.Abstractions" ProjectPath="$(RepoRoot)src/Html.Abstractions/src/Microsoft.AspNetCore.Html.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Abstractions" ProjectPath="$(RepoRoot)src/Http/Authentication.Abstractions/src/Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Core" ProjectPath="$(RepoRoot)src/Http/Authentication.Core/src/Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <TrimmableProject Include="Microsoft.Net.Http.Headers" ProjectPath="$(RepoRoot)src/Http/Headers/src/Microsoft.Net.Http.Headers.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Abstractions" ProjectPath="$(RepoRoot)src/Http/Http.Abstractions/src/Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Extensions" ProjectPath="$(RepoRoot)src/Http/Http.Extensions/src/Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Features" ProjectPath="$(RepoRoot)src/Http/Http.Features/src/Microsoft.AspNetCore.Http.Features.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Results" ProjectPath="$(RepoRoot)src/Http/Http.Results/src/Microsoft.AspNetCore.Http.Results.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http" ProjectPath="$(RepoRoot)src/Http/Http/src/Microsoft.AspNetCore.Http.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Metadata" ProjectPath="$(RepoRoot)src/Http/Metadata/src/Microsoft.AspNetCore.Metadata.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Routing.Abstractions" ProjectPath="$(RepoRoot)src/Http/Routing.Abstractions/src/Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Routing" ProjectPath="$(RepoRoot)src/Http/Routing/src/Microsoft.AspNetCore.Routing.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" ProjectPath="$(RepoRoot)src/Http/WebUtilities/src/Microsoft.AspNetCore.WebUtilities.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Identity" ProjectPath="$(RepoRoot)src/Identity/Core/src/Microsoft.AspNetCore.Identity.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.Identity.Core" ProjectPath="$(RepoRoot)src/Identity/Extensions.Core/src/Microsoft.Extensions.Identity.Core.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.Identity.Stores" ProjectPath="$(RepoRoot)src/Identity/Extensions.Stores/src/Microsoft.Extensions.Identity.Stores.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.Localization.Abstractions" ProjectPath="$(RepoRoot)src/Localization/Abstractions/src/Microsoft.Extensions.Localization.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Cors" ProjectPath="$(RepoRoot)src/Middleware/CORS/src/Microsoft.AspNetCore.Cors.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.Abstractions" ProjectPath="$(RepoRoot)src/Middleware/Diagnostics.Abstractions/src/Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" ProjectPath="$(RepoRoot)src/Middleware/Diagnostics.EntityFrameworkCore/src/Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics" ProjectPath="$(RepoRoot)src/Middleware/Diagnostics/src/Microsoft.AspNetCore.Diagnostics.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HeaderPropagation" ProjectPath="$(RepoRoot)src/Middleware/HeaderPropagation/src/Microsoft.AspNetCore.HeaderPropagation.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" ProjectPath="$(RepoRoot)src/Middleware/HealthChecks.EntityFrameworkCore/src/Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src/Middleware/HealthChecks/src/Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HostFiltering" ProjectPath="$(RepoRoot)src/Middleware/HostFiltering/src/Microsoft.AspNetCore.HostFiltering.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HttpLogging" ProjectPath="$(RepoRoot)src/Middleware/HttpLogging/src/Microsoft.AspNetCore.HttpLogging.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HttpOverrides" ProjectPath="$(RepoRoot)src/Middleware/HttpOverrides/src/Microsoft.AspNetCore.HttpOverrides.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HttpsPolicy" ProjectPath="$(RepoRoot)src/Middleware/HttpsPolicy/src/Microsoft.AspNetCore.HttpsPolicy.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Localization.Routing" ProjectPath="$(RepoRoot)src/Middleware/Localization.Routing/src/Microsoft.AspNetCore.Localization.Routing.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Localization" ProjectPath="$(RepoRoot)src/Middleware/Localization/src/Microsoft.AspNetCore.Localization.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.OutputCaching" ProjectPath="$(RepoRoot)src/Middleware/OutputCaching/src/Microsoft.AspNetCore.OutputCaching.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.RateLimiting" ProjectPath="$(RepoRoot)src/Middleware/RateLimiting/src/Microsoft.AspNetCore.RateLimiting.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.RequestDecompression" ProjectPath="$(RepoRoot)src/Middleware/RequestDecompression/src/Microsoft.AspNetCore.RequestDecompression.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" ProjectPath="$(RepoRoot)src/Middleware/ResponseCaching.Abstractions/src/Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching" ProjectPath="$(RepoRoot)src/Middleware/ResponseCaching/src/Microsoft.AspNetCore.ResponseCaching.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCompression" ProjectPath="$(RepoRoot)src/Middleware/ResponseCompression/src/Microsoft.AspNetCore.ResponseCompression.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Rewrite" ProjectPath="$(RepoRoot)src/Middleware/Rewrite/src/Microsoft.AspNetCore.Rewrite.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Session" ProjectPath="$(RepoRoot)src/Middleware/Session/src/Microsoft.AspNetCore.Session.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SpaProxy" ProjectPath="$(RepoRoot)src/Middleware/Spa/SpaProxy/src/Microsoft.AspNetCore.SpaProxy.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepoRoot)src/Middleware/Spa/SpaServices.Extensions/src/Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.StaticFiles" ProjectPath="$(RepoRoot)src/Middleware/StaticFiles/src/Microsoft.AspNetCore.StaticFiles.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepoRoot)src/Middleware/WebSockets/src/Microsoft.AspNetCore.WebSockets.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Abstractions/src/Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.ApiExplorer" ProjectPath="$(RepoRoot)src/Mvc/Mvc.ApiExplorer/src/Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.Core" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Core/src/Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.ObjectPool" ProjectPath="$(RepoRoot)src/ObjectPool/src/Microsoft.Extensions.ObjectPool.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" ProjectPath="$(RepoRoot)src/OpenApi/src/Microsoft.AspNetCore.OpenApi.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.BearerToken" ProjectPath="$(RepoRoot)src/Security/Authentication/BearerToken/src/Microsoft.AspNetCore.Authentication.BearerToken.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Certificate" ProjectPath="$(RepoRoot)src/Security/Authentication/Certificate/src/Microsoft.AspNetCore.Authentication.Certificate.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Cookies" ProjectPath="$(RepoRoot)src/Security/Authentication/Cookies/src/Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication" ProjectPath="$(RepoRoot)src/Security/Authentication/Core/src/Microsoft.AspNetCore.Authentication.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Facebook" ProjectPath="$(RepoRoot)src/Security/Authentication/Facebook/src/Microsoft.AspNetCore.Authentication.Facebook.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Google" ProjectPath="$(RepoRoot)src/Security/Authentication/Google/src/Microsoft.AspNetCore.Authentication.Google.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.JwtBearer" ProjectPath="$(RepoRoot)src/Security/Authentication/JwtBearer/src/Microsoft.AspNetCore.Authentication.JwtBearer.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" ProjectPath="$(RepoRoot)src/Security/Authentication/MicrosoftAccount/src/Microsoft.AspNetCore.Authentication.MicrosoftAccount.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Negotiate" ProjectPath="$(RepoRoot)src/Security/Authentication/Negotiate/src/Microsoft.AspNetCore.Authentication.Negotiate.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.OAuth" ProjectPath="$(RepoRoot)src/Security/Authentication/OAuth/src/Microsoft.AspNetCore.Authentication.OAuth.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" ProjectPath="$(RepoRoot)src/Security/Authentication/OpenIdConnect/src/Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Twitter" ProjectPath="$(RepoRoot)src/Security/Authentication/Twitter/src/Microsoft.AspNetCore.Authentication.Twitter.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.WsFederation" ProjectPath="$(RepoRoot)src/Security/Authentication/WsFederation/src/Microsoft.AspNetCore.Authentication.WsFederation.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authorization" ProjectPath="$(RepoRoot)src/Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authorization.Policy" ProjectPath="$(RepoRoot)src/Security/Authorization/Policy/src/Microsoft.AspNetCore.Authorization.Policy.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.CookiePolicy" ProjectPath="$(RepoRoot)src/Security/CookiePolicy/src/Microsoft.AspNetCore.CookiePolicy.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" ProjectPath="$(RepoRoot)src/Servers/Connections.Abstractions/src/Microsoft.AspNetCore.Connections.Abstractions.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.HttpSys" ProjectPath="$(RepoRoot)src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.IIS" ProjectPath="$(RepoRoot)src/Servers/IIS/IIS/src/Microsoft.AspNetCore.Server.IIS.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.IISIntegration" ProjectPath="$(RepoRoot)src/Servers/IIS/IISIntegration/src/Microsoft.AspNetCore.Server.IISIntegration.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Core" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Core/src/Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Kestrel/src/Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Transport.NamedPipes/src/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Transport.Quic/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Transport.Sockets/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client.Core" ProjectPath="$(RepoRoot)src/SignalR/clients/csharp/Client.Core/src/Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client" ProjectPath="$(RepoRoot)src/SignalR/clients/csharp/Client/src/Microsoft.AspNetCore.SignalR.Client.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections.Client" ProjectPath="$(RepoRoot)src/SignalR/clients/csharp/Http.Connections.Client/src/Microsoft.AspNetCore.Http.Connections.Client.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections.Common" ProjectPath="$(RepoRoot)src/SignalR/common/Http.Connections.Common/src/Microsoft.AspNetCore.Http.Connections.Common.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections" ProjectPath="$(RepoRoot)src/SignalR/common/Http.Connections/src/Microsoft.AspNetCore.Http.Connections.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Protocols.Json" ProjectPath="$(RepoRoot)src/SignalR/common/Protocols.Json/src/Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Common" ProjectPath="$(RepoRoot)src/SignalR/common/SignalR.Common/src/Microsoft.AspNetCore.SignalR.Common.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Core" ProjectPath="$(RepoRoot)src/SignalR/server/Core/src/Microsoft.AspNetCore.SignalR.Core.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepoRoot)src/SignalR/server/SignalR/src/Microsoft.AspNetCore.SignalR.csproj" />
+    <TrimmableProject Include="Microsoft.AspNetCore.StaticAssets" ProjectPath="$(RepoRoot)src/StaticAssets/src/Microsoft.AspNetCore.StaticAssets.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.Validation" ProjectPath="$(RepoRoot)src/Validation/src/Microsoft.Extensions.Validation.csproj" />
+    <TrimmableProject Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepoRoot)src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
   </ItemGroup>
 </Project>

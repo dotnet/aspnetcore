@@ -72,7 +72,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_Metrics_HttpProtocolAndTlsSet()
     {
         // Arrange
@@ -121,7 +120,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task GET_MiddlewareIsRunWithConnectionLoggingScopeForHttpRequests(HttpProtocols protocol)
     {
@@ -227,8 +226,8 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3, 11)]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3, 1024)]
+    [InlineData(HttpProtocols.Http3, 11)]
+    [InlineData(HttpProtocols.Http3, 1024)]
     [InlineData(HttpProtocols.Http2, 11)]
     [InlineData(HttpProtocols.Http2, 1024)]
     public async Task GET_ServerStreaming_ClientReadsPartialResponse(HttpProtocols protocol, int clientBufferSize)
@@ -273,7 +272,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_ClientSendsOnlyHeaders_RequestReceivedOnServer(HttpProtocols protocol)
     {
@@ -397,7 +396,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task POST_ServerCompletesWithoutReadingRequestBody_ClientGetsResponse()
     {
         // Arrange
@@ -541,7 +539,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_ServerAbort_ClientReceivesAbort(HttpProtocols protocol)
     {
@@ -606,7 +604,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task POST_ServerAbortAfterWrite_ClientReceivesAbort()
     {
         // Arrange
@@ -660,7 +657,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task GET_ServerAbort_ClientReceivesAbort(HttpProtocols protocol)
     {
@@ -715,7 +712,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task POST_Expect100Continue_Get100Continue()
     {
         // Arrange
@@ -773,7 +769,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_ConnectionsMakingMultipleRequests_AllSuccess()
     {
         // Arrange
@@ -838,7 +833,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_MultipleRequestsInSequence_ReusedState()
     {
         // Arrange
@@ -896,7 +890,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_RequestAbortedByClient_StateNotReused()
     {
         // Arrange
@@ -984,7 +977,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_RequestAbortedByServer_StateNotReused()
     {
         // Arrange
@@ -1052,7 +1044,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_MultipleRequests_RequestVersionOrHigher_UpgradeToHttp3()
     {
         // Arrange
@@ -1132,9 +1123,8 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [InlineData(HttpProtocols.Http3)]
+    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/38008", OperatingSystems.Windows | OperatingSystems.Linux | OperatingSystems.MacOSX, HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
     public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
     {
         // Arrange
@@ -1329,7 +1319,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task ApplicationWriteWhenConnectionClosesPreservesMemory(HttpProtocols protocol)
     {
@@ -1456,7 +1446,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux, HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task GET_ClientCancellationAfterResponseHeaders_RequestAbortRaised(HttpProtocols protocol)
     {
@@ -1510,7 +1500,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task StreamResponseContent_DelayAndTrailers_ClientSuccess()
     {
         // Arrange
@@ -1574,7 +1563,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_MultipleRequests_ConnectionAndTraceIdsUpdated()
     {
         // Arrange
@@ -1628,7 +1616,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_MultipleRequestsInSequence_ReusedRequestHeaderStrings()
     {
         // Arrange
@@ -1691,7 +1678,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task Get_CompleteAsyncAndReset_StreamNotPooled()
     {
         // Arrange
@@ -1752,7 +1738,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_ConnectionLoggingConfigured_OutputToLogs()
     {
         // Arrange
@@ -1803,7 +1788,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_UseHttpsCallback_ConnectionContextAvailable()
     {
         // Arrange
@@ -1856,7 +1840,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_ClientDisconnected_ConnectionAbortRaised()
     {
         // Arrange
@@ -1921,7 +1904,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ConnectionLifetimeNotificationFeature_RequestClose_ConnectionEnds()
     {
         // Arrange
@@ -2027,7 +2009,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_ServerAbortTransport_ConnectionAbortRaised()
     {
         // Arrange
@@ -2115,7 +2096,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task GET_ConnectionInfo_PropertiesSet()
     {
         string connectionId = null;
@@ -2358,7 +2338,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ServerReset_InvalidErrorCode()
     {
         var ranHandler = false;

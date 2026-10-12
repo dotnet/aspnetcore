@@ -5,9 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Media" />
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Media\src\Microsoft.AspNetCore.Components.Media.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>
