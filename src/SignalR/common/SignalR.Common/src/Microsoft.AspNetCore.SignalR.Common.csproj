@@ -19,7 +19,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Newtonsoft.Json" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <Reference Include="System.Buffers" />
   </ItemGroup>
 
