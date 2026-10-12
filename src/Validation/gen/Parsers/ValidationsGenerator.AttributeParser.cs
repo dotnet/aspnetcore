@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using System.Threading;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -13,15 +13,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     internal static bool ShouldTransformSymbolWithAttribute(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
-        return syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax;
+        return syntaxNode.IsKind(SyntaxKind.ClassDeclaration) || syntaxNode.IsKind(SyntaxKind.RecordDeclaration);
     }
 
-    internal ImmutableArray<ValidatableType> TransformValidatableTypeWithAttribute(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    internal static ImmutableArray<ValidatableType> TransformValidatableTypeWithAttribute(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
         var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         List<ITypeSymbol> visitedTypes = [];
         var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-        if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes))
+        if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, wellKnownTypes, validatableTypes, visitedTypes))
         {
             return [.. validatableTypes];
         }

@@ -15,6 +15,14 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
 
+    /// <summary>
+    /// Gets or sets whether client-side validation rules are suppressed for this form.
+    /// When <see langword="false"/> (the default), the framework includes the validation rules for
+    /// the form's model in the rendered HTML so user errors can be reported without a round trip
+    /// to the server. When <see langword="true"/>, only server-side validation runs.
+    /// </summary>
+    [Parameter] public bool DisableClientValidation { get; set; }
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -27,6 +35,11 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
         _subscriptions = CurrentEditContext.EnableDataAnnotationsValidation(ServiceProvider);
         _originalEditContext = CurrentEditContext;
+
+        if (!DisableClientValidation)
+        {
+            CurrentEditContext.Properties[typeof(DataAnnotationsValidator)] = true;
+        }
     }
 
     /// <inheritdoc />
@@ -41,7 +54,10 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Releases resources used by the validator.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> if managed resources should be released; otherwise, <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
     }
@@ -50,6 +66,8 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
     {
         _subscriptions?.Dispose();
         _subscriptions = null;
+
+        CurrentEditContext?.Properties.Remove(typeof(DataAnnotationsValidator));
 
         Dispose(disposing: true);
     }

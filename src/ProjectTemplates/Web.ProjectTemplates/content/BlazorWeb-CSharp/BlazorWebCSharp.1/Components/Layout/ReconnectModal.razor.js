@@ -52,7 +52,7 @@ async function resume() {
             location.reload();
         }
     } catch {
-        location.reload();
+        reconnectModal.classList.replace("components-reconnect-paused", "components-reconnect-resume-failed");
     }
 }
 

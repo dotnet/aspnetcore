@@ -49,11 +49,13 @@ public class AddValidationIntegrationTest : ServerTestBase<BasicTestAppServerSit
             "Product Name is required."
         };
 
-        Assert.Equal(expected, messages);
+        // Validation summary order is not guaranteed, so compare without ordering.
+        Assert.Equal(expected.OrderBy(x => x), messages.OrderBy(x => x));
 
-        // Individual field messages
+        // Individual field messages.
         var individual = Browser.FindElements(By.CssSelector(".mb-3 > .validation-message"))
             .Select(element => element.Text)
+            .Where(text => !string.IsNullOrEmpty(text))
             .ToList();
 
         Assert.Equal(expected, individual);

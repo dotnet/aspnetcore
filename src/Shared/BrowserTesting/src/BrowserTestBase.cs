@@ -21,6 +21,9 @@ public class BrowserTestBase : LoggedTest, IAsyncLifetime
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild")) ||
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Helix"));
 
+    private static readonly bool _isContainerEnvironment =
+        File.Exists("/.dockerenv") || File.Exists("/run/.containerenv");
+
     private static readonly BrowserManagerConfiguration _config = new BrowserManagerConfiguration(CreateConfiguration());
 
     public BrowserTestBase(ITestOutputHelper output = null) : base(output) { }
@@ -37,13 +40,10 @@ public class BrowserTestBase : LoggedTest, IAsyncLifetime
     private static IConfiguration CreateConfiguration()
     {
         var basePath = Path.GetDirectoryName(typeof(BrowserTestBase).Assembly.Location);
-        var os = Environment.OSVersion.Platform switch
-        {
-            PlatformID.Win32NT => "win",
-            PlatformID.Unix => "linux",
-            PlatformID.MacOSX => "osx",
-            _ => null
-        };
+        var os = OperatingSystem.IsWindows() ? "win"
+            : OperatingSystem.IsLinux() ? "linux"
+            : OperatingSystem.IsMacOS() ? "osx"
+            : null;
 
         var builder = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(basePath, "playwrightSettings.json"))
@@ -53,6 +53,11 @@ public class BrowserTestBase : LoggedTest, IAsyncLifetime
         {
             builder.AddJsonFile(Path.Combine(basePath, "playwrightSettings.ci.json"), optional: true)
                 .AddJsonFile(Path.Combine(basePath, $"playwrightSettings.ci.{os}.json"), optional: true);
+        }
+
+        if (_isContainerEnvironment)
+        {
+            builder.AddJsonFile(Path.Combine(basePath, "playwrightSettings.container.json"), optional: true);
         }
 
         if (Debugger.IsAttached)

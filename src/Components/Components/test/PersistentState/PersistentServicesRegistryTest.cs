@@ -651,6 +651,59 @@ public class PersistentServicesRegistryTest
 
         public IComponentRenderMode GetRenderModeOrDefault() => null;
     }
+
+    [Fact]
+    public async Task PersistStateAsync_PersistsAndRestoresEmptyServiceRegistry()
+    {
+        var componentRenderMode = new TestRenderMode();
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+        persistenceManager.SetPlatformRenderMode(componentRenderMode);
+        var testStore = new TestStore(new Dictionary<string, byte[]>());
+
+        await persistenceManager.RestoreStateAsync(
+            new TestStore(new Dictionary<string, byte[]>()),
+            RestoreContext.InitialValue);
+
+        await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
+
+        var persistedRegistry = Assert.Single(testStore.State);
+        Assert.Equal(typeof(PersistentServicesRegistry).FullName, persistedRegistry.Key);
+        Assert.Equal("[]", System.Text.Encoding.UTF8.GetString(persistedRegistry.Value));
+
+        var restoringManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+
+        await restoringManager.RestoreStateAsync(testStore, RestoreContext.InitialValue);
+
+        var restoredRegistry = Assert.IsType<PersistentServicesRegistry>(restoringManager.ServicesRegistry);
+        Assert.Empty(restoredRegistry.Registrations);
+        Assert.Empty(testStore.State);
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_RestoresPreviousRegistryWireFormat()
+    {
+        var assembly = typeof(TestService).Assembly.GetName().Name;
+        var fullTypeName = typeof(TestService).FullName;
+        var state = new Dictionary<string, byte[]>
+        {
+            [typeof(PersistentServicesRegistry).FullName] =
+                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new[] { new { assembly, fullTypeName } }),
+        };
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().AddScoped<TestService>().BuildServiceProvider());
+
+        await persistenceManager.RestoreStateAsync(new TestStore(state), RestoreContext.InitialValue);
+
+        var registry = Assert.IsType<PersistentServicesRegistry>(persistenceManager.ServicesRegistry);
+        var registration = Assert.Single(registry.Registrations);
+        Assert.Equal(assembly, registration.Assembly);
+        Assert.Equal(fullTypeName, registration.FullTypeName);
+    }
 }
 
 static file class ComponentStatePersistenceManagerExtensions

@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -24,9 +23,11 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.RoutingTestContext);
 
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/57153")]
+    [Fact]
     public void ExternalNavigationIsLockedAfterPrerendering()
     {
+        InitializeBrowser(BrowserFixture.NavigationPromptContext);
+
         Navigate("/locked-navigation");
 
         // Assert that the component rendered successfully
@@ -36,7 +37,6 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
 
         // Assert that external navigations are blocked
         Browser.Navigate().GoToUrl("about:blank");
-        Browser.SwitchTo().Alert().Dismiss();
         Browser.Equal("Prevented navigations: 0", () => Browser.FindElement(By.Id("num-prevented-navigations")).Text);
     }
 

@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <!-- Update helix.proj when this TFM is updated. -->
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net12.0</TargetFramework>
 
     <OutputType>Exe</OutputType>
     <NoWarn>$(NoWarn);CA2007;NU5104</NoWarn>
@@ -20,8 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Playwright" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20158.1" AllowExplicitReference="true" />
+    <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
   <Target Name="PublishThisProject" AfterTargets="Build" Condition=" '$(ExcludeFromBuild)' != 'true' " >

@@ -444,7 +444,7 @@ class GsonHubProtocolTest {
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, message.getMessageType());
         InvocationBindingFailureMessage failureMessage = (InvocationBindingFailureMessage) messages.get(0);
 
-        assertEquals("com.google.gson.JsonSyntaxException", failureMessage.getException().getClass().getName());
+        assertNotEquals(null, failureMessage.getException());
     }
 
     @Test

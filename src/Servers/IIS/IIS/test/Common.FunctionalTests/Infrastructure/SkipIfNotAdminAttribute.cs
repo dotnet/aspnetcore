@@ -14,6 +14,11 @@ public sealed class SkipIfNotAdminAttribute : Attribute, ITestCondition
     {
         get
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                return false;
+            }
+
             var identity = WindowsIdentity.GetCurrent();
             var principal = new WindowsPrincipal(identity);
             return principal.IsInRole(WindowsBuiltInRole.Administrator) || SkipInVSTSAttribute.RunningInVSTS;

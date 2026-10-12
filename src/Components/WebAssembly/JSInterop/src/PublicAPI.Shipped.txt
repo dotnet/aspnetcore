@@ -3,7 +3,9 @@
 ~override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeJS(string identifier, string argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string
 Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime
 Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.WebAssemblyJSRuntime() -> void
+override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.BeginInvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> void
 override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.BeginInvokeJS(long asyncHandle, string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> void
 override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.EndInvokeDotNet(Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo callInfo, in Microsoft.JSInterop.Infrastructure.DotNetInvocationResult dispatchResult) -> void
+override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
 override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string!
 override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.SendByteArray(int id, byte[]! data) -> void

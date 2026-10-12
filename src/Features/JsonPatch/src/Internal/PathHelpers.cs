@@ -2,30 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal;
 
 internal static class PathHelpers
 {
-    internal static string ValidateAndNormalizePath(string path)
+    internal static string NormalizePath(string path)
     {
-        // check for most common path errors on create.  This is not
-        // absolutely necessary, but it allows us to already catch mistakes
-        // on creation of the patch document rather than on execute.
-
-        if (path.Contains("//"))
+        // An empty string on its own is valid, and is different from "/".
+        // So, we never want to normalize an empty string.
+        if (path.Length > 0 && !path.StartsWith("/", StringComparison.Ordinal))
         {
-            throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
+            return $"/{path}";
         }
 
-        if (!path.StartsWith("/", StringComparison.Ordinal))
-        {
-            return "/" + path;
-        }
-        else
-        {
-            return path;
-        }
+        return path;
     }
 }

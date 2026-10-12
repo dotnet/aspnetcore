@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Padrões de Serviço Blazor WebAssembly",
+  "description": "Um modelo de projeto para a criação de uma biblioteca padrão de serviços para aplicativos Blazor WebAssembly. Inclui OpenTelemetry, descoberta de serviços e suporte à resiliência para integração Aspire.",
+  "symbols/Framework/description": "A estrutura de destino para o projeto.",
+  "symbols/hosted/description": "Configurar para um cenário hospedado do Blazor Web no qual a configuração flui do servidor por meio de um comentário DOM. Quando false (padrão), configura-se para um cenário independente com um ponto de extremidade de configuração e um inicializador de JS.",
+  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto que está sendo criado.",
+  "postActions/restore/description": "Restaurar os pacotes NuGet exigidos por esse projeto.",
+  "postActions/restore/manualInstructions/default/text": "Execute 'dotnet restore'"
+}

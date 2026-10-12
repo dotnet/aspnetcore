@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,6 +75,9 @@ public class TestServerTests : VerifiableLoggedTest
             await connection.StartAsync();
             await connection.InvokeAsync("Echo", originalMessage);
             Assert.True(webSocketFactoryCalled);
+
+            await connection.StopAsync();
+            await host.StopAsync();
         }
     }
 
@@ -128,6 +132,9 @@ public class TestServerTests : VerifiableLoggedTest
 
             await connection.StartAsync();
             await connection.InvokeAsync("Echo", originalMessage);
+
+            await connection.StopAsync();
+            await host.StopAsync();
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 /// <summary>
 /// Used to configure razor compilation.
 /// </summary>
-[Obsolete("Razor runtime compilation is obsolete and is not recommended for production scenarios. For production scenarios, use the default build time compilation. For development scenarios, use Hot Reload instead. For more information, visit https://aka.ms/aspnet/deprecate/003.", DiagnosticId = "ASPDEPR003")]
+[Obsolete("Razor runtime compilation is obsolete and is not recommended for production scenarios. For production scenarios, use the default build time compilation. For development scenarios, use Hot Reload instead. For more information, visit https://aka.ms/aspnet/deprecate/003.", DiagnosticId = "ASPDEPR003", UrlFormat = Obsoletions.AspNetCoreDeprecate003Url)]
 public class MvcRazorRuntimeCompilationOptions
 {
     /// <summary>

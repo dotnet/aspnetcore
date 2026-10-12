@@ -16,7 +16,7 @@ internal sealed class RouteTable(TreeRouter treeRouter)
 
     static RouteTable()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _routeEntryCache.Clear;
         }

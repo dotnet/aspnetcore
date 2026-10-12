@@ -139,6 +139,52 @@ app.MapGet("/hello", ([FromQuery] int p1 = 10) => $"{p1}");
         await VerifyResponseBodyAsync(httpContext, "10");
     }
 
+    [Theory]
+    [InlineData(null, "Id: 00000000-0000-0000-0000-000000000000")]
+    [InlineData("a0e1f2b3-c4d5-4e6f-7a8b-9c0d1e2f3a4b", "Id: a0e1f2b3-c4d5-4e6f-7a8b-9c0d1e2f3a4b")]
+    public async Task CanSetGuidParamAsOptionalWithDefaultValue(string queryValue, string expectedResponse)
+    {
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapGet("/", ([FromQuery] Guid id = default) => $"Id: {id}");
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        if (queryValue is not null)
+        {
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = queryValue
+            });
+        }
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedResponse);
+    }
+
+    [Theory]
+    [InlineData(null, "Date: 0001-01-01T00:00:00.0000000")]
+    [InlineData("2024-01-15", "Date: 2024-01-15T00:00:00.0000000")]
+    public async Task CanSetDateTimeParamAsOptionalWithDefaultValue(string queryValue, string expectedResponse)
+    {
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapGet("/", ([FromQuery] DateTime date = default) => $"Date: {date:O}");
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        if (queryValue is not null)
+        {
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["date"] = queryValue
+            });
+        }
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedResponse);
+    }
+
     public static object[][] MapAction_ExplicitQueryParam_NameTest_Data
     {
         get

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Xunit.Sdk;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 
@@ -21,6 +22,7 @@ public class GridRaceConditionTest
         var testJsRuntime = new TestJsRuntime(moduleLoadCompletion, moduleImportStarted);
         var serviceProvider = new ServiceCollection()
             .AddSingleton<IJSRuntime>(testJsRuntime)
+            .AddSingleton<NavigationManager, TestNavigationManager>()
             .BuildServiceProvider();
         var renderer = new TestRenderer(serviceProvider);
 
@@ -57,6 +59,7 @@ public class GridRaceConditionTest
         var testJsRuntime = new TestJsRuntime(moduleLoadCompletion, moduleImportStarted);
         var serviceProvider = new ServiceCollection()
             .AddSingleton<IJSRuntime>(testJsRuntime)
+            .AddSingleton<NavigationManager, TestNavigationManager>()
             .BuildServiceProvider();
         var renderer = new TestRenderer(serviceProvider);
 
@@ -175,6 +178,15 @@ internal class TestJsRuntime(TaskCompletionSource moduleCompletion, TaskCompleti
 
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) =>
         InvokeAsync<TValue>(identifier, args);
+}
+
+internal class TestNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
+{
+    public TestNavigationManager() => Initialize("https://localhost/", "https://localhost/");
+
+    void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
+
+    protected override void NavigateToCore(string uri, bool forceLoad) => Uri = uri;
 }
 
 internal class TestJSObjectReference(TestJsRuntime jsRuntime) : IJSObjectReference

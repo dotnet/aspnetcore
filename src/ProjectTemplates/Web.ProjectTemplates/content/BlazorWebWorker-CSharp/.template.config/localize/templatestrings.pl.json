@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Proces roboczy usługi Blazor",
+  "description": "Projekt tworzący bibliotekę klas, która uruchamia kod .NET w procesie roboczym sieci Web z aplikacji internetowej Blazor WebAssembly lub Blazor.",
+  "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
+  "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
+  "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
+  "postActions/restore/manualInstructions/default/text": "Uruchom polecenie „dotnet restore”"
+}

@@ -54,6 +54,11 @@ internal sealed class PageContext : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        // Prevent any further JS interop calls during component disposal, similar to
+        // how server-side Blazor marks the circuit as permanently disconnected.
+        // This ensures JSObjectReference.DisposeAsync() doesn't throw when the page navigates away.
+        JSRuntime.MarkAsDisconnected();
+
         await Renderer.DisposeAsync();
         await _serviceScope.DisposeAsync();
     }

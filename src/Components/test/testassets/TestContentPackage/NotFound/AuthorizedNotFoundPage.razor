@@ -1,0 +1,6 @@
+@page "/render-authorized-not-found-page"
+@layout NotFoundLayout
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+
+<h3 id="test-info">Welcome On Authorized Not Found Page</h3>
+<p id="protected-not-found-content">This page is protected and should not be rendered for anonymous users.</p>

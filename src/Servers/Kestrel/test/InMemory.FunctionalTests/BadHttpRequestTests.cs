@@ -39,7 +39,7 @@ public class BadHttpRequestTests : LoggedTest
         return TestBadRequest(
             $"GET / {httpVersion}\r\n",
             "505 HTTP Version Not Supported",
-            CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion),
+            CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion_Detail(httpVersion),
             ConnectionEndReason.InvalidHttpVersion);
     }
 
@@ -100,6 +100,10 @@ public class BadHttpRequestTests : LoggedTest
     [Theory]
     [InlineData("NaN")]
     [InlineData("-1")]
+    [InlineData("+1")]
+    [InlineData("+0")]
+    [InlineData("-0")]
+    [InlineData("")]
     public Task BadRequestIfContentLengthInvalid(string contentLength)
     {
         return TestBadRequest(

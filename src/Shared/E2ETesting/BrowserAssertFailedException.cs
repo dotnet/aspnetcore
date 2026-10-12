@@ -14,15 +14,20 @@ namespace OpenQA.Selenium;
 // case.
 public class BrowserAssertFailedException : XunitException
 {
-    public BrowserAssertFailedException(IReadOnlyCollection<string> logs, Exception innerException, string screenShotPath, string innerHTML)
-        : base(BuildMessage(innerException, logs, screenShotPath, innerHTML), innerException)
+    public BrowserAssertFailedException(IReadOnlyCollection<string> logs, Exception innerException, string screenShotPath, string innerHTML, string url = null, IReadOnlyCollection<string> networkDetails = null)
+        : base(BuildMessage(innerException, logs, screenShotPath, innerHTML, url, networkDetails), innerException)
     {
     }
 
-    private static string BuildMessage(Exception exception, IReadOnlyCollection<string> logs, string screenShotPath, string innerHTML)
+    private static string BuildMessage(Exception exception, IReadOnlyCollection<string> logs, string screenShotPath, string innerHTML, string url, IReadOnlyCollection<string> networkDetails)
     {
         var builder = new StringBuilder();
         builder.AppendLine(exception.ToString());
+
+        if (!string.IsNullOrEmpty(url))
+        {
+            builder.AppendLine(FormattableString.Invariant($"Browser URL: {url}"));
+        }
 
         if (File.Exists(screenShotPath))
         {
@@ -33,6 +38,13 @@ public class BrowserAssertFailedException : XunitException
         {
             builder.AppendLine("Encountered browser errors")
                 .AppendJoin(Environment.NewLine, logs);
+        }
+
+        if (networkDetails is not null && networkDetails.Count > 0)
+        {
+            builder.AppendLine()
+                .AppendLine("Network responses (_framework, _blazor, and errors):")
+                .AppendJoin(Environment.NewLine, networkDetails);
         }
 
         builder.AppendLine("Page content:")

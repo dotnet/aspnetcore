@@ -10,13 +10,13 @@ namespace Components.TestServer.Controllers;
 [Route("[controller]/[action]")]
 public class CultureController : Controller
 {
-    public IActionResult SetCulture(string culture, string redirectUri)
+    public IActionResult SetCulture(string culture, string? uiCulture, string redirectUri)
     {
         if (culture != null)
         {
             HttpContext.Response.Cookies.Append(
                 CookieRequestCultureProvider.DefaultCookieName,
-                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)));
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture, uiCulture ?? culture)));
         }
 
         var htmlEncoder = HtmlEncoder.Default;

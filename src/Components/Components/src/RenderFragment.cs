@@ -18,4 +18,4 @@ public delegate void RenderFragment(RenderTreeBuilder builder);
 /// </summary>
 /// <typeparam name="TValue">The type of object.</typeparam>
 /// <param name="value">The value used to build the content.</param>
-public delegate RenderFragment RenderFragment<TValue>(TValue value);
+public delegate RenderFragment RenderFragment<in TValue>(TValue value);

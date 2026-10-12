@@ -3,7 +3,9 @@
 
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Net.Http.Headers;
 
@@ -84,5 +86,13 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
         return DebuggerHelpers.GetDebugText(nameof(StatusCode), StatusCode, nameof(ContentTypes), ContentTypes, nameof(Type), Type, includeNullValues: false, prefix: "Produces");
     }
 
-    internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(statusCode, type, contentTypes);
+    internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes)
+    {
+        if (type is not null && typeof(ProblemDetails).IsAssignableFrom(type))
+        {
+            contentTypes = [MediaTypeNames.Application.ProblemJson];
+        }
+
+        return new(statusCode, type, contentTypes);
+    }
 }

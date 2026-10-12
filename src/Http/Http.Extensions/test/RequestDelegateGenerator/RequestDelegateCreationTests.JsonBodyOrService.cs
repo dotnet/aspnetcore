@@ -194,10 +194,7 @@ app.MapPost("/", TestAction);
         });
         var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
 
-        var httpContext = CreateHttpContext(serviceProvider);
-        httpContext.Request.Headers["Content-Type"] = "application/json";
-        httpContext.Request.Headers["Content-Length"] = "0";
-        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+        var httpContext = CreateHttpContextWithEmptyJsonBody(serviceProvider);
 
         var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => endpoint.RequestDelegate(httpContext));
         Assert.StartsWith("Implicit body inferred for parameter", ex.Message);

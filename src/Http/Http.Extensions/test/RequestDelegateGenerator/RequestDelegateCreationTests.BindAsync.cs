@@ -254,7 +254,7 @@ app.MapPost("/", (HttpContext context, MyBindAsyncRecord myBindAsyncParam, Todo 
         Assert.Equal("Write more tests!", todo!.Name);
     }
 
-    [Fact(Skip = "Resetting Stream.Position to 0 doesn't work with StreamPipeReader currently.")]
+    [Fact]
     public async Task BindAsyncRunsBeforeBodyBinding()
     {
         Todo originalTodo = new()
@@ -328,5 +328,71 @@ app.MapGet("/2", (BindableStructWithMismatchedNullability<Todo> param) => "Hello
             await VerifyResponseBodyAsync(httpContext, $"Hello /{index}!");
             index++;
         }
+    }
+
+    [Fact]
+    public async Task MapAction_BindAsync_SingleArgumentNullableStructReturn_Provided()
+    {
+        var source = """
+app.MapGet("/", (BindableStructWithSingleArgumentNullableReturn param) => param.Value);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = QueryString.Create("value", "bound");
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "bound");
+    }
+
+    [Fact]
+    public async Task MapAction_BindAsync_SingleArgumentNullableStructReturn_NotProvided()
+    {
+        var source = """
+app.MapGet("/", (BindableStructWithSingleArgumentNullableReturn param) => param.Value);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "", StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task MapAction_BindAsync_SingleArgumentNullableStructReturn_Optional_Provided()
+    {
+        var source = """
+app.MapGet("/", (BindableStructWithSingleArgumentNullableReturn? param) => param?.Value ?? "not bound");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = QueryString.Create("value", "bound");
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "bound");
+    }
+
+    [Fact]
+    public async Task MapAction_BindAsync_SingleArgumentNullableStructReturn_Optional_NotProvided()
+    {
+        var source = """
+app.MapGet("/", (BindableStructWithSingleArgumentNullableReturn? param) => param?.Value ?? "not bound");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "not bound");
     }
 }

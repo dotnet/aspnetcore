@@ -1,0 +1,133 @@
+{
+  "calls": [
+    {
+      "prompt": "Please plan a trip to mars in 5 steps.",
+      "messageCount": 2,
+      "toolNames": [
+        "generate_task_steps"
+      ],
+      "frames": [
+        {
+          "name": "task-steps-review",
+          "functionCall": {
+            "callId": "human-in-the-loop-steps-1",
+            "name": "generate_task_steps",
+            "arguments": {
+              "steps": [
+                {
+                  "description": "Define mission goals and timeline",
+                  "status": "enabled"
+                },
+                {
+                  "description": "Design and test the spacecraft",
+                  "status": "enabled"
+                },
+                {
+                  "description": "Select and train the astronaut crew",
+                  "status": "enabled"
+                },
+                {
+                  "description": "Plan launch and Mars surface operations",
+                  "status": "enabled"
+                },
+                {
+                  "description": "Prepare communications and contingency plans",
+                  "status": "enabled"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please plan a trip to mars in 5 steps.",
+      "messageCount": 4,
+      "toolNames": [
+        "generate_task_steps"
+      ],
+      "toolResultCallIds": [
+        "human-in-the-loop-steps-1"
+      ],
+      "toolResults": [
+        {
+          "callId": "human-in-the-loop-steps-1",
+          "result": "\"The user selected the following steps: Define mission goals and timeline, Select and train the astronaut crew, Prepare communications and contingency plans\""
+        }
+      ],
+      "frames": [
+        {
+          "name": "selection-summary",
+          "chunks": [
+            "I'll move forward with the selected tasks: Define mission goals and timeline, ",
+            "Select and train the astronaut crew, Prepare communications and contingency plans."
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "Please create a simple Mars mission plan.",
+      "messageCount": 2,
+      "toolNames": [
+        "generate_task_steps"
+      ],
+      "frames": [
+        {
+          "name": "task-steps-review",
+          "functionCall": {
+            "callId": "human-in-the-loop-steps-1",
+            "name": "generate_task_steps",
+            "arguments": {
+              "steps": [
+                {
+                  "description": "Define mission goals and timeline",
+                  "status": "enabled"
+                },
+                {
+                  "description": "Design and test the spacecraft",
+                  "status": "enabled"
+                },
+                {
+                  "description": "Select and train the astronaut crew",
+                  "status": "enabled"
+                },
+                {
+                  "description": "Plan launch and Mars surface operations",
+                  "status": "enabled"
+                },
+                {
+                  "description": "Prepare communications and contingency plans",
+                  "status": "enabled"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please create a simple Mars mission plan.",
+      "messageCount": 4,
+      "toolNames": [
+        "generate_task_steps"
+      ],
+      "toolResultCallIds": [
+        "human-in-the-loop-steps-1"
+      ],
+      "toolResults": [
+        {
+          "callId": "human-in-the-loop-steps-1",
+          "result": "\"The user rejected all proposed steps.\""
+        }
+      ],
+      "frames": [
+        {
+          "name": "rejection-summary",
+          "chunks": [
+            "No tasks were selected, so I won't move forward with any proposed steps."
+          ]
+        }
+      ]
+    }
+  ]
+}

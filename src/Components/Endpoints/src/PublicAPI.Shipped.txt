@@ -52,6 +52,8 @@ Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Infer = 1 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Server = 2 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.WebAssembly = 3 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
+Microsoft.AspNetCore.Components.ResourcePreloader
+Microsoft.AspNetCore.Components.ResourcePreloader.ResourcePreloader() -> void
 Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions
 Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider
 Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void
@@ -64,9 +66,9 @@ Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.ExecuteAsync(Microsof
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.PreventStreamingRendering.get -> bool
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.PreventStreamingRendering.set -> void
-Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType) -> void
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType, object! parameters) -> void
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> void
+Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType) -> void
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.StatusCode.set -> void
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult<TComponent>
@@ -75,6 +77,7 @@ Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult<TComponent>.RazorComp
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult<TComponent>.RazorComponentResult(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> void
 Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder
 Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions
 Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions
 override Microsoft.AspNetCore.Components.ImportMapDefinition.ToString() -> string!
 override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
@@ -86,4 +89,5 @@ static Microsoft.AspNetCore.Components.Endpoints.Infrastructure.ComponentEndpoin
 static Microsoft.AspNetCore.Components.ImportMapDefinition.Combine(params Microsoft.AspNetCore.Components.ImportMapDefinition![]! sources) -> Microsoft.AspNetCore.Components.ImportMapDefinition!
 static Microsoft.AspNetCore.Components.ImportMapDefinition.FromResourceCollection(Microsoft.AspNetCore.Components.ResourceAssetCollection! assets) -> Microsoft.AspNetCore.Components.ImportMapDefinition!
 static Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions.AcceptsInteractiveRouting(this Microsoft.AspNetCore.Http.HttpContext! context) -> bool
+static Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions.RegisterPersistentService<TPersistentService>(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
 static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

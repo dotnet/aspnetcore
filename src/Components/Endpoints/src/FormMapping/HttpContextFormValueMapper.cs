@@ -138,7 +138,8 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
                     ErrorHandler = context.OnError,
                     AttachInstanceToErrorsHandler = context.MapErrorToContainer,
                     MaxRecursionDepth = options.MaxRecursionDepth,
-                    MaxErrorCount = options.MaxErrorCount
+                    MaxErrorCount = options.MaxErrorCount,
+                    MaxCollectionSize = options.MaxCollectionSize
                 };
 
                 reader.PushPrefix(context.ParameterName);

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.ResponseCaching;
 using Microsoft.Net.Http.Headers;
 
 namespace ResponseCachingSample;
@@ -20,17 +21,31 @@ public class Startup
             context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
             {
                 Public = true,
-                MaxAge = TimeSpan.FromSeconds(10)
+                MaxAge = TimeSpan.FromSeconds(60)
             };
-            context.Response.Headers.Vary = new string[] { "Accept-Encoding" };
 
-            await context.Response.WriteAsync("Hello World! " + DateTime.UtcNow);
+            var responseCachingFeature = context.Features.Get<IResponseCachingFeature>();
+            if (responseCachingFeature != null)
+            {
+                responseCachingFeature.VaryByQueryKeys = [ "*" ];
+            }
+
+            var user = context.Request.Query["user"].FirstOrDefault() ?? "(none)";
+            var theme = context.Request.Query["theme"].FirstOrDefault() ?? "(none)";
+
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync($"User: {user} | Theme: {theme} | Generated: {DateTime.UtcNow:O}");
         });
     }
 
     public static Task Main(string[] args)
     {
         var host = new HostBuilder()
+            .ConfigureLogging(logging =>
+            {
+                logging.AddConsole();
+                logging.SetMinimumLevel(LogLevel.Information);
+            })
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder

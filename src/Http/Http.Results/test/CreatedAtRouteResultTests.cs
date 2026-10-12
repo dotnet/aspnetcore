@@ -75,7 +75,6 @@ public partial class CreatedAtRouteResultTests
     {
         // Arrange
         CreatedAtRoute MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act

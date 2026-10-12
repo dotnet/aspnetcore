@@ -151,14 +151,7 @@ internal sealed partial class ResponseBody : Stream
             }
             else
             {
-                statusCode = PInvoke.HttpSendResponseEntityBody(
-                    RequestQueueHandle,
-                    RequestId,
-                    flags,
-                    dataChunks,
-                    null,
-                    null,
-                    null);
+                statusCode = PInvoke.HttpSendResponseEntityBody(RequestQueueHandle, RequestId, flags, dataChunks);
             }
         }
         finally
@@ -482,6 +475,11 @@ internal sealed partial class ResponseBody : Stream
             }
         }
 
+        if (!_requestContext.Request.KeepAlive)
+        {
+            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+        }
+
         if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
         {
             flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
@@ -563,14 +561,14 @@ internal sealed partial class ResponseBody : Stream
 
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
-        return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
+        return TaskToAsyncResult.Begin(WriteAsync(buffer, offset, count), callback, state);
     }
 
     public override void EndWrite(IAsyncResult asyncResult)
     {
         ArgumentNullException.ThrowIfNull(asyncResult);
 
-        TaskToApm.End(asyncResult);
+        TaskToAsyncResult.End(asyncResult);
     }
 
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)

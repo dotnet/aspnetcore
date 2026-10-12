@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    $CommonMetadataElements$
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+  </metadata>
+  <files>
+    $CommonFileElements$
+    <!-- Reuse the exact binaries produced by the Microsoft.AspNetCore.Components.Gateway
+         package by packing the gateway's publish output into the dotnet tool layout. -->
+    <file src="$publishDir$**\*" target="tools\$toolTfm$\any" />
+    <!-- The gateway disables GenerateRuntimeConfigurationFiles and emits its runtimeconfig
+         (with the correct shared framework version) into the build output directory, so it is
+         copied in explicitly rather than picked up from the publish directory. -->
+    <file src="$binDir$blazor-gateway.runtimeconfig.json" target="tools\$toolTfm$\any\blazor-gateway.runtimeconfig.json" />
+    <!-- The tool manifest that maps the "blazor-gateway" command to blazor-gateway.dll. -->
+    <file src="$dotnetToolSettings$" target="tools\$toolTfm$\any\DotnetToolSettings.xml" />
+    <file src="$PackageThirdPartyNoticesFile$" target=".\THIRD-PARTY-NOTICES.txt" />
+  </files>
+</package>

@@ -55,7 +55,26 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password);
 
         // Since we aren't confirmed yet, login should fail until we confirm
-        await UserStories.LoginFailsWithWrongPasswordAsync(client, userName, password);
+        await UserStories.LoginFailsAsync(client, userName, password);
+        await register.ClickConfirmLinkAsync();
+        await UserStories.LoginExistingUserAsync(client, userName, password);
+    }
+
+    [Fact]
+    public async Task CanRegisterAUserWithRequiredEmailConfirmation()
+    {
+        void ConfigureTestServices(IServiceCollection services) { services.SetupEmailRequired(); };
+
+        var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        var client = server.CreateClient();
+
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
+
+        var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password);
+
+        await UserStories.LoginFailsAsync(client, userName, password);
         await register.ClickConfirmLinkAsync();
         await UserStories.LoginExistingUserAsync(client, userName, password);
     }
@@ -88,7 +107,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
 
         // Since we aren't confirmed yet, login should fail until we confirm
-        await UserStories.LoginFailsWithWrongPasswordAsync(client, userName, password);
+        await UserStories.LoginFailsAsync(client, userName, password);
     }
 
     [Fact]
@@ -148,6 +167,25 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         var email = $"{guid}@example.com";
 
         // Act & Assert
+        await UserStories.RegisterNewUserWithSocialLoginWithConfirmationAsync(client, userName, email);
+    }
+
+    [Fact]
+    public async Task CanRegisterWithASocialLoginProviderFromLoginWithRequiredEmailConfirmation()
+    {
+        void ConfigureTestServices(IServiceCollection services) =>
+            services
+                .SetupEmailRequired()
+                .SetupTestThirdPartyLogin();
+
+        var client = ServerFactory
+            .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
+            .CreateClient();
+
+        var guid = Guid.NewGuid();
+        var userName = $"{guid}";
+        var email = $"{guid}@example.com";
+
         await UserStories.RegisterNewUserWithSocialLoginWithConfirmationAsync(client, userName, email);
     }
 

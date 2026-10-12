@@ -861,6 +861,32 @@ public class UserManagerTest
     }
 
     [Fact]
+    public async Task RemovePasskeyAsyncUpdatesSecurityStamp()
+    {
+        // Setup
+        var store = new Mock<IUserPasskeyStore<PocoUser>>();
+        var securityStampStore = store.As<IUserSecurityStampStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo", SecurityStamp = "initial-security-stamp" };
+        var credentialId = (byte[])[1, 2, 3, 4, 5, 6, 7, 8];
+        store.Setup(s => s.RemovePasskeyAsync(user, credentialId, CancellationToken.None)).Returns(Task.CompletedTask).Verifiable();
+        securityStampStore.Setup(s => s.GetSecurityStampAsync(user, CancellationToken.None)).ReturnsAsync(() => user.SecurityStamp).Verifiable();
+        securityStampStore.Setup(s => s.SetSecurityStampAsync(user, It.IsAny<string>(), CancellationToken.None))
+            .Callback<PocoUser, string, CancellationToken>((_, stamp, _) => user.SecurityStamp = stamp)
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+        store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+        var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+
+        // Act
+        var result = await userManager.RemovePasskeyAsync(user, credentialId);
+
+        // Assert
+        Assert.True(result.Succeeded);
+        Assert.NotEqual("initial-security-stamp", user.SecurityStamp);
+        store.VerifyAll();
+    }
+
+    [Fact]
     public async Task CheckPasswordWithNullUserReturnsFalse()
     {
         var testMeterFactory = new TestMeterFactory();
@@ -1238,6 +1264,39 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetTwoFactorEnabledAsync(null));
         await
             Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetTwoFactorEnabledAsync(null, true));
+    }
+
+    [Fact]
+    public async Task IsLockedOutAsyncUsesTimeProvider()
+    {
+        var isLockoutEnabled = true;
+        var user = new PocoUser();
+        var currentDate = DateTimeOffset.UtcNow;
+        var lockoutEndDate = (DateTimeOffset?)currentDate.AddMinutes(-1);
+        var timeProviderDate = currentDate.AddMinutes(-2);
+        var timeProvider = new Mock<TimeProvider>();
+        timeProvider.Setup(provider => provider.GetUtcNow())
+            .Returns(timeProviderDate);
+
+        var userLockoutStore = new Mock<IUserLockoutStore<PocoUser>>();
+        userLockoutStore.Setup(store =>
+            store.GetLockoutEnabledAsync(user, It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult(isLockoutEnabled));
+
+        userLockoutStore.Setup(store =>
+            store.GetLockoutEndDateAsync(user, It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult(lockoutEndDate));
+
+        var services = new ServiceCollection()
+            .AddSingleton(timeProvider.Object)
+            .AddSingleton<IUserStore<PocoUser>>(userLockoutStore.Object)
+            .AddLogging();
+
+        services.AddIdentity<PocoUser, PocoRole>();
+
+        var manager = services.BuildServiceProvider().GetService<UserManager<PocoUser>>();
+
+        Assert.True(await manager.IsLockedOutAsync(user));
     }
 
     [Fact]

@@ -1,0 +1,5 @@
+{
+  "GlobalBrowserOptions": {
+    "ChromiumSandbox": false
+  }
+}

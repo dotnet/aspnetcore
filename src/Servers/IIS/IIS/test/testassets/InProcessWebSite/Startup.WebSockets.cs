@@ -153,7 +153,13 @@ public partial class Startup
 
         // Upgrade the connection
         Stream opaqueTransport = await upgradeFeature.UpgradeAsync();
-        Assert.Null(context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize);
+
+        // In-process reads upgraded data through the same loop that enforces MaxRequestBodySize, so it
+        // must clear the limit. Out-of-process runs on Kestrel, which never enforces it once upgraded.
+        if (context.Features.Get<IServerVariablesFeature>() is not null)
+        {
+            Assert.Null(context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize);
+        }
 
         // Get the WebSocket object
         var ws = WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));

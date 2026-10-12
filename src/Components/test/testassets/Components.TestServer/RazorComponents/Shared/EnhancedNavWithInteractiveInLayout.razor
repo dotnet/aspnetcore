@@ -1,0 +1,12 @@
+@inherits LayoutComponentBase
+@using TestContentPackage
+
+<nav>
+    <NavLink href="nav/interactive-in-layout">Home (interactive layout)</NavLink> |
+    <NavLink href="nav/interactive-in-layout/other">Other (interactive layout)</NavLink>
+</nav>
+<hr />
+<main>
+    @Body
+    <InteractiveCounterInLayout />
+</main>

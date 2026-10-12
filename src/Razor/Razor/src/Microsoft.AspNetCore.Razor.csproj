@@ -19,7 +19,7 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <ProjectReference Include="$(RepoRoot)src\Html.Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

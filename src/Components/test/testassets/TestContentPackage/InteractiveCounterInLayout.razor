@@ -1,0 +1,26 @@
+@rendermode RenderMode.InteractiveAuto
+
+<p id="layout-counter">
+    Layout counter: <span id="layout-counter-value">@currentCount</span>
+</p>
+<p>Interactive: <span id="layout-counter-interactive">@_isInteractive</span></p>
+<button id="layout-counter-button" class="btn btn-primary" @onclick="IncrementCount">Increment layout counter</button>
+
+@code {
+    private int currentCount = 0;
+    private bool _isInteractive;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInteractive = true;
+            StateHasChanged();
+        }
+    }
+}

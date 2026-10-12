@@ -43,6 +43,18 @@ internal sealed class NullParser<TRequestHandler> : IHttpParser<TRequestHandler>
         return true;
     }
 
+    HttpParseResult IHttpParser<TRequestHandler>.TryParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
+    {
+        ParseRequestLine(handler, ref reader);
+        return HttpParseResult.Complete;
+    }
+
+    HttpParseResult IHttpParser<TRequestHandler>.TryParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)
+    {
+        ParseHeaders(handler, ref reader);
+        return HttpParseResult.Complete;
+    }
+
     public void Reset()
     {
     }

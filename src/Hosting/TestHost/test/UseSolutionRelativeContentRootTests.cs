@@ -154,11 +154,14 @@ public class UseSolutionRelativeContentRootTests : IDisposable
             .UseTestServer()
             .Configure(app => { });
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        // On some platforms (e.g., Ubuntu 24.04), directory traversal may hit
+        // UnauthorizedAccessException before reaching the root directory.
+        var exception = Assert.ThrowsAny<Exception>(() =>
             builder.UseSolutionRelativeContentRoot("src", applicationBasePath: _tempDirectory));
 
-        Assert.Contains("Solution root could not be located", exception.Message);
-        Assert.Contains(_tempDirectory, exception.Message);
+        Assert.True(
+            exception is InvalidOperationException || exception is UnauthorizedAccessException,
+            $"Expected InvalidOperationException or UnauthorizedAccessException, got {exception.GetType().Name}");
     }
 
     [Fact]

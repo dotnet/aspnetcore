@@ -14,7 +14,10 @@ public class OperationAuthorizationRequirement : IAuthorizationRequirement
     /// </summary>
     public string Name { get; set; } = default!;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns a string representation of the requirement.
+    /// </summary>
+    /// <returns>A description of the named operation requirement.</returns>
     public override string ToString()
     {
         return $"{nameof(OperationAuthorizationRequirement)}:Name={Name}";

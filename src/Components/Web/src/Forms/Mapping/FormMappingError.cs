@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Components.Forms.Mapping;
 /// </summary>
 public sealed class FormMappingError
 {
-    private static readonly char[] Separators = new char[] { '.', '[' };
     private readonly List<FormattableString> _errorMessages;
 
     /// <summary>
@@ -58,7 +57,7 @@ public sealed class FormMappingError
     private static string GetName(string path)
     {
         var errorKey = path;
-        var lastSeparatorIndex = path.LastIndexOfAny(Separators);
+        var lastSeparatorIndex = path.LastIndexOfAny('.', '[');
         if (lastSeparatorIndex >= 0)
         {
             if (path[lastSeparatorIndex] == '[')

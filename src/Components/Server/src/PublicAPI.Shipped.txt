@@ -14,10 +14,18 @@ Microsoft.AspNetCore.Components.Server.CircuitOptions.DisconnectedCircuitMaxReta
 Microsoft.AspNetCore.Components.Server.CircuitOptions.DisconnectedCircuitMaxRetained.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.DisconnectedCircuitRetentionPeriod.get -> System.TimeSpan
 Microsoft.AspNetCore.Components.Server.CircuitOptions.DisconnectedCircuitRetentionPeriod.set -> void
+Microsoft.AspNetCore.Components.Server.CircuitOptions.HybridPersistenceCache.get -> Microsoft.Extensions.Caching.Hybrid.HybridCache?
+Microsoft.AspNetCore.Components.Server.CircuitOptions.HybridPersistenceCache.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.JSInteropDefaultCallTimeout.get -> System.TimeSpan
 Microsoft.AspNetCore.Components.Server.CircuitOptions.JSInteropDefaultCallTimeout.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.MaxBufferedUnacknowledgedRenderBatches.get -> int
 Microsoft.AspNetCore.Components.Server.CircuitOptions.MaxBufferedUnacknowledgedRenderBatches.set -> void
+Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitDistributedRetentionPeriod.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitDistributedRetentionPeriod.set -> void
+Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryMaxRetained.get -> int
+Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryMaxRetained.set -> void
+Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryRetentionPeriod.get -> System.TimeSpan
+Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryRetentionPeriod.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.RootComponents.get -> Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions!
 Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions
 Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.CircuitRootComponentOptions() -> void
@@ -63,12 +71,12 @@ Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder.Services.get -
 Microsoft.Extensions.DependencyInjection.ServerRazorComponentsBuilderExtensions
 Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions
 override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
-static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
-static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! path) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! path) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
-static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions!>! configure) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
 static Microsoft.Extensions.DependencyInjection.ComponentServiceCollectionExtensions.AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!
 static Microsoft.Extensions.DependencyInjection.ServerRazorComponentsBuilderExtensions.AddInteractiveServerComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!
 static Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions.AddCircuitOptions(this Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!

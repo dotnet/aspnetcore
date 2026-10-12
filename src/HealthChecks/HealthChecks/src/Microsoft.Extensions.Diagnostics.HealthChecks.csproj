@@ -12,6 +12,10 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsTrimmable>true</IsTrimmable>
+    <!-- SYSLIB1006, SYSLIB1025: multiple logging methods using the same event id/name
+         Pragma suppression doesn't work with incremental generators due to trimmed locations (known Roslyn limitation).
+         Suppress at project level instead. -->
+    <NoWarn>$(NoWarn);SYSLIB1006;SYSLIB1025</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,13 +32,15 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <ProjectReference Include="$(RepoRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
 
     <!-- See: https://github.com/dotnet/aspnetcore/issues/46683 -->
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
 </Project>

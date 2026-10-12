@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Security.Claims;
-using System.Security.Principal;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
@@ -13,6 +12,7 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Timeouts;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,6 +24,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionItemsFeature,
                                      IConnectionTransportFeature,
                                      IConnectionUserFeature,
+                                     IConnectionAuthenticationRefreshFeature,
                                      IConnectionHeartbeatFeature,
                                      ITransferFormatFeature,
                                      IHttpContextFeature,
@@ -35,6 +36,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IStatefulReconnectFeature
 #pragma warning restore CA2252 // This API requires opting into preview features
 {
+    // Prefer the standard identity-claim precedence used by DefaultClaimUidExtractor before
+    // falling back to exact principal content.
+    private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
+
     private readonly HttpConnectionDispatcherOptions _options;
 
     private readonly object _stateLock = new object();
@@ -52,6 +57,14 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private bool _activeSend;
     private TimeSpan _startedSendTime;
     private bool _useStatefulReconnect;
+    // Guards User swaps in UpdateUserAsync so concurrent /refresh requests (or long-polling polls racing
+    // explicit /refresh requests) can't roll the connection back to an older identity.
+    private readonly object _userLock = new object();
+    private Func<AuthenticationRefreshContext, Task<bool>> _onAuthenticationRefresh = DefaultOnAuthenticationRefreshAsync;
+    // True only for the WindowsIdentity user clone created by the first long-polling request.
+    private bool _ownsUserIdentities;
+    private readonly object _userRefreshCallbackLock = new object();
+    private List<UserRefreshedCallbackRegistration>? _userRefreshedCallbacks;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -87,6 +100,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
         Features.Set<IConnectionUserFeature>(this);
+        Features.Set<IConnectionAuthenticationRefreshFeature>(this);
         Features.Set<IConnectionItemsFeature>(this);
         Features.Set<IConnectionIdFeature>(this);
         Features.Set<IConnectionTransportFeature>(this);
@@ -245,6 +259,348 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
+    public Func<AuthenticationRefreshContext, Task<bool>> OnAuthenticationRefresh
+    {
+        get
+        {
+            lock (_userLock)
+            {
+                return _onAuthenticationRefresh;
+            }
+        }
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            lock (_userLock)
+            {
+                _onAuthenticationRefresh = value;
+            }
+        }
+    }
+
+    public IDisposable OnAuthenticationRefreshed(Action<AuthenticationRefreshContext, object?> callback, object? state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var registration = new UserRefreshedCallbackRegistration(this, callback, state);
+        lock (_userRefreshCallbackLock)
+        {
+            _userRefreshedCallbacks ??= new List<UserRefreshedCallbackRegistration>();
+            _userRefreshedCallbacks.Add(registration);
+        }
+
+        return registration;
+    }
+
+    private void RemoveUserRefreshedCallback(UserRefreshedCallbackRegistration registration)
+    {
+        lock (_userRefreshCallbackLock)
+        {
+            _userRefreshedCallbacks?.Remove(registration);
+        }
+    }
+
+    /// <summary>
+    /// Updates the User/ClaimsPrincipal on this connection and refreshes the authentication expiration.
+    /// </summary>
+    /// <param name="user">The refreshed principal to apply to the connection.</param>
+    /// <param name="authenticationExpiration">The expiration of the refreshed authentication.</param>
+    /// <param name="userRefreshHttpContext">The request context exposed to <see cref="OnAuthenticationRefresh"/> while validating the refreshed principal.</param>
+    /// <param name="additionalAuthenticationRefresh">An optional additional policy invoked after <see cref="OnAuthenticationRefresh"/> accepts the refresh.</param>
+    /// <param name="replacementHttpContext">The request context to associate with the connection when publishing the refreshed principal.</param>
+    /// <remarks>
+    /// This uses a two-phase validate-then-publish strategy: <see cref="OnAuthenticationRefresh"/> is awaited
+    /// without holding <see cref="_userLock"/> (it may run arbitrary, possibly slow, application code), and the
+    /// staleness/identity checks are then re-validated atomically with the swap under the lock. This prevents a
+    /// concurrent refresh (for example the /refresh endpoint racing a long-polling poll) that already published
+    /// a newer or different identity while the callback was running from being rolled back by this update.
+    /// The update is skipped as <see cref="UserUpdateResult.Stale"/> if <paramref name="authenticationExpiration"/>
+    /// is older than the currently applied <see cref="AuthenticationExpiration"/>, or if the connection's user
+    /// advanced past the snapshot this update's acceptance decision was based on.
+    /// </remarks>
+    internal async Task<UserUpdateResult> UpdateUserAsync(
+        ClaimsPrincipal user,
+        DateTimeOffset authenticationExpiration,
+        HttpContext? userRefreshHttpContext = null,
+        Func<AuthenticationRefreshContext, Task<bool>>? additionalAuthenticationRefresh = null,
+        HttpContext? replacementHttpContext = null)
+    {
+        ClaimsPrincipal? previousUserReference;
+        ClaimsPrincipal previousUserSnapshot;
+        Func<AuthenticationRefreshContext, Task<bool>> callback;
+        lock (_userLock)
+        {
+            // A concurrent refresh (for example the /refresh endpoint racing a long-polling poll) may have
+            // already applied a newer token. Don't roll the connection back to an older one.
+            if (IsStale(authenticationExpiration))
+            {
+                return UserUpdateResult.Stale;
+            }
+
+            previousUserReference = User;
+            previousUserSnapshot = previousUserReference ?? new ClaimsPrincipal(new ClaimsIdentity());
+            callback = _onAuthenticationRefresh;
+        }
+
+        // Phase 1: validate without holding _userLock. The callback is application code and may be async/slow;
+        // it must never run while the lock is held.
+        var refreshContext = new AuthenticationRefreshContext
+        {
+            HttpContext = userRefreshHttpContext ?? HttpContext ?? throw new InvalidOperationException("An HttpContext is required to refresh authentication."),
+            ConnectionId = ConnectionId,
+            PreviousUser = previousUserSnapshot,
+            NewUser = user,
+            NewExpiration = authenticationExpiration == DateTimeOffset.MaxValue ? null : authenticationExpiration,
+        };
+
+        if (!await InvokeOnAuthenticationRefreshAsync(callback, refreshContext).ConfigureAwait(false))
+        {
+            return GetRejectionResult(
+                authenticationExpiration,
+                previousUserReference,
+                callback,
+                UserUpdateResult.Rejected);
+        }
+
+        if (additionalAuthenticationRefresh is not null
+            && !await additionalAuthenticationRefresh(refreshContext).ConfigureAwait(false))
+        {
+            return GetRejectionResult(
+                authenticationExpiration,
+                previousUserReference,
+                callback,
+                UserUpdateResult.AdditionalPolicyRejected);
+        }
+
+        // Phase 2: revalidate and publish atomically under the lock. The acceptance decision above was made
+        // against a snapshot; re-check it still reflects the connection's current state before swapping.
+        ClaimsPrincipal? previouslyOwnedUser = null;
+
+        lock (_userLock)
+        {
+            if (HasValidationStateChanged(authenticationExpiration, previousUserReference, callback))
+            {
+                return UserUpdateResult.Stale;
+            }
+
+            if (_ownsUserIdentities && !ReferenceEquals(User, user))
+            {
+                previouslyOwnedUser = User;
+                _ownsUserIdentities = false;
+            }
+
+            User = user;
+            AuthenticationExpiration = authenticationExpiration;
+
+            if (replacementHttpContext is not null)
+            {
+                replacementHttpContext.User = user;
+                HttpContext = replacementHttpContext;
+            }
+            else if (HttpContext is { } httpContext)
+            {
+                httpContext.User = user;
+            }
+        }
+
+        // Notify callbacks (e.g., the SignalR Hub layer) that the user has been updated. Invoke
+        // outside _userLock to avoid reentrancy/deadlock if a callback aborts/disposes the connection.
+        UserRefreshedCallbackRegistration[]? callbacks = null;
+        lock (_userRefreshCallbackLock)
+        {
+            if (_userRefreshedCallbacks is { Count: > 0 })
+            {
+                callbacks = _userRefreshedCallbacks.ToArray();
+            }
+        }
+
+        if (callbacks is not null)
+        {
+            foreach (var registration in callbacks)
+            {
+                try
+                {
+                    registration.Invoke(refreshContext);
+                }
+                catch (Exception ex)
+                {
+                    Log.UserRefreshedCallbackFailed(_logger, ex);
+                }
+            }
+        }
+
+        if (previouslyOwnedUser is not null)
+        {
+            DisposeOwnedIdentities(previouslyOwnedUser);
+        }
+
+        return UserUpdateResult.Updated;
+    }
+
+    private bool IsStale(DateTimeOffset authenticationExpiration)
+    {
+        return authenticationExpiration != DateTimeOffset.MaxValue
+            && AuthenticationExpiration != DateTimeOffset.MaxValue
+            && authenticationExpiration < AuthenticationExpiration;
+    }
+
+    private UserUpdateResult GetRejectionResult(
+        DateTimeOffset authenticationExpiration,
+        ClaimsPrincipal? previousUser,
+        Func<AuthenticationRefreshContext, Task<bool>> callback,
+        UserUpdateResult rejectionResult)
+    {
+        lock (_userLock)
+        {
+            return HasValidationStateChanged(authenticationExpiration, previousUser, callback)
+                ? UserUpdateResult.Stale
+                : rejectionResult;
+        }
+    }
+
+    private bool HasValidationStateChanged(
+        DateTimeOffset authenticationExpiration,
+        ClaimsPrincipal? previousUser,
+        Func<AuthenticationRefreshContext, Task<bool>> callback)
+        => IsStale(authenticationExpiration)
+            || !ReferenceEquals(User, previousUser)
+            || !ReferenceEquals(_onAuthenticationRefresh, callback);
+
+    private async Task<bool> InvokeOnAuthenticationRefreshAsync(Func<AuthenticationRefreshContext, Task<bool>> callback, AuthenticationRefreshContext context)
+    {
+        try
+        {
+            return await callback(context).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.UserRefreshingCallbackFailed(_logger, ex);
+            return false;
+        }
+    }
+
+    internal bool IsUserAssociatedWithConnection(ClaimsPrincipal user)
+    {
+        lock (_userLock)
+        {
+            return IsUserRefreshAcceptedByDefault(User, user);
+        }
+    }
+
+    private static Task<bool> DefaultOnAuthenticationRefreshAsync(AuthenticationRefreshContext context)
+        => IsUserRefreshAcceptedByDefault(context.PreviousUser, context.NewUser) ? TaskCache.True : TaskCache.False;
+
+    private static bool IsUserRefreshAcceptedByDefault(ClaimsPrincipal? currentUser, ClaimsPrincipal user)
+    {
+        if (currentUser is null || ReferenceEquals(currentUser, user))
+        {
+            return true;
+        }
+
+        var currentIdentityKey = GetUserIdentityKey(currentUser);
+        var newIdentityKey = GetUserIdentityKey(user);
+        if (currentIdentityKey is not null || newIdentityKey is not null)
+        {
+            return currentIdentityKey == newIdentityKey;
+        }
+
+        if (!HasAuthenticatedIdentity(currentUser) && !HasAuthenticatedIdentity(user))
+        {
+            return true;
+        }
+
+        // Without a stable identity key, require the authenticated principal content to remain unchanged.
+        return ClaimsPrincipalContentEquals(currentUser, user);
+    }
+
+    internal static (string Type, string Value, string Issuer)? GetUserIdentityKey(ClaimsPrincipal user)
+    {
+        foreach (var claimType in _userIdentityClaimTypes)
+        {
+            var claim = user.FindFirst(claimType);
+            if (claim is not null && !string.IsNullOrEmpty(claim.Value))
+            {
+                return (claim.Type, claim.Value, claim.Issuer);
+            }
+        }
+
+        return null;
+    }
+
+    internal static bool ClaimsPrincipalContentEquals(ClaimsPrincipal current, ClaimsPrincipal incoming)
+    {
+        return SequenceEqual(current.Identities, incoming.Identities, ClaimsIdentityContentEquals);
+    }
+
+    private static bool ClaimsIdentityContentEquals(ClaimsIdentity current, ClaimsIdentity incoming)
+    {
+        if (!string.Equals(current.AuthenticationType, incoming.AuthenticationType, StringComparison.Ordinal)
+            || !string.Equals(current.NameClaimType, incoming.NameClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.RoleClaimType, incoming.RoleClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.Label, incoming.Label, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return SequenceEqual(current.Claims, incoming.Claims, ClaimContentEquals);
+    }
+
+    private static bool ClaimContentEquals(Claim current, Claim incoming)
+    {
+        return string.Equals(current.Type, incoming.Type, StringComparison.Ordinal)
+            && string.Equals(current.Value, incoming.Value, StringComparison.Ordinal)
+            && string.Equals(current.ValueType, incoming.ValueType, StringComparison.Ordinal)
+            && string.Equals(current.Issuer, incoming.Issuer, StringComparison.Ordinal)
+            && string.Equals(current.OriginalIssuer, incoming.OriginalIssuer, StringComparison.Ordinal);
+    }
+
+    private static bool SequenceEqual<T>(IEnumerable<T> current, IEnumerable<T> incoming, Func<T, T, bool> equals)
+    {
+        using var currentEnumerator = current.GetEnumerator();
+        using var incomingEnumerator = incoming.GetEnumerator();
+
+        while (true)
+        {
+            var currentHasValue = currentEnumerator.MoveNext();
+            if (currentHasValue != incomingEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            if (!currentHasValue)
+            {
+                return true;
+            }
+
+            if (!equals(currentEnumerator.Current, incomingEnumerator.Current))
+            {
+                return false;
+            }
+        }
+    }
+
+    private static bool HasAuthenticatedIdentity(ClaimsPrincipal user)
+    {
+        foreach (var identity in user.Identities)
+        {
+            if (identity.IsAuthenticated)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal void MarkUserOwned()
+    {
+        lock (_userLock)
+        {
+            _ownsUserIdentities = true;
+        }
+    }
+
     public async Task DisposeAsync(bool closeGracefully = false)
     {
         Task disposeTask;
@@ -272,23 +628,37 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
         finally
         {
+            ClaimsPrincipal? ownedUser = null;
+            lock (_userLock)
+            {
+                if (_ownsUserIdentities)
+                {
+                    ownedUser = User;
+                    _ownsUserIdentities = false;
+                }
+            }
+
+            if (ownedUser is not null)
+            {
+                DisposeOwnedIdentities(ownedUser);
+            }
+
             Cancellation?.Dispose();
 
             Cancellation = null;
-
-            // Long Polling clones the windows identity if set
-            if (TransportType == HttpTransportType.LongPolling && User?.Identity is WindowsIdentity)
-            {
-                foreach (var identity in User.Identities)
-                {
-                    (identity as IDisposable)?.Dispose();
-                }
-            }
 
             ServiceScope?.Dispose();
         }
 
         await disposeTask;
+    }
+
+    private static void DisposeOwnedIdentities(ClaimsPrincipal user)
+    {
+        foreach (var identity in user.Identities)
+        {
+            (identity as IDisposable)?.Dispose();
+        }
     }
 
     private async Task WaitOnTasks(Task applicationTask, Task transportTask, bool closeGracefully)
@@ -754,11 +1124,41 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         return UseStatefulReconnect == true || TransportType == HttpTransportType.LongPolling;
     }
 
+    private sealed class UserRefreshedCallbackRegistration(
+        HttpConnectionContext connection,
+        Action<AuthenticationRefreshContext, object?> callback,
+        object? state) : IDisposable
+    {
+        private HttpConnectionContext? _connection = connection;
+
+        public void Invoke(AuthenticationRefreshContext context)
+        {
+            if (_connection is not null)
+            {
+                callback(context, state);
+            }
+        }
+
+        public void Dispose()
+        {
+            var connection = Interlocked.Exchange(ref _connection, null);
+            connection?.RemoveUserRefreshedCallback(this);
+        }
+    }
+
     internal enum SetTransportState
     {
         Success,
         AlreadyActive,
         CannotChange,
+    }
+
+    internal enum UserUpdateResult
+    {
+        Updated,
+        Stale,
+        Rejected,
+        AdditionalPolicyRejected,
     }
 
     private static partial class Log
@@ -789,5 +1189,11 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         [LoggerMessage(9, LogLevel.Trace, "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.", EventName = "TransportSendTimeout")]
         public static partial void TransportSendTimeout(ILogger logger, TimeSpan timeout, string transportConnectionId);
+
+        [LoggerMessage(10, LogLevel.Error, "An IConnectionAuthenticationRefreshFeature.OnAuthenticationRefreshed callback threw an exception.", EventName = "UserRefreshedCallbackFailed")]
+        public static partial void UserRefreshedCallbackFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(11, LogLevel.Error, "The IConnectionAuthenticationRefreshFeature.OnAuthenticationRefresh callback threw an exception. The user update was rejected.", EventName = "UserRefreshingCallbackFailed")]
+        public static partial void UserRefreshingCallbackFailed(ILogger logger, Exception exception);
     }
 }

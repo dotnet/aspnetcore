@@ -28,13 +28,16 @@ public class KestrelServerOptions
     internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
     private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
     internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
+    private const string EnableChunkedExtensionsSwitch = "Microsoft.AspNetCore.Server.Kestrel.EnableChunkedExtensions";
     private static readonly bool _finOnError;
     private static readonly bool _disableCertificateFileWatching;
+    private static readonly bool _enableChunkedExtensions;
 
     static KestrelServerOptions()
     {
         AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
         AppContext.TryGetSwitch(CertificateFileWatchingSwitch, out _disableCertificateFileWatching);
+        AppContext.TryGetSwitch(EnableChunkedExtensionsSwitch, out _enableChunkedExtensions);
     }
 
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
@@ -42,6 +45,9 @@ public class KestrelServerOptions
 
     // Opt-out flag for back compat. Remove in 9.0 (or make public).
     internal bool FinOnError { get; set; } = _finOnError;
+
+    // Internal for testing.
+    internal bool EnableChunkedExtensions { get; set; } = _enableChunkedExtensions;
 
     private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
@@ -217,7 +223,7 @@ public class KestrelServerOptions
     internal bool IsDevelopmentCertificateLoaded { get; set; }
 
     /// <summary>
-    /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experiemental features.
+    /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experimental features.
     /// </summary>
     private bool? _enableWebTransportAndH3Datagrams;
     internal bool EnableWebTransportAndH3Datagrams
@@ -235,7 +241,10 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Internal AppContext switch to toggle whether a request line can end with LF only instead of CR/LF.
+    /// Internal AppContext switch to toggle whether HTTP/1.x request lines, headers, and trailers can
+    /// end with a bare LF instead of CRLF. Bare LF terminators are accepted by default. Set the AppContext
+    /// switch <c>Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators</c> to <c>true</c>
+    /// to reject them and require CRLF as recommended by RFC 9112.
     /// </summary>
     private bool? _disableHttp1LineFeedTerminators;
     internal bool DisableHttp1LineFeedTerminators

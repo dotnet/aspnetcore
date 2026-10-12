@@ -353,6 +353,75 @@ public class MapConnectionHandlerTests
     }
 
     [Fact]
+    public void MapConnectionHandlerEndPointRoutingAppliesAuthenticationRefreshAndAuthorizationMetadataWhenEnabled()
+    {
+        void ConfigureRoutes(IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapConnectionHandler<AuthConnectionHandler>("/path", options =>
+            {
+                options.EnableAuthenticationRefresh = true;
+            });
+        }
+
+        using (var host = BuildWebHost(ConfigureRoutes))
+        {
+            host.Start();
+
+            var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+            // With EnableAuthenticationRefresh we register 3 endpoints (/negotiate, /refresh, /)
+            Assert.Collection(dataSource.Endpoints,
+                endpoint =>
+                {
+                    Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                    Assert.Null(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
+                },
+                endpoint =>
+                {
+                    Assert.Equal("/path/refresh", endpoint.DisplayName);
+                    var metaData = endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>();
+                    Assert.NotNull(metaData);
+                    var optionsMetaData = endpoint.Metadata.GetMetadata<HttpConnectionDispatcherOptions>();
+                    Assert.NotNull(optionsMetaData);
+                    Assert.True(optionsMetaData.EnableAuthenticationRefresh);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
+                },
+                endpoint =>
+                {
+                    Assert.Equal("/path", endpoint.DisplayName);
+                    Assert.Null(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
+                });
+        }
+    }
+
+    [Fact]
+    public void MapConnectionHandlerDoesNotRegisterRefreshEndpointWhenAuthenticationRefreshDisabled()
+    {
+        void ConfigureRoutes(IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapConnectionHandler<AuthConnectionHandler>("/path");
+        }
+
+        using (var host = BuildWebHost(ConfigureRoutes))
+        {
+            host.Start();
+
+            var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+            // Without EnableAuthenticationRefresh only /negotiate and / are registered, and neither carries AuthenticationRefreshMetadata.
+            Assert.Collection(dataSource.Endpoints,
+                endpoint =>
+                {
+                    Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                    Assert.Null(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
+                },
+                endpoint =>
+                {
+                    Assert.Equal("/path", endpoint.DisplayName);
+                    Assert.Null(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
+                });
+        }
+    }
+
+    [Fact]
     public void MapConnectionHandlerEndPointRoutingAppliesCorsMetadata()
     {
         void ConfigureRoutes(IEndpointRouteBuilder endpoints)

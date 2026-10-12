@@ -69,7 +69,10 @@ public static class ServerRazorComponentsBuilderExtensions
             }
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
-            var hub = endpointRouteBuilder.MapBlazorHub("/_blazor");
+            var serverRenderMode = (InternalServerRenderMode)renderMode;
+            var hub = serverRenderMode.Options?.ConfigureConnection is not null
+                ? endpointRouteBuilder.MapBlazorHub("/_blazor", serverRenderMode.Options.ConfigureConnection)
+                : endpointRouteBuilder.MapBlazorHub("/_blazor");
 
             if (renderMode is InternalServerRenderMode { Options.ConfigureWebSocketAcceptContext: var configureConnection, Options.DisableWebSocketCompression: var disableCompression } &&
                 (configureConnection is not null || !disableCompression))

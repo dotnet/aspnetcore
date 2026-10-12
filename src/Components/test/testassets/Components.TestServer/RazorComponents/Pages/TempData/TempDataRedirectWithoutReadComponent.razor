@@ -1,0 +1,12 @@
+﻿@page "/tempdata/redirect_without_read"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+
+<form method="post" @formname="JustRedirect" @onsubmit="() => NavigateToPage()">
+    <AntiforgeryToken />
+    <button type="submit" id="redirect-button">Navigate to the Same Page</button>
+</form>
+
+@code {
+    private void NavigateToPage() => NavigationManager.NavigateTo("/subdir/tempdata", forceLoad: true);
+}

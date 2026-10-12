@@ -1,3 +1,4 @@
 #nullable enable
-*REMOVED*~override Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
-~override Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.Cache.get -> Microsoft.Extensions.Caching.Memory.IMemoryCache
+*REMOVED*~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.HostingEnvironment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment
+*REMOVED*~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.ImageTagHelper(Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider cacheProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider fileVersionProvider, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void

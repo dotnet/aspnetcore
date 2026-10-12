@@ -11,7 +11,7 @@ internal static class RouteDiagnosticsHelpers
         // 1. It is potentially confusing, "What does empty string mean?"
         // 2. Some telemetry tools have problems with empty string values, e.g. https://github.com/dotnet/aspnetcore/pull/62432
         //
-        // The fix is to resolve empty string route to "/" in metrics.
+        // The fix is to resolve empty string route to "/" in telemetry attributes.
         return string.IsNullOrEmpty(route) ? "/" : route;
     }
 }

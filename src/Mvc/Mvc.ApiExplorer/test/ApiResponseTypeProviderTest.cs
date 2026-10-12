@@ -33,7 +33,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -85,6 +85,17 @@ public class ApiResponseTypeProviderTest
                 new FilterDescriptor(new ProducesResponseTypeAttribute(404), FilterScope.Action),
             };
 
+        // Global:
+        //  400 => void (ignored, overriden by 400 status code in controller scope)
+        // --
+        // Controller:
+        //  201 => object (ignored, overriden by 201 status code in action scope)
+        //  400 => ProblemDetails
+        // --
+        // Action:
+        // 201 => BaseModel
+        // 404 => void
+
         var actionDescriptor = new ControllerActionDescriptor
         {
             FilterDescriptors = filterDescriptors,
@@ -98,7 +109,8 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
+            // BaseModel; 201 => scope=Action
             responseType =>
             {
                 Assert.Equal(201, responseType.StatusCode);
@@ -112,6 +124,7 @@ public class ApiResponseTypeProviderTest
                         Assert.IsType<TestOutputFormatter>(format.Formatter);
                     });
             },
+            // ProblemDetails; 400 => scope=Controller
             responseType =>
             {
                 Assert.Equal(400, responseType.StatusCode);
@@ -125,6 +138,7 @@ public class ApiResponseTypeProviderTest
                         Assert.IsType<TestOutputFormatter>(format.Formatter);
                     });
             },
+            // 404; void => scope=Action
             responseType =>
             {
                 Assert.Equal(404, responseType.StatusCode);
@@ -156,7 +170,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-           result.OrderBy(r => r.StatusCode),
+           result,
            responseType =>
            {
                Assert.Equal(200, responseType.StatusCode);
@@ -213,7 +227,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-           result.OrderBy(r => r.StatusCode),
+           result,
            responseType =>
            {
                Assert.Equal(200, responseType.StatusCode);
@@ -267,7 +281,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-           result.OrderBy(r => r.StatusCode),
+           result,
            responseType =>
            {
                Assert.Equal(200, responseType.StatusCode);
@@ -306,7 +320,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.True(responseType.IsDefaultResponse);
@@ -362,7 +376,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(201, responseType.StatusCode);
@@ -405,7 +419,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -457,7 +471,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(errorType, responseType.Type);
@@ -500,7 +514,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(typeof(DivideByZeroException), responseType.Type);
@@ -551,7 +565,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(201, responseType.StatusCode);
@@ -597,7 +611,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.True(responseType.IsDefaultResponse);
@@ -643,7 +657,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.True(responseType.IsDefaultResponse);
@@ -693,7 +707,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -723,7 +737,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -749,7 +763,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -782,7 +796,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(typeof(BaseModel), responseType.Type);
@@ -807,6 +821,28 @@ public class ApiResponseTypeProviderTest
                 Assert.Equal(typeof(void), responseType.Type);
                 Assert.Equal(409, responseType.StatusCode);
                 Assert.Empty(GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_PreservesMultipleProducesResponseTypeWithSameStatusCodeButDifferentTypesWithoutContentTypes()
+    {
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetMultipleTypes));
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        Assert.Collection(
+            result,
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+            },
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(string), responseType.Type);
             });
     }
 
@@ -889,6 +925,10 @@ public class ApiResponseTypeProviderTest
 
         public IResult GetIResult(int id) => null;
 
+        [ProducesResponseType(typeof(BaseModel), 200)]
+        [ProducesResponseType(typeof(string), 200)]
+        public IResult GetMultipleTypes() => Results.Ok();
+
         public MyResponse GetCustomIResult() => new MyResponse { Content = "Test Content" };
     }
 
@@ -910,6 +950,289 @@ public class ApiResponseTypeProviderTest
         }
 
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context) => Task.CompletedTask;
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_PreservesMultipleProducesResponseTypeWithSameStatusCodeButDifferentContentTypes()
+    {
+        // Arrange
+        var actionDescriptor = GetControllerActionDescriptor(
+            typeof(MultipleProducesForSameStatusCodeController),
+            nameof(MultipleProducesForSameStatusCodeController.Get));
+
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        Assert.Collection(
+            result,
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(new[] { "text/html" }, GetSortedMediaTypes(responseType));
+            });
+    }
+
+    public class MultipleProducesForSameStatusCodeController : ControllerBase
+    {
+        [ProducesResponseType(typeof(BaseModel), 200, "application/json")]
+        [ProducesResponseType(typeof(string), 200, "text/html")]
+        public IActionResult Get() => null;
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_PreservesMultipleProducesResponseTypeFromEndpointMetadata()
+    {
+        // Arrange
+        var actionDescriptor = GetControllerActionDescriptor(
+            typeof(MultipleProducesForSameStatusCodeController),
+            nameof(MultipleProducesForSameStatusCodeController.Get));
+        actionDescriptor.EndpointMetadata =
+        [
+            new ProducesResponseTypeMetadata(200, typeof(BaseModel), ["application/json"]),
+            new ProducesResponseTypeMetadata(200, typeof(string), ["text/html"]),
+        ];
+
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        Assert.Collection(
+            result,
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(new[] { "text/html" }, GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_MergesContentTypesForSameStatusCodeAndTypeAtSameScope()
+    {
+        // Arrange — two [ProducesResponseType] for the same (200, BaseModel) at action scope with different content types.
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(BaseModel), 200, "application/json"), FilterScope.Action));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(BaseModel), 200, "text/xml"), FilterScope.Action));
+
+        // Act
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert — single (200, BaseModel) with merged [json, xml]
+        Assert.Collection(
+            result,
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+                Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_ProducesAttribute_HighestScopeWins()
+    {
+        // Arrange — [Produces("text/xml")] at controller scope and [Produces("application/json")] at action scope.
+        // Action scope is higher, so "application/json" should be the shared content type.
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesAttribute("text/xml"), FilterScope.Controller));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesAttribute("application/json"), FilterScope.Action));
+
+        // Act
+        var provider = GetProvider();
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert — action-level "application/json" wins, controller-level "text/xml" is ignored
+        Assert.Collection(
+            result,
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(DerivedModel), responseType.Type);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_AttributesTakePrecedenceOverEndpointMetadata_ForOverlappingStatusCodes()
+    {
+        // Arrange — endpoint metadata provides (200, string, "text/html") and (404, ProblemDetails, "application/json").
+        // Filter attribute claims status code 200 with (200, BaseModel, "application/json").
+        // Attribute wins for 200, endpoint metadata 404 passes through.
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
+        actionDescriptor.EndpointMetadata =
+        [
+            new ProducesResponseTypeMetadata(200, typeof(string), ["text/html"]),
+            new ProducesResponseTypeMetadata(404, typeof(ProblemDetails), ["application/json"]),
+        ];
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(BaseModel), 200, "application/json"), FilterScope.Action));
+
+        // Act
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        Assert.Collection(
+            result,
+            responseType =>
+            {
+                // Attribute wins for 200
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // Endpoint metadata 404 passes through (not claimed by attributes)
+                Assert.Equal(404, responseType.StatusCode);
+                Assert.Equal(typeof(ProblemDetails), responseType.Type);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_DeterministicOrdering_ComplexScenario()
+    {
+        // [Produces("application/json")]                                   // controller, scope=20
+        // [ProducesResponseType(typeof(Error), 404)]                       // controller, scope=20
+        // public class MyController
+        // {
+        //     [ProducesResponseType(typeof(Foo), 200, "application/json")] // action, scope=10
+        //     [ProducesResponseType(typeof(Bar), 200, "text/xml")]         // action, scope=10
+        //     [ProducesResponseType(typeof(Foo), 200, "text/plain")]       // action, scope=10
+        //     [ProducesResponseType(404)]                                  // action, scope=10
+        //     public IActionResult Get() { ... }
+        // }
+        //
+        // Expected output:
+        //   200 BaseModel [application/json, text/plain] → Foo merged
+        //   200 Bar [text/xml]
+        //   404 void [] → action scope wins (void), controller 404 Error ignored
+
+        // Arrange
+        var filterDescriptors = new[]
+        {
+            // controller scope
+            new FilterDescriptor(new ProducesAttribute("application/json"), FilterScope.Controller),
+            new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(DerivedModel), 404), FilterScope.Controller),
+            // action scope
+            new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(BaseModel), 200, "application/json"), FilterScope.Action),
+            new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(DerivedModel), 200, "text/xml"), FilterScope.Action),
+            new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(BaseModel), 200, "text/plain"), FilterScope.Action),
+            new FilterDescriptor(new ProducesResponseTypeAttribute(404), FilterScope.Action),
+        };
+
+        var actionDescriptor = new ControllerActionDescriptor
+        {
+            FilterDescriptors = filterDescriptors,
+            MethodInfo = typeof(GetApiResponseTypes_ReturnsResponseTypesFromActionIfPresentController)
+                .GetMethod(nameof(GetApiResponseTypes_ReturnsResponseTypesFromActionIfPresentController.Get)),
+        };
+
+        // Act
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert — ordered by StatusCode → Type.Name → first ContentType
+        Assert.Collection(
+            result,
+            responseType =>
+            {
+                // 200 BaseModel [application/json, text/plain] — merged from two action-scope entries
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+                Assert.Equal(["application/json", "text/plain"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // 200 DerivedModel [text/xml] — different type, added alongside
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(DerivedModel), responseType.Type);
+                Assert.Equal(["text/xml"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // 404 void — action scope wins over controller's (404, DerivedModel).
+                // [Produces("application/json")] shared content type applied since no own formats.
+                Assert.Equal(404, responseType.StatusCode);
+                Assert.Equal(typeof(void), responseType.Type);
+                Assert.Empty(responseType.ApiResponseFormats);
+            });
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_DefaultFallback_VoidReturnType_Produces200WithNoFormats()
+    {
+        // Arrange — action returns void (Task), no attributes, no conventions.
+        var actionDescriptor = new ControllerActionDescriptor
+        {
+            MethodInfo = typeof(VoidController).GetMethod(nameof(VoidController.Delete)),
+            FilterDescriptors = [],
+        };
+
+        // Act
+        var provider = GetProvider();
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert — default fallback produces (200, void) with empty formats
+        var responseType = Assert.Single(result);
+        Assert.Equal(200, responseType.StatusCode);
+        Assert.Null(responseType.ModelMetadata);
+        Assert.Empty(responseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_HigherScopeProviderWithNullType_DoesNotBlockLowerScope()
+    {
+        // Arrange — a custom IApiResponseMetadataProvider at action scope returns Type=null for
+        // status 404. Because the entry is dropped (Type stays null and the `if (Type != null)`
+        // guard skips it), the action scope does NOT register a claim on status 404 in
+        // statusCodeScopes. A controller-level [ProducesResponseType(typeof(DerivedModel), 404)]
+        // is therefore allowed to fill in the entry. This locks down behavior for the corner case
+        // where a custom provider intentionally yields no type information.
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new NullTypeMetadataProvider(404), FilterScope.Action));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(DerivedModel), 404), FilterScope.Controller));
+
+        // Act
+        var provider = GetProvider();
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert — controller-level (404, DerivedModel) survives because the higher-scope
+        // null-Type provider produced no entry.
+        Assert.Contains(result, r => r.StatusCode == 404 && r.Type == typeof(DerivedModel));
+    }
+
+    private sealed class NullTypeMetadataProvider : IApiResponseMetadataProvider
+    {
+        public NullTypeMetadataProvider(int statusCode) { StatusCode = statusCode; }
+        public Type Type => null;
+        public int StatusCode { get; }
+        public string Description => null;
+        public void SetContentTypes(MediaTypeCollection contentTypes) { }
+    }
+
+    public class VoidController : ControllerBase
+    {
+        public Task Delete() => Task.CompletedTask;
     }
 
     public static class SearchApiConventions

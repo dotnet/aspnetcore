@@ -133,7 +133,7 @@ Routine Description:
 Arguments:
 
     pszFilePath - The path to the file where the DACL will be modified
-    cExplicitAccess - The count of EXPLICIT_ACCESS entires to add
+    cExplicitAccess - The count of EXPLICIT_ACCESS entries to add
     rgExplicitAccess - The EXPLICIT_ACCESS entries
 
 Return Value:
@@ -270,7 +270,7 @@ Return Value:
                              &cbUserAccount ) )
     {
         //
-        // We are expecing a FALSE return value since we
+        // We are expecting a FALSE return value since we
         // are obtaining required buffer sizes.
         //
         hr = HRESULT_FROM_WIN32( ERROR_INVALID_DATA );

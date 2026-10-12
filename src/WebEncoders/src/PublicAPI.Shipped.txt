@@ -31,5 +31,5 @@ override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.FindFirstCharac
 override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.MaxOutputCharactersPerInputCharacter.get -> int
 override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.TryEncodeUnicodeScalar(int unicodeScalar, char* buffer, int bufferLength, out int numberOfCharactersWritten) -> bool
 override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.WillEncode(int unicodeScalar) -> bool
-static Microsoft.Extensions.DependencyInjection.EncoderServiceCollectionExtensions.AddWebEncoders(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.EncoderServiceCollectionExtensions.AddWebEncoders(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.WebEncoders.WebEncoderOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.EncoderServiceCollectionExtensions.AddWebEncoders(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -16,6 +16,7 @@ internal class OpenApiSchemaKeywords
     public const string DescriptionKeyword = "description";
     public const string DiscriminatorKeyword = "discriminatorName";
     public const string DiscriminatorMappingKeyword = "discriminatorMapping";
+    public const string DiscriminatorDefaultMappingKeyword = "discriminatorDefaultMapping";
     public const string MinLengthKeyword = "minLength";
     public const string MaxLengthKeyword = "maxLength";
     public const string PatternKeyword = "pattern";
@@ -27,4 +28,5 @@ internal class OpenApiSchemaKeywords
     public const string MaxItemsKeyword = "maxItems";
     public const string RefKeyword = "$ref";
     public const string ConstKeyword = "const";
+    public const string DeprecatedKeyword = "deprecated";
 }

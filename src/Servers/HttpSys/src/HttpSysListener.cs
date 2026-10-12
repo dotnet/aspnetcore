@@ -52,7 +52,7 @@ internal sealed partial class HttpSysListener : IDisposable
 
         if (!HttpApi.Supported)
         {
-            throw new PlatformNotSupportedException();
+            throw CreateHttpInitializeFailureException(HttpApi.HttpInitializeStatusCode);
         }
 
         MemoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "httpsys" });
@@ -256,6 +256,19 @@ internal sealed partial class HttpSysListener : IDisposable
         _serverSession.Dispose();
     }
 
+    internal static Exception CreateHttpInitializeFailureException(uint httpInitializeStatusCode)
+    {
+        if (httpInitializeStatusCode == ErrorCodes.ERROR_SUCCESS)
+        {
+            // Keep the existing PlatformNotSupportedException behavior when no specific native error is available.
+            return new PlatformNotSupportedException();
+        }
+
+        return new HttpSysException(
+            (int)httpInitializeStatusCode,
+            $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8}.");
+    }
+
     /// <summary>
     /// Accept a request from the incoming request queue.
     /// </summary>
@@ -344,7 +357,6 @@ internal sealed partial class HttpSysListener : IDisposable
 
         httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
         var statusDescription = ReasonPhrases.GetReasonPhrase(httpStatusCode);
-        uint dataWritten = 0;
         uint statusCode;
 
         bytes = allocator.GetHeaderEncodedBytes(statusDescription, out bytesLength);
@@ -367,7 +379,7 @@ internal sealed partial class HttpSysListener : IDisposable
             0,
             httpResponse,
             null,
-            &dataWritten,
+            out _,
             null,
             null);
         if (statusCode != ErrorCodes.ERROR_SUCCESS)

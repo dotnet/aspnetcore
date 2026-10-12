@@ -117,7 +117,7 @@ public class CookieHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CookieHeaderValue? parsedValue)
     {
         var index = 0;
-        return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
+        return SingleValueParser.TryParseValue(input, index, out _, out parsedValue!);
     }
 
     /// <summary>
@@ -169,7 +169,7 @@ public class CookieHeaderValue
             throw new ArgumentNullException(nameof(name));
         }
 
-        if (HttpRuleParser.GetTokenLength(name, 0) != name.Length)
+        if (!HttpRuleParser.IsToken(name))
         {
             throw new ArgumentException("Invalid cookie name: " + name, parameterName);
         }

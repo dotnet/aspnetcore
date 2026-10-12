@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Net.Http;
 using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -74,6 +76,43 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
         }
     }
 
+    [ConditionalFact]
+    [RequiresIIS(IISCapability.ApplicationInitialization)]
+    [RequiresNewHandler]
+    public async Task ApplicationPreloadDrainsRequestDuringShutdown()
+    {
+        // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+        using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            deploymentParameters.TransformArguments((args, _) => $"{args} HostBuilder");
+            EnablePreload(deploymentParameters);
+
+            var result = await DeployAsync(deploymentParameters);
+            // The deployment client's LoggingHandler buffers the response body, defeating ResponseHeadersRead.
+            // We're purposefully blocking the response from being sent on the server side until the app shutdown starts.
+            using var client = new HttpClient
+            {
+                BaseAddress = new Uri(result.ApplicationBaseUri),
+                Timeout = TimeSpan.FromSeconds(200),
+            };
+            using var response = await client.GetAsync("/CompleteAfterAppStartsShuttingDown", HttpCompletionOption.ResponseHeadersRead);
+            var responseBodyTask = response.Content.ReadAsStringAsync();
+
+            Logger.LogInformation("Creating app_offline.htm.");
+            AddAppOffline(result.ContentRoot);
+
+            Logger.LogInformation("Waiting for the response body to complete.");
+            var responseBody = await responseBodyTask;
+            Logger.LogInformation("The response body completed.");
+            Assert.Equal("StartedCompleted", responseBody);
+
+            Logger.LogInformation("Waiting for the worker process to stop.");
+            result.AssertWorkerProcessStop();
+            Logger.LogInformation("The worker process stopped.");
+        }
+    }
+
     [ConditionalTheory]
     [RequiresIIS(IISCapability.ApplicationInitialization)]
     [RequiresNewHandler]
@@ -112,12 +151,15 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
             (config, _) =>
             {
 
-                config
+                foreach (var site in config
                     .RequiredElement("system.applicationHost")
                     .RequiredElement("sites")
-                    .RequiredElement("site")
-                    .RequiredElement("application")
-                    .SetAttributeValue("preloadEnabled", true);
+                    .Elements("site"))
+                {
+                    site
+                        .RequiredElement("application")
+                        .SetAttributeValue("preloadEnabled", true);
+                }
             });
 
         baseDeploymentParameters.EnableModule("ApplicationInitializationModule", "%IIS_BIN%\\warmup.dll");

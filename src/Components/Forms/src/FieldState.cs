@@ -20,6 +20,10 @@ internal sealed class FieldState
 
     public bool IsModified { get; set; }
 
+    internal Task? PendingValidationTask { get; set; }
+    internal CancellationTokenSource? PendingValidationCts { get; set; }
+    internal bool IsValidationFaulted { get; set; }
+
     public IEnumerable<string> GetValidationMessages()
     {
         if (_validationMessageStores != null)

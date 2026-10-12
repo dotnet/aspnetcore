@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.OpenApi.Tests.Integration;
 public class OpenApiDocumentConcurrentRequestTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
 {
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58128")]
     public async Task MapOpenApi_HandlesConcurrentRequests()
     {
         // Arrange

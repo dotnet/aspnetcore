@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Shared;
 using AspNetIPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 using IPAddress = System.Net.IPAddress;
 using IPNetwork = System.Net.IPNetwork;
@@ -90,7 +91,7 @@ public class ForwardedHeadersOptions
     /// Address ranges of known proxies to accept forwarded headers from.
     /// Obsolete, please use <see cref="KnownIPNetworks"/> instead
     /// </summary>
-    [Obsolete("Please use KnownIPNetworks instead. For more information, visit https://aka.ms/aspnet/deprecate/005.", DiagnosticId = "ASPDEPR005")]
+    [Obsolete("Please use KnownIPNetworks instead. For more information, visit https://aka.ms/aspnet/deprecate/005.", DiagnosticId = "ASPDEPR005", UrlFormat = Obsoletions.AspNetCoreDeprecate005Url)]
     public IList<AspNetIPNetwork> KnownNetworks => _knownNetworks;
 
     /// <summary>

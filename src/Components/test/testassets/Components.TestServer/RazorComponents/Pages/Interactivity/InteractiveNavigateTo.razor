@@ -1,0 +1,18 @@
+﻿@page "/interactivity/navigateto"
+@layout Components.TestServer.RazorComponents.Shared.EnhancedNavLayout
+@inject NavigationManager Nav
+@rendermode RenderMode.InteractiveServer
+
+<h1>Interactive NavigateTo</h1>
+
+<p>Shows that NavigateTo from an interactive event handler works as expected, with or without enhanced navigation.</p>
+
+<button id="perform-navigateto" @onclick="@(() => PerformNavigateTo(false))">Navigate</button>
+<button id="perform-navigateto-force" @onclick="@(() => PerformNavigateTo(true))">Navigate (force load)</button>
+
+@code {
+    void PerformNavigateTo(bool forceLoad)
+    {
+        Nav.NavigateTo("nav", forceLoad);
+    }
+}

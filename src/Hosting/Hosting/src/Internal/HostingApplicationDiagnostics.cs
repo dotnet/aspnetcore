@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -37,6 +38,9 @@ internal sealed class HostingApplicationDiagnostics
     // Internal for testing purposes only
     internal bool SuppressActivityOpenTelemetryData { get; set; }
 
+    // Internal for testing purposes only
+    internal bool SuppressActivityUrlQuery { get; set; }
+
     public HostingApplicationDiagnostics(
         ILogger logger,
         DiagnosticListener diagnosticListener,
@@ -53,14 +57,26 @@ internal sealed class HostingApplicationDiagnostics
         _metrics = metrics;
 
         SuppressActivityOpenTelemetryData = GetSuppressActivityOpenTelemetryData();
+        SuppressActivityUrlQuery = GetSuppressActivityUrlQuery();
     }
 
     private static bool GetSuppressActivityOpenTelemetryData()
     {
-        // Default to true if the switch isn't set.
+        // Default to false if the switch isn't set.
         if (!AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData", out var enabled))
         {
-            return true;
+            return false;
+        }
+
+        return enabled;
+    }
+
+    private static bool GetSuppressActivityUrlQuery()
+    {
+        // Default to false if the switch isn't set.
+        if (!AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityUrlQuery", out var enabled))
+        {
+            return false;
         }
 
         return enabled;
@@ -233,7 +249,7 @@ internal sealed class HostingApplicationDiagnostics
         // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
-            StopActivity(httpContext, activity, context.HasDiagnosticListener);
+            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener);
         }
 
         if (context.EventLogEnabled)
@@ -251,7 +267,7 @@ internal sealed class HostingApplicationDiagnostics
             }
         }
 
-        // Logging Scope is finshed with
+        // Logging Scope is finished with
         context.Scope?.Dispose();
     }
 
@@ -434,6 +450,13 @@ internal sealed class HostingApplicationDiagnostics
             return null;
         }
 
+        if (!SuppressActivityOpenTelemetryData)
+        {
+            // Set the initial display name to just the HTTP method.
+            // It will be updated to include the route if one is matched.
+            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method);
+        }
+
         _diagnosticListener.OnActivityImport(activity, httpContext);
 
         if (_diagnosticListener.IsEnabled(ActivityStartKey))
@@ -449,17 +472,32 @@ internal sealed class HostingApplicationDiagnostics
         return activity;
     }
 
-    private static TagList CreateInitializeActivityTags(HttpContext httpContext)
+    private TagList CreateInitializeActivityTags(HttpContext httpContext)
     {
         // The tags here are set when the activity is created. They can be used in sampling decisions.
         // Most values in semantic conventions that are present at creation are specified:
         // https://github.com/open-telemetry/semantic-conventions/blob/27735ccca3746d7bb7fa061dfb73d93bcbae2b6e/docs/http/http-spans.md#L581-L592
         // Missing values recommended by the spec are:
-        // - url.query (need configuration around redaction to do properly)
-        // - http.request.header.<key>
+        // - http.request.header.<key> (opt-in)
+        // - client.port (opt-in)
+        // - network.protocol.name (only required if not "http", which is never the case here)
+        //
+        // Note that these tags are added even if Activity.IsAllDataRequested is false, as they may be used in sampling decisions.
 
         var request = httpContext.Request;
         var creationTags = new TagList();
+
+        if (httpContext.Connection.RemoteIpAddress is { } remoteIpAddress)
+        {
+            var remoteIpAddressString = remoteIpAddress.ToString();
+            creationTags.Add(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
+            creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerAddress, remoteIpAddressString);
+
+            if (httpContext.Connection.RemotePort is { } remotePort && remotePort > 0)
+            {
+                creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerPort, remotePort);
+            }
+        }
 
         if (request.Host.HasValue)
         {
@@ -473,7 +511,7 @@ internal sealed class HostingApplicationDiagnostics
 
         HostingTelemetryHelpers.SetActivityHttpMethodTags(ref creationTags, request.Method);
 
-        if (request.Headers.TryGetValue("User-Agent", out var values))
+        if (request.Headers.TryGetValue(HeaderNames.UserAgent, out var values))
         {
             var userAgent = values.Count > 0 ? values[0] : null;
             if (!string.IsNullOrEmpty(userAgent))
@@ -487,12 +525,22 @@ internal sealed class HostingApplicationDiagnostics
         var path = (request.PathBase.HasValue || request.Path.HasValue) ? (request.PathBase + request.Path).ToString() : "/";
         creationTags.Add(HostingTelemetryHelpers.AttributeUrlPath, path);
 
+        if (!SuppressActivityUrlQuery && request.QueryString.Value is { Length: > 0 } queryString)
+        {
+            creationTags.Add(HostingTelemetryHelpers.AttributeUrlQuery, HostingTelemetryHelpers.GetRedactedQueryString(queryString));
+        }
+
         return creationTags;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StopActivity(HttpContext httpContext, Activity activity, bool hasDiagnosticListener)
+    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener)
     {
+        if (!SuppressActivityOpenTelemetryData && activity.IsAllDataRequested)
+        {
+            SetActivityEndTags(httpContext, activity, exception);
+        }
+
         if (hasDiagnosticListener)
         {
             StopActivity(activity, httpContext);
@@ -500,6 +548,47 @@ internal sealed class HostingApplicationDiagnostics
         else
         {
             activity.Stop();
+        }
+    }
+
+    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception)
+    {
+        var response = httpContext.Response;
+
+        activity.SetTag(HostingTelemetryHelpers.AttributeHttpResponseStatusCode, HostingTelemetryHelpers.GetBoxedStatusCode(response.StatusCode));
+
+        if (HostingTelemetryHelpers.TryGetHttpVersion(httpContext.Request.Protocol, out var httpVersion))
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
+        }
+
+        var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+        var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+        if (route is not null)
+        {
+            var resolvedRoute = RouteDiagnosticsHelpers.ResolveHttpRoute(route);
+            activity.SetTag(HostingTelemetryHelpers.AttributeHttpRoute, resolvedRoute);
+            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method, resolvedRoute);
+        }
+
+        if (exception != null)
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, exception.GetType().FullName);
+            activity.SetStatus(ActivityStatusCode.Error);
+        }
+        else if (HostingTelemetryHelpers.IsErrorStatusCode(response.StatusCode))
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(CultureInfo.InvariantCulture));
+            activity.SetStatus(ActivityStatusCode.Error);
+        }
+
+        if (httpContext.Connection.RemoteIpAddress is { } remoteIpAddress)
+        {
+            var remoteIpAddressString = remoteIpAddress.ToString();
+
+            // `client.address` is set again (see CreateInitializeActivityTags) in case of
+            // other middleware rewriting it (like ForwardedHeadersMiddleware)
+            activity.SetTag(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
         }
     }
 

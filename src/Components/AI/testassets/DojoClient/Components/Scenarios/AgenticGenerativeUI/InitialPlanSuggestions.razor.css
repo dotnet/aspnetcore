@@ -1,0 +1,48 @@
+.plan-suggestions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    width: min(100%, 36rem);
+    margin: 1rem auto 0;
+}
+
+.plan-suggestion {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    background: #fff;
+    color: #111827;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.plan-suggestion:hover:not(:disabled) {
+    border-color: #818cf8;
+    box-shadow: 0 4px 12px rgb(79 70 229 / 12%);
+    transform: translateY(-1px);
+}
+
+.plan-suggestion:focus-visible {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+
+.plan-suggestion:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.plan-suggestion__title {
+    font-weight: 600;
+}
+
+@media (max-width: 36rem) {
+    .plan-suggestions {
+        grid-template-columns: 1fr;
+    }
+}

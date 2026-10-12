@@ -434,4 +434,54 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             target.SendKeys(c.ToString());
         }
     }
+
+    [Fact]
+    public void ClipboardEvents_CanTrigger()
+    {
+        Browser.MountTestComponent<ClipboardProgressErrorEventComponent>();
+
+        var target = Browser.Exists(By.Id("clipboard-target"));
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        Browser.ExecuteJavaScript(@"
+            var el = document.getElementById('clipboard-target');
+            el.dispatchEvent(new ClipboardEvent('copy', { bubbles: true }));
+            el.dispatchEvent(new ClipboardEvent('cut', { bubbles: true }));
+            el.dispatchEvent(new ClipboardEvent('paste', { bubbles: true }));");
+
+        Browser.Equal("copy,cut,paste,", () => output.Text);
+    }
+
+    [Fact]
+    public void ProgressEvents_CanTrigger()
+    {
+        Browser.MountTestComponent<ClipboardProgressErrorEventComponent>();
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        Browser.ExecuteJavaScript(@"
+            var el = document.getElementById('progress-target');
+            el.dispatchEvent(new ProgressEvent('progress', { bubbles: true }));
+            el.dispatchEvent(new ProgressEvent('loadstart', { bubbles: true }));
+            el.dispatchEvent(new ProgressEvent('loadend', { bubbles: true }));");
+
+        Browser.Equal("progress,loadstart,loadend,", () => output.Text);
+    }
+
+    [Fact]
+    public void ErrorEvent_CanTrigger()
+    {
+        Browser.MountTestComponent<ClipboardProgressErrorEventComponent>();
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        Browser.ExecuteJavaScript(@"
+            var el = document.getElementById('error-target');
+            el.dispatchEvent(new ErrorEvent('error', { bubbles: true, message: 'test error' }));");
+
+        Browser.Equal("error,", () => output.Text);
+    }
 }

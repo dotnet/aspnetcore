@@ -72,10 +72,12 @@ internal static partial class HttpApi
     internal static bool SupportsClientHello { get; }
     internal static bool SupportsQueryTlsCipherInfo { get; }
     internal static bool Supported { get; }
+    internal static uint HttpInitializeStatusCode { get; }
 
     static unsafe HttpApi()
     {
         var statusCode = PInvoke.HttpInitialize(Version, HTTP_INITIALIZE.HTTP_INITIALIZE_SERVER | HTTP_INITIALIZE.HTTP_INITIALIZE_CONFIG);
+        HttpInitializeStatusCode = statusCode;
 
         if (statusCode == ErrorCodes.ERROR_SUCCESS)
         {
@@ -86,8 +88,8 @@ internal static partial class HttpApi
             SupportsReset = HttpSetRequestPropertySupported;
             SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
             SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
-            SupportsClientHello = IsFeatureSupported((HTTP_FEATURE_ID)11 /* HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello */) && HttpGetRequestPropertySupported;
-            SupportsQueryTlsCipherInfo = IsFeatureSupported((HTTP_FEATURE_ID)15 /* HTTP_FEATURE_ID.HttpFeatureQueryCipherInfo */) && HttpGetRequestPropertySupported;
+            SupportsClientHello = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello) && HttpGetRequestPropertySupported;
+            SupportsQueryTlsCipherInfo = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureQueryCipherInfo) && HttpGetRequestPropertySupported;
         }
     }
 

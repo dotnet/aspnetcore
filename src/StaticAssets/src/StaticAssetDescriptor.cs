@@ -15,9 +15,20 @@ public sealed class StaticAssetDescriptor
     bool _isFrozen;
     private string? _route;
     private string? _assetFile;
+    private string? _order;
     private IReadOnlyList<StaticAssetSelector> _selectors = [];
     private IReadOnlyList<StaticAssetProperty> _endpointProperties = [];
     private IReadOnlyList<StaticAssetResponseHeader> _responseHeaders = [];
+
+    /// <summary>
+    /// The order of the endpoint in the routing table. When null or empty, the default order of -100 is used.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Order
+    {
+        get => _order;
+        set => _order = !_isFrozen ? value : throw new InvalidOperationException("StaticAssetDescriptor is frozen and doesn't accept further changes");
+    }
 
     /// <summary>
     /// The route that the asset is served from.

@@ -5,10 +5,10 @@ using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Text;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -661,22 +661,24 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             {
                 Browser.Click(preferredCriteria);
             }
-            // Set the value for preferred ti 'invalid' to trigger a binding error
+            // Set the value for preferred to 'invalid' to trigger a binding error
             ((IJavaScriptExecutor)Browser).ExecuteScript($"arguments[0].setAttribute('value', 'invalid{i}')", preferred);
         }
 
         Browser.Click(By.Id("send"));
 
-        Browser.Exists(By.CssSelector("[data-index='0']")).Text.Contains("The value 'invalid0' is not valid for 'IsPreferred'.");
-        Browser.Exists(By.CssSelector("[data-index='1']")).Text.Contains("The value 'invalid1' is not valid for 'IsPreferred'.");
+        Browser.Contains(
+            "The value 'invalid0' is not valid for 'IsPreferred'.",
+            () => Browser.FindElement(By.CssSelector("[data-index='0']")).Text);
+        Browser.Contains(
+            "The value 'invalid1' is not valid for 'IsPreferred'.",
+            () => Browser.FindElement(By.CssSelector("[data-index='1']")).Text);
 
         Browser.Equal(2, () => Browser.FindElements(By.CssSelector("li.validation-message")).Count());
 
         if (!suppressEnhancedNavigation)
         {
-            // Verify the same form element is still in the page
-            // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetDomAttribute("action"));
+            Browser.True(() => !string.IsNullOrEmpty(Browser.FindElement(By.CssSelector("form")).GetDomAttribute("action")));
         }
     }
 
@@ -1634,7 +1636,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             if (!dispatch.FormIsEnhanced)
             {
                 // Verify the same form element is *not* still in the page
-                Browser.True(() => IsElementStale(form));
+                Browser.True(() => form.IsStale());
             }
             else if (!dispatch.SuppressEnhancedNavigation)
             {
@@ -1684,19 +1686,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     private void GoTo(string relativePath)
     {
         Navigate($"{ServerPathBase}/{relativePath}");
-    }
-
-    private static bool IsElementStale(IWebElement element)
-    {
-        try
-        {
-            _ = element.Enabled;
-            return false;
-        }
-        catch (StaleElementReferenceException)
-        {
-            return true;
-        }
     }
 
     private struct TempFile

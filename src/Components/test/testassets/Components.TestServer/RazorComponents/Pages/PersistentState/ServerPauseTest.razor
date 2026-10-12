@@ -1,0 +1,59 @@
+@page "/persistent-state/server-pause"
+@rendermode RenderMode.InteractiveServer
+@using Microsoft.AspNetCore.Components.Server.Circuits
+@using Microsoft.JSInterop
+@using TestServer
+
+@inject PauseTrackingHandler PauseTracker
+
+<p>Validates server-triggered circuit pause via RequestCircuitPauseAsync()</p>
+
+<TestContentPackage.PersistentCounter />
+
+<p>Circuit ID: <span id="circuit-id">@_circuitId</span></p>
+<p>Inline count: <span id="inline-count">@_inlineState.Count</span></p>
+<button id="increment-and-pause" @onclick="IncrementAndPause">Increment + Pause</button>
+
+@code {
+    private string _circuitId = "";
+
+    [PersistentState]
+    public CounterState _inlineState { get; set; }
+
+    public class CounterState
+    {
+        public int Count { get; set; } = 0;
+    }
+
+    protected override void OnInitialized()
+    {
+        _circuitId = PauseTracker.CurrentCircuit?.Id ?? "";
+        _inlineState ??= new CounterState();
+    }
+
+    private async Task IncrementAndPause()
+    {
+        // Mutate state — this triggers StateHasChanged and a render batch.
+        _inlineState.Count++;
+
+        // Request pause while the render batch from the mutation above
+        // is being generated/queued. The JS.RequestPause message is sent
+        // after the render batch on the same connection.
+        var circuit = PauseTracker.CurrentCircuit;
+        if (circuit is not null)
+        {
+            await circuit.RequestCircuitPauseAsync();
+        }
+    }
+
+    [JSInvokable]
+    public static async Task<bool> TriggerServerPause(string circuitId)
+    {
+        var circuit = PauseTrackingHandler.GetCircuit(circuitId);
+        if (circuit is null)
+        {
+            return false;
+        }
+        return await circuit.RequestCircuitPauseAsync();
+    }
+}

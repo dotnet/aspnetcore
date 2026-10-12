@@ -212,7 +212,7 @@ public class ResponseBodyTests : LoggedTest
         using (Utilities.CreateHttpServer(out address, async httpContext =>
         {
             httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
-            httpContext.Response.Headers["Content-lenGth"] = " 30 ";
+            httpContext.Response.Headers["Content-lenGth"] = "30";
             Stream stream = httpContext.Response.Body;
             stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
             stream.Write(new byte[10], 0, 10);
@@ -236,7 +236,7 @@ public class ResponseBodyTests : LoggedTest
         string address;
         using (Utilities.CreateHttpServer(out address, httpContext =>
         {
-            httpContext.Response.Headers["Content-lenGth"] = " 20 ";
+            httpContext.Response.Headers["Content-lenGth"] = "20";
             return Task.FromResult(0);
         }, LoggerFactory))
         {
@@ -250,7 +250,7 @@ public class ResponseBodyTests : LoggedTest
         string address;
         using (Utilities.CreateHttpServer(out address, httpContext =>
         {
-            httpContext.Response.Headers["Content-lenGth"] = " 20 ";
+            httpContext.Response.Headers["Content-lenGth"] = "20";
             return httpContext.Response.Body.WriteAsync(new byte[5], 0, 5);
         }, LoggerFactory))
         {
@@ -265,7 +265,7 @@ public class ResponseBodyTests : LoggedTest
         string address;
         using (Utilities.CreateHttpServer(out address, async httpContext =>
         {
-            httpContext.Response.Headers["Content-lenGth"] = " 10 ";
+            httpContext.Response.Headers["Content-lenGth"] = "10";
             await httpContext.Response.Body.WriteAsync(new byte[5], 0, 5);
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 httpContext.Response.Body.WriteAsync(new byte[6], 0, 6));
@@ -286,7 +286,7 @@ public class ResponseBodyTests : LoggedTest
             try
             {
                 httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
-                httpContext.Response.Headers["Content-lenGth"] = " 10 ";
+                httpContext.Response.Headers["Content-lenGth"] = "10";
                 httpContext.Response.Body.Write(new byte[10], 0, 10);
                 httpContext.Response.Body.Write(new byte[9], 0, 9);
                 requestThrew.SetResult(false);

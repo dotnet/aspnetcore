@@ -1,5 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.CookieRedirectEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Http.AllowCookieRedirectAttribute
+Microsoft.AspNetCore.Http.AllowCookieRedirectAttribute.AllowCookieRedirectAttribute() -> void
 Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute
 Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute.DisableHttpMetricsAttribute() -> void
 Microsoft.AspNetCore.Http.EndpointDescriptionAttribute
@@ -164,6 +167,8 @@ override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Equals(object? obj) -
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.ToString() -> string!
 override Microsoft.AspNetCore.Http.TagsAttribute.ToString() -> string!
+static Microsoft.AspNetCore.Builder.CookieRedirectEndpointConventionBuilderExtensions.AllowCookieRedirect<TBuilder>(this TBuilder builder) -> TBuilder
+static Microsoft.AspNetCore.Builder.CookieRedirectEndpointConventionBuilderExtensions.DisableCookieRedirect<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions.DisableHttpMetrics<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.Http.Extensions.HttpRequestMultipartExtensions.GetMultipartBoundary(this Microsoft.AspNetCore.Http.HttpRequest! request) -> string!
 static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream! source, System.IO.Stream! destination, long? count, int bufferSize, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task!
@@ -213,5 +218,5 @@ static Microsoft.AspNetCore.Http.SessionExtensions.GetString(this Microsoft.AspN
 static Microsoft.AspNetCore.Http.SessionExtensions.SetInt32(this Microsoft.AspNetCore.Http.ISession! session, string! key, int value) -> void
 static Microsoft.AspNetCore.Http.SessionExtensions.SetString(this Microsoft.AspNetCore.Http.ISession! session, string! key, string! value) -> void
 static Microsoft.Extensions.DependencyInjection.HttpJsonServiceExtensions.ConfigureHttpJsonOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Json.JsonOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.ProblemDetailsOptions!>? configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

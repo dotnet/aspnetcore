@@ -68,8 +68,8 @@ Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.Wra
 Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.WriterSettings.get -> System.Xml.XmlWriterSettings!
 Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.XmlDataContractSerializerOutputFormatter() -> void
 Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.XmlDataContractSerializerOutputFormatter(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.XmlDataContractSerializerOutputFormatter(System.Xml.XmlWriterSettings! writerSettings) -> void
 Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.XmlDataContractSerializerOutputFormatter(System.Xml.XmlWriterSettings! writerSettings, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.XmlDataContractSerializerOutputFormatter(System.Xml.XmlWriterSettings! writerSettings) -> void
 Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter
 Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.MaxDepth.get -> int
 Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.MaxDepth.set -> void
@@ -81,8 +81,8 @@ Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.WrapperProvider
 Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.WriterSettings.get -> System.Xml.XmlWriterSettings!
 Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.XmlSerializerOutputFormatter() -> void
 Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.XmlSerializerOutputFormatter(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.XmlSerializerOutputFormatter(System.Xml.XmlWriterSettings! writerSettings) -> void
 Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.XmlSerializerOutputFormatter(System.Xml.XmlWriterSettings! writerSettings, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.XmlSerializerOutputFormatter(System.Xml.XmlWriterSettings! writerSettings) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DataMemberRequiredBindingMetadataProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DataMemberRequiredBindingMetadataProvider.CreateBindingMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadataProviderContext! context) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DataMemberRequiredBindingMetadataProvider.DataMemberRequiredBindingMetadataProvider() -> void
@@ -99,16 +99,16 @@ override Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.ReadReq
 override Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.CanWriteType(System.Type? type) -> bool
 override Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerOutputFormatter.WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext! context, System.Text.Encoding! selectedEncoding) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Mvc.Formatters.Xml.WrapperProviderFactoriesExtensions.GetWrapperProvider(this System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory!>! wrapperProviderFactories, Microsoft.AspNetCore.Mvc.Formatters.Xml.WrapperProviderContext! wrapperProviderContext) -> Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProvider?
-static Microsoft.Extensions.DependencyInjection.MvcXmlMvcBuilderExtensions.AddXmlDataContractSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcXmlMvcBuilderExtensions.AddXmlDataContractSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Formatters.Xml.MvcXmlOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
+static Microsoft.Extensions.DependencyInjection.MvcXmlMvcBuilderExtensions.AddXmlDataContractSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcXmlMvcBuilderExtensions.AddXmlOptions(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Formatters.Xml.MvcXmlOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
-static Microsoft.Extensions.DependencyInjection.MvcXmlMvcBuilderExtensions.AddXmlSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcXmlMvcBuilderExtensions.AddXmlSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Formatters.Xml.MvcXmlOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
-static Microsoft.Extensions.DependencyInjection.MvcXmlMvcCoreBuilderExtensions.AddXmlDataContractSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
+static Microsoft.Extensions.DependencyInjection.MvcXmlMvcBuilderExtensions.AddXmlSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcXmlMvcCoreBuilderExtensions.AddXmlDataContractSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Formatters.Xml.MvcXmlOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
+static Microsoft.Extensions.DependencyInjection.MvcXmlMvcCoreBuilderExtensions.AddXmlDataContractSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcXmlMvcCoreBuilderExtensions.AddXmlOptions(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Formatters.Xml.MvcXmlOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
-static Microsoft.Extensions.DependencyInjection.MvcXmlMvcCoreBuilderExtensions.AddXmlSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcXmlMvcCoreBuilderExtensions.AddXmlSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Formatters.Xml.MvcXmlOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
+static Microsoft.Extensions.DependencyInjection.MvcXmlMvcCoreBuilderExtensions.AddXmlSerializerFormatters(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
 static readonly Microsoft.AspNetCore.Mvc.Formatters.Xml.ProblemDetailsWrapper.EmptyKey -> string!
 virtual Microsoft.AspNetCore.Mvc.Formatters.Xml.ProblemDetailsWrapper.ReadValue(System.Xml.XmlReader! reader, string! name) -> void
 virtual Microsoft.AspNetCore.Mvc.Formatters.Xml.ProblemDetailsWrapper.ReadXml(System.Xml.XmlReader! reader) -> void
@@ -124,8 +124,8 @@ virtual Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputForma
 virtual Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.GetCachedSerializer(System.Type! type) -> System.Runtime.Serialization.DataContractSerializer!
 virtual Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter.GetSerializableType(System.Type! type) -> System.Type!
 virtual Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.CreateSerializer(System.Type! type) -> System.Xml.Serialization.XmlSerializer?
-virtual Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.CreateXmlReader(System.IO.Stream! readStream, System.Text.Encoding! encoding) -> System.Xml.XmlReader!
 virtual Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.CreateXmlReader(System.IO.Stream! readStream, System.Text.Encoding! encoding, System.Type! type) -> System.Xml.XmlReader!
+virtual Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.CreateXmlReader(System.IO.Stream! readStream, System.Text.Encoding! encoding) -> System.Xml.XmlReader!
 virtual Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.ExceptionPolicy.get -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy
 virtual Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.GetCachedSerializer(System.Type! type) -> System.Xml.Serialization.XmlSerializer!
 virtual Microsoft.AspNetCore.Mvc.Formatters.XmlSerializerInputFormatter.GetSerializableType(System.Type! declaredType) -> System.Type!

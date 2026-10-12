@@ -1,5 +1,7 @@
 MsgPack support for SignalR for ASP.NET Core
 
+[Changelog](https://github.com/dotnet/aspnetcore/tree/main/src/SignalR/clients/ts/CHANGELOG.md)
+
 ## Installation
 
 ```bash

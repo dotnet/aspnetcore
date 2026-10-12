@@ -8,13 +8,14 @@ import * as Environment from './Environment';
 import { monoPlatform, dispatcher, getInitializer } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
+import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { WebAssemblyComponentDescriptor, WebAssemblyServerOptions, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from './JSInterop/Microsoft.JSInterop';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
@@ -121,6 +122,13 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   };
 
+  Blazor._internal.renderBatchOutOfProcess = (browserRendererId: number, batchData: Uint8Array): void => {
+    // No heap lock needed — batchData is a self-contained byte[] copy,
+    // not a pointer into the .NET managed heap.
+    // Uses UTF-16LE string table encoding to avoid UTF-8 transcoding on both sides.
+    renderBatch(browserRendererId, new OutOfProcessRenderBatch(batchData, /* useUtf16StringTable */ true));
+  };
+
   Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     await dispatcher.invokeDotNetStaticMethodAsync(
       'Microsoft.AspNetCore.Components.WebAssembly',
@@ -197,7 +205,7 @@ export function waitForBootConfigLoaded(): Promise<MonoConfig> {
   return bootConfigPromise;
 }
 
-export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblyServerOptions | undefined): Promise<void> {
+export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblyServerOptions | undefined, justDownload?: boolean): Promise<void> {
   platformLoadPromise ??= (async () => {
     await initializersPromise;
     const finalOptions = options ?? {};
@@ -207,6 +215,9 @@ export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblySe
     const existingConfig = options?.configureRuntime;
     finalOptions.configureRuntime = (config) => {
       existingConfig?.(config);
+      if (justDownload) {
+        config.withConfig({ maxParallelDownloads: 1 });
+      }
       if (serverOptions?.environmentVariables) {
         config.withEnvironmentVariables(serverOptions.environmentVariables);
       }
@@ -214,8 +225,10 @@ export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblySe
         config.withEnvironmentVariable('__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS', 'true');
       }
     };
-    await monoPlatform.load(finalOptions, resolveBootConfigPromise);
-    loadedWebAssemblyPlatform = true;
+    await monoPlatform.load(finalOptions, resolveBootConfigPromise, justDownload);
+    if (!justDownload) {
+      loadedWebAssemblyPlatform = true;
+    }
   })();
   return platformLoadPromise;
 }

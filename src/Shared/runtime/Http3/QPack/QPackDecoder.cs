@@ -634,10 +634,16 @@ namespace System.Net.Http.QPack
 
                 if (_huffman)
                 {
-                    return Huffman.Decode(new ReadOnlySpan<byte>(_stringOctets, 0, _stringLength), ref dst);
+                    int decodedLength = Huffman.Decode(new ReadOnlySpan<byte>(_stringOctets, 0, _stringLength), ref dst);
+                    if (decodedLength > _maxHeadersLength)
+                    {
+                        throw new QPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
+                    }
+                    return decodedLength;
                 }
                 else
                 {
+                    Debug.Assert(_stringLength <= _maxHeadersLength, "String length should have been checked prior to decode.");
                     Buffer.BlockCopy(_stringOctets, 0, dst, 0, _stringLength);
                     return _stringLength;
                 }
@@ -706,6 +712,8 @@ namespace System.Net.Http.QPack
 
         private void OnIndexedHeaderName(int index)
         {
+            ThrowIfInvalidStaticIndex(index);
+
             _headerStaticIndex = index;
             _state = State.HeaderValueLength;
         }
@@ -745,8 +753,18 @@ namespace System.Net.Http.QPack
 
         private void OnIndexedHeaderField(int index, IHttpStreamHeadersHandler handler)
         {
+            ThrowIfInvalidStaticIndex(index);
+
             handler.OnStaticIndexedHeader(index);
             _state = State.CompressedHeaders;
+        }
+
+        private static void ThrowIfInvalidStaticIndex(int index)
+        {
+            if (index >= H3StaticTable.Count)
+            {
+                throw new QPackDecodingException(SR.Format(SR.net_http_qpack_invalid_index, index));
+            }
         }
 
         private static void ThrowDynamicTableNotSupported()

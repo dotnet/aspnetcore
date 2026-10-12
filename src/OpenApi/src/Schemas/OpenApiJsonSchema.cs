@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.OpenApi;
 
 [JsonConverter(typeof(JsonConverter))]
 internal sealed partial class OpenApiJsonSchema(OpenApiSchema schema)
@@ -21,6 +22,8 @@ internal sealed partial class OpenApiJsonSchema(OpenApiSchema schema)
             {
                 throw new JsonException("Expected StartObject token to represent beginning of schema.");
             }
+
+            OpenApiJsonSchemaContext? context = null;
             reader.Read();
             do
             {
@@ -28,7 +31,8 @@ internal sealed partial class OpenApiJsonSchema(OpenApiSchema schema)
                 {
                     case JsonTokenType.PropertyName:
                         var propertyName = reader.GetString() ?? throw new JsonException("Encountered unexpected missing property name.");
-                        ReadProperty(ref reader, propertyName, schema, options);
+                        context ??= (options.TypeInfoResolver as OpenApiJsonSchemaContext) ?? new OpenApiJsonSchemaContext(new(options));
+                        ReadProperty(ref reader, propertyName, schema, options, context);
                         break;
                     case JsonTokenType.EndObject:
                         return new OpenApiJsonSchema(schema);

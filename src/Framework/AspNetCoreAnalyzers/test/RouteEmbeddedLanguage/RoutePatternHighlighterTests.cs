@@ -450,6 +450,45 @@ class Program
 ");
     }
 
+    [Fact]
+    public async Task InParameterName_MatchingMethodInPartialClassAcrossFiles_HighlightsOnlyRouteLiteral()
+    {
+        var mapSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+public static partial class XEndpoints
+{
+    public static void MapXEndpoints(this IEndpointRouteBuilder app)
+    {
+        app.MapPost(""/organizations/{$$[|organizationId|]}/y/{yId}/z/{zId}/w/{wId}/load"", LoadAsync);
+    }
+}
+";
+
+        var handlerSource = @"
+public static partial class XEndpoints
+{
+    public static string LoadAsync(string organizationId, string yId, string zId, string wId)
+    {
+        return organizationId;
+    }
+}
+";
+
+        MarkupTestFile.GetPositionAndSpans(mapSource, out var output, out int cursorPosition, out var spans);
+        var routeSpan = Assert.Single(spans);
+
+        // Act - this used to throw ArgumentException ("Syntax node is not within syntax tree").
+        var highlightSpans = await Runner.GetHighlightingAsync(cursorPosition, output, handlerSource);
+
+        // Assert - the route literal is highlighted, and nothing else.
+        // Anything else would be a span from the handler file mis-mapped
+        // into the active document (the route file).
+        var highlight = Assert.Single(highlightSpans);
+        Assert.Equal(routeSpan, highlight.TextSpan);
+    }
+
     private async Task TestHighlightingAsync(string source)
     {
         MarkupTestFile.GetPositionAndSpans(source, out var output, out int cursorPosition, out var spans);

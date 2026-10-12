@@ -762,4 +762,65 @@ public static class NavigationManagerExtensions
 
         return true;
     }
+
+    /// <summary>
+    /// Returns a URI constructed from <see cref="NavigationManager.Uri"/> with a fragment
+    /// added, updated, or removed.
+    /// </summary>
+    /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+    /// <param name="fragment">The fragment string. If <see langword="null"/> or empty, the fragment will be removed from the URI.</param>
+    /// <returns>The URI with the specified fragment.</returns>
+    /// <remarks>
+    /// <para>
+    /// If <paramref name="fragment"/> does not start with <c>#</c>, then <c>#</c> will be prepended.
+    /// </para>
+    /// <para>
+    /// This method is useful when the document's <c>baseURI</c> differs from its location,
+    /// such as when a <c>&lt;base&gt;</c> element is used, since relative hash URLs are resolved
+    /// relative to the <c>baseURI</c>.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// @inject NavigationManager Nav
+    /// &lt;a href="@Nav.GetUriWithFragment("section1")"&gt;Go to section 1&lt;/a&gt;
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static string GetUriWithFragment(this NavigationManager navigationManager, string? fragment)
+    {
+        ArgumentNullException.ThrowIfNull(navigationManager);
+
+        var uri = navigationManager.Uri;
+        var existingHashIndex = uri.IndexOf('#');
+
+        var uriWithoutHashLength = existingHashIndex < 0 ? uri.Length : existingHashIndex;
+
+        if (string.IsNullOrEmpty(fragment))
+        {
+            if (existingHashIndex < 0)
+            {
+                return uri;
+            }
+
+            return uri.Substring(0, uriWithoutHashLength);
+        }
+
+        var fragmentStartsWithSymbol = fragment[0] == '#';
+        var totalLength = uriWithoutHashLength + (fragmentStartsWithSymbol ? fragment.Length : fragment.Length + 1);
+
+        return string.Create(totalLength, (uri, fragment, uriWithoutHashLength, fragmentStartsWithSymbol), static (chars, state) =>
+        {
+            var (uriValue, fragmentValue, uriLength, startsWithSymbol) = state;
+
+            uriValue.AsSpan(0, uriLength).CopyTo(chars);
+            var position = uriLength;
+
+            if (!startsWithSymbol)
+            {
+                chars[position++] = '#';
+            }
+
+            fragmentValue.AsSpan().CopyTo(chars[position..]);
+        });
+    }
 }

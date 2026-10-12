@@ -82,9 +82,11 @@ internal partial class ResourceCollectionUrlEndpoint
     private static byte[] CreateGzipBytes(byte[] bytes)
     {
         using var gzipContent = new MemoryStream();
-        using var gzipStream = new GZipStream(gzipContent, CompressionLevel.Optimal, leaveOpen: true);
-        gzipStream.Write(bytes);
-        gzipStream.Flush();
+        using (var gzipStream = new GZipStream(gzipContent, CompressionLevel.Optimal, leaveOpen: true))
+        {
+            gzipStream.Write(bytes);
+        }
+
         return gzipContent.ToArray();
     }
 
@@ -107,7 +109,7 @@ internal partial class ResourceCollectionUrlEndpoint
         return content.ToArray();
     }
 
-    private static string ComputeFingerprintSuffix(ResourceAssetCollection resourceCollection)
+    internal static string ComputeFingerprintSuffix(ResourceAssetCollection resourceCollection)
     {
         var resources = (IReadOnlyList<ResourceAsset>)resourceCollection;
         var incrementalHash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -118,6 +120,12 @@ internal partial class ResourceCollectionUrlEndpoint
         {
             var url = resource.Url;
             AppendToHash(incrementalHash, buffer, ref rented, url);
+
+            var additionalData = GetAdditionalDataForFingerprint(resource);
+            if (additionalData is not null)
+            {
+                AppendToHash(incrementalHash, buffer, ref rented, additionalData);
+            }
         }
         incrementalHash.GetCurrentHash(result);
         // Base64 encoding at most increases size by (4 * byteSize / 3 + 2),
@@ -126,6 +134,37 @@ internal partial class ResourceCollectionUrlEndpoint
         var length = WebUtilities.WebEncoders.Base64UrlEncode(result, fingerprintSpan[1..]);
         fingerprintSpan[0] = '.';
         return fingerprintSpan[..(length + 1)].ToString();
+    }
+
+    private static string? GetAdditionalDataForFingerprint(ResourceAsset resource)
+    {
+        // For non-fingerprinted assets (those without a 'label' property), we need to include
+        // the integrity hash in the fingerprint calculation. This ensures that if the content
+        // changes between builds, the resource-collection fingerprint also changes.
+        if (resource.Properties is null)
+        {
+            return null;
+        }
+
+        var hasLabel = false;
+        string? integrity = null;
+        foreach (var property in resource.Properties)
+        {
+            if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
+            {
+                hasLabel = true;
+                // No need to continue if we found a label - we won't use integrity
+                break;
+            }
+            else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
+            {
+                integrity = property.Value;
+                // Continue searching in case there's also a label property
+            }
+        }
+
+        // If there's no label (non-fingerprinted) but there is an integrity value, return it
+        return !hasLabel ? integrity : null;
     }
 
     private static void AppendToHash(IncrementalHash incrementalHash, Span<byte> buffer, ref byte[]? rented, string value)
@@ -162,14 +201,14 @@ internal partial class ResourceCollectionUrlEndpoint
         private readonly byte[] _content;
         private readonly string _contentETag;
         private readonly byte[] _gzipContent;
-        private readonly string[] _gzipContentETags;
+        private readonly string _gzipContentETag;
 
         public ResourceCollectionEndpointsBuilder(byte[] content, byte[] gzipContent)
         {
             _content = content;
             _contentETag = ComputeETagTag(content);
             _gzipContent = gzipContent;
-            _gzipContentETags = [$"W/ {_contentETag}", ComputeETagTag(gzipContent)];
+            _gzipContentETag = ComputeETagTag(gzipContent);
         }
 
         private string ComputeETagTag(byte[] content)
@@ -212,8 +251,7 @@ internal partial class ResourceCollectionUrlEndpoint
         private void WriteEncodingHeaders(HttpContext context)
         {
             context.Response.Headers[HeaderNames.ContentEncoding] = "gzip";
-            context.Response.Headers[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
-            context.Response.Headers.ETag = new StringValues(_gzipContentETags);
+            context.Response.Headers.ETag = _gzipContentETag;
         }
 
         private void WriteNoEncodingHeaders(HttpContext context)
@@ -223,18 +261,19 @@ internal partial class ResourceCollectionUrlEndpoint
 
         private static void WriteFingerprintHeaders(HttpContext context)
         {
-            context.Response.Headers[HeaderNames.CacheControl] = "max-age=31536000, immutable";
+            context.Response.Headers[HeaderNames.CacheControl] = "max-age=31536000, immutable, no-transform";
         }
 
         private static void WriteNonFingerprintedHeaders(HttpContext context)
         {
-            context.Response.Headers[HeaderNames.CacheControl] = "no-cache, must-revalidate";
+            context.Response.Headers[HeaderNames.CacheControl] = "no-cache, must-revalidate, no-transform";
         }
 
         private static void WriteCommonHeaders(HttpContext context, byte[] contents)
         {
             context.Response.ContentType = "application/javascript";
             context.Response.ContentLength = contents.Length;
+            context.Response.Headers[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
         }
 
         internal IEnumerable<RouteEndpointBuilder> CreateEndpoints(

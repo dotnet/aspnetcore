@@ -19,17 +19,20 @@ parameters:
   # publishing defaults
   artifacts: ''
   enableMicrobuild: false
+  enablePreviewMicrobuild: false
+  microbuildPluginVersion: 'latest'
   enableMicrobuildForMacAndLinux: false
   microbuildUseESRP: true
   enablePublishBuildArtifacts: false
   enablePublishBuildAssets: false
   enablePublishTestResults: false
+  enablePublishing: false
   enableBuildRetry: false
+  enableAstred: false
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
   name: ''
-  componentGovernanceSteps: []
   preSteps: []
   artifactPublishSteps: []
   runAsPublic: false
@@ -71,6 +74,14 @@ jobs:
     templateContext: ${{ parameters.templateContext }}
 
   variables:
+  - name: AllowPtrToDetectTestRunRetryFiles
+    value: true
+  # Component Governance detection and CodeQL are not run in the public project
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: skipComponentGovernanceDetection
+      value: true
+    - name: Codeql.SkipTaskAutoInjection
+      value: true
   - ${{ if ne(parameters.enableTelemetry, 'false') }}:
     - name: DOTNET_CLI_TELEMETRY_PROFILE
       value: '$(Build.Repository.Uri)'
@@ -109,7 +120,14 @@ jobs:
         - name: ${{ pair.key }}
           value: ${{ pair.value }}
 
-  # DotNet-HelixApi-Access provides 'HelixApiAccessToken' for internal builds
+  - ${{ if and(eq(parameters.enableAstred, true), eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - name: MSBUILDDEBUGENGINE
+      value: 1
+    - name: MSBUILDDEBUGPATH
+      value: $(Build.ArtifactStagingDirectory)/AstredCapture/binlogs
+
+  # DotNet-HelixApi-Access provides 'HelixApiAccessToken' for internal builds.
+  # Entra-enabled Helix templates do not forward this value to their processes.
   - ${{ if and(eq(parameters.enableTelemetry, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: DotNet-HelixApi-Access
 
@@ -128,6 +146,8 @@ jobs:
     - template: /eng/common/core-templates/steps/install-microbuild.yml
       parameters:
         enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enablePreviewMicrobuild: ${{ parameters.enablePreviewMicrobuild }}
+        microbuildPluginVersion: ${{ parameters.microbuildPluginVersion }}
         enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
         microbuildUseESRP: ${{ parameters.microbuildUseESRP }}
         continueOnError: ${{ parameters.continueOnError }}
@@ -146,13 +166,12 @@ jobs:
   - ${{ each step in parameters.steps }}:
     - ${{ step }}
 
-  - ${{ each step in parameters.componentGovernanceSteps }}:
-    - ${{ step }}
-
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/common/core-templates/steps/cleanup-microbuild.yml
       parameters:
         enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enablePreviewMicrobuild: ${{ parameters.enablePreviewMicrobuild }}
+        microbuildPluginVersion: ${{ parameters.microbuildPluginVersion }}
         enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
         continueOnError: ${{ parameters.continueOnError }}
 
@@ -225,3 +244,8 @@ jobs:
       condition: always()
   - ${{ each step in parameters.artifactPublishSteps }}:
     - ${{ step }}
+
+  - ${{ if and(eq(parameters.enableAstred, true), eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - template: /eng/common/core-templates/steps/astred-artifacts.yml
+      parameters:
+        binlogDir: $(MSBUILDDEBUGPATH)

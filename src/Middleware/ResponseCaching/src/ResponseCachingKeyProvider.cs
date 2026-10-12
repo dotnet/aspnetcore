@@ -15,6 +15,9 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     private const char KeyDelimiter = '\x1e';
     // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
     private const char KeySubDelimiter = '\x1f';
+    // Use the group separator for delimiting a name from its value and representing empty values to avoid possible collisions.
+    // A literal '=' cannot be used because it can legitimately appear in decoded header/query names and values.
+    private const char KeyNameValueDelimiter = '\x1d';
 
     private readonly ObjectPool<StringBuilder> _builderPool;
     private readonly ResponseCachingOptions _options;
@@ -33,12 +36,16 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         return new string[] { CreateStorageVaryByKey(context) };
     }
 
-    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH
+    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE<delimiter>/PATH
     public string CreateBaseKey(ResponseCachingContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
         var request = context.HttpContext.Request;
+
+        ThrowIfContainsDelimiters(request.PathBase.Value);
+        ThrowIfContainsDelimiters(request.Path.Value);
+
         var builder = _builderPool.Get();
 
         try
@@ -54,12 +61,14 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
             {
                 builder
                     .Append(request.PathBase.Value)
+                    .Append(KeyDelimiter)
                     .Append(request.Path.Value);
             }
             else
             {
                 builder
                     .AppendUpperInvariant(request.PathBase.Value)
+                    .Append(KeyDelimiter)
                     .AppendUpperInvariant(request.Path.Value);
             }
 
@@ -71,7 +80,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         }
     }
 
-    // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
+    // BaseKey<delimiter>H<delimiter>HeaderName<namevaluedelimiter>HeaderValue1<subdelimiter>HeaderValue2<delimiter>Q<delimiter>QueryName<namevaluedelimiter>QueryValue1<subdelimiter>QueryValue2
     public string CreateStorageVaryByKey(ResponseCachingContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -110,14 +119,18 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                     var headerValues = requestHeaders[header];
                     builder.Append(KeyDelimiter)
                         .Append(header)
-                        .Append('=');
+                        .Append(KeyNameValueDelimiter);
 
                     var headerValuesArray = headerValues.ToArray();
-                    Array.Sort(headerValuesArray, StringComparer.Ordinal);
 
                     for (var j = 0; j < headerValuesArray.Length; j++)
                     {
-                        builder.Append(headerValuesArray[j]);
+                        if (j > 0)
+                        {
+                            builder.Append(KeySubDelimiter);
+                        }
+
+                        AppendValue(builder, headerValuesArray[j]);
                     }
                 }
             }
@@ -138,12 +151,13 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
 
                     for (var i = 0; i < queryArray.Length; i++)
                     {
+                        ThrowIfContainsDelimiters(queryArray[i].Key);
+
                         builder.Append(KeyDelimiter)
                             .AppendUpperInvariant(queryArray[i].Key)
-                            .Append('=');
+                            .Append(KeyNameValueDelimiter);
 
                         var queryValueArray = queryArray[i].Value.ToArray();
-                        Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                         for (var j = 0; j < queryValueArray.Length; j++)
                         {
@@ -152,7 +166,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                                 builder.Append(KeySubDelimiter);
                             }
 
-                            builder.Append(queryValueArray[j]);
+                            AppendValue(builder, queryValueArray[j]);
                         }
                     }
                 }
@@ -164,10 +178,9 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                         var queryKeyValues = context.HttpContext.Request.Query[queryKey];
                         builder.Append(KeyDelimiter)
                             .Append(queryKey)
-                            .Append('=');
+                            .Append(KeyNameValueDelimiter);
 
                         var queryValueArray = queryKeyValues.ToArray();
-                        Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                         for (var j = 0; j < queryValueArray.Length; j++)
                         {
@@ -176,7 +189,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                                 builder.Append(KeySubDelimiter);
                             }
 
-                            builder.Append(queryValueArray[j]);
+                            AppendValue(builder, queryValueArray[j]);
                         }
                     }
                 }
@@ -187,6 +200,27 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         finally
         {
             _builderPool.Return(builder);
+        }
+    }
+
+    private static void AppendValue(StringBuilder builder, string? value)
+    {
+        ThrowIfContainsDelimiters(value);
+        if (string.IsNullOrEmpty(value))
+        {
+            builder.Append(KeyNameValueDelimiter);
+        }
+        else
+        {
+            builder.Append(value);
+        }
+    }
+
+    internal static void ThrowIfContainsDelimiters(string? value)
+    {
+        if (!string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter, KeyNameValueDelimiter))
+        {
+            throw new CacheKeyDelimiterException();
         }
     }
 

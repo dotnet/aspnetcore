@@ -1,7 +1,23 @@
 ﻿@page "/Account/InvalidUser"
 
+@using Microsoft.AspNetCore.Identity
+@using BlazorWebCSharp._1.Data
+@inject UserManager<ApplicationUser> UserManager
+
 <PageTitle>Invalid user</PageTitle>
 
 <h3>Invalid user</h3>
 
-<StatusMessage />
+<StatusMessage Message="@message" />
+
+@code {
+    private string? message;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        message = $"Error: Unable to load user with ID '{UserManager.GetUserId(HttpContext.User)}'.";
+    }
+}

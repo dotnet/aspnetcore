@@ -150,6 +150,9 @@
   <data name="BadRequest_InvalidRequestHeadersNoCRLF" xml:space="preserve">
     <value>Invalid request headers: missing final CRLF in header fields.</value>
   </data>
+  <data name="BadRequest_InvalidRequestHeader" xml:space="preserve">
+    <value>Invalid request header.</value>
+  </data>
   <data name="BadRequest_InvalidRequestHeader_Detail" xml:space="preserve">
     <value>Invalid request header: '{detail}'</value>
   </data>
@@ -193,6 +196,9 @@
     <value>Unexpected end of request content.</value>
   </data>
   <data name="BadRequest_UnrecognizedHTTPVersion" xml:space="preserve">
+    <value>Unrecognized HTTP version.</value>
+  </data>
+  <data name="BadRequest_UnrecognizedHTTPVersion_Detail" xml:space="preserve">
     <value>Unrecognized HTTP version: '{detail}'</value>
   </data>
   <data name="FallbackToIPv4Any" xml:space="preserve">
@@ -337,7 +343,7 @@
     <value>An endpoint must be configured to serve at least one protocol.</value>
   </data>
   <data name="EndPointHttp2NotNegotiated" xml:space="preserve">
-    <value>HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.</value>
+    <value>HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint. Ensure the client supports HTTP/2 and offers 'h2' during TLS ALPN negotiation, or enable HTTP/1.1 on the server endpoint as a fallback.</value>
   </data>
   <data name="Http2ErrorStreamIdEven" xml:space="preserve">
     <value>The client sent a {frameType} frame with even stream ID {streamId}.</value>
@@ -739,5 +745,11 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http3ControlStreamFrameTooLarge" xml:space="preserve">
     <value>The client sent a {frameType} frame to a control stream that was too large.</value>
+  </data>
+  <data name="BadRequest_BadChunkExtension" xml:space="preserve">
+    <value>Bad chunk extension.</value>
+  </data>
+  <data name="BadRequest_ChunkedExtensionNotAllowed" xml:space="preserve">
+    <value>Parsing chunked extensions is not enabled by default. It can be enabled by using 'Microsoft.AspNetCore.Server.Kestrel.EnableChunkedExtensions' AppContext switch. This switch might be removed in a future release.</value>
   </data>
 </root>

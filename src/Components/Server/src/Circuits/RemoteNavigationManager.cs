@@ -20,7 +20,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     private const string _disableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException";
 
     [FeatureSwitchDefinition(_disableThrowNavigationException)]
-    private static bool _throwNavigationException =>
+    private static bool _throwNavigationException { get; } =
         !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
     private Func<string, Task>? _onNavigateTo;
 
@@ -206,7 +206,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     {
         try
         {
-            await _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, WebRendererId.Server, value);
+            await _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, (int)WebRendererId.Server, value);
         }
         catch (JSDisconnectedException)
         {

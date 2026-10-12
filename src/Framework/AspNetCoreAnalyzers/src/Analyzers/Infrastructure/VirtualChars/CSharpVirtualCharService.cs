@@ -207,7 +207,7 @@ internal class CSharpVirtualCharService : AbstractVirtualCharService
         // we skip the space and newline that follow the initial `"""`.
         var startLineInclusive = tokenIncludeDelimiters ? 1 : 0;
 
-        // Similarly, if we're on the very last chunk of hte multi-line raw string literal, then we don't want to
+        // Similarly, if we're on the very last chunk of the multi-line raw string literal, then we don't want to
         // include the line contents for the line that has the final `    """` on it.
         var lastLineExclusive = tokenIncludeDelimiters ? tokenSourceText.Lines.Count - 1 : tokenSourceText.Lines.Count;
 

@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using Microsoft.Extensions.ObjectPool;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -13,35 +14,26 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// </summary>
 internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
 {
-    private readonly ObjectPool<AntiforgerySerializationContext> _pool;
-
-    public DefaultClaimUidExtractor(ObjectPool<AntiforgerySerializationContext> pool)
-    {
-        _pool = pool;
-    }
-
-    /// <inheritdoc />
-    public string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
+    public bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination)
     {
         Debug.Assert(claimsPrincipal != null);
 
         var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsPrincipal.Identities);
-        if (uniqueIdentifierParameters == null)
+        if (uniqueIdentifierParameters is null)
         {
-            // No authenticated identities containing claims found.
-            return null;
+            return false;
         }
 
-        var claimUidBytes = ComputeSha256(uniqueIdentifierParameters);
-        return Convert.ToBase64String(claimUidBytes);
+        ComputeSha256(uniqueIdentifierParameters, destination);
+        return true;
     }
 
-    public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
+    public static List<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
     {
         var identitiesList = claimsIdentities as List<ClaimsIdentity>;
         if (identitiesList == null)
         {
-            identitiesList = new List<ClaimsIdentity>(claimsIdentities);
+            identitiesList = [.. claimsIdentities];
         }
 
         for (var i = 0; i < identitiesList.Count; i++)
@@ -56,36 +48,36 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
                 claim => string.Equals("sub", claim.Type, StringComparison.Ordinal));
             if (subClaim != null && !string.IsNullOrEmpty(subClaim.Value))
             {
-                return new string[]
-                {
-                        subClaim.Type,
-                        subClaim.Value,
-                        subClaim.Issuer
-                };
+                return
+                [
+                    subClaim.Type,
+                    subClaim.Value,
+                    subClaim.Issuer
+                ];
             }
 
             var nameIdentifierClaim = identity.FindFirst(
                 claim => string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal));
             if (nameIdentifierClaim != null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
             {
-                return new string[]
-                {
-                        nameIdentifierClaim.Type,
-                        nameIdentifierClaim.Value,
-                        nameIdentifierClaim.Issuer
-                };
+                return
+                [
+                    nameIdentifierClaim.Type,
+                    nameIdentifierClaim.Value,
+                    nameIdentifierClaim.Issuer
+                ];
             }
 
             var upnClaim = identity.FindFirst(
                 claim => string.Equals(ClaimTypes.Upn, claim.Type, StringComparison.Ordinal));
             if (upnClaim != null && !string.IsNullOrEmpty(upnClaim.Value))
             {
-                return new string[]
-                {
-                        upnClaim.Type,
-                        upnClaim.Value,
-                        upnClaim.Issuer
-                };
+                return
+                [
+                    upnClaim.Type,
+                    upnClaim.Value,
+                    upnClaim.Issuer
+                ];
             }
         }
 
@@ -119,33 +111,42 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
         return identifierParameters;
     }
 
-    private byte[] ComputeSha256(IEnumerable<string> parameters)
+    private static void ComputeSha256(List<string> parameters, Span<byte> destination)
     {
-        var serializationContext = _pool.Get();
+        Debug.Assert(destination.Length >= SHA256.HashSizeInBytes);
+
+        // Calculate total size needed for serialization
+        var totalSize = 0;
+        for (var i = 0; i < parameters.Count; i++)
+        {
+            var byteCount = System.Text.Encoding.UTF8.GetByteCount(parameters[i]);
+            totalSize += byteCount.Measure7BitEncodedUIntLength() + byteCount;
+        }
+
+        // Use stackalloc for small buffers, otherwise rent
+        byte[]? rentedBuffer = null;
+        var buffer = totalSize <= 256
+            ? stackalloc byte[256]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(totalSize));
 
         try
         {
-            var writer = serializationContext.Writer;
-            foreach (string parameter in parameters)
+            var span = buffer[..totalSize];
+            var offset = 0;
+            for (var i = 0; i < parameters.Count; i++)
             {
-                writer.Write(parameter); // also writes the length as a prefix; unambiguous
+                offset += span.Slice(offset).Write7BitEncodedString(parameters[i]);
             }
 
-            writer.Flush();
-
-            bool success = serializationContext.Stream.TryGetBuffer(out ArraySegment<byte> buffer);
-            if (!success)
-            {
-                throw new InvalidOperationException();
-            }
-
-            var bytes = SHA256.HashData(buffer);
-
-            return bytes;
+            // Hash directly into destination (SHA256 output is always 32 bytes)
+            SHA256.HashData(span.Slice(0, offset), destination);
         }
         finally
         {
-            _pool.Return(serializationContext);
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer);
+            }
         }
     }
 }

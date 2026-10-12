@@ -12,16 +12,24 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
-public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class RedirectionTest :
+    ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>,
+    IClassFixture<BasicTestAppServerSiteFixture<ExternalNavigationStartup>>
 {
+    private readonly Uri _externalNavigationTargetUri;
+    private readonly Uri _externalNavigationTargetUriWithQuery;
     private IWebElement _originalH1Element;
 
     public RedirectionTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        BasicTestAppServerSiteFixture<ExternalNavigationStartup> externalNavigationFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
+        _externalNavigationTargetUri = new Uri(externalNavigationFixture.RootUri, "/external-navigation-target");
+        _externalNavigationTargetUriWithQuery = new Uri($"{_externalNavigationTargetUri}?foo=🙂");
+        serverFixture.AdditionalArguments.Add($"--ExternalNavigationTargetUri={_externalNavigationTargetUri.AbsoluteUri}");
     }
 
     public override async Task InitializeAsync()
@@ -38,7 +46,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectStreamingGetToInternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         Browser.Exists(By.LinkText("Streaming GET with internal redirection")).Click();
         AssertElementRemoved(_originalH1Element);
@@ -57,9 +65,9 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectStreamingGetToExternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
         Browser.Exists(By.LinkText("Streaming GET with external redirection")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
@@ -67,7 +75,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectStreamingPostToInternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         Browser.Exists(By.CssSelector("#form-streaming-internal button")).Click();
         AssertElementRemoved(_originalH1Element);
@@ -86,9 +94,9 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectStreamingPostToExternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
         Browser.Exists(By.CssSelector("#form-streaming-external button")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
@@ -96,7 +104,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectEnhancedGetToInternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         // Note that for enhanced nav we can't preserve the hash part of the URL, as it
         // gets discarded when the browser follows a 'fetch' redirection. This is not solvable
@@ -119,9 +127,9 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectEnhancedGetToExternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
         Browser.Exists(By.LinkText("Enhanced GET with external redirection")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
@@ -129,7 +137,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectEnhancedPostToInternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-enhanced-internal button")).Click();
@@ -147,9 +155,9 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectEnhancedPostToExternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
         Browser.Exists(By.CssSelector("#form-enhanced-external button")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
@@ -157,7 +165,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectStreamingEnhancedGetToInternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.LinkText("Streaming enhanced GET with internal redirection")).Click();
@@ -175,19 +183,18 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectStreamingEnhancedGetToExternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         Browser.Exists(By.LinkText("Streaming enhanced GET with external redirection")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
-    
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void RedirectStreamingEnhancedPostToInternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-streaming-enhanced-internal button")).Click();
@@ -205,18 +212,19 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectStreamingEnhancedPostToExternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         Browser.Exists(By.CssSelector("#form-streaming-enhanced-external button")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67342")]
     public void RedirectEnhancedNonBlazorGetToInternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.LinkText("Enhanced GET to non-Blazor endpoint with internal redirection")).Click();
@@ -234,10 +242,10 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectEnhancedNonBlazorGetToExternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         Browser.Exists(By.LinkText("Enhanced GET to non-Blazor endpoint with external redirection")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted(hasQuery: false);
     }
 
     [Theory]
@@ -245,7 +253,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectEnhancedNonBlazorPostToInternal(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-nonblazor-enhanced-internal button")).Click();
@@ -268,7 +276,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [InlineData(false)]
     public void RedirectEnhancedGetToInternalWithErrorBoundary(bool disableThrowNavigationException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);
 
         // This test verifies that redirection works even if an ErrorBoundary wraps
         // a component throwing a NavigationException.
@@ -284,13 +292,16 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/63708/")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66118")]
     public void NavigationException_InAsyncContext_DoesNotBecomeUnobservedTaskException()
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", false);
+        TestFeatureSwitches.SetDisableThrowNavigationException(false);
 
         // Navigate to the page that triggers the circular redirect.
         Navigate($"{ServerPathBase}/redirect/circular");
+
+        // Wait for the circular redirects to settle.
+        Browser.Exists(By.Id("unobserved-exceptions-count"));
 
         // The component will stop redirecting after 3 attempts and render the exception count.
         Browser.Equal("0", () => Browser.FindElement(By.Id("unobserved-exceptions-count")).Text);
@@ -311,5 +322,12 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
             return false;
         });
+    }
+
+    private void AssertExternalNavigationCompleted(bool hasQuery = true)
+    {
+        var expectedUri = hasQuery ? _externalNavigationTargetUriWithQuery : _externalNavigationTargetUri;
+        Browser.Equal(expectedUri, () => new Uri(Browser.Url));
+        Browser.Exists(By.Id("external-navigation-target"));
     }
 }

@@ -40,26 +40,6 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     /// Creates a <see cref="ModelMetadataIdentity"/> for the provided property.
     /// </summary>
     /// <param name="modelType">The model type.</param>
-    /// <param name="name">The name of the property.</param>
-    /// <param name="containerType">The container type of the model property.</param>
-    /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
-    [Obsolete("This API is obsolete and may be removed in a future release. Please use the overload that takes a PropertyInfo object.")] // Remove after .NET 6.
-    public static ModelMetadataIdentity ForProperty(
-        Type modelType,
-        string name,
-        Type containerType)
-    {
-        ArgumentNullException.ThrowIfNull(modelType);
-        ArgumentNullException.ThrowIfNull(containerType);
-        ArgumentException.ThrowIfNullOrEmpty(name);
-
-        return new ModelMetadataIdentity(modelType, name, containerType);
-    }
-
-    /// <summary>
-    /// Creates a <see cref="ModelMetadataIdentity"/> for the provided property.
-    /// </summary>
-    /// <param name="modelType">The model type.</param>
     /// <param name="propertyInfo">The property.</param>
     /// <param name="containerType">The container type of the model property.</param>
     /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>

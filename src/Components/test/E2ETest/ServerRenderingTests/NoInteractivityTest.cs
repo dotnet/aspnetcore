@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
+using System;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -72,7 +72,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false, true)]
     public void NavigatesWithoutInteractivityByRequestRedirection(bool controlFlowByException, bool isStreaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: !controlFlowByException);
+        TestFeatureSwitches.SetDisableThrowNavigationException(!controlFlowByException);
         string streaming = isStreaming ? $"streaming-" : "";
         Navigate($"{ServerPathBase}/routing/ssr-{streaming}navigate-to");
         Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
@@ -85,7 +85,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false)]
     public void ProgrammaticNavigationToNotExistingPath_ReExecutesTo404(bool streaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        TestFeatureSwitches.SetDisableThrowNavigationException(true);
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}?navigate-programmatically=true");
         AssertReExecutionPageRendered();
@@ -94,7 +94,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [Fact]
     public void ProgrammaticNavigationToNotExistingPath_AfterAsyncOperation_ReExecutesTo404()
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        TestFeatureSwitches.SetDisableThrowNavigationException(true);
         Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr?doAsync=true&navigate-programmatically=true");
         AssertReExecutionPageRendered();
     }
@@ -104,7 +104,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false)]
     public void LinkNavigationToNotExistingPath_ReExecutesTo404(bool streaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        TestFeatureSwitches.SetDisableThrowNavigationException(true);
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}");
         Browser.Click(By.Id("link-to-not-existing-page"));
@@ -116,13 +116,30 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false)]
     public void BrowserNavigationToNotExistingPath_ReExecutesTo404(bool streaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        TestFeatureSwitches.SetDisableThrowNavigationException(true);
         // non-existing path has to have re-execution middleware set up
         // so it has to have "reexecution" prefix. Otherwise middleware mapping
         // will not be activated, see configuration in Startup
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/not-existing-page-ssr{streamingPath}");
         AssertReExecutionPageRendered();
+    }
+
+    [Fact]
+    public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404()
+    {
+        TestFeatureSwitches.SetDisableThrowNavigationException(true);
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page?useOnNavigateAsync=true");
+        AssertReExecutionPageRendered();
+    }
+
+    [Fact]
+    public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404_CanStream()
+    {
+        TestFeatureSwitches.SetDisableThrowNavigationException(true);
+        Navigate($"{ServerPathBase}/streaming-reexecution/not-existing-page?useOnNavigateAsync=true");
+        AssertReExecutionPageRendered();
+        Browser.Equal("Streaming completed.", () => Browser.Exists(By.Id("reexecute-streaming-status")).Text);
     }
 
     private void AssertReExecutionPageRendered() =>
@@ -192,7 +209,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false, true)]
     [InlineData(false, false)]
     // This tests the application subscribing to OnNotFound event and setting NotFoundEventArgs.Path, opposed to the framework doing it for the app.
-    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR (bool streaming, bool customRouter)
+    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR(bool streaming, bool customRouter)
     {
         string streamingPath = streaming ? "-streaming" : "";
         string testUrl = $"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomRouter={customRouter}&appSetsEventArgsPath=true";
@@ -424,6 +441,27 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
         AssertReExecutionPageRendered();
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Fact]
+    public void NotFoundSetOnInitialization_AppSetsEventArgsPathToAuthorizedRoute_AnonymousUser_RendersNotAuthorizedContent()
+    {
+        string testUrl = $"{ServerPathBase}/set-not-found-ssr?appSetsEventArgsPath=true&useAuthorizedNotFoundPage=true";
+        Navigate(testUrl);
+
+        Browser.Equal("Not authorized to view this page.", () => Browser.Exists(By.Id("not-authorized-content")).Text);
+        Browser.DoesNotExist(By.Id("protected-not-found-content"));
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Fact]
+    public void NotFoundSetOnInitialization_AuthorizedNotFoundPage_AnonymousUser_RendersNotAuthorizedContent()
+    {
+        string testUrl = $"{ServerPathBase}/set-not-found-ssr?useAuthorizedNotFoundPage=true";
+        Navigate(testUrl);
+        Browser.Equal("Not authorized to view this page.", () => Browser.Exists(By.Id("not-authorized-content")).Text);
+        Browser.DoesNotExist(By.Id("protected-not-found-content"));
         AssertUrlNotChanged(testUrl);
     }
 

@@ -144,7 +144,6 @@ public class OpenApiAddFileTests : OpenApiTestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61225")]
     public async Task OpenApi_Add_FromJson()
     {
         var project = CreateBasicProject(withOpenApi: true);
@@ -185,7 +184,6 @@ public class OpenApiAddFileTests : OpenApiTestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61225")]
     public async Task OpenApi_Add_MultipleTimes_OnlyOneReference()
     {
         var project = CreateBasicProject(withOpenApi: true);

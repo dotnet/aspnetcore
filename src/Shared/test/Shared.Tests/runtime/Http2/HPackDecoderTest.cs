@@ -679,6 +679,45 @@ namespace System.Net.Http.Unit.Tests.HPack
         }
 
         [Fact]
+        public void HuffmanDecodedHeaderName_ExceedsLimitAfterDecoding_Throws()
+        {
+            // '0' (ASCII 48) has a 5-bit Huffman code (00000).
+            // 16 '0' characters = 80 Huffman bits = 10 encoded bytes, but decodes to 16 bytes.
+            // Encoded length (10) passes the pre-decode check (<= 10), but decoded length (16) exceeds the limit.
+            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, maxHeadersLength: 10);
+
+            byte[] encoded = [
+                0x00,       // Literal header field without indexing, new name
+                0x8a,       // Huffman flag set (0x80) + string length 10 (7-bit prefix)
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10 bytes Huffman -> 16 '0' chars
+                0x01,       // String length = 1 (no Huffman)
+                0x61        // Value = "a"
+            ];
+
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, 10), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+        }
+
+        [Fact]
+        public void HuffmanDecodedHeaderValue_ExceedsLimitAfterDecoding_Throws()
+        {
+            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, maxHeadersLength: 10);
+
+            byte[] encoded = [
+                0x00,       // Literal header field without indexing, new name
+                0x01,       // String length = 1 (no Huffman)
+                0x61,       // Name = "a"
+                0x8a,       // Huffman flag set (0x80) + string length 10 (7-bit prefix)
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  // 10 bytes Huffman -> 16 '0' chars
+            ];
+
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, 10), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+        }
+
+        [Fact]
         public void DecodesStringLength_LimitConfigurable()
         {
             HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);

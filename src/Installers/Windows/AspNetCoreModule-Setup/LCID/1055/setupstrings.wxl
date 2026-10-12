@@ -3,49 +3,49 @@
   <String Id="Language" Value="1033"/>
 
   <!-- Strings for AspNetCore Module -->
-  <String Id="AspNetCoreModuleProductName" Value="Microsoft ASP.NET Core Module"/>
-  <String Id="AspNetCoreModuleProductNameV2" Value="Microsoft ASP.NET Core Module V2"/>
-  <String Id="AspNetCoreModuleProductTitle" Value="ASP.NET Core IIS Runtime"/>
-  <String Id="AspNetCoreModuleProductDescription" Value="Adds the support of asp.net core application to IIS."/>
-  <String Id="AspNetCoreIISExpressModuleProductName" Value="Microsoft ASP.NET Core Module for IIS Express"/>
-  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="Microsoft ASP.NET Core Module V2 for IIS Express"/>
-  <String Id="AspNetCoreModuleIISExpressPrereq" Value="IIS Express 8.0 or higher is not installed."/>
+  <String Id="AspNetCoreModuleProductName" Value="Microsoft ASP.NET Core Modülü"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Microsoft ASP.NET Core Modülü V2"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="ASP.NET Core IIS Çalışma Zamanı"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="IIS'ye asp.net core uygulaması desteği ekler."/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="IIS Express için Microsoft ASP.NET Core Modülü"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="IIS Express için Microsoft ASP.NET Core Modülü V2"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="IIS Express 8.0 veya üzeri yüklü değil."/>
 
   <!--Custom errors for OOB Projects -->
 
   <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
-  <String Id="ConflictingProduct" Overridable="yes" Value="An incompatible product, [CONFLICTING_PRODUCT_NAME], is on this computer. Installation of [ProductName] cannot continue. To install this product, use Add/Remove Programs on the Control Panel to remove [CONFLICTING_PRODUCT_NAME]."/>
-  <String Id="AdminRequired" Overridable="yes" Value="Administrator privilege is required to install [ProductName]."/>
-  <String Id="IIS7Only" Overridable="yes" Value="IIS Version 7.0 is required to use [ProductName]."/>
-  <String Id="IIS7OrGreater" Overridable="yes" Value="IIS Version 7.0 or greater is required to install [ProductName]."/>
-  <String Id="IIS75OrGreater" Overridable="yes" Value="IIS Version 7.5 or greater is required to install [ProductName]."/>
-  <String Id="IIS7Or75Only" Overridable="yes" Value="IIS Version 7 or 7.5 is required to install [ProductName]."/>
-  <String Id="IIS8OrGreater" Overridable="yes" Value="IIS Version 8.0 or greater is required to install [ProductName]."/>
-  <String Id="BetaVersionFound" Overridable="yes" Value="The beta version of [ProductName] was found on this machine."/>
-  <String Id="NewerVersionFound" Overridable="yes" Value="A newer version of [ProductName] was found on this machine."/>
-  <String Id="DuplicateVersionFound" Overridable="yes" Value="Setup cannot continue because another instance of [ProductName] is already installed on this computer. Please uninstall it first and then re-launch this installation."/>
-  <String Id="CoreWebW3SVC" Overridable="yes" Value="The IIS 7.0 CoreWebEngine and W3SVC features must be installed to use [ProductName]."/>
-  <String Id="IISManagementConsole" Overridable="yes" Value="The IIS Management Console must be installed to use [ProductName]."/>
-  <String Id="WebServicesRunning" Overridable="yes" Value="Please stop both services Windows Process Activation Service (WAS) and Web Management Service (WMSvc) before installing [ProductName]. You will need to start the services after installing [ProductName]."/>
-  <String Id="MetabaseRequired" Overridable="yes" Value="IIS Metabase is required to install [ProductName]."/>
-  <String Id="LaunchCondition_32BIT" Value="The 64-bit version of [ProductName] cannot be installed on a 32-bit edition of Microsoft Windows."/>
-  <String Id="LaunchCondition_64BIT" Value="The 32-bit version of [ProductName] cannot be installed on a 64-bit edition of Microsoft Windows."/>
-  <String Id="NetFX2OrGreaterRequired" Value="Microsoft .NET Framework Version 2.0 or greater is required to install [ProductName]."/>
-  <String Id="NetFX35OrGreaterRequired" Value="Microsoft .NET Framework Version 3.5 or greater is required to install [ProductName]. Use 'Add Features' under the Server Manager to install Microsoft .Net Version 3.5."/>
-  <String Id="NetFX4OrGreaterRequired" Value="Microsoft .NET Framework Version 4.0 or greater is required to install [ProductName]."/>
-  <String Id="NetFX20SP1IsRequired" Value="Please install Microsoft .NET Framework Version 2.0 Service Pack 1 (or a later service pack), before installing [ProductName]."/>
-  <String Id="WindowsUpdateEnabled" Value="The Windows Update (wuauserv) service cannot be disabled, it is required to install [ProductName]."/>
-  <String Id="GetFromOSforWin7" Value="The PowerShell snap-in is part of Windows Operating System. Please install it via 'Programs and Features' or 'Server Manager'."/>
-  <String Id="WebPI3OrGreaterRequired" Value="Microsoft Web Platform Installer Version 3.0 or greater is required to install [ProductName]."/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="Bu bilgisayarda uyumsuz bir ürün olan [CONFLICTING_PRODUCT_NAME] bulunuyor. [ProductName] kurulumu devam edemiyor. Bu ürünü yüklemek için, Denetim Masası'ndaki Program Ekle/Kaldır'ı kullanarak [CONFLICTING_PRODUCT_NAME ]'i kaldırın."/>
+  <String Id="AdminRequired" Overridable="yes" Value="[ProductName] yüklemek için yönetici ayrıcalığı gereklidir."/>
+  <String Id="IIS7Only" Overridable="yes" Value="[ProductName] kullanmak için IIS Sürüm 7.0 gereklidir."/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="[ProductName] yüklemek için IIS Sürüm 7.0 veya üzeri gereklidir."/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="[ProductName] yüklemek için IIS Sürüm 7.5 veya üzeri gereklidir."/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="[ProductName] yüklemek için IIS Sürüm 7 veya 7.5 gereklidir."/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="[ProductName] yüklemek için IIS Sürüm 8.0 veya üzeri gereklidir."/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="Bu makinede [ProductName] beta sürümü bulundu."/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="Bu makinede [ProductName]’in daha yeni bir sürümü bulundu."/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="Bu bilgisayarda başka bir [ProductName] örneği zaten yüklü olduğu için kurulum devam edemiyor. Lütfen önce onu kaldırın ve ardından bu yüklemeyi yeniden başlatın."/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="[ProductName] kullanmak için IIS 7.0 CoreWebEngine ve W3SVC özellikleri yüklü olmalıdır."/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="[ProductName] kullanmak için IIS Yönetim Konsolu yüklü olmalıdır."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="[ProductName] yüklemeden önce Windows İşlem Etkinleştirme Hizmeti (WAS) ve Web Yönetimi Hizmeti (WMSvc) hizmetlerini durdurun. [ProductName] yüklemesinden sonra bu hizmetleri başlatmanız gerekecek."/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="[ProductName] yüklemek için IIS Metatabanı gereklidir."/>
+  <String Id="LaunchCondition_32BIT" Value="[ProductName]'in 64 bit sürümü, 32 bit Microsoft Windows sürümüne yüklenemez."/>
+  <String Id="LaunchCondition_64BIT" Value="[ProductName]'in 32 bit sürümü, 64 bit Microsoft Windows sürümüne yüklenemez."/>
+  <String Id="NetFX2OrGreaterRequired" Value="[ProductName] yüklemek için Microsoft .NET Framework Sürüm 2.0 veya üzeri gereklidir."/>
+  <String Id="NetFX35OrGreaterRequired" Value="[ProductName] yüklemek için Microsoft .NET Framework Sürüm 3.5 veya üzeri gereklidir. Microsoft .NET Sürüm 3.5'i yüklemek için Sunucu Yöneticisi altındaki 'Özellik Ekle' seçeneğini kullanın."/>
+  <String Id="NetFX4OrGreaterRequired" Value="[ProductName] yüklemek için Microsoft .NET Framework Sürüm 4.0 veya üzeri gereklidir."/>
+  <String Id="NetFX20SP1IsRequired" Value="[ProductName] yüklemeden önce lütfen Microsoft .NET Framework Sürüm 2.0 Hizmet Paketi 1 (veya daha yeni bir hizmet paketi) yükleyin."/>
+  <String Id="WindowsUpdateEnabled" Value="Windows Update (wuauserv) hizmeti devre dışı bırakılamaz, [ProductName] yüklemek için gereklidir."/>
+  <String Id="GetFromOSforWin7" Value="PowerShell ek bileşeni Windows İşletim Sistemi'nin bir parçasıdır. Lütfen 'Programlar ve Özellikler' veya 'Sunucu Yöneticisi' üzerinden yükleyin."/>
+  <String Id="WebPI3OrGreaterRequired" Value="[ProductName] yüklemek için Microsoft Web Platformu Yükleyicisi Sürüm 3.0 veya üzeri gereklidir."/>
 
-  <String Id="Error30001" Overridable="yes" Value="Setup failed to detect shared configuration."/>
-  <String Id="Error30002" Overridable="yes" Value="Shared configuration is enabled for IIS. Installing [ProductName] is not supported when using shared configuration. Please disable shared configuration before installing this feature."/>
+  <String Id="Error30001" Overridable="yes" Value="Kurulum paylaşılan yapılandırmayı algılayamadı."/>
+  <String Id="Error30002" Overridable="yes" Value="IIS için paylaşılan yapılandırma etkin. Paylaşılan yapılandırma kullanılırken [ProductName] yüklenemez. Bu özelliği yüklemeden önce paylaşılan yapılandırmayı devre dışı bırakın."/>
 
-  <String Id="W3SVCRunning" Overridable="yes" Value="Please stop World Wide Web Publishing Service (W3SVC) before installing [ProductName]. You will need to start the service after installation."/>
-  <String Id="IISPowershellConsole" Value="IIS PowerShell Management Console"/>
-  <String Id="IISPowershellSnapin" Value="IIS PowerShell snap-in"/>
-  <String Id="PowerShellRequired" Value="IIS PowerShell snap-in requires PowerShell v1.0 or v2.0 installed"/>
-  <String Id="WasAndConfigRequired" Value="IIS PowerShell snap-in requires WAS and configuration installed"/>
-  <String Id="TestBogusString" Overridable="yes" Value="This is a bogus string."/>
+  <String Id="W3SVCRunning" Overridable="yes" Value="[ProductName] yüklemeden önce lütfen World Wide Web Yayımlama Hizmeti’ni (W3SVC) durdurun. Yüklemeden sonra hizmeti başlatmanız gerekir."/>
+  <String Id="IISPowershellConsole" Value="IIS PowerShell Yönetim Konsolu"/>
+  <String Id="IISPowershellSnapin" Value="IIS PowerShell ek bileşeni"/>
+  <String Id="PowerShellRequired" Value="IIS PowerShell ek bileşeni için PowerShell v1.0 veya v2.0 yüklü olmalıdır"/>
+  <String Id="WasAndConfigRequired" Value="IIS PowerShell ek bileşeni için WAS ve yapılandırma yüklü olmalıdır"/>
+  <String Id="TestBogusString" Overridable="yes" Value="Bu sahte bir dizedir."/>
 
 </WixLocalization>

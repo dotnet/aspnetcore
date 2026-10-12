@@ -4,6 +4,8 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Diagnostics.Tracing;
+using System.Globalization;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -260,8 +262,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.Request.Protocol = "HTTP/2";
@@ -276,14 +278,14 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         Assert.Empty(context.MetricsTagsFeature.TagsList);
@@ -319,8 +321,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.SetEndpoint(new Endpoint(
@@ -335,20 +337,20 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
         Assert.Collection(requestDurationCollector.GetMeasurementSnapshot(),
             m =>
             {
                 Assert.True(m.Value > 0);
-                Assert.Equal("hello/{name}", m.Tags["http.route"]);
+                Assert.Equal("hello/{name}", m.Tags[HostingTelemetryHelpers.AttributeHttpRoute]);
             });
     }
 
@@ -384,8 +386,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.SetEndpoint(new Endpoint(
@@ -400,20 +402,20 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
         Assert.Collection(requestDurationCollector.GetMeasurementSnapshot(),
             m =>
             {
                 Assert.True(m.Value > 0);
-                Assert.Equal("/", m.Tags["http.route"]);
+                Assert.Equal("/", m.Tags[HostingTelemetryHelpers.AttributeHttpRoute]);
             });
     }
 
@@ -444,8 +446,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.SetEndpoint(new Endpoint(
@@ -460,14 +462,14 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
         Assert.Empty(requestDurationCollector.GetMeasurementSnapshot());
     }
@@ -499,8 +501,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.Features.Get<IHttpMetricsTagsFeature>().MetricsDisabled = true;
@@ -515,14 +517,14 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
         Assert.Empty(requestDurationCollector.GetMeasurementSnapshot());
         Assert.False(context.MetricsTagsFeature.MetricsDisabled);
@@ -530,7 +532,12 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
 
     private sealed class TestRouteDiagnosticsMetadata : IRouteDiagnosticsMetadata
     {
-        public string Route { get; } = "hello/{name}";
+        public TestRouteDiagnosticsMetadata(string route = "hello/{name}")
+        {
+            Route = route;
+        }
+
+        public string Route { get; }
     }
 
     [Fact]
@@ -1081,10 +1088,10 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
-    public void ActivityListenersAreCalled()
+    public void ActivityListeners_SuppressActivityTags_NoTagsAdded()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
-        var hostingApplication = CreateApplication(out var features, activitySource: testSource);
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: true);
         var parentSpanId = "";
         var tags = new List<KeyValuePair<string, object>>();
         using var listener = new ActivityListener
@@ -1111,6 +1118,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             },
             PathBase = "/path_base",
             Path = "/path",
+            QueryString = "?q=OpenTelemetry&sig=secret",
             Scheme = "http",
             Method = "CUSTOM_METHOD",
             Protocol = "HTTP/1.1"
@@ -1123,7 +1131,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
-    public void ActivityListeners_DontSuppressActivityTags_TagsAdded()
+    public void ActivityListeners_TagsAdded()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false);
@@ -1153,6 +1161,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             },
             PathBase = "/path_base",
             Path = "/path",
+            QueryString = "?q=OpenTelemetry&sig=secret",
             Scheme = "http",
             Method = "CUSTOM_METHOD",
             Protocol = "HTTP/1.1"
@@ -1167,6 +1176,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             kvp => AssertKeyValuePair(kvp, "server.address", "localhost"),
             kvp => AssertKeyValuePair(kvp, "server.port", 8080),
             kvp => AssertKeyValuePair(kvp, "url.path", "/path_base/path"),
+            kvp => AssertKeyValuePair(kvp, "url.query", "q=OpenTelemetry&sig=REDACTED"),
             kvp => AssertKeyValuePair(kvp, "url.scheme", "http"));
 
         static void AssertKeyValuePair<T>(KeyValuePair<string, T> pair, string key, T value)
@@ -1174,6 +1184,248 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             Assert.Equal(key, pair.Key);
             Assert.Equal(value, pair.Value);
         }
+    }
+
+    [Fact]
+    public void ActivityListeners_ClientAndNetworkPeerAddressTagsAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false,
+            configure: c =>
+            {
+                c.Connection.RemoteIpAddress = IPAddress.Parse("192.0.2.1");
+                c.Connection.RemotePort = 65123;
+            });
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost" }
+            },
+            Scheme = "http",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeClientAddress]);
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeNetworkPeerAddress]);
+        Assert.Equal(65123, tags[HostingTelemetryHelpers.AttributeNetworkPeerPort]);
+    }
+
+    [Fact]
+    public void ActivityListeners_ClientAddressTagUpdatedWhenRemoteIpAddressChanges()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false,
+            configure: c => c.Connection.RemoteIpAddress = IPAddress.Parse("192.0.2.1"));
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.1");
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+        Assert.Equal("203.0.113.1", tags[HostingTelemetryHelpers.AttributeClientAddress]);
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeNetworkPeerAddress]);
+    }
+
+    [Fact]
+    public void ActivityListeners_NetworkPeerPortTagNotAddedWhenZero()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false,
+            configure: c =>
+            {
+                c.Connection.RemoteIpAddress = IPAddress.Parse("192.0.2.1");
+                c.Connection.RemotePort = 0;
+            });
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost" }
+            },
+            Scheme = "http",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeClientAddress]);
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeNetworkPeerAddress]);
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkPeerPort));
+    }
+
+    [Fact]
+    public void ActivityListeners_NoRemoteIpAddress_ClientAndNetworkPeerAddressTagsNotAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false);
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost" }
+            },
+            Scheme = "http",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeClientAddress));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkPeerAddress));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkPeerPort));
+    }
+
+    [Theory]
+    [InlineData("", null)]
+    [InlineData("?", "")]
+    [InlineData("?q=OpenTelemetry",
+                 "q=OpenTelemetry")]
+    [InlineData("?X-Amz-Signature=signature&X-Amz-Credential=credential&X-Amz-Security-Token=token&AWSAccessKeyId=key&Signature=signature&sig=sas&X-Goog-Signature=google",
+                 "X-Amz-Signature=REDACTED&X-Amz-Credential=REDACTED&X-Amz-Security-Token=REDACTED&AWSAccessKeyId=key&Signature=signature&sig=REDACTED&X-Goog-Signature=REDACTED")]
+    [InlineData("?x-amz-signature=signature&x-amz-credential=credential&x-amz-security-token=token&awsaccesskeyid=key&signature=signature&SIG=sas&x-goog-signature=google",
+                 "x-amz-signature=signature&x-amz-credential=credential&x-amz-security-token=token&awsaccesskeyid=key&signature=signature&SIG=sas&x-goog-signature=google")]
+    [InlineData("?%73ig=encoded&sig=&sig",
+                 "%73ig=REDACTED&sig=REDACTED&sig")]
+    public void ActivityListeners_QueryTagIsAvailableToSampler(string queryString, string expectedQuery)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false);
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+            {
+                var queryTags = options.Tags.Where(tag => tag.Key == HostingTelemetryHelpers.AttributeUrlQuery);
+                if (expectedQuery is null)
+                {
+                    Assert.Empty(queryTags);
+                }
+                else
+                {
+                    Assert.Equal(expectedQuery, Assert.Single(queryTags).Value);
+                }
+
+                return ActivitySamplingResult.AllData;
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature
+        {
+            QueryString = queryString
+        });
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+    }
+
+    [Fact]
+    public void ActivityListeners_SuppressActivityUrlQuery_QueryTagNotAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(
+            out var features,
+            activitySource: testSource,
+            suppressActivityOpenTelemetryData: false,
+            suppressActivityUrlQuery: true);
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+            {
+                var tags = options.Tags.ToDictionary();
+                Assert.Equal("GET", tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
+                Assert.Equal("/", tags[HostingTelemetryHelpers.AttributeUrlPath]);
+                Assert.Equal("http", tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlQuery));
+                return ActivitySamplingResult.AllData;
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature
+        {
+            Method = "GET",
+            Scheme = "http",
+            QueryString = "?q=OpenTelemetry"
+        });
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+    }
+
+    [Theory]
+    [InlineData(null, "CONNECT", "CONNECT")]
+    [InlineData(null, "connect", "CONNECT")]
+    [InlineData("", "GET", "GET")]
+    [InlineData("", "get", "GET")]
+    [InlineData("GET,CUSTOM", "GET", "GET")]
+    [InlineData("GET,CUSTOM", "CUSTOM", "CUSTOM")]
+    [InlineData("GET,CUSTOM", "custom", "_OTHER")]
+    [InlineData("GET,CUSTOM", "POST", "_OTHER")]
+    [InlineData("get,Custom", "get", "get")]
+    [InlineData("get,Custom", "GET", "_OTHER")]
+    [InlineData("get,Custom", "Custom", "Custom")]
+    [InlineData("get,Custom", "custom", "_OTHER")]
+    [InlineData("CUSTOM,custom", "CUSTOM", "CUSTOM")]
+    [InlineData("CUSTOM,custom", "custom", "custom")]
+    public void KnownHttpMethodsConfigurationOverridesDefaults(string configuredKnownMethods, string method, string expectedMethod)
+    {
+        var knownHttpMethods = HostingTelemetryHelpers.CreateKnownHttpMethods(configuredKnownMethods);
+        var normalizedMethod = knownHttpMethods.TryGetValue(method, out var result) ? result : "_OTHER";
+
+        Assert.Equal(expectedMethod, normalizedMethod);
     }
 
     [Theory]
@@ -1212,6 +1464,381 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
 
         Assert.Equal(expectedPort != null, tags.TryGetValue("server.port", out var actualPort));
         Assert.Equal(expectedPort, (int?)actualPort);
+    }
+
+    [Fact]
+    public void ActivityListeners_PropagationDataSample_EndTagsNotAdded()
+    {
+        // When Activity.IsAllDataRequested is false (PropagationData sample result),
+        // end tags should NOT be added as they are only relevant when all data is requested.
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/hello";
+            c.Response.StatusCode = 500;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.PropagationData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata()),
+            "Test endpoint"));
+
+        var exception = new InvalidOperationException("Test exception");
+        hostingApplication.DisposeContext(context, exception);
+
+        Assert.NotNull(stoppedActivity);
+        Assert.False(stoppedActivity.IsAllDataRequested);
+
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        // Verify sampling tags are still present
+        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpRequestMethod));
+        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlScheme));
+        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlPath));
+
+        // Verify end tags are NOT present since IsAllDataRequested is false
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpResponseStatusCode));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkProtocolVersion));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpRoute));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
+        Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
+    }
+
+    [Fact]
+    public void ActivityListeners_EndTagsAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/hello";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata()),
+            "Test endpoint"));
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(200, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal("1.1", tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
+        Assert.Equal("hello/{name}", tags[HostingTelemetryHelpers.AttributeHttpRoute]);
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
+        Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
+    }
+
+    [Fact]
+    public void ActivityListeners_ErrorStatusCodeSetsErrorType()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/2";
+            c.Request.Scheme = "https";
+            c.Request.Method = "POST";
+            c.Request.Path = "/api/test";
+            c.Response.StatusCode = 500;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(500, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal("2", tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
+        Assert.Equal("500", tags[HostingTelemetryHelpers.AttributeErrorType]);
+        Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
+    }
+
+    [Fact]
+    public void ActivityListeners_ExceptionSetsErrorType()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/error";
+            c.Response.StatusCode = 500;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        var exception = new InvalidOperationException("Test exception");
+        hostingApplication.DisposeContext(context, exception);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(500, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal("1.1", tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
+        Assert.Equal("System.InvalidOperationException", tags[HostingTelemetryHelpers.AttributeErrorType]);
+        Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
+        Assert.Null(stoppedActivity.StatusDescription);
+    }
+
+    [Theory]
+    [InlineData("HTTP/1.0", "1.0")]
+    [InlineData("HTTP/1.1", "1.1")]
+    [InlineData("HTTP/2", "2")]
+    [InlineData("HTTP/3", "3")]
+    public void ActivityListeners_HttpVersionMapped(string protocol, string expectedVersion)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = protocol;
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(expectedVersion, tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
+    }
+
+    [Fact]
+    public void ActivityListeners_SuppressActivityTags_NoEndTagsAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: true, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/hello";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata()),
+            "Test endpoint"));
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        // No end tags should be added when suppressed
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpResponseStatusCode));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkProtocolVersion));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpRoute));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
+    }
+
+    [Theory]
+    [InlineData(500)]
+    [InlineData(503)]
+    [InlineData(599)]
+    public void ActivityListeners_ErrorStatusCodesSetErrorType(int statusCode)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/";
+            c.Response.StatusCode = statusCode;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(statusCode, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal(statusCode.ToString(CultureInfo.InvariantCulture), tags[HostingTelemetryHelpers.AttributeErrorType]);
+        Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
+    }
+
+    [Theory]
+    [InlineData(200)]
+    [InlineData(201)]
+    [InlineData(204)]
+    [InlineData(301)]
+    [InlineData(399)]
+    [InlineData(400)]
+    [InlineData(404)]
+    [InlineData(499)]
+    [InlineData(600)]
+    [InlineData(999)]
+    public void ActivityListeners_SuccessStatusCodesNoErrorType(int statusCode)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/";
+            c.Response.StatusCode = statusCode;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(statusCode, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
+        Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
+    }
+
+    [Theory]
+    [InlineData("GET", null, "GET")]
+    [InlineData("get", null, "GET")]
+    [InlineData("POST", null, "POST")]
+    [InlineData("PUT", null, "PUT")]
+    [InlineData("DELETE", null, "DELETE")]
+    [InlineData("PATCH", null, "PATCH")]
+    [InlineData("HEAD", null, "HEAD")]
+    [InlineData("OPTIONS", null, "OPTIONS")]
+    [InlineData("TRACE", null, "TRACE")]
+    [InlineData("CONNECT", null, "CONNECT")]
+    [InlineData("QUERY", null, "QUERY")]
+    [InlineData("CUSTOM", null, "HTTP")]
+    [InlineData("weird", null, "HTTP")]
+    [InlineData("GET", "hello/{name}", "GET hello/{name}")]
+    [InlineData("POST", "hello/{name}", "POST hello/{name}")]
+    [InlineData("QUERY", "hello/{name}", "QUERY hello/{name}")]
+    [InlineData("CUSTOM", "hello/{name}", "HTTP hello/{name}")]
+    public void ActivityListeners_DisplayName(string method, string route, string expectedDisplayName)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = method;
+            c.Request.Path = "/api/test";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        if (route is not null)
+        {
+            context.HttpContext.SetEndpoint(new Endpoint(
+                c => Task.CompletedTask,
+                new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata(route)),
+                "Test endpoint"));
+        }
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        Assert.Equal(expectedDisplayName, stoppedActivity.DisplayName);
     }
 
     [Fact]
@@ -1260,7 +1887,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     private static HostingApplication CreateApplication(out FeatureCollection features,
         DiagnosticListener diagnosticListener = null, ActivitySource activitySource = null, ILogger logger = null,
         Action<DefaultHttpContext> configure = null, HostingEventSource eventSource = null, IMeterFactory meterFactory = null,
-        bool? suppressActivityOpenTelemetryData = null)
+        bool? suppressActivityOpenTelemetryData = null, bool? suppressActivityUrlQuery = null)
     {
         var httpContextFactory = new Mock<IHttpContextFactory>();
 
@@ -1285,6 +1912,11 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         if (suppressActivityOpenTelemetryData is { } suppress)
         {
             hostingApplication.SuppressActivityOpenTelemetryData = suppress;
+        }
+
+        if (suppressActivityUrlQuery is { } suppressUrlQuery)
+        {
+            hostingApplication.SuppressActivityUrlQuery = suppressUrlQuery;
         }
 
         return hostingApplication;

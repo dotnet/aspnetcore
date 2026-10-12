@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.ServerSentEvents;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +62,166 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 
     [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEvents()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos/events"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("text/event-stream", content.Key);
+            Assert.Null(content.Value.Schema);
+            var itemSchema = Assert.IsType<OpenApiSchema>(content.Value.ItemSchema);
+            Assert.Equal(JsonSchemaType.Object, itemSchema.Type);
+            Assert.Equal(["data"], itemSchema.Required);
+            Assert.Collection(itemSchema.Properties.OrderBy(property => property.Key),
+                property =>
+                {
+                    Assert.Equal("data", property.Key);
+                    var dataSchema = Assert.IsType<OpenApiSchemaReference>(property.Value);
+                    Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+                },
+                property =>
+                {
+                    Assert.Equal("event", property.Key);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Null(property.Value.Enum);
+                },
+                property =>
+                {
+                    Assert.Equal("id", property.Key);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                });
+        });
+
+        static async IAsyncEnumerable<SseItem<Todo>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEventsOfDataItems()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/data-events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/todos/data-events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+        });
+
+        static async IAsyncEnumerable<Todo> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEventsOfStringItems()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/messages/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/messages/events");
+            var dataSchema = Assert.IsType<OpenApiSchema>(itemSchema.Properties["data"]);
+            Assert.Equal(JsonSchemaType.String, dataSchema.Type);
+        });
+
+        static async IAsyncEnumerable<string> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesSchemaAndItemSchemaForSameDataSchemaInDifferentMediaTypes()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/responses", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(SseItem<Todo>), ["text/event-stream"]));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos/responses"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+
+            var jsonContent = response.Value.Content["application/json"];
+            var jsonSchema = Assert.IsType<OpenApiSchemaReference>(jsonContent.Schema);
+            Assert.Equal(nameof(Todo), jsonSchema.Reference.Id);
+            Assert.Null(jsonContent.ItemSchema);
+
+            var eventStreamContent = response.Value.Content["text/event-stream"];
+            Assert.Null(eventStreamContent.Schema);
+            var itemSchema = Assert.IsType<OpenApiSchema>(eventStreamContent.ItemSchema);
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesDiscriminatedUnionCasesForServerSentEventsEventSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/pets/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/pets/events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(UnionPet), dataSchema.Reference.Id);
+            AssertEventSchema(itemSchema, [nameof(Kitten), nameof(Puppy)]);
+        });
+
+        static async IAsyncEnumerable<SseItem<UnionPet>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesAbstractBaseDiscriminatorValuesForServerSentEventsEventSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/vehicles/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/vehicles/events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Vehicle), dataSchema.Reference.Id);
+            AssertEventSchema(itemSchema, ["car", "truck", "plane"]);
+        });
+
+        static async IAsyncEnumerable<SseItem<Vehicle>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
     public async Task GetOpenApiResponse_SupportsMultipleResponsesForStatusCode()
     {
         // Arrange
@@ -106,7 +268,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("OK", response.Value.Description);
             var content = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", content.Key);
-            // Todo: Check that this generates a schema using `oneOf`.
+            var schema = content.Value.Schema;
+            Assert.NotNull(schema.AnyOf);
+            Assert.Equal(2, schema.AnyOf.Count);
         });
     }
 
@@ -158,6 +322,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("200", response.Key);
             Assert.Equal("OK", response.Value.Description);
             Assert.Collection(response.Value.Content.OrderBy(c => c.Key),
+                content =>
+                {
+                    Assert.Equal("application/json", content.Key);
+                },
                 content =>
                 {
                     Assert.Equal("application/xml", content.Key);
@@ -438,5 +606,206 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     Assert.Equal("Bad Request", response.Value.Description);
                 });
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_MergesMultipleTypesForSameContentTypeAndDifferentContentTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(TodoWithDueDate), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Error), ["text/plain"]));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+
+            // application/json should have an anyOf schema since two types share the same content-type
+            Assert.True(response.Value.Content.TryGetValue("application/json", out var jsonContent));
+            Assert.NotNull(jsonContent.Schema.AnyOf);
+            Assert.Equal(2, jsonContent.Schema.AnyOf.Count);
+
+            // text/plain should have its own schema without anyOf
+            Assert.True(response.Value.Content.TryGetValue("text/plain", out var textContent));
+            Assert.Null(textContent.Schema.AnyOf);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_SupportsThreeTypesForSameContentTypeWithAnyOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(TodoWithDueDate), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Error), ["application/json"]));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", content.Key);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(3, content.Value.Schema.AnyOf.Count);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_MultipleProducesWithDifferentStatusCodes_ProducesSeparateResponses()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Error), ["text/plain"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status404NotFound, typeof(Error), ["application/json"]));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            Assert.Equal(2, operation.Responses.Count);
+
+            // 200 response should have both content types merged
+            Assert.True(operation.Responses.TryGetValue("200", out var okResponse));
+            Assert.Equal(2, okResponse.Content.Count);
+            Assert.True(okResponse.Content.ContainsKey("application/json"));
+            Assert.True(okResponse.Content.ContainsKey("text/plain"));
+
+            // 404 response is separate
+            Assert.True(operation.Responses.TryGetValue("404", out var notFoundResponse));
+            var notFoundContent = Assert.Single(notFoundResponse.Content);
+            Assert.Equal("application/json", notFoundContent.Key);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_ProducesExtensionMethod_SupportsDifferentTypesForSameStatusCode()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<Todo>(StatusCodes.Status200OK, "application/json")
+            .Produces<Error>(StatusCodes.Status200OK, "text/plain");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+            Assert.True(response.Value.Content.ContainsKey("application/json"));
+            Assert.True(response.Value.Content.ContainsKey("text/plain"));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_ProducesExtensionMethod_SupportsAnyOfForSameContentType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<Todo>(StatusCodes.Status200OK, "application/json")
+            .Produces<Error>(StatusCodes.Status200OK, "application/json");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", content.Key);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(2, content.Value.Schema.AnyOf.Count);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_WithNumberAsString_ShouldSerializeWithoutErrors()
+    {
+        // Arrange
+        var builder = CreateBuilder(serviceCollection: null, numberHandling: JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString);
+
+        // Act
+        builder.MapGet("/myapi", () => new ModelWithStringAndStringLength(string.Empty));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/myapi"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var kvp = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", kvp.Key);
+            var schema = Assert.Single(document.Components.Schemas);
+            Assert.Equal(nameof(ModelWithStringAndStringLength), schema.Key);
+            var property = Assert.Single(schema.Value.Properties);
+            Assert.Equal("value", property.Key);
+            Assert.Equal(100, property.Value.MaxLength);
+        });
+    }
+
+    private static OpenApiSchema GetServerSentEventsItemSchema(OpenApiDocument document, string path)
+    {
+        var operation = Assert.Single(document.Paths[path].Operations.Values);
+        var response = Assert.Single(operation.Responses);
+        Assert.Equal("200", response.Key);
+        var content = Assert.Single(response.Value.Content);
+        Assert.Equal("text/event-stream", content.Key);
+        Assert.Null(content.Value.Schema);
+        return Assert.IsType<OpenApiSchema>(content.Value.ItemSchema);
+    }
+
+    private static void AssertEventSchema(OpenApiSchema itemSchema, string[] expectedEvents)
+    {
+        var eventSchema = Assert.IsType<OpenApiSchema>(itemSchema.Properties["event"]);
+        Assert.Equal(JsonSchemaType.String, eventSchema.Type);
+        Assert.NotNull(eventSchema.Enum);
+        Assert.Equal(expectedEvents.OrderBy(value => value), eventSchema.Enum.Select(value => value.GetValue<string>()).OrderBy(value => value));
+    }
+
+    [JsonDerivedType(typeof(Car), typeDiscriminator: "car")]
+    [JsonDerivedType(typeof(Truck), typeDiscriminator: "truck")]
+    [JsonDerivedType(typeof(Plane), typeDiscriminator: "plane")]
+    private abstract class Vehicle
+    {
+        public required string Make { get; set; }
+    }
+
+    private sealed class Car : Vehicle
+    {
+        public int Doors { get; set; }
+    }
+
+    private sealed class Truck : Vehicle
+    {
+        public double PayloadCapacity { get; set; }
+    }
+
+    private sealed class Plane : Vehicle
+    {
+        public double Wingspan { get; set; }
     }
 }

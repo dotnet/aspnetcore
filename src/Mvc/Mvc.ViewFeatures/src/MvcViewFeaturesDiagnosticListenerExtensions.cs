@@ -16,7 +16,7 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         ViewComponentContext context,
         object viewComponent)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeViewComponentImpl(diagnosticListener, context, viewComponent);
@@ -43,7 +43,7 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         IViewComponentResult result,
         object viewComponent)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterViewComponentImpl(diagnosticListener, context, result, viewComponent);
@@ -70,7 +70,7 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         ViewComponentContext context,
         IView view)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             ViewComponentBeforeViewExecuteImpl(diagnosticListener, context, view);
@@ -96,7 +96,7 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         ViewComponentContext context,
         IView view)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             ViewComponentAfterViewExecuteImpl(diagnosticListener, context, view);
@@ -122,7 +122,7 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         IView view,
         ViewContext viewContext)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeViewImpl(diagnosticListener, view, viewContext);
@@ -144,7 +144,7 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         IView view,
         ViewContext viewContext)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterViewImpl(diagnosticListener, view, viewContext);
@@ -169,7 +169,7 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         string viewName,
         IView view)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             ViewFoundImpl(diagnosticListener, actionContext, isMainPage, viewResult, viewName, view);
@@ -200,7 +200,7 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         string viewName,
         IEnumerable<string> searchedLocations)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             ViewNotFoundImpl(diagnosticListener, actionContext, isMainPage, viewResult, viewName, searchedLocations);

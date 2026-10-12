@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.OutputCaching;
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
-/// Extension methods for adding the <see cref="OutputCacheMiddleware"/> to an application.
+/// Extension methods for adding output caching to an application.
 /// </summary>
 public static class OutputCacheApplicationBuilderExtensions
 {
     /// <summary>
-    /// Adds the <see cref="OutputCacheMiddleware"/> for caching HTTP responses.
+    /// Adds the output caching middleware for caching HTTP responses.
     /// </summary>
     /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
     public static IApplicationBuilder UseOutputCache(this IApplicationBuilder app)

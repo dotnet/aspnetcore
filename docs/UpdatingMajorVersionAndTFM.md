@@ -14,14 +14,13 @@ Typically, we will update the Major Version before updating the TFM. This is bec
   1. Increment `AspNetCoreMajorVersion` by 1.
   2. Change `PreReleaseVersionIteration` to `1`.
   3. Change `PreReleaseVersionLabel` to `alpha`.
-  4. Change `PreReleaseBrandingLabel` to `Alpha $(PreReleaseVersionIteration)`.
+  Note: `PreReleaseBrandingLabel` is automatically calculated based on `PreReleaseVersionLabel` and does not need to be manually updated.
 * Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet8` and `dotnet8-transport`) and adding entries for the new feeds (`dotnet9` and `dotnet9-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add an entry to `_templatePackages` for `Microsoft.DotNet.Web.ProjectTemplates` matching the new version.
 * In [eng/targets/CSharp.Common.props](/eng/targets/CSharp.Common.props) for the previous release branch, modify the `<LangVersion>` to be a hardcoded version instead of `preview`. (e.g. If main is being updated to 8.0.0 modify the `<LangVersion>` in the release/7.0 branch). See https://learn.microsoft.com/dotnet/csharp/language-reference/configure-language-version#defaults to find what language version to use.
 * Mark APIs from the previous release as Shipped by running `.\eng\scripts\mark-shipped.cmd`. **Note that it's best to do this as early as possible after the API surface is finalized from the previous release** - make sure to be careful that any new API in `main` that isn't shipped as part of the previous release, stays in `PublicAPI.Unshipped.txt` files.
   * One way to ensure this is to check out the release branch shipping the previous release (**after API surface area has been finalized**), run `.\eng\scripts\mark-shipped.cmd` there, copy over all of the `PublicAPI.Unshipped.txt` and `PublicAPI.Shipped.txt` files into a new branch based off of `main`, and build the repo. Any failures there will tell you whether or not there are new APIs in main that need to be put back into the `PublicAPI.Unshipped.txt` files.
     * The result of `.\eng\scripts\mark-shipped.cmd` should be checked in to the release branch as well, as part of the RTM release.
-* Update `.\eng\Baseline.xml` to reflect the set of RTM packages that were just shipped. Then, `dotnet run` `.\eng\tools\BaselineGenerator\BaselineGenerator.csproj`, which will update `.\eng\Baseline.Designer.props`. If RTM hasn't shipped yet, do this in a separate PR once it has. See https://github.com/dotnet/aspnetcore/pull/49269.
 * **In the new release branch**, add files named `.\eng\PlatformManifest.txt` and `.\eng\PackageOverrides.txt`. These files should be found by downloading the just released RTM version of the `Microsoft.AspNetCore.App.Ref` package, and copying over the files from the `data` folder.
 * Update [helix-matrix.yml](https://github.com/dotnet/aspnetcore/blob/436556163a671259c8b14ae1c90d72767af62d18/.azure/pipelines/helix-matrix.yml#L12-L16) to list the currently active release branches.
     * This should be done in `main` as well as the relevant release branch.
@@ -48,7 +47,7 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
 * Add a reference to the new `SiteExtensions` package for the previous Major Version.
   1. Add references to [src/SiteExtensions/LoggingAggregate/src/Microsoft.AspNetCore.AzureAppServices.SiteExtension/Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj](/src/SiteExtensions/LoggingAggregate/src/Microsoft.AspNetCore.AzureAppServices.SiteExtension/Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj) to `Microsoft.AspNetCore.AzureAppServices.SiteExtension.{PreviousMajorVersion}.0.x64` and `Microsoft.AspNetCore.AzureAppServices.SiteExtension.{PreviousMajorVersion}.0.x86`.
   2. Add entries in [eng/Versions.props](/eng/Versions.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/216c92b78bce31d5e81a70b589707ec2ae5ab21a/eng/Versions.props#L224-L226) - the version should be from the latest released build of .Net.
-  3. Add entries in [eng/Dependencies.props](/eng/Dependencies.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/a47c0a58d7002b9a530c67532366b9db96d73cc6/eng/Dependencies.props#L119-L120).
+  3. Add `<PackageVersion>` entries in [Directory.Packages.props](/Directory.Packages.props) for the new SiteExtensions packages.
 * Update AssemblyVersions for dotnet/runtime assemblies in [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs).
 * Update template precedence
   1. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.

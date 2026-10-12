@@ -1,0 +1,70 @@
+@* Test page for verifying Virtualize behavior with supported CSS display modes *@
+
+<h3>Virtualization with CSS Display Modes</h3>
+
+<p>
+    <strong>Test:</strong> Verify that variable-height virtualization works correctly with supported CSS layout modes.
+</p>
+
+<h4>1. display: block (default)</h4>
+<p>
+    <div id="block-container" style="display: block; background-color: #e8f5e9; height: 200px; overflow-y: auto;">
+        <Virtualize Items="@items" ItemSize="40">
+            <div @key="context.Index" id="block-item-@context.Index" class="block-item" 
+                 style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 60%, 75%); padding: 8px; box-sizing: border-box;">
+                <span class="item-index">Block Item @context.Index (height: @context.Height px)</span>
+            </div>
+        </Virtualize>
+    </div>
+</p>
+<p id="block-status">Block items: <span id="block-count">@items.Count</span></p>
+
+<h4>2. display: grid; grid-template-columns: 1fr</h4>
+<p>
+    <div id="grid-container" style="display: grid; grid-template-columns: 1fr; background-color: #fff3e0; height: 200px; overflow-y: auto; gap: 4px;">
+        <Virtualize Items="@items" ItemSize="40">
+            <div @key="context.Index" id="grid-item-@context.Index" class="grid-item" 
+                 style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 60%, 75%); padding: 8px; box-sizing: border-box;">
+                <span class="item-index">Grid Item @context.Index (height: @context.Height px)</span>
+            </div>
+        </Virtualize>
+    </div>
+</p>
+<p id="grid-status">Grid items: <span id="grid-count">@items.Count</span></p>
+
+<h4>3. Subgrid (single-column parent)</h4>
+<p>
+    <div id="subgrid-container" style="display: grid; grid-template-columns: 100px 1fr; background-color: #e0f2f1; height: 200px; overflow-y: auto;">
+        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: subgrid;">
+            <Virtualize Items="@items" ItemSize="40">
+                <div @key="context.Index" id="subgrid-item-@context.Index" class="subgrid-item" 
+                     style="grid-column: 1 / -1; height: @(context.Height)px; background-color: hsl(@(context.Hue), 60%, 75%); padding: 8px; box-sizing: border-box; display: grid; grid-template-columns: subgrid;">
+                    <span style="grid-column: 1;">@context.Index</span>
+                    <span style="grid-column: 2;">Subgrid Item (height: @context.Height px)</span>
+                </div>
+            </Virtualize>
+        </div>
+    </div>
+</p>
+<p id="subgrid-status">Subgrid items: <span id="subgrid-count">@items.Count</span></p>
+
+@code {
+    ICollection<DisplayModeItem> items = new List<DisplayModeItem>();
+
+    protected override void OnInitialized()
+    {
+        items = Enumerable.Range(0, 50).Select(i => new DisplayModeItem
+        {
+            Index = i,
+            Height = 30 + (i * 17 % 51), // Heights vary from 30-80px
+            Hue = (i * 7) % 360
+        }).ToList();
+    }
+
+    class DisplayModeItem
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+        public int Hue { get; set; }
+    }
+}

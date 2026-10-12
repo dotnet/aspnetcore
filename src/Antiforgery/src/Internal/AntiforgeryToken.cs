@@ -25,14 +25,11 @@ internal sealed class AntiforgeryToken
 
     public bool IsCookieToken { get; set; }
 
-    public BinaryBlob? SecurityToken
+    public BinaryBlob SecurityToken
     {
         get
         {
-            if (_securityToken == null)
-            {
-                _securityToken = new BinaryBlob(SecurityTokenBitLength);
-            }
+            _securityToken ??= new BinaryBlob(SecurityTokenBitLength);
             return _securityToken;
         }
         set

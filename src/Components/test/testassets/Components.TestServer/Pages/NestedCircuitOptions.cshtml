@@ -1,0 +1,33 @@
+@page "/nestedCircuitOptions"
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Basic test app - Nested Circuit Options</title>
+    <base href="~/" />
+    <link href="style.css" rel="stylesheet" />
+    <link rel="icon" href="data:,">
+    <component type="typeof(Microsoft.AspNetCore.Components.Web.HeadOutlet)" render-mode="Server" />
+</head>
+<body>
+    <root><component type="typeof(BasicTestApp.Index)" render-mode="Server" /></root>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            circuit: {
+                reconnectionOptions: {
+                    retryIntervalMilliseconds: Array.prototype.at.bind([5000, 5000, 5000, 10000, 30000]),
+                },
+            },
+        });
+    </script>
+</body>
+</html>
