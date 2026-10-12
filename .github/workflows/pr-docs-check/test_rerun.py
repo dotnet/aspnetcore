@@ -70,7 +70,7 @@ class RerunTests(unittest.TestCase):
             with self.subTest(draft=draft):
                 with self.assertRaises(OutcomeValidationError):
                     validate_preflight(self.payload, 42, draft, workspace_evidence=self.proof)
-        for field, value in (("state", "closed"), ("draft", False), ("title", "Human title")):
+        for field, value in (("state", "closed"), ("draft", False), ("user", {"login": "human"})):
             with self.subTest(field=field):
                 metadata = copy.deepcopy(self.metadata)
                 metadata[field] = value
@@ -175,8 +175,8 @@ class RerunTests(unittest.TestCase):
 
     def test_skip_cannot_trust_changed_or_malformed_live_identity(self):
         for field, value in (
-            ("state", "closed"), ("draft", False), ("html_url", "https://example.com/pull/9"),
-            ("user", {"login": "human"}), ("title", "Human title"), ("labels", []),
+            ("state", "closed"), ("html_url", "https://example.com/pull/9"),
+            ("head", {**self.metadata["head"], "ref": "docs/aspnetcore-pr-420"}),
         ):
             with self.subTest(field=field):
                 live = {**self.metadata, field: value}
@@ -188,22 +188,28 @@ class RerunTests(unittest.TestCase):
                             lambda endpoint: [self.metadata] if "?" in endpoint else live,
                         )
 
-    def test_non_draft_and_untrusted_matches_block_creation_instead_of_skipping(self):
+    def test_untrusted_matches_skip_by_default_and_reject_refresh(self):
         for field, value in (
-            ("draft", False), ("user", {"login": "human"}), ("title", "Human title"),
-            ("labels", []),
+            ("user", {"login": "human"}),
         ):
             for mode in ("skip", "refresh"):
                 with self.subTest(field=field, mode=mode):
                     metadata = {**self.metadata, field: value}
                     with tempfile.TemporaryDirectory() as directory:
                         root = Path(directory)
-                        result = prepare_run(
-                            "dotnet/aspnetcore", "42", root, mode, "aspnetcore-docs-bot[bot]",
-                            lambda endpoint: [changed_file("src/Foo.cs")] if "/files?" in endpoint else pull_request(),
-                            lambda endpoint: [metadata] if "?" in endpoint else self.fail("Do not trust this draft"),
-                        )
-                        self.assertTrue(result["analyze"])
+                        def prepare():
+                            return prepare_run(
+                                "dotnet/aspnetcore", "42", root, mode, "aspnetcore-docs-bot[bot]",
+                                lambda endpoint: pull_request() if "/files?" not in endpoint else self.fail("No analysis"),
+                                lambda endpoint: [metadata] if "?" in endpoint else metadata,
+                            )
+
+                        if mode == "refresh":
+                            with self.assertRaisesRegex(ValueError, "refresh is blocked"):
+                                prepare()
+                            continue
+                        result = prepare()
+                        self.assertFalse(result["analyze"])
                         draft = json.loads((root / "existing-draft.json").read_text())
                         self.assertTrue(draft["blocked"])
                         self.assertFalse(draft["found"])
@@ -276,7 +282,6 @@ class RerunTests(unittest.TestCase):
                     update = fixtures.ValidateOutcomeTests._payload(
                         "drafted", "updated",
                         {"type": "push_to_pull_request_branch", "pull_request_number": 9},
-                        {"type": "update_pull_request", "pull_request_number": 9},
                         existing_docs_pr_number=9,
                     )
                     validate_preflight(update, 42, self.draft, workspace_evidence=proof)

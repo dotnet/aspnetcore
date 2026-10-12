@@ -1,3 +1,5 @@
+import json
+import re
 import unittest
 from pathlib import Path
 
@@ -114,8 +116,21 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertNotIn("github.rest.issues", attribution)
         self.assertNotIn("assignees:", self.workflow)
         self.assertNotIn("reviewers:", self.workflow)
-        self.assertIn("Omit `body` to preserve the existing generated description", self.workflow)
-        self.assertIn('\\"allow_body\\":false', self.compiled_workflow)
+        self.assertIn("Do not emit `update_pull_request` or edit the title or body.", self.workflow)
+        self.assertNotIn("  update-pull-request:", self.workflow)
+        self.assertNotIn('\\"required_title_prefix\\"', self.compiled_workflow)
+
+    def test_compiler_and_setup_use_the_same_published_release(self):
+        metadata = json.loads(self.compiled_workflow.splitlines()[0].removeprefix("# gh-aw-metadata: "))
+        self.assertEqual("v0.91.6", metadata["compiler_version"])
+        self.assertTrue(metadata["strict"])
+        setup = re.findall(r"uses: github/gh-aw-actions/setup@([a-f0-9]{40}) # (v[0-9.]+)", self.compiled_workflow)
+        self.assertEqual(6, len(setup))
+        self.assertEqual({("13f59f7032b1e9a26305dada85d6b99fa2a5e649", "v0.91.6")}, set(setup))
+        self.assertNotIn("source-303b402", self.compiled_workflow)
+        self.assertNotIn("github/gh-aw/actions/setup@", self.compiled_workflow)
+        cache = json.loads((WORKFLOW.parents[1] / "aw" / "actions-lock.json").read_text(encoding="utf-8"))
+        self.assertEqual(setup[0][0], cache["entries"]["github/gh-aw-actions/setup@v0.91.6"]["sha"])
 
 
 if __name__ == "__main__":
