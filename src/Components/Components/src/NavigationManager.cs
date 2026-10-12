@@ -206,14 +206,14 @@ public abstract class NavigationManager
         var queryOrFragmentIndex = currentUri.IndexOfAny('?', '#');
         var pathOnlyLength = queryOrFragmentIndex >= 0 ? queryOrFragmentIndex : currentUri.Length;
         var lastSlashIndex = currentUri[..pathOnlyLength].LastIndexOf('/');
-        
+
         if (lastSlashIndex < 0)
         {
             // No slash found - this shouldn't happen for valid absolute URIs
             // In this edge case, just append to the current URI
             return string.Concat(_uri, relativeUri);
         }
-        
+
         // Keep everything up to and including the last slash, then append the relative URI
         var basePathLength = lastSlashIndex + 1;
         return string.Concat(currentUri[..basePathLength], relativeUri.AsSpan());
@@ -528,7 +528,7 @@ public abstract class NavigationManager
         finally
         {
             // Only signal cancellation of the LocationChangingContext.CancellationToken when the
-            // navigation was actually canceled.
+            // navigation was superseded by another navigation.
             if (navigationCanceled)
             {
                 cts.Cancel();
