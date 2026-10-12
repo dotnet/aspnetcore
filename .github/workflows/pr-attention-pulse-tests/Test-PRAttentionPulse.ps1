@@ -58,7 +58,7 @@ function Write-JsonFile
         [Parameter(Mandatory)][string]$Path
     )
 
-    $json = $Value | ConvertTo-Json -Depth 100
+    $json = $Value | ConvertTo-Json -Depth 100 -EscapeHandling EscapeNonAscii
     # Byte-hashed fixture JSON must be identical across hosts.
     [IO.File]::WriteAllText($Path, $json.Replace("`r`n", "`n") + "`n", [Text.UTF8Encoding]::new($false))
 }
@@ -89,12 +89,30 @@ function Get-FixtureSnapshotContext
     }
 }
 
+function Get-FixtureSnapshotJson
+{
+    param([object]$Pulse, [string]$InputPath)
+
+    if ($InputPath)
+    {
+        return [IO.File]::ReadAllText($InputPath)
+    }
+
+    # Match Write-JsonFile's exact text so it agrees with the hash Get-FixtureSnapshotContext computes.
+    $json = $Pulse | ConvertTo-Json -Depth 100 -EscapeHandling EscapeNonAscii
+    return $json.Replace("`r`n", "`n") + "`n"
+}
+
 function Remove-FixtureSnapshotBlock
 {
     param([object]$Pulse, [string]$Body)
 
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
-    $suffix = "`n`n" + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse))
+    $separator = "`n`n"
+    $snapshotStart = $Body.LastIndexOf("${separator}## Snapshot`n", [StringComparison]::Ordinal)
+    Assert-True ($snapshotStart -ge 0) "The fixture body must contain a snapshot section."
+    $suffix = $separator + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse) `
+        -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -MaxSnapshotLength (65000 - $snapshotStart - $separator.Length))
     Assert-True ($Body.EndsWith($suffix, [StringComparison]::Ordinal)) "The fixture body must end with its exact frozen snapshot."
     Assert-True ([regex]::Matches($Body, "(?m)^## Snapshot$").Count -eq 1) "Only one snapshot section is permitted."
 
@@ -134,6 +152,9 @@ function Invoke-Sanitizer
             -MaxOutputBytes $MaxOutputBytes
 
         Assert-True (-not (Test-Path $inputPath)) "The raw input must always be deleted."
+        $outputBytes = [IO.File]::ReadAllBytes($outputPath)
+        Assert-True ($outputBytes.Length -gt 0 -and $outputBytes[-1] -eq 10 -and
+            ($outputBytes.Length -eq 1 -or $outputBytes[-2] -ne 13)) "Sanitized Pulse JSON must end with LF on every platform."
         return Get-Content -Raw $outputPath | ConvertFrom-Json -Depth 100
     }
     finally
@@ -821,7 +842,7 @@ function Assert-PresentationTablesAndFields
     Assert-PresentationLayout -Pulse $Pulse -Body $Body
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
     $before = $Pulse | ConvertTo-Json -Depth 100 -Compress
-    $directBody = ConvertTo-PRAttentionPulseBody -Pulse $Pulse -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse)
+    $directBody = ConvertTo-PRAttentionPulseBody -Pulse $Pulse -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse)
     Assert-True ([string]::Equals($before, ($Pulse | ConvertTo-Json -Depth 100 -Compress), [StringComparison]::Ordinal)) "Rendering must not mutate the supplied envelope."
     Assert-True ([string]::Equals($directBody, $Body, [StringComparison]::Ordinal)) "The file entry point and the single production renderer must agree."
     $Pulse = Resolve-PulseMergeArea -Area $Pulse
@@ -1345,7 +1366,7 @@ try
         "blazor/discussion-pull-requests.json" = @(0, 0, 0, 0, 0)
         "repository-wide/pull-requests.json" = @(5, 0, 3, 0, 1)
         "repository-wide/correctness-pull-requests.json" = @(4, 1, 2, 0, 1)
-        "repository-wide/discussion-pull-requests.json" = @(2, 5, 0, 0, 0)
+        "repository-wide/discussion-pull-requests.json" = @(5, 5, 0, 0, 0)
     }
     $realPulses = [ordered]@{}
     foreach ($fixtureKey in $realFixtureExpectations.Keys)
@@ -1998,7 +2019,7 @@ try
             Assert-True (-not [string]::Equals($tampered, $canonical, [StringComparison]::Ordinal)) "Table tampering must actually change the body."
             Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
             Assert-Throws `
-                -Action { Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput -Body $tampered) -Pulse $normal -SnapshotContext (Get-FixtureSnapshotContext -Pulse $normal) -ExpectedBody $tampered -ExpectedIssueNumber $script:DashboardIssueNumber } `
+                -Action { Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput -Body $tampered) -Pulse $normal -Json (Get-FixtureSnapshotJson -Pulse $normal) -SnapshotContext (Get-FixtureSnapshotContext -Pulse $normal) -ExpectedBody $tampered -ExpectedIssueNumber $script:DashboardIssueNumber } `
                 -Message "The direct publication contract must reject $name."
             Assert-Throws `
                 -Action { Invoke-PublicationValidator -Pulse $normal -AgentOutput (New-ValidAgentOutput -Body $tampered) -ExpectedBody $canonical } `
@@ -2022,3 +2043,5 @@ finally
 {
     Remove-Item $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
+
+$global:LASTEXITCODE = 0
