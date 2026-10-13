@@ -17,21 +17,35 @@ export class WebAssemblyConfigLoader {
       return;
     }
 
-    const appsettingsToLoad = new Set<string>(loadedConfig.appsettings);
+    const appsettingsToLoad = Array.from(new Set(loadedConfig.appsettings)).filter(appsetting => {
+      const fileName = getFileName(appsetting);
+      return shouldLoad(fileName, loadedConfig.applicationEnvironment);
+    });
+
     // Delete loadedConfig.appsettings so dotnet.js will not fetch them into the VFS.
     delete loadedConfig.appsettings;
 
-    await Promise.all(Array.from(appsettingsToLoad).map(async name => {
+    await Promise.all(appsettingsToLoad.map(async name => {
+      const fileName = getFileName(name);
       const content = await getConfigBytes(name);
       if (content) {
-        configFiles.set(name, content);
+        configFiles.set(fileName, content);
+        if (fileName !== name) {
+          configFiles.set(name, content);
+        }
       }
     }));
 
     async function getConfigBytes(file: string): Promise<Uint8Array | undefined> {
-      let url = file;
+      let defaultUri = file;
+      if (typeof document !== 'undefined' && document.baseURI) {
+        const frameworkBase = new URL('_framework/', document.baseURI);
+        defaultUri = new URL(file, frameworkBase).href;
+      }
+
+      let url = defaultUri;
       if (startOptions.loadBootResource) {
-        const customLoadResult = startOptions.loadBootResource('configuration', file, file, '', 'vfs');
+        const customLoadResult = startOptions.loadBootResource('configuration', file, defaultUri, '', 'vfs');
         if (customLoadResult instanceof Promise) {
           try {
             const response = await customLoadResult;
@@ -43,12 +57,10 @@ export class WebAssemblyConfigLoader {
           }
           return undefined;
         } else if (typeof customLoadResult === 'string') {
-          url = customLoadResult;
+          url = typeof document !== 'undefined' && document.baseURI
+            ? new URL(customLoadResult, document.baseURI).href
+            : customLoadResult;
         }
-      }
-
-      if (typeof document !== 'undefined' && document.baseURI) {
-        url = new URL(url, document.baseURI).href;
       }
 
       try {
@@ -68,4 +80,13 @@ export class WebAssemblyConfigLoader {
       }
     }
   }
+}
+
+function getFileName(path: string): string {
+  const lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+  return lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
+}
+
+function shouldLoad(fileName: string, environment?: string): boolean {
+  return fileName === 'appsettings.json' || (Boolean(environment) && fileName === `appsettings.${environment}.json`);
 }
