@@ -114,6 +114,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.AI" ProjectPath="$(RepoRoot)src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.CustomElements" ProjectPath="$(RepoRoot)src/Components/CustomElements/src/Microsoft.AspNetCore.Components.CustomElements.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src/Components/Media/src/Microsoft.AspNetCore.Components.Media.csproj" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Platform" ProjectPath="$(RepoRoot)src/Components/Platform/src/Microsoft.AspNetCore.Components.Platform.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" ProjectPath="$(RepoRoot)src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter/src/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid" ProjectPath="$(RepoRoot)src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/src/Microsoft.AspNetCore.Components.QuickGrid.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Server.AutoPause" ProjectPath="$(RepoRoot)src/Components/Server.AutoPause/src/Microsoft.AspNetCore.Components.Server.AutoPause.csproj" />
