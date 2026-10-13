@@ -4,7 +4,7 @@
 #
 
 # Dockerfile that creates a container suitable to build dotnet-cli
-FROM ubuntu:18.04
+FROM mcr.microsoft.com/mirror/docker/library/ubuntu:18.04
 
 # Misc Dependencies for build
 RUN apt-get update && \
