@@ -91,6 +91,7 @@ public class FormPipeReader
     public async Task<Dictionary<string, StringValues>> ReadFormAsync(CancellationToken cancellationToken = default)
     {
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
         while (true)
         {
             var readResult = await _pipeReader.ReadAsync(cancellationToken);
@@ -101,7 +102,7 @@ public class FormPipeReader
             {
                 try
                 {
-                    ParseFormValues(ref buffer, ref accumulator, readResult.IsCompleted);
+                    ParseFormValues(ref buffer, ref accumulator, ref scannedLength, readResult.IsCompleted);
                 }
                 catch
                 {
@@ -131,27 +132,24 @@ public class FormPipeReader
     internal void ParseFormValues(
         ref ReadOnlySequence<byte> buffer,
         ref KeyValueAccumulator accumulator,
+        ref long scannedLength,
         bool isFinalBlock)
     {
         if (buffer.IsSingleSegment)
         {
-            ParseFormValuesFast(buffer.FirstSpan,
-                ref accumulator,
-                isFinalBlock,
-                out var consumed);
+            ParseFormValuesFast(buffer.FirstSpan, ref accumulator, ref scannedLength, isFinalBlock, out var consumed);
 
             buffer = buffer.Slice(consumed);
             return;
         }
 
-        ParseValuesSlow(ref buffer,
-            ref accumulator,
-            isFinalBlock);
+        ParseValuesSlow(ref buffer, ref accumulator, ref scannedLength, isFinalBlock);
     }
 
     // Fast parsing for single span in ReadOnlySequence
     private void ParseFormValuesFast(ReadOnlySpan<byte> span,
         ref KeyValueAccumulator accumulator,
+        ref long scannedLength,
         bool isFinalBlock,
         out int consumed)
     {
@@ -161,10 +159,17 @@ public class FormPipeReader
         var equalsDelimiter = GetEqualsForEncoding();
         var andDelimiter = GetAndForEncoding();
 
+        // The delimiter can span multiple bytes (e.g. UTF-16/UTF-32), so it may straddle the end of a read.
+        // 'scannedLength' therefore never covers the last delimiterOverlap bytes, which have to be rescanned.
+        var delimiterOverlap = andDelimiter.Length - 1;
+
         while (span.Length > 0)
         {
             // Find the end of the key=value pair.
-            var ampersand = span.IndexOf(andDelimiter);
+            // Start the search from the scannedLength to avoid rescanning bytes we already scanned
+            var searchStart = (int)Math.Min(scannedLength, span.Length);
+            var ampersandRelative = span[searchStart..].IndexOf(andDelimiter);
+            var ampersand = ampersandRelative == -1 ? -1 : ampersandRelative + searchStart;
             ReadOnlySpan<byte> keyValuePair;
             int equals;
             var foundAmpersand = ampersand != -1;
@@ -174,6 +179,8 @@ public class FormPipeReader
                 keyValuePair = span.Slice(0, ampersand);
                 span = span.Slice(keyValuePair.Length + andDelimiter.Length);
                 consumed += keyValuePair.Length + andDelimiter.Length;
+                // Reset: the new span starts fresh, nothing pre-scanned.
+                scannedLength = 0;
             }
             else
             {
@@ -186,12 +193,17 @@ public class FormPipeReader
                     {
                         ThrowKeyOrValueTooLargeException();
                     }
+                    // Record how far we've scanned so the next call skips these bytes. The trailing
+                    // delimiterOverlap bytes are left out: a multi-byte delimiter could start there and
+                    // only be completed by the bytes that arrive next.
+                    scannedLength = Math.Max(0, span.Length - delimiterOverlap);
                     return;
                 }
 
                 keyValuePair = span;
                 span = default;
                 consumed += keyValuePair.Length;
+                scannedLength = 0;
             }
 
             equals = keyValuePair.IndexOf(equalsDelimiter);
@@ -234,6 +246,7 @@ public class FormPipeReader
     private void ParseValuesSlow(
         ref ReadOnlySequence<byte> buffer,
         ref KeyValueAccumulator accumulator,
+        ref long scannedLength,
         bool isFinalBlock)
     {
         var sequenceReader = new SequenceReader<byte>(buffer);
@@ -244,7 +257,17 @@ public class FormPipeReader
         var equalsDelimiter = GetEqualsForEncoding();
         var andDelimiter = GetAndForEncoding();
 
-        while (!sequenceReader.End)
+        // 'scannedLength' already excludes the trailing bytes a multi-byte delimiter could have started in,
+        // so everything it covers can be skipped outright.
+        var resumeSkipped = Math.Min(scannedLength, sequenceReader.Length);
+        if (resumeSkipped > 0)
+        {
+            sequenceReader.Advance(resumeSkipped);
+        }
+
+        // Advancing can place the reader at the end when everything buffered was already scanned.
+        // Those bytes are still unconsumed, so on the final block they must be parsed as the last pair.
+        while (!sequenceReader.End || (isFinalBlock && consumedBytes < sequenceReader.Length))
         {
             if (!sequenceReader.TryReadTo(out keyValuePair, andDelimiter))
             {
@@ -255,17 +278,31 @@ public class FormPipeReader
                     {
                         ThrowKeyOrValueTooLargeException();
                     }
+
+                    // Record total bytes scanned from 'consumed' so next call skips them, minus the trailing
+                    // bytes a multi-byte delimiter could have started in.
+                    scannedLength = Math.Max(0, sequenceReader.Length - consumedBytes - (andDelimiter.Length - 1));
                     break;
                 }
 
-                // This must be the final key=value pair
-                keyValuePair = buffer.Slice(sequenceReader.Position);
-                sequenceReader.Advance(keyValuePair.Length);
+                // This must be the final key=value pair; take everything from the last consumed position.
+                keyValuePair = buffer.Slice(consumed);
+                sequenceReader.Advance(sequenceReader.Remaining);
             }
+            else if (resumeSkipped > 0)
+            {
+                // TryReadTo only returned [resumeSkipped..'&'). Reconstruct the full pair
+                // [consumed..'&') by prepending the already-scanned prefix.
+                keyValuePair = buffer.Slice(consumed, resumeSkipped + keyValuePair.Length);
+            }
+
+            scannedLength = 0;
+            resumeSkipped = 0;
 
             if (keyValuePair.IsSingleSegment)
             {
-                ParseFormValuesFast(keyValuePair.FirstSpan, ref accumulator, isFinalBlock: true, out var segmentConsumed);
+                var segmentScannedLength = 0L;
+                ParseFormValuesFast(keyValuePair.FirstSpan, ref accumulator, ref segmentScannedLength, isFinalBlock: true, out var segmentConsumed);
                 Debug.Assert(segmentConsumed == keyValuePair.FirstSpan.Length);
                 consumedBytes = sequenceReader.Consumed;
                 consumed = sequenceReader.Position;

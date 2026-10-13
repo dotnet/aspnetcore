@@ -32,6 +32,7 @@
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" Link="Shared\ValueStopwatch\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" />
+    <Compile Include="$(SharedSourceRoot)PooledMemoryStream.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" Link="Shared\UrlDecoder\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\**\*.cs" Link="Shared\ThrowHelpers\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\**\*.cs" Link="Shared\CallerArgument\%(Filename)%(Extension)" />
