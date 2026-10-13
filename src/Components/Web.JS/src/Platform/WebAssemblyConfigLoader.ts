@@ -7,16 +7,19 @@ import { Blazor } from '../GlobalExports';
 
 export class WebAssemblyConfigLoader {
   static async initAsync(loadedConfig: MonoConfig, startOptions: Partial<WebAssemblyStartOptions>): Promise<void> {
-    const appsettingsToLoad = new Set<string>(loadedConfig.appsettings ?? []);
-    appsettingsToLoad.add('appsettings.json');
-    if (loadedConfig.applicationEnvironment) {
-      appsettingsToLoad.add(`appsettings.${loadedConfig.applicationEnvironment}.json`);
+    const configFiles = new Map<string, Uint8Array>();
+
+    Blazor._internal.getConfig = (fileName: string): Uint8Array | undefined => {
+      return configFiles.get(fileName);
+    };
+
+    if (!loadedConfig.appsettings || loadedConfig.appsettings.length === 0) {
+      return;
     }
 
+    const appsettingsToLoad = new Set<string>(loadedConfig.appsettings);
     // Delete loadedConfig.appsettings so dotnet.js will not fetch them into the VFS.
     delete loadedConfig.appsettings;
-
-    const configFiles = new Map<string, Uint8Array>();
 
     await Promise.all(Array.from(appsettingsToLoad).map(async name => {
       const content = await getConfigBytes(name);
@@ -24,10 +27,6 @@ export class WebAssemblyConfigLoader {
         configFiles.set(name, content);
       }
     }));
-
-    Blazor._internal.getConfig = (fileName: string): Uint8Array | undefined => {
-      return configFiles.get(fileName);
-    };
 
     async function getConfigBytes(file: string): Promise<Uint8Array | undefined> {
       let url = file;
