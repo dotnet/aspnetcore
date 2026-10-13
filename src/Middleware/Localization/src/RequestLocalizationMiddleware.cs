@@ -167,7 +167,7 @@ public class RequestLocalizationMiddleware
         {
             try
             {
-                culture = CultureInfo.GetCultureInfo(cultureName.ToString());
+                culture = CultureInfo.GetCultureInfo(cultureName.ToString(), predefinedOnly: true);
 
                 culture = GetCultureInfo(culture.Parent.Name, supportedCultures, fallbackToParentCultures, currentDepth + 1);
             }
