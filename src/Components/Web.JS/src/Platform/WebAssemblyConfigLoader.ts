@@ -45,8 +45,6 @@ export class WebAssemblyConfigLoader {
           return undefined;
         } else if (typeof customLoadResult === 'string') {
           url = customLoadResult;
-        } else if (customLoadResult === null) {
-          return undefined;
         }
       }
 
