@@ -33,6 +33,7 @@ public class TargetingPackTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void TargetingPackContainsListedAssemblies()
     {
         var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
@@ -108,6 +109,7 @@ public class TargetingPackTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void RefAssemblyReferencesHaveExpectedAssemblyVersions()
     {
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
@@ -130,6 +132,7 @@ public class TargetingPackTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void PackageOverridesContainsCorrectEntries()
     {
         var packageOverridePath = Path.Combine(_targetingPackRoot, "data", "PackageOverrides.txt");
@@ -238,6 +241,7 @@ public class TargetingPackTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void PlatformManifestListsAllFiles()
     {
         var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
@@ -303,6 +307,7 @@ public class TargetingPackTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void FrameworkListContainsCorrectEntries()
     {
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
@@ -370,6 +375,7 @@ public class TargetingPackTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void FrameworkListContainsCorrectPaths()
     {
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
@@ -412,6 +418,7 @@ public class TargetingPackTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void FrameworkListContainsAnalyzerLanguage()
     {
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
