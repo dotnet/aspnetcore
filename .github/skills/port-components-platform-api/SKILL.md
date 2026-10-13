@@ -34,6 +34,9 @@ otherwise.
   extension members in an `extension(Window window)` block, not as instance properties that always
   hold it alive. Get the instance with `window.GetOrAddFeature(...)`, and pass a subkey when two
   properties share one type, as `LocalStorage` and `SessionStorage` do.
+- Let the trimmer also drop each unused member when a WebAssembly app is published, not only
+  unused families. Do not reach members through reflection, `[DynamicDependency]`, or tables that
+  reference every member. Keep the build free of trim warnings.
 - Follow Web IDL names and behavior. Do not add convenience APIs, polyfills, or .NET substitutions.
   Map an operation `foo()` to `FooAsync()` and a readable attribute `foo` to `GetFooAsync()`. Map
   `unsigned long` to `uint` and a nullable `DOMString` to `string?`.
@@ -46,7 +49,10 @@ otherwise.
   Keep raw JS interop types and identifiers non-public. `PublicApiTest` enforces both.
 - Do not add locks or other synchronization. Blazor runs on a single threaded synchronization
   context, so only one thread runs at a time.
-- Use direct constructor, property, and method interop before adding a JavaScript module.
+- Do not add a JavaScript module. Use only the `IJSRuntime` and `IJSObjectReference` features of
+  .NET 10 and later, such as `InvokeConstructorAsync`, `GetValueAsync`, and `SetValueAsync`. If a
+  feature seems to need JavaScript of its own, such as an event listener, stop and raise it as an
+  open question.
 - Acquire a JS object reference lazily on first use and share the pending task between callers. Do
   not keep a failed or canceled acquisition. A timeout during a brief connection loss would
   otherwise break the family for the rest of the circuit, so acquire again on the next call.
@@ -112,7 +118,8 @@ the API proposal's usage example.
   `PlatformTestApp.E2E.Tests`. These E2E tests run on Helix in CI with a prebuilt app. A local run
   from the build output does not use that layout, so also run the tests from the output of
   `dotnet publish` on the E2E project.
-- Publish a trimmed WebAssembly application and confirm the unused families are gone from the output.
+- Publish a trimmed WebAssembly application and confirm that the unused families and the unused
+  members of a used family are gone from the output.
 - Update `PublicAPI.Unshipped.txt`, build, pack, and inspect the final diff. Use explicit
   `ProjectReference` and `PackageReference` items in project files, as
   `docs/ReferenceResolution.md` describes.
