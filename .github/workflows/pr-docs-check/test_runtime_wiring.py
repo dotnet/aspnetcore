@@ -228,7 +228,7 @@ with patch('prepare_context.subprocess.run', side_effect=api):
         self.assertIn("needs.docs_context.outputs.analyze == 'true'", jobs["agent"])
         for name in ("detection", "safe_outputs", "notify_source_pr"):
             self.assertIn("needs.agent.result != 'skipped'", jobs[name].split("    runs-on:", 1)[0])
-        self.assertNotIn("GH_AW_ALLOWED_BOTS", jobs["pre_activation"])
+        self.assertIn('GH_AW_ALLOWED_BOTS: "dotnet-policy-service[bot]"', jobs["pre_activation"])
         self.assertIn('GH_AW_REQUIRED_ROLES: "admin,maintainer,write"', jobs["pre_activation"])
         self.assertIn("github.event.pull_request.merged == true", jobs["pre_activation"])
         self.assertIn("needs.pre_activation.outputs.activated == 'true'", jobs["docs_context"])
