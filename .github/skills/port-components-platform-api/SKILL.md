@@ -37,8 +37,13 @@ otherwise.
 - Follow Web IDL names and behavior. Do not add convenience APIs, polyfills, or .NET substitutions.
   Map an operation `foo()` to `FooAsync()` and a readable attribute `foo` to `GetFooAsync()`. Map
   `unsigned long` to `uint` and a nullable `DOMString` to `string?`.
+- Keep this one-to-one shape even when a more .NET-like API looks simpler. Review chose it on
+  purpose. A developer who knows the Web Platform API should find the same API from `Window.`
+  without learning Blazor-specific services. It also keeps unused families trimmable.
 - Keep live browser access asynchronous, and return `ValueTask` or `ValueTask<T>` like the JS
-  interop APIs do. Keep raw JS interop types and identifiers non-public. `PublicApiTest` enforces both.
+  interop APIs do. Do not switch to `Task`. `ValueTask` leaves room for a synchronous
+  `IJSInProcessRuntime` path on WebAssembly, and the return type cannot change after the API ships.
+  Keep raw JS interop types and identifiers non-public. `PublicApiTest` enforces both.
 - Do not add locks or other synchronization. Blazor runs on a single threaded synchronization
   context, so only one thread runs at a time.
 - Use direct constructor, property, and method interop before adding a JavaScript module.
@@ -49,15 +54,38 @@ otherwise.
   one to every caller, so never implement `IAsyncDisposable` or a public `DisposeAsync`. Implement
   the internal `IInternalAsyncDisposal` explicitly, and let `Window` call it when the scope ends.
 - Never let disposal throw. `Window` disposes features in access order, and an exception stops the
-  rest. If an acquisition fails while disposal waits for it, there is nothing to release, so return.
-  After disposal, throw `ObjectDisposedException` from every member.
+  rest. Do not wait for a pending acquisition either. It could hold up scope disposal until the JS
+  interop timeout, which is one minute by default. Release the reference only when the acquisition
+  has already completed successfully. After disposal, throw `ObjectDisposedException` from every
+  member.
 - Add cancellation only when it maps to `AbortSignal`, and do not add it to Web Storage style APIs.
+  A `CancellationToken` overload can be added later without a breaking change, so leave it out
+  when in doubt.
   `IJSRuntime` never forwards a token to JavaScript. Canceling only stops .NET from waiting and
   skips deserialization, and the result is still transferred. Real cancellation needs a JS-side
   `AbortController` that .NET aborts through interop. Also, any token turns off the default timeout
   that `JSRuntime` applies, so call the overload without a token when the caller passes none.
-- Write XML docs for consumer-observable behavior only. Do not describe interop, caching, or
-  disposal internals there.
+
+## Document
+
+Every public member needs complete XML docs. The PR review bot flagged `Storage` when they were
+missing. Describe consumer-observable behavior only. Do not describe interop, caching, or disposal
+internals. Follow the majority phrasing in this repository and `ProtectedBrowserStorage`.
+
+- Write a `<summary>` for every public member. Add a `<param>` for each parameter, a `<returns>`
+  for every non-void method (including a bare `ValueTask`), and an `<exception>` for each argument
+  check the member throws.
+- Write a `<param>` as a noun phrase only, such as `The key of the value to set.` Put behavior,
+  such as "replaces any existing value" or "if it exists", in the `<summary>`.
+- For `ValueTask<T>`, describe the value itself, such as `The number of stored items.`
+- For a bare `ValueTask`, write
+  `A <see cref="ValueTask"/> representing the completion of the operation.`
+- For a nullable result, write `..., or <see langword="null"/> if ...`. Use "if", not "when".
+- For a null check, write
+  `<exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>`.
+- Do not document `JSException`, for example for an exceeded quota. Interop types stay out of the
+  public contract.
+- When unsure, search the repository for the phrasing and use the most common form.
 
 ## Adopt
 
@@ -75,10 +103,11 @@ the API proposal's usage example.
 - Add unit tests to `src/Components/Platform/test`, one file per family. Cover interop identifiers
   and arguments, lazy acquisition, a single shared acquisition, acquiring again after a failure,
   stable and distinct instances, disposal of the acquired reference, `ObjectDisposedException` after
-  disposal, and disposal that continues when an acquisition fails while it waits.
+  disposal, and disposal that finishes without waiting for a pending acquisition.
 - Keep tests few and readable. Avoid tricks that depend on ordering. When ordering cannot be
   avoided, make it visible in the test and explain it in one comment.
-- Add the new type to `LiveBrowserObjectMethods_AreAsynchronous` in `PublicApiTest`.
+- Add the new type to both `LiveBrowserObjectMethods_AreAsynchronous` and
+  `SharedInstances_CannotBeDisposedByApplicationCode` in `PublicApiTest`.
 - Exercise the public API in Interactive Server and WebAssembly through `PlatformTestApp` and
   `PlatformTestApp.E2E.Tests`. These E2E tests run on Helix in CI with a prebuilt app. A local run
   from the build output does not use that layout, so also run the tests from the output of
