@@ -83,7 +83,7 @@ public class RemoteNavigationManagerTest
 
         var (expectedId, expectedName, expectedLevel, expectsUnhandledException) = failure switch
         {
-            NavigationFailure.TimedOutOnLiveCircuit => (8, "NavigationTimedOut", LogLevel.Warning, false),
+            NavigationFailure.TimedOutOnLiveCircuit => (8, "NavigationTimedOut", LogLevel.Debug, false),
             NavigationFailure.SessionAlreadyEnded or NavigationFailure.SessionEndedDuringInvocation =>
                 (7, "NavigationStoppedSessionEnded", LogLevel.Debug, false),
             NavigationFailure.UnexpectedError => (4, "NavigationFailed", LogLevel.Error, true),

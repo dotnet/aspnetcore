@@ -71,7 +71,7 @@ public class NavigationReconnectionTest : ServerTestBase<BasicTestAppServerSiteF
         var outcome = await navigationLog.Outcome.WaitAsync(TimeSpan.FromSeconds(30));
         Assert.Equal(8, outcome.EventId.Id);
         Assert.Equal("NavigationTimedOut", outcome.EventId.Name);
-        Assert.Equal(LogLevel.Warning, outcome.LogLevel);
+        Assert.Equal(LogLevel.Debug, outcome.LogLevel);
         Assert.IsType<TaskCanceledException>(outcome.Exception);
 
         // A server round-trip after the timeout also exercises CircuitHost and the circuit registry.

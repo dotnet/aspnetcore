@@ -253,7 +253,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         [LoggerMessage(7, LogLevel.Debug, "Navigation stopped because the session ended when navigating to {Uri}", EventName = "NavigationStoppedSessionEnded")]
         public static partial void NavigationStoppedSessionEnded(ILogger logger, string uri);
 
-        [LoggerMessage(8, LogLevel.Warning, "Navigation timed out when changing the location to {Uri}", EventName = "NavigationTimedOut")]
+        [LoggerMessage(8, LogLevel.Debug, "Navigation timed out when changing the location to {Uri}", EventName = "NavigationTimedOut")]
         public static partial void NavigationTimedOut(ILogger logger, string uri, Exception exception);
     }
 }
