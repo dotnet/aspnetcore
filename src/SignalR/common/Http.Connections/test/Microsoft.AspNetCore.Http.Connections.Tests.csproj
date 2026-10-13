@@ -17,7 +17,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections" />
     <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Newtonsoft.Json" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
 </Project>

@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="Newtonsoft.Json" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
   </ItemGroup>
 
