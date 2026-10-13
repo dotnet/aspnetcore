@@ -26,7 +26,6 @@
     <PackageReference Include="Microsoft.DotNet.RemoteExecutor" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
 
