@@ -36,7 +36,7 @@ public sealed class Storage : IInternalAsyncDisposal
     /// Gets the key at the specified index.
     /// </summary>
     /// <param name="index">The zero-based index of the key to retrieve.</param>
-    /// <returns>The key at <paramref name="index"/>, or <see langword="null"/> when no key exists at that index.</returns>
+    /// <returns>The key at <paramref name="index"/>, or <see langword="null"/> if no key exists at that index.</returns>
     public async ValueTask<string?> KeyAsync(uint index)
     {
         var storage = await GetReferenceAsync().ConfigureAwait(false);
@@ -48,7 +48,7 @@ public sealed class Storage : IInternalAsyncDisposal
     /// Gets the value associated with the specified key.
     /// </summary>
     /// <param name="key">The key of the value to retrieve.</param>
-    /// <returns>The value associated with <paramref name="key"/>, or <see langword="null"/> when the key does not exist.</returns>
+    /// <returns>The value associated with <paramref name="key"/>, or <see langword="null"/> if the key does not exist.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
     public async ValueTask<string?> GetItemAsync(string key)
     {
@@ -60,11 +60,11 @@ public sealed class Storage : IInternalAsyncDisposal
     }
 
     /// <summary>
-    /// Sets the value associated with the specified key.
+    /// Sets the value associated with the specified key, replacing any existing value.
     /// </summary>
     /// <param name="key">The key of the value to set.</param>
-    /// <param name="value">The value to store. It replaces any existing value for <paramref name="key"/>.</param>
-    /// <returns>A <see cref="ValueTask"/> that completes when the value is stored.</returns>
+    /// <param name="value">The value to store.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="key"/> or <paramref name="value"/> is <see langword="null"/>.</exception>
     public async ValueTask SetItemAsync(string key, string value)
     {
@@ -76,10 +76,10 @@ public sealed class Storage : IInternalAsyncDisposal
     }
 
     /// <summary>
-    /// Removes the value associated with the specified key.
+    /// Removes the value associated with the specified key, if it exists.
     /// </summary>
-    /// <param name="key">The key of the value to remove. Nothing happens when the key does not exist.</param>
-    /// <returns>A <see cref="ValueTask"/> that completes when the value is removed.</returns>
+    /// <param name="key">The key of the value to remove.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
     public async ValueTask RemoveItemAsync(string key)
     {
@@ -92,7 +92,7 @@ public sealed class Storage : IInternalAsyncDisposal
     /// <summary>
     /// Removes all stored values.
     /// </summary>
-    /// <returns>A <see cref="ValueTask"/> that completes when all values are removed.</returns>
+    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
     public async ValueTask ClearAsync()
     {
         var storage = await GetReferenceAsync().ConfigureAwait(false);

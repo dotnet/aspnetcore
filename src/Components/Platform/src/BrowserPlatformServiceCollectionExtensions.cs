@@ -15,7 +15,7 @@ public static class BrowserPlatformServiceCollectionExtensions
     /// Adds typed browser platform services.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddBrowserPlatform(this IServiceCollection services)
     {
