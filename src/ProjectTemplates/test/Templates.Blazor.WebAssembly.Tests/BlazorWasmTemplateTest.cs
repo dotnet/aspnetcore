@@ -81,4 +81,14 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Fact]
     public Task BlazorWasmStandalonePwaEmptyTemplateNoHttpsCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.NoHttps, ArgConstants.Empty });
+
+    [Fact]
+    public async Task BlazorWasmStandalonePwaTemplateTracksServiceWorkerForBuild()
+    {
+        var project = await ProjectFactory.CreateProject(Output);
+        await project.RunDotNetNewAsync(ProjectType, args: new[] { ArgConstants.Pwa }, restore: false);
+        var projectFilePath = Path.Combine(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
+
+        Assert.Contains("""<UpToDateCheckInput Include="@(ServiceWorker)" />""", File.ReadAllText(projectFilePath));
+    }
 }
