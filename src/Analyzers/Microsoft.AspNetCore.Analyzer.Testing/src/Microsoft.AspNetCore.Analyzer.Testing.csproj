@@ -16,7 +16,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
-    <PackageReference Include="System.Reflection.Metadata" />
 
     <!--
       This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.

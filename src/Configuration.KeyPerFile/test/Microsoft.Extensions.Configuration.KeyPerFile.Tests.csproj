@@ -8,7 +8,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
 
     <ProjectReference Include="$(RepoRoot)src\Configuration.KeyPerFile\src\Microsoft.Extensions.Configuration.KeyPerFile.csproj" />
   </ItemGroup>

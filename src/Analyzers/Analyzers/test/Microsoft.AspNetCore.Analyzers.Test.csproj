@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
 
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Analyzers\src\Microsoft.AspNetCore.Analyzers.csproj" />
