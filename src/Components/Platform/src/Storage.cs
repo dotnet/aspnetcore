@@ -24,6 +24,7 @@ public sealed class Storage : IInternalAsyncDisposal
     /// <summary>
     /// Gets the number of stored items.
     /// </summary>
+    /// <returns>The number of stored items.</returns>
     public async ValueTask<uint> GetLengthAsync()
     {
         var storage = await GetReferenceAsync().ConfigureAwait(false);
@@ -34,6 +35,8 @@ public sealed class Storage : IInternalAsyncDisposal
     /// <summary>
     /// Gets the key at the specified index.
     /// </summary>
+    /// <param name="index">The zero-based index of the key to retrieve.</param>
+    /// <returns>The key at <paramref name="index"/>, or <see langword="null"/> when no key exists at that index.</returns>
     public async ValueTask<string?> KeyAsync(uint index)
     {
         var storage = await GetReferenceAsync().ConfigureAwait(false);
@@ -44,6 +47,9 @@ public sealed class Storage : IInternalAsyncDisposal
     /// <summary>
     /// Gets the value associated with the specified key.
     /// </summary>
+    /// <param name="key">The key of the value to retrieve.</param>
+    /// <returns>The value associated with <paramref name="key"/>, or <see langword="null"/> when the key does not exist.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
     public async ValueTask<string?> GetItemAsync(string key)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -56,6 +62,10 @@ public sealed class Storage : IInternalAsyncDisposal
     /// <summary>
     /// Sets the value associated with the specified key.
     /// </summary>
+    /// <param name="key">The key of the value to set.</param>
+    /// <param name="value">The value to store. It replaces any existing value for <paramref name="key"/>.</param>
+    /// <returns>A <see cref="ValueTask"/> that completes when the value is stored.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> or <paramref name="value"/> is <see langword="null"/>.</exception>
     public async ValueTask SetItemAsync(string key, string value)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -68,6 +78,9 @@ public sealed class Storage : IInternalAsyncDisposal
     /// <summary>
     /// Removes the value associated with the specified key.
     /// </summary>
+    /// <param name="key">The key of the value to remove. Nothing happens when the key does not exist.</param>
+    /// <returns>A <see cref="ValueTask"/> that completes when the value is removed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
     public async ValueTask RemoveItemAsync(string key)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -79,6 +92,7 @@ public sealed class Storage : IInternalAsyncDisposal
     /// <summary>
     /// Removes all stored values.
     /// </summary>
+    /// <returns>A <see cref="ValueTask"/> that completes when all values are removed.</returns>
     public async ValueTask ClearAsync()
     {
         var storage = await GetReferenceAsync().ConfigureAwait(false);
