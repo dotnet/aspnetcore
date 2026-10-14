@@ -147,7 +147,7 @@ function onDocumentSubmit(event: SubmitEvent) {
     }
 
     const method = event.submitter?.getAttribute('formmethod') || formElem.method;
-    if (method === 'dialog') {
+    if (method.toLowerCase() === 'dialog') {
       console.warn('A form cannot be enhanced when its method is "dialog".');
       return;
     }
@@ -171,7 +171,7 @@ function onDocumentSubmit(event: SubmitEvent) {
     }
 
     const urlSearchParams = new URLSearchParams(formData as any).toString();
-    if (fetchOptions.method === 'get') { // method is always returned as lowercase
+    if (fetchOptions.method?.toLowerCase() === 'get') { // method may be any case, e.g., 'GET', 'get', or 'GeT'
       url.search = urlSearchParams;
 
       // For forms with method=get, we need to push a URL history entry equivalent to how it
