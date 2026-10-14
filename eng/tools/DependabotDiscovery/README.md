@@ -6,27 +6,21 @@ Do **not** add `ExcludeFromBuild` (or similar) to try to make that more explicit
 `ExcludeFromBuild` disables NuGet restore entirely, which would also stop Dependabot from resolving
 any packages out of this project.
 
-Most projects in this repo declare external packages with `<Reference Include="X" />` instead of
-`<PackageReference>` (see [docs/ReferenceResolution.md](/docs/ReferenceResolution.md)). Dependabot's
-NuGet updater only recognizes literal `<PackageReference>`/`<PackageVersion>` elements, so it cannot
-see or update any of those dependencies on its own.
+Projects now use ordinary `<PackageReference>` items and NuGet Central Package Management. This
+discovery project remains the entry point for the existing Dependabot jobs, selecting the packages
+those jobs should update without requiring them to restore every product and platform.
 
-`DependabotDiscovery.csproj` re-declares the same packages as ordinary `<PackageReference>` items,
-using the same version properties from `eng/Versions.props`. Dependabot can discover these, and when
-it bumps a version property here, that same property flows into every real project through the normal
-`eng/Versions.props` import - no other repo behavior changes.
+Its references use the central versions in `Directory.Packages.props`.
+The version properties remain in `eng/Versions.props`, shared with the real consuming projects.
 
 Only packages that meet **all** of the following belong here:
 - Not already managed by Maestro (see `eng/Version.Details.props`) and not pinned via the shared
   `$(IdentityModelVersion)` property - those are updated by other automation and are excluded from
   Dependabot via `.github/dependabot.yml`.
-- Not mapped to an in-repo `ProjectReferenceProvider` (see `eng/ProjectReferences.props`) - those
-  names resolve to a project built from source in this repo, not a real external package, and have
-  no meaningful version to bump.
+- Not an in-repository shipping assembly (see `eng/ShippingAssemblies.props`) referenced as a
+  project, or an intentionally pinned historical package for an in-repository assembly.
 - Backed by a real, resolvable `$(SomePackageNameVersion)` property in `eng/Versions.props` (per the
-  naming convention in `eng/Dependencies.props`). A handful of `eng/Dependencies.props` entries are
-  vestigial - unreferenced by any project and without a matching version property - and must be
-  skipped here too, or restore fails.
+  central mappings in `Directory.Packages.props`).
 - Actually reportable by Dependabot as a top-level, updatable dependency. Two real, referenced
   packages are excluded for this reason: `NETStandard.Library` (dependabot-core hard-codes it as
   "resolved but not reported", being a compile-time SDK compatibility shim) and
@@ -43,15 +37,15 @@ project) is suppressed via `NoWarn`, since this project is never actually built 
 
 ## Keeping this file up to date
 
-Whenever you add, remove, or rename a package in `eng/Dependencies.props`, make the matching change
+Whenever you add, remove, or rename a package in `Directory.Packages.props`, make the matching change
 here (unless it's Maestro- or IdentityModel-managed). `eng/scripts/CodeCheck.ps1` fails CI if
-`eng/Dependencies.props` changes without a corresponding change to this file.
+`Directory.Packages.props` changes without a corresponding change to this file.
 
 ## Adding a package
 
-1. Confirm it meets all the criteria listed above (not Maestro/IdentityModel-managed, not a
-   `ProjectReferenceProvider` name, has a real `$(SomePackageNameVersion)` property).
-2. Add `<PackageReference Include="PackageName" Version="$(PackageNameVersion)" />` to the main
+1. Confirm it meets all the criteria listed above (not Maestro/IdentityModel-managed, not an
+   in-repository shipping assembly name, has a real `$(SomePackageNameVersion)` property).
+2. Add `<PackageReference Include="PackageName" />` to the main
    `ItemGroup`.
 3. Run `dotnet restore` on this project. If it fails with `NU1202` (package doesn't support a
    target framework), the package needs its own TFM-conditioned `ItemGroup` instead of the main

@@ -28,12 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" AllowExplicitReference="true" />
-    <Reference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Components\AI\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
     <None Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.Components.AI.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.AI.SourceGenerators.dll"

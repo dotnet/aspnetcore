@@ -61,7 +61,7 @@ class ResolveTargetVersionTests(unittest.TestCase):
 
 
 class FindExistingDraftTests(unittest.TestCase):
-    def test_selects_most_recent_matching_draft(self):
+    def test_multiple_matching_drafts_block_refresh(self):
         pulls = [
             self._pull(1, "2026-01-01T00:00:00Z", "docs/aspnetcore-pr-42-abcd"),
             self._pull(2, "2026-02-01T00:00:00Z", "docs/aspnetcore-pr-42"),
@@ -76,9 +76,10 @@ class FindExistingDraftTests(unittest.TestCase):
             "aspnetcore-docs-bot[bot]",
         )
 
-        self.assertTrue(result["found"])
-        self.assertEqual(2, result["selected"]["number"])
-        self.assertEqual([1], [pull["number"] for pull in result["other_matching_pull_requests"]])
+        self.assertFalse(result["found"])
+        self.assertTrue(result["blocked"])
+        self.assertEqual("ambiguous_open_pull_requests", result["blocked_reason"])
+        self.assertEqual([2], [pull["number"] for pull in result["other_matching_pull_requests"]])
 
     def test_ignores_untrusted_or_non_draft_pull_requests(self):
         pulls = [
@@ -155,6 +156,7 @@ class FindExistingDraftTests(unittest.TestCase):
             "draft": draft,
             "updated_at": updated_at,
             "body": "Source: dotnet/aspnetcore#42\n\nDetails",
+            "title": "[docs] Update docs",
             "base": {
                 "ref": "main",
                 "repo": {"full_name": "dotnet/AspNetCore.Docs"},

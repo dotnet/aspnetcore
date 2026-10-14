@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Net.Http.Headers" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Headers\src\Microsoft.Net.Http.Headers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
