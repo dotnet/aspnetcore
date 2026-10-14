@@ -463,6 +463,8 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     public Task OnDataAsync(Http2Frame dataFrame, in ReadOnlySequence<byte> payload)
     {
+        _inputFlowControl.Advance(dataFrame.PayloadLength);
+
         // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
         if (dataFrame.DataHasPadding)
         {
@@ -485,8 +487,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                     // Call before flushing the request body pipe, because that might induce a window update.
                     _inputFlowControl.StopWindowUpdates();
                 }
-
-                _inputFlowControl.Advance((int)dataPayload.Length);
 
                 // This check happens after flow control so that when we throw and abort, the byte count is returned to the connection
                 // level accounting.
