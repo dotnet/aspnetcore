@@ -190,7 +190,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             endpointBuilder.Metadata.Add(new EndpointNameMetadata(confirmEmailEndpointName));
         });
 
-        routeGroup.MapPost("/resendConfirmationEmail", async Task<Ok>
+        routeGroup.MapPost("/resendConfirmationEmail", async Task<Results<Ok, ValidationProblem>>
             ([FromBody] ResendConfirmationEmailRequest resendRequest, HttpContext context, [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
@@ -199,7 +199,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.Ok();
             }
 
-            await SendConfirmationEmailAsync(user, userManager, context, resendRequest.Email);
+            var storedEmail = await userManager.GetEmailAsync(user);
+            if (string.IsNullOrEmpty(storedEmail))
+            {
+                return CreateValidationProblem("MissingEmail", "Users must have an email.");
+            }
+
+            await SendConfirmationEmailAsync(user, userManager, context, storedEmail);
             return TypedResults.Ok();
         });
 
@@ -211,10 +217,16 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
             if (user is not null && await userManager.IsEmailConfirmedAsync(user))
             {
+                var storedEmail = await userManager.GetEmailAsync(user);
+                if (string.IsNullOrEmpty(storedEmail))
+                {
+                    return CreateValidationProblem("MissingEmail", "Users must have an email.");
+                }
+
                 var code = await userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                await emailSender.SendPasswordResetCodeAsync(user, resetRequest.Email, HtmlEncoder.Default.Encode(code));
+                await emailSender.SendPasswordResetCodeAsync(user, storedEmail, HtmlEncoder.Default.Encode(code));
             }
 
             // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
