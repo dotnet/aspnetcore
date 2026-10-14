@@ -57,7 +57,7 @@ class AuthenticationTests(unittest.TestCase):
         self.assertIn("repositories: [\"AspNetCore.Docs.Automation\"]", self.workflow)
         self.assertIn("DOCS_GITHUB_TOKEN: ${{ steps.docs-bot-token.outputs.token }}", self.workflow)
         self.assertIn(
-            'GH_TOKEN="${DOCS_GITHUB_TOKEN}" gh api',
+            '--allowed-author "${DOCS_BOT_APP_SLUG}[bot]"',
             self.workflow,
         )
         self.assertIn(
