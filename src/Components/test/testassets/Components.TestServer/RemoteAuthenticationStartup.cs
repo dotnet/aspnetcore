@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Reflection;
+using System.Text.Json;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -58,23 +59,52 @@ public class RemoteAuthenticationStartup
                 });
 
                 var lastCode = "";
+                var mountSilentCallback = false;
+                var interactiveAuthorizationRequests = 0;
+                var preservedExtraQueryParamsObserved = false;
                 oidcEndpoints.MapGet("authorize", (string redirect_uri, string? state, string? prompt, bool? preservedExtraQueryParams) =>
                 {
                     // Require interaction so silent sign-in does not skip RedirectToLogin.razor.
                     if (prompt == "none")
                     {
+                        if (mountSilentCallback)
+                        {
+                            mountSilentCallback = false;
+                            var callbackUrl = JsonSerializer.Serialize($"{redirect_uri}?error=interaction_required&state={state}");
+                            return Results.Content(
+                                $"""
+                                <script>
+                                    sessionStorage.removeItem('Microsoft.AspNetCore.Components.WebAssembly.Authentication.CachedAuthSettings');
+                                    location.replace({callbackUrl});
+                                </script>
+                                """,
+                                "text/html");
+                        }
+
                         return Results.Redirect($"{redirect_uri}?error=interaction_required&state={state}");
                     }
 
-                    // Verify that the extra query parameters added by RedirectToLogin.razor are preserved.
-                    if (preservedExtraQueryParams != true)
-                    {
-                        return Results.Redirect($"{redirect_uri}?error=invalid_request&error_description=extraQueryParams%20not%20preserved&state={state}");
-                    }
+                    interactiveAuthorizationRequests++;
+                    preservedExtraQueryParamsObserved = preservedExtraQueryParams == true;
 
                     lastCode = Random.Shared.Next().ToString(CultureInfo.InvariantCulture);
                     return Results.Redirect($"{redirect_uri}?code={lastCode}&state={state}");
                 });
+                oidcEndpoints.MapGet("mount-silent-callback", () =>
+                {
+                    mountSilentCallback = true;
+                    interactiveAuthorizationRequests = 0;
+                    return Results.Content(
+                        """
+                        <script>
+                            sessionStorage.clear();
+                            location.replace('/subdir/silent-authentication');
+                        </script>
+                        """,
+                        "text/html");
+                });
+                oidcEndpoints.MapGet("interactive-authorization-requests", () => interactiveAuthorizationRequests);
+                oidcEndpoints.MapGet("preserved-extra-query-params-observed", () => preservedExtraQueryParamsObserved);
 
                 var jwtHandler = new JsonWebTokenHandler();
                 oidcEndpoints.MapPost("token", ([FromForm] string code) =>

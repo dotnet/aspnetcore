@@ -149,7 +149,8 @@ public class RemoteAuthenticatorCoreTests
         // Arrange
         var originalUrl = "https://www.example.com/base/authentication/login-callback?code=1234";
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
-            originalUrl);
+            originalUrl,
+            isTopLevelWindow: true);
 
         authServiceMock.CompleteSignInCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
         {
@@ -166,6 +167,32 @@ public class RemoteAuthenticatorCoreTests
 
         // Assert
         Assert.Equal("https://www.example.com/base/authentication/login", remoteAuthenticator.Navigation.Uri);
+    }
+
+    [Fact]
+    public async Task AuthenticationManager_LoginCallback_DoesNothingOnOperationCompletedInIframe()
+    {
+        // Arrange
+        var originalUrl = "https://www.example.com/base/authentication/login-callback?code=1234";
+        var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
+            originalUrl,
+            isTopLevelWindow: false);
+
+        authServiceMock.CompleteSignInCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
+        {
+            Status = RemoteAuthenticationStatus.OperationCompleted
+        });
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [_action] = RemoteAuthenticationActions.LogInCallback
+        });
+
+        // Act
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
+
+        // Assert
+        Assert.Equal(originalUrl, remoteAuthenticator.Navigation.Uri);
     }
 
     [Fact]
@@ -677,7 +704,8 @@ public class RemoteAuthenticatorCoreTests
         CreateAuthenticationManager(
         string currentUri,
         string currentState = null,
-        string baseUri = "https://www.example.com/base/")
+        string baseUri = "https://www.example.com/base/",
+        bool isTopLevelWindow = true)
     {
         var renderer = new TestRenderer(new ServiceCollection().BuildServiceProvider());
         var logger = new TestLoggerFactory(new TestSink(), false).CreateLogger<RemoteAuthenticatorViewCore<RemoteAuthenticationState>>();
@@ -694,7 +722,7 @@ public class RemoteAuthenticatorCoreTests
         remoteAuthenticator.AuthenticationState = new RemoteAuthenticationState();
         remoteAuthenticator.ApplicationPaths = new RemoteAuthenticationApplicationPathsOptions();
 
-        var jsRuntime = new TestJsRuntime();
+        var jsRuntime = new TestJsRuntime(isTopLevelWindow);
         var authenticationServiceMock = new TestRemoteAuthenticationService(
             jsRuntime,
             Mock.Of<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>(),
@@ -702,6 +730,7 @@ public class RemoteAuthenticatorCoreTests
 
         remoteAuthenticator.AuthenticationService = authenticationServiceMock;
         remoteAuthenticator.AuthenticationProvider = authenticationServiceMock;
+        remoteAuthenticator.JSRuntime = jsRuntime;
         return (remoteAuthenticator, renderer, authenticationServiceMock);
     }
 
@@ -725,11 +754,23 @@ public class RemoteAuthenticatorCoreTests
 
     private class TestJsRuntime : IJSRuntime
     {
+        private readonly bool _isTopLevelWindow;
+
+        public TestJsRuntime(bool isTopLevelWindow)
+        {
+            _isTopLevelWindow = isTopLevelWindow;
+        }
+
         public (string identifier, object[] args) LastInvocation { get; set; }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
             LastInvocation = (identifier, args);
+            if (identifier == "AuthenticationService.isTopLevelWindow")
+            {
+                return ValueTask.FromResult((TValue)(object)_isTopLevelWindow);
+            }
+
             return default;
         }
 

@@ -457,6 +457,10 @@ export class AuthenticationService {
         return AuthenticationService.instance.signIn(context);
     }
 
+    public static isTopLevelWindow() {
+        return window.self === window.top;
+    }
+
     public static async completeSignIn(url: string) {
         let operation = this._pendingOperations[url];
         if (!operation) {

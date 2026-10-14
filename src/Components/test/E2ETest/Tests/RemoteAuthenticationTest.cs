@@ -25,19 +25,45 @@ public class RemoteAuthenticationTest :
     public void NavigateToLogin_PreservesExtraQueryParams()
     {
         // If the preservedExtraQueryParams passed to NavigateToLogin by RedirectToLogin gets trimmed,
-        // the OIDC endpoints will fail to authenticate the user.
+        // the OIDC endpoint will not observe it.
         Navigate("/subdir/test-remote-authentication");
 
+        var heading = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello, Jane Doe!", () => heading.Text);
+        Browser.Equal("true", () => GetResponseText("/subdir/oidc/preserved-extra-query-params-observed"));
+    }
+
+    [Fact]
+    public void NavigateDirectlyToLoginCallbackRestartsLogin()
+    {
+        Navigate("/subdir/authentication/login-callback");
+
+        Browser.Equal(new Uri(_serverFixture.RootUri, "/subdir/").AbsoluteUri, () => Browser.Url);
         var heading = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello, Jane Doe!", () => heading.Text);
     }
 
     [Fact]
-    public void NavigateDirectlyToLoginCallbackDoesNotStayOnCompletingLogin()
+    public void SilentLoginCallbackInIframeDoesNotRestartLogin()
     {
-        Navigate("/subdir/authentication/login-callback");
+        Navigate("/subdir/oidc/mount-silent-callback");
 
-        Browser.DoesNotExist(By.XPath("//p[text()='Completing login...']"));
-        Browser.True(() => !Browser.Url.Contains("/authentication/login-callback"));
+        Browser.Exists(By.XPath("//p[text()='Silent authentication completed.']"));
+        Browser.True(() => (bool?)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return window.__authenticationCallbackCompletedInIframe") == true);
+        Browser.DoesNotExist(By.TagName("iframe"));
+        Browser.Equal("0", () => GetResponseText("/subdir/oidc/interactive-authorization-requests"));
+    }
+
+    private string GetResponseText(string path)
+    {
+        var response = ((IJavaScriptExecutor)Browser).ExecuteAsyncScript(
+            """
+            const done = arguments[arguments.length - 1];
+            fetch(arguments[0]).then(response => response.text()).then(done);
+            """,
+            path);
+
+        return Assert.IsType<string>(response);
     }
 }

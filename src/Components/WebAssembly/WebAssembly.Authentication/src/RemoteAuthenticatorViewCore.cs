@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -105,6 +106,8 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
     [Inject] internal IRemoteAuthenticationPathsProvider RemoteApplicationPathsProvider { get; set; } = default!;
 
     [Inject] internal AuthenticationStateProvider AuthenticationProvider { get; set; } = default!;
+
+    [Inject] internal IJSRuntime JSRuntime { get; set; } = default!;
 
     [Inject] internal ILogger<RemoteAuthenticatorViewCore<TAuthenticationState>> Logger { get; set; } = default!;
 
@@ -263,8 +266,11 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 Navigation.NavigateTo(redirectUrl, AuthenticationNavigationOptions);
                 break;
             case RemoteAuthenticationStatus.OperationCompleted:
-                Log.NavigatingToUrl(Logger, ApplicationPaths.LogInPath);
-                Navigation.NavigateTo(ApplicationPaths.LogInPath, AuthenticationNavigationOptions);
+                if (await JSRuntime.InvokeAsync<bool>("AuthenticationService.isTopLevelWindow"))
+                {
+                    Log.NavigatingToUrl(Logger, ApplicationPaths.LogInPath);
+                    Navigation.NavigateTo(ApplicationPaths.LogInPath, AuthenticationNavigationOptions);
+                }
                 break;
             case RemoteAuthenticationStatus.Failure:
                 Log.LoginCallbackFailed(Logger, result.ErrorMessage!);
