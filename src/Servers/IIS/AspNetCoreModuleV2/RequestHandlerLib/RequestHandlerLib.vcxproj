@@ -25,10 +25,10 @@
     <ClCompile Include="requesthandler_config.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\CommonLib\CommonLib.vcxproj">
       <Project>{55494e58-e061-4c4c-a0a8-837008e72f85}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\IISLib\IISLib.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\IISLib.vcxproj">
       <Project>{4787a64f-9a3e-4867-a55a-70cb4b2b2ffe}</Project>
     </ProjectReference>
   </ItemGroup>

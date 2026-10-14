@@ -56,8 +56,15 @@
       are written) flows through MSBuild at high importance, so it shows up in the binlog and CI console
       instead of being dropped or buried at default importance.
     -->
-    <Exec Command="$(JavaBuildArgs)"
+    <Exec Condition="'$(ContinuousIntegrationBuild)' != 'true'"
+          Command="$(JavaBuildArgs)"
           StandardErrorImportance="High" />
+    <Microsoft.DotNet.Arcade.Sdk.ExecWithRetries
+      Condition="'$(ContinuousIntegrationBuild)' == 'true'"
+      Command="$(JavaBuildArgs)"
+      IgnoreStandardErrorWarningFormat="true"
+      MaxAttempts="2"
+      StandardErrorImportance="High" />
     <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)build-sentinel" />
   </Target>
 

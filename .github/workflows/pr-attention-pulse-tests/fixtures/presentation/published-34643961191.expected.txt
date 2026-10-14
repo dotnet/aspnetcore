@@ -98,12 +98,456 @@ Inspect the discussion before merging; these prospective candidates do not estab
 
 Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact; retained for seven days.
+Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>
 
 Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
 JSON SHA-256: `d69fdb0a40ba4c80a7515044b256fbe9b7fe22bd2fb2890cb4bd8b0f6b4a6f3b`.
+
+</details>
+
+<details>
+<summary>Snapshot JSON (exact sanitized bytes)</summary>
+
+```json
+{
+  "schemaVersion": "1.0.0",
+  "status": "complete",
+  "attemptedAt": "2026-09-11T20:25:07.9519155Z",
+  "candidateCountsAvailable": true,
+  "source": {
+    "repository": "dotnet/aspnetcore",
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-09-11T20:25:08.8529515Z",
+    "query": {
+      "openPullRequestCount": 366,
+      "returnedPullRequestCount": 366,
+      "complete": true
+    },
+    "filter": {
+      "name": "adhoc",
+      "description": "Ad hoc pull-request scope",
+      "coverage": "all-repo",
+      "selection": "(all open pull requests)",
+      "allRepositoryPullRequests": true
+    },
+    "discussion": {
+      "candidateLimit": 20,
+      "assessedCandidateCount": 20,
+      "verificationNeededCount": 9,
+      "unassessedReviewNowCount": 20
+    },
+    "census": {
+      "openPullRequests": 366,
+      "matched": 366,
+      "labelOnly": 0,
+      "pathOnly": 0,
+      "labelAndPath": 0,
+      "incidentalPathExcluded": 0,
+      "unresolvedMergeable": 0,
+      "byBucket": {
+        "ReviewNow": 40,
+        "NeedsRescue": 29,
+        "ReadyToMerge": 5,
+        "WaitingOnAuthor": 71,
+        "WaitingOnCI": 112,
+        "DesignDecision": 0,
+        "Draft": 65,
+        "Excluded": 44
+      }
+    },
+    "overflow": {
+      "reviewNow": 35,
+      "needsRescue": 26,
+      "readyToMerge": 2
+    },
+    "caps": {
+      "reviewNow": 5,
+      "needsRescue": 3,
+      "readyToMerge": 3,
+      "reviewNowPerAuthor": 2
+    },
+    "warnings": [
+      "Discussion evidence was assessed for the first 20 Review now candidate(s). 20 lower-ranked candidate(s) cannot enter the unattended digest."
+    ]
+  },
+  "views": {
+    "reviewNow": [
+      {
+        "number": 68808,
+        "title": "Fix rewrite map lookups nested in a pattern",
+        "author": "astralmaster",
+        "bucket": "ReviewNow",
+        "rank": 1,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "review-requested",
+          "ci-pending",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 16,
+        "idleDays": 16,
+        "scopeMatch": "all-repo"
+      },
+      {
+        "number": 68788,
+        "title": "Fix ApacheModRewrite tokenizer throwing on regex shorthand escapes",
+        "author": "SergioAlmeida29",
+        "bucket": "ReviewNow",
+        "rank": 2,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "review-requested",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 16,
+        "idleDays": 16,
+        "scopeMatch": "all-repo"
+      },
+      {
+        "number": 68859,
+        "title": "Add documentation for (link removed) failureMessage parameter",
+        "author": "SergioAlmeida29",
+        "bucket": "ReviewNow",
+        "rank": 3,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "review-requested",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 15,
+        "idleDays": 15,
+        "scopeMatch": "all-repo"
+      },
+      {
+        "number": 68926,
+        "title": "Preserve regex escapes in Apache rewrite rules",
+        "author": "vipulm12",
+        "bucket": "ReviewNow",
+        "rank": 4,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "author-responded",
+          "roundtrip-waiting",
+          "reviewer-commented",
+          "head-changed-after-review",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 11,
+        "idleDays": 9,
+        "scopeMatch": "all-repo"
+      },
+      {
+        "number": 68797,
+        "title": "Delete the nonce cookie when the OIDC callback returns an error",
+        "author": "astralmaster",
+        "bucket": "ReviewNow",
+        "rank": 5,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "author-responded",
+          "roundtrip-waiting",
+          "reviewer-commented",
+          "head-changed-after-review",
+          "ci-pending"
+        ],
+        "blockers": [],
+        "ageDays": 16,
+        "idleDays": 9,
+        "scopeMatch": "all-repo"
+      }
+    ],
+    "verifyDiscussionBeforeReview": [
+      {
+        "number": 67440,
+        "title": "(Hosting) Avoid allocations for OpenTelemetry",
+        "author": "martincostello",
+        "bucket": "ReviewNow",
+        "rank": 1,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "author-responded",
+          "roundtrip-waiting",
+          "reviewer-commented",
+          "head-changed-after-review",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 77,
+        "idleDays": 21,
+        "scopeMatch": "all-repo",
+        "discussionAssessment": {
+          "state": "verification-needed",
+          "complete": true,
+          "signals": [
+            "non-author-discussion-requires-verification"
+          ],
+          "commentTotalCount": 4,
+          "commentEvidenceTruncated": false,
+          "threads": {
+            "totalCount": 3,
+            "returnedCount": 3,
+            "complete": true,
+            "unresolvedCount": 0,
+            "outdatedUnresolvedCount": 0
+          }
+        }
+      },
+      {
+        "number": 68037,
+        "title": "Avoid defensive copies of RenderTreeFrame in (link removed)",
+        "author": "vendasankarsf3945",
+        "bucket": "ReviewNow",
+        "rank": 2,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "author-responded",
+          "roundtrip-waiting",
+          "reviewer-commented",
+          "head-changed-after-review"
+        ],
+        "blockers": [],
+        "ageDays": 46,
+        "idleDays": 17,
+        "scopeMatch": "all-repo",
+        "discussionAssessment": {
+          "state": "verification-needed",
+          "complete": true,
+          "signals": [
+            "non-author-discussion-after-author-response",
+            "non-author-discussion-requires-verification"
+          ],
+          "commentTotalCount": 9,
+          "commentEvidenceTruncated": false,
+          "threads": {
+            "totalCount": 4,
+            "returnedCount": 4,
+            "complete": true,
+            "unresolvedCount": 1,
+            "outdatedUnresolvedCount": 1
+          }
+        }
+      },
+      {
+        "number": 68786,
+        "title": "Reject authentication schemes on SignalR hub methods",
+        "author": "BrennanConroy",
+        "bucket": "ReviewNow",
+        "rank": 3,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "review-requested"
+        ],
+        "blockers": [],
+        "ageDays": 17,
+        "idleDays": 17,
+        "scopeMatch": "all-repo",
+        "discussionAssessment": {
+          "state": "verification-needed",
+          "complete": true,
+          "signals": [
+            "current-inline-discussion-unassessed"
+          ],
+          "commentTotalCount": 0,
+          "commentEvidenceTruncated": false,
+          "threads": {
+            "totalCount": 1,
+            "returnedCount": 1,
+            "complete": true,
+            "unresolvedCount": 1,
+            "outdatedUnresolvedCount": 0
+          }
+        }
+      },
+      {
+        "number": 67939,
+        "title": "Throw from client (link removed) when the target method does not exist",
+        "author": "Arul1998",
+        "bucket": "ReviewNow",
+        "rank": 4,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "author-responded",
+          "roundtrip-waiting",
+          "head-changed-after-review",
+          "ci-pending"
+        ],
+        "blockers": [],
+        "ageDays": 52,
+        "idleDays": 15,
+        "scopeMatch": "all-repo",
+        "discussionAssessment": {
+          "state": "verification-needed",
+          "complete": true,
+          "signals": [
+            "non-author-discussion-requires-verification"
+          ],
+          "commentTotalCount": 6,
+          "commentEvidenceTruncated": false,
+          "threads": {
+            "totalCount": 0,
+            "returnedCount": 0,
+            "complete": true,
+            "unresolvedCount": 0,
+            "outdatedUnresolvedCount": 0
+          }
+        }
+      },
+      {
+        "number": 66899,
+        "title": "Handle Blazor WASM auth errors from URL fragments",
+        "author": "EduardF1",
+        "bucket": "ReviewNow",
+        "rank": 5,
+        "nextActor": "human reviewer",
+        "reasonCodes": [
+          "author-responded",
+          "roundtrip-waiting",
+          "reviewer-commented",
+          "head-changed-after-review",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 105,
+        "idleDays": 12,
+        "scopeMatch": "all-repo",
+        "discussionAssessment": {
+          "state": "verification-needed",
+          "complete": true,
+          "signals": [
+            "non-author-discussion-requires-verification"
+          ],
+          "commentTotalCount": 10,
+          "commentEvidenceTruncated": false,
+          "threads": {
+            "totalCount": 2,
+            "returnedCount": 2,
+            "complete": true,
+            "unresolvedCount": 2,
+            "outdatedUnresolvedCount": 2
+          }
+        }
+      }
+    ],
+    "needsRescue": [
+      {
+        "number": 62349,
+        "title": "Unescape relative path before file lookup to fix space-in-filename issue",
+        "author": "jacob-l",
+        "bucket": "NeedsRescue",
+        "rank": 1,
+        "nextActor": "maintainer/triager",
+        "reasonCodes": [
+          "blocked-label",
+          "community-contribution"
+        ],
+        "blockers": [
+          "A blocking label requires an explicit triage decision."
+        ],
+        "ageDays": 454,
+        "idleDays": 454,
+        "scopeMatch": "all-repo"
+      },
+      {
+        "number": 66426,
+        "title": "Make DefaultActionDescriptorCollectionProvider implement IDisposable",
+        "author": "kvantetore",
+        "bucket": "NeedsRescue",
+        "rank": 2,
+        "nextActor": "maintainer/triager",
+        "reasonCodes": [
+          "never-reviewed",
+          "orphan-unassigned",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 141,
+        "idleDays": 141,
+        "scopeMatch": "all-repo"
+      },
+      {
+        "number": 66435,
+        "title": "RateLimitingMiddleware implements IDisposable to avoid leaking timers",
+        "author": "kvantetore",
+        "bucket": "NeedsRescue",
+        "rank": 3,
+        "nextActor": "maintainer/triager",
+        "reasonCodes": [
+          "review-requested",
+          "reviewer-idle-30d",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 141,
+        "idleDays": 141,
+        "scopeMatch": "all-repo"
+      }
+    ],
+    "readyToMerge": [
+      {
+        "number": 62861,
+        "title": "Fix RequestDelegateFactory to handle nullable types correctly in empty request body scenarios",
+        "author": "opuzakov",
+        "bucket": "ReadyToMerge",
+        "rank": 1,
+        "nextActor": "merger",
+        "reasonCodes": [
+          "approved",
+          "mergeable",
+          "ci-green",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 416,
+        "idleDays": 416,
+        "scopeMatch": "all-repo"
+      },
+      {
+        "number": 65785,
+        "title": "forward CancellationToken in StreamOutputFormatter",
+        "author": "mus65",
+        "bucket": "ReadyToMerge",
+        "rank": 2,
+        "nextActor": "merger",
+        "reasonCodes": [
+          "approved",
+          "mergeable",
+          "ci-green",
+          "community-contribution"
+        ],
+        "blockers": [],
+        "ageDays": 180,
+        "idleDays": 180,
+        "scopeMatch": "all-repo"
+      },
+      {
+        "number": 67695,
+        "title": "Improve Render Output Invalid Exception Message to Clarify Common Control Flow Causes",
+        "author": "Yuvan111",
+        "bucket": "ReadyToMerge",
+        "rank": 3,
+        "nextActor": "merger",
+        "reasonCodes": [
+          "approved",
+          "mergeable",
+          "ci-green"
+        ],
+        "blockers": [],
+        "ageDays": 64,
+        "idleDays": 64,
+        "scopeMatch": "all-repo"
+      }
+    ]
+  },
+  "scope": "repository-wide"
+}
+
+```
 
 </details>

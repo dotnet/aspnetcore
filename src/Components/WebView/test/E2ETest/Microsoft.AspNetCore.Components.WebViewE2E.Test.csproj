@@ -4,13 +4,13 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <!-- Suppress CS8002 because Photino assemblies are not signed -->
-    <NoWarn>@(NoWarn);CS8002</NoWarn>
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
     <!-- See code comment in Program.cs/Main in this project regarding this -->
     <StartupObject>Microsoft.AspNetCore.Components.WebViewE2E.Test.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
   </ItemGroup>
 
   <ItemGroup>

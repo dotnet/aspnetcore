@@ -93,7 +93,6 @@
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
-    <SystemCodeDomVersion>4.4.0</SystemCodeDomVersion>
     <SystemCommandlineExperimentalVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalVersion>
     <SystemComponentModelVersion>4.3.0</SystemComponentModelVersion>
     <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
@@ -148,11 +147,11 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>
     <!-- 3rd party dependencies -->
-    <AzureIdentityVersion>1.11.4</AzureIdentityVersion>
+    <AzureIdentityVersion>1.21.0</AzureIdentityVersion>
     <AngleSharpVersion>1.5.2</AngleSharpVersion>
     <BenchmarkDotNetVersion>0.13.0</BenchmarkDotNetVersion>
     <CastleCoreVersion>5.2.1</CastleCoreVersion>
-    <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
+    <CommandLineParserVersion>2.4.3</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.15.0</GoogleApiCommonProtosVersion>
     <GoogleProtobufVersion>3.33.6</GoogleProtobufVersion>
@@ -200,7 +199,7 @@
     <VerifySourceGeneratorsVersion>2.2.0</VerifySourceGeneratorsVersion>
     <VerifyXunitVersion>19.14.0</VerifyXunitVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
-    <XunitAnalyzersVersion>1.15.0</XunitAnalyzersVersion>
+    <XunitAnalyzersVersion>1.27.0</XunitAnalyzersVersion>
     <XunitVersion>2.9.2</XunitVersion>
     <XunitAssertVersion>$(XunitVersion)</XunitAssertVersion>
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
@@ -215,7 +214,7 @@
     <MicrosoftTestingExtensionsTrxReportVersion>2.2.3</MicrosoftTestingExtensionsTrxReportVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
-    <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
+    <MicrosoftDataSqlClientVersion>7.1.0</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
     <MicrosoftOpenApiVersion>[3.10.2,4.0.0)</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiYamlReaderVersion>[3.10.2,4.0.0)</MicrosoftOpenApiYamlReaderVersion>

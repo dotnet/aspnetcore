@@ -47,12 +47,32 @@ No complete source coverage was available for this area.
 
 Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact; retained for seven days.
+Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>
 
 Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
 JSON SHA-256: `0f954e9a74942427466297df78038c30c5ea67d53782832daf091793b3fb0752`.
+
+</details>
+
+<details>
+<summary>Snapshot JSON (exact sanitized bytes)</summary>
+
+```json
+{
+  "schemaVersion": "1.0.0",
+  "scope": "blazor",
+  "status": "unavailable",
+  "attemptedAt": "2026-09-10T20:04:56Z",
+  "source": {
+    "repository": "dotnet/aspnetcore"
+  },
+  "errorCategory": "incomplete-query",
+  "candidateCountsAvailable": false
+}
+
+```
 
 </details>

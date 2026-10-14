@@ -1,16 +1,31 @@
 # PR Attention Pulse snapshot consumer contract
 
 The canonical [Pulse issue](https://github.com/dotnet/aspnetcore/issues/69328)
-publishes a report and the identity of the exact JSON file used to render it.
-Consumers can reuse those results without collecting or classifying PRs again.
-The snapshot is **capped report results, not a full-queue export**. A filter over
-its rows can find only displayed candidates; no matching row does not establish
-that no matching PR exists.
+publishes a report and the exact JSON file used to render it. When the combined
+JSON is small enough to fit within the issue body's size limit, it is embedded
+directly in the issue body, inside a collapsed `<details>` section in the
+`## Snapshot` section, as a fenced ` ```json ` code block that preserves the
+exact sanitized bytes for copy/paste. Consumers can reuse those results without
+collecting or classifying PRs again, and without any GitHub authentication or
+Actions API access, by reading that embedded block directly. The snapshot is
+**capped report results, not a full-queue export**. A filter over its rows can
+find only displayed candidates; no matching row does not establish that no
+matching PR exists.
 
-The existing `pulse-publication-evidence` Actions artifact contains exactly:
+The existing `pulse-publication-evidence` Actions artifact still contains
+exactly:
 
 - `pulse-input.json`: the combined, sanitized JSON, including its original bytes.
 - `pulse-body.md`: the canonical published Markdown body.
+
+The artifact remains available as **secondary audit evidence** (for example, to
+verify the published body/checksum out-of-band), but it is not required to
+retrieve the JSON: the embedded block is the primary and normally sufficient
+source. When the combined JSON does not fit within the issue body size limit,
+it is never truncated or claimed to be embedded; instead the snapshot section
+explicitly says the JSON is not embedded, and the artifact becomes the sole
+source of the exact bytes for that snapshot, exactly as before this embedding
+capability existed.
 
 There is no additional exported context file or new JSON schema. Private
 preparation/validation context is an implementation detail, not a consumer
@@ -185,20 +200,45 @@ even when later publication is blocked. A retry of downstream publication jobs
 can publish bytes from an earlier producing attempt. Always use the producing
 run/attempt tuple printed in the report.
 
-The report ends with this form (the checksum below is a placeholder):
+The report ends with this form (the checksum, run/attempt tuple, and JSON below
+are placeholders; the fenced JSON block's backtick fence widens automatically
+if the JSON itself contains a run of backticks, so it can never be closed early
+by the embedded content):
 
-```markdown
+````markdown
 ## Snapshot
 
 Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact; retained for seven days.
+Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>
 
 Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
 JSON SHA-256: `<64 lower-case hex hash of exact file bytes>`.
+
+</details>
+
+<details>
+<summary>Snapshot JSON (exact sanitized bytes)</summary>
+
+```json
+{"schemaVersion":"2.0.0", ...}
+```
+
+</details>
+````
+
+When the combined JSON does not fit within the issue body size limit for that
+snapshot, the second `<details>` block instead reads:
+
+```markdown
+<details>
+<summary>Snapshot JSON</summary>
+
+The exact JSON does not fit within the issue body size limit for this snapshot and is not embedded here.
+Retrieve the identical bytes from the `pulse-publication-evidence` artifact and verify them against the checksum above.
 
 </details>
 ```
@@ -210,50 +250,68 @@ The exact names and URL are part of the identity, not configurable alternatives.
 
 1. Read and capture the issue's whole `body` string once. Decode the API's JSON
    string, but do not trim, reformat, normalize newlines, or reconstruct Markdown.
-2. Validate its snapshot suffix and tuple. Optionally cross-check the specific
-   attempt through
+2. Validate the snapshot identity block and its run/attempt tuple, exactly as above.
+3. If the second `<details>` block contains a fenced ` ```json ` code block
+   (the embedded case), that fenced content **is** the exact sanitized
+   `pulse-input.json` bytes: read it directly, hash it, and compare lowercase
+   SHA-256 to the published checksum. Do not reformat, re-encode, or trim it
+   before hashing. This is the primary retrieval path; it needs no GitHub
+   authentication or Actions API access beyond reading the issue itself.
+   Parse and validate the JSON envelope (below) and stop; the artifact is not
+   required, though it remains available as optional secondary audit evidence.
+4. Otherwise, the second `<details>` block must contain the exact "not
+   embedded" fallback text above; retrieve the exact bytes from the artifact
+   instead, using the algorithm that follows. Any other content in that block
+   is an explicit error, never a silently accepted partial or reformatted copy.
+
+### Artifact retrieval (secondary audit evidence, or when not embedded)
+
+1. Optionally cross-check the specific producing attempt through
    `GET /repos/dotnet/aspnetcore/actions/runs/<run-id>/attempts/<attempt>`.
    Do not demand overall success or compare against the latest attempt instead.
-3. Enumerate **all pages** of
+2. Enumerate **all pages** of
    `GET /repos/dotnet/aspnetcore/actions/runs/<run-id>/artifacts`, selecting the
    exact name `pulse-publication-evidence`. An artifact record has **no attempt
    property**. Name, creation time, or list position cannot select the attempt.
-4. Download each available candidate by artifact ID with
+3. Download each available candidate by artifact ID with
    `GET /repos/dotnet/aspnetcore/actions/artifacts/<artifact-id>/zip`. Read the
    two expected files. Require `pulse-body.md` to equal the captured body using
    ordinal string comparison. This also matches repository, run, attempt,
    generation time, names, and producing-run URL in the body.
-5. Hash the **exact `pulse-input.json` bytes before parsing**, including encoding,
+4. Hash the **exact `pulse-input.json` bytes before parsing**, including encoding,
    whitespace, and trailing newline. Compare lowercase SHA-256 to the published
    checksum. Do not hash the ZIP or a reserialized object. A wrong-attempt body
    can accompany identical JSON bytes and therefore the same checksum.
-6. Require exactly one matching candidate. Reject zero matches and ambiguous
+5. Require exactly one matching candidate. Reject zero matches and ambiguous
    multiple exact matches. An unreadable candidate or incomplete artifact listing
    prevents establishing uniqueness; report that failure rather than guessing.
    This includes ZIP or entry-read failures after a successful download.
-   Then parse and validate the supported JSON envelope. Keep unavailable/partial
-   data states separate from retrieval failures.
+   Then parse and validate the supported JSON envelope (below). Keep
+   unavailable/partial data states separate from retrieval failures.
 
-Downloads require **GitHub authentication and appropriate repository/Actions
-read access** (for example, Actions read access for a fine-grained token, plus
-access to read the issue). These are consumer credentials; there is no need to
-broaden workflow permissions. All API operations below are GETs.
+Artifact downloads require **GitHub authentication and appropriate
+repository/Actions read access** (for example, Actions read access for a
+fine-grained token, plus access to read the issue). These are consumer
+credentials; there is no need to broaden workflow permissions. All API
+operations above are GETs.
 
 The artifact is a ZIP with seven-day retention, not a permanent public JSON URL.
 The download endpoint redirects to a short-lived download URL; do not store that
 URL as the snapshot identity. Authentication/authorization failures, deletion,
-expiration, or reruns can make the referenced snapshot unavailable, potentially
+expiration, or reruns can make the referenced artifact unavailable, potentially
 **before seven days**. Non-overwriting upload behavior does not prevent GitHub's
 own rerun lifecycle from removing prior artifacts. Never silently select newer
-data or report an empty queue when the published artifact is unavailable.
+data or report an empty queue when the embedded JSON is absent and the
+published artifact is also unavailable.
 
 ### PowerShell retrieval example
 
 This named example uses only PowerShell 7/.NET, not the repository's producer
-module. Its two injectable transports perform read-only JSON GETs and ZIP GETs.
-The example checks identity, exact body/bytes, uniqueness, schema versions,
-ordered area/status metadata, query completeness, and the five view arrays.
-It deliberately does not reimplement the producer's classifier or every
+module. Its two injectable transports perform read-only JSON GETs and ZIP GETs;
+they are only invoked when the JSON is not embedded in the body. The example
+checks identity, exact body/bytes, uniqueness, schema versions, ordered
+area/status metadata, query completeness, and the five view arrays. It
+deliberately does not reimplement the producer's classifier or every
 item-level validation rule.
 
 <!-- pulse-snapshot-retrieval -->
@@ -267,15 +325,15 @@ function Get-PublishedPulseSnapshot
     )
 
     $ErrorActionPreference = "Stop"
-    $pattern = '(?m)^## Snapshot\n\n' +
+    $headerPattern = '(?m)^## Snapshot\n\n' +
         'Snapshot generated: `(?<time>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{7}Z)`\. ' +
         '\[Producing workflow run\]\(https://github\.com/dotnet/aspnetcore/actions/runs/(?<run>[1-9][0-9]*)/attempts/(?<attempt>[1-9][0-9]*)\)\.\n' +
         'Artifact: `pulse-publication-evidence`; files: `pulse-input\.json`, `pulse-body\.md`\.\n' +
-        'Capped report results, not the full queue\. Authenticated ZIP artifact; retained for seven days\.\n\n' +
+        'Capped report results, not the full queue\. Authenticated ZIP artifact retained for seven days as secondary audit evidence\.\n\n' +
         '<details>\n<summary>Snapshot identity</summary>\n\n' +
         'Repository: `dotnet/aspnetcore`; run ID: `\k<run>`; attempt: `\k<attempt>`\.\n' +
-        'JSON SHA-256: `(?<hash>[0-9a-f]{64})`\.\n\n</details>\n?\z'
-    $identity = [regex]::Match($PublishedBody, $pattern)
+        'JSON SHA-256: `(?<hash>[0-9a-f]{64})`\.\n\n</details>'
+    $identity = [regex]::Match($PublishedBody, $headerPattern)
     $time = [datetimeoffset]::MinValue
     if (-not $identity.Success -or
         [regex]::Matches($PublishedBody, '(?m)^## Snapshot$').Count -ne 1 -or
@@ -289,181 +347,227 @@ function Get-PublishedPulseSnapshot
 
     $runId = $identity.Groups["run"].Value
     $attempt = $identity.Groups["attempt"].Value
+    $hash = $identity.Groups["hash"].Value
     $repositoryPath = "repos/dotnet/aspnetcore"
-    try
-    {
-        $run = & $ReadJson "$repositoryPath/actions/runs/$runId/attempts/$attempt"
-    }
-    catch
-    {
-        throw "Producing attempt read failed: $($_.Exception.Message)"
-    }
-    if ([string]$run.id -cne $runId -or [string]$run.run_attempt -cne $attempt -or
-        $run.repository.full_name -cne "dotnet/aspnetcore")
-    {
-        throw "Producing attempt identity mismatch."
-    }
-
-    $artifacts = [Collections.Generic.List[object]]::new()
-    $ids = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-    $total = $null
-    $page = 1
-    do
-    {
-        try
-        {
-            $response = & $ReadJson "$repositoryPath/actions/runs/$runId/artifacts?per_page=100&page=$page"
-        }
-        catch
-        {
-            throw "Artifact listing read failed: $($_.Exception.Message)"
-        }
-        if ($response.artifacts -isnot [array] -or
-            ($response.total_count -isnot [long] -and $response.total_count -isnot [int]) -or
-            $response.total_count -lt 0)
-        {
-            throw "Invalid artifact listing."
-        }
-        if ($null -eq $total)
-        {
-            $total = $response.total_count
-        }
-        if ($response.total_count -ne $total -or
-            ($response.artifacts.Count -eq 0 -and $artifacts.Count -lt $total))
-        {
-            throw "Artifact listing changed or is incomplete; retry the captured snapshot."
-        }
-        foreach ($artifact in $response.artifacts)
-        {
-            $id = [string]$artifact.id
-            if ($id -cnotmatch '^[1-9][0-9]*$' -or -not $ids.Add($id))
-            {
-                throw "Invalid or repeated artifact ID in listing."
-            }
-            $artifacts.Add($artifact)
-        }
-        if ($artifacts.Count -gt $total)
-        {
-            throw "Artifact listing changed or is incomplete; retry the captured snapshot."
-        }
-        $page++
-    } while ($artifacts.Count -lt $total)
-
-    $candidates = @($artifacts | Where-Object {
-        [string]::Equals($_.name, "pulse-publication-evidence", [StringComparison]::Ordinal)
-    })
-    if ($candidates.Count -eq 0)
-    {
-        throw "Snapshot unavailable: publication artifact is missing."
-    }
-    $matching = [Collections.Generic.List[object]]::new()
-    $rejections = [Collections.Generic.List[string]]::new()
     $utf8 = [Text.UTF8Encoding]::new($false, $true)
-    foreach ($artifact in $candidates)
-    {
-        if ($artifact.expired -isnot [bool])
-        {
-            throw "Invalid artifact expiry metadata."
-        }
-        if ($artifact.expired)
-        {
-            $rejections.Add("$($artifact.id): expired")
-            continue
-        }
-        if ([string]$artifact.workflow_run.id -cne $runId)
-        {
-            $rejections.Add("$($artifact.id): artifact run identity mismatch")
-            continue
-        }
-        try
-        {
-            [byte[]]$zipBytes = & $ReadZip "$repositoryPath/actions/artifacts/$($artifact.id)/zip"
-        }
-        catch
-        {
-            throw "Artifact $($artifact.id) download/read failed; cannot establish uniqueness: $($_.Exception.Message)"
-        }
+    $tail = $PublishedBody.Substring($identity.Index + $identity.Length)
 
-        $buffer = $null
-        $archive = $null
+    # The embedded fenced JSON block's backtick fence is at least three backticks and
+    # widens automatically whenever the JSON contains a run of backticks, so it can
+    # never be closed early by the embedded content; match whatever fence was used.
+    $embeddedPattern = '\A\n\n<details>\n<summary>Snapshot JSON \(exact sanitized bytes\)</summary>\n\n' +
+        '(?<fence>`{3,})json\n' +
+        '(?<json>[\s\S]*?)\n\k<fence>\n\n</details>\n?\z'
+    $embedded = [regex]::Match($tail, $embeddedPattern)
+    $fallbackTail = "`n`n<details>`n<summary>Snapshot JSON</summary>`n`n" +
+        "The exact JSON does not fit within the issue body size limit for this snapshot and is not embedded here.`n" +
+        "Retrieve the identical bytes from the ``pulse-publication-evidence`` artifact and verify them against the checksum above.`n`n</details>"
+    $isFallback = [string]::Equals($tail.TrimEnd("`n"), $fallbackTail, [StringComparison]::Ordinal)
+
+    if (-not $embedded.Success -and -not $isFallback)
+    {
+        throw "Invalid published snapshot JSON section."
+    }
+
+    if ($embedded.Success)
+    {
+        # Primary path: the fenced block already is the exact sanitized JSON bytes.
+        # No GitHub authentication or Actions API access is required to retrieve it.
+        $jsonBytes = $utf8.GetBytes($embedded.Groups["json"].Value)
+        $sha256 = [Security.Cryptography.SHA256]::Create()
         try
         {
-            $buffer = [IO.MemoryStream]::new($zipBytes, $false)
-            $archive = [IO.Compression.ZipArchive]::new($buffer, [IO.Compression.ZipArchiveMode]::Read)
-            $files = @{}
-            $entries = @($archive.Entries)
-            if ($entries.Count -ne 2 -or
-                @($entries | Where-Object { [string]::Equals($_.FullName, "pulse-input.json", [StringComparison]::Ordinal) }).Count -ne 1 -or
-                @($entries | Where-Object { [string]::Equals($_.FullName, "pulse-body.md", [StringComparison]::Ordinal) }).Count -ne 1)
-            {
-                $rejections.Add("$($artifact.id): ZIP must contain the two exact expected files, once each.")
-                continue
-            }
-            foreach ($entry in $entries)
-            {
-                $stream = $entry.Open()
-                $content = [IO.MemoryStream]::new()
-                try
-                {
-                    $stream.CopyTo($content)
-                    $files[$entry.FullName] = $content.ToArray()
-                }
-                finally
-                {
-                    $stream.Dispose()
-                    $content.Dispose()
-                }
-            }
-            $body = $utf8.GetString($files["pulse-body.md"])
-            if (-not [string]::Equals($body, $PublishedBody, [StringComparison]::Ordinal))
-            {
-                $rejections.Add("$($artifact.id): Published body/identity mismatch.")
-                continue
-            }
-            $sha256 = [Security.Cryptography.SHA256]::Create()
-            try
-            {
-                $hash = [BitConverter]::ToString($sha256.ComputeHash($files["pulse-input.json"])).Replace("-", "").ToLowerInvariant()
-            }
-            finally
-            {
-                $sha256.Dispose()
-            }
-            if ($hash -cne $identity.Groups["hash"].Value)
-            {
-                $rejections.Add("$($artifact.id): Exact-byte JSON checksum mismatch.")
-                continue
-            }
-            $matching.Add($files["pulse-input.json"])
-        }
-        catch [IO.InvalidDataException], [IO.IOException], [Text.DecoderFallbackException]
-        {
-            throw "Artifact $($artifact.id) ZIP read failed; cannot establish uniqueness: $($_.Exception.Message)"
+            $actualHash = [BitConverter]::ToString($sha256.ComputeHash($jsonBytes)).Replace("-", "").ToLowerInvariant()
         }
         finally
         {
-            if ($null -ne $archive)
-            {
-                $archive.Dispose()
-            }
-            if ($null -ne $buffer)
-            {
-                $buffer.Dispose()
-            }
+            $sha256.Dispose()
+        }
+        if ($actualHash -cne $hash)
+        {
+            throw "Embedded snapshot JSON does not match its published checksum."
         }
     }
-    if ($matching.Count -ne 1)
+    else
     {
-        if ($matching.Count -gt 1)
+        # Secondary path: the JSON did not fit in the issue body for this snapshot;
+        # retrieve the exact bytes from the authenticated artifact instead, exactly
+        # as before this embedding capability existed.
+        try
         {
-            throw "Snapshot ambiguous: multiple exact matching artifacts."
+            $run = & $ReadJson "$repositoryPath/actions/runs/$runId/attempts/$attempt"
         }
-        throw "Snapshot unavailable: no exact matching artifact. $($rejections -join '; ')"
+        catch
+        {
+            throw "Producing attempt read failed: $($_.Exception.Message)"
+        }
+        if ([string]$run.id -cne $runId -or [string]$run.run_attempt -cne $attempt -or
+            $run.repository.full_name -cne "dotnet/aspnetcore")
+        {
+            throw "Producing attempt identity mismatch."
+        }
+
+        $artifacts = [Collections.Generic.List[object]]::new()
+        $ids = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        $total = $null
+        $page = 1
+        do
+        {
+            try
+            {
+                $response = & $ReadJson "$repositoryPath/actions/runs/$runId/artifacts?per_page=100&page=$page"
+            }
+            catch
+            {
+                throw "Artifact listing read failed: $($_.Exception.Message)"
+            }
+            if ($response.artifacts -isnot [array] -or
+                ($response.total_count -isnot [long] -and $response.total_count -isnot [int]) -or
+                $response.total_count -lt 0)
+            {
+                throw "Invalid artifact listing."
+            }
+            if ($null -eq $total)
+            {
+                $total = $response.total_count
+            }
+            if ($response.total_count -ne $total -or
+                ($response.artifacts.Count -eq 0 -and $artifacts.Count -lt $total))
+            {
+                throw "Artifact listing changed or is incomplete; retry the captured snapshot."
+            }
+            foreach ($artifact in $response.artifacts)
+            {
+                $id = [string]$artifact.id
+                if ($id -cnotmatch '^[1-9][0-9]*$' -or -not $ids.Add($id))
+                {
+                    throw "Invalid or repeated artifact ID in listing."
+                }
+                $artifacts.Add($artifact)
+            }
+            if ($artifacts.Count -gt $total)
+            {
+                throw "Artifact listing changed or is incomplete; retry the captured snapshot."
+            }
+            $page++
+        } while ($artifacts.Count -lt $total)
+
+        $candidates = @($artifacts | Where-Object {
+            [string]::Equals($_.name, "pulse-publication-evidence", [StringComparison]::Ordinal)
+        })
+        if ($candidates.Count -eq 0)
+        {
+            throw "Snapshot unavailable: publication artifact is missing."
+        }
+        $matching = [Collections.Generic.List[object]]::new()
+        $rejections = [Collections.Generic.List[string]]::new()
+        foreach ($artifact in $candidates)
+        {
+            if ($artifact.expired -isnot [bool])
+            {
+                throw "Invalid artifact expiry metadata."
+            }
+            if ($artifact.expired)
+            {
+                $rejections.Add("$($artifact.id): expired")
+                continue
+            }
+            if ([string]$artifact.workflow_run.id -cne $runId)
+            {
+                $rejections.Add("$($artifact.id): artifact run identity mismatch")
+                continue
+            }
+            try
+            {
+                [byte[]]$zipBytes = & $ReadZip "$repositoryPath/actions/artifacts/$($artifact.id)/zip"
+            }
+            catch
+            {
+                throw "Artifact $($artifact.id) download/read failed; cannot establish uniqueness: $($_.Exception.Message)"
+            }
+
+            $buffer = $null
+            $archive = $null
+            try
+            {
+                $buffer = [IO.MemoryStream]::new($zipBytes, $false)
+                $archive = [IO.Compression.ZipArchive]::new($buffer, [IO.Compression.ZipArchiveMode]::Read)
+                $files = @{}
+                $entries = @($archive.Entries)
+                if ($entries.Count -ne 2 -or
+                    @($entries | Where-Object { [string]::Equals($_.FullName, "pulse-input.json", [StringComparison]::Ordinal) }).Count -ne 1 -or
+                    @($entries | Where-Object { [string]::Equals($_.FullName, "pulse-body.md", [StringComparison]::Ordinal) }).Count -ne 1)
+                {
+                    $rejections.Add("$($artifact.id): ZIP must contain the two exact expected files, once each.")
+                    continue
+                }
+                foreach ($entry in $entries)
+                {
+                    $stream = $entry.Open()
+                    $content = [IO.MemoryStream]::new()
+                    try
+                    {
+                        $stream.CopyTo($content)
+                        $files[$entry.FullName] = $content.ToArray()
+                    }
+                    finally
+                    {
+                        $stream.Dispose()
+                        $content.Dispose()
+                    }
+                }
+                $body = $utf8.GetString($files["pulse-body.md"])
+                if (-not [string]::Equals($body, $PublishedBody, [StringComparison]::Ordinal))
+                {
+                    $rejections.Add("$($artifact.id): Published body/identity mismatch.")
+                    continue
+                }
+                $sha256 = [Security.Cryptography.SHA256]::Create()
+                try
+                {
+                    $candidateHash = [BitConverter]::ToString($sha256.ComputeHash($files["pulse-input.json"])).Replace("-", "").ToLowerInvariant()
+                }
+                finally
+                {
+                    $sha256.Dispose()
+                }
+                if ($candidateHash -cne $hash)
+                {
+                    $rejections.Add("$($artifact.id): Exact-byte JSON checksum mismatch.")
+                    continue
+                }
+                $matching.Add($files["pulse-input.json"])
+            }
+            catch [IO.InvalidDataException], [IO.IOException], [Text.DecoderFallbackException]
+            {
+                throw "Artifact $($artifact.id) ZIP read failed; cannot establish uniqueness: $($_.Exception.Message)"
+            }
+            finally
+            {
+                if ($null -ne $archive)
+                {
+                    $archive.Dispose()
+                }
+                if ($null -ne $buffer)
+                {
+                    $buffer.Dispose()
+                }
+            }
+        }
+        if ($matching.Count -ne 1)
+        {
+            if ($matching.Count -gt 1)
+            {
+                throw "Snapshot ambiguous: multiple exact matching artifacts."
+            }
+            throw "Snapshot unavailable: no exact matching artifact. $($rejections -join '; ')"
+        }
+        $jsonBytes = $matching[0]
     }
 
     try
     {
-        $pulse = $utf8.GetString($matching[0]) | ConvertFrom-Json -Depth 100 -NoEnumerate
+        $pulse = $utf8.GetString($jsonBytes) | ConvertFrom-Json -Depth 100 -NoEnumerate
     }
     catch
     {
