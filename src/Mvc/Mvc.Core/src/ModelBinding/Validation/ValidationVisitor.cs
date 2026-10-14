@@ -18,6 +18,7 @@ public class ValidationVisitor
 {
     private readonly ValidationStack _currentPath;
     private int? _maxValidationDepth;
+    private IValidationStrategy? _unionValidationStrategy;
 
     /// <summary>
     /// Creates a new <see cref="ValidationVisitor"/>.
@@ -351,6 +352,11 @@ public class ValidationVisitor
 
         using (StateManager.Recurse(this, key ?? string.Empty, metadata, model, strategy!))
         {
+            if (Model is IUnion)
+            {
+                return VisitComplexType(_unionValidationStrategy ??= new DefaultUnionValidationStrategy(MetadataProvider));
+            }
+
             if (Metadata!.IsEnumerableType)
             {
                 return VisitComplexType(DefaultCollectionValidationStrategy.Instance);
@@ -436,7 +442,13 @@ public class ValidationVisitor
                 continue;
             }
 
-            isValid &= Visit(metadata, key, entry.Model);
+            var model = entry.Model;
+            if (strategy is DefaultUnionValidationStrategy unionStrategy)
+            {
+                metadata = unionStrategy.GetChildMetadata(metadata, model);
+            }
+
+            isValid &= Visit(metadata, key, model);
         }
 
         return isValid;

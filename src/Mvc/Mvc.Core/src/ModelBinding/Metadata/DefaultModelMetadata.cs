@@ -478,6 +478,12 @@ public class DefaultModelMetadata : ModelMetadata
             return defaultModelMetadata._hasValidators.Value;
         }
 
+        if (typeof(IUnion).IsAssignableFrom(Nullable.GetUnderlyingType(metadata.ModelType) ?? metadata.ModelType))
+        {
+            // The active case's validators are determined from its runtime type.
+            return true;
+        }
+
         if (defaultModelMetadata.ValidationMetadata.HasValidators != false)
         {
             // Either the ModelMetadata instance has some validators (HasValidators = true) or it is non-deterministic (HasValidators = null).
