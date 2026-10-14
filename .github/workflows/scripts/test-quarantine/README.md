@@ -99,6 +99,10 @@ conditions derive directly from `Attribute`, not `DataAttribute`; implementing
 be non-data metadata.
 Matching inline and quarantined rows with identical arguments are ambiguous too.
 Renamed row owners receive the same conservative history checks as method targets.
+Those checks compare declaration snapshots within the owning type, so formatting,
+namespace-style, signature, and overload rewrites that preserve the target identity
+do not look like renames. A disappearing method or type that can map to the current
+target remains ambiguous.
 Unresolved historical inheritance is unproven, not evidence that a test was
 never inherited.
 
