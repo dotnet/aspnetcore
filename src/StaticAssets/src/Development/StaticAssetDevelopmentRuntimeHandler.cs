@@ -57,18 +57,24 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
         {
             var originalFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
             var fileInfo = context.RequestServices.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(asset.AssetPath);
-            // Truncating is correct because the manifest truncates the timestamp when it serializes the Last-Modified header
-            // (HTTP date format only supports second precision). We need to apply the same truncation here so that we correctly
-            // detect unchanged files rather than always seeing them as different due to subsecond precision mismatch.
-            // Leave missing files to the invoker instead of reading metadata that can throw.
-            if (fileInfo.Exists && (fileInfo.Length != asset.GetContentLength() || TruncateToSeconds(fileInfo.LastModified) != asset.GetLastModified()))
+            try
             {
-                // At this point, we know that the file has changed from what was generated at build time.
-                // This is for example, when someone changes something in the WWWRoot folder.
+                // Truncating is correct because the manifest truncates the timestamp when it serializes the Last-Modified header
+                // (HTTP date format only supports second precision). We need to apply the same truncation here so that we correctly
+                // detect unchanged files rather than always seeing them as different due to subsecond precision mismatch.
+                if (fileInfo.Exists && (fileInfo.Length != asset.GetContentLength() || TruncateToSeconds(fileInfo.LastModified) != asset.GetLastModified()))
+                {
+                    // At this point, we know that the file has changed from what was generated at build time.
+                    // This is for example, when someone changes something in the WWWRoot folder.
 
-                // In case we were dealing with a compressed asset, we are going to wrap the response body feature to re-compress the asset on the fly.
-                // and write that to the response instead.
-                context.Features.Set<IHttpResponseBodyFeature>(new RuntimeStaticAssetResponseBodyFeature(originalFeature, context, asset));
+                    // In case we were dealing with a compressed asset, we are going to wrap the response body feature to re-compress the asset on the fly.
+                    // and write that to the response instead.
+                    context.Features.Set<IHttpResponseBodyFeature>(new RuntimeStaticAssetResponseBodyFeature(originalFeature, context, asset));
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                // Leave files that disappear during the metadata probe to the invoker.
             }
 
             await original(context);

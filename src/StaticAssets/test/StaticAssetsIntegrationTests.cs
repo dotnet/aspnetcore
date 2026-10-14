@@ -1516,6 +1516,63 @@ public class StaticAssetsIntegrationTests
     }
 
     [Theory]
+    [InlineData(true, "HEAD")]
+    [InlineData(true, "NotModified")]
+    [InlineData(true, "UnsatisfiableRange")]
+    [InlineData(false, "HEAD")]
+    [InlineData(false, "NotModified")]
+    [InlineData(false, "UnsatisfiableRange")]
+    public async Task MappedAssetDeletedAfterBeingServed_EarlyResponseReturns404WithNoStore(
+        bool reloadStaticAssetsAtRuntime,
+        string requestType)
+    {
+        var appName = $"{nameof(MappedAssetDeletedAfterBeingServed_EarlyResponseReturns404WithNoStore)}_{reloadStaticAssetsAtRuntime}_{requestType}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+
+        await using var app = await StartMissingAssetTestAppAsync(appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime);
+        using var client = app.GetTestClient();
+
+        using var served = await client.GetAsync("/sample.txt");
+        Assert.Equal(HttpStatusCode.OK, served.StatusCode);
+
+        File.Delete(Path.Combine(webRoot, "sample.txt"));
+
+        using var request = new HttpRequestMessage(requestType == "HEAD" ? HttpMethod.Head : HttpMethod.Get, "/sample.txt");
+        if (requestType == "NotModified")
+        {
+            request.Headers.IfNoneMatch.Add(served.Headers.ETag);
+        }
+        else if (requestType == "UnsatisfiableRange")
+        {
+            request.Headers.Range = new RangeHeaderValue(100, null);
+        }
+
+        using var response = await client.SendAsync(request);
+
+        await AssertMissingAssetResponseAsync(response);
+    }
+
+    [Fact]
+    public async Task FileDisappearsDuringDevelopmentMetadataProbe_Returns404WithNoStore()
+    {
+        await using var app = await CreateAppAsync(
+            new FailDuringMetadataProbeFileProvider("sample.txt"),
+            reloadStaticAssetsAtRuntime: true);
+        using var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/sample.txt");
+
+        await AssertMissingAssetResponseAsync(response);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task MissingCompressedMappedAsset_Returns404WithNoStore(bool reloadStaticAssetsAtRuntime)
@@ -1697,7 +1754,9 @@ public class StaticAssetsIntegrationTests
     }
 
     // Same setup as CreateClient(), but with a caller-supplied file provider and explicit application ownership.
-    private static async Task<WebApplication> CreateAppAsync(IFileProvider fileProvider)
+    private static async Task<WebApplication> CreateAppAsync(
+        IFileProvider fileProvider,
+        bool reloadStaticAssetsAtRuntime = false)
     {
         var manifest = new StaticAssetsManifest()
         {
@@ -1726,6 +1785,9 @@ public class StaticAssetsIntegrationTests
             WebRootPath = AppContext.BaseDirectory
         });
         builder.Environment.WebRootFileProvider = fileProvider;
+        builder.WebHost.UseSetting(
+            StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey,
+            reloadStaticAssetsAtRuntime ? "true" : "false");
         builder.WebHost.ConfigureServices(services =>
         {
             services.AddRouting();
@@ -1767,6 +1829,33 @@ public class StaticAssetsIntegrationTests
                     Directory.Delete(contentRoot, recursive: true);
                 }
             }
+        }
+    }
+
+    private sealed class FailDuringMetadataProbeFileProvider(string path) : IFileProvider
+    {
+        public IDirectoryContents GetDirectoryContents(string subpath) => NotFoundDirectoryContents.Singleton;
+
+        public IFileInfo GetFileInfo(string subpath) =>
+            subpath == path ? new FailDuringMetadataProbeFileInfo(path) : new NotFoundFileInfo(subpath);
+
+        public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
+
+        private sealed class FailDuringMetadataProbeFileInfo(string filePath) : IFileInfo
+        {
+            public bool Exists => true;
+
+            public long Length => throw new FileNotFoundException("The file was removed during the metadata probe.");
+
+            public string PhysicalPath => null;
+
+            public string Name => Path.GetFileName(filePath);
+
+            public DateTimeOffset LastModified => new(2023, 03, 03, 0, 0, 0, TimeSpan.Zero);
+
+            public bool IsDirectory => false;
+
+            public Stream CreateReadStream() => throw new FileNotFoundException("The file was removed before it could be sent.");
         }
     }
 
