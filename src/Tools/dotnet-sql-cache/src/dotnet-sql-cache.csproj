@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="$(SqlClientSystemSecurityCryptographyPkcs9Version)" AllowExplicitReference="true" />
     <Reference Include="Microsoft.Data.SqlClient" />
     <Reference Include="Azure.Identity" />
     <Reference Include="System.Runtime.Caching" />
