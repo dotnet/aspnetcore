@@ -114,9 +114,17 @@ examples below use the Cookie Store API.
   call and during disposal. When the acquired reference is `null`, fail the acquisition with
   `NotSupportedException`, so it is not kept. Do not add an API that only reports whether the
   object exists. The specification excludes such capability registries.
-- Wrap identity-bearing objects and preserve identity. `Window` owns the wrapper and hands the same
-  one to every caller, so never implement `IAsyncDisposable` or a public `DisposeAsync`. Implement
-  the internal `IInternalAsyncDisposal` explicitly, and let `Window` call it when the scope ends.
+- Wrap identity-bearing objects and preserve identity. `Window` owns a shared wrapper, such as
+  `Storage`, and hands the same one to every caller. So never implement `IAsyncDisposable` or a
+  public `DisposeAsync` on it. Implement the internal `IInternalAsyncDisposal` explicitly, and let
+  `Window` call it when the scope ends. The review of the API proposal rejected two other designs.
+  A public `IAsyncDisposable` let one caller break the wrapper for the rest of the scope. An
+  explicit `IAsyncDisposable` implementation hid `DisposeAsync` from IntelliSense, but
+  `await using` still compiled. With the internal interface, `await using` does not compile.
+- This disposal rule covers only shared wrappers that `Window` hands out. Disposal of an object
+  that a call creates and the caller owns is not designed yet. Examples are the `Cache` that
+  `caches.open()` returns and a `Lock` from Web Locks. When a family returns such an object, stop
+  and raise it as an open question.
 - Never let disposal throw. `Window` disposes features in access order, and an exception stops the
   rest. Do not wait for a pending acquisition either. It could hold up scope disposal until the JS
   interop timeout, which is one minute by default. Release the reference only when the acquisition
