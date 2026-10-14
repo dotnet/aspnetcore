@@ -66,9 +66,8 @@ examples below use the Cookie Store API.
 - Map types by [references/type-mapping.md](references/type-mapping.md). It covers names, value
   types, dictionaries, overloads, enums, and trimming. A wrong mapping can send `null` where the
   browser expects a missing member, and the browser then stores the string `"null"`.
-- For every .NET shape decision that Web IDL does not settle, follow
-  [../review-public-api/references/conventions.md](../review-public-api/references/conventions.md).
-  When a convention conflicts with the one-to-one rules of this skill, follow this skill and raise
+- For every .NET shape decision that Web IDL does not settle, follow the API conventions of the
+  `review-public-api` skill. When a convention conflicts with the one-to-one rules of this skill, follow this skill and raise
   the conflict as an open question.
 - Return `ValueTask` or `ValueTask<T>` from every live browser access, like the JS interop APIs do.
   Do not switch to `Task`. `ValueTask` leaves room for a synchronous `IJSInProcessRuntime` path on
