@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -177,24 +178,77 @@ public abstract class WebSocketsTests : FunctionalTestsBase
         }
 
         Uri uri = new Uri(Fixture.DeploymentResult.ApplicationBaseUri + "WebSocketEcho");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         using TcpClient client = new TcpClient();
-        await client.ConnectAsync(uri.Host, uri.Port);
-        NetworkStream stream = client.GetStream();
+        await client.ConnectAsync(uri.Host, uri.Port, timeout.Token);
+        using var stream = new BufferedStream(client.GetStream());
 
         // Send WebSocket upgrade request with duplicate "websocket" in Upgrade header
         var secWebSocketKey = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-        await SendWebSocketUpgradeRequestWithDuplicateHeader(stream, uri, secWebSocketKey);
+        await SendWebSocketUpgradeRequestWithDuplicateHeader(stream, uri, secWebSocketKey, timeout.Token);
 
-        // Read the response
-        StreamReader reader = new StreamReader(stream);
-        string statusLine = await reader.ReadLineAsync();
-        string[] parts = statusLine.Split(' ');
+        string response = await ReadHttpResponseHeaders(stream, timeout.Token);
+        string[] responseLines = response.Split("\r\n", StringSplitOptions.None);
+        string[] statusLineParts = responseLines[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        // Verify we get 101 Switching Protocols
-        Assert.Equal(101, int.Parse(parts[1], CultureInfo.InvariantCulture));
+        Assert.True(statusLineParts.Length >= 2, $"The response status line was invalid: {responseLines[0]}");
+        Assert.Equal("HTTP/1.1", statusLineParts[0]);
+        Assert.Equal(101, int.Parse(statusLineParts[1], CultureInfo.InvariantCulture));
+
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        for (int i = 1; i < responseLines.Length && responseLines[i].Length > 0; i++)
+        {
+            int separator = responseLines[i].IndexOf(':');
+            Assert.True(separator > 0, $"The response header was invalid: {responseLines[i]}");
+
+            string name = responseLines[i][..separator].Trim();
+            string value = responseLines[i][(separator + 1)..].Trim();
+            if (headers.TryGetValue(name, out string existingValue))
+            {
+                headers[name] = existingValue + ", " + value;
+            }
+            else
+            {
+                headers.Add(name, value);
+            }
+        }
+
+        Assert.True(headers.ContainsKey("Connection"), "The response did not contain a Connection header.");
+        Assert.True(ContainsHeaderToken(headers["Connection"], "Upgrade"), "The Connection header did not contain the Upgrade token.");
+        Assert.True(headers.ContainsKey("Upgrade"), "The response did not contain an Upgrade header.");
+        Assert.True(ContainsHeaderToken(headers["Upgrade"], "websocket"), "The Upgrade header did not contain the websocket token.");
+        Assert.True(headers.ContainsKey("Sec-WebSocket-Accept"), "The response did not contain a Sec-WebSocket-Accept header.");
+
+        string expectedAccept = Convert.ToBase64String(SHA1.HashData(Encoding.ASCII.GetBytes(
+            secWebSocketKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")));
+        Assert.Equal(expectedAccept, headers["Sec-WebSocket-Accept"]);
+
+        using var webSocket = WebSocket.CreateFromStream(stream, isServer: false, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
+        const string message = "duplicate websocket upgrade value";
+        byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+        await webSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, timeout.Token);
+
+        var receiveBuffer = new byte[1024];
+        using var echoedMessage = new MemoryStream();
+        WebSocketReceiveResult receiveResult;
+        do
+        {
+            receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), timeout.Token);
+            Assert.Equal(WebSocketMessageType.Text, receiveResult.MessageType);
+            echoedMessage.Write(receiveBuffer, 0, receiveResult.Count);
+        }
+        while (!receiveResult.EndOfMessage);
+
+        Assert.Equal(message, Encoding.UTF8.GetString(echoedMessage.ToArray()));
+
+        await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "test complete", timeout.Token);
+        WebSocketReceiveResult closeResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), timeout.Token);
+        Assert.Equal(WebSocketMessageType.Close, closeResult.MessageType);
+        Assert.Equal(WebSocketCloseStatus.NormalClosure, closeResult.CloseStatus);
+        Assert.Equal(WebSocketState.Closed, webSocket.State);
     }
 
-    private async Task SendWebSocketUpgradeRequestWithDuplicateHeader(NetworkStream stream, Uri uri, string secWebSocketKey)
+    private async Task SendWebSocketUpgradeRequestWithDuplicateHeader(Stream stream, Uri uri, string secWebSocketKey, CancellationToken cancellationToken)
     {
         // Send an HTTP/1.1 WebSocket upgrade request with duplicate "websocket" in Upgrade header
         StringBuilder builder = new StringBuilder();
@@ -219,7 +273,48 @@ public abstract class WebSocketsTests : FunctionalTestsBase
 
         builder.Append("\r\n");
         var requestBytes = Encoding.ASCII.GetBytes(builder.ToString());
-        await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
+        await stream.WriteAsync(requestBytes, cancellationToken);
+    }
+
+    private static async Task<string> ReadHttpResponseHeaders(Stream stream, CancellationToken cancellationToken)
+    {
+        using var headers = new MemoryStream();
+        var buffer = new byte[1];
+        while (headers.Length < 16 * 1024)
+        {
+            int bytesRead = await stream.ReadAsync(buffer, cancellationToken);
+            if (bytesRead == 0)
+            {
+                throw new EndOfStreamException("The response ended before its headers were complete.");
+            }
+
+            headers.WriteByte(buffer[0]);
+            int length = (int)headers.Length;
+            byte[] headerBytes = headers.GetBuffer();
+            if (length >= 4 &&
+                headerBytes[length - 4] == '\r' &&
+                headerBytes[length - 3] == '\n' &&
+                headerBytes[length - 2] == '\r' &&
+                headerBytes[length - 1] == '\n')
+            {
+                return Encoding.ASCII.GetString(headerBytes, 0, length);
+            }
+        }
+
+        throw new InvalidDataException("The response headers exceeded the maximum supported size.");
+    }
+
+    private static bool ContainsHeaderToken(string headerValue, string expectedToken)
+    {
+        foreach (string value in headerValue.Split(','))
+        {
+            if (string.Equals(value.Trim(), expectedToken, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async Task SendHttp10Request(NetworkStream stream, Uri uri)
