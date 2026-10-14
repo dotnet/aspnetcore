@@ -88,6 +88,63 @@ public class UnionValidationIntegrationTest
         strategy.Verify(s => s.GetChildren(It.IsAny<ModelMetadata>(), "model", model), Times.Once);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Validate_ValidationStateMetadata_OverridesActiveCaseMetadata(bool validateCase)
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        var value = new ValidatableCase("invalid");
+        var model = new ValidatableUnion(value);
+        var metadataProvider = services.GetRequiredService<IModelMetadataProvider>();
+        var validationState = new ValidationStateDictionary
+        {
+            [value] = new ValidationStateEntry
+            {
+                Key = "overridden",
+                Metadata = metadataProvider.GetMetadataForType(validateCase ? typeof(ValidatableCase) : typeof(object)),
+            },
+        };
+
+        services.GetRequiredService<IObjectModelValidator>().Validate(context, validationState, "model", model);
+
+        Assert.Equal(!validateCase, context.ModelState.IsValid);
+        if (validateCase)
+        {
+            var entry = Assert.Single(context.ModelState);
+            Assert.Equal("overridden", entry.Key);
+            Assert.Equal("Invalid case.", Assert.Single(entry.Value.Errors).ErrorMessage);
+        }
+        else
+        {
+            Assert.Empty(context.ModelState);
+        }
+    }
+
+    [Fact]
+    public void Validate_ValidationStateStrategy_PreservesDeclaredChildMetadata()
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        var value = new ValidatableCase("invalid");
+        object model = new ValidatableUnion(value);
+        var metadata = services.GetRequiredService<IModelMetadataProvider>().GetMetadataForType(typeof(object));
+        var strategy = new Mock<IValidationStrategy>();
+        strategy.Setup(s => s.GetChildren(It.IsAny<ModelMetadata>(), "model", model))
+            .Returns(() => new[] { new ValidationEntry(metadata, "model.Value", value) }.AsEnumerable().GetEnumerator());
+        var validationState = new ValidationStateDictionary
+        {
+            [model] = new ValidationStateEntry { Strategy = strategy.Object },
+        };
+
+        services.GetRequiredService<IObjectModelValidator>().Validate(context, validationState, "model", model);
+
+        Assert.True(context.ModelState.IsValid);
+        Assert.Empty(context.ModelState);
+        strategy.Verify(s => s.GetChildren(It.IsAny<ModelMetadata>(), "model", model), Times.Once);
+    }
+
     [Fact]
     public void Validate_UnionCycle_DoesNotRevisitCase()
     {
@@ -162,6 +219,36 @@ public class UnionValidationIntegrationTest
         var entry = Assert.Single(context.ModelState);
         Assert.Equal("model.Name", entry.Key);
         Assert.Equal("The Name field is required.", Assert.Single(entry.Value.Errors).ErrorMessage);
+    }
+
+    [Fact]
+    public void Validate_UnionWithOtherObjectProperty_DoesNotUseRuntimeTypeMetadata()
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        var model = new UnionWithOtherObjectProperty { Other = new ValidatableCase("invalid") };
+
+        services.GetRequiredService<IObjectModelValidator>().Validate(context, null, "model", model);
+
+        Assert.True(context.ModelState.IsValid);
+        Assert.Empty(context.ModelState);
+    }
+
+    [Theory]
+    [InlineData(null, "valid", "The Value field is required.")]
+    [InlineData("public", "invalid", "Invalid case.")]
+    public void Validate_ExplicitUnionValueWithPublicNamesake_ValidatesBothValues(string publicValue, string caseName, string errorMessage)
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        var model = new UnionWithPublicNamesake(publicValue, new ValidatableCase(caseName));
+
+        services.GetRequiredService<IObjectModelValidator>().Validate(context, null, "model", model);
+
+        Assert.False(context.ModelState.IsValid);
+        var entry = Assert.Single(context.ModelState);
+        Assert.Equal("model.Value", entry.Key);
+        Assert.Equal(errorMessage, Assert.Single(entry.Value.Errors).ErrorMessage);
     }
 
     [Theory]
@@ -249,6 +336,21 @@ public class UnionValidationIntegrationTest
     private class ExplicitUnion(object value) : IUnion
     {
         object IUnion.Value => value;
+    }
+
+    private class UnionWithOtherObjectProperty : IUnion
+    {
+        public object Value => 42;
+
+        public object Other { get; set; }
+    }
+
+    private class UnionWithPublicNamesake(object publicValue, object caseValue) : IUnion
+    {
+        [Required]
+        public object Value => publicValue;
+
+        object IUnion.Value => caseValue;
     }
 
     private class SuppressedGetterModel

@@ -24,20 +24,12 @@ internal sealed class DefaultUnionValidationStrategy : IValidationStrategy
         while (enumerator.MoveNext())
         {
             var entry = enumerator.Current;
-            if (entry.Metadata.PropertyName != nameof(IUnion.Value))
+            if (IsUnionValueProperty(entry.Metadata, model.GetType()))
             {
-                yield return entry;
-                continue;
+                hasValueProperty = true;
             }
 
-            hasValueProperty = true;
-            if (entry.Metadata.ModelType != typeof(object))
-            {
-                yield return entry;
-                continue;
-            }
-
-            yield return new ValidationEntry(entry.Metadata, entry.Key, () => ((IUnion)model).Value);
+            yield return entry;
         }
 
         if (!hasValueProperty)
@@ -50,19 +42,18 @@ internal sealed class DefaultUnionValidationStrategy : IValidationStrategy
         }
     }
 
-    public ModelMetadata GetChildMetadata(ModelMetadata metadata, object? value)
+    internal static bool IsUnionValueProperty(ModelMetadata metadata, Type unionType)
     {
-        if (metadata.ModelType != typeof(object) || value is null ||
-            (metadata.MetadataKind != ModelMetadataKind.Type && metadata.PropertyName != nameof(IUnion.Value)))
+        if (metadata.MetadataKind != ModelMetadataKind.Property || metadata.PropertyName != nameof(IUnion.Value))
         {
-            return metadata;
+            return false;
         }
 
-        // Retain the Value property's validation attributes and filters while validating the active case.
-        return _metadataProvider is ModelMetadataProvider provider &&
-            metadata is DefaultModelMetadata propertyMetadata &&
-            propertyMetadata.Details.Key.PropertyInfo is { } propertyInfo
-            ? provider.GetMetadataForProperty(propertyInfo, value.GetType())
-            : _metadataProvider.GetMetadataForType(value.GetType());
+        var getter = metadata is DefaultModelMetadata propertyMetadata
+            ? propertyMetadata.Details.Key.PropertyInfo?.GetMethod
+            : metadata.ContainerType?.GetProperty(nameof(IUnion.Value))?.GetMethod;
+        var unionGetter = unionType.GetInterfaceMap(typeof(IUnion)).TargetMethods[0];
+
+        return getter is not null && getter.GetBaseDefinition() == unionGetter.GetBaseDefinition();
     }
 }

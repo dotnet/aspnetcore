@@ -311,6 +311,12 @@ public class ValidationVisitor
             };
         }
 
+        // Model and Strategy still describe the parent until StateManager.Recurse.
+        if (Model is IUnion && Strategy is null)
+        {
+            metadata = GetUnionCaseMetadata(metadata, model);
+        }
+
         var entry = GetValidationEntry(model);
         key = entry?.Key ?? key ?? string.Empty;
         metadata = entry?.Metadata ?? metadata;
@@ -369,6 +375,22 @@ public class ValidationVisitor
 
             return VisitSimpleType();
         }
+    }
+
+    private ModelMetadata GetUnionCaseMetadata(ModelMetadata metadata, object? model)
+    {
+        if (metadata.ModelType != typeof(object) || model is null ||
+            (metadata.MetadataKind != ModelMetadataKind.Type && !DefaultUnionValidationStrategy.IsUnionValueProperty(metadata, Model!.GetType())))
+        {
+            return metadata;
+        }
+
+        // Retain the Value property's validation attributes while validating the active case.
+        return MetadataProvider is ModelMetadataProvider provider &&
+            metadata is DefaultModelMetadata propertyMetadata &&
+            propertyMetadata.Details.Key.PropertyInfo is { } propertyInfo
+            ? provider.GetMetadataForProperty(propertyInfo, model.GetType())
+            : MetadataProvider.GetMetadataForType(model.GetType());
     }
 
     /// <summary>
@@ -442,13 +464,7 @@ public class ValidationVisitor
                 continue;
             }
 
-            var model = entry.Model;
-            if (strategy is DefaultUnionValidationStrategy unionStrategy)
-            {
-                metadata = unionStrategy.GetChildMetadata(metadata, model);
-            }
-
-            isValid &= Visit(metadata, key, model);
+            isValid &= Visit(metadata, key, entry.Model);
         }
 
         return isValid;
