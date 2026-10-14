@@ -152,17 +152,23 @@ public ValueTask<CookieListItem?> GetAsync(CookieStoreGetOptions options);
 JS interop serializes dictionaries by reflection, and a trimmed WebAssembly app can break this
 without any warning.
 
-- A returned type is safe. `TValue` of `InvokeAsync` and `GetValueAsync` carries
-  `[DynamicallyAccessedMembers(JsonSerialized)]`, so the trimmer keeps its properties.
-- An argument is not. Arguments travel as `object?[]`, which has no annotation. The trimmer cannot
-  see that the serializer reads the property getters of `CookieInit`, so it can remove them. The
-  member then silently disappears from the JSON. `JSRuntime` suppresses the trim warnings for its
-  reflection serializer, so the build stays clean.
-- So put `[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(...))]` on
-  each method that passes a dictionary to JS interop, as
-  `RemoteNavigationManager.NavigateToCore` does for `NavigationOptions`. Add one for each nested
-  dictionary type too, because the attribute does not follow property types. The dependency lives
-  only while the method lives, so it does not keep unused members of the family.
+- Only the `TValue` of `InvokeAsync` and `GetValueAsync` itself is safe. It carries
+  `[DynamicallyAccessedMembers(JsonSerialized)]`, so the trimmer keeps its constructors and
+  properties. The annotation does not reach the element type of a collection or the type of a
+  property. So when `getAll()` returns `IReadOnlyList<CookieListItem>`, the trimmer can remove
+  the constructor or the properties of `CookieListItem`, and deserialization breaks.
+- An argument is not safe at all. Arguments travel as `object?[]`, which has no annotation. The
+  trimmer cannot see that the serializer reads the property getters of `CookieInit`, so it can
+  remove them. The member then silently disappears from the JSON.
+- `JSRuntime` suppresses the trim warnings for its reflection serializer, so the build stays clean
+  in both cases.
+- So put `[DynamicDependency(JsonSerialized, typeof(...))]` on each method that passes or receives
+  a dictionary through JS interop, for every dictionary type that is not the `TValue` itself.
+  Include nested dictionary types, because the attribute does not follow property types.
+  `ResourceCollectionProvider.LoadResourceCollection` does this for the elements of
+  `ResourceAsset[]`. Take `JsonSerialized` from the shared `LinkerFlags.cs`, which projects include
+  with `<Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />`. The dependency
+  lives only while the method lives, so it does not keep unused members of the family.
 - The enum attributes above are also read by reflection.
 - Still prove every dictionary member in a trimmed WebAssembly app, not only in unit tests. Send
   each member of a dictionary the application passes, and read each member of a returned one,

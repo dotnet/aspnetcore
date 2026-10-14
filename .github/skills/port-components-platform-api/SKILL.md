@@ -42,10 +42,13 @@ examples below use the Cookie Store API.
   https://github.com/w3c/webref, not from memory. For example, `cookiestore.idl` shows that
   `CookieListItem` now has only `name` and `value`. Use MDN for the behavior that Web IDL does not
   show.
-- List every interface, dictionary, enum, typedef, and member that the family reaches from
-  `window`. Mark each one as implement, defer, or exclude, and give the reason. For example, the
-  `get`, `getAll`, `set`, and `delete` operations are implemented, `onchange` is deferred as an
-  event, and `CookieStoreManager` is excluded because only a service worker reaches it.
+- List every interface, dictionary, enum, typedef, and member that the family reaches from its
+  entry point, such as `window.cookieStore`. Mark each one as implement, defer, or exclude, and give
+  the reason. For example, the `get`, `getAll`, `set`, and `delete` operations are implemented,
+  `onchange` is deferred as an event, and `CookieStoreManager` is excluded. It is exposed to
+  `Window` too, but only through another entry point, `ServiceWorkerRegistration.cookies`, so it
+  belongs to a separate slice. Check the `Exposed` attribute in the Web IDL before you give such a
+  reason.
 - Check the browser support of each member in the browser compatibility data on MDN. When a member
   is not Baseline, stop and raise it. Such a member would need `[Experimental]`, and the package
   has no diagnostic ID for it yet. A dictionary member that was added recently is a typical case.
@@ -97,7 +100,7 @@ examples below use the Cookie Store API.
   `LocalStorage` and `SessionStorage` do.
 - Let the trimmer drop each unused member of a used family too. Do not reach family members through
   reflection or tables that reference every member. Use `[DynamicDependency]` only on a method that
-  passes a dictionary to JS interop, as the type mapping describes. Keep the build free of trim
+  passes or receives a dictionary through JS interop, as the type mapping describes. Keep the build free of trim
   warnings.
 - Do not add a JavaScript module. Use only the `IJSRuntime` and `IJSObjectReference` features of
   .NET 10 and later, such as `InvokeConstructorAsync`, `GetValueAsync`, and `SetValueAsync`. If a
