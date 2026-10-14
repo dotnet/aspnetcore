@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using BasicTestApp;
 using BasicTestApp.RouterTest;
+using BasicTestApp.RouteViewLayoutTransition;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -43,6 +44,22 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
+    }
+
+    [Fact]
+    public void ChangingLayoutCreatesDestinationPageOnce()
+    {
+        SetUrlViaPushState("/route-view-layout-transition/default/first");
+
+        var app = Browser.MountTestComponent<RouteViewLayoutTransitionApp>();
+        Browser.Equal(nameof(DefaultLayoutPage), () => app.FindElement(By.Id("page-name")).Text);
+
+        app.FindElement(By.Id("navigate-alternate-layout")).Click();
+        Browser.Equal(nameof(AlternateLayoutPage), () => app.FindElement(By.Id("page-name")).Text);
+        Browser.Equal("second", () => app.FindElement(By.Id("page-value")).Text);
+        var trace = app.FindElement(By.Id("instantiation-log")).Text;
+
+        Assert.Equal(1, trace.Split('\n').Count(line => line.Contains($"{nameof(AlternateLayoutPage)}[") && line.Contains("constructor")));
     }
 
     [Fact]
