@@ -18,8 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.JSInterop" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
   </ItemGroup>
 
   <ItemGroup>

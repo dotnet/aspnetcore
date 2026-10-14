@@ -13,10 +13,11 @@
     <Protobuf Include=".\Proto\chat.proto" GrpcServices="Server" />
     <Protobuf Include=".\Proto\greet.proto" GrpcServices="Client" />
 
-    <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Google.Protobuf" />
-    <Reference Include="Grpc.Tools" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="All" />
+
+    <ProjectReference Include="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>

@@ -51,23 +51,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Antiforgery" />
-    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
-    <Reference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+
+    <ProjectReference Include="$(RepoRoot)src\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Html.Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\StaticAssets\src\Microsoft.AspNetCore.StaticAssets.csproj" />
   </ItemGroup>
 
   <ItemGroup>

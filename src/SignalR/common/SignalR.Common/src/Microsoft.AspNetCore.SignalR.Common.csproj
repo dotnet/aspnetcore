@@ -25,16 +25,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup
        Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
-    <Reference Include="System.Text.Json" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
-    <Reference Include="System.Net.Sockets" />
+    <PackageReference Include="System.Net.Sockets" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,6 +52,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>

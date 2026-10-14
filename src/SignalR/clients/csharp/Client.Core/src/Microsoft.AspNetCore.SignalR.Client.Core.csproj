@@ -29,15 +29,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="System.Threading.Channels" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="System.Threading.Channels" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+
+    <ProjectReference Include="$(RepoRoot)src\SignalR\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\common\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
-    <Reference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
   </ItemGroup>
 
   <ItemGroup>
