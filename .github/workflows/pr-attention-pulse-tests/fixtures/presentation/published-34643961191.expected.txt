@@ -107,6 +107,7 @@ Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
 JSON SHA-256: `d69fdb0a40ba4c80a7515044b256fbe9b7fe22bd2fb2890cb4bd8b0f6b4a6f3b`.
 
 </details>
+
 <details>
 <summary>Snapshot JSON (exact sanitized bytes)</summary>
 

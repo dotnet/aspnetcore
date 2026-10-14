@@ -213,7 +213,7 @@
     <MicrosoftTestingExtensionsTrxReportVersion>2.2.3</MicrosoftTestingExtensionsTrxReportVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
-    <MicrosoftDataSqlClientVersion>7.1.0</MicrosoftDataSqlClientVersion>
+    <MicrosoftDataSqlClientVersion>7.1.1</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
     <MicrosoftOpenApiVersion>[3.10.2,4.0.0)</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiYamlReaderVersion>[3.10.2,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
