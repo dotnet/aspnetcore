@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -36,12 +37,15 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
     private readonly byte[] _contextHeader;
     private readonly IManagedGenRandom _genRandom;
     private readonly Secret _keyDerivationKey;
+
     private readonly Func<SymmetricAlgorithm> _symmetricAlgorithmFactory;
     private readonly int _symmetricAlgorithmBlockSizeInBytes;
     private readonly int _symmetricAlgorithmSubkeyLengthInBytes;
+
+    private readonly Func<KeyedHashAlgorithm> _validationAlgorithmFactory;
     private readonly int _validationAlgorithmDigestLengthInBytes;
     private readonly int _validationAlgorithmSubkeyLengthInBytes;
-    private readonly Func<KeyedHashAlgorithm> _validationAlgorithmFactory;
+    private readonly HashAlgorithmType _validationAlgorithmType;
 
     public ManagedAuthenticatedEncryptor(Secret keyDerivationKey, Func<SymmetricAlgorithm> symmetricAlgorithmFactory, int symmetricAlgorithmKeySizeInBytes, Func<KeyedHashAlgorithm> validationAlgorithmFactory, IManagedGenRandom? genRandom = null)
     {
@@ -60,6 +64,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         using (var validationAlgorithm = validationAlgorithmFactory())
         {
             _validationAlgorithmFactory = validationAlgorithmFactory;
+            _validationAlgorithmType = validationAlgorithm.GetHashAlgorithmType();
             _validationAlgorithmDigestLengthInBytes = validationAlgorithm.GetDigestSizeInBytes();
             _validationAlgorithmSubkeyLengthInBytes = _validationAlgorithmDigestLengthInBytes; // for simplicity we'll generate MAC subkeys with a length equal to the digest length
         }
@@ -239,8 +244,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     using var symmetricAlgorithm = CreateSymmetricAlgorithm();
                     symmetricAlgorithm.SetKey(encryptionSubkey);
 
-                    using var validationAlgorithm = CreateValidationAlgorithm();
-
                     // Perform the encryption operation
                     var ciphertextDestination = buffer.Slice(keyModifierLength + ivLength, cipherTextLength);
                     symmetricAlgorithm.EncryptCbc(plaintext, iv, ciphertextDestination);
@@ -250,16 +253,17 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     var macDestinationSpan = buffer.Slice(keyModifierLength + ivLength + cipherTextLength, macLength);
 
                     // Use optimized method for specific algorithms when possible
-                    if (validationAlgorithm is HMACSHA256)
+                    if (_validationAlgorithmType is HashAlgorithmType.HMACSHA256)
                     {
                         HMACSHA256.HashData(key: validationSubkey, source: ivAndCipherTextSpan, destination: macDestinationSpan);
                     }
-                    else if (validationAlgorithm is HMACSHA512)
+                    else if (_validationAlgorithmType is HashAlgorithmType.HMACSHA512)
                     {
                         HMACSHA512.HashData(key: validationSubkey, source: ivAndCipherTextSpan, destination: macDestinationSpan);
                     }
                     else
                     {
+                        using var validationAlgorithm = CreateValidationAlgorithm();
                         validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
                         if (!validationAlgorithm.TryComputeHash(source: ivAndCipherTextSpan, destination: macDestinationSpan, out _))
                         {
@@ -403,8 +407,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 #if NET
     private bool ValidateMac(ReadOnlySpan<byte> dataToValidate, ReadOnlySpan<byte> providedMac, ReadOnlySpan<byte> validationSubkey, byte[]? validationSubkeyArray)
     {
-        using var validationAlgorithm = CreateValidationAlgorithm();
-        var hashSize = validationAlgorithm.GetDigestSizeInBytes();
+        var hashSize = _validationAlgorithmDigestLengthInBytes;
 
         byte[]? correctHashArray = null;
         Span<byte> correctHash = hashSize <= 128
@@ -414,16 +417,18 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         try
         {
             int bytesWritten;
-            if (validationAlgorithm is HMACSHA256)
+            if (_validationAlgorithmType is HashAlgorithmType.HMACSHA256)
             {
                 bytesWritten = HMACSHA256.HashData(key: validationSubkey, source: dataToValidate, destination: correctHash);
             }
-            else if (validationAlgorithm is HMACSHA512)
+            else if (_validationAlgorithmType is HashAlgorithmType.HMACSHA512)
             {
                 bytesWritten = HMACSHA512.HashData(key: validationSubkey, source: dataToValidate, destination: correctHash);
             }
             else
             {
+                using var validationAlgorithm = CreateValidationAlgorithm();
+
                 // if validationSubkey is stackalloc'ed, there is no way we avoid an alloc here
                 validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
                 var success = validationAlgorithm.TryComputeHash(dataToValidate, correctHash, out bytesWritten);
@@ -446,7 +451,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
     byte[]? validationSubkeyArray)
     {
         using var validationAlgorithm = CreateValidationAlgorithm();
-        var hashSize = validationAlgorithm.GetDigestSizeInBytes();
+        var hashSize = _validationAlgorithmDigestLengthInBytes;
 
         // if validationSubkey is stackalloc'ed, there is no way we avoid an alloc here
         validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
