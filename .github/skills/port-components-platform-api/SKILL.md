@@ -1,14 +1,16 @@
 ---
 name: port-components-platform-api
 description: >-
-  Port one standard non-DOM browser API family, such as Clipboard, Geolocation, or Permissions, to
-  Microsoft.AspNetCore.Components.Platform as a typed projection reached from
-  IBrowserPlatform.Window, the way Web Storage is exposed as Window.LocalStorage. USE FOR adding,
-  extending, reviewing, or testing a browser API family in src/Components/Platform; designing its
-  public API and API proposal; giving Blazor typed access to a standard browser API instead of
-  string-based IJSRuntime calls; and the disposal, cancellation, trimming, and Helix E2E rules of
-  that package. DO NOT USE FOR DOM manipulation, application-specific JavaScript, or migrating
-  existing framework code such as ProtectedBrowserStorage to the package.
+  Port one standard non-DOM browser API family, such as Cookie Store, Screen, or Clipboard, to
+  Microsoft.AspNetCore.Components.Platform as a typed .NET projection reached from
+  IBrowserPlatform.Window, the way Web Storage is exposed as Window.LocalStorage. USE FOR wrapping,
+  porting, or projecting a browser API (window.* or navigator.*) for Blazor, such as "wrap the
+  Cookie Store API as a .NET API" or "add navigator.clipboard to Components.Platform"; designing the
+  public API and API proposal of a family; mapping Web IDL types to .NET; extending or testing a
+  family in src/Components/Platform; and the disposal, cancellation, trimming, and E2E rules of
+  that package. DO NOT USE FOR DOM manipulation, application-specific JavaScript, migrating
+  existing framework code such as ProtectedBrowserStorage, or filing the API review issue itself
+  (use api-review).
 ---
 
 # Port a Components Platform API
@@ -21,41 +23,97 @@ otherwise.
 ## Scope
 
 - Port one API family per change, so each family stays small and separately reviewable.
-- Use Web IDL, browser compatibility data, and MDN to define the family and its explicit exclusions.
 - Keep DOM manipulation and application-specific JavaScript out of this package.
-- New public API needs an API proposal issue. Use the `api-review` skill, and keep the issue
-  description in sync with `PublicAPI.Unshipped.txt` when the shape changes during review.
+- Leave out events and other callbacks from JavaScript to .NET for now, such as the `onchange`
+  event handler of `CookieStore`. Their design, including how to deliver them without a JavaScript
+  module, is not decided yet. List them as deferred members, and raise them as an open question.
+- Do not migrate existing framework code, such as `ProtectedBrowserStorage`, to the projection. The
+  package ships on its own, and an assembly in the shared framework, such as
+  `Microsoft.AspNetCore.Components.Server`, cannot reference it. Reviewers also found no benefit in
+  wrapping a few existing `IJSRuntime` calls.
+
+## Design first
+
+Most of the time on a family goes to agreeing on its API shape, not to coding. So write a design
+proposal before you write code, and get agreement from the person who asked for the port. The
+examples below use the Cookie Store API.
+
+- Read the Web IDL of the family from webref, at `ed/idl/<spec>.idl` in
+  https://github.com/w3c/webref, not from memory. For example, `cookiestore.idl` shows that
+  `CookieListItem` now has only `name` and `value`. Use MDN for the behavior that Web IDL does not
+  show.
+- List every interface, dictionary, enum, typedef, and member that the family reaches from
+  `window`. Mark each one as implement, defer, or exclude, and give the reason. For example, the
+  `get`, `getAll`, `set`, and `delete` operations are implemented, `onchange` is deferred as an
+  event, and `CookieStoreManager` is excluded because only a service worker reaches it.
+- Check the browser support of each member in the browser compatibility data on MDN. When a member
+  is not Baseline, stop and raise it. Such a member would need `[Experimental]`, and the package
+  has no diagnostic ID for it yet. A dictionary member that was added recently is a typical case.
+- Write the planned public API as C# signatures, following the next section.
+- Collect every open question that the rules in this skill tell you to raise into one list.
+- Start the implementation only after the proposal is agreed. Then file the API proposal issue
+  with the `api-review` skill. Its usage example calls `AddBrowserPlatform()`, injects
+  `IBrowserPlatform`, and imports `Microsoft.AspNetCore.Components.Platform` for the extension
+  members. Keep the issue in sync with `PublicAPI.Unshipped.txt` when the shape changes in review.
+
+## Shape the public API
+
+- Follow Web IDL names and behavior. Map an operation `foo()` to `FooAsync()` and a readable
+  attribute `foo` to `GetFooAsync()`. Do not add convenience APIs, polyfills, or .NET
+  substitutions, even when a more .NET-like API looks simpler. Review chose this one-to-one shape
+  on purpose. A developer who knows the Web Platform API should find the same API from `Window.`
+  without learning Blazor-specific services.
+- Map types by [references/type-mapping.md](references/type-mapping.md). It covers names, value
+  types, dictionaries, overloads, enums, and trimming. A wrong mapping can send `null` where the
+  browser expects a missing member, and the browser then stores the string `"null"`.
+- For every .NET shape decision that Web IDL does not settle, follow
+  [../review-public-api/references/conventions.md](../review-public-api/references/conventions.md).
+  When a convention conflicts with the one-to-one rules of this skill, follow this skill and raise
+  the conflict as an open question.
+- Return `ValueTask` or `ValueTask<T>` from every live browser access, like the JS interop APIs do.
+  Do not switch to `Task`. `ValueTask` leaves room for a synchronous `IJSInProcessRuntime` path on
+  WebAssembly, and the return type cannot change after the API ships. Keep raw JS interop types
+  and identifiers non-public. `PublicApiTest` enforces both.
+- Expose the family as a synchronous property in an `extension(Window window)` block, as
+  `WindowWebStorageExtensions` does, not as an instance property of `Window`. The trimmer can then
+  drop a family the application never touches. Keep the property synchronous even when the browser
+  object can be missing. "Implement" below says how to handle that.
+- Leave value checks to the browser. For example, do not check in .NET that `CookieInit` sets both
+  `expires` and `maxAge`. The browser already throws `TypeError` for that, and a copy in .NET can
+  drift when the browser changes. Check only a `null` argument for a non-nullable parameter, and
+  throw `ArgumentNullException`, as `Storage` does. Web IDL would turn that `null` into the string
+  `"null"`. Check a dictionary argument itself but not its members, as `ResponseCookies.Append`
+  does with `CookieOptions`. A caller who writes `Name = null!` takes responsibility for it.
+- Add a `CancellationToken` only where Web IDL has an `AbortSignal`, and not to Web Storage style
+  APIs. An overload with a token can be added later without a breaking change, so leave it out when
+  in doubt. `IJSRuntime` never forwards a token to JavaScript. Canceling only stops .NET from
+  waiting and skips deserialization, and the result is still transferred. Real cancellation needs a
+  JS-side `AbortController` that .NET aborts through interop.
 
 ## Implement
 
 - Put the projection in `src/Components/Platform/src`. Add one type for the family, such as
-  `Clipboard.cs`, and one extension class, such as `WindowClipboardExtensions.cs`.
-- Let the IL trimmer drop a family the application never touches. Attach each family to `Window` as
-  extension members in an `extension(Window window)` block, not as instance properties that always
-  hold it alive. Get the instance with `window.GetOrAddFeature(...)`, and pass a subkey when two
-  properties share one type, as `LocalStorage` and `SessionStorage` do.
-- Let the trimmer also drop each unused member when a WebAssembly app is published, not only
-  unused families. Do not reach members through reflection, `[DynamicDependency]`, or tables that
-  reference every member. Keep the build free of trim warnings.
-- Follow Web IDL names and behavior. Do not add convenience APIs, polyfills, or .NET substitutions.
-  Map an operation `foo()` to `FooAsync()` and a readable attribute `foo` to `GetFooAsync()`. Map
-  `unsigned long` to `uint` and a nullable `DOMString` to `string?`.
-- Keep this one-to-one shape even when a more .NET-like API looks simpler. Review chose it on
-  purpose. A developer who knows the Web Platform API should find the same API from `Window.`
-  without learning Blazor-specific services. It also keeps unused families trimmable.
-- Keep live browser access asynchronous, and return `ValueTask` or `ValueTask<T>` like the JS
-  interop APIs do. Do not switch to `Task`. `ValueTask` leaves room for a synchronous
-  `IJSInProcessRuntime` path on WebAssembly, and the return type cannot change after the API ships.
-  Keep raw JS interop types and identifiers non-public. `PublicApiTest` enforces both.
-- Do not add locks or other synchronization. Blazor runs on a single threaded synchronization
-  context, so only one thread runs at a time.
+  `Clipboard.cs`, and one extension class, such as `WindowClipboardExtensions.cs`. Get the instance
+  with `window.GetOrAddFeature(...)`, and pass a subkey when two properties share one type, as
+  `LocalStorage` and `SessionStorage` do.
+- Let the trimmer drop each unused member of a used family too. Do not reach family members through
+  reflection or tables that reference every member. Use `[DynamicDependency]` only on a method that
+  passes a dictionary to JS interop, as the type mapping describes. Keep the build free of trim
+  warnings.
 - Do not add a JavaScript module. Use only the `IJSRuntime` and `IJSObjectReference` features of
   .NET 10 and later, such as `InvokeConstructorAsync`, `GetValueAsync`, and `SetValueAsync`. If a
-  feature seems to need JavaScript of its own, such as an event listener, stop and raise it as an
-  open question.
+  feature seems to need JavaScript of its own, stop and raise it as an open question.
+- Do not add locks or other synchronization. Blazor runs on a single threaded synchronization
+  context, so only one thread runs at a time.
 - Acquire a JS object reference lazily on first use and share the pending task between callers. Do
   not keep a failed or canceled acquisition. A timeout during a brief connection loss would
   otherwise break the family for the rest of the circuit, so acquire again on the next call.
+- Handle a browser object that can be missing. For example, `window.cookieStore` is `undefined` on
+  an insecure page or in an older browser. JS interop then returns a `null` reference as a
+  successful result, and code copied from Web Storage fails with `NullReferenceException` on every
+  call and during disposal. When the acquired reference is `null`, fail the acquisition with
+  `NotSupportedException`, so it is not kept. Do not add an API that only reports whether the
+  object exists. The specification excludes such capability registries.
 - Wrap identity-bearing objects and preserve identity. `Window` owns the wrapper and hands the same
   one to every caller, so never implement `IAsyncDisposable` or a public `DisposeAsync`. Implement
   the internal `IInternalAsyncDisposal` explicitly, and let `Window` call it when the scope ends.
@@ -64,13 +122,8 @@ otherwise.
   interop timeout, which is one minute by default. Release the reference only when the acquisition
   has already completed successfully. After disposal, throw `ObjectDisposedException` from every
   member.
-- Add cancellation only when it maps to `AbortSignal`, and do not add it to Web Storage style APIs.
-  A `CancellationToken` overload can be added later without a breaking change, so leave it out
-  when in doubt.
-  `IJSRuntime` never forwards a token to JavaScript. Canceling only stops .NET from waiting and
-  skips deserialization, and the result is still transferred. Real cancellation needs a JS-side
-  `AbortController` that .NET aborts through interop. Also, any token turns off the default timeout
-  that `JSRuntime` applies, so call the overload without a token when the caller passes none.
+- When the caller passes no `CancellationToken`, call the `IJSRuntime` overload without a token.
+  Any token, even `CancellationToken.None`, turns off the default timeout of `JSRuntime`.
 
 ## Document
 
@@ -89,27 +142,20 @@ internals. Follow the majority phrasing in this repository and `ProtectedBrowser
 - For a nullable result, write `..., or <see langword="null"/> if ...`. Use "if", not "when".
 - For a null check, write
   `<exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>`.
+- When the browser object can be missing, add `<exception cref="NotSupportedException">` to each
+  member that reaches it.
 - Do not document `JSException`, for example for an exceeded quota. Interop types stay out of the
   public contract.
 - When unsure, search the repository for the phrasing and use the most common form.
-
-## Adopt
-
-Do not migrate existing framework code to the projection in the same change. The package ships on
-its own, and an assembly in the shared framework, such as `Microsoft.AspNetCore.Components.Server`,
-cannot reference it. Reviewers also decided that a wrapper around a few existing `IJSRuntime` calls
-gives the framework no benefit. Adoption, if ever needed, is a separate decision.
-
-Applications adopt the projection by calling `AddBrowserPlatform()`, injecting `IBrowserPlatform`, and
-importing `Microsoft.AspNetCore.Components.Platform` for the extension members. Show exactly this in
-the API proposal's usage example.
 
 ## Verify
 
 - Add unit tests to `src/Components/Platform/test`, one file per family. Cover interop identifiers
   and arguments, lazy acquisition, a single shared acquisition, acquiring again after a failure,
   stable and distinct instances, disposal of the acquired reference, `ObjectDisposedException` after
-  disposal, and disposal that finishes without waiting for a pending acquisition.
+  disposal, and disposal that finishes without waiting for a pending acquisition. When the browser
+  object can be missing, also cover a `null` reference. Every member throws
+  `NotSupportedException`, and disposal does not throw.
 - Keep tests few and readable. Avoid tricks that depend on ordering. When ordering cannot be
   avoided, make it visible in the test and explain it in one comment.
 - Add the new type to both `LiveBrowserObjectMethods_AreAsynchronous` and
@@ -118,8 +164,10 @@ the API proposal's usage example.
   `PlatformTestApp.E2E.Tests`. These E2E tests run on Helix in CI with a prebuilt app. A local run
   from the build output does not use that layout, so also run the tests from the output of
   `dotnet publish` on the E2E project.
-- Publish a trimmed WebAssembly application and confirm that the unused families and the unused
-  members of a used family are gone from the output.
+- Publish a trimmed WebAssembly application. Confirm that the unused families and the unused
+  members of a used family are gone. When the family passes or returns a dictionary, also confirm
+  that every dictionary member reaches the browser and comes back. Trimming can drop a member
+  without a warning.
 - Update `PublicAPI.Unshipped.txt`, build, pack, and inspect the final diff. Use explicit
   `ProjectReference` and `PackageReference` items in project files, as
   `docs/ReferenceResolution.md` describes.
