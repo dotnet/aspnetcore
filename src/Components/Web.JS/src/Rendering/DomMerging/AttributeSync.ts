@@ -19,6 +19,10 @@ export function synchronizeAttributes(destination: Element, source: Element) {
       remainingDestAttrs.set(destAttr.name, destAttr);
     }
 
+    if (destination instanceof HTMLDialogElement && destination.matches(':modal')) {
+      remainingDestAttrs.delete('open');
+    }
+
     for (const sourceAttr of source.attributes as any as Attr[]) {
       const existingDestAttr = sourceAttr.namespaceURI
         ? destination.getAttributeNodeNS(sourceAttr.namespaceURI, sourceAttr.localName)
