@@ -1462,26 +1462,104 @@ public class EndpointHtmlRendererTest
         Assert.Contains(sink.Writes, w => w.EventId.Name == "SectionRenderModeMismatch" && w.LogLevel == LogLevel.Warning);
     }
 
-    [Fact]
-    public async Task StaticHeadOutlet_InteractivePageTitle_DoesNotWarnDuringPrerendering()
+    public static TheoryData<IComponentRenderMode, bool> HeadSectionRenderModeData => new()
+    {
+        { RenderMode.InteractiveServer, true },
+        { RenderMode.InteractiveServer, false },
+        { RenderMode.InteractiveWebAssembly, true },
+        { RenderMode.InteractiveWebAssembly, false },
+        { RenderMode.InteractiveAuto, true },
+        { RenderMode.InteractiveAuto, false },
+    };
+
+    [Theory]
+    [MemberData(nameof(HeadSectionRenderModeData))]
+    public async Task StaticHeadOutlet_InteractivePageTitle_DoesNotWarnDuringPrerendering(IComponentRenderMode renderMode, bool outletFirst)
     {
         var sink = new TestSink();
         var renderer = GetEndpointHtmlRenderer(loggerFactory: new TestLoggerFactory(sink, enabled: true));
         var httpContext = GetHttpContext();
 
-        var outlet = await renderer.PrerenderComponentAsync(httpContext, typeof(HeadOutlet), null, ParameterView.Empty);
-        await renderer.PrerenderComponentAsync(httpContext, typeof(PageTitleTestComponent), RenderMode.InteractiveServer, ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(HeadSectionTestComponent), null, ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(HeadSectionTestComponent.ContentType)] = typeof(PageTitleTestComponent),
+            [nameof(HeadSectionTestComponent.ContentRenderMode)] = renderMode,
+            [nameof(HeadSectionTestComponent.OutletFirst)] = outletFirst,
+        }));
 
-        Assert.Equal("<title>Counter</title>", await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(outlet)));
+        Assert.Contains("<title>Counter</title>", await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result)));
         var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "SectionRenderModeMismatch"));
         Assert.Equal(LogLevel.Debug, write.LogLevel);
         Assert.Contains("'PageTitle/HeadOutlet'", write.Message);
         Assert.Contains("static server-side rendering", write.Message);
-        Assert.Contains(nameof(InteractiveServerRenderMode), write.Message);
+        Assert.Contains(renderMode.GetType().Name, write.Message);
         Assert.Contains("Prerendered content may appear correctly", write.Message);
         Assert.Contains("interactive updates cannot cross the render mode boundary", write.Message);
         Assert.Contains("same render mode", write.Message);
         Assert.Contains("static component tree", write.Message);
+    }
+
+    [Theory]
+    [MemberData(nameof(HeadSectionRenderModeData))]
+    public async Task StaticHeadOutlet_InteractiveHeadContent_LogsWarningDuringPrerendering(IComponentRenderMode renderMode, bool outletFirst)
+    {
+        var sink = new TestSink();
+        var renderer = GetEndpointHtmlRenderer(loggerFactory: new TestLoggerFactory(sink, enabled: true));
+        var httpContext = GetHttpContext();
+
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(HeadSectionTestComponent), null, ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(HeadSectionTestComponent.ContentType)] = typeof(HeadContentTestComponent),
+            [nameof(HeadSectionTestComponent.ContentRenderMode)] = renderMode,
+            [nameof(HeadSectionTestComponent.OutletFirst)] = outletFirst,
+        }));
+
+        Assert.Contains("<meta name=\"description\" content=\"Counter\" />", await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result)));
+        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "SectionRenderModeMismatch"));
+        Assert.Equal(LogLevel.Warning, write.LogLevel);
+        Assert.Contains("'HeadContent/HeadOutlet'", write.Message);
+        Assert.Contains(renderMode.GetType().Name, write.Message);
+    }
+
+    [Theory]
+    [MemberData(nameof(HeadSectionRenderModeData))]
+    public async Task InteractiveHeadOutlet_StaticPageTitle_LogsWarningDuringPrerendering(IComponentRenderMode renderMode, bool outletFirst)
+    {
+        var sink = new TestSink();
+        var renderer = GetEndpointHtmlRenderer(loggerFactory: new TestLoggerFactory(sink, enabled: true));
+        var httpContext = GetHttpContext();
+
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(HeadSectionTestComponent), null, ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(HeadSectionTestComponent.ContentType)] = typeof(PageTitleTestComponent),
+            [nameof(HeadSectionTestComponent.OutletRenderMode)] = renderMode,
+            [nameof(HeadSectionTestComponent.OutletFirst)] = outletFirst,
+        }));
+
+        Assert.Contains("<title>Counter</title>", await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result)));
+        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "SectionRenderModeMismatch"));
+        Assert.Equal(LogLevel.Warning, write.LogLevel);
+        Assert.Contains("'PageTitle/HeadOutlet'", write.Message);
+    }
+
+    [Theory]
+    [MemberData(nameof(HeadSectionRenderModeData))]
+    public async Task HeadOutletAndPageTitle_SameRenderMode_DoesNotLogMismatch(IComponentRenderMode renderMode, bool outletFirst)
+    {
+        var sink = new TestSink();
+        var renderer = GetEndpointHtmlRenderer(loggerFactory: new TestLoggerFactory(sink, enabled: true));
+        var httpContext = GetHttpContext();
+
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(HeadSectionTestComponent), null, ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(HeadSectionTestComponent.ContentType)] = typeof(PageTitleTestComponent),
+            [nameof(HeadSectionTestComponent.OutletRenderMode)] = renderMode,
+            [nameof(HeadSectionTestComponent.ContentRenderMode)] = renderMode,
+            [nameof(HeadSectionTestComponent.OutletFirst)] = outletFirst,
+        }));
+
+        Assert.Contains("<title>Counter</title>", await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result)));
+        Assert.DoesNotContain(sink.Writes, w => w.EventId.Name == "SectionRenderModeMismatch");
     }
 
     private sealed class PageTitleTestComponent : ComponentBase
@@ -1490,6 +1568,71 @@ public class EndpointHtmlRendererTest
         {
             builder.OpenComponent<PageTitle>(0);
             builder.AddComponentParameter(1, nameof(PageTitle.ChildContent), (RenderFragment)(contentBuilder => contentBuilder.AddContent(0, "Counter")));
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class HeadSectionTestComponent : ComponentBase
+    {
+        [Parameter]
+        public Type ContentType { get; set; } = default!;
+
+        [Parameter]
+        public IComponentRenderMode OutletRenderMode { get; set; }
+
+        [Parameter]
+        public IComponentRenderMode ContentRenderMode { get; set; }
+
+        [Parameter]
+        public bool OutletFirst { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (OutletFirst)
+            {
+                RenderOutlet(builder);
+                RenderContent(builder);
+            }
+            else
+            {
+                RenderContent(builder);
+                RenderOutlet(builder);
+            }
+        }
+
+        private void RenderOutlet(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<HeadOutlet>(0);
+            if (OutletRenderMode is not null)
+            {
+                builder.AddComponentRenderMode(OutletRenderMode);
+            }
+            builder.CloseComponent();
+        }
+
+        private void RenderContent(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent(1, ContentType);
+            if (ContentRenderMode is not null)
+            {
+                builder.AddComponentRenderMode(ContentRenderMode);
+            }
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class HeadContentTestComponent : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<HeadContent>(0);
+            builder.AddComponentParameter(1, nameof(HeadContent.ChildContent), (RenderFragment)(contentBuilder =>
+            {
+                contentBuilder.OpenElement(0, "meta");
+                contentBuilder.AddAttribute(1, "name", "description");
+                contentBuilder.AddAttribute(2, "content", "Counter");
+                contentBuilder.CloseElement();
+            }));
             builder.CloseComponent();
         }
     }

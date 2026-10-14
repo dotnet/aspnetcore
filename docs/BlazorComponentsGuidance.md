@@ -62,6 +62,9 @@ validation guidance rather than defining a separate architecture.
 - For DOM synchronization changes, cover interactive render batches alongside enhanced-navigation document updates so component updates do not overwrite unrelated content.
 - Virtualization and scroll-convergence logic should use narrow DOM signals, guard against browser overflow anchoring, and avoid MutationObserver feedback loops triggered by unrelated DOM churn.
 - Section, head, title, and attribute updates should preserve user-provided attributes and target the semantically correct DOM node without unnecessary markup or global selectors.
+- Use `PageTitle/HeadOutlet` and `HeadContent/HeadOutlet` identifiers to make built-in head-section diagnostics actionable.
+- Only `PageTitle` render-mode mismatches with a static `HeadOutlet` log at Debug to avoid default per-page-template warnings. `HeadContent`, user-defined sections, and mismatches with an interactive outlet still log at Warning.
+- The title exception includes dynamic content; it does not detect constant content or track updates across renderers. Interactive title updates require matching render modes. Warning for lost updates without warning for unchanged default titles remains an unresolved follow-up.
 
 ### Events, callbacks, navigation, and enhanced navigation
 
