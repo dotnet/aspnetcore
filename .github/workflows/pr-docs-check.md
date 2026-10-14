@@ -36,6 +36,7 @@ on:
           - skip
           - refresh
   roles: [admin, maintainer, write]
+  bots: ["dotnet-policy-service[bot]"]
   reaction: none
   status-comment: false
 

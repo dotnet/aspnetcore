@@ -1820,6 +1820,249 @@ namespace New
         ], moved_result
 
 
+def test_declaration_rewrites_are_not_renames(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests
+{
+    public class SampleTests
+    {
+        public void ReturnsExpectedResponse()
+        {
+        }
+
+        public void OtherTest()
+        {
+        }
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Add block scoped tests", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    public void ReturnsExpectedResponse(bool enabled)
+    {
+    }
+
+    public void OtherTest(bool enabled)
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Use file scoped namespace", "2026-08-02T00:00:00Z")
+
+        assert not module.target_identity_rename_detected(
+            root,
+            TEST_PATH,
+            "Microsoft.AspNetCore.Tests.SampleTests",
+            "ReturnsExpectedResponse",
+            "HEAD",
+        )
+        assert not module.target_identity_rename_detected(
+            root,
+            TEST_PATH,
+            "Microsoft.AspNetCore.Tests.SampleTests",
+            None,
+            "HEAD",
+        )
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "eligible", result
+
+
+def test_mixed_rename_and_rewrite_is_ambiguous(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    public void ReturnsExpectedResponse()
+    {
+    }
+
+    public void OldName()
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Add overloaded test owners", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    public void ReturnsExpectedResponse()
+    {
+    }
+
+    public void ReturnsExpectedResponse(bool enabled)
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Rename while adding overload", "2026-08-02T00:00:00Z")
+
+        assert module.target_identity_rename_detected(
+            root,
+            TEST_PATH,
+            "Microsoft.AspNetCore.Tests.SampleTests",
+            "ReturnsExpectedResponse",
+            "HEAD",
+        )
+
+
+def test_unrelated_type_edit_is_not_a_rename(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+}
+
+public class OtherTests
+{
+    public void OldUnrelated()
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Add unrelated test", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    public void ReturnsExpectedResponse()
+    {
+    }
+}
+
+public class OtherTests
+{
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Replace unrelated test", "2026-08-02T00:00:00Z")
+
+        assert not module.target_identity_rename_detected(
+            root,
+            TEST_PATH,
+            "Microsoft.AspNetCore.Tests.SampleTests",
+            "ReturnsExpectedResponse",
+            "HEAD",
+        )
+
+
+def test_type_and_method_rename_is_ambiguous(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class OldTests
+{
+    public void OldName()
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Add old test identity", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    public void ReturnsExpectedResponse()
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Rename type and method", "2026-08-02T00:00:00Z")
+
+        assert module.target_identity_rename_detected(
+            root,
+            TEST_PATH,
+            "Microsoft.AspNetCore.Tests.SampleTests",
+            None,
+            "HEAD",
+        )
+
+
+def test_replaced_overload_rename_is_ambiguous(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    public void ReturnsExpectedResponse()
+    {
+    }
+
+    public void OldName(bool enabled)
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Add old overload identities", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    public void ReturnsExpectedResponse(bool enabled)
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Replace overload with renamed method", "2026-08-02T00:00:00Z")
+
+        assert module.target_identity_rename_detected(
+            root,
+            TEST_PATH,
+            "Microsoft.AspNetCore.Tests.SampleTests",
+            "ReturnsExpectedResponse",
+            "HEAD",
+        )
+
+
 def test_assembly_history_ignores_child_removal_after_own_quarantine():
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -3700,6 +3943,11 @@ def main():
     test_build_source_ancestry()
     test_history_cutoff_uses_first_parent_order()
     test_requarantine_history()
+    test_declaration_rewrites_are_not_renames()
+    test_mixed_rename_and_rewrite_is_ambiguous()
+    test_unrelated_type_edit_is_not_a_rename()
+    test_type_and_method_rename_is_ambiguous()
+    test_replaced_overload_rename_is_ambiguous()
     test_assembly_history_ignores_child_removal_after_own_quarantine()
     test_assembly_history_ignores_child_churn_during_own_quarantine()
     test_method_history_ignores_assembly_churn_during_own_quarantine()
