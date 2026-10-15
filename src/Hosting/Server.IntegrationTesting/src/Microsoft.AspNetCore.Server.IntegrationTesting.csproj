@@ -18,10 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="Serilog.Extensions.Logging" />
-    <PackageReference Include="Serilog.Sinks.File" />
 
     <ProjectReference Include="$(RepoRoot)src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj" />

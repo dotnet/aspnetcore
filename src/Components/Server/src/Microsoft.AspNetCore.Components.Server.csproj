@@ -15,7 +15,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
 
     <ProjectReference Include="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj" />
