@@ -167,6 +167,13 @@ internals. Follow the majority phrasing in this repository and `ProtectedBrowser
   disposal, and disposal that finishes without waiting for a pending acquisition. When the browser
   object can be missing, also cover a `null` reference. Every member throws
   `NotSupportedException`, and disposal does not throw.
+- When a method passes a dictionary or an enum, also assert the JSON that reaches the browser. A
+  mock of `IJSRuntime`, like the one in `StorageTest`, records the .NET objects before
+  serialization. So it cannot catch a missing `[JsonIgnore]` that sends `"path":null`, or an enum
+  value with the wrong string. Use a test runtime that derives from `JSRuntime` and records the
+  `ArgsJson` it receives in `BeginInvokeJS`. Cover each member with a default set to `null`, an
+  empty options object, and each enum value. Trimming is a separate risk. Only the trimmed
+  WebAssembly app below can show it.
 - Keep tests few and readable. Avoid tricks that depend on ordering. When ordering cannot be
   avoided, make it visible in the test and explain it in one comment.
 - Add the new type to both `LiveBrowserObjectMethods_AreAsynchronous` and
