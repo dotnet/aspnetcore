@@ -4,6 +4,7 @@
 #nullable enable
 #pragma warning disable ASP0040 // Partitioned is experimental.
 
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -221,6 +222,71 @@ public class CookieStoreTest
         await provider.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.False(jsRuntime.ObjectReference.Disposed);
+    }
+
+    [Fact]
+    public async Task SetOnChangeAsync_AssignsAFunctionThatDeliversTheChangeEvent()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        CookieChangeEvent? received = null;
+
+        await cookieStore.SetOnChangeAsync(changeEvent =>
+        {
+            received = changeEvent;
+            return Task.CompletedTask;
+        });
+        var result = await jsRuntime.InvokeLastCallbackAsync(
+            """[{"changed":[{"name":"a","value":"1"}],"deleted":[{"name":"b"}]}]""");
+
+        // The cookie store is object 1, the module is object 2, and the function is object 3.
+        using var createCallbackArgs = JsonDocument.Parse(Assert.Single(jsRuntime.CallsTo("createCallback")).ArgsJson);
+        Assert.Equal("""[{"changed":null,"deleted":null}]""", createCallbackArgs.RootElement[1].GetString());
+        var assignment = Assert.Single(jsRuntime.CallsTo("onchange"));
+        Assert.Equal((JSCallType.SetValue, 1, """[{"__jsObjectId":3}]"""), (assignment.CallType, assignment.TargetInstanceId, assignment.ArgsJson));
+        Assert.True(result.Success, result.Exception?.ToString());
+        Assert.Equal(("a", "1"), (Assert.Single(received!.Changed).Name, received.Changed[0].Value));
+        Assert.Equal(("b", null), (Assert.Single(received.Deleted).Name, received.Deleted[0].Value));
+    }
+
+    [Fact]
+    public async Task SetOnChangeAsync_ReplacesAndRemovesTheHandler()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        var calls = new List<string>();
+
+        await cookieStore.SetOnChangeAsync(_ => { calls.Add("first"); return Task.CompletedTask; });
+        await cookieStore.SetOnChangeAsync(_ => { calls.Add("second"); return Task.CompletedTask; });
+        await jsRuntime.InvokeLastCallbackAsync("""[{"changed":[],"deleted":[]}]""");
+        await cookieStore.SetOnChangeAsync(null);
+        var afterRemoval = await jsRuntime.InvokeLastCallbackAsync("""[{"changed":[],"deleted":[]}]""");
+
+        Assert.Equal(["second"], calls);
+        Assert.True(afterRemoval.Success);
+        Assert.Single(jsRuntime.CallsTo("createCallback"));
+        Assert.Equal(
+            ["""[{"__jsObjectId":3}]""", """[{"__jsObjectId":3}]""", "[null]"],
+            jsRuntime.CallsTo("onchange").Select(call => call.ArgsJson));
+    }
+
+    [Fact]
+    public async Task ScopeDisposal_RemovesTheChangeHandler()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        await cookieStore.SetOnChangeAsync(_ => Task.CompletedTask);
+
+        await provider.DisposeAsync();
+
+        Assert.Equal("[null]", jsRuntime.CallsTo("onchange").Last().ArgsJson);
+        Assert.Equal(
+            ["[1]", "[3]", "[2]"],
+            jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => cookieStore.SetOnChangeAsync(null).AsTask());
     }
 
     // A mock IJSRuntime records arguments before serialization, so the tests below check the JSON the browser receives.

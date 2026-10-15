@@ -12,13 +12,20 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public sealed class CookieStore : IInternalAsyncDisposal
 {
+    // The change event crosses by value, and CookieListItem is a dictionary, so the lists are copied whole.
+    private const string OnChangeShapes = """[{"changed":null,"deleted":null}]""";
+
     private readonly IJSRuntime _jsRuntime;
+    private readonly JSCallbackFactory _callbacks;
+    private readonly JSCallback<CookieChangeEvent> _onChange = new();
     private Task<IJSObjectReference>? _referenceTask;
+    private Task<IJSObjectReference>? _onChangeFunctionTask;
     private bool _disposed;
 
     internal CookieStore(IJSRuntime jsRuntime)
     {
         _jsRuntime = jsRuntime;
+        _callbacks = new JSCallbackFactory(jsRuntime);
     }
 
     /// <summary>
@@ -168,6 +175,37 @@ public sealed class CookieStore : IInternalAsyncDisposal
         await cookieStore.InvokeVoidAsync("delete", options).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Sets the handler that is called when cookies visible to the current page change, replacing any previous handler.
+    /// </summary>
+    /// <param name="handler">The handler to call, or <see langword="null"/> to remove the current handler.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
+    /// <exception cref="NotSupportedException">The browser does not provide the Cookie Store API for the current page.</exception>
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(CookieListItem))]
+    public async ValueTask SetOnChangeAsync(Func<CookieChangeEvent, Task>? handler)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        // Swap the handler before any await, so the last call wins even if calls overlap.
+        _onChange.Handler = handler;
+
+        var cookieStore = await GetReferenceAsync().ConfigureAwait(false);
+
+        if (handler is null)
+        {
+            await cookieStore.SetValueAsync<IJSObjectReference?>("onchange", null).ConfigureAwait(false);
+            return;
+        }
+
+        if (_onChangeFunctionTask is null || _onChangeFunctionTask.IsFaulted || _onChangeFunctionTask.IsCanceled)
+        {
+            _onChangeFunctionTask = _callbacks.CreateAsync(_onChange, OnChangeShapes);
+        }
+
+        var function = await _onChangeFunctionTask.ConfigureAwait(false);
+        await cookieStore.SetValueAsync("onchange", function).ConfigureAwait(false);
+    }
+
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
     {
         if (_disposed)
@@ -176,12 +214,29 @@ public sealed class CookieStore : IInternalAsyncDisposal
         }
 
         _disposed = true;
+        _onChange.Handler = null;
 
         // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
         if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
         {
-            await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
+            var cookieStore = referenceTask.Result;
+
+            if (_onChangeFunctionTask is { IsCompletedSuccessfully: true })
+            {
+                try
+                {
+                    await cookieStore.SetValueAsync<IJSObjectReference?>("onchange", null).ConfigureAwait(false);
+                }
+                catch (JSDisconnectedException)
+                {
+                    // The page is already gone, so nothing can call the handler.
+                }
+            }
+
+            await cookieStore.DisposeAsync().ConfigureAwait(false);
         }
+
+        await ((IInternalAsyncDisposal)_callbacks).InternalDisposeAsync().ConfigureAwait(false);
     }
 
     private Task<IJSObjectReference> GetReferenceAsync()

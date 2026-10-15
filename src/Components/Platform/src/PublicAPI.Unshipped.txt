@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.Changed.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.Changed.init -> void
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.CookieChangeEvent() -> void
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.Deleted.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.Deleted.init -> void
 Microsoft.AspNetCore.Components.Platform.CookieInit
 Microsoft.AspNetCore.Components.Platform.CookieInit.CookieInit() -> void
 Microsoft.AspNetCore.Components.Platform.CookieInit.Domain.get -> string?
@@ -37,6 +43,7 @@ Microsoft.AspNetCore.Components.Platform.CookieStore.GetAsync(Microsoft.AspNetCo
 Microsoft.AspNetCore.Components.Platform.CookieStore.GetAsync(string! name) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.CookieListItem?>
 Microsoft.AspNetCore.Components.Platform.CookieStore.SetAsync(Microsoft.AspNetCore.Components.Platform.CookieInit! options) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.CookieStore.SetAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStore.SetOnChangeAsync(System.Func<Microsoft.AspNetCore.Components.Platform.CookieChangeEvent!, System.Threading.Tasks.Task!>? handler) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions
 Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.CookieStoreDeleteOptions() -> void
 Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Domain.get -> string?
