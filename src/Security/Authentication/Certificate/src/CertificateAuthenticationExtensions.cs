@@ -87,6 +87,8 @@ public static class CertificateAuthenticationAppBuilderExtensions
         this AuthenticationBuilder builder,
         Action<CertificateValidationCacheOptions>? configureOptions = null)
     {
+        // Registered as an app-wide singleton shared across certificate authentication schemes: safe because
+        // CertificateValidationCache.ComputeKey namespaces every cache entry by scheme name.
         builder.Services.AddSingleton<ICertificateValidationCache, CertificateValidationCache>();
         if (configureOptions != null)
         {

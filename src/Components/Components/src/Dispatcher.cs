@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Sections;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -12,8 +11,6 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public abstract class Dispatcher
 {
-    private SectionRegistry? _sectionRegistry;
-
     /// <summary>
     /// Creates a default instance of <see cref="Dispatcher"/>.
     /// </summary>
@@ -24,11 +21,6 @@ public abstract class Dispatcher
     /// Provides notifications of unhandled exceptions that occur within the dispatcher.
     /// </summary>
     internal event UnhandledExceptionEventHandler? UnhandledException;
-
-    /// <summary>
-    /// Gets the <see cref="Sections.SectionRegistry"/> associated with the dispatcher.
-    /// </summary>
-    internal SectionRegistry SectionRegistry => _sectionRegistry ??= new();
 
     /// <summary>
     /// Validates that the currently executing code is running inside the dispatcher.

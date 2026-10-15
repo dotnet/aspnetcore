@@ -24,9 +24,7 @@ public class Program
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
         builder.Services.AddValidation();
-#pragma warning restore ASP0029
 
         // Interactive host registers the gate so the async validation E2E tests control settling deterministically.
         builder.Services.AddSingleton<BasicTestApp.FormsTest.AsyncValidationGate>();

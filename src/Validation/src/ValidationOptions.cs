@@ -46,18 +46,6 @@ public class ValidationOptions
         = (type, factory) => factory.Create(type);
 
     /// <summary>
-    /// Gets or sets a delegate that computes the resource key used to look up a localized validation
-    /// message.
-    /// </summary>
-    /// <remarks>
-    /// The provider supplies the lookup key by convention (for example, keyed by
-    /// <see cref="ValidationMessageKeyContext.ValidatorType"/>) for validators that do not specify an
-    /// explicit message. When a validator specifies an explicit message, that message is used as the
-    /// lookup key and the provider is not consulted.
-    /// </remarks>
-    public Func<ValidationMessageKeyContext, string?>? MessageKeyProvider { get; set; }
-
-    /// <summary>
     /// Attempts to get validation information for the specified type.
     /// </summary>
     /// <param name="type">The type to get validation information for.</param>

@@ -12,11 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
 
-    <Reference Include="Microsoft.Extensions.Features" />
+    <ProjectReference Include="$(RepoRoot)src\Extensions\Features\src\Microsoft.Extensions.Features.csproj" />
 
-    <Reference Include="System.IO.Pipelines" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'"/>
+    <PackageReference Include="System.IO.Pipelines" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'"/>
 
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />

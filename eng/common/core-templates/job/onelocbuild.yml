@@ -5,14 +5,14 @@ parameters:
   # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
   pool: ''
 
-  CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
-  GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
-
-  # Service connection for WIF-based Entra authentication to ceapex feeds (replaces CeapexPat).
-  # When set, dnceng/internal builds acquire a federated Entra token instead of using a PAT.
-  # All other projects (e.g. DevDiv, public), where this dnceng-scoped service connection does not
-  # exist, and any pipeline that sets this to '' fall back to PAT-based auth via the CeapexPat parameter.
+  # Project-scoped WIF service connection for Ceapex feed authentication.
   CeapexServiceConnection: 'dnceng-onelocbuild-ceapex'
+
+  # GitHub App authentication for the OneLoc check-in PR.
+  GitHubAppServiceConnection: 'dnceng-oneloc-githubapp'
+  GitHubAppKeyVaultName: 'EngKeyVault'
+  GitHubAppIdSecretName: 'oneloc-localization-app-app-id'
+  GitHubAppPrivateKeySecretName: 'oneloc-localization-app-app-private-key'
 
   SourcesDirectory: $(System.DefaultWorkingDirectory)
   CreatePr: true
@@ -40,7 +40,6 @@ jobs:
   displayName: OneLocBuild${{ parameters.JobNameSuffix }}
 
   variables:
-    - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
     - name: _GenerateLocProjectArguments
       value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
         -LanguageSet "${{ parameters.LanguageSet }}"
@@ -71,6 +70,10 @@ jobs:
   steps:
     - ${{ if eq(parameters.is1ESPipeline, '') }}:
       - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
+    - ${{ if notIn(variables['System.TeamProject'], 'internal', 'DevDiv') }}:
+      - 'OneLocBuild is supported only in dnceng/internal and DevDiv/DevDiv.': error
+    - ${{ if eq(parameters.CeapexServiceConnection, '') }}:
+      - 'CeapexServiceConnection must identify a WIF service connection.': error
 
     - ${{ if ne(parameters.SkipLocProjectJsonGeneration, 'true') }}:
       - task: Powershell@2
@@ -80,13 +83,27 @@ jobs:
         displayName: Generate LocProject.json
         condition: ${{ parameters.condition }}
 
-    # Acquire an Entra token for ceapex feed access via WIF (dnceng/internal only).
-    # All other projects use PAT-based auth, since the ceapex service connection is scoped to dnceng/internal.
-    - ${{ if and(ne(parameters.CeapexServiceConnection, ''), eq(variables['System.TeamProject'], 'internal')) }}:
-      - template: /eng/common/templates/steps/get-federated-access-token.yml
+    # Acquire a short-lived Entra token for Ceapex feed access.
+    - template: /eng/common/templates/steps/get-federated-access-token.yml
+      parameters:
+        federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
+        outputVariableName: 'CeapexEntraToken'
+        condition: ${{ parameters.condition }}
+
+    # Mint a short-lived GitHub App installation token for the loc check-in PR.
+    - ${{ if eq(parameters.RepoType, 'gitHub') }}:
+      - template: /eng/common/core-templates/steps/get-github-app-token.yml
         parameters:
-          federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
-          outputVariableName: 'CeapexEntraToken'
+          is1ESPipeline: ${{ parameters.is1ESPipeline }}
+          ${{ if and(eq(variables['System.TeamProject'], 'DevDiv'), eq(parameters.GitHubAppServiceConnection, 'dnceng-oneloc-githubapp')) }}:
+            azureSubscription: 'devdiv-oneloc-githubapp'
+          ${{ else }}:
+            azureSubscription: ${{ parameters.GitHubAppServiceConnection }}
+          keyVaultName: ${{ parameters.GitHubAppKeyVaultName }}
+          appIdSecretName: ${{ parameters.GitHubAppIdSecretName }}
+          appPrivateKeySecretName: ${{ parameters.GitHubAppPrivateKeySecretName }}
+          installationOwner: ${{ parameters.GitHubOrg }}
+          outputVariableName: 'GitHubAppInstallationToken'
           condition: ${{ parameters.condition }}
 
     - task: OneLocBuild@2
@@ -104,13 +121,10 @@ jobs:
           isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
           isShouldReusePrSelected: ${{ parameters.ReusePr }}
         packageSourceAuth: patAuth
-        ${{ if and(ne(parameters.CeapexServiceConnection, ''), eq(variables['System.TeamProject'], 'internal')) }}:
-          patVariable: $(CeapexEntraToken)
-        ${{ if or(eq(parameters.CeapexServiceConnection, ''), ne(variables['System.TeamProject'], 'internal')) }}:
-          patVariable: ${{ parameters.CeapexPat }}
+        patVariable: $(CeapexEntraToken)
         ${{ if eq(parameters.RepoType, 'gitHub') }}:
           repoType: ${{ parameters.RepoType }}
-          gitHubPatVariable: "${{ parameters.GithubPat }}"
+          gitHubPatVariable: "$(GitHubAppInstallationToken)"
         ${{ if ne(parameters.MirrorRepo, '') }}:
           isMirrorRepoSelected: true
           gitHubOrganization: ${{ parameters.GitHubOrg }}

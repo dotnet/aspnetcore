@@ -244,6 +244,7 @@ public class TestRunner
             }
 
             var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") ?? Directory.GetCurrentDirectory();
+            EnvironmentVariables["E2E_ARTIFACTS_DIR"] = Path.Combine(uploadRoot, "test-artifacts");
             var diagLog = Path.Combine(uploadRoot, "vstest.log");
 
             // Pass all target assemblies to a single dotnet test invocation.

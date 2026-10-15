@@ -4,6 +4,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.JSInterop;
@@ -142,6 +143,31 @@ public class ProtectedBrowserStorageTest
         var invocation = jsRuntime.Invocations.Single();
         Assert.Equal("testStore.getItem", invocation.Identifier);
         Assert.Collection(invocation.Args, arg => Assert.Equal(keyName, arg));
+    }
+
+    [Fact]
+    public async Task SourceGeneratedOptions_RoundTripParameterizedType()
+    {
+        var jsRuntime = new TestJSRuntime
+        {
+            NextInvocationResult = new ValueTask<IJSVoidResult>(Mock.Of<IJSVoidResult>()),
+        };
+        var dataProtectionProvider = new TestDataProtectionProvider();
+        var options = new JsonSerializerOptions
+        {
+            TypeInfoResolver = ProtectedBrowserStorageTestJsonContext.Default,
+        };
+        var storage = new TestProtectedBrowserStorage("testStore", jsRuntime, dataProtectionProvider, options);
+
+        await storage.SetAsync("testKey", new ParameterizedTestModel(42));
+        var protectedJson = Assert.IsType<string>(jsRuntime.Invocations.Single().Args[1]);
+        jsRuntime.Invocations.Clear();
+        jsRuntime.NextInvocationResult = new ValueTask<string>(protectedJson);
+
+        var result = await storage.GetAsync<ParameterizedTestModel>("testKey");
+
+        Assert.True(result.Success);
+        Assert.Equal(42, result.Value.Value);
     }
 
     [Fact]
@@ -408,5 +434,27 @@ public class ProtectedBrowserStorageTest
             : base(storeName, jsRuntime, dataProtectionProvider)
         {
         }
+
+        public TestProtectedBrowserStorage(
+            string storeName,
+            IJSRuntime jsRuntime,
+            IDataProtectionProvider dataProtectionProvider,
+            JsonSerializerOptions serializerOptions)
+            : base(storeName, jsRuntime, dataProtectionProvider, serializerOptions)
+        {
+        }
     }
 }
+
+internal sealed class ParameterizedTestModel
+{
+    public ParameterizedTestModel(int value)
+    {
+        Value = value;
+    }
+
+    public int Value { get; }
+}
+
+[JsonSerializable(typeof(ParameterizedTestModel))]
+internal sealed partial class ProtectedBrowserStorageTestJsonContext : JsonSerializerContext;

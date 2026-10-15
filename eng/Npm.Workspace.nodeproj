@@ -73,11 +73,15 @@
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\esm\**\*.js.map" />
 
     <!-- JSInterop outputs -->
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\src\Microsoft.JSInterop.d.ts" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\src\Microsoft.JSInterop.d.ts.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\src\Microsoft.JSInterop.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\src\Microsoft.JSInterop.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\tsconfig.tsbuildinfo" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\src\index.d.ts" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\src\index.d.ts.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\src\index.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\src\index.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\src\Microsoft.JSInterop.d.ts" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\src\Microsoft.JSInterop.d.ts.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\src\Microsoft.JSInterop.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\src\Microsoft.JSInterop.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\JSInterop\dist\tsconfig.tsbuildinfo" />
 
     <!-- Components Web.JS outputs -->
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.server.js" />

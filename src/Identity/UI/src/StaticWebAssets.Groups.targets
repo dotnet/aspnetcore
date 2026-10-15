@@ -18,4 +18,8 @@
       Value="$(_IdentityUIGroupValue)"
       SourceId="Microsoft.AspNetCore.Identity.UI" />
   </ItemGroup>
+
+  <Target Name="_WarnIfUsingBootstrap4IdentityUI" BeforeTargets="PrepareForBuild" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4' and '$(SuppressBootstrap4IdentityUIWarning)' != 'true'">
+    <Warning Text="Bootstrap 4 support in Microsoft.AspNetCore.Identity.UI is obsolete and will be removed in a future release. To use Bootstrap 5, remove IdentityDefaultUIFramework/IdentityUIFrameworkVersion or set IdentityUIFrameworkVersion=Bootstrap5. To suppress this warning, set SuppressBootstrap4IdentityUIWarning=true." />
+  </Target>
 </Project>
