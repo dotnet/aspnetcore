@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="$(SqlClientSystemSecurityCryptographyPkcs9Version)" AllowExplicitReference="true" />
     <ProjectReference Include="..\testassets\HealthChecksSample\HealthChecksSample.csproj" />
   </ItemGroup>
 
