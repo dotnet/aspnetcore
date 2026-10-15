@@ -4,9 +4,12 @@
 using System.ComponentModel;
 using System.Net.Http;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.DependencyInjection;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -93,6 +96,94 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesNamedFloatingPointLiteralsWithoutObjectType()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.PostConfigure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+        {
+            options.SerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+        });
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.MapGet("/api", () => new FloatingPointResponse(12.0));
+
+        // Assert
+        var documentService = CreateDocumentService(builder, new OpenApiOptions());
+        var scopedService = ((IServiceScopeFactory)builder.ServiceProvider).CreateScope();
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_1);
+
+        var expected = """
+            {
+              "openapi": "3.1.1",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/api": {
+                  "get": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "$ref": "#/components/schemas/FloatingPointResponse"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "FloatingPointResponse": {
+                    "required": [
+                      "temperatureF"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "temperatureF": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "enum": [
+                              "NaN",
+                              "Infinity",
+                              "-Infinity"
+                            ]
+                          }
+                        ],
+                        "format": "double"
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+
+        Assert.True(JsonNode.DeepEquals(
+            JsonNode.Parse(actual),
+            JsonNode.Parse(expected)));
     }
 
     [Fact]
@@ -1039,6 +1130,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
         internal Todo Get() => new(1, "Write test", false, DateTime.Now);
     }
+
+    public record FloatingPointResponse(double TemperatureF);
 
     private class ClassWithObjectProperty
     {
