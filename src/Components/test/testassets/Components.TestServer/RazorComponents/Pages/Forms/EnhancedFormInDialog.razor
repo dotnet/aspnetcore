@@ -1,0 +1,25 @@
+﻿@page "/forms/enhanced-form-in-dialog"
+@using Microsoft.AspNetCore.Components.Forms
+
+<button id="open-dialog" type="button" onclick="document.getElementById('enhanced-form-dialog').showModal()">Open dialog</button>
+
+<dialog id="enhanced-form-dialog">
+    <EditForm Enhance FormName="dialog-form" Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true">
+        <InputText id="dialog-input" @bind-Value="Parameter" />
+        <button id="submit-dialog-form" type="submit">Submit</button>
+    </EditForm>
+
+    @if (_submitted)
+    {
+        <p id="dialog-form-result">Hello @Parameter!</p>
+    }
+
+    <button id="close-dialog" type="button" onclick="document.getElementById('enhanced-form-dialog').close()">Close dialog</button>
+</dialog>
+
+@code {
+    private bool _submitted;
+
+    [SupplyParameterFromForm(FormName = "dialog-form")]
+    public string Parameter { get; set; } = "";
+}
