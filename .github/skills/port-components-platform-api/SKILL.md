@@ -135,6 +135,10 @@ examples below use the Cookie Store API.
   member.
 - When the caller passes no `CancellationToken`, call the `IJSRuntime` overload without a token.
   Any token, even `CancellationToken.None`, turns off the default timeout of `JSRuntime`.
+- Pass JS arguments in `params` form, such as `InvokeAsync<CookieListItem?>("get", name)`, as most
+  of the repository does. Write the argument list as `[...]` only when an argument could be taken
+  for something else. An array or `null` becomes the argument list itself, and a `TimeSpan` or
+  `CancellationToken` binds to the timeout or cancellation overload.
 
 ## Document
 
