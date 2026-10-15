@@ -217,6 +217,75 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaDeprecated_ObsoletePropertyDoesNotDeprecateReferencedSchemaAcrossEndpoints()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/orders", (DtoWithOnlyObsoleteReferenceProperty dto) => { });
+        builder.MapPost("/shipments", (DtoWithOnlyCurrentReferenceProperty dto) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var ordersContent = Assert.Single(document.Paths["/orders"].Operations[HttpMethod.Post].RequestBody.Content);
+            var ordersProperty = Assert.Single(ordersContent.Value.Schema.Properties);
+            Assert.Equal("old", ordersProperty.Key);
+            var obsoleteReference = Assert.IsType<OpenApiSchemaReference>(ordersProperty.Value);
+            Assert.True(obsoleteReference.Deprecated);
+
+            var shipmentsContent = Assert.Single(document.Paths["/shipments"].Operations[HttpMethod.Post].RequestBody.Content);
+            var shipmentsProperty = Assert.Single(shipmentsContent.Value.Schema.Properties);
+            Assert.Equal("current", shipmentsProperty.Key);
+            var currentReference = Assert.IsType<OpenApiSchemaReference>(shipmentsProperty.Value);
+            Assert.False(currentReference.Deprecated);
+
+            var referencedSchema = document.Components.Schemas["NonObsoleteChildDto"];
+            Assert.False(referencedSchema.Deprecated);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaDeprecated_ObsoleteNullablePropertyDoesNotDeprecateReferencedSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DtoWithObsoleteNullableReferenceProperty dto) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
+            var content = Assert.Single(operation.RequestBody.Content);
+            var property = Assert.Single(content.Value.Schema.Properties);
+            Assert.Equal("old", property.Key);
+            Assert.NotNull(property.Value.OneOf);
+            Assert.Contains(property.Value.OneOf, schema => schema is OpenApiSchemaReference);
+
+            var referencedSchema = document.Components.Schemas["NonObsoleteChildDto"];
+            Assert.False(referencedSchema.Deprecated);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaDeprecated_ObsoletePropertyOfObsoleteTypeKeepsReferencedSchemaDeprecated()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DtoWithObsoleteReferencePropertyOfObsoleteType dto) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
+            var content = Assert.Single(operation.RequestBody.Content);
+            var property = Assert.Single(content.Value.Schema.Properties);
+            Assert.Equal("old", property.Key);
+            var reference = Assert.IsType<OpenApiSchemaReference>(property.Value);
+            Assert.True(reference.Deprecated);
+
+            var referencedSchema = document.Components.Schemas["ObsoleteDto"];
+            Assert.True(referencedSchema.Deprecated);
+        });
+    }
+
+    [Fact]
     public async Task SchemaDeprecated_NonObsoleteTypeIsNotDeprecated()
     {
         var builder = CreateBuilder();
@@ -253,5 +322,30 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     public class NonObsoleteChildDto
     {
         public string Value { get; set; }
+    }
+
+    public class DtoWithOnlyObsoleteReferenceProperty
+    {
+        [Obsolete("Use something else.")]
+        public NonObsoleteChildDto Old { get; set; }
+    }
+
+    public class DtoWithOnlyCurrentReferenceProperty
+    {
+        public NonObsoleteChildDto Current { get; set; }
+    }
+
+#nullable enable
+    public class DtoWithObsoleteNullableReferenceProperty
+    {
+        [Obsolete("Use something else.")]
+        public NonObsoleteChildDto? Old { get; set; }
+    }
+#nullable restore
+
+    public class DtoWithObsoleteReferencePropertyOfObsoleteType
+    {
+        [Obsolete("Use something else.")]
+        public ObsoleteDto Old { get; set; }
     }
 }
