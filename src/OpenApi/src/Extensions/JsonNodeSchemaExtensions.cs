@@ -206,11 +206,10 @@ internal static class JsonNodeSchemaExtensions
     {
         if (propertyInfo.AssociatedParameter is { HasDefaultValue: true }
             && schema.WillBeComponentized()
-            && schema is JsonObject schemaObject
-            && schemaObject.TryGetPropertyValue(OpenApiSchemaKeywords.DefaultKeyword, out var defaultValue))
+            && schema.AsObject().TryGetPropertyValue(OpenApiSchemaKeywords.DefaultKeyword, out var defaultValue))
         {
-            schemaObject.Remove(OpenApiSchemaKeywords.DefaultKeyword);
-            schemaObject[OpenApiConstants.RefDefaultAnnotation] = defaultValue;
+            schema.AsObject().Remove(OpenApiSchemaKeywords.DefaultKeyword);
+            schema[OpenApiConstants.RefDefaultAnnotation] = defaultValue;
         }
     }
 
