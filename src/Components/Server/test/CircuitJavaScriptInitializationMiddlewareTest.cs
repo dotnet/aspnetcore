@@ -13,12 +13,32 @@ namespace Microsoft.AspNetCore.Builder;
 public class CircuitJavaScriptInitializationMiddlewareTest
 {
     [Fact]
-    public async Task InvokeAsync_UsesConfiguredHttpJsonOptions()
+    public async Task InvokeAsync_UsesGeneratedMetadataWithoutReflectionResolver()
+    {
+        var jsonOptions = new JsonOptions();
+        jsonOptions.SerializerOptions.TypeInfoResolverChain.Clear();
+
+        var response = await InvokeMiddlewareAsync(jsonOptions);
+
+        Assert.Equal("""["./initializer.js"]""", response);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_UsesConfiguredHttpJsonOptionsWithoutReflectionResolver()
+    {
+        var jsonOptions = new JsonOptions();
+        jsonOptions.SerializerOptions.TypeInfoResolverChain.Clear();
+        jsonOptions.SerializerOptions.Converters.Add(new InitializersConverter());
+
+        var response = await InvokeMiddlewareAsync(jsonOptions);
+
+        Assert.Equal("\"configured\"", response);
+    }
+
+    private static async Task<string> InvokeMiddlewareAsync(JsonOptions jsonOptions)
     {
         var circuitOptions = new CircuitOptions();
         circuitOptions.JavaScriptInitializers.Add("./initializer.js");
-        var jsonOptions = new JsonOptions();
-        jsonOptions.SerializerOptions.Converters.Add(new InitializersConverter());
         var middleware = new CircuitJavaScriptInitializationMiddleware(
             Options.Create(circuitOptions),
             Options.Create(jsonOptions),
@@ -30,7 +50,7 @@ public class CircuitJavaScriptInitializationMiddlewareTest
 
         context.Response.Body.Position = 0;
         using var reader = new StreamReader(context.Response.Body);
-        Assert.Equal("\"configured\"", await reader.ReadToEndAsync());
+        return await reader.ReadToEndAsync();
     }
 
     private sealed class InitializersConverter : JsonConverter<IList<string>>
