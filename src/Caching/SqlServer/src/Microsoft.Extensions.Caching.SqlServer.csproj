@@ -15,6 +15,14 @@
     <InternalsVisibleTo Include="Microsoft.Extensions.Caching.SqlServer.Tests" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="$(SqlClientSystemSecurityCryptographyPkcs9Version)" AllowExplicitReference="true" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="$(SqlClientSystemSecurityCryptographyPkcs8Version)" AllowExplicitReference="true" />
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
