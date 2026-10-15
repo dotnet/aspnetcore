@@ -52,7 +52,7 @@ Choose the .NET shape of each member from its Web IDL shape.
 | --- | --- | --- |
 | `required T x` | `CookieInit.name` | `required T` |
 | `T x = value` | `CookieInit.path = "/"`, `sameSite = "strict"`, `partitioned = false` | `T`, initialized to the same value. On a reference type, add `[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]` |
-| `T? x = null` | `CookieInit.domain`, `expires`, `maxAge` | `T?`, with no attribute |
+| `T? x = null` | `CookieInit.domain`, `expires`, `maxAge` | `T?` with `[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]` |
 | `T x` with no default | `CookieStoreGetOptions.name`, `url` | `T?` with `[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]` |
 | `T? x` with no default, or `T? x` with a default other than `null` | None | Stop and raise it as an open question |
 
@@ -63,8 +63,10 @@ public sealed class CookieInit
 
     public required string Value { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? Expires { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Domain { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -74,6 +76,7 @@ public sealed class CookieInit
 
     public bool Partitioned { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public long? MaxAge { get; set; }
 }
 ```
@@ -94,8 +97,9 @@ public sealed class CookieInit
   the old value. This is accepted. Take each default from the current Web IDL, not from memory.
 - The attribute on a reference type with a default is a safety net. If the application assigns
   `null` anyway, the member is left out and the browser uses its default.
-- For `T? x = null`, sending `null` and leaving the member out mean the same, so no attribute is
-  needed.
+- For `T? x = null`, the specification treats `null` and a missing member the same. Leave the
+  member out anyway. Chromium crashes the page on `cookieStore.set({ maxAge: null })`, and only an
+  E2E test in a real browser shows such a bug. A member that is never sent cannot hit it.
 - Initialize an enum member explicitly, as `SameSite` does above. Do not rely on the first enum
   member being the default value.
 
