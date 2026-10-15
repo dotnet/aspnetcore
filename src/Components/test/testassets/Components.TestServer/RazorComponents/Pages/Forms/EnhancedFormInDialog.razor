@@ -17,9 +17,27 @@
     <button id="close-dialog" type="button" onclick="document.getElementById('enhanced-form-dialog').close()">Close dialog</button>
 </dialog>
 
+<button id="open-non-modal-dialog" type="button" onclick="document.getElementById('enhanced-form-non-modal-dialog').show()">Open non-modal dialog</button>
+
+<dialog id="enhanced-form-non-modal-dialog">
+    <EditForm Enhance FormName="non-modal-dialog-form" Model="NonModalParameter" method="POST" OnValidSubmit="() => _nonModalSubmitted = true">
+        <InputText id="non-modal-dialog-input" @bind-Value="NonModalParameter" />
+        <button id="submit-non-modal-dialog-form" type="submit">Submit</button>
+    </EditForm>
+</dialog>
+
+@if (_nonModalSubmitted)
+{
+    <p id="non-modal-dialog-form-result">Hello @NonModalParameter!</p>
+}
+
 @code {
     private bool _submitted;
+    private bool _nonModalSubmitted;
 
     [SupplyParameterFromForm(FormName = "dialog-form")]
     public string Parameter { get; set; } = "";
+
+    [SupplyParameterFromForm(FormName = "non-modal-dialog-form")]
+    public string NonModalParameter { get; set; } = "";
 }

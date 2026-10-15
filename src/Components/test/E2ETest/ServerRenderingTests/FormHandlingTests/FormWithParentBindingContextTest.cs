@@ -1426,6 +1426,24 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    public void EnhancedFormSubmissionRemovesOpenFromNonModalDialog()
+    {
+        GoTo("forms/enhanced-form-in-dialog");
+        var javascript = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("open-non-modal-dialog")).Click();
+        Browser.True(() => (bool)javascript.ExecuteScript("return document.getElementById('enhanced-form-non-modal-dialog').open;"));
+        Assert.False((bool)javascript.ExecuteScript("return document.getElementById('enhanced-form-non-modal-dialog').matches(':modal');"));
+
+        Browser.Exists(By.Id("non-modal-dialog-input")).SendKeys("Blazor");
+        Browser.Exists(By.Id("submit-non-modal-dialog-form")).Click();
+
+        Browser.Equal("Hello Blazor!", () => Browser.Exists(By.Id("non-modal-dialog-form-result")).Text);
+        Browser.False(() => (bool)javascript.ExecuteScript("return document.getElementById('enhanced-form-non-modal-dialog').open;"));
+        Browser.False(() => Browser.Exists(By.Id("enhanced-form-non-modal-dialog")).Displayed);
+    }
+
+    [Fact]
     public void SubmitButtonFormactionAttributeOverridesEnhancedFormAction()
     {
         GoTo("forms/form-submit-button-with-formaction");
