@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
@@ -25,8 +27,13 @@ public class ComponentStatePersistenceManager
     /// </summary>
     /// <param name="logger"></param>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
+        : this(logger, (JsonSerializerOptions?)null)
     {
-        State = new PersistentComponentState(_currentState, _registeredCallbacks, _registeredRestoringCallbacks);
+    }
+
+    private ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, JsonSerializerOptions? jsonSerializerOptions)
+    {
+        State = new PersistentComponentState(_currentState, _registeredCallbacks, _registeredRestoringCallbacks, jsonSerializerOptions);
         _logger = logger;
     }
 
@@ -35,7 +42,10 @@ public class ComponentStatePersistenceManager
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="serviceProvider"></param>
-    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider) : this(logger)
+    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider)
+        : this(logger, serviceProvider is IKeyedServiceProvider
+            ? serviceProvider.GetKeyedService<JsonSerializerOptions>(typeof(ComponentStatePersistenceManager))
+            : null)
     {
         _servicesRegistry = new PersistentServicesRegistry(serviceProvider);
     }

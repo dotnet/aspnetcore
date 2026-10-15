@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -39,6 +41,19 @@ public static class ComponentServiceCollectionExtensions
         var builder = new DefaultServerSideBlazorBuilder(services);
 
         services.AddDataProtection();
+        // Application registrations of JsonSerializerOptions must not bypass the circuit resolvers.
+        services.TryAddKeyedScoped<JsonSerializerOptions>(typeof(ComponentStatePersistenceManager), (sp, _) =>
+        {
+            var circuitOptions = sp.GetRequiredService<IOptions<CircuitOptions>>().Value;
+            var options = new JsonSerializerOptions(JsonSerializerOptionsProvider.Options);
+#pragma warning disable ASPNETCORE9004 // The framework implements this experimental extension point.
+            for (var i = circuitOptions.JsonTypeInfoResolvers.Count - 1; i >= 0; i--)
+            {
+                options.TypeInfoResolverChain.Insert(0, circuitOptions.JsonTypeInfoResolvers[i]);
+            }
+#pragma warning restore ASPNETCORE9004
+            return options;
+        });
 
         services.TryAddScoped<ProtectedBrowserStorageJsonSerializerOptions>();
         services.TryAddScoped(static services => new ProtectedLocalStorage(

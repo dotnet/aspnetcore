@@ -8,22 +8,30 @@ using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.DotNet.RemoteExecutor;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits;
 
-public class CircuitPersistenceManagerTest
+public partial class CircuitPersistenceManagerTest
 {
     // Pause circuit registers with PersistentComponentStatemanager to persist root components.
     // Do not try to generate code after this line.
@@ -353,6 +361,97 @@ public class CircuitPersistenceManagerTest
         Assert.NotNull(result);
     }
 
+    [ConditionalTheory]
+    [RemoteExecutionSupported]
+    [InlineData("None")]
+    [InlineData("Before")]
+    [InlineData("After")]
+    public void PersistStateAsync_UsesCircuitJsonTypeInfoResolvers_IndependentlyOfApplicationOptions(
+        string applicationOptionsRegistration)
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add(
+            "System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault",
+            bool.FalseString);
+
+        using var remoteHandle = RemoteExecutor.Invoke(static async applicationOptionsRegistration =>
+        {
+            Assert.False(JsonSerializer.IsReflectionEnabledByDefault);
+
+            var unrelatedOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseUpper,
+                WriteIndented = true,
+            };
+            var services = new ServiceCollection();
+            var sink = new TestSink();
+            using var loggerFactory = new TestLoggerFactory(sink, true);
+            services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var environment = new Mock<IWebHostEnvironment>();
+            environment.SetupGet(value => value.ApplicationName).Returns(nameof(CircuitPersistenceManagerTest));
+            environment.SetupGet(value => value.WebRootFileProvider).Returns(new NullFileProvider());
+            services.AddSingleton(environment.Object);
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            if (applicationOptionsRegistration == "Before")
+            {
+                services.AddScoped(_ => unrelatedOptions);
+            }
+            var builder = services.AddRazorComponents()
+                .RegisterPersistentService<TestPersistentService>(RenderMode.InteractiveServer);
+#pragma warning disable ASPNETCORE9004 // The framework implements this experimental extension point.
+            builder.AddInteractiveServerComponents(options =>
+                options.JsonTypeInfoResolvers.Add(TestJsonSerializerContext.Default));
+#pragma warning restore ASPNETCORE9004
+            services.AddScoped<TestPersistentService>();
+            if (applicationOptionsRegistration == "After")
+            {
+                services.AddScoped(_ => unrelatedOptions);
+            }
+
+            await using var serviceProvider = services.BuildServiceProvider();
+            var store = new TestStore(new Dictionary<string, byte[]>());
+
+            await using (var scope = serviceProvider.CreateAsyncScope())
+            {
+                scope.ServiceProvider.GetRequiredService<TestPersistentService>().Customer = new Customer
+                {
+                    Name = "John Doe",
+                };
+                var persistenceManager = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
+                await persistenceManager.RestoreStateAsync(
+                    new TestStore(new Dictionary<string, byte[]>()),
+                    RestoreContext.InitialValue);
+                await persistenceManager.PersistStateAsync(store, new PersistenceTestRenderer());
+
+                Assert.All(sink.Writes, write => Assert.Null(write.Exception));
+                Assert.Contains("""{"name":"John Doe"}""", store.State.Values.Select(data => Encoding.UTF8.GetString(data)));
+                if (applicationOptionsRegistration == "None")
+                {
+                    Assert.Null(scope.ServiceProvider.GetService<JsonSerializerOptions>());
+                }
+                else
+                {
+                    Assert.Same(unrelatedOptions, scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>());
+                }
+            }
+
+            await using (var scope = serviceProvider.CreateAsyncScope())
+            {
+                var persistenceManager = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
+                await persistenceManager.RestoreStateAsync(store, RestoreContext.InitialValue);
+
+                var customer = scope.ServiceProvider.GetRequiredService<TestPersistentService>().Customer;
+                Assert.NotNull(customer);
+                Assert.Equal("John Doe", customer.Name);
+            }
+
+            Assert.False(unrelatedOptions.IsReadOnly);
+            Assert.Empty(unrelatedOptions.TypeInfoResolverChain);
+        }, applicationOptionsRegistration, options);
+    }
+
     private void AssertRootComponents(
         ServerComponentDeserializer deserializer,
         (int Id, ComponentMarkerKey Key, (Type ComponentType, Dictionary<string, object> Parameters))[] expected, byte[] rootComponents)
@@ -563,6 +662,47 @@ public class CircuitPersistenceManagerTest
             State = state;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class TestStore(IDictionary<string, byte[]> state) : IPersistentComponentStateStore
+    {
+        public IDictionary<string, byte[]> State { get; private set; } = state;
+
+        public Task<IDictionary<string, byte[]>> GetPersistedStateAsync() => Task.FromResult(State);
+
+        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
+        {
+            State = state.ToDictionary();
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class PersistenceTestRenderer()
+        : Renderer(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance)
+    {
+        private readonly Dispatcher _dispatcher = Dispatcher.CreateDefault();
+
+        public override Dispatcher Dispatcher => _dispatcher;
+
+        protected override void HandleException(Exception exception) => throw new NotImplementedException();
+
+        protected override Task UpdateDisplayAsync(in RenderBatch renderBatch) => Task.CompletedTask;
+    }
+
+    private sealed class TestPersistentService
+    {
+        [PersistentState]
+        public Customer Customer { get; set; }
+    }
+
+    private sealed class Customer
+    {
+        public string Name { get; set; }
+    }
+
+    [JsonSerializable(typeof(Customer))]
+    private sealed partial class TestJsonSerializerContext : JsonSerializerContext
+    {
     }
 
     public class RootComponent : IComponent
