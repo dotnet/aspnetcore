@@ -83,7 +83,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.NoHttps, ArgConstants.Empty });
 
     [Fact]
-    public async Task BlazorWasmStandalonePwaTemplateTracksServiceWorkerForBuild()
+    public async Task BlazorWasmStandalonePwaTemplateIncludesServiceWorkerAsUpToDateCheckInput()
     {
         var project = await ProjectFactory.CreateProject(Output);
         await project.RunDotNetNewAsync(ProjectType, args: new[] { ArgConstants.Pwa }, restore: false);
