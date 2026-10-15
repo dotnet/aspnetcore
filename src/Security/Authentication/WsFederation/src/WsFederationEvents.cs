@@ -29,7 +29,8 @@ public class WsFederationEvents : RemoteAuthenticationEvents
     /// <remarks>
     /// Unless this event handles or skips the request, the handler signs out the local session. The request isn't
     /// authenticated by the handler. To reject requests that don't match the identity provider's expected origin,
-    /// call <see cref="RemoteSignOutContext.HandleResponse"/> or <see cref="RemoteSignOutContext.SkipHandler"/>.
+    /// call <see cref="HandleRequestContext{WsFederationOptions}.HandleResponse"/> or
+    /// <see cref="HandleRequestContext{WsFederationOptions}.SkipHandler"/>.
     /// The following example deliberately rejects a missing <c>Referer</c> header and uses a trailing slash to avoid
     /// matching look-alike host names:
     /// <example>
@@ -85,8 +86,8 @@ public class WsFederationEvents : RemoteAuthenticationEvents
     /// <remarks>
     /// The default implementation invokes <see cref="OnRemoteSignOut"/>. If the event doesn't handle or skip the
     /// request, the handler signs out the local session. Call
-    /// <see cref="RemoteSignOutContext.HandleResponse"/> or <see cref="RemoteSignOutContext.SkipHandler"/> to
-    /// prevent the sign-out.
+    /// <see cref="HandleRequestContext{WsFederationOptions}.HandleResponse"/> or
+    /// <see cref="HandleRequestContext{WsFederationOptions}.SkipHandler"/> to prevent the sign-out.
     /// </remarks>
     public virtual Task RemoteSignOut(RemoteSignOutContext context) => OnRemoteSignOut(context);
 
