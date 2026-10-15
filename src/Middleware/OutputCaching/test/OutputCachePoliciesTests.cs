@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.OutputCaching.Policies;
+using Moq;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -143,6 +144,43 @@ public class OutputCachePoliciesTests
         await predicate.CacheRequestAsync(context, default);
 
         Assert.Equal(expected, context.EnableOutputCaching);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task PredicatePolicy_UsesInitialResultForAllPhases(bool initialResult, bool completesSynchronously)
+    {
+        var predicateResult = initialResult;
+        var evaluations = 0;
+        var innerPolicy = new Mock<IOutputCachePolicy>();
+        IOutputCachePolicy predicate = new PredicatePolicy(EvaluatePredicateAsync, innerPolicy.Object);
+        var context = TestUtils.CreateUninitializedContext();
+
+        await predicate.CacheRequestAsync(context, default);
+        predicateResult = !initialResult;
+        await predicate.ServeFromCacheAsync(context, default);
+        await predicate.ServeResponseAsync(context, default);
+
+        Assert.Equal(1, evaluations);
+        var expectedCalls = initialResult ? Times.Once() : Times.Never();
+        innerPolicy.Verify(policy => policy.CacheRequestAsync(context, default), expectedCalls);
+        innerPolicy.Verify(policy => policy.ServeFromCacheAsync(context, default), expectedCalls);
+        innerPolicy.Verify(policy => policy.ServeResponseAsync(context, default), expectedCalls);
+
+        ValueTask<bool> EvaluatePredicateAsync(OutputCacheContext _)
+        {
+            evaluations++;
+            return completesSynchronously ? ValueTask.FromResult(predicateResult) : YieldResultAsync(predicateResult);
+        }
+
+        static async ValueTask<bool> YieldResultAsync(bool result)
+        {
+            await Task.Yield();
+            return result;
+        }
     }
 
     [Fact]
