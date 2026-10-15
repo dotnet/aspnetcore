@@ -450,8 +450,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
     ReadOnlySpan<byte> validationSubkey,
     byte[]? validationSubkeyArray)
     {
-        var hashSize = _validationAlgorithmDigestLengthInBytes;
-
         // if validationSubkey is stackalloc'ed, there is no way we avoid an alloc here
         using var validationAlgorithm = CreateValidationAlgorithm(validationSubkeyArray ?? validationSubkey.ToArray());
         var correctHashArray = validationAlgorithm.ComputeHash(payloadArray, ivOffset, macOffset - ivOffset);
