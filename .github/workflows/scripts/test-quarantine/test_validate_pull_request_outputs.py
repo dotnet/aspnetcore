@@ -322,6 +322,30 @@ def assert_rejected(callback, message):
         raise AssertionError(f"Expected validation failure containing {message!r}")
 
 
+def test_pull_request_repository():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, commit = initialize_repository(root)
+        transport = root / "transport"
+        transport.mkdir()
+        eligibility, history = receipts(commit, case_a_record())
+        for repository in ("aspnetcore", "dotnet/runtime", f" {REPOSITORY} "):
+            request = pull_request("test-quarantine/repository")
+            request["repo"] = repository
+            assert_rejected(
+                lambda: validate(
+                    root,
+                    commit,
+                    eligibility,
+                    history,
+                    {"items": [case_a_issue(), request]},
+                    transport,
+                ),
+                "must target the workflow repository",
+            )
+    print("PASS pull request repository")
+
+
 def test_theory_target_binding(data="HttpProtocols.Http3", displayed="Http3", supported=True, provider=""):
     for theory in ("Theory", "ConditionalTheory"):
         for case in ("case-a", "case-b"):
@@ -454,6 +478,7 @@ def test_row_comment_ownership():
 
 
 def main():
+    test_pull_request_repository()
     test_theory_target_binding(provider="[MsQuicSupported]")
     test_theory_target_binding(
         supported=False, provider="[MsQuicSupported]\n    [MemberData(nameof(GetRows))]"
@@ -532,6 +557,8 @@ def main():
             ),
         )
         eligibility, history = receipts(commit, case_a_record())
+        request = pull_request(branch)
+        request["repo"] = REPOSITORY
         result = validate(
             root,
             commit,
@@ -540,7 +567,7 @@ def main():
             {
                 "items": [
                     case_a_issue(),
-                    pull_request(branch),
+                    request,
                 ],
             },
             transport,
