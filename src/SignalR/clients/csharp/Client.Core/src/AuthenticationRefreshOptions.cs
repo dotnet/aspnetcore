@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR.Client;
 
@@ -42,20 +40,10 @@ public sealed class AuthenticationRefreshOptions
             field = value;
         }
     } = TimeSpan.FromMinutes(5);
-
-    /// <summary>
-    /// Optional callback invoked after a successful authentication refresh.
-    /// </summary>
-    public Func<AuthenticationRefreshedContext, Task>? OnAuthenticationRefreshed { get; set; }
-
-    /// <summary>
-    /// Optional callback invoked when an authentication refresh attempt fails.
-    /// </summary>
-    public Func<AuthenticationRefreshFailedContext, Task>? OnAuthenticationRefreshFailed { get; set; }
 }
 
 /// <summary>
-/// Context passed to <see cref="AuthenticationRefreshOptions.OnAuthenticationRefreshed"/> after a successful refresh.
+/// Context passed to <see cref="HubConnection.AuthenticationRefreshed"/> after a successful refresh.
 /// </summary>
 public sealed class AuthenticationRefreshedContext
 {
@@ -83,7 +71,7 @@ public sealed class AuthenticationRefreshedContext
 }
 
 /// <summary>
-/// Context passed to <see cref="AuthenticationRefreshOptions.OnAuthenticationRefreshFailed"/> when a refresh attempt fails.
+/// Context passed to <see cref="HubConnection.AuthenticationRefreshFailed"/> when a refresh attempt fails.
 /// </summary>
 public sealed class AuthenticationRefreshFailedContext
 {

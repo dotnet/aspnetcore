@@ -1,0 +1,13 @@
+{
+  "name": "aspnetcore-skill-evaluation-tools",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Pinned command-line tools used by the skill evaluation workflow.",
+  "dependencies": {
+    "@github/copilot": "1.0.80",
+    "@microsoft/vally-cli": "0.14.0"
+  },
+  "overrides": {
+    "@github/copilot": "1.0.80"
+  }
+}

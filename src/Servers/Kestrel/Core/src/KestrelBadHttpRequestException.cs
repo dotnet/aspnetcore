@@ -96,6 +96,9 @@ internal static class KestrelBadHttpRequestException
             case RequestRejectionReason.InvalidRequestHeader:
                 ex = new BadHttpRequestException(CoreStrings.BadRequest_InvalidRequestHeader, StatusCodes.Status400BadRequest, reason);
                 break;
+            case RequestRejectionReason.ChunkedExtensionNotAllowed:
+                ex = new BadHttpRequestException(CoreStrings.BadRequest_ChunkedExtensionNotAllowed, StatusCodes.Status400BadRequest, reason);
+                break;
             default:
                 ex = new BadHttpRequestException(CoreStrings.BadRequest, StatusCodes.Status400BadRequest, reason);
                 break;

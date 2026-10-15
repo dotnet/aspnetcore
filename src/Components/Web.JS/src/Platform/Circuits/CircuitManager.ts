@@ -11,7 +11,7 @@ import { CircuitStartOptions } from './CircuitStartOptions';
 import { attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
 import { WebRendererId } from '../../Rendering/WebRendererId';
 import { JSEventRegistry } from '../../Services/JSEventRegistry';
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from '../../JSInterop/Microsoft.JSInterop';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { ConsoleLogger } from '../Logging/Loggers';
 import { RenderQueue } from './RenderQueue';
@@ -139,7 +139,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const connectionBuilder = new HubConnectionBuilder()
       .withUrl('_blazor')
-      .withHubProtocol(hubProtocol);
+      .withHubProtocol(hubProtocol)
+      .withAuthenticationRefresh();
 
     this._options.configureSignalR(connectionBuilder);
 

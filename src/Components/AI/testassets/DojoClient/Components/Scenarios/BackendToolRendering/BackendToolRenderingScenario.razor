@@ -1,0 +1,41 @@
+@page "/backend_tool_rendering"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>Backend Tool Rendering</PageTitle>
+
+<ChatPage Agent="_agent"
+          Placeholder="Ask about the weather..."
+          data-scenario="backend_tool_rendering">
+    <Header>
+        <h1 class="dojo-scenario__title">Backend Tool Rendering</h1>
+    </Header>
+    <WelcomeContent>
+        <p class="dojo-scenario__welcome">Ask for the weather in any city.</p>
+    </WelcomeContent>
+    <MessageListContent>
+        <BlockRenderer TBlock="WeatherToolBlock"
+                       Context="weather"
+                       When="@(block => block.ToolName == "get_weather")">
+            <WeatherCard Block="weather" />
+        </BlockRenderer>
+    </MessageListContent>
+</ChatPage>
+
+@code {
+    private UIAgent _agent = default!;
+
+    [Inject(Key = DojoScenarios.BackendToolRenderingEndpoint)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent(
+            ChatClient,
+            options => options.AddGeneratedToolBlocks(),
+            LoggerFactory);
+    }
+
+    public void Dispose() => _agent?.Dispose();
+}

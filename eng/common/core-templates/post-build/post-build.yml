@@ -236,6 +236,7 @@ stages:
           StageLabel: 'Validation'
           JobLabel: 'Signing'
           BinlogToolVersion: $(BinlogToolVersion)
+          enableInternalRuntimes: false
 
     # SourceLink validation has been removed — the underlying CLI tool
     # (targeting netcoreapp2.1) has not functioned for years.

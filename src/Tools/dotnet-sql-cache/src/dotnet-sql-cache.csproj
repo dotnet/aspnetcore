@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Data.SqlClient" />
-    <Reference Include="Azure.Identity" />
-    <Reference Include="System.Runtime.Caching" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="System.Runtime.Caching" />
   </ItemGroup>
 
 </Project>

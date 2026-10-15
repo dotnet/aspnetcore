@@ -1427,7 +1427,7 @@ internal abstract class CertificateManager
             "See https://aka.ms/dev-certs-trust for more information.")]
         internal void UnixSuggestSettingEnvironmentVariable(string certDir, string openSslDir, string envVarName) => WriteEvent(110, certDir, openSslDir, envVarName);
 
-        [Event(111, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {2} environment variable. " +
+        [Event(111, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {1} environment variable. " +
             "See https://aka.ms/dev-certs-trust for more information.")]
         internal void UnixSuggestSettingEnvironmentVariableWithoutExample(string certDir, string envVarName) => WriteEvent(111, certDir, envVarName);
 

@@ -1,0 +1,21 @@
+@page "/persistent-state/auto-pause-enhanced-navigation-streaming"
+@attribute [StreamRendering]
+
+@if (_ready)
+{
+    <TestContentPackage.PersistentCounter @rendermode="RenderMode.InteractiveServer" />
+}
+else
+{
+    <p id="streaming-status">Streaming</p>
+}
+
+@code {
+    private bool _ready;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _ready = true;
+    }
+}
