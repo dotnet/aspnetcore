@@ -198,6 +198,41 @@ public class RemoteJSDataStreamTest
     }
 
     [Fact]
+    public async Task CreateRemoteJSDataStreamAsync_DisposesStream_WhenSendJSDataStreamThrows()
+    {
+        // Arrange
+        var unhandledExceptionRaised = false;
+        var jsRuntime = new TestRemoteJSRuntime(
+            Options.Create(new CircuitOptions()),
+            Options.Create(new HubOptions<ComponentHub>()),
+            Mock.Of<ILogger<RemoteJSRuntime>>())
+        {
+            ExceptionToThrow = new JSException("initiation failed"),
+        };
+        jsRuntime.UnhandledException += (_, _) => unhandledExceptionRaised = true;
+
+        var jsStreamReference = Mock.Of<IJSStreamReference>();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<JSException>(async () =>
+            await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+                jsRuntime,
+                jsStreamReference,
+                totalLength: 15,
+                signalRMaximumIncomingBytes: 10_000,
+                jsInteropDefaultCallTimeout: TimeSpan.FromMilliseconds(50),
+                cancellationToken: CancellationToken.None));
+
+        // Assert
+        Assert.Equal("initiation failed", exception.Message);
+        Assert.Empty(jsRuntime.RemoteJSDataStreamInstances);
+
+        await Task.Delay(200);
+
+        Assert.False(unhandledExceptionRaised);
+    }
+
+    [Fact]
     public async Task ReceiveData_NoDataProvidedBeforeTimeout_StreamDisposed()
     {
         // Arrange
@@ -354,6 +389,8 @@ public class RemoteJSDataStreamTest
 
     class TestRemoteJSRuntime : RemoteJSRuntime, IJSRuntime
     {
+        public Exception ExceptionToThrow { get; set; }
+
         public TestRemoteJSRuntime(IOptions<CircuitOptions> circuitOptions, IOptions<HubOptions<ComponentHub>> hubOptions, ILogger<RemoteJSRuntime> logger) : base(circuitOptions, hubOptions, logger)
         {
         }
@@ -361,6 +398,12 @@ public class RemoteJSDataStreamTest
         public new ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
             Assert.Equal("Blazor._internal.sendJSDataStream", identifier);
+
+            if (ExceptionToThrow is not null)
+            {
+                return ValueTask.FromException<TValue>(ExceptionToThrow);
+            }
+
             return ValueTask.FromResult<TValue>(default);
         }
     }
