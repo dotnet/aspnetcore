@@ -40,8 +40,9 @@ examples below use the Cookie Store API.
 
 - Read the Web IDL of the family from webref, at `ed/idl/<spec>.idl` in
   https://github.com/w3c/webref, not from memory. For example, `cookiestore.idl` shows that
-  `CookieListItem` now has only `name` and `value`. Use MDN for the behavior that Web IDL does not
-  show.
+  `CookieListItem` now has only `name` and `value`. Web IDL shows only signatures. Read the method
+  steps in the specification for the behavior, such as which arguments the browser rejects, and
+  use MDN as a guide.
 - List every interface, dictionary, enum, typedef, and member that the family reaches from its
   entry point, such as `window.cookieStore`. Mark each one as implement, defer, or exclude, and give
   the reason. For example, the `get`, `getAll`, `set`, and `delete` operations are implemented,

@@ -82,8 +82,8 @@ public sealed class CookieInit
 
 - `null` and a missing member mean different things to the browser. Web IDL converts `null` to the
   string `"null"` for a non-nullable string. So `{ path: null }` creates a cookie whose path is
-  `"null"`. `get({ name: null })` looks for a cookie named `"null"`, while `get({})` returns the
-  first cookie. Never let `null` reach the browser for a non-nullable member.
+  `"null"`. `getAll({ name: null })` looks for cookies named `"null"`, while `getAll({})` returns
+  every cookie. Never let `null` reach the browser for a non-nullable member.
 - `JSRuntime` serializes arguments with System.Text.Json and writes a `null` member as `null`,
   because it does not set `DefaultIgnoreCondition`. A `[JsonIgnore]` attribute on the property
   still works, so a member can be left out without JavaScript of your own.
@@ -130,13 +130,13 @@ public enum CookieSameSite
 
 ## Operation overloads
 
-Web IDL overloads become .NET overloads. Cookie Store has `get(USVString name)` and
-`get(optional CookieStoreGetOptions options = {})`.
+Web IDL overloads become .NET overloads. Cookie Store has `getAll(USVString name)` and
+`getAll(optional CookieStoreGetOptions options = {})`.
 
 ```csharp
-public ValueTask<CookieListItem?> GetAsync();
-public ValueTask<CookieListItem?> GetAsync(string name);
-public ValueTask<CookieListItem?> GetAsync(CookieStoreGetOptions options);
+public ValueTask<IReadOnlyList<CookieListItem>> GetAllAsync();
+public ValueTask<IReadOnlyList<CookieListItem>> GetAllAsync(string name);
+public ValueTask<IReadOnlyList<CookieListItem>> GetAllAsync(CookieStoreGetOptions options);
 ```
 
 - Map an optional dictionary parameter whose default is `{}` to an overload without that
@@ -144,8 +144,15 @@ public ValueTask<CookieListItem?> GetAsync(CookieStoreGetOptions options);
   `CookieStoreGetOptions? options = null`. The overloads match the call shapes that MDN lists, and
   `null` gets no special meaning. A default value is also compiled into the caller, so it is hard
   to change later.
-- `GetAsync(null)` does not compile, because it matches both `string` and
-  `CookieStoreGetOptions`. Accept this. A caller who needs it writes `GetAsync(default(string))`.
+- Read the method steps in the specification before you add the overload without the parameter.
+  Web IDL requires `optional` and `= {}` on a final dictionary parameter without required members,
+  so `= {}` does not mean that empty options work. For example, the steps of
+  `get(optional CookieStoreGetOptions options = {})` reject empty options with `TypeError`, so
+  `get()`, `get({})`, and `get(null)` always fail. Cookie Store has no `GetAsync()` for this
+  reason, only `GetAsync(string name)` and `GetAsync(CookieStoreGetOptions options)`.
+- `GetAllAsync(null)` does not compile, because it matches both `string` and
+  `CookieStoreGetOptions`. Accept this. A caller who needs it writes
+  `GetAllAsync(default(string))`.
 
 ## Trimming
 
