@@ -150,9 +150,13 @@ public ValueTask<IReadOnlyList<CookieListItem>> GetAllAsync(CookieStoreGetOption
   `get(optional CookieStoreGetOptions options = {})` reject empty options with `TypeError`, so
   `get()`, `get({})`, and `get(null)` always fail. Cookie Store has no `GetAsync()` for this
   reason, only `GetAsync(string name)` and `GetAsync(CookieStoreGetOptions options)`.
-- `GetAllAsync(null)` does not compile, because it matches both `string` and
-  `CookieStoreGetOptions`. Accept this. A caller who needs it writes
-  `GetAllAsync(default(string))`.
+- When two overloads take a reference type at the same position, a `null` literal does not
+  compile, because it matches both. Accept this, and do not add a renamed method or another
+  workaround. In Cookie Store, `GetAllAsync(null)` fails this way, but nothing is lost, because
+  both parameters are non-nullable and `null` throws `ArgumentNullException` anyway. It matters
+  when `null` is a valid value. Web IDL allows `foo(DOMString? value)` next to `foo(Bar bar)` when
+  `Bar` is an interface, and JavaScript `foo(null)` calls the first one. In .NET, `Foo(null)` does
+  not compile, so the caller writes `Foo(default(string))`.
 
 ## Trimming
 
