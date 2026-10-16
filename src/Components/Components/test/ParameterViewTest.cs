@@ -229,10 +229,37 @@ public partial class ParameterViewTest
         }, 0);
 
         // Act/Assert
-        Assert.Throws<InvalidCastException>(() =>
+        var ex = Assert.Throws<InvalidCastException>(() =>
         {
             parameters.TryGetValue<bool>("my entry", out var value);
         });
+
+        Assert.Contains("'my entry'", ex.Message);
+        Assert.Contains(typeof(string).FullName!, ex.Message);
+        Assert.Contains(typeof(bool).FullName!, ex.Message);
+        Assert.IsType<InvalidCastException>(ex.InnerException);
+    }
+
+    [Fact]
+    public void FromDictionary_ThrowsIfTryGetValueWithIncorrectType()
+    {
+        // Arrange: simulates splatted attributes, where the dictionary contains a boxed
+        // value whose type does not match the receiving parameter's type
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            ["DebounceInterval"] = 500
+        });
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidCastException>(() =>
+        {
+            parameters.TryGetValue<double>("DebounceInterval", out _);
+        });
+
+        Assert.Contains("'DebounceInterval'", ex.Message);
+        Assert.Contains(typeof(int).FullName!, ex.Message);
+        Assert.Contains(typeof(double).FullName!, ex.Message);
+        Assert.IsType<InvalidCastException>(ex.InnerException);
     }
 
     [Fact]
