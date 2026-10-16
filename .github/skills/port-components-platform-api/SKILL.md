@@ -150,8 +150,10 @@ examples below use the Cookie Store API.
 - Never let disposal throw. `Window` disposes features in access order, and an exception stops the
   rest. Do not wait for a pending acquisition either. It could hold up scope disposal until the JS
   interop timeout, which is one minute by default. Release the reference only when the acquisition
-  has already completed successfully. After disposal, throw `ObjectDisposedException` from every
-  member.
+  has already completed successfully. A reference that arrives after disposal is never released.
+  This is accepted. It happens only when the scope ends during an acquisition, and it leaves at
+  most one reference for each family. A circuit that waits a minute to close costs more. After
+  disposal, throw `ObjectDisposedException` from every member.
 - When the caller passes no `CancellationToken`, call the `IJSRuntime` overload without a token.
   Any token, even `CancellationToken.None`, turns off the default timeout of `JSRuntime`.
 - Pass JS arguments in `params` form, such as `InvokeAsync<CookieListItem?>("get", name)`, as most
