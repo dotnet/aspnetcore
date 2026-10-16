@@ -274,6 +274,57 @@ public class CacheTagKeyTest
     }
 
     [Theory]
+    [InlineData("?scope=alpha&scope=beta", "CacheTagHelper||testid||VaryByQuery(scope||alpha,beta)")]
+    [InlineData("?scope=alpha,beta", "CacheTagHelper||testid||VaryByQuery(scope||alpha\\,beta)")]
+    [InlineData("?scope=a%5C&scope=b", "CacheTagHelper||testid||VaryByQuery(scope||a\\\\,b)")]
+    [InlineData("?scope=a%5C,b", "CacheTagHelper||testid||VaryByQuery(scope||a\\\\\\,b)")]
+    public void GenerateKey_UsesVaryByQuery_EscapesSeparatorsInValues(string queryString, string expected)
+    {
+        // Arrange & Act
+        var key = CreateCacheTagKeyWithQuery("scope", queryString).GenerateKey();
+
+        // Assert
+        Assert.Equal(expected, key);
+    }
+
+    [Fact]
+    public void Equality_ReturnsFalse_WhenQueryHasMultipleValuesVersusOneValueContainingComma()
+    {
+        // Arrange
+        var key1 = CreateCacheTagKeyWithQuery("scope", "?scope=alpha&scope=beta");
+        var key2 = CreateCacheTagKeyWithQuery("scope", "?scope=alpha,beta");
+
+        // Act
+        var equals = key1.Equals(key2);
+        var hashCode1 = key1.GetHashCode();
+        var hashCode2 = key2.GetHashCode();
+
+        // Assert
+        Assert.False(equals, "CacheTagKeys must not be equal");
+        Assert.NotEqual(hashCode1, hashCode2);
+        Assert.NotEqual(key1.GenerateKey(), key2.GenerateKey());
+        Assert.NotEqual(key1.GenerateHashedKey(), key2.GenerateHashedKey());
+    }
+
+    [Fact]
+    public void Equality_ReturnsTrue_WhenQueryHasSameMultipleValues()
+    {
+        // Arrange
+        var key1 = CreateCacheTagKeyWithQuery("scope", "?scope=alpha&scope=beta");
+        var key2 = CreateCacheTagKeyWithQuery("scope", "?scope=alpha&scope=beta");
+
+        // Act
+        var equals = key1.Equals(key2);
+        var hashCode1 = key1.GetHashCode();
+        var hashCode2 = key2.GetHashCode();
+
+        // Assert
+        Assert.True(equals, "CacheTagKeys must be equal");
+        Assert.Equal(hashCode1, hashCode2);
+        Assert.Equal(key1.GenerateKey(), key2.GenerateKey());
+    }
+
+    [Theory]
     [InlineData("id", "CacheTagHelper||testid||VaryByRoute(id||4)")]
     [InlineData("Category,,Id,OptionRouteValue",
         "CacheTagHelper||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
@@ -576,6 +627,18 @@ public class CacheTagKeyTest
         // Assert
         Assert.True(equals, "CacheTagKeys must be equal");
         Assert.Equal(hashCode1, hashCode2);
+    }
+
+    private static CacheTagKey CreateCacheTagKeyWithQuery(string varyByQuery, string queryString)
+    {
+        var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
+        {
+            ViewContext = GetViewContext(),
+            VaryByQuery = varyByQuery
+        };
+        cacheTagHelper.ViewContext.HttpContext.Request.QueryString = new QueryString(queryString);
+
+        return new CacheTagKey(cacheTagHelper, GetTagHelperContext());
     }
 
     private static ViewContext GetViewContext()
