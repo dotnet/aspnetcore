@@ -196,9 +196,19 @@ public sealed class CookieStore : IInternalAsyncDisposal
 
     private async Task<IJSObjectReference> AcquireReferenceAsync()
     {
-        // window.cookieStore is undefined on an insecure page or in an older browser, and interop returns null for it.
-        var reference = await _jsRuntime.GetValueAsync<IJSObjectReference?>("cookieStore").ConfigureAwait(false);
+        const string NotAvailableMessage = "The Cookie Store API is not available for the current page.";
 
-        return reference ?? throw new NotSupportedException("The Cookie Store API is not available for the current page.");
+        IJSObjectReference? reference;
+        try
+        {
+            reference = await _jsRuntime.GetValueAsync<IJSObjectReference?>("cookieStore").ConfigureAwait(false);
+        }
+        catch (JSException ex)
+        {
+            // Interop throws for a missing window.cookieStore, such as on an insecure page or in an older browser.
+            throw new NotSupportedException(NotAvailableMessage, ex);
+        }
+
+        return reference ?? throw new NotSupportedException(NotAvailableMessage);
     }
 }

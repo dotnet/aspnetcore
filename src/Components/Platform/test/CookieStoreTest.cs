@@ -99,7 +99,39 @@ public class CookieStoreTest
     [Fact]
     public async Task CookieStore_ThrowsNotSupportedExceptionWhenTheBrowserHasNoCookieStore()
     {
-        var jsRuntime = new RecordingJSRuntime { CookieStoreMissing = true };
+        // JS interop throws this for a missing window.cookieStore, such as on a page that is not a secure context.
+        var missingProperty = new JSException("The property 'cookieStore' is not defined or is not readable.");
+        var jsRuntime = new RecordingJSRuntime { GetValueException = missingProperty };
+        var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        Func<Task>[] members =
+        [
+            () => cookieStore.GetAsync("name").AsTask(),
+            () => cookieStore.GetAsync(new CookieStoreGetOptions()).AsTask(),
+            () => cookieStore.GetAllAsync().AsTask(),
+            () => cookieStore.GetAllAsync("name").AsTask(),
+            () => cookieStore.GetAllAsync(new CookieStoreGetOptions()).AsTask(),
+            () => cookieStore.SetAsync("name", "value").AsTask(),
+            () => cookieStore.SetAsync(new CookieInit { Name = "name", Value = "value" }).AsTask(),
+            () => cookieStore.DeleteAsync("name").AsTask(),
+            () => cookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = "name" }).AsTask(),
+        ];
+
+        foreach (var member in members)
+        {
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(member);
+            Assert.Same(missingProperty, exception.InnerException);
+        }
+        await provider.DisposeAsync();
+
+        Assert.Equal(members.Length, jsRuntime.GetValueCallCount);
+        Assert.Empty(jsRuntime.ObjectReference.Invocations);
+    }
+
+    [Fact]
+    public async Task CookieStore_ThrowsNotSupportedExceptionWhenCookieStoreIsNull()
+    {
+        var jsRuntime = new RecordingJSRuntime { CookieStoreNull = true };
         var provider = CreateServiceProvider(jsRuntime);
         var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
 
@@ -109,6 +141,23 @@ public class CookieStoreTest
 
         Assert.Equal(2, jsRuntime.GetValueCallCount);
         Assert.Empty(jsRuntime.ObjectReference.Invocations);
+    }
+
+    [Fact]
+    public async Task CookieStore_PassesThroughOtherAcquisitionFailuresAndReacquires()
+    {
+        var disconnected = new JSDisconnectedException("The circuit is disconnected.");
+        var jsRuntime = new RecordingJSRuntime { GetValueException = disconnected };
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        var exception = await Assert.ThrowsAsync<JSDisconnectedException>(() => cookieStore.GetAllAsync().AsTask());
+        jsRuntime.GetValueException = null;
+        var all = await cookieStore.GetAllAsync();
+
+        Assert.Same(disconnected, exception);
+        Assert.Single(all);
+        Assert.Equal(2, jsRuntime.GetValueCallCount);
     }
 
     [Fact]
@@ -282,7 +331,9 @@ public class CookieStoreTest
 
         public bool CancelNextGetValue { get; set; }
 
-        public bool CookieStoreMissing { get; set; }
+        public bool CookieStoreNull { get; set; }
+
+        public Exception? GetValueException { get; set; }
 
         public TaskCompletionSource<IJSObjectReference>? PendingNextGetValue { get; set; }
 
@@ -318,8 +369,13 @@ public class CookieStoreTest
                 return new ValueTask<TValue>((Task<TValue>)(object)pending.Task);
             }
 
-            // JS interop returns a null reference when window.cookieStore is undefined.
-            return ValueTask.FromResult(CookieStoreMissing ? default! : (TValue)(object)ObjectReference);
+            if (GetValueException is { } exception)
+            {
+                return ValueTask.FromException<TValue>(exception);
+            }
+
+            // JS interop returns a null reference when window.cookieStore exists and holds null or undefined.
+            return ValueTask.FromResult(CookieStoreNull ? default! : (TValue)(object)ObjectReference);
         }
     }
 
