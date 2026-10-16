@@ -63,7 +63,7 @@ examples below use the Cookie Store API.
 ## Shape the public API
 
 - Follow Web IDL names and behavior. Map an operation `foo()` to `FooAsync()` and a readable
-  attribute `foo` to `GetFooAsync()`. Do not add convenience APIs, polyfills, or .NET
+  attribute `foo` to `GetFooAsync()`, except for the object properties described below. Do not add convenience APIs, polyfills, or .NET
   substitutions, even when a more .NET-like API looks simpler. Review chose this one-to-one shape
   on purpose. A developer who knows the Web Platform API should find the same API from `Window.`
   without learning Blazor-specific services.
@@ -77,10 +77,24 @@ examples below use the Cookie Store API.
   Do not switch to `Task`. `ValueTask` leaves room for a synchronous `IJSInProcessRuntime` path on
   WebAssembly, and the return type cannot change after the API ships. Keep raw JS interop types
   and identifiers non-public. `PublicApiTest` enforces both.
-- Expose the family as a synchronous property in an `extension(Window window)` block, as
-  `WindowWebStorageExtensions` does, not as an instance property of `Window`. The trimmer can then
-  drop a family the application never touches. Keep the property synchronous even when the browser
-  object can be missing. "Implement" below says how to handle that.
+- Put each family on the object that owns it in Web IDL, and reach that object from `Window`
+  through synchronous properties. For example, `navigator.clipboard` becomes
+  `Window.Navigator.Clipboard`, and its `writeText()` becomes `WriteTextAsync()`. Do not move a
+  family to another owner, such as `Window.Clipboard`. A member of `WindowOrWorkerGlobalScope`,
+  such as `indexedDB` or `caches`, belongs to the global object, which is `window` in a page, so
+  put it on `Window`.
+- Project a readable attribute as a synchronous property only when all of these are true. Its type
+  is an interface. It returns the same object for the life of the page. Web IDL marks most such
+  attributes `[SameObject]`, but not all, such as `localStorage`. Reading it has no side effect and
+  needs no permission. The property then only moves between .NET objects and does not call the
+  browser. Project any other readable attribute as `Get<X>Async()`, such as `navigator.language`
+  as `GetLanguageAsync()`.
+- Declare each synchronous property in an `extension` block of its owner, such as
+  `extension(Window window)` in `WindowWebStorageExtensions`, not as an instance property. The
+  trimmer can then drop a family the application never touches. When the owner type does not exist
+  yet, such as `Navigator`, stop and raise it as an open question. Keep the property synchronous
+  and non-nullable even when the browser object can be missing. "Implement" below says how to
+  handle that.
 - Leave value checks to the browser. For example, do not check in .NET that `CookieInit` sets both
   `expires` and `maxAge`. The browser already throws `TypeError` for that, and a copy in .NET can
   drift when the browser changes. Check only a `null` argument for a non-nullable parameter, and
@@ -96,8 +110,8 @@ examples below use the Cookie Store API.
 ## Implement
 
 - Put the projection in `src/Components/Platform/src`. Add one type for the family, such as
-  `Clipboard.cs`, and one extension class, such as `WindowClipboardExtensions.cs`. Get the instance
-  with `window.GetOrAddFeature(...)`, and pass a subkey when two properties share one type, as
+  `Clipboard.cs`, and one extension class on its owner, such as `NavigatorClipboardExtensions.cs`.
+  Get the instance with `window.GetOrAddFeature(...)`, and pass a subkey when two properties share one type, as
   `LocalStorage` and `SessionStorage` do.
 - Let the trimmer drop each unused member of a used family too. Do not reach family members through
   reflection or tables that reference every member. Use `[DynamicDependency]` only on a method that
@@ -111,12 +125,17 @@ examples below use the Cookie Store API.
 - Acquire a JS object reference lazily on first use and share the pending task between callers. Do
   not keep a failed or canceled acquisition. A timeout during a brief connection loss would
   otherwise break the family for the rest of the circuit, so acquire again on the next call.
-- Handle a browser object that can be missing. For example, `window.cookieStore` is `undefined` on
-  an insecure page or in an older browser. JS interop then returns a `null` reference as a
-  successful result, and code copied from Web Storage fails with `NullReferenceException` on every
-  call and during disposal. When the acquired reference is `null`, fail the acquisition with
-  `NotSupportedException`, so it is not kept. Do not add an API that only reports whether the
-  object exists. The specification excludes such capability registries.
+- Handle a browser object that can be missing. For example, `window.cookieStore` does not exist on
+  an insecure page or in an older browser. `GetValueAsync` then throws `JSException`, because the
+  property is not defined. It returns a `null` reference only when the property exists and holds
+  `null` or `undefined`. Code copied from Web Storage passes the `JSException` to the caller, or
+  fails with `NullReferenceException` for a `null` reference. In both cases, fail the acquisition
+  with `NotSupportedException`, so it is not kept, and set the `JSException` as its inner
+  exception. Translate only `JSException`. A disconnect or a timeout must reach the caller as it
+  is. `NotSupportedException` is only the default that the Cookie Store API proposal (#69844)
+  proposes. Until API review approves it, raise this behavior as an open question in the API
+  proposal of the family. Do not add an API that only reports whether the object exists. Web IDL has no such member,
+  so it would be a convenience API.
 - Wrap identity-bearing objects and preserve identity. `Window` owns a shared wrapper, such as
   `Storage`, and hands the same one to every caller. So never implement `IAsyncDisposable` or a
   public `DisposeAsync` on it. Implement the internal `IInternalAsyncDisposal` explicitly, and let
@@ -169,8 +188,8 @@ internals. Follow the majority phrasing in this repository and `ProtectedBrowser
   and arguments, lazy acquisition, a single shared acquisition, acquiring again after a failure,
   stable and distinct instances, disposal of the acquired reference, `ObjectDisposedException` after
   disposal, and disposal that finishes without waiting for a pending acquisition. When the browser
-  object can be missing, also cover a `null` reference. Every member throws
-  `NotSupportedException`, and disposal does not throw.
+  object can be missing, also cover a `JSException` from the acquisition and a `null` reference.
+  Every member throws `NotSupportedException`, and disposal does not throw.
 - When a method passes a dictionary or an enum, also assert the JSON that reaches the browser. A
   mock of `IJSRuntime`, like the one in `StorageTest`, records the .NET objects before
   serialization. So it cannot catch a missing `[JsonIgnore]` that sends `"path":null`, or an enum
