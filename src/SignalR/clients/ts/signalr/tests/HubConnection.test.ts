@@ -2548,6 +2548,31 @@ describe("HubConnection", () => {
             });
         });
 
+        [0, -1].forEach((sequenceId) => {
+            it(`sequence message with ID ${sequenceId} closes connection`, async () => {
+                await VerifyLogger.run(async (logger) => {
+                    const connection = new TestConnection();
+                    // tell HubConnection we "negotiated" reconnect
+                    connection.features.reconnect = true;
+
+                    const hubConnection = createHubConnection(connection, logger);
+                    try {
+                        const closeError = new PromiseSource<Error | undefined>();
+                        hubConnection.onclose((e) => {
+                            closeError.reject(e);
+                        });
+                        await hubConnection.start();
+
+                        connection.receive({ type: MessageType.Sequence, sequenceId });
+
+                        await expect(closeError).rejects.toThrow("Sequence ID must be greater than 0.");
+                    } finally {
+                        await hubConnection.stop();
+                    }
+                });
+            });
+        });
+
         it("buffer full blocks sending, unblocks with ack", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
