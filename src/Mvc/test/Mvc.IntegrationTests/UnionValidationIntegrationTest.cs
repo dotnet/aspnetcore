@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -120,6 +121,101 @@ public class UnionValidationIntegrationTest
         {
             Assert.Empty(context.ModelState);
         }
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void Validate_ValidationStateMetadata_OverridesUnionMetadata(bool nested, bool existingError)
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        var value = new ExplicitUnion(new ValidatableCase("invalid"));
+        object model = nested ? new ExplicitUnion(value) : value;
+        var key = nested ? "model.Value" : "model";
+        if (existingError)
+        {
+            context.ModelState.AddModelError(key, "Existing error.");
+        }
+
+        var validationState = new ValidationStateDictionary
+        {
+            [value] = new ValidationStateEntry
+            {
+                Metadata = services.GetRequiredService<IModelMetadataProvider>().GetMetadataForType(typeof(object)),
+            },
+        };
+
+        services.GetRequiredService<IObjectModelValidator>().Validate(context, validationState, "model", model);
+
+        Assert.Equal(!existingError, context.ModelState.IsValid);
+        Assert.Equal(existingError ? 1 : 0, context.ModelState.ErrorCount);
+        if (existingError)
+        {
+            var entry = Assert.Single(context.ModelState);
+            Assert.Equal(key, entry.Key);
+            Assert.Equal("Existing error.", Assert.Single(entry.Value.Errors).ErrorMessage);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Validate_ValidationStateMetadata_PreservesUnionTraversal(bool nullable)
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        object model = new ValidatableUnion(new ValidatableCase("invalid"));
+        var validationState = new ValidationStateDictionary
+        {
+            [model] = new ValidationStateEntry
+            {
+                Metadata = services.GetRequiredService<IModelMetadataProvider>().GetMetadataForType(nullable ? typeof(ValidatableUnion?) : typeof(ValidatableUnion)),
+            },
+        };
+
+        services.GetRequiredService<IObjectModelValidator>().Validate(context, validationState, "model", model);
+
+        Assert.False(context.ModelState.IsValid);
+        var entry = Assert.Single(context.ModelState);
+        Assert.Equal("model.Value", entry.Key);
+        Assert.Equal("Invalid case.", Assert.Single(entry.Value.Errors).ErrorMessage);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void Validate_DecoratedMetadataProvider_PreservesValuePropertyAndCaseValidators(bool decorate, bool invalidCase)
+    {
+        using var services = CreateServices(decorateMetadataProvider: decorate);
+        var context = CreateContext();
+        object model = invalidCase
+            ? new ValidatableUnion(new ValidatableCase("invalid"))
+            : new LengthUnion("long");
+
+        services.GetRequiredService<IObjectModelValidator>().Validate(context, null, "model", model);
+
+        Assert.False(context.ModelState.IsValid);
+        var entry = Assert.Single(context.ModelState);
+        Assert.Equal("model.Value", entry.Key);
+        Assert.Equal(invalidCase ? "Invalid case." : "The field Value must be a string or array type with a maximum length of '3'.", Assert.Single(entry.Value.Errors).ErrorMessage);
+    }
+
+    [Fact]
+    public void Validate_ClassLevelSuppressedExplicitUnion_DoesNotInvokeGetter()
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        context.ModelState.SetModelValue("model.Value.Name", "ignored", "ignored");
+
+        services.GetRequiredService<IObjectModelValidator>().Validate(context, null, "model", new SuppressedExplicitUnion());
+
+        Assert.True(context.ModelState.IsValid);
+        Assert.Equal(ModelValidationState.Skipped, context.ModelState["model.Value.Name"].ValidationState);
     }
 
     [Fact]
@@ -284,11 +380,17 @@ public class UnionValidationIntegrationTest
         Assert.Equal(suppressValue ? 0 : 1, context.ModelState.ErrorCount);
     }
 
-    private static ServiceProvider CreateServices(Action<MvcOptions> configure = null)
+    private static ServiceProvider CreateServices(Action<MvcOptions> configure = null, bool decorateMetadataProvider = false)
     {
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddControllers(options => configure?.Invoke(options));
+        if (decorateMetadataProvider)
+        {
+            services.AddSingleton<IModelMetadataProvider>(provider =>
+                new MetadataDecorator(ActivatorUtilities.CreateInstance<DefaultModelMetadataProvider>(provider)));
+        }
+
         return services.BuildServiceProvider();
     }
 
@@ -336,6 +438,25 @@ public class UnionValidationIntegrationTest
     private class ExplicitUnion(object value) : IUnion
     {
         object IUnion.Value => value;
+    }
+
+    private sealed class MetadataDecorator(IModelMetadataProvider inner) : IModelMetadataProvider
+    {
+        public ModelMetadata GetMetadataForType(Type modelType) => inner.GetMetadataForType(modelType);
+
+        public IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType) => inner.GetMetadataForProperties(modelType);
+    }
+
+    private class LengthUnion(string value) : IUnion
+    {
+        [MaxLength(3)]
+        public object Value => value;
+    }
+
+    [ValidateNever]
+    private class SuppressedExplicitUnion : IUnion
+    {
+        object IUnion.Value => throw new InvalidOperationException("Suppressed getter was invoked.");
     }
 
     private class UnionWithOtherObjectProperty : IUnion

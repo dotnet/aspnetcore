@@ -36,7 +36,9 @@ internal sealed class DefaultUnionValidationStrategy : IValidationStrategy
         {
             // IUnion.Value can be implemented explicitly.
             yield return new ValidationEntry(
-                _metadataProvider.GetMetadataForType(typeof(object)),
+                metadata is DefaultModelMetadata defaultMetadata
+                    ? defaultMetadata.CreateUnionValueMetadata()
+                    : _metadataProvider.GetMetadataForType(typeof(object)),
                 ModelNames.CreatePropertyModelName(key, nameof(IUnion.Value)),
                 () => ((IUnion)model).Value);
         }
@@ -54,6 +56,6 @@ internal sealed class DefaultUnionValidationStrategy : IValidationStrategy
             : metadata.ContainerType?.GetProperty(nameof(IUnion.Value))?.GetMethod;
         var unionGetter = unionType.GetInterfaceMap(typeof(IUnion)).TargetMethods[0];
 
-        return getter is not null && getter.GetBaseDefinition() == unionGetter.GetBaseDefinition();
+        return getter is not null && (getter.DeclaringType == typeof(IUnion) || getter.GetBaseDefinition() == unionGetter.GetBaseDefinition());
     }
 }

@@ -561,6 +561,26 @@ public class DefaultModelMetadata : ModelMetadata
 
     internal DefaultMetadataDetails Details => _details;
 
+    internal ModelMetadata GetMetadataForRuntimeType(Type modelType)
+    {
+        return _provider is ModelMetadataProvider provider && _details.Key.PropertyInfo is { } propertyInfo
+            ? provider.GetMetadataForProperty(propertyInfo, modelType)
+            : this;
+    }
+
+    internal ModelMetadata CreateUnionValueMetadata()
+    {
+        var propertyInfo = typeof(IUnion).GetProperty(nameof(IUnion.Value))!;
+        var details = new DefaultMetadataDetails(
+            ModelMetadataIdentity.ForProperty(propertyInfo, typeof(object), ModelType),
+            ModelAttributes.GetAttributesForProperty(ModelType, propertyInfo))
+        {
+            ContainerMetadata = this,
+        };
+
+        return new DefaultModelMetadata(_provider, _detailsProvider, details, _modelBindingMessageProvider);
+    }
+
     /// <inheritdoc />
     public override ModelMetadata GetMetadataForType(Type modelType)
     {

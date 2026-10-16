@@ -312,7 +312,8 @@ public class ValidationVisitor
         }
 
         // Model and Strategy still describe the parent until StateManager.Recurse.
-        if (Model is IUnion && Strategy is null)
+        if (Model is IUnion && Strategy is null &&
+            typeof(IUnion).IsAssignableFrom(Nullable.GetUnderlyingType(Metadata!.ModelType) ?? Metadata.ModelType))
         {
             metadata = GetUnionCaseMetadata(metadata, model);
         }
@@ -358,7 +359,7 @@ public class ValidationVisitor
 
         using (StateManager.Recurse(this, key ?? string.Empty, metadata, model, strategy!))
         {
-            if (Model is IUnion)
+            if (Model is IUnion && typeof(IUnion).IsAssignableFrom(Nullable.GetUnderlyingType(Metadata!.ModelType) ?? Metadata.ModelType))
             {
                 return VisitComplexType(_unionValidationStrategy ??= new DefaultUnionValidationStrategy(MetadataProvider));
             }
@@ -385,12 +386,22 @@ public class ValidationVisitor
             return metadata;
         }
 
-        // Retain the Value property's validation attributes while validating the active case.
-        return MetadataProvider is ModelMetadataProvider provider &&
-            metadata is DefaultModelMetadata propertyMetadata &&
-            propertyMetadata.Details.Key.PropertyInfo is { } propertyInfo
-            ? provider.GetMetadataForProperty(propertyInfo, model.GetType())
-            : MetadataProvider.GetMetadataForType(model.GetType());
+        // Retain property attributes even when the registered provider decorates the metadata's provider.
+        if (metadata.MetadataKind == ModelMetadataKind.Property)
+        {
+            if (MetadataProvider is ModelMetadataProvider provider &&
+                metadata is DefaultModelMetadata propertyMetadata &&
+                propertyMetadata.Details.Key.PropertyInfo is { } propertyInfo)
+            {
+                return provider.GetMetadataForProperty(propertyInfo, model.GetType());
+            }
+
+            return metadata is DefaultModelMetadata defaultMetadata
+                ? defaultMetadata.GetMetadataForRuntimeType(model.GetType())
+                : metadata;
+        }
+
+        return MetadataProvider.GetMetadataForType(model.GetType());
     }
 
     /// <summary>
