@@ -32,7 +32,7 @@ public class MessageBufferTests
 
         var count = 0;
         while (count < 100)
-        { 
+        {
             var res = await pipes.Application.Input.ReadAsync().DefaultTimeout();
 
             var buffer = res.Buffer;
@@ -298,6 +298,27 @@ public class MessageBufferTests
         pipes.Application.Input.AdvanceTo(buffer.Start);
 
         Assert.Throws<InvalidOperationException>(() => messageBuffer.ShouldProcessMessage(new SequenceMessage(2)));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(long.MinValue)]
+    public void ReceiveSequenceMessageWithNonPositiveIDThrows(long sequenceId)
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000, NullLogger.Instance);
+
+        Assert.True(messageBuffer.ShouldProcessMessage(new InvocationMessage("1", "Test", Array.Empty<object>())));
+        Assert.True(messageBuffer.ShouldProcessMessage(new InvocationMessage("2", "Test", Array.Empty<object>())));
+
+        var exception = Assert.Throws<InvalidOperationException>(() => messageBuffer.ShouldProcessMessage(new SequenceMessage(sequenceId)));
+        Assert.Equal("Sequence ID must be greater than 0.", exception.Message);
+
+        Assert.True(messageBuffer.ShouldProcessMessage(new InvocationMessage("3", "Test", Array.Empty<object>())));
     }
 
     [Fact]
