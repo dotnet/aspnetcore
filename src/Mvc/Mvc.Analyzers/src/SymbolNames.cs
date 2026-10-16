@@ -27,6 +27,8 @@ internal static class SymbolNames
 
     public const string FromBodyAttribute = "Microsoft.AspNetCore.Mvc.FromBodyAttribute";
 
+    public const string FromServicesAttribute = "Microsoft.AspNetCore.Mvc.FromServicesAttribute";
+
     public const string HtmlHelperPartialExtensionsType = "Microsoft.AspNetCore.Mvc.Rendering.HtmlHelperPartialExtensions";
 
     public const string IApiBehaviorMetadata = "Microsoft.AspNetCore.Mvc.Infrastructure.IApiBehaviorMetadata";
