@@ -422,7 +422,7 @@
     <BaselinePackageVersion>1.2.13</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.2.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Common-->
@@ -443,7 +443,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.3.13, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.2.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.3.13, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
@@ -994,8 +994,8 @@
     <BaselinePackageVersion>1.2.13</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[1.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.13, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[1.2.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.1, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
@@ -1006,8 +1006,8 @@
     <BaselinePackageVersion>1.2.13</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[1.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[1.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[1.2.13, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[1.2.13, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Common-->
@@ -1026,8 +1026,8 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[2.3.13, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[1.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.13, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[1.2.13, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.2, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
@@ -1039,7 +1039,7 @@
     <BaselinePackageVersion>1.2.13</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.13, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
   </ItemGroup>
@@ -1048,8 +1048,8 @@
     <BaselinePackageVersion>1.2.13</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections" Version="[1.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections" Version="[1.2.13, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.2.13, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.3.13, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
   </ItemGroup>
