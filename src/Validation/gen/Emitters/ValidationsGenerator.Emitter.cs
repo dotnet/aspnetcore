@@ -63,7 +63,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type propertyType,
             string name,
             global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null,
-            bool isUnionValue = false) : base(containingType, propertyType, name, displayNameInfo, isUnionValue)
+            bool isUnionValue = false,
+            global::System.Func<object, bool>? skipValidation = null) : base(containingType, propertyType, name, displayNameInfo, isUnionValue, skipValidation)
         {
             ContainingType = containingType;
         }
@@ -394,6 +395,10 @@ namespace Microsoft.Extensions.Validation.Generated
         if (member.IsUnionValue)
         {
             cw.WriteLine("isUnionValue: true,");
+        }
+        if (!member.SkippedUnionCaseTypes.IsDefaultOrEmpty)
+        {
+            cw.WriteLine($"skipValidation: static value => value is {string.Join(" or ", member.SkippedUnionCaseTypes)},");
         }
         cw.WriteLine($"displayNameInfo: {FormatPropertyDisplayNameInfo(member)}");
         cw.Indent--;

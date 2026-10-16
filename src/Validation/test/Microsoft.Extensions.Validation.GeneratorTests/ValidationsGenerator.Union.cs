@@ -152,7 +152,8 @@ public union Batch(CheckedCase[], bool);
         {
             Assert.True(validationOptions.TryGetValidatableTypeInfo(unionType, out var validatableTypeInfo));
 
-            var primitiveUnion = Activator.CreateInstance(unionType, true)!;
+            var primitiveUnion = Activator.CreateInstance(unionType, [true])!;
+            Assert.True(Assert.IsType<bool>(unionType.GetProperty("Value")!.GetValue(primitiveUnion)));
             var primitiveContext = new ValidateContext { ValidationOptions = validationOptions };
 
             await ValidateAsync(validatableTypeInfo, primitiveUnion, primitiveContext, useAsync, default);
@@ -207,6 +208,243 @@ public union Batch(CheckedCase[], bool);
 
                 Assert.Equal(StatusCodes.Status201Created, validContext.Response.StatusCode);
             }
+        });
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task CanSkipValidationForUnionCollections(bool useAsync, bool skipCollection)
+    {
+        var source = """
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Validation;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+app.MapPost("/collection", (CollectionCommand command) => Results.StatusCode(201));
+app.MapPost("/elements", (ElementsCommand command) => Results.StatusCode(201));
+app.Run();
+
+public sealed class CheckedCase
+{
+    [Range(1, 10)]
+    public int Count { get; set; }
+}
+
+[SkipValidation]
+public sealed class IgnoredCases : List<CheckedCase>
+{
+    public IgnoredCases()
+    {
+        Add(new CheckedCase());
+    }
+}
+
+[SkipValidation]
+public sealed class IgnoredCase
+{
+    [Range(1, 10)]
+    public int Count { get; set; }
+}
+
+public union CollectionCommand(IgnoredCases, CheckedCase);
+public union ElementsCommand(IgnoredCase[], CheckedCase);
+""";
+
+        await Verify(source, out var compilation);
+
+        await VerifyValidatableType(compilation, skipCollection ? "CollectionCommand" : "ElementsCommand", async (validationOptions, unionType) =>
+        {
+            Assert.True(validationOptions.TryGetValidatableTypeInfo(unionType, out var validatableTypeInfo));
+            var checkedType = unionType.Assembly.GetType("CheckedCase")!;
+            var checkedValue = Activator.CreateInstance(checkedType)!;
+            var checkedUnion = Activator.CreateInstance(unionType, [checkedValue])!;
+            var checkedContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, checkedUnion, checkedContext, useAsync, default);
+
+            Assert.Equal("Value.Count", Assert.Single(checkedContext.ValidationErrors!).Key);
+
+            checkedType.GetProperty("Count")!.SetValue(checkedValue, 1);
+            var validContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, checkedUnion, validContext, useAsync, default);
+
+            Assert.Null(validContext.ValidationErrors);
+
+            var ignoredType = unionType.Assembly.GetType(skipCollection ? "IgnoredCases" : "IgnoredCase")!;
+            object ignoredValue;
+            if (skipCollection)
+            {
+                ignoredValue = Activator.CreateInstance(ignoredType)!;
+            }
+            else
+            {
+                var array = Array.CreateInstance(ignoredType, 1);
+                array.SetValue(Activator.CreateInstance(ignoredType), 0);
+                ignoredValue = array;
+            }
+
+            var ignoredUnion = Activator.CreateInstance(unionType, [ignoredValue])!;
+            var ignoredContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, ignoredUnion, ignoredContext, useAsync, default);
+
+            Assert.Null(ignoredContext.ValidationErrors);
+            Assert.False(validationOptions.TryGetValidatableTypeInfo(ignoredType, out _));
+        });
+
+        await VerifyEndpoint(compilation, skipCollection ? "/collection" : "/elements", async (endpoint, serviceProvider) =>
+        {
+            var ignoredContext = CreateHttpContextWithPayload("""[{"Count":0}]""", serviceProvider);
+
+            await endpoint.RequestDelegate(ignoredContext);
+
+            Assert.Equal(StatusCodes.Status201Created, ignoredContext.Response.StatusCode);
+
+            var checkedContext = CreateHttpContextWithPayload("""{"Count":0}""", serviceProvider);
+
+            await endpoint.RequestDelegate(checkedContext);
+
+            var problemDetails = await AssertBadRequest(checkedContext);
+            Assert.Equal("Value.Count", Assert.Single(problemDetails.Errors).Key);
+        });
+    }
+
+    [Theory]
+    [InlineData(true, "Property")]
+    [InlineData(false, "Property")]
+    [InlineData(true, "Type")]
+    [InlineData(false, "Type")]
+    [InlineData(true, "Empty")]
+    [InlineData(false, "Empty")]
+    [InlineData(true, "Element")]
+    [InlineData(false, "Element")]
+    [InlineData(true, "Valid")]
+    [InlineData(false, "Valid")]
+    public async Task CanValidateUnionCollectionObject(bool useAsync, string scenario)
+    {
+        var source = """
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Validation;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+app.MapPost("/", (Batch batch) => Results.StatusCode(201));
+app.Run();
+
+public sealed class CheckedCase
+{
+    [Range(1, 10)]
+    public int Count { get; set; }
+}
+
+[CustomValidation(typeof(NonEmptyList), nameof(ValidateType))]
+public sealed class NonEmptyList : List<CheckedCase>, IValidatableObject
+{
+    public static int ValidationCalls;
+
+    [Range(1, 10)]
+    public int Priority { get; set; } = 1;
+
+    public bool IsAllowed { get; set; } = true;
+
+    public static ValidationResult? ValidateType(NonEmptyList value)
+        => value.IsAllowed ? ValidationResult.Success : new ValidationResult("The collection is not allowed.");
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+    {
+        ValidationCalls++;
+        if (Count == 0)
+        {
+            yield return new ValidationResult("The collection cannot be empty.", [nameof(Count)]);
+        }
+    }
+}
+
+public union Batch(NonEmptyList, bool);
+""";
+
+        await Verify(source, out var compilation);
+
+        await VerifyValidatableType(compilation, "Batch", async (validationOptions, unionType) =>
+        {
+            Assert.True(validationOptions.TryGetValidatableTypeInfo(unionType, out var validatableTypeInfo));
+            var collectionType = unionType.Assembly.GetType("NonEmptyList")!;
+            var collection = Activator.CreateInstance(collectionType)!;
+            if (scenario != "Empty")
+            {
+                var checkedType = unionType.Assembly.GetType("CheckedCase")!;
+                var item = Activator.CreateInstance(checkedType)!;
+                checkedType.GetProperty("Count")!.SetValue(item, scenario == "Element" ? 0 : 1);
+                ((System.Collections.IList)collection).Add(item);
+            }
+
+            collectionType.GetProperty("Priority")!.SetValue(collection, scenario == "Property" ? 0 : 1);
+            collectionType.GetProperty("IsAllowed")!.SetValue(collection, scenario != "Type");
+            var union = Activator.CreateInstance(unionType, [collection])!;
+            var context = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, union, context, useAsync, default);
+
+            if (scenario == "Valid")
+            {
+                Assert.Null(context.ValidationErrors);
+            }
+            else
+            {
+                var error = Assert.Single(context.ValidationErrors!);
+                var (path, message) = scenario switch
+                {
+                    "Property" => ("Value.Priority", "The field Priority must be between 1 and 10."),
+                    "Type" => ("Value", "The collection is not allowed."),
+                    "Empty" => ("Value.Count", "The collection cannot be empty."),
+                    "Element" => ("Value[0].Count", "The field Count must be between 1 and 10."),
+                    _ => throw new InvalidOperationException($"Unexpected scenario '{scenario}'."),
+                };
+                Assert.Equal(path, error.Key);
+                Assert.Equal(message, Assert.Single(error.Value).ErrorMessage);
+            }
+
+            Assert.Equal(scenario is "Property" or "Type" ? 0 : 1, collectionType.GetField("ValidationCalls")!.GetValue(null));
+        });
+
+        await VerifyEndpoint(compilation, "/", async (endpoint, serviceProvider) =>
+        {
+            var emptyContext = CreateHttpContextWithPayload("[]", serviceProvider);
+
+            await endpoint.RequestDelegate(emptyContext);
+
+            var problemDetails = await AssertBadRequest(emptyContext);
+            var error = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value.Count", error.Key);
+            Assert.Equal("The collection cannot be empty.", Assert.Single(error.Value));
+
+            var invalidContext = CreateHttpContextWithPayload("""[{"Count":0}]""", serviceProvider);
+
+            await endpoint.RequestDelegate(invalidContext);
+
+            var invalidProblemDetails = await AssertBadRequest(invalidContext);
+            Assert.Equal("Value[0].Count", Assert.Single(invalidProblemDetails.Errors).Key);
+
+            var validContext = CreateHttpContextWithPayload("""[{"Count":1}]""", serviceProvider);
+
+            await endpoint.RequestDelegate(validContext);
+
+            Assert.Equal(StatusCodes.Status201Created, validContext.Response.StatusCode);
         });
     }
 
