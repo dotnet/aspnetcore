@@ -240,6 +240,7 @@ public class FileBufferingReadStream : Stream
             Debug.Assert(_tempFileDirectory != null);
         }
 
+        Directory.CreateDirectory(_tempFileDirectory);
         _tempFileName = Path.Combine(_tempFileDirectory, "ASPNETCORE_" + Guid.NewGuid().ToString() + ".tmp");
 
         // Create a temp file with the correct Unix file mode before moving it to the assigned _tempFileName in the _tempFileDirectory.
