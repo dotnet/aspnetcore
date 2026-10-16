@@ -11,6 +11,7 @@
 
 <div>
     <button id="set-cookie" @onclick="SetAsync">Set</button>
+    <button id="set-cookie-with-defaults" @onclick="SetWithDefaultsAsync">Set with defaults</button>
     <button id="set-cookie-with-options" @onclick="SetWithOptionsAsync">Set with options</button>
     <button id="set-cookie-with-max-age" @onclick="SetWithMaxAgeAsync">Set with max age</button>
     <button id="set-cookie-with-other-domain" @onclick="SetWithOtherDomainAsync">Set with another domain</button>
@@ -40,6 +41,12 @@
     {
         await Browser.Window.CookieStore.SetAsync(name, value);
         result = $"Set: {name}";
+    }
+
+    private async Task SetWithDefaultsAsync()
+    {
+        await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value });
+        result = $"Set with defaults: {name}";
     }
 
     private async Task SetWithOptionsAsync()

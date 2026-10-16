@@ -38,6 +38,7 @@ public partial class CookieStoreTests : BrowserTest
             await _page.Locator("#cookie-name").FillAsync(name);
             await _page.Locator("#cookie-value").FillAsync("value");
             await RunAsync("#set-cookie", $"Set: {name}");
+            AssertDefaultAttributes(await GetBrowserCookieAsync(name));
 
             await RunAsync("#get-cookie", $"Found: {name}=value");
             await RunAsync("#get-cookie-with-options", $"Found: {name}=value");
@@ -52,6 +53,32 @@ public partial class CookieStoreTests : BrowserTest
     }
 
     [TestMethod]
+    public async Task CookieStore_GetsAllOfSeveralCookies()
+    {
+        foreach (var path in CookieStorePaths)
+        {
+            await NavigateAsync(path, "#set-cookie");
+
+            var prefix = path == "/cookiestore-server" ? "server" : "wasm";
+            await _page.Locator("#cookie-value").FillAsync("value");
+            foreach (var name in new[] { $"{prefix}-first", $"{prefix}-second" })
+            {
+                await _page.Locator("#cookie-name").FillAsync(name);
+                await RunAsync("#set-cookie", $"Set: {name}");
+            }
+
+            // Cookies with the same path come back in the order of creation.
+            await RunAsync("#get-all-cookies", $"Found: {prefix}-first=value; {prefix}-second=value");
+
+            foreach (var name in new[] { $"{prefix}-first", $"{prefix}-second" })
+            {
+                await _page.Locator("#cookie-name").FillAsync(name);
+                await RunAsync("#delete-cookie", $"Deleted: {name}");
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task CookieStore_SendsEveryCookieOptionToTheBrowser()
     {
         foreach (var path in CookieStorePaths)
@@ -60,6 +87,10 @@ public partial class CookieStoreTests : BrowserTest
 
             var name = path == "/cookiestore-server" ? "server-options" : "wasm-options";
             await _page.Locator("#cookie-name").FillAsync(name);
+
+            await RunAsync("#set-cookie-with-defaults", $"Set with defaults: {name}");
+            AssertDefaultAttributes(await GetBrowserCookieAsync(name));
+            await RunAsync("#delete-cookie", $"Deleted: {name}");
 
             await RunAsync("#set-cookie-with-options", $"Set with options: {name}");
             var cookie = await GetBrowserCookieAsync(name);
@@ -100,6 +131,14 @@ public partial class CookieStoreTests : BrowserTest
         var cookies = await _context.CookiesAsync();
 
         return cookies.Single(cookie => cookie.Name == name);
+    }
+
+    private static void AssertDefaultAttributes(BrowserContextCookiesResult cookie)
+    {
+        Assert.AreEqual("/", cookie.Path);
+        Assert.AreEqual(SameSiteAttribute.Strict, cookie.SameSite);
+        // Playwright reports a session cookie with -1.
+        Assert.AreEqual(-1, cookie.Expires);
     }
 
     private static void AssertExpiresIn(BrowserContextCookiesResult cookie, TimeSpan expected)
