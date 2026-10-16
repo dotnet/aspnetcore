@@ -18,23 +18,31 @@ public class PersistentComponentState
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
     private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
+    private JsonSerializerOptions _jsonSerializerOptions = JsonSerializerOptionsProvider.Options;
 
     internal PersistentComponentState(
         IDictionary<string, byte[]> currentState,
         List<PersistComponentStateRegistration> pauseCallbacks,
-        List<RestoreComponentStateRegistration> restoringCallbacks,
-        JsonSerializerOptions? jsonSerializerOptions = null)
+        List<RestoreComponentStateRegistration> restoringCallbacks)
     {
         _currentState = currentState;
         _registeredCallbacks = pauseCallbacks;
         _registeredRestoringCallbacks = restoringCallbacks;
-        _jsonSerializerOptions = jsonSerializerOptions ?? JsonSerializerOptionsProvider.Options;
     }
 
     internal bool PersistingState { get; set; }
 
     internal RestoreContext CurrentContext { get; private set; } = RestoreContext.InitialValue;
+
+    // Initial values and updates come from prerendering, whose JSON contract must also work in WebAssembly.
+    private JsonSerializerOptions DeserializationOptions => CurrentContext == RestoreContext.LastSnapshot
+        ? _jsonSerializerOptions
+        : JsonSerializerOptionsProvider.Options;
+
+    internal void SetJsonSerializerOptions(JsonSerializerOptions options)
+    {
+        _jsonSerializerOptions = options;
+    }
 
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState, RestoreContext context)
     {
@@ -177,7 +185,7 @@ public class PersistentComponentState
         if (TryTake(key, out var data))
         {
             var reader = new Utf8JsonReader(data);
-            instance = JsonSerializer.Deserialize<TValue>(ref reader, _jsonSerializerOptions)!;
+            instance = JsonSerializer.Deserialize<TValue>(ref reader, DeserializationOptions)!;
             return true;
         }
         else
@@ -195,7 +203,7 @@ public class PersistentComponentState
         if (TryTake(key, out var data))
         {
             var reader = new Utf8JsonReader(data);
-            instance = JsonSerializer.Deserialize(ref reader, type, _jsonSerializerOptions);
+            instance = JsonSerializer.Deserialize(ref reader, type, DeserializationOptions);
             return true;
         }
         else

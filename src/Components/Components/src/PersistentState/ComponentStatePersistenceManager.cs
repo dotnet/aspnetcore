@@ -20,6 +20,7 @@ public class ComponentStatePersistenceManager
     private bool _stateIsPersisted;
     private bool _stateIsInitialized;
     private readonly PersistentServicesRegistry? _servicesRegistry;
+    private readonly IServiceProvider? _serviceProvider;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
 
     /// <summary>
@@ -27,13 +28,8 @@ public class ComponentStatePersistenceManager
     /// </summary>
     /// <param name="logger"></param>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
-        : this(logger, (JsonSerializerOptions?)null)
     {
-    }
-
-    private ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, JsonSerializerOptions? jsonSerializerOptions)
-    {
-        State = new PersistentComponentState(_currentState, _registeredCallbacks, _registeredRestoringCallbacks, jsonSerializerOptions);
+        State = new PersistentComponentState(_currentState, _registeredCallbacks, _registeredRestoringCallbacks);
         _logger = logger;
     }
 
@@ -43,11 +39,10 @@ public class ComponentStatePersistenceManager
     /// <param name="logger"></param>
     /// <param name="serviceProvider"></param>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider)
-        : this(logger, serviceProvider is IKeyedServiceProvider
-            ? serviceProvider.GetKeyedService<JsonSerializerOptions>(typeof(ComponentStatePersistenceManager))
-            : null)
+        : this(logger)
     {
         _servicesRegistry = new PersistentServicesRegistry(serviceProvider);
+        _serviceProvider = serviceProvider;
     }
 
     // For testing purposes only
@@ -178,6 +173,12 @@ public class ComponentStatePersistenceManager
         }
 
         _servicesRegistry!.RenderMode = renderMode;
+        if (_serviceProvider is IKeyedServiceProvider &&
+            _serviceProvider.GetKeyedService<JsonSerializerOptions>(
+                (typeof(ComponentStatePersistenceManager), renderMode.GetType())) is { } options)
+        {
+            State.SetJsonSerializerOptions(options);
+        }
     }
 
     private void InferRenderModes(Renderer renderer)

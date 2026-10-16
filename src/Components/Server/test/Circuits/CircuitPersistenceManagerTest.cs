@@ -440,7 +440,7 @@ public partial class CircuitPersistenceManagerTest
             {
                 var persistenceManager = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
                 persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
-                await persistenceManager.RestoreStateAsync(store, RestoreContext.InitialValue);
+                await persistenceManager.RestoreStateAsync(store, RestoreContext.LastSnapshot);
 
                 var customer = scope.ServiceProvider.GetRequiredService<TestPersistentService>().Customer;
                 Assert.NotNull(customer);

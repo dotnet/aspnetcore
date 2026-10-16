@@ -42,7 +42,7 @@ public static class ComponentServiceCollectionExtensions
 
         services.AddDataProtection();
         // Application registrations of JsonSerializerOptions must not bypass the circuit resolvers.
-        services.TryAddKeyedScoped<JsonSerializerOptions>(typeof(ComponentStatePersistenceManager), (sp, _) =>
+        services.TryAddKeyedScoped<JsonSerializerOptions>((typeof(ComponentStatePersistenceManager), typeof(InteractiveServerRenderMode)), (sp, _) =>
         {
             var circuitOptions = sp.GetRequiredService<IOptions<CircuitOptions>>().Value;
             var options = new JsonSerializerOptions(JsonSerializerOptionsProvider.Options);
