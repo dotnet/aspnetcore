@@ -64,6 +64,23 @@ public class CookieStoreTest
     }
 
     [Fact]
+    public async Task CookieStore_SharesPendingAcquisitionBetweenCallers()
+    {
+        var pending = new TaskCompletionSource<IJSObjectReference>();
+        var jsRuntime = new RecordingJSRuntime { PendingNextGetValue = pending };
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        var first = cookieStore.GetAllAsync().AsTask();
+        var second = cookieStore.GetAsync("name").AsTask();
+        pending.SetResult(jsRuntime.ObjectReference);
+        await Task.WhenAll(first, second);
+
+        Assert.Equal(1, jsRuntime.GetValueCallCount);
+        Assert.Equal(2, jsRuntime.ObjectReference.Invocations.Count);
+    }
+
+    [Fact]
     public async Task CookieStore_RejectsNullArguments()
     {
         var jsRuntime = new RecordingJSRuntime();
@@ -122,6 +139,7 @@ public class CookieStoreTest
             var exception = await Assert.ThrowsAsync<NotSupportedException>(member);
             Assert.Same(missingProperty, exception.InnerException);
         }
+        // Disposal must not throw for the failed acquisitions.
         await provider.DisposeAsync();
 
         Assert.Equal(members.Length, jsRuntime.GetValueCallCount);
@@ -137,6 +155,7 @@ public class CookieStoreTest
 
         await Assert.ThrowsAsync<NotSupportedException>(() => cookieStore.GetAllAsync().AsTask());
         await Assert.ThrowsAsync<NotSupportedException>(() => cookieStore.SetAsync("name", "value").AsTask());
+        // Disposal must not throw for the failed acquisitions.
         await provider.DisposeAsync();
 
         Assert.Equal(2, jsRuntime.GetValueCallCount);
@@ -297,12 +316,28 @@ public class CookieStoreTest
         var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
 
         var cookies = await cookieStore.GetAllAsync();
-        var missing = await cookieStore.GetAsync("missing");
 
         Assert.Collection(
             cookies,
             cookie => Assert.Equal(("a", "1"), (cookie.Name, cookie.Value)),
             cookie => Assert.Equal(("b", "2"), (cookie.Name, cookie.Value)));
+    }
+
+    [Fact]
+    public async Task GetAsync_ReadsTheCookieOrNull()
+    {
+        var jsRuntime = new SerializingJSRuntime
+        {
+            GetResult = """{"name":"a","value":"1","domain":null,"path":"/","expires":null,"secure":true,"sameSite":"strict","partitioned":false}""",
+        };
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        var cookie = await cookieStore.GetAsync("a");
+        jsRuntime.GetResult = "null";
+        var missing = await cookieStore.GetAsync("missing");
+
+        Assert.Equal(("a", "1"), (cookie?.Name, cookie?.Value));
         Assert.Null(missing);
     }
 
@@ -426,6 +461,8 @@ public class CookieStoreTest
 
         public string GetAllResult { get; init; } = "[]";
 
+        public string GetResult { get; set; } = "null";
+
         public string[] ArgumentsSentTo(string identifier)
             => [.. _calls.Where(call => call.Identifier == identifier).Select(call => call.ArgsJson ?? string.Empty)];
 
@@ -436,6 +473,7 @@ public class CookieStoreTest
             var result = invocationInfo.Identifier switch
             {
                 "cookieStore" => """{"__jsObjectId":1}""",
+                "get" => GetResult,
                 "getAll" => GetAllResult,
                 _ => "null",
             };
