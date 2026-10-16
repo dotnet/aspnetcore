@@ -1,3 +1,18 @@
+export function beforeWebStart(options) {
+    if (!document.getElementById('browser-configuration-streaming-status')) {
+        return;
+    }
+
+    const result = document.createElement('pre');
+    result.id = 'browser-configuration-options';
+    result.textContent = JSON.stringify({
+        logLevel: options.logLevel,
+        dialogId: options.circuit.reconnectionOptions.dialogId,
+        maxRetries: options.circuit.reconnectionOptions.maxRetries,
+    });
+    document.body.appendChild(result);
+}
+
 export function beforeWebAssemblyStart() {
     appendElement('server--classic-and-modern-before-web-assembly-start', 'Server project Classic and modern "beforeWebAssemblyStart"');
 }
