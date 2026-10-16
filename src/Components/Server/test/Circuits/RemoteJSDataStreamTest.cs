@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
@@ -197,38 +198,69 @@ public class RemoteJSDataStreamTest
         Assert.Equal("Out of sequence chunk received, expected 5, but received 7.", ex.Message);
     }
 
-    [Fact]
-    public async Task CreateRemoteJSDataStreamAsync_DisposesStream_WhenSendJSDataStreamThrows()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateRemoteJSDataStreamAsync_DisposesStream_WhenSendJSDataStreamThrows(bool failAsynchronously)
     {
-        // Arrange
+        var initiationCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var initiationException = new JSException("initiation failed");
         var unhandledExceptionRaised = false;
         var jsRuntime = new TestRemoteJSRuntime(
             Options.Create(new CircuitOptions()),
             Options.Create(new HubOptions<ComponentHub>()),
             Mock.Of<ILogger<RemoteJSRuntime>>())
         {
-            ExceptionToThrow = new JSException("initiation failed"),
+            ExceptionToThrow = initiationException,
+            InitiationTask = failAsynchronously ? initiationCompletion.Task : Task.CompletedTask,
         };
         jsRuntime.UnhandledException += (_, _) => unhandledExceptionRaised = true;
 
         var jsStreamReference = Mock.Of<IJSStreamReference>();
+        var continuations = Channel.CreateUnbounded<(SendOrPostCallback Callback, object State)>();
+        var synchronizationContext = new Mock<SynchronizationContext>();
+        synchronizationContext
+            .Setup(context => context.Post(It.IsAny<SendOrPostCallback>(), It.IsAny<object>()))
+            .Callback<SendOrPostCallback, object>((callback, state) =>
+                Assert.True(continuations.Writer.TryWrite((callback, state))));
 
-        // Act
-        var exception = await Assert.ThrowsAsync<JSException>(async () =>
-            await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+        Task<RemoteJSDataStream> createTask;
+        var originalContext = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(synchronizationContext.Object);
+        try
+        {
+            createTask = RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
                 jsRuntime,
                 jsStreamReference,
                 totalLength: 15,
                 signalRMaximumIncomingBytes: 10_000,
                 jsInteropDefaultCallTimeout: TimeSpan.FromMilliseconds(50),
-                cancellationToken: CancellationToken.None));
+                cancellationToken: CancellationToken.None).AsTask();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(originalContext);
+        }
 
-        // Assert
-        Assert.Equal("initiation failed", exception.Message);
+        // Hold the real timeout continuation until initiation has failed and cleanup has completed.
+        var timeoutContinuation = await continuations.Reader.ReadAsync().AsTask().DefaultTimeout();
+        if (failAsynchronously)
+        {
+            Assert.False(createTask.IsCompleted);
+            Assert.Single(jsRuntime.RemoteJSDataStreamInstances);
+            initiationCompletion.SetResult();
+            while (!createTask.IsCompleted)
+            {
+                var initiationContinuation = await continuations.Reader.ReadAsync().AsTask().DefaultTimeout();
+                initiationContinuation.Callback(initiationContinuation.State);
+            }
+        }
+
+        var exception = await Assert.ThrowsAsync<JSException>(() => createTask.DefaultTimeout());
+        Assert.Same(initiationException, exception);
         Assert.Empty(jsRuntime.RemoteJSDataStreamInstances);
 
-        await Task.Delay(200);
-
+        timeoutContinuation.Callback(timeoutContinuation.State);
         Assert.False(unhandledExceptionRaised);
     }
 
@@ -391,20 +423,24 @@ public class RemoteJSDataStreamTest
     {
         public Exception ExceptionToThrow { get; set; }
 
+        public Task InitiationTask { get; set; } = Task.CompletedTask;
+
         public TestRemoteJSRuntime(IOptions<CircuitOptions> circuitOptions, IOptions<HubOptions<ComponentHub>> hubOptions, ILogger<RemoteJSRuntime> logger) : base(circuitOptions, hubOptions, logger)
         {
         }
 
-        public new ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+        public new async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
             Assert.Equal("Blazor._internal.sendJSDataStream", identifier);
 
+            await InitiationTask.ConfigureAwait(false);
+
             if (ExceptionToThrow is not null)
             {
-                return ValueTask.FromException<TValue>(ExceptionToThrow);
+                throw ExceptionToThrow;
             }
 
-            return ValueTask.FromResult<TValue>(default);
+            return default;
         }
     }
 }
