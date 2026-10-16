@@ -12,3 +12,4 @@ Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending() -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted() -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsModified(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
