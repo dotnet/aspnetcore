@@ -1617,16 +1617,41 @@ def target_identity_rename_detected(
                 )
                 ranges = declaration_ranges(clean)
                 methods = {}
+                method_counts = {}
+                method_signatures = {}
                 for match in METHOD_PATTERN.finditer(clean):
                     declaring_type = full_type_name(
                         ranges,
                         match.start(),
                         file_namespace,
                     )
-                    methods.setdefault(declaring_type, set()).add(
-                        match.group("method")
+                    method_name = match.group("method")
+                    methods.setdefault(declaring_type, set()).add(method_name)
+                    counts = method_counts.setdefault(declaring_type, {})
+                    counts[method_name] = counts.get(method_name, 0) + 1
+                    depth = 0
+                    signature_end = None
+                    for index in range(match.end() - 1, len(clean)):
+                        if clean[index] == "(":
+                            depth += 1
+                        elif clean[index] == ")":
+                            depth -= 1
+                            if depth == 0:
+                                signature_end = index + 1
+                                break
+                    signature = re.sub(
+                        r"\s+",
+                        " ",
+                        clean[match.start():signature_end or match.end()],
+                    ).strip()
+                    signatures = method_signatures.setdefault(
+                        declaring_type,
+                        {},
                     )
+                    signatures.setdefault(method_name, set()).add(signature)
                 identities.append({
+                    "commit": commit,
+                    "path": historical_path,
                     "types": {
                         full_type_name(
                             ranges,
@@ -1638,6 +1663,8 @@ def target_identity_rename_detected(
                         if entry[2] == "type"
                     },
                     "methods": methods,
+                    "method_counts": method_counts,
+                    "method_signatures": method_signatures,
                 })
         else:
             identities = None
@@ -1645,6 +1672,19 @@ def target_identity_rename_detected(
     identities = IDENTITY_HISTORY_CACHE[identity_cache_key]
     if identities is None:
         return True
+    lineage = []
+    for identity in identities:
+        if lineage and identity["path"] != lineage[-1]["path"]:
+            old_path_still_exists = git_result(
+                root,
+                "cat-file",
+                "-e",
+                f"{lineage[-1]['commit']}:{identity['path']}",
+            )
+            if old_path_still_exists.returncode == 0:
+                break
+        lineage.append(identity)
+    identities = lineage
     if any(
         historical_type.rsplit(".", 1)[-1] == type_short_name
         and historical_type != type_name
@@ -1657,60 +1697,33 @@ def target_identity_rename_detected(
     ):
         return True
 
-    if method is None:
-        declaration_pattern = re.compile(
-            r"\b(?:class|struct|record)\s+"
-            r"(?P<name>[A-Za-z_][A-Za-z0-9_]*)\b"
-        )
-        git_pattern = re.escape(type_short_name)
-        current_name = type_short_name
-    else:
-        declaration_pattern = METHOD_PATTERN
-        git_pattern = re.escape(method)
-        current_name = method
-
-    def declaration_name(line):
-        match = declaration_pattern.search(line[1:])
-        if match is None:
-            return None
-        return match.group("method" if method is not None else "name")
-
-    history = git_result(
-        root,
-        "log",
-        "--first-parent",
-        "--follow",
-        "--format=@@COMMIT@@%H",
-        "-G",
-        git_pattern,
-        "-p",
-        history_ref,
-        "--",
-        relative_path,
-    )
-    if history.returncode != 0:
-        return True
-    for commit in re.split(r"(?=@@COMMIT@@)", history.stdout):
-        if not commit.startswith("@@COMMIT@@"):
+    for older, newer in zip(reversed(identities), reversed(identities[:-1])):
+        if method is None:
+            if type_name in older["types"] or type_name not in newer["types"]:
+                continue
+            if older["types"] - newer["types"]:
+                return True
             continue
-        if "\ncopy from " in commit:
+
+        older_counts = older["method_counts"].get(type_name, {})
+        newer_counts = newer["method_counts"].get(type_name, {})
+        if not newer_counts.get(method, 0):
             continue
-        changed = [
-            line for line in commit.splitlines()
-            if line.startswith(("+", "-"))
-            and not line.startswith(("+++", "---"))
-        ]
-        if not any(
-            line.startswith("+") and declaration_name(line) == current_name
-            for line in changed
+        older_signatures = older["method_signatures"].get(
+            type_name,
+            {},
+        ).get(method, set())
+        newer_signatures = newer["method_signatures"].get(
+            type_name,
+            {},
+        ).get(method, set())
+        if older_signatures == newer_signatures:
+            continue
+        if any(
+            name != method and count > newer_counts.get(name, 0)
+            for name, count in older_counts.items()
         ):
-            continue
-        return any(
-            line.startswith("-")
-            and (name := declaration_name(line)) is not None
-            and name != current_name
-            for line in changed
-        )
+            return True
     return False
 
 
