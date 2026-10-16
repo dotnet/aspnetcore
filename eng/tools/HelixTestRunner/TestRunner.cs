@@ -7,11 +7,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace HelixTestRunner;
 
 public class TestRunner
 {
+    private const string GuaranteedTestClassName = "AlwaysTestTests.SuccessfulTests";
+    private const string GuaranteedTestFilter = $"FullyQualifiedName~{GuaranteedTestClassName}";
+
     public TestRunner(HelixTestRunnerOptions options)
     {
         Options = options;
@@ -266,7 +270,7 @@ public class TestRunner
                 : "Quarantined!=true|Quarantined=false";
             if (!string.IsNullOrWhiteSpace(Options.TestFilter))
             {
-                filter = $"({filter})&({Options.TestFilter})";
+                filter = $"({filter})&(({Options.TestFilter})|({GuaranteedTestFilter}))";
             }
             var filterDesc = Options.Quarantined ? "quarantined" : "non-quarantined";
 
@@ -292,6 +296,12 @@ public class TestRunner
                     exitCode = result.ExitCode;
                 }
             }
+            else if (!Options.Quarantined &&
+                !string.IsNullOrWhiteSpace(Options.TestFilter) &&
+                !HasFilteredTestResults())
+            {
+                exitCode = 1;
+            }
         }
         catch (Exception e)
         {
@@ -299,6 +309,49 @@ public class TestRunner
             exitCode = 1;
         }
         return exitCode;
+    }
+
+    private bool HasFilteredTestResults()
+    {
+        const string resultsPath = "TestResults/TestResults.xml";
+
+        try
+        {
+            if (!File.Exists(resultsPath))
+            {
+                ProcessUtil.PrintMessage($"No test results were produced for filter '{Options.TestFilter}'.");
+                return false;
+            }
+
+            var results = XDocument.Load(resultsPath);
+            var hasFilteredTest = results
+                .Descendants()
+                .Where(element => element.Name.LocalName == "test")
+                .Any(element =>
+                {
+                    var testClass = element.Attribute("type")?.Value;
+                    if (!string.IsNullOrEmpty(testClass))
+                    {
+                        return !string.Equals(testClass, GuaranteedTestClassName, StringComparison.Ordinal);
+                    }
+
+                    var testName = element.Attribute("name")?.Value;
+                    return !string.IsNullOrEmpty(testName) &&
+                        !testName.StartsWith($"{GuaranteedTestClassName}.", StringComparison.Ordinal);
+                });
+
+            if (!hasFilteredTest)
+            {
+                ProcessUtil.PrintMessage($"The configured test filter '{Options.TestFilter}' did not select any tests.");
+            }
+
+            return hasFilteredTest;
+        }
+        catch (Exception e)
+        {
+            ProcessUtil.PrintMessage($"Exception validating test results for filter '{Options.TestFilter}': {e}");
+            return false;
+        }
     }
 
     public void UploadResults()
