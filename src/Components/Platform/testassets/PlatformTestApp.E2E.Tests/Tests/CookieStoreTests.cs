@@ -114,6 +114,21 @@ public partial class CookieStoreTests : BrowserTest
         }
     }
 
+    [TestMethod]
+    public async Task CookieStore_ThrowsNotSupportedExceptionWithoutTheBrowserApi()
+    {
+        // Same as a page that is not a secure context. The context belongs to this test only.
+        await _context.AddInitScriptAsync("delete window.cookieStore;");
+
+        foreach (var path in CookieStorePaths)
+        {
+            await NavigateAsync(path, "#get-cookie");
+            Assert.IsFalse(await _page.EvaluateAsync<bool>("'cookieStore' in window"));
+
+            await RunAsync("#get-cookie", "Not supported: JSException");
+        }
+    }
+
     private async Task NavigateAsync(string path, string interactiveSelector)
     {
         await _page.GotoAsync($"{_server.TestUrl}{path}");

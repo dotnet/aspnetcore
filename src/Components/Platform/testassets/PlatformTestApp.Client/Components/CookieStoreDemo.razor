@@ -90,7 +90,14 @@
 
     private async Task GetAsync()
     {
-        result = Format(await Browser.Window.CookieStore.GetAsync(name));
+        try
+        {
+            result = Format(await Browser.Window.CookieStore.GetAsync(name));
+        }
+        catch (NotSupportedException ex)
+        {
+            result = $"Not supported: {ex.InnerException?.GetType().Name}";
+        }
     }
 
     private async Task GetWithOptionsAsync()
