@@ -88,4 +88,78 @@ public class RewriteTokenizerTest
         var ex = Assert.Throws<FormatException>(() => Tokenizer.Tokenize("\""));
         Assert.Equal("Mismatched number of quotes: \"", ex.Message);
     }
+
+    [Theory]
+    [InlineData(@"\d")]
+    [InlineData(@"\w")]
+    [InlineData(@"\s")]
+    [InlineData(@"\b")]
+    public void Tokenize_PreservesRegexShorthandEscapeSequences(string shorthand)
+    {
+        var testString = @"RewriteRule ^/(" + shorthand + @")$ /result";
+        var tokens = Tokenizer.Tokenize(testString);
+
+        var expected = new List<string>();
+        expected.Add("RewriteRule");
+        expected.Add(@"^/(" + shorthand + @")$");
+        expected.Add("/result");
+        Assert.Equal(expected, tokens);
+    }
+
+    [Fact]
+    public void Tokenize_CheckEscapedBackslashIsUnescaped()
+    {
+        var testString = @"RewriteCond %{HTTPS}\\what !-f";
+        var tokens = Tokenizer.Tokenize(testString);
+
+        var expected = new List<string>();
+        expected.Add("RewriteCond");
+        expected.Add(@"%{HTTPS}\what");
+        expected.Add("!-f");
+        Assert.Equal(expected, tokens);
+    }
+
+    [Fact]
+    public void Tokenize_CheckQuotesWithStringContainingSpaceAndShorthand()
+    {
+        var testString = @"RewriteRule ""^/(\d) page$"" /result";
+        var tokens = Tokenizer.Tokenize(testString);
+
+        var expected = new List<string>();
+        expected.Add("RewriteRule");
+        expected.Add(@"^/(\d) page$");
+        expected.Add("/result");
+        Assert.Equal(expected, tokens);
+    }
+
+    [Fact]
+    public void Tokenize_RegexShorthandFollowedByEscapedSpace()
+    {
+        var testString = @"RewriteRule ^/(\d)\ test$ /result";
+        var tokens = Tokenizer.Tokenize(testString);
+
+        var expected = new List<string>();
+        expected.Add("RewriteRule");
+        expected.Add(@"^/(\d) test$");
+        expected.Add("/result");
+        Assert.Equal(expected, tokens);
+    }
+
+    [Theory]
+    [InlineData(@"\t", "\t")]
+    [InlineData(@"\x41", "A")]
+    [InlineData(@"\u0041", "A")]
+    [InlineData(@"\101", "A")]
+    public void Tokenize_UnescapesPreviouslySupportedEscapeSequences(string escaped, string unescaped)
+    {
+        var testString = @"RewriteCond %{HTTPS} " + escaped + " !-f";
+        var tokens = Tokenizer.Tokenize(testString);
+
+        var expected = new List<string>();
+        expected.Add("RewriteCond");
+        expected.Add("%{HTTPS}");
+        expected.Add(unescaped);
+        expected.Add("!-f");
+        Assert.Equal(expected, tokens);
+    }
 }
