@@ -205,16 +205,22 @@ public class TestRunner
             // Run test discovery to verify there are tests to run.
             // dotnet test accepts multiple DLL paths.
             var assemblyArgs = string.Join(" ", Options.Targets.Select(t => $"\"{t}\""));
+            var filterArgs = string.IsNullOrWhiteSpace(Options.TestFilter)
+                ? string.Empty
+                : $" --filter \"{Options.TestFilter}\"";
             ProcessUtil.PrintMessage($"Running test discovery for {Options.Targets.Length} assembly(ies).");
             var discoveryResult = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"test {assemblyArgs} --list-tests",
+                $"test {assemblyArgs} --list-tests{filterArgs}",
                 environmentVariables: EnvironmentVariables,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2 * Options.Targets.Length)).Token);
 
-            if (discoveryResult.StandardOutput.Contains("Exception thrown", StringComparison.Ordinal) ||
-                discoveryResult.StandardError.Contains("Exception thrown", StringComparison.Ordinal))
+            if (discoveryResult.ExitCode != 0 ||
+                discoveryResult.StandardOutput.Contains("Exception thrown", StringComparison.Ordinal) ||
+                discoveryResult.StandardError.Contains("Exception thrown", StringComparison.Ordinal) ||
+                discoveryResult.StandardOutput.Contains("No test matches the given testcase filter", StringComparison.Ordinal) ||
+                discoveryResult.StandardError.Contains("No test matches the given testcase filter", StringComparison.Ordinal))
             {
-                ProcessUtil.PrintMessage("Exception thrown during test discovery.");
+                ProcessUtil.PrintMessage("Test discovery failed.");
                 ProcessUtil.PrintMessage(discoveryResult.StandardOutput);
                 ProcessUtil.PrintMessage(discoveryResult.StandardError);
                 return false;
@@ -258,6 +264,10 @@ public class TestRunner
             var filter = Options.Quarantined
                 ? "Quarantined=true"
                 : "Quarantined!=true|Quarantined=false";
+            if (!string.IsNullOrWhiteSpace(Options.TestFilter))
+            {
+                filter = $"({filter})&({Options.TestFilter})";
+            }
             var filterDesc = Options.Quarantined ? "quarantined" : "non-quarantined";
 
             ProcessUtil.PrintMessage($"Running {filterDesc} tests for {Options.Targets.Length} assembly(ies).");

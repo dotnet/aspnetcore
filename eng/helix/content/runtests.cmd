@@ -11,6 +11,7 @@ set "$arch=%~4"
 set "$quarantined=%~5"
 set "$helixTimeout=%~6"
 set "$installPlaywright=%~7"
+set "$testFilter=%~8"
 
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set PLAYWRIGHT_BROWSERS_PATH=%CD%\ms-playwright
@@ -22,8 +23,8 @@ set "PATH=%HELIX_WORKITEM_ROOT%;%PATH%;%HELIX_WORKITEM_ROOT%\node\bin"
 echo Set path to: "%PATH%"
 echo.
 
-echo "Running tests: dotnet %HELIX_CORRELATION_PAYLOAD%/HelixTestRunner/HelixTestRunner.dll --targets-file !$targetsFile! --runtime !$aspRuntimeVersion! --queue !$queue! --arch !$arch! --quarantined !$quarantined! --helixTimeout !$helixTimeout! --playwright !$installPlaywright!"
-dotnet %HELIX_CORRELATION_PAYLOAD%/HelixTestRunner/HelixTestRunner.dll --targets-file !$targetsFile! --runtime !$aspRuntimeVersion! --queue !$queue! --arch !$arch! --quarantined !$quarantined! --helixTimeout !$helixTimeout! --playwright !$installPlaywright!
+echo "Running tests: dotnet %HELIX_CORRELATION_PAYLOAD%/HelixTestRunner/HelixTestRunner.dll --targets-file !$targetsFile! --runtime !$aspRuntimeVersion! --queue !$queue! --arch !$arch! --quarantined !$quarantined! --helixTimeout !$helixTimeout! --playwright !$installPlaywright! --filter !$testFilter!"
+dotnet %HELIX_CORRELATION_PAYLOAD%/HelixTestRunner/HelixTestRunner.dll --targets-file !$targetsFile! --runtime !$aspRuntimeVersion! --queue !$queue! --arch !$arch! --quarantined !$quarantined! --helixTimeout !$helixTimeout! --playwright !$installPlaywright! --filter "!$testFilter!"
 set exit_code=%errorlevel%
 
 echo "Finished running tests: exit_code=%exit_code%"
