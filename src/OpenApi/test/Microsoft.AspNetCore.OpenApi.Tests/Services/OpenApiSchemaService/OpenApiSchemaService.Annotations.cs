@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
@@ -224,23 +225,41 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         builder.MapPost("/orders", (DtoWithOnlyObsoleteReferenceProperty dto) => { });
         builder.MapPost("/shipments", (DtoWithOnlyCurrentReferenceProperty dto) => { });
 
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var ordersContent = Assert.Single(document.Paths["/orders"].Operations[HttpMethod.Post].RequestBody.Content);
-            var ordersProperty = Assert.Single(ordersContent.Value.Schema.Properties);
-            Assert.Equal("old", ordersProperty.Key);
-            var obsoleteReference = Assert.IsType<OpenApiSchemaReference>(ordersProperty.Value);
-            Assert.True(obsoleteReference.Deprecated);
-
-            var shipmentsContent = Assert.Single(document.Paths["/shipments"].Operations[HttpMethod.Post].RequestBody.Content);
-            var shipmentsProperty = Assert.Single(shipmentsContent.Value.Schema.Properties);
-            Assert.Equal("current", shipmentsProperty.Key);
-            var currentReference = Assert.IsType<OpenApiSchemaReference>(shipmentsProperty.Value);
-            Assert.False(currentReference.Deprecated);
-
-            var referencedSchema = document.Components.Schemas["NonObsoleteChildDto"];
-            Assert.False(referencedSchema.Deprecated);
-        });
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
+        var expectedComponents = """
+            {
+              "DtoWithOnlyCurrentReferenceProperty": {
+                "type": "object",
+                "properties": {
+                  "current": {
+                    "$ref": "#/components/schemas/NonObsoleteChildDto"
+                  }
+                }
+              },
+              "DtoWithOnlyObsoleteReferenceProperty": {
+                "type": "object",
+                "properties": {
+                  "old": {
+                    "deprecated": true,
+                    "$ref": "#/components/schemas/NonObsoleteChildDto"
+                  }
+                }
+              },
+              "NonObsoleteChildDto": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
     }
 
     [Fact]
@@ -250,18 +269,41 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         builder.MapPost("/", (DtoWithObsoleteNullableReferenceProperty dto) => { });
 
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var operation = document.Paths["/"].Operations[HttpMethod.Post];
-            var content = Assert.Single(operation.RequestBody.Content);
-            var property = Assert.Single(content.Value.Schema.Properties);
-            Assert.Equal("old", property.Key);
-            Assert.NotNull(property.Value.OneOf);
-            Assert.Contains(property.Value.OneOf, schema => schema is OpenApiSchemaReference);
-
-            var referencedSchema = document.Components.Schemas["NonObsoleteChildDto"];
-            Assert.False(referencedSchema.Deprecated);
-        });
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
+        // "deprecated" is inside the oneOf branch instead of on "old" until #69727 is fixed.
+        var expectedComponents = """
+            {
+              "DtoWithObsoleteNullableReferenceProperty": {
+                "type": "object",
+                "properties": {
+                  "old": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "deprecated": true,
+                        "$ref": "#/components/schemas/NonObsoleteChildDto"
+                      }
+                    ]
+                  }
+                }
+              },
+              "NonObsoleteChildDto": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
     }
 
     [Fact]
@@ -271,18 +313,34 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         builder.MapPost("/", (DtoWithObsoleteReferencePropertyOfObsoleteType dto) => { });
 
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var operation = document.Paths["/"].Operations[HttpMethod.Post];
-            var content = Assert.Single(operation.RequestBody.Content);
-            var property = Assert.Single(content.Value.Schema.Properties);
-            Assert.Equal("old", property.Key);
-            var reference = Assert.IsType<OpenApiSchemaReference>(property.Value);
-            Assert.True(reference.Deprecated);
-
-            var referencedSchema = document.Components.Schemas["ObsoleteDto"];
-            Assert.True(referencedSchema.Deprecated);
-        });
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
+        var expectedComponents = """
+            {
+              "DtoWithObsoleteReferencePropertyOfObsoleteType": {
+                "type": "object",
+                "properties": {
+                  "old": {
+                    "deprecated": true,
+                    "$ref": "#/components/schemas/ObsoleteDto"
+                  }
+                }
+              },
+              "ObsoleteDto": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                },
+                "deprecated": true
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
     }
 
     [Fact]
