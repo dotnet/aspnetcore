@@ -436,6 +436,7 @@ public abstract class NavigationManager
             CancellationToken = cancellationToken,
         };
 
+        var navigationCanceled = false;
         try
         {
             if (handlerCount == 1)
@@ -518,6 +519,7 @@ public abstract class NavigationManager
             {
                 // This navigation was in progress when a successive navigation occurred.
                 // We treat this as a canceled navigation.
+                navigationCanceled = true;
                 return false;
             }
 
@@ -525,7 +527,12 @@ public abstract class NavigationManager
         }
         finally
         {
-            cts.Cancel();
+            // Only signal cancellation of the LocationChangingContext.CancellationToken when the
+            // navigation was superseded by another navigation.
+            if (navigationCanceled)
+            {
+                cts.Cancel();
+            }
             cts.Dispose();
 
             if (_locationChangingCts == cts)

@@ -818,7 +818,14 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Cancel the navigation using the first navigation lock
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-cancel")).Click();
 
-        // The second navigation lock callback has completed and has thus removed its navigation controls
+        // The first navigation lock callback completed and removed its navigation controls
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // Preventing navigation does not cancel the other location changing handlers
+        Browser.Exists(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
+
+        // Complete the second navigation lock callback
+        Browser.FindElement(By.CssSelector("#navigation-lock-1 > div.blocking-controls > button.navigation-cancel")).Click();
         Browser.DoesNotExist(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
 
         // The navigation was canceled and the URI has not changed
