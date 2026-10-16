@@ -8,5 +8,6 @@ internal sealed record class ValidatableProperty(
     string TypeFQN,
     string Name,
     string? DisplayName,
-    bool HasResourceDisplayAttribute
+    bool HasResourceDisplayAttribute,
+    bool IsUnionValue = false
 );

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
@@ -108,8 +109,14 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var hasValidatableUnionCases = false;
         if (typeSymbol.IsUnion)
         {
+            var skipValidationAttributeSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
             foreach (var unionCaseType in typeSymbol.UnionCaseTypes)
             {
+                if (unionCaseType.HasAttribute(skipValidationAttributeSymbol))
+                {
+                    continue;
+                }
+
                 hasValidatableUnionCases |= TryExtractValidatableType(unionCaseType, wellKnownTypes, validatableTypes, visitedTypes);
             }
         }
@@ -339,7 +346,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 TypeFQN: member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 Name: member.Name,
                 DisplayName: memberLiteral,
-                HasResourceDisplayAttribute: memberHasResource));
+                HasResourceDisplayAttribute: memberHasResource,
+                IsUnionValue: IsUnionValueProperty(member)));
         }
 
         return [.. members];

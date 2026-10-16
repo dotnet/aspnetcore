@@ -10,6 +10,206 @@ namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanSkipValidationForUnionCase(bool useAsync)
+    {
+        var source = """
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Validation;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+
+var app = builder.Build();
+app.MapPost("/", (Command command) => Results.Ok());
+app.Run();
+
+[SkipValidation]
+public sealed class IgnoredCase
+{
+    [Range(1, 10)]
+    public int Count { get; init; }
+}
+
+public sealed class CheckedCase
+{
+    [Range(1, 10)]
+    public int Count { get; init; }
+}
+
+[JsonUnion(TypeClassifier = typeof(CommandClassifierFactory))]
+public union Command(IgnoredCase, CheckedCase);
+
+public sealed class CommandClassifierFactory : JsonTypeClassifierFactory<Command>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options)
+        => static (ref Utf8JsonReader reader) =>
+        {
+            var clone = reader;
+            clone.Read();
+            return clone.ValueTextEquals("ignored") ? typeof(IgnoredCase) : typeof(CheckedCase);
+        };
+}
+""";
+
+        await Verify(source, out var compilation);
+
+        await VerifyValidatableType(compilation, "Command", async (validationOptions, unionType) =>
+        {
+            Assert.True(validationOptions.TryGetValidatableTypeInfo(unionType, out var validatableTypeInfo));
+
+            var checkedType = unionType.Assembly.GetType("CheckedCase")!;
+            var checkedValue = Activator.CreateInstance(checkedType)!;
+            var checkedUnion = Activator.CreateInstance(unionType, checkedValue)!;
+            var checkedContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, checkedUnion, checkedContext, useAsync, default);
+
+            var error = Assert.Single(checkedContext.ValidationErrors!);
+            Assert.Equal("Value.Count", error.Key);
+            Assert.Equal("The field Count must be between 1 and 10.", Assert.Single(error.Value).ErrorMessage);
+
+            checkedType.GetProperty("Count")!.SetValue(checkedValue, 1);
+            var validContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, checkedUnion, validContext, useAsync, default);
+
+            Assert.Null(validContext.ValidationErrors);
+
+            var ignoredType = unionType.Assembly.GetType("IgnoredCase")!;
+            var ignoredValue = Activator.CreateInstance(ignoredType)!;
+            var ignoredUnion = Activator.CreateInstance(unionType, ignoredValue)!;
+            var ignoredContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, ignoredUnion, ignoredContext, useAsync, default);
+
+            Assert.Null(ignoredContext.ValidationErrors);
+        });
+
+        await VerifyEndpoint(compilation, "/", async (endpoint, serviceProvider) =>
+        {
+            var context = CreateHttpContextWithPayload("""{"ignored":true,"Count":0}""", serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            var invalidContext = CreateHttpContextWithPayload("""{"Count":0}""", serviceProvider);
+
+            await endpoint.RequestDelegate(invalidContext);
+
+            var problemDetails = await AssertBadRequest(invalidContext);
+            var error = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value.Count", error.Key);
+            Assert.Equal("The field Count must be between 1 and 10.", Assert.Single(error.Value));
+
+            var validContext = CreateHttpContextWithPayload("""{"Count":1}""", serviceProvider);
+
+            await endpoint.RequestDelegate(validContext);
+
+            Assert.Equal(StatusCodes.Status200OK, validContext.Response.StatusCode);
+        });
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanValidateUnionCollectionCases(bool useAsync)
+    {
+        var source = """
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Validation;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+
+var app = builder.Build();
+app.MapPost("/", (Batch batch) => Results.StatusCode(201));
+app.Run();
+
+public sealed class CheckedCase
+{
+    [Range(1, 10)]
+    public int Count { get; init; }
+}
+
+public union Batch(CheckedCase[], bool);
+""";
+
+        await Verify(source, out var compilation);
+
+        await VerifyValidatableType(compilation, "Batch", async (validationOptions, unionType) =>
+        {
+            Assert.True(validationOptions.TryGetValidatableTypeInfo(unionType, out var validatableTypeInfo));
+
+            var primitiveUnion = Activator.CreateInstance(unionType, true)!;
+            var primitiveContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, primitiveUnion, primitiveContext, useAsync, default);
+
+            Assert.Null(primitiveContext.ValidationErrors);
+
+            var checkedType = unionType.Assembly.GetType("CheckedCase")!;
+            var emptyUnion = Activator.CreateInstance(unionType, [Array.CreateInstance(checkedType, 0)])!;
+            var emptyContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, emptyUnion, emptyContext, useAsync, default);
+
+            Assert.Null(emptyContext.ValidationErrors);
+
+            var checkedValue = Activator.CreateInstance(checkedType)!;
+            checkedType.GetProperty("Count")!.SetValue(checkedValue, 10);
+            var array = Array.CreateInstance(checkedType, 2);
+            array.SetValue(checkedValue, 0);
+            var arrayUnion = Activator.CreateInstance(unionType, [array])!;
+            var validContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, arrayUnion, validContext, useAsync, default);
+
+            Assert.Null(validContext.ValidationErrors);
+
+            checkedType.GetProperty("Count")!.SetValue(checkedValue, 0);
+            var invalidContext = new ValidateContext { ValidationOptions = validationOptions };
+
+            await ValidateAsync(validatableTypeInfo, arrayUnion, invalidContext, useAsync, default);
+
+            var error = Assert.Single(invalidContext.ValidationErrors!);
+            Assert.Equal("Value[0].Count", error.Key);
+            Assert.Equal("The field Count must be between 1 and 10.", Assert.Single(error.Value).ErrorMessage);
+        });
+
+        await VerifyEndpoint(compilation, "/", async (endpoint, serviceProvider) =>
+        {
+            var invalidContext = CreateHttpContextWithPayload("""[{"Count":0}]""", serviceProvider);
+
+            await endpoint.RequestDelegate(invalidContext);
+
+            var problemDetails = await AssertBadRequest(invalidContext);
+            var error = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value[0].Count", error.Key);
+            Assert.Equal("The field Count must be between 1 and 10.", Assert.Single(error.Value));
+
+            foreach (var payload in new[] { """[{"Count":10}]""", "[]", "true" })
+            {
+                var validContext = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(validContext);
+
+                Assert.Equal(StatusCodes.Status201Created, validContext.Response.StatusCode);
+            }
+        });
+    }
+
     [Fact]
     public async Task CanValidateUnionCases()
     {

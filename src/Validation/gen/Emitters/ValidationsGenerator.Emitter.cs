@@ -62,7 +62,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
+            global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null,
+            bool isUnionValue = false) : base(containingType, propertyType, name, displayNameInfo, isUnionValue)
         {
             ContainingType = containingType;
         }
@@ -390,6 +391,10 @@ namespace Microsoft.Extensions.Validation.Generated
         cw.WriteLine($"containingType: typeof({member.ContainingTypeFQN}),");
         cw.WriteLine($"propertyType: typeof({member.TypeFQN}),");
         cw.WriteLine($"name: \"{member.Name}\",");
+        if (member.IsUnionValue)
+        {
+            cw.WriteLine("isUnionValue: true,");
+        }
         cw.WriteLine($"displayNameInfo: {FormatPropertyDisplayNameInfo(member)}");
         cw.Indent--;
         cw.WriteLine("),");
