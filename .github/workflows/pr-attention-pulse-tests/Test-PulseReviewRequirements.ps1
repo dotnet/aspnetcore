@@ -194,8 +194,7 @@ Invoke-Control "SnapshotTrustedActionsBinding" {
     foreach ($binding in @(
         @{ Name = "REPOSITORY"; Context = "repository"; Parameter = "Repository" },
         @{ Name = "SERVER_URL"; Context = "server_url"; Parameter = "ServerUrl" },
-        @{ Name = "RUN_ID"; Context = "run_id"; Parameter = "RunId" },
-        @{ Name = "RUN_ATTEMPT"; Context = "run_attempt"; Parameter = "RunAttempt" }))
+        @{ Name = "RUN_ID"; Context = "run_id"; Parameter = "RunId" }))
     {
         $environment = "PULSE_SNAPSHOT_$($binding.Name)"
         $assignment = $environment + ': ${{ github.' + $binding.Context + ' }}'
@@ -205,6 +204,18 @@ Invoke-Control "SnapshotTrustedActionsBinding" {
             $safeOutputs.Contains("-Expected$($binding.Parameter) `$env:$environment")) "The renderer and safe-output validator must consume their trusted '$environment' binding."
         Assert-True (-not $agentStep.Contains($environment)) "Snapshot preparation context must not be supplied to inference."
     }
+    $agentAttempt = 'PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}'
+    $safeOutputsAttempt = 'PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ needs.snapshot_binding.outputs.pulse_snapshot_run_attempt }}'
+    $snapshotBinding = Get-CompiledJob "snapshot_binding"
+    Assert-True ([regex]::Matches($agent, [regex]::Escape($agentAttempt)).Count -eq 1) "Snapshot preparation must bind the producer attempt from trusted Actions context."
+    Assert-True ($snapshotBinding.Contains("needs: agent") -and
+        $snapshotBinding.Contains('pulse_snapshot_run_attempt: ${{ steps.read_binding.outputs.run_attempt }}') -and
+        $snapshotBinding.Contains('"run_attempt=$attempt" | Out-File -FilePath $env:GITHUB_OUTPUT')) "A trusted intermediate job must preserve the frozen producer attempt as a job output."
+    Assert-True ([regex]::Matches($safeOutputs, [regex]::Escape($safeOutputsAttempt)).Count -eq 1 -and
+        -not $safeOutputs.Contains($agentAttempt)) "A failed-job publication retry must validate the frozen snapshot against the successful producer attempt, not the publication attempt."
+    Assert-True ($agent.Contains("-RunAttempt `$env:PULSE_SNAPSHOT_RUN_ATTEMPT") -and
+        $safeOutputs.Contains("-ExpectedRunAttempt `$env:PULSE_SNAPSHOT_RUN_ATTEMPT")) "The renderer and safe-output validator must consume the producer attempt binding."
+    Assert-True (-not $agentStep.Contains("PULSE_SNAPSHOT_RUN_ATTEMPT")) "Snapshot preparation context must not be supplied to inference."
     Assert-True ($agent.Contains('-SnapshotContextPath .pr-attention-pulse/pulse-snapshot-context.json') -and
         $safeOutputs.Contains('pr-attention-pulse-validator/pulse-snapshot-context.json')) "Frozen identity must be staged once and then read from the validator artifact in the safe-output job."
     $renderer = Get-Content -LiteralPath (Join-Path $supportRoot "Render-PRAttentionPulse.ps1") -Raw

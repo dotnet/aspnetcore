@@ -112,7 +112,7 @@ function Remove-FixtureSnapshotBlock
     $snapshotStart = $Body.LastIndexOf("${separator}## Snapshot`n", [StringComparison]::Ordinal)
     Assert-True ($snapshotStart -ge 0) "The fixture body must contain a snapshot section."
     $suffix = $separator + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse) `
-        -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -MaxSnapshotLength (65000 - $snapshotStart - $separator.Length))
+        -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -MaxSnapshotLength (64000 - $snapshotStart - $separator.Length))
     Assert-True ($Body.EndsWith($suffix, [StringComparison]::Ordinal)) "The fixture body must end with its exact frozen snapshot."
     Assert-True ([regex]::Matches($Body, "(?m)^## Snapshot$").Count -eq 1) "Only one snapshot section is permitted."
 
@@ -1156,7 +1156,7 @@ try
     Assert-True ($combinedNormal.areas[1].id -ceq "repository-wide" -and -not $combinedNormal.areas[1].openByDefault) "Repository-wide must be the second, collapsed baseline."
     $combinedNormalBody = Invoke-Renderer -Pulse $combinedNormal
     Assert-CombinedPresentationLayout -Pulse $combinedNormal -Body $combinedNormalBody
-    Assert-True ($combinedNormalBody.Length -le 65000) "The combined two-area report must remain within the publication body limit."
+    Assert-True ($combinedNormalBody.Length -le 64000) "The combined two-area report must remain within the canonical publication body limit."
     Assert-True ([regex]::Matches($combinedNormalBody, "\[dotnet/aspnetcore#101\]\(https://github\.com/dotnet/aspnetcore/pull/101\)").Count -eq 2) "The same pull request may appear once in each independently generated area."
     $combinedPostIngestionBody = Invoke-PinnedOutputSanitizer -Content $combinedNormalBody
     Assert-True ([string]::Equals($combinedPostIngestionBody, $combinedNormalBody, [StringComparison]::Ordinal)) "Pinned gh-aw output sanitization must preserve the complete combined report byte-for-byte."
@@ -1858,7 +1858,7 @@ try
                 $expectedRow = Invoke-PinnedOutputSanitizer -Content $rawRows[$index]
                 Assert-True ([string]::Equals($normalizedRows[$index], $expectedRow, [StringComparison]::Ordinal)) "Only the existing pinned Unicode transformations may change a complete candidate row."
             }
-            Assert-True ($normalized.Length -ge 200 -and $normalized.Length -le 65000) "The original publication body size limits must remain sufficient."
+            Assert-True ($normalized.Length -ge 200 -and $normalized.Length -le 64000) "The canonical publication body size limits must reserve room for runtime provenance."
         }
     }
 

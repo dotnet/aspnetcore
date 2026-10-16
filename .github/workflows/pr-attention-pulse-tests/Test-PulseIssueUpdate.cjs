@@ -2,8 +2,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const [actionsDir, lockPath, bodyPath, snapshotManifestPath] = process.argv.slice(2);
+const [actionsDir, lockPath, bodyPath, snapshotManifestPath, publishedBodyOutputPath] = process.argv.slice(2);
 const dashboardIssueNumber = 69328;
+const body = fs.readFileSync(bodyPath, "utf8");
+const snapshotRun = body.match(/Producing workflow run]\(https:\/\/github\.com\/dotnet\/aspnetcore\/actions\/runs\/([1-9][0-9]*)\/attempts\//);
+const testRunId = Number(snapshotRun?.[1] ?? 38956798671);
 const lock = fs.readFileSync(lockPath, "utf8");
 const job = lock.slice(lock.indexOf("\n  safe_outputs:"));
 const step = job.slice(job.indexOf("      - name: Process Safe Outputs"), job.indexOf("      - name:", job.indexOf("      - name: Process Safe Outputs") + 10));
@@ -19,7 +22,7 @@ process.env.GH_AW_ALLOWED_GITHUB_REFS = "dotnet/aspnetcore";
 process.env.GH_AW_DETECTION_CONCLUSION = "success";
 process.env.GITHUB_REPOSITORY = "dotnet/aspnetcore";
 process.env.GITHUB_REPOSITORY_ID = "1";
-process.env.GITHUB_RUN_ID = "1";
+process.env.GITHUB_RUN_ID = String(testRunId);
 process.env.GITHUB_RUN_ATTEMPT = "1";
 process.env.GITHUB_JOB = "safe_outputs";
 process.env.GH_AW_JOB_CHECK_RUN_ID = "1";
@@ -27,17 +30,19 @@ process.env.GH_AW_JOB_CHECK_RUN_ID = "1";
 global.core = { info() {}, warning() {}, error() {}, debug() {} };
 global.context = {
   repo: { owner: "dotnet", repo: "aspnetcore" },
-  serverUrl: "https://github.com", runId: 1, eventName: "workflow_dispatch", payload: {},
+  serverUrl: "https://github.com", runId: testRunId, eventName: "workflow_dispatch", payload: {},
 };
 const { main } = require(path.join(actionsDir, "update_issue.cjs"));
 const { appendExecutionProvenance } = require(path.join(actionsDir, "execution_provenance.cjs"));
 const { generateWorkflowIdMarker } = require(path.join(actionsDir, "generate_footer.cjs"));
-const body = fs.readFileSync(bodyPath, "utf8");
 function publishedBody(canonicalBody) {
   return appendExecutionProvenance(
     `${canonicalBody}\n\n${generateWorkflowIdMarker(jobWorkflowId)}`,
     workflowName,
-    "https://github.com/dotnet/aspnetcore/actions/runs/1");
+    `https://github.com/dotnet/aspnetcore/actions/runs/${testRunId}`);
+}
+if (publishedBodyOutputPath) {
+  fs.writeFileSync(publishedBodyOutputPath, publishedBody(body), "utf8");
 }
 const issue = {
   number: dashboardIssueNumber, title: "[pr-attention-pulse] ASP.NET Core PR Attention Pulse",
@@ -161,6 +166,7 @@ async function run() {
       assert.equal(writes.length, 1);
       assert.deepEqual(Object.keys(writes[0]).sort(), ["body", "issue_number", "owner", "repo"]);
       assert.equal(writes[0].body, publishedBody(body), "The real pinned issue handler must preserve the canonical body and append trusted provenance.");
+      assert.ok(writes[0].body.length <= 65536, "The handler-emitted issue body must fit GitHub's issue body limit.");
       const repeated = await handler({ type: "update_issue", issue_number: dashboardIssueNumber, operation: "replace", body });
       assert.equal(repeated.success, false);
       assert.equal(writes.length, 1, "The one-item limit must still prevent another mutation.");

@@ -54,6 +54,35 @@ jobs:
             throw "The fixed Pulse dashboard target must be an open issue whose title starts with '[pr-attention-pulse]'."
           }
 
+  snapshot_binding:
+    name: Preserve Pulse snapshot producer binding
+    runs-on: ubuntu-latest
+    needs: [agent]
+    outputs:
+      pulse_snapshot_run_attempt: ${{ steps.read_binding.outputs.run_attempt }}
+    steps:
+      - name: Download trusted Pulse publication validator
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pulse-publication-validator
+          path: ${{ runner.temp }}/pr-attention-pulse-validator
+
+      - name: Read producer attempt
+        id: read_binding
+        shell: pwsh
+        env:
+          EXPR_RUNNER_TEMP: ${{ runner.temp }}
+        run: |
+          $contextPath = Join-Path $env:EXPR_RUNNER_TEMP "pr-attention-pulse-validator/pulse-snapshot-context.json"
+          $context = Get-Content -LiteralPath $contextPath -Raw | ConvertFrom-Json -Depth 20
+          $attempt = [string]$context.runAttempt
+          if ($attempt -cnotmatch "\A[1-9][0-9]*\z")
+          {
+            throw "The frozen Pulse snapshot producer attempt is invalid."
+          }
+
+          "run_attempt=$attempt" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
   activation:
     steps:
       - name: Remove repository data from activation artifact
@@ -70,7 +99,7 @@ jobs:
             fi
           done
   safe_outputs:
-    needs: [validate_dashboard_target]
+    needs: [validate_dashboard_target, snapshot_binding]
     if: "needs.agent.result == 'success'"
     pre-steps:
       - name: Revalidate fixed Pulse dashboard target
@@ -407,7 +436,7 @@ safe-outputs:
         PULSE_SNAPSHOT_REPOSITORY: ${{ github.repository }}
         PULSE_SNAPSHOT_SERVER_URL: ${{ github.server_url }}
         PULSE_SNAPSHOT_RUN_ID: ${{ github.run_id }}
-        PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}
+        PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ needs.snapshot_binding.outputs.pulse_snapshot_run_attempt }}
         EXPR_RUNNER_TEMP: ${{ runner.temp }}
       run: |
         $dashboardIssueNumber = 69328
