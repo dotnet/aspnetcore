@@ -103,7 +103,8 @@ public sealed class CookieStore : IInternalAsyncDisposal
     }
 
     /// <summary>
-    /// Sets a cookie with the specified name and value, replacing any existing cookie with the same name.
+    /// Sets a cookie with the specified name and value for the host of the current page and the path <c>"/"</c>,
+    /// replacing any existing cookie with the same name, host, and path.
     /// </summary>
     /// <param name="name">The name of the cookie.</param>
     /// <param name="value">The value of the cookie.</param>
@@ -136,7 +137,8 @@ public sealed class CookieStore : IInternalAsyncDisposal
     }
 
     /// <summary>
-    /// Deletes the cookie with the specified name, if it exists.
+    /// Deletes the cookie with the specified name that is restricted to the host of the current page and has the path <c>"/"</c>, if it exists.
+    /// A cookie with another domain or path is not deleted.
     /// </summary>
     /// <param name="name">The name of the cookie to delete.</param>
     /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
