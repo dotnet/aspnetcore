@@ -185,7 +185,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Download review output for publication preflight
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.2
         with:
           pattern: "{agent,agent-output-fallback}"
           merge-multiple: true

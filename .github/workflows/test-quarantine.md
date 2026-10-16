@@ -1343,7 +1343,7 @@ on:
         SCRIPT
 
     - name: Upload deterministic evidence for safe output validation
-      uses: actions/upload-artifact@v7.0.1
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: |
@@ -1402,7 +1402,7 @@ safe-outputs:
   steps:
     - name: Download deterministic quarantine evidence
       continue-on-error: true
-      uses: actions/download-artifact@v8.0.1
+      uses: actions/download-artifact@v8.0.2
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: ${{ runner.temp }}/test-quarantine-evidence
