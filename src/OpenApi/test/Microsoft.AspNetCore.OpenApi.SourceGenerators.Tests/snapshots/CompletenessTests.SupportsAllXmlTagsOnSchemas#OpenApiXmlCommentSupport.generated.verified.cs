@@ -528,8 +528,11 @@ T", null, null, false, null, null, null));
                     }
                     if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                     {
-                        var modelName = GetModelName(propertyInfo, propertyInfo.Name);
-                        var parameter = GetOperationParameter(operation, modelName);
+                        // Prefer the name resolved by the API description. It accounts for binding
+                        // attributes applied to a positional record's constructor parameter, which are
+                        // not visible on the property that the parameter maps to.
+                        var parameter = GetOperationParameter(operation, parameterDescription.Name)
+                            ?? GetOperationParameter(operation, GetModelName(propertyInfo, propertyInfo.Name));
                         var description = propertyComment.Summary;
                         if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
                         {
