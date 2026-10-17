@@ -56,13 +56,13 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
         if (string.IsNullOrWhiteSpace(userName))
         {
             errors ??= new List<IdentityError>();
-            errors.Add(Describer.InvalidUserName(userName));
+            errors.Add(Describer.InvalidUserName(userName, manager.Options.User.AllowedUserNameCharacters));
         }
         else if (!string.IsNullOrEmpty(manager.Options.User.AllowedUserNameCharacters) &&
             userName.Any(c => !manager.Options.User.AllowedUserNameCharacters.Contains(c)))
         {
             errors ??= new List<IdentityError>();
-            errors.Add(Describer.InvalidUserName(userName));
+            errors.Add(Describer.InvalidUserName(userName, manager.Options.User.AllowedUserNameCharacters));
         }
         else
         {
