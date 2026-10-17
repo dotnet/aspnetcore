@@ -14,7 +14,6 @@ internal sealed class DefaultWebSocketManager : WebSocketManager
     private static readonly Func<IFeatureCollection, IHttpWebSocketFeature?> _nullWebSocketFeature = f => null;
 
     private FeatureReferences<FeatureInterfaces> _features;
-    private static readonly WebSocketAcceptContext _defaultWebSocketAcceptContext = new WebSocketAcceptContext();
 
     public DefaultWebSocketManager(IFeatureCollection features)
     {
@@ -60,8 +59,7 @@ internal sealed class DefaultWebSocketManager : WebSocketManager
 
     public override Task<WebSocket> AcceptWebSocketAsync(string? subProtocol)
     {
-        var acceptContext = subProtocol is null ? _defaultWebSocketAcceptContext :
-            new WebSocketAcceptContext() { SubProtocol = subProtocol };
+        var acceptContext =  new WebSocketAcceptContext { SubProtocol = subProtocol };
         return AcceptWebSocketAsync(acceptContext);
     }
 
