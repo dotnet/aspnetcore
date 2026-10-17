@@ -22,6 +22,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 {
     private static readonly string _fullHubName = typeof(THub).FullName ?? typeof(THub).Name;
 
+    private const int MaxActivityTags = 7;
+
+    [ThreadStatic]
+    private static List<KeyValuePair<string, object?>>? t_activityTags;
+
     private readonly Dictionary<string, HubMethodDescriptor> _methods = new(StringComparer.OrdinalIgnoreCase);
     private readonly Utf8HashLookup _cachedMethodNames = new();
     private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -93,7 +98,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
             InitializeHub(hub, connection, hubCallerContext, invokeAllowed: false);
 
-            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger, connection);
+            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, links: null, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger, connection);
 
             if (_onConnectedMiddleware != null)
             {
@@ -129,7 +134,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             var hubCallerContext = connection.HubCallerContext;
             InitializeHub(hub, connection, hubCallerContext);
 
-            activity = StartActivity(SignalRServerActivitySource.OnDisconnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger, connection);
+            activity = StartActivity(SignalRServerActivitySource.OnDisconnected, ActivityKind.Internal, links: null, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger, connection);
 
             if (_onDisconnectedMiddleware != null)
             {
@@ -176,7 +181,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             var hubCallerContext = connection.HubCallerContext;
             InitializeHub(hub, connection, hubCallerContext, invokeAllowed: false);
 
-            activity = StartActivity(SignalRServerActivitySource.OnAuthenticationRefreshed, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthenticationRefreshedAsync), headers: null, _logger, connection);
+            activity = StartActivity(SignalRServerActivitySource.OnAuthenticationRefreshed, ActivityKind.Internal, links: null, scope.ServiceProvider, nameof(hub.OnAuthenticationRefreshedAsync), headers: null, _logger, connection);
 
             await hub.OnAuthenticationRefreshedAsync();
         }
@@ -432,6 +437,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                     // Invoke or Send
                     static async Task ExecuteInvocation(DefaultHubDispatcher<THub> dispatcher,
                                                         ObjectMethodExecutor methodExecutor,
+                                                        HubMethodDescriptor descriptor,
                                                         THub hub,
                                                         object?[] arguments,
                                                         AsyncServiceScope scope,
@@ -455,7 +461,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
                         // Use hubMethodInvocationMessage.Target instead of methodExecutor.MethodInfo.Name
                         // We want to take HubMethodNameAttribute into account which will be the same as what the invocation target is
-                        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger, connection);
+                        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivityLinks, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger, connection, descriptor);
 
                         // Register the CancellationTokenSource if present so CancelInvocationMessage can cancel it
                         var ctsRegistered = false;
@@ -523,7 +529,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         }
                     }
 
-                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall, cts, streamOwner);
+                    invocation = ExecuteInvocation(this, methodExecutor, descriptor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall, cts, streamOwner);
                 }
 
                 if (isStreamCall || isStreamResponse)
@@ -600,7 +606,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             Activity.Current = null;
         }
 
-        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger, connection);
+        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivityLinks, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger, connection, descriptor);
 
         var ctsRegistered = false;
         try
@@ -963,7 +969,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
     // Starts an Activity for a Hub method invocation and sets up all the tags and other state.
     // Make sure to call Activity.Stop() once the Hub method completes, and consider calling SetActivityError on exception.
-    private static Activity? StartActivity(string operationName, ActivityKind kind, Activity? linkedActivity, IServiceProvider serviceProvider, string methodName, IDictionary<string, string>? headers, ILogger logger, HubConnectionContext? connection = null)
+    private static Activity? StartActivity(string operationName, ActivityKind kind, IEnumerable<ActivityLink>? links, IServiceProvider serviceProvider, string methodName, IDictionary<string, string>? headers, ILogger logger, HubConnectionContext? connection = null, HubMethodDescriptor? descriptor = null)
     {
         var activitySource = serviceProvider.GetService<SignalRServerActivitySource>()?.ActivitySource;
         if (activitySource is null)
@@ -977,51 +983,62 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             return null;
         }
 
-        var tagList = new TagList
-        {
-            { "rpc.method", methodName },
-            { "rpc.system", "signalr" },
-            { "rpc.service", _fullHubName }
-        };
-        
-        // Add connection endpoint tags if connection is available
-        if (connection is not null)
-        {
-            ConnectionEndpointTags.AddConnectionEndpointTags(ref tagList, connection.Features);
-        }
-
-        IEnumerable<KeyValuePair<string, object?>> tags = tagList;
-        IEnumerable<ActivityLink>? links = (linkedActivity is not null) ? [new ActivityLink(linkedActivity.Context)] : null;
+        // Use a reusable list for the tags rather than a TagList, which would be boxed, along with its enumerator,
+        // for every invocation. This is safe because the tags are copied into the activity when it's created. The
+        // list is taken from the thread-static field while it's in use so a reentrant call can't modify it.
+        // Don't build a TagList and copy it into the list either. There's a JIT performance issue that can cause
+        // the copy operation to be up to 10x slower with AVX, see https://github.com/dotnet/runtime/issues/133784.
+        var tags = t_activityTags ?? new List<KeyValuePair<string, object?>>(MaxActivityTags);
+        t_activityTags = null;
 
         Activity? activity;
-        if (headers != null)
+        try
         {
-            var propagator = serviceProvider.GetService<DistributedContextPropagator>() ?? DistributedContextPropagator.Current;
+            // Update MaxActivityTags when adding tags here or in ConnectionEndpointTags.
+            tags.Add(new("rpc.method", methodName));
+            tags.Add(new("rpc.system", "signalr"));
+            tags.Add(new("rpc.service", _fullHubName));
 
-            activity = ActivityCreator.CreateFromRemote(
-                activitySource,
-                propagator,
-                headers,
-                static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
-                {
-                    fieldValues = default;
-                    var headers = (IDictionary<string, string>)carrier!;
-                    headers.TryGetValue(fieldName, out fieldValue);
-                },
-                operationName,
-                kind,
-                tags,
-                links,
-                loggingEnabled);
+            // Add connection endpoint tags if connection is available
+            if (connection is not null)
+            {
+                ConnectionEndpointTags.AddConnectionEndpointTags(ref tags, connection.Features);
+            }
+
+            if (headers != null)
+            {
+                var propagator = serviceProvider.GetService<DistributedContextPropagator>() ?? DistributedContextPropagator.Current;
+
+                activity = ActivityCreator.CreateFromRemote(
+                    activitySource,
+                    propagator,
+                    headers,
+                    static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
+                    {
+                        fieldValues = default;
+                        var headers = (IDictionary<string, string>)carrier!;
+                        headers.TryGetValue(fieldName, out fieldValue);
+                    },
+                    operationName,
+                    kind,
+                    tags,
+                    links,
+                    loggingEnabled);
+            }
+            else
+            {
+                activity = activitySource.CreateActivity(operationName, kind, parentId: null, tags: tags, links: links);
+            }
         }
-        else
+        finally
         {
-            activity = activitySource.CreateActivity(operationName, kind, parentId: null, tags: tags, links: links);
+            tags.Clear();
+            t_activityTags = tags;
         }
 
         if (activity is not null)
         {
-            activity.DisplayName = $"{_fullHubName}/{methodName}";
+            activity.DisplayName = descriptor?.GetActivityDisplayName(_fullHubName, methodName) ?? $"{_fullHubName}/{methodName}";
             activity.Start();
         }
 
