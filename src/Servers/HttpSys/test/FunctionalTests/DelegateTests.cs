@@ -221,7 +221,6 @@ public class DelegateTests : LoggedTest
 
     [ConditionalFact]
     [DelegateSupportedCondition(true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60141")]
     public async Task DelegateAfterReceiverRestart()
     {
         var queueName = Guid.NewGuid().ToString();
@@ -263,7 +262,8 @@ public class DelegateTests : LoggedTest
             options.UrlPrefixes.Clear();
             options.UrlPrefixes.Add(receiverAddress);
         }, LoggerFactory);
-
+        destination?.Dispose();
+        destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
         responseString = await SendRequestAsync(delegatorAddress);
         Assert.Equal(_expectedResponseString, responseString);
 
