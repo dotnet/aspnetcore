@@ -1107,6 +1107,30 @@ public class ApiExplorerTest : LoggedTest
     }
 
     [Fact]
+    public async Task ApiExplorer_Parameters_ComplexModelFromHeader()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("http://localhost/ApiExplorerParameters/ComplexModelFromHeader");
+
+        var body = await response.Content.ReadAsStringAsync();
+        var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+        // Assert
+        var description = Assert.Single(result);
+        var parameters = description.ParameterDescriptions;
+
+        Assert.Equal(2, parameters.Count);
+
+        var authorization = Assert.Single(parameters, p => p.Name == "Authorization");
+        Assert.Equal(BindingSource.Header.Id, authorization.Source);
+        Assert.Equal(typeof(string).FullName, authorization.Type);
+
+        var contentType = Assert.Single(parameters, p => p.Name == "ContentType");
+        Assert.Equal(BindingSource.Header.Id, contentType.Source);
+        Assert.Equal(typeof(string).FullName, contentType.Type);
+    }
+
+    [Fact]
     public async Task ApiExplorer_Parameters_DefaultValue()
     {
         // Arrange & Act
