@@ -1,0 +1,15 @@
+@{
+    void RenderTree(int depth, int maxDepth)
+    {
+        if (depth >= maxDepth)
+        {
+            return;
+        }
+
+        <FluentTreeItem Text="item">
+            @{ RenderTree(depth + 1, maxDepth); }
+        </FluentTreeItem>
+    }
+
+    RenderTree(0, 2);
+}
