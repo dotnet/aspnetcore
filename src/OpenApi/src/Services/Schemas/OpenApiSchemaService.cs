@@ -148,6 +148,12 @@ internal sealed class OpenApiSchemaService(
                     if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
                     {
                         schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
+                        // System.Text.Json also emits `deprecated` for [Obsolete] properties. Remove it
+                        // so that it doesn't leak into the shared component unless the type itself is obsolete.
+                        if (!typeAttributes.OfType<ObsoleteAttribute>().Any() && schema is JsonObject schemaObject)
+                        {
+                            schemaObject.Remove(OpenApiSchemaKeywords.DeprecatedKeyword);
+                        }
                     }
                 }
             }
