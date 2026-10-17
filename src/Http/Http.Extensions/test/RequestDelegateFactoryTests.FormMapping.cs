@@ -344,6 +344,146 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(formFiles, capturedArgument.FormFileCollection);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsFormFileListInCollectionItem(bool includeFile)
+    {
+        OrderWithFiles capturedArgument = default;
+        void TestAction([FromForm] OrderWithFiles order) { capturedArgument = order; }
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection();
+        if (includeFile)
+        {
+            formFiles.Add(new FormFile(Stream.Null, 0, 10, "Lines[0].Attachments", "file.txt"));
+        }
+        httpContext.Request.Form = new FormCollection(new() { { "Lines[0].Label", "A test line" } }, formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        var line = Assert.Single(capturedArgument.Lines);
+        Assert.Equal("A test line", line.Label);
+        Assert.Equal(includeFile ? 1 : 0, line.Attachments?.Count);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsFormFileCollectionInCollectionItem(bool includeFile)
+    {
+        OrderWithFileCollection capturedArgument = default;
+        void TestAction([FromForm] OrderWithFileCollection order) { capturedArgument = order; }
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection();
+        if (includeFile)
+        {
+            formFiles.Add(new FormFile(Stream.Null, 0, 10, "Lines[0].Attachments", "file.txt"));
+        }
+        httpContext.Request.Form = new FormCollection(new() { { "Lines[0].Label", "A test line" } }, formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        var line = Assert.Single(capturedArgument.Lines);
+        Assert.Equal("A test line", line.Label);
+        Assert.Equal(formFiles, line.Attachments);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsFormFileCollectionInCollectionItemWithOnlyUnrelatedFile(bool includeLabel)
+    {
+        OrderWithFileCollection capturedArgument = default;
+        var handlerInvoked = false;
+        void TestAction([FromForm] OrderWithFileCollection order)
+        {
+            capturedArgument = order;
+            handlerInvoked = true;
+        }
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "unrelated", "file.txt"),
+        };
+        var fields = new Dictionary<string, StringValues>();
+        if (includeLabel)
+        {
+            fields.Add("Lines[0].Label", "A test line");
+        }
+        httpContext.Request.Form = new FormCollection(fields, formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerInvoked);
+        if (includeLabel)
+        {
+            var line = Assert.Single(capturedArgument.Lines);
+            Assert.Equal("A test line", line.Label);
+            Assert.Same(formFiles, line.Attachments);
+        }
+        else
+        {
+            Assert.Null(capturedArgument);
+        }
+    }
+
+    [Theory]
+    [InlineData("", "files")]
+    [InlineData("docs", "docs")]
+    public async Task SupportsRootFormFileList(string name, string fileFieldName)
+    {
+        IReadOnlyList<IFormFile> capturedArgument = default;
+        void TestAction([FromForm] IReadOnlyList<IFormFile> files) { capturedArgument = files; }
+        void TestActionWithName([FromForm(Name = "docs")] IReadOnlyList<IFormFile> files) { capturedArgument = files; }
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, fileFieldName, "file-1.txt"),
+            new FormFile(Stream.Null, 0, 10, fileFieldName, "file-2.txt"),
+            new FormFile(Stream.Null, 0, 10, string.Empty, "unnamed.txt"),
+        };
+        httpContext.Request.Form = new FormCollection(null, formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(name.Length == 0 ? TestAction : TestActionWithName);
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Collection(
+            capturedArgument,
+            file => Assert.Equal("file-1.txt", file.FileName),
+            file => Assert.Equal("file-2.txt", file.FileName));
+    }
+
+    [Fact]
+    public async Task SupportsDictionaryKeyContainingClosingBracket()
+    {
+        string capturedArgument = null;
+        void TestAction([FromForm] LabelsWithClosingBracket labels)
+        {
+            capturedArgument = string.Join(", ", labels.Values.Select(entry => $"{entry.Key}={entry.Value}"));
+        }
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new()
+        {
+            ["Values[a]"] = "1",
+            ["Values[x]y]"] = "2",
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.Equal("a=1, x]y=2", capturedArgument);
+    }
+
     private record TodoRecord(int Id, string Name, bool IsCompleted);
 
     private class Employee
@@ -359,5 +499,32 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public IFormFile? File { get; set; }
         public IReadOnlyList<IFormFile>? FormFiles { get; set; }
         public IFormFileCollection? FormFileCollection { get; set; }
+    }
+
+    private class LabelsWithClosingBracket
+    {
+        public Dictionary<string, int> Values { get; set; } = [];
+    }
+
+    private class OrderWithFiles
+    {
+        public List<LineWithFiles> Lines { get; set; } = [];
+    }
+
+    private class LineWithFiles
+    {
+        public string? Label { get; set; }
+        public IReadOnlyList<IFormFile>? Attachments { get; set; }
+    }
+
+    private class OrderWithFileCollection
+    {
+        public List<LineWithFileCollection> Lines { get; set; } = [];
+    }
+
+    private class LineWithFileCollection
+    {
+        public string? Label { get; set; }
+        public IFormFileCollection? Attachments { get; set; }
     }
 }
