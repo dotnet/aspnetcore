@@ -50,6 +50,20 @@ public class InputParserTests
         Assert.Equal(expected, result);
     }
 
+    [Fact]
+    public void InputParser_EvaluatesNestedUrlServerVariable()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Path = "/MiXeD";
+        var rewriteContext = new RewriteContext { HttpContext = httpContext, Logger = NullLogger.Instance };
+        var pattern = new InputParser(null, alwaysUseManagedServerVariables: true)
+            .ParseInputString("{ToLower:{URL}}", UriMatchPart.Path);
+
+        var result = pattern.Evaluate(rewriteContext, CreateTestRuleBackReferences(), CreateTestCondBackReferences());
+
+        Assert.Equal("/mixed", result);
+    }
+
     [Theory]
     [InlineData("hey/{ToLower:HEY}", "hey/hey")]
     [InlineData("hey/{ToLower:{R:1}}", "hey/foo")]
