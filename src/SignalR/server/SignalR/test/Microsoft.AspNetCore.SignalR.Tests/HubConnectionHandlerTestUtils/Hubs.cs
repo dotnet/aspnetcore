@@ -1520,3 +1520,43 @@ public class OnConnectedSendToClientHub : Hub
         }
     }
 }
+
+[AllowAnonymous]
+public class AllowAnonymousHub : TestHub
+{
+    public async Task AsyncNoAttribute()
+    {
+        await Task.Yield();
+    }
+
+    [AllowAnonymous]
+    public async Task AsyncMethodAllowAnonymous()
+    {
+        await Task.Yield();
+    }
+
+    [Authorize(Policy = "Open")]
+    public async Task AsyncOpenPolicy()
+    {
+        await Task.Yield();
+    }
+
+    public void SyncNoAttribute()
+    {
+    }
+
+    [AllowAnonymous]
+    public void SyncMethodAllowAnonymous()
+    {
+    }
+
+    [Unrelated]
+    public void UnrelatedAttribute()
+    {
+    }
+}
+
+[AttributeUsage(AttributeTargets.All)]
+public sealed class UnrelatedAttribute : Attribute
+{
+}
