@@ -802,7 +802,7 @@ public static partial class RequestDelegateFactory
                 ? BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext)
                 : BindComplexParameterFromFormItem(parameter, string.IsNullOrEmpty(formAttribute.Name) ? parameter.Name : formAttribute.Name, factoryContext);
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
+        else if (parameterCustomAttributes.Any(a => a is IFromServiceMetadata))
         {
             if (parameterCustomAttributes.FirstOrDefault(a => typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.GetType())) is not null)
             {
