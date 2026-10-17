@@ -8,46 +8,49 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
 {
+    private readonly ApiBehaviorOptions _options;
+
     public ApiBehaviorApplicationModelProvider(
         IOptions<ApiBehaviorOptions> apiBehaviorOptions,
         IModelMetadataProvider modelMetadataProvider,
         IServiceProvider serviceProvider)
     {
-        var options = apiBehaviorOptions.Value;
+        _options = apiBehaviorOptions.Value;
 
         ActionModelConventions = new List<IActionModelConvention>()
         {
             new ApiVisibilityConvention(),
         };
 
-        if (!options.SuppressMapClientErrors)
+        if (!_options.SuppressMapClientErrors)
         {
             ActionModelConventions.Add(new ClientErrorResultFilterConvention());
         }
 
-        if (!options.SuppressModelStateInvalidFilter)
+        if (!_options.SuppressModelStateInvalidFilter)
         {
             ActionModelConventions.Add(new InvalidModelStateFilterConvention());
         }
 
-        if (!options.SuppressConsumesConstraintForFormFileParameters)
+        if (!_options.SuppressConsumesConstraintForFormFileParameters)
         {
             ActionModelConventions.Add(new ConsumesConstraintForFormFileParameterConvention());
         }
 
-        var defaultErrorType = options.SuppressMapClientErrors ? typeof(void) : typeof(ProblemDetails);
+        var defaultErrorType = _options.SuppressMapClientErrors ? typeof(void) : typeof(ProblemDetails);
         var defaultErrorTypeAttribute = new ProducesErrorResponseTypeAttribute(defaultErrorType);
         ActionModelConventions.Add(new ApiConventionApplicationModelConvention(defaultErrorTypeAttribute));
 
-        if (!options.SuppressInferBindingSourcesForParameters)
+        if (!_options.SuppressInferBindingSourcesForParameters)
         {
             var serviceProviderIsService = serviceProvider.GetService<IServiceProviderIsService>();
-            var convention = options.DisableImplicitFromServicesParameters || serviceProviderIsService is null ?
+            var convention = _options.DisableImplicitFromServicesParameters || serviceProviderIsService is null ?
                 new InferParameterBindingInfoConvention(modelMetadataProvider) :
                 new InferParameterBindingInfoConvention(modelMetadataProvider, serviceProviderIsService);
             ActionModelConventions.Add(convention);
@@ -79,6 +82,14 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
             {
                 // Ensure ApiController is set up correctly
                 EnsureActionIsAttributeRouted(action);
+
+                if (_options.SkipStatusCodePages)
+                {
+                    foreach (var selector in action.Selectors)
+                    {
+                        selector.EndpointMetadata.Add(SkipStatusCodePagesMetadata.Instance);
+                    }
+                }
 
                 foreach (var convention in ActionModelConventions)
                 {
@@ -125,4 +136,10 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
         var assemblyAttributes = controllerAssembly.GetCustomAttributes();
         return assemblyAttributes.OfType<IApiBehaviorMetadata>().Any();
     }
+}
+
+internal sealed class SkipStatusCodePagesMetadata : ISkipStatusCodePagesMetadata
+{
+    public static readonly SkipStatusCodePagesMetadata Instance = new();
+    private SkipStatusCodePagesMetadata() { }
 }
