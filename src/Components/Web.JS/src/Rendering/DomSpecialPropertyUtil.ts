@@ -8,7 +8,7 @@
 // This module provides helpers for doing that, and is shared by the interactive renderer (BrowserRenderer)
 // and the SSR DOM merging logic.
 
-const deferredValuePropname = '_blazorDeferredValue';
+export const deferredValuePropname = '_blazorDeferredValue';
 
 export function tryApplySpecialProperty(element: Element, name: string, value: string | null) {
   switch (name) {
@@ -81,7 +81,12 @@ function tryApplyValueProperty(element: Element, value: string | null): boolean 
       }
 
       setDeferredElementValue(element, value);
-      element[deferredValuePropname] = value;
+      if (value === null) {
+        // The 'value' frame was removed, so there's no explicit value to track anymore.
+        delete element[deferredValuePropname];
+      } else {
+        element[deferredValuePropname] = value;
+      }
 
       return true;
     }
