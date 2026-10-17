@@ -201,6 +201,62 @@ public class WebAssemblyHostBuilderTest
         Assert.Equal("value", configuration["key"]);
     }
 
+    [Fact]
+    public void Builder_LoadsAppSettingsConfiguration_WhenPresent()
+    {
+        // Arrange
+        var appsettings = Encoding.UTF8.GetBytes("""{ "Key": "AppsettingsValue" }""");
+        var configs = new Dictionary<string, byte[]>
+        {
+            ["appsettings.json"] = appsettings,
+        };
+        var jsMethods = new TestInternalJSImportMethods(configs: configs);
+
+        // Act
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        var host = builder.Build();
+
+        // Assert
+        Assert.Equal("AppsettingsValue", host.Configuration["Key"]);
+    }
+
+    [Fact]
+    public void Builder_LoadsEnvironmentSpecificAppSettings_WhenPresent()
+    {
+        // Arrange
+        var appsettings = Encoding.UTF8.GetBytes("""{ "Key": "BaseValue", "Key2": "BaseOnly" }""");
+        var appsettingsDev = Encoding.UTF8.GetBytes("""{ "Key": "DevValue", "Key3": "DevOnly" }""");
+        var configs = new Dictionary<string, byte[]>
+        {
+            ["appsettings.json"] = appsettings,
+            ["appsettings.Development.json"] = appsettingsDev,
+        };
+        var jsMethods = new TestInternalJSImportMethods(environment: "Development", configs: configs);
+
+        // Act
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        var host = builder.Build();
+
+        // Assert
+        Assert.Equal("DevValue", host.Configuration["Key"]);
+        Assert.Equal("BaseOnly", host.Configuration["Key2"]);
+        Assert.Equal("DevOnly", host.Configuration["Key3"]);
+    }
+
+    [Fact]
+    public void Builder_DoesNotThrow_WhenAppSettingsNotPresent()
+    {
+        // Arrange
+        var jsMethods = new TestInternalJSImportMethods();
+
+        // Act
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        var host = builder.Build();
+
+        // Assert
+        Assert.Null(host.Configuration["Key"]);
+    }
+
     private static IReadOnlyList<Type> DefaultServiceTypes
     {
         get
