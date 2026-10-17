@@ -13,6 +13,8 @@ internal sealed class HostingMetrics : IDisposable
 {
     public const string MeterName = "Microsoft.AspNetCore.Hosting";
 
+    private static readonly object BoxedTrue = true;
+
     private readonly Meter _meter;
     private readonly UpDownCounter<long> _activeRequestsCounter;
     private readonly Histogram<double> _requestDuration;
@@ -61,7 +63,7 @@ internal sealed class HostingMetrics : IDisposable
             }
             if (unhandledRequest)
             {
-                tags.Add("aspnetcore.request.is_unhandled", true);
+                tags.Add("aspnetcore.request.is_unhandled", BoxedTrue);
             }
 
             // Add information gathered during request.
