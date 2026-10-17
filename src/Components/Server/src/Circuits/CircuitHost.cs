@@ -1039,7 +1039,7 @@ internal partial class CircuitHost : IAsyncDisposable
         [LoggerMessage(101, LogLevel.Debug, "Circuit initialization succeeded.", EventName = "InitializationSucceeded")]
         public static partial void InitializationSucceeded(ILogger logger);
 
-        [LoggerMessage(102, LogLevel.Debug, "Circuit initialization failed.", EventName = "InitializationFailed")]
+        [LoggerMessage(102, LogLevel.Error, "Circuit initialization failed.", EventName = "InitializationFailed")]
         public static partial void InitializationFailed(ILogger logger, Exception exception);
 
         [LoggerMessage(103, LogLevel.Debug, "Disposing circuit '{CircuitId}' started.", EventName = "DisposeStarted")]
@@ -1072,7 +1072,7 @@ internal partial class CircuitHost : IAsyncDisposable
         [LoggerMessage(112, LogLevel.Debug, "Update root components succeeded.", EventName = nameof(UpdateRootComponentsSucceeded))]
         public static partial void UpdateRootComponentsSucceeded(ILogger logger);
 
-        [LoggerMessage(113, LogLevel.Debug, "Update root components failed.", EventName = nameof(UpdateRootComponentsFailed))]
+        [LoggerMessage(113, LogLevel.Error, "Update root components failed.", EventName = nameof(UpdateRootComponentsFailed))]
         public static partial void UpdateRootComponentsFailed(ILogger logger, Exception exception);
 
         public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
