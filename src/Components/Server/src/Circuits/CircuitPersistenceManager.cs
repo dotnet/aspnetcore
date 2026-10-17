@@ -189,7 +189,7 @@ internal partial class CircuitPersistenceManager(
             {
                 return JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(
                     rootComponents,
-                    JsonSerializerOptionsProvider.Options);
+                    CircuitPersistenceManagerSerializerContext.Default.DictionaryInt32ComponentMarker);
             }
             catch
             {

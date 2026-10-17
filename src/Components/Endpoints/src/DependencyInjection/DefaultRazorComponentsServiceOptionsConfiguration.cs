@@ -54,7 +54,9 @@ internal class DefaultRazorComponentsServiceOptionsConfiguration(
                 {
                     if (options.JavaScriptInitializers != null)
                     {
-                        var initializers = JsonSerializer.Deserialize<string[]>(options.JavaScriptInitializers);
+                        var initializers = JsonSerializer.Deserialize(
+                            options.JavaScriptInitializers,
+                            RazorComponentsJsonSerializerContext.Default.StringArray);
                         if (initializers == null || initializers.Length == 0)
                         {
                             options.JavaScriptInitializers = null;
