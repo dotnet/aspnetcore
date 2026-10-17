@@ -64,5 +64,7 @@ internal static partial class LoggerExtensions
         "The application is not running against the published output and Static Web Assets are not enabled." +
         " To configure static web assets in other environments, call 'StaticWebAssetsLoader.UseStaticWebAssets(IWebHostEnvironment, IConfiguration)' to enable them.", EventName = "StaticWebAssetsNotEnabled")]
     public static partial void EnsureStaticWebAssetsEnabled(this ILogger logger);
-}
 
+    [LoggerMessage(18, LogLevel.Warning, "The static asset {Path} is listed in the static assets manifest, but its file could not be found. Responding with 404 Not Found.", EventName = "MappedAssetFileNotFound")]
+    public static partial void MappedAssetFileNotFound(this ILogger logger, string path, Exception exception);
+}
