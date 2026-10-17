@@ -42,7 +42,7 @@ public class RateLimitingMetricsTests
         using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.requests");
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
@@ -72,15 +72,16 @@ public class RateLimitingMetricsTests
 
         var middleware = CreateTestRateLimitingMiddleware(
             options,
-            meterFactory: meterFactory,
-            next: async c =>
-            {
-                await syncPoint.WaitToContinue();
-            });
+            meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
 
         var context = new DefaultHttpContext();
         context.Request.Method = "GET";
+
+        RequestDelegate next = async c =>
+            {
+                await syncPoint.WaitToContinue();
+            };
 
         using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request_lease.duration");
         using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.active_request_leases");
@@ -89,7 +90,7 @@ public class RateLimitingMetricsTests
         using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.requests");
 
         // Act
-        var middlewareTask = middleware.Invoke(context);
+        var middlewareTask = middleware.InvokeAsync(context, next);
 
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
@@ -131,18 +132,17 @@ public class RateLimitingMetricsTests
 
         var middleware = CreateTestRateLimitingMiddleware(
             options,
-            meterFactory: meterFactory,
-            next: async c =>
-            {
-                await syncPoint.WaitToContinue();
-            });
+            meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
 
         var context = new DefaultHttpContext();
         context.Request.Method = "GET";
 
         // Act
-        var middlewareTask = middleware.Invoke(context);
+        var middlewareTask = middleware.InvokeAsync(context, async c =>
+            {
+                await syncPoint.WaitToContinue();
+            });
 
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
@@ -186,16 +186,17 @@ public class RateLimitingMetricsTests
         var middleware = CreateTestRateLimitingMiddleware(
             serviceProvider.GetRequiredService<IOptions<RateLimiterOptions>>(),
             meterFactory: meterFactory,
-            next: async c =>
-            {
-                await syncPoint.WaitToContinue();
-            },
             serviceProvider: serviceProvider);
         var meter = meterFactory.Meters.Single();
 
         var routeEndpointBuilder = new RouteEndpointBuilder(c => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         routeEndpointBuilder.Metadata.Add(new EnableRateLimitingAttribute("concurrencyPolicy"));
         var endpoint = routeEndpointBuilder.Build();
+
+        RequestDelegate next = async c =>
+            {
+                await syncPoint.WaitToContinue();
+            };
 
         using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request_lease.duration");
         using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.active_request_leases");
@@ -207,7 +208,7 @@ public class RateLimitingMetricsTests
         var context1 = new DefaultHttpContext();
         context1.Request.Method = "GET";
         context1.SetEndpoint(endpoint);
-        var middlewareTask1 = middleware.Invoke(context1);
+        var middlewareTask1 = middleware.InvokeAsync(context1, next);
 
         // Wait for first request to reach server and block it.
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
@@ -215,7 +216,7 @@ public class RateLimitingMetricsTests
         var context2 = new DefaultHttpContext();
         context2.Request.Method = "GET";
         context2.SetEndpoint(endpoint);
-        var middlewareTask2 = middleware.Invoke(context1);
+        var middlewareTask2 = middleware.InvokeAsync(context1, next);
 
         // Assert second request is queued.
         Assert.Collection(currentRequestsQueuedCollector.GetMeasurementSnapshot(),
@@ -261,10 +262,6 @@ public class RateLimitingMetricsTests
         var middleware = CreateTestRateLimitingMiddleware(
             serviceProvider.GetRequiredService<IOptions<RateLimiterOptions>>(),
             meterFactory: meterFactory,
-            next: async c =>
-            {
-                await syncPoint.WaitToContinue();
-            },
             serviceProvider: serviceProvider);
         var meter = meterFactory.Meters.Single();
 
@@ -272,11 +269,16 @@ public class RateLimitingMetricsTests
         routeEndpointBuilder.Metadata.Add(new EnableRateLimitingAttribute("concurrencyPolicy"));
         var endpoint = routeEndpointBuilder.Build();
 
+        RequestDelegate next = async c =>
+            {
+                await syncPoint.WaitToContinue();
+            };
+
         // Act
         var context1 = new DefaultHttpContext();
         context1.Request.Method = "GET";
         context1.SetEndpoint(endpoint);
-        var middlewareTask1 = middleware.Invoke(context1);
+        var middlewareTask1 = middleware.InvokeAsync(context1, next);
 
         // Wait for first request to reach server and block it.
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
@@ -284,7 +286,7 @@ public class RateLimitingMetricsTests
         var context2 = new DefaultHttpContext();
         context2.Request.Method = "GET";
         context2.SetEndpoint(endpoint);
-        var middlewareTask2 = middleware.Invoke(context1);
+        var middlewareTask2 = middleware.InvokeAsync(context1, next);
 
         // Start listening while the second request is queued.
 
@@ -332,11 +334,9 @@ public class RateLimitingMetricsTests
         }
     }
 
-    private RateLimitingMiddleware CreateTestRateLimitingMiddleware(IOptions<RateLimiterOptions> options, ILogger<RateLimitingMiddleware> logger = null, IServiceProvider serviceProvider = null, IMeterFactory meterFactory = null, RequestDelegate next = null)
+    private RateLimitingMiddleware CreateTestRateLimitingMiddleware(IOptions<RateLimiterOptions> options, ILogger<RateLimitingMiddleware> logger = null, IServiceProvider serviceProvider = null, IMeterFactory meterFactory = null)
     {
-        next ??= c => Task.CompletedTask;
         return new RateLimitingMiddleware(
-            next,
             logger ?? new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
             serviceProvider ?? Mock.Of<IServiceProvider>(),
