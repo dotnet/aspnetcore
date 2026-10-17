@@ -769,6 +769,18 @@ class DotNetStream {
   async arrayBuffer(): Promise<ArrayBuffer> {
     return new Response(await this.stream()).arrayBuffer();
   }
+
+  /**
+       * Supplies a Blob of data being sent from .NET.
+       * Note that, like arrayBuffer(), this buffers the whole stream before the Blob is available.
+       * @param contentType Optional MIME type for the Blob. Defaults to 'application/octet-stream'.
+       */
+  async blob(contentType?: string): Promise<Blob> {
+    const response = new Response(await this.stream(), {
+      headers: { 'Content-Type': contentType || 'application/octet-stream' },
+    });
+    return response.blob();
+  }
 }
 
 class PendingStream {
