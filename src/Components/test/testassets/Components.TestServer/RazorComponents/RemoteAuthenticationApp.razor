@@ -13,6 +13,15 @@
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script>
+        const isTopLevelWindow = AuthenticationService.isTopLevelWindow.bind(AuthenticationService);
+        AuthenticationService.isTopLevelWindow = () => {
+            const result = isTopLevelWindow();
+            if (!result) {
+                window.top.__authenticationCallbackCompletedInIframe = true;
+            }
+            return result;
+        };
+
         Blazor.start({
             webAssembly: {
                 loadBootResource: (type, name, defaultUri, integrity) => `WasmRemoteAuthentication/_framework/${name}`
