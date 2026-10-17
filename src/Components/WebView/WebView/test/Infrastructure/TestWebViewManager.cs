@@ -37,4 +37,9 @@ public class TestWebViewManager : WebViewManager
     {
         ReceiveIpcMessage(IpcCommon.IncomingMessageType.AttachPage, "http://example/", "http://example/testStartUrl");
     }
+
+    public void ReceiveRenderCompletedMessage(long batchId)
+    {
+        ReceiveIpcMessage(IpcCommon.IncomingMessageType.OnRenderCompleted, batchId, null);
+    }
 }
