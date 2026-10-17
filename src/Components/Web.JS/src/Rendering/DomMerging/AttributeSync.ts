@@ -38,9 +38,17 @@ export function synchronizeAttributes(destination: Element, source: Element) {
 
     for (const attrToDelete of remainingDestAttrs.values()) {
       // Delete
-      removeAttribute(destination, attrToDelete);
+      if (!shouldPreserveAttribute(destination, attrToDelete)) {
+        removeAttribute(destination, attrToDelete);
+      }
     }
   }
+}
+
+function shouldPreserveAttribute(element: Element, attr: Attr): boolean {
+  return element instanceof HTMLDialogElement
+    && element.matches(':modal')
+    && attr.name === 'open';
 }
 
 function attributeSetsAreIdentical(destAttrs: NamedNodeMap, sourceAttrs: NamedNodeMap): boolean {
