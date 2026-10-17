@@ -31,7 +31,7 @@ public class HubClientProxyGeneratorTests
         Task ReturnTask();
     }
 
-    private class MyClient : IMyClient
+    internal class MyClient : IMyClient
     {
         public int CallsOfNoArg;
         public void NoArg()
@@ -258,5 +258,53 @@ public class HubClientProxyGeneratorTests
         Assert.NotNull(returnTaskFunc);
         await returnTaskFunc(Array.Empty<object>(), returnTaskState);
         Assert.Equal(1, myClient.CallsOfReturnTask);
+    }
+
+    [Fact]
+    public void RegistersCallbackProviderWithExplicitGeneric()
+    {
+        // Arrange
+        var mockConn = MockHubConnection.Get();
+        var noArgReg = new Disposable();
+        mockConn
+            .Setup(x => x.On(
+                "NoArg",
+                Array.Empty<Type>(),
+                It.IsAny<Func<object[], object, Task>>(),
+                It.IsAny<object>()))
+            .Returns(noArgReg);
+        var conn = mockConn.Object;
+        var myClient = new MyClient();
+
+        // Act
+        var registration = conn.SetHubClient<IMyClient>(myClient);
+
+        // Assert
+        mockConn.VerifyAll();
+        Assert.False(noArgReg.IsDisposed);
+    }
+
+    [Fact]
+    public void RegistersCallbackProviderWithInferredGeneric()
+    {
+        // Arrange
+        var mockConn = MockHubConnection.Get();
+        var noArgReg = new Disposable();
+        mockConn
+            .Setup(x => x.On(
+                "NoArg",
+                Array.Empty<Type>(),
+                It.IsAny<Func<object[], object, Task>>(),
+                It.IsAny<object>()))
+            .Returns(noArgReg);
+        var conn = mockConn.Object;
+        var myClient = new MyClient();
+
+        // Act
+        var registration = conn.SetHubClient(myClient); // Inferred generic type
+
+        // Assert
+        mockConn.VerifyAll();
+        Assert.False(noArgReg.IsDisposed);
     }
 }
