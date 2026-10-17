@@ -9,7 +9,10 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
-internal partial class FileLoggerProcessor : IAsyncDisposable
+// Queues log entries of type TMessage and writes them out to a rolling set of files on a background task.
+// TMessage carries whatever a concrete processor needs to write one log entry directly to a StreamWriter,
+// so callers don't have to allocate a fully formatted string just to get it onto the queue.
+internal abstract partial class FileLoggerProcessor<TMessage> : IAsyncDisposable
 {
     private const int _maxQueuedMessages = 1024;
 
@@ -25,9 +28,9 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     private bool _firstFile = true;
 
     private readonly IOptionsMonitor<W3CLoggerOptions> _options;
-    private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
+    private readonly BlockingCollection<TMessage> _messageQueue = new BlockingCollection<TMessage>(_maxQueuedMessages);
     private readonly ILogger _logger;
-    private readonly List<string> _currentBatch = new List<string>();
+    private readonly List<TMessage> _currentBatch = new List<TMessage>();
     private readonly Task _outputTask;
     private readonly CancellationTokenSource _cancellationTokenSource;
 
@@ -37,8 +40,10 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     private readonly object _pathLock = new object();
     private ISet<string> _additionalHeaders;
 
-    public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
+    protected FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
     {
+        // Preserve the pre-existing "FileLoggerProcessor" logger category for all concrete processors
+        // (including W3CLoggerProcessor), regardless of TMessage.
         _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
 
         _options = options;
@@ -103,7 +108,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         _outputTask = Task.Run(ProcessLogQueue);
     }
 
-    public void EnqueueMessage(string message)
+    public void EnqueueMessage(TMessage message)
     {
         if (!_messageQueue.IsAddingCompleted)
         {
@@ -152,7 +157,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         }
     }
 
-    private async Task WriteMessagesAsync(List<string> messages, CancellationToken cancellationToken)
+    private async Task WriteMessagesAsync(List<TMessage> messages, CancellationToken cancellationToken)
     {
         // Files are written up to _maxFileSize before rolling to a new file
         DateTime today = SystemDateTime.Now;
@@ -256,8 +261,13 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         return true;
     }
 
-    // Virtual for testing
-    internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+    // Writes one queued log entry directly to the StreamWriter. Implemented per TMessage so that no
+    // intermediate formatted string needs to be allocated before a message reaches the queue.
+    internal abstract Task WriteMessageAsync(TMessage message, StreamWriter streamWriter, CancellationToken cancellationToken);
+
+    // Helper for writing a single already-literal line (e.g. W3C header/comment lines), shared by all
+    // concrete processors. Virtual so tests can observe these lines the same way they observe TMessage writes.
+    internal virtual async Task WriteLineAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
         {
@@ -347,4 +357,19 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         [LoggerMessage(3, LogLevel.Warning, "Limit of 10000 files per day has been reached", EventName = "MaxFilesReached")]
         public static partial void MaxFilesReached(ILogger logger);
     }
+}
+
+// Plain string-based processor. W3CLoggerProcessor (the only production processor) uses
+// FileLoggerProcessor<W3CLogEntry> instead; this type exists so FileLoggerProcessorTests can keep
+// testing the shared queue/rolling logic directly against strings, and so that logger category
+// (typeof(FileLoggerProcessor), used by both processors) stays stable.
+internal sealed class FileLoggerProcessor : FileLoggerProcessor<string>
+{
+    public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
+        : base(options, environment, factory)
+    {
+    }
+
+    internal override Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+        => WriteLineAsync(message, streamWriter, cancellationToken);
 }
