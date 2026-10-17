@@ -94,6 +94,7 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return InvokeAsync($"{JsFunctionsPrefix}.isFollowingBottom", disposedResult: false, _selfReference);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The call serializes only the framework's DotNetObjectReference.")]
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
@@ -120,6 +121,7 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Callers pass only framework-owned references and primitive values.")]
     private async ValueTask InvokeVoidAsync(string identifier, params object?[]? args)
     {
         if (_disposed)
@@ -144,6 +146,7 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return InvokeAsync(identifier, disposedResult, CancellationToken.None, args);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Callers pass only framework-owned references and primitive values, and the result type is annotated.")]
     private async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(
         string identifier,
         TValue disposedResult,

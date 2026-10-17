@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -58,6 +59,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The fallback call serializes only the formatted log message string.")]
     private void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
     {
         lock (_logBuilder)

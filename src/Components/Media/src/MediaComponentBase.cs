@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -181,6 +182,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         public string? Error { get; set; }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The media payload uses framework-owned types with registered converters and primitive values.")]
     private async Task LoadMediaAsync(MediaSource? source, CancellationToken cancellationToken)
     {
         if (source == null || !IsInteractive)
