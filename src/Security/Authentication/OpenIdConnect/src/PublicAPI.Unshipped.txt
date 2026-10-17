@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationFailedContext
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationFailedContext.Exception.get -> System.Exception!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationFailedContext.Handled.get -> bool
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationFailedContext.Handled.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationFailedContext.PushedAuthorizationFailedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions! options, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, System.Exception! exception) -> void
+virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.PushAuthorizationFailed(Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationFailedContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnPushAuthorizationFailed.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnPushAuthorizationFailed.get -> System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationFailedContext!, System.Threading.Tasks.Task!>!
