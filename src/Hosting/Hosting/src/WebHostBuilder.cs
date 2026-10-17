@@ -241,8 +241,17 @@ public class WebHostBuilder : IWebHostBuilder
 
                     foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
                     {
-                        var hostingStartup = (IHostingStartup)Activator.CreateInstance(attribute.HostingStartupType)!;
-                        hostingStartup.Configure(this);
+                        try
+                        {
+                            var hostingStartup = (IHostingStartup)Activator.CreateInstance(attribute.HostingStartupType)!;
+                            hostingStartup.Configure(this);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Capture the error and keep going. An assembly can declare more than one
+                            // hosting startup, and one of them failing shouldn't silently skip the rest.
+                            exceptions.Add(new InvalidOperationException($"Startup assembly {assemblyName} failed to execute. See the inner exception for more details.", ex));
+                        }
                     }
                 }
                 catch (Exception ex)
