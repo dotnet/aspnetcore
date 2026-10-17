@@ -85,7 +85,11 @@ public class Program
             return 1;
         }
 
-        var store = new SecretsStore(userSecretsId, reporter);
+        // Some commands should ignore potential load errors so that they can still operate on the secrets store
+        // (e.g. edit, clear), while other commands should fail if the secrets store cannot be loaded (e.g. list, remove).
+        var ignoreLoadErrors = options.Command is EditCommand or ClearCommand;
+
+        var store = new SecretsStore(userSecretsId, reporter, ignoreLoadErrors);
         var context = new Internal.CommandContext(store, reporter, _console);
         options.Command.Execute(context);
 
