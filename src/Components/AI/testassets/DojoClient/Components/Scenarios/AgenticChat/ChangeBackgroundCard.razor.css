@@ -1,0 +1,15 @@
+.change-background-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    background: var(--sc-ai-color-surface-subtle, #f3f4f6);
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+.change-background-card__message {
+    overflow-wrap: anywhere;
+}
