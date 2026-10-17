@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -18,10 +20,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature, ISslStreamFeature
 {
-    private readonly SslStream _sslStream;
+    private readonly SslStream? _sslStream;
+    private readonly TlsBufferSession? _session;
+    private readonly TlsSessionDuplexPipe? _tlsPipe;
     private readonly ConnectionContext _context;
     private readonly ILogger<HttpsConnectionMiddleware> _logger;
     private bool _snapshotted;
+
+    /// <summary>
+    /// Whether the negotiated values are served from cached fields rather than from a live
+    /// <see cref="SslStream"/>. When this is false there is always an SslStream to read from,
+    /// which lets the accessors below drop their null-forgiving operators.
+    /// </summary>
+    [MemberNotNullWhen(false, nameof(_sslStream))]
+    private bool Snapshotted => _snapshotted;
 
     private X509Certificate2? _clientCert;
     private Task<X509Certificate2?>? _clientCertTask;
@@ -46,6 +58,51 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         _sslStream = sslStream;
         _context = context;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Creates a feature backed by the sans-IO TLS session instead of an <see cref="SslStream"/>.
+    /// It is created before the handshake runs, so that a failed or timed-out handshake still
+    /// leaves a readable feature, and is marked snapshotted so the getters are served from the
+    /// cached fields rather than a stream that does not exist. Call
+    /// <see cref="CaptureFromSession"/> once the handshake succeeds.
+    /// </summary>
+    internal TlsConnectionFeature(TlsSessionDuplexPipe tlsPipe, ConnectionContext context, ILogger<HttpsConnectionMiddleware> logger)
+    {
+        ArgumentNullException.ThrowIfNull(tlsPipe);
+        ArgumentNullException.ThrowIfNull(context);
+
+        _tlsPipe = tlsPipe;
+        _session = tlsPipe.Session;
+        _context = context;
+        _logger = logger;
+        _snapshotted = true;
+    }
+
+    /// <summary>
+    /// Reads the negotiated values off the session after a successful handshake. Until this is
+    /// called the feature reports defaults, which is what the SslStream path also does when the
+    /// handshake fails.
+    /// </summary>
+    internal void CaptureFromSession()
+    {
+        Debug.Assert(_session is not null, "Only valid on a session-backed feature.");
+
+        _protocol = _session.NegotiatedProtocol;
+        _negotiatedCipherSuite = _session.NegotiatedCipherSuite;
+        _applicationProtocol = _session.NegotiatedApplicationProtocol.Protocol.ToArray();
+        _clientCert = _session.GetRemoteCertificate();
+
+#pragma warning disable SYSLIB0058 // Obsolete TLS cipher algorithm enums
+        TlsCipherSuiteDecomposition.Decompose(
+            _session.NegotiatedCipherSuite,
+            out _cipherAlgorithm,
+            out _cipherStrength,
+            out _hashAlgorithm,
+            out _hashStrength,
+            out _keyExchangeAlgorithm,
+            out _keyExchangeStrength);
+#pragma warning restore SYSLIB0058
     }
 
     /// <summary>
@@ -95,6 +152,11 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     {
         get
         {
+            if (_sslStream is null)
+            {
+                return _clientCert;
+            }
+
             return _clientCert ??= ConvertToX509Certificate2(_sslStream.RemoteCertificate);
         }
         set
@@ -106,35 +168,52 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     public string HostName { get; set; } = string.Empty;
 
-    public ReadOnlyMemory<byte> ApplicationProtocol => _snapshotted ? _applicationProtocol : _sslStream.NegotiatedApplicationProtocol.Protocol;
+    public ReadOnlyMemory<byte> ApplicationProtocol => Snapshotted ? _applicationProtocol : _sslStream.NegotiatedApplicationProtocol.Protocol;
 
-    public SslProtocols Protocol => _snapshotted ? _protocol : _sslStream.SslProtocol;
+    public SslProtocols Protocol => Snapshotted ? _protocol : _sslStream.SslProtocol;
 
-    public SslStream SslStream => _sslStream;
+    /// <summary>
+    /// Only reachable on an SslStream-backed connection. A session-backed feature is never
+    /// registered as <see cref="ISslStreamFeature"/> - there is no SslStream to hand out, and
+    /// the feature's contract is that it is absent rather than present-but-broken, so
+    /// applications probing for it with <c>Get&lt;ISslStreamFeature&gt;()?.SslStream</c> degrade
+    /// instead of failing. This guard exists so that wiring it up by mistake fails loudly.
+    /// </summary>
+    public SslStream SslStream => _sslStream
+        ?? throw new NotSupportedException(
+            "ISslStreamFeature is not available when Kestrel is using the sans-IO TLS layer; "
+            + "there is no SslStream backing this connection.");
 
     public Exception? Exception { get; set; }
 
     // After Snapshot() is called, all values are served from cached fields instead of the SslStream.
+    // A session-backed feature is snapshotted at construction, so the _sslStream branch of the
+    // ternaries below is unreachable in that case - hence the null-forgiving operator.
 
-    public TlsCipherSuite? NegotiatedCipherSuite => _snapshotted ? _negotiatedCipherSuite : _sslStream.NegotiatedCipherSuite;
-
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public CipherAlgorithmType CipherAlgorithm => _snapshotted ? _cipherAlgorithm : _sslStream.CipherAlgorithm;
-
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int CipherStrength => _snapshotted ? _cipherStrength : _sslStream.CipherStrength;
+    public TlsCipherSuite? NegotiatedCipherSuite => Snapshotted ? _negotiatedCipherSuite : _sslStream.NegotiatedCipherSuite;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public HashAlgorithmType HashAlgorithm => _snapshotted ? _hashAlgorithm : _sslStream.HashAlgorithm;
+    public CipherAlgorithmType CipherAlgorithm => Snapshotted ? _cipherAlgorithm : _sslStream.CipherAlgorithm;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int HashStrength => _snapshotted ? _hashStrength : _sslStream.HashStrength;
+    public int CipherStrength => Snapshotted ? _cipherStrength : _sslStream.CipherStrength;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public ExchangeAlgorithmType KeyExchangeAlgorithm => _snapshotted ? _keyExchangeAlgorithm : _sslStream.KeyExchangeAlgorithm;
+    public HashAlgorithmType HashAlgorithm => Snapshotted ? _hashAlgorithm : _sslStream.HashAlgorithm;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int KeyExchangeStrength => _snapshotted ? _keyExchangeStrength : _sslStream.KeyExchangeStrength;
+    public int HashStrength => Snapshotted ? _hashStrength : _sslStream.HashStrength;
+
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public ExchangeAlgorithmType KeyExchangeAlgorithm => Snapshotted ? _keyExchangeAlgorithm : _sslStream.KeyExchangeAlgorithm;
+
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public int KeyExchangeStrength => Snapshotted ? _keyExchangeStrength : _sslStream.KeyExchangeStrength;
+
+    private SslApplicationProtocol NegotiatedApplicationProtocolValue
+        => _session is not null
+            ? _session.NegotiatedApplicationProtocol
+            : _sslStream!.NegotiatedApplicationProtocol;
 
     public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
     {
@@ -147,7 +226,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         if (ClientCertificate != null
             || !AllowDelayedClientCertificateNegotation
             // Delayed client cert negotiation is not allowed on HTTP/2 (or HTTP/3, but that's implemented elsewhere).
-            || _sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
+            || NegotiatedApplicationProtocolValue == SslApplicationProtocol.Http2)
         {
             return _clientCertTask = Task.FromResult(ClientCertificate);
         }
@@ -159,9 +238,21 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     {
         try
         {
+            if (_tlsPipe is not null)
+            {
+                await _tlsPipe.RequestClientCertificateAsync(cancellationToken: cancellationToken);
+
+                // The session-backed feature serves ClientCertificate from a field captured after
+                // the handshake, so it has to be refreshed once the peer has sent one. The
+                // SslStream path re-reads RemoteCertificate instead.
+                _clientCert = _session!.GetRemoteCertificate();
+            }
+            else
+            {
 #pragma warning disable CA1416 // Validate platform compatibility
-            await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+                await _sslStream!.NegotiateClientCertificateAsync(cancellationToken);
 #pragma warning restore CA1416 // Validate platform compatibility
+            }
         }
         catch (PlatformNotSupportedException)
         {
@@ -194,10 +285,19 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
     {
-        // The SslStream may be disposed after Snapshot() runs at connection teardown, so channel
-        // bindings are only retrievable while the connection is live. Callers should read the token
-        // once during request processing.
-        if (_snapshotted || (kind != ChannelBindingKind.Endpoint && kind != ChannelBindingKind.Unique))
+        // Channel bindings come from the live TLS state, so they are only retrievable while the
+        // underlying provider is usable. For the SslStream path that means before Snapshot()
+        // runs at connection teardown. A session-backed feature is snapshotted from
+        // construction - there the flag means "serve the negotiated values from cached fields",
+        // not "the connection is gone" - so it must not gate the session branch below, or that
+        // branch is unreachable and bindings silently never work on this path.
+        if (kind != ChannelBindingKind.Endpoint && kind != ChannelBindingKind.Unique)
+        {
+            channelBindingToken = default;
+            return false;
+        }
+
+        if (_session is null && _snapshotted)
         {
             channelBindingToken = default;
             return false;
@@ -205,7 +305,9 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
         try
         {
-            using var binding = _sslStream.TransportContext?.GetChannelBinding(kind);
+            using var binding = _session is not null
+                ? _session.GetChannelBinding(kind)
+                : _sslStream!.TransportContext?.GetChannelBinding(kind);
             if (binding is null || binding.IsInvalid || binding.IsClosed)
             {
                 channelBindingToken = default;
