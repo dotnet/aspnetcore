@@ -80,6 +80,16 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
+        // The generated resolver is non-generic: every typeof(...) it emits must name a
+        // fully closed type. Skip any symbol whose type tree still contains a type
+        // parameter; emitting it would produce typeof(T) / typeof(Wrapper<T>), which
+        // does not compile in the generated code. Closed constructions (Wrapper<string>)
+        // contain no type parameters and register normally.
+        if (ContainsTypeParameter(typeSymbol))
+        {
+            return false;
+        }
+
         // Skip file-local types, which are only accessible within their declaring file
         // and cannot be referenced from generated code in a different file
         // Skip types that are not accessible from generated code
@@ -365,5 +375,52 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     {
         var validatableObjectSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_IValidatableObject);
         return typeSymbol.ImplementsInterface(validatableObjectSymbol);
+    }
+
+    /// <summary>
+    /// Returns true if the given type symbol contains an unresolved type parameter
+    /// anywhere in its type tree. This catches not only bare <c>T</c> but also
+    /// constructed types like <c>List&lt;T&gt;</c>, <c>T[]</c>, <c>T?</c>, and
+    /// <c>Dictionary&lt;string, T&gt;</c>, all of which would produce invalid
+    /// <c>typeof(...)</c> expressions in the emitted code.
+    /// </summary>
+    internal static bool ContainsTypeParameter(ITypeSymbol type)
+    {
+        // Bare type parameter: T, TSelf, TSelf?
+        if (type is ITypeParameterSymbol)
+        {
+            return true;
+        }
+
+        // Array: T[], T[,], List<T>[]
+        if (type is IArrayTypeSymbol arrayType)
+        {
+            return ContainsTypeParameter(arrayType.ElementType);
+        }
+
+        if (type is INamedTypeSymbol namedType)
+        {
+            // Constructed generic: List<T>, Dictionary<string, T>, Nullable<T>, Func<T, bool>
+            if (namedType.IsGenericType)
+            {
+                foreach (var typeArg in namedType.TypeArguments)
+                {
+                    if (ContainsTypeParameter(typeArg))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // Nested type inside a generic outer: Outer<T>.Inner. Inner has no type
+            // arguments of its own, but its emitted FQN still carries the outer's
+            // parameter; typeof(global::Outer<T>.Inner) is not valid C# either.
+            if (namedType.ContainingType is not null)
+            {
+                return ContainsTypeParameter(namedType.ContainingType);
+            }
+        }
+
+        return false;
     }
 }
