@@ -153,6 +153,8 @@ public class FormFeatureTests
 "\r\n" +
 "Foo\r\n";
 
+    private const string NoContentTypeMessage = "This request does not have a Content-Type header. Forms are available from requests with bodies like POSTs and a form Content-Type of either application/x-www-form-urlencoded or multipart/form-data.";
+
     private const string InvalidContentDispositionValue = "form-data; name=\"description\" - filename=\"temp.html\"";
 
     private const string MultipartFormFileInvalidContentDispositionValue = "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
@@ -608,6 +610,111 @@ InvalidContentDispositionValue +
         var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
 
         Assert.Equal("Form section has invalid Content-Disposition value: " + InvalidContentDispositionValue, exception.Message);
+    }
+
+    [Fact]
+    public void ReadForm_NoContentType_Throws()
+    {
+        var context = new DefaultHttpContext();
+        var formFeature = new FormFeature(context.Request, new FormOptions());
+        context.Features.Set<IFormFeature>(formFeature);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => formFeature.ReadForm());
+
+        Assert.Equal(NoContentTypeMessage, exception.Message);
+    }
+
+    [Fact]
+    public async Task ReadFormAsync_NoContentType_Throws()
+    {
+        var context = new DefaultHttpContext();
+        var formFeature = new FormFeature(context.Request, new FormOptions());
+        context.Features.Set<IFormFeature>(formFeature);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => formFeature.ReadFormAsync(CancellationToken.None));
+
+        Assert.Equal(NoContentTypeMessage, exception.Message);
+
+        // The synchronous path must report the exact same message.
+        var syncContext = new DefaultHttpContext();
+        var syncFormFeature = new FormFeature(syncContext.Request, new FormOptions());
+        var syncException = Assert.Throws<InvalidOperationException>(() => syncFormFeature.ReadForm());
+
+        Assert.Equal(syncException.Message, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("image/png")]
+    [InlineData("application/json")]
+    public void ReadForm_NonFormContentType_Throws(string contentType)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = contentType;
+        var formFeature = new FormFeature(context.Request, new FormOptions());
+        context.Features.Set<IFormFeature>(formFeature);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => formFeature.ReadForm());
+
+        Assert.Contains(contentType, exception.Message);
+        Assert.DoesNotContain("does not have a Content-Type header", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("image/png")]
+    [InlineData("application/json")]
+    public async Task ReadFormAsync_NonFormContentType_Throws(string contentType)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = contentType;
+        var formFeature = new FormFeature(context.Request, new FormOptions());
+        context.Features.Set<IFormFeature>(formFeature);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => formFeature.ReadFormAsync(CancellationToken.None));
+
+        Assert.Contains(contentType, exception.Message);
+        Assert.DoesNotContain("does not have a Content-Type header", exception.Message);
+
+        // The synchronous path must report the exact same message.
+        var syncContext = new DefaultHttpContext();
+        syncContext.Request.ContentType = contentType;
+        var syncFormFeature = new FormFeature(syncContext.Request, new FormOptions());
+        var syncException = Assert.Throws<InvalidOperationException>(() => syncFormFeature.ReadForm());
+
+        Assert.Equal(syncException.Message, exception.Message);
+    }
+
+    [Fact]
+    public async Task ReadFormAsyncWithOptions_NoContentType_Throws()
+    {
+        var context = new DefaultHttpContext();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => context.Request.ReadFormAsync(new FormOptions()));
+
+        Assert.Equal(NoContentTypeMessage, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("image/png")]
+    [InlineData("application/json")]
+    public async Task ReadFormAsyncWithOptions_NonFormContentType_Throws(string contentType)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = contentType;
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => context.Request.ReadFormAsync(new FormOptions()));
+
+        Assert.Contains(contentType, exception.Message);
+        Assert.DoesNotContain("does not have a Content-Type header", exception.Message);
+
+        // The message must match the one FormFeature itself reports.
+        var featureContext = new DefaultHttpContext();
+        featureContext.Request.ContentType = contentType;
+        var formFeature = new FormFeature(featureContext.Request, new FormOptions());
+        var featureException = Assert.Throws<InvalidOperationException>(() => formFeature.ReadForm());
+
+        Assert.Equal(featureException.Message, exception.Message);
     }
 
     private Stream CreateFile(int size)
