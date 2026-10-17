@@ -49,7 +49,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
             Assert.Equal(EnsureCertificateResult.Succeeded, result);
             Assert.True(File.Exists(CertificateName));
 
-            var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName));
+            var exportedCertificate = X509CertificateLoader.LoadCertificate(File.ReadAllBytes(CertificateName));
             Assert.NotNull(exportedCertificate);
             Assert.False(exportedCertificate.HasPrivateKey);
 
@@ -148,7 +148,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
         Assert.True(File.Exists(CertificateName));
 
-        var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName), certificatePassword);
+        var exportedCertificate = X509CertificateLoader.LoadPkcs12(File.ReadAllBytes(CertificateName), certificatePassword);
         Assert.NotNull(exportedCertificate);
         Assert.True(exportedCertificate.HasPrivateKey);
 
@@ -215,7 +215,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
         Assert.True(File.Exists(CertificateName));
 
-        var exportedCertificate = new X509Certificate2(CertificateName);
+        var exportedCertificate = X509CertificateLoader.LoadCertificateFromFile(CertificateName);
         Assert.NotNull(exportedCertificate);
         Assert.False(exportedCertificate.HasPrivateKey);
     }
