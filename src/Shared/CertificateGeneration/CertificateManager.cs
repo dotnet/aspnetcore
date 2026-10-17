@@ -1148,8 +1148,8 @@ internal abstract class CertificateManager
         [Event(22, Level = EventLevel.Error, Message = "An error has occurred saving the certificate: {0}.")]
         public void SaveCertificateInStoreError(string e) => WriteEvent(22, e);
 
-        [Event(23, Level = EventLevel.Verbose, Message = "Saving certificate '{0}' to {1} {2} private key.")]
-        public void ExportCertificateStart(string certificate, string path, bool includePrivateKey) => WriteEvent(23, certificate, path, includePrivateKey ? "with" : "without");
+        [Event(23, Level = EventLevel.Verbose, Message = "Saving certificate '{0}' to {1}. Include private key: {2}.")]
+        public void ExportCertificateStart(string certificate, string path, bool includePrivateKey) => WriteEvent(23, certificate, path, includePrivateKey);
 
         [Event(24, Level = EventLevel.Verbose, Message = "Exporting certificate with private key but no password.")]
         public void NoPasswordForCertificate() => WriteEvent(24);
