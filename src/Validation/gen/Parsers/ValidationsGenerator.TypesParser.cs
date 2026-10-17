@@ -268,11 +268,24 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
-                        _ = TryExtractValidatableType(
+                        var hasValidatableType = TryExtractValidatableType(
                             correspondingProperty.Type,
                             wellKnownTypes,
                             validatableTypes,
                             visitedTypes);
+
+                        // If neither the parameter nor the corresponding property has validation
+                        // attributes, and the property's type is not itself validatable, skip it.
+                        // This mirrors the gate applied to non-record properties below and prevents
+                        // records with no validatable members from being emitted as validatable types.
+                        // Attributes on record primary constructor parameters bind to the parameter
+                        // rather than the property by default, so both are checked.
+                        if (!HasValidationAttributes(parameter, wellKnownTypes)
+                            && !HasValidationAttributes(correspondingProperty, wellKnownTypes)
+                            && !hasValidatableType)
+                        {
+                            continue;
+                        }
 
                         // Record primary-constructor parameters can carry [Display]/[DisplayName] too.
                         // Prefer the parameter's attribute over the property's.

@@ -64,6 +64,28 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
             .DisableRequireUniquePrefix();
     }
 
+    // Runs the generator against the source and returns the resulting compilation without
+    // producing a Verify snapshot. Useful for tests that assert the generated behavior at
+    // runtime (via VerifyValidatableType/VerifyEndpoint) rather than the generated source text.
+    internal static void RunGenerator(string source, out Compilation compilation)
+    {
+        var references = GetMetadataReferences();
+        var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
+            [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
+            references,
+            new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
+        var programEmitResult = inputCompilation.Emit(Stream.Null);
+        if (!programEmitResult.Success)
+        {
+            throw new InvalidOperationException($"Failed to compile Program.cs: {string.Join(Environment.NewLine, programEmitResult.Diagnostics)}");
+        }
+
+        var generator = new ValidationsGenerator();
+        var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
+        driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out _);
+    }
+
     private static IEnumerable<MetadataReference> GetMetadataReferences()
         => AppDomain.CurrentDomain.GetAssemblies()
             .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
