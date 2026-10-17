@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpers;
 using Microsoft.AspNetCore.Hosting;
@@ -52,6 +53,48 @@ public class MigrationsEndPointMiddlewareTest
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             await context.Response.WriteAsync("Request Handled");
+        }
+    }
+
+    [Theory]
+    [InlineData("GET", null)]
+    [InlineData("GET", "application/x-www-form-urlencoded")]
+    [InlineData("PUT", "application/x-www-form-urlencoded")]
+    [InlineData("DELETE", "application/x-www-form-urlencoded")]
+    [InlineData("OPTIONS", null)]
+    [InlineData("POST", null)]
+    [InlineData("POST", "application/json")]
+    [InlineData("POST", "text/plain")]
+    [InlineData("POST", "image/png")]
+    public async Task Invalid_migration_requests_pass_thru(string method, string contentType)
+    {
+        foreach (var path in new[] { MigrationsEndPointOptions.DefaultPath, new PathString("/CustomMigrations") })
+        {
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseTestServer()
+                        .Configure(app => app
+                            .UseMigrationsEndPoint(new MigrationsEndPointOptions { Path = path })
+                            .UseMiddleware<SuccessMiddleware>());
+                }).Build();
+
+            await host.StartAsync();
+
+            using var request = new HttpRequestMessage(new HttpMethod(method), "http://localhost" + path)
+            {
+                Content = new ByteArrayContent(Array.Empty<byte>())
+            };
+            if (contentType != null)
+            {
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+            }
+
+            using var response = await host.GetTestClient().SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Request Handled", await response.Content.ReadAsStringAsync());
         }
     }
 
@@ -138,8 +181,11 @@ public class MigrationsEndPointMiddlewareTest
         }
     }
 
-    [Fact]
-    public async Task Context_type_not_specified()
+    [Theory]
+    [InlineData("application/x-www-form-urlencoded")]
+    [InlineData("application/x-www-form-urlencoded; charset=utf-8")]
+    [InlineData("multipart/form-data; boundary=test-boundary")]
+    public async Task Context_type_not_specified(string contentType)
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -156,7 +202,10 @@ public class MigrationsEndPointMiddlewareTest
 
         var server = host.GetTestServer();
 
-        var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>());
+        using HttpContent formData = contentType.StartsWith("multipart/", StringComparison.Ordinal)
+            ? new MultipartFormDataContent("test-boundary") { { new StringContent("value"), "other" } }
+            : new FormUrlEncodedContent(new List<KeyValuePair<string, string>>());
+        formData.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
 
         var response = await server.CreateClient().PostAsync("http://localhost" + MigrationsEndPointOptions.DefaultPath, formData);
         var content = await response.Content.ReadAsStringAsync();
