@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
@@ -74,7 +75,7 @@ internal sealed partial class LongPollingTransport : ITransport
 
         // Start sending and polling (ask for binary if the server supports it)
         var receiving = Poll(url, _transportCts.Token);
-        var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
+        var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger, logMessageContent: _httpConnectionOptions.LogMessageContent);
 
         // Wait for send or receive to complete
         var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
@@ -145,7 +146,11 @@ internal sealed partial class LongPollingTransport : ITransport
         Log.StartReceive(_logger);
 
         // Allocate this once for the duration of the transport so we can continuously write to it
-        var applicationStream = new PipeWriterStream(_application.Output);
+        Stream applicationStream = new PipeWriterStream(_application.Output);
+        if (_httpConnectionOptions.LogMessageContent)
+        {
+            applicationStream = new ContentLoggingStream(applicationStream, _logger);
+        }
 
         try
         {
