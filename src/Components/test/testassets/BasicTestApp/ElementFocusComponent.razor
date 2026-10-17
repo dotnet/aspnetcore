@@ -14,16 +14,26 @@
 <p>Received focus in: <span id="focus-event-received">@didReceiveFocusIn</span></p>
 <hr />
 <input id="focus-input" @ref="inputReference" style="margin-top: 10000px" />
+<hr />
+<button id="focus-out-button" @onclick="BlurInput">Click to focus out (blur)!</button>
+<hr />
+<input id="focus-out-input" @ref="inputOutReference" />
 
 @code {
     private ElementReference inputReference;
     private ElementReference inputForOnAfterRenderReference;
+    private ElementReference inputOutReference;
     private bool performFocusDuringOnAfterRender;
     private bool didReceiveFocusIn;
 
     private async Task FocusInput(bool preventScroll)
     {
         await inputReference.FocusAsync(preventScroll);
+    }
+
+    private async Task BlurInput()
+    {
+        await inputOutReference.BlurAsync();
     }
 
     private void FocusDuringOnAfterRenderViaInvoke()
