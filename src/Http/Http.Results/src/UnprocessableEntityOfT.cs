@@ -4,6 +4,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -42,7 +43,7 @@ public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProv
     int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc />
-    public Task ExecuteAsync(HttpContext httpContext)
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
@@ -53,7 +54,19 @@ public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProv
         HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        // If the value is a ProblemDetails, attempt to use IProblemDetailsService for writing
+        // This enables customizations via ProblemDetailsOptions.CustomizeProblemDetails
+        if (Value is ProblemDetails problemDetails)
+        {
+            var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
+            if (problemDetailsService is not null &&
+                await problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = problemDetails }))
+            {
+                return;
+            }
+        }
+
+        await HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger: logger,
                 Value);
