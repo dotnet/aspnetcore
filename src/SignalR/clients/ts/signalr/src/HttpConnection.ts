@@ -248,6 +248,7 @@ export class HttpConnection implements IConnection {
         delete this.features.authenticationRefresh;
         this._accessTokenFactory = this._options.accessTokenFactory;
         this._httpClient._accessTokenFactory = this._accessTokenFactory;
+        this._httpClient.updateCachedToken(undefined);
         this._httpClient.setRefreshAccessTokenFactory(this._options.accessTokenFactory);
 
         try {

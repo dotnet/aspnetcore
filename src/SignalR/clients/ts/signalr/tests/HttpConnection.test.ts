@@ -1016,6 +1016,32 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("does not reuse a redirected access token at the original endpoint after restarting", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            const httpClient = new TestHttpClient()
+                .on("POST", /\/negotiate/, (request) => request.url!.startsWith("http://tempuri.org/")
+                    ? { url: "https://service.example/hub", accessToken: "service-token" }
+                    : defaultNegotiateResponse);
+            const connection = new HttpConnection("http://tempuri.org", { ...commonOptions, httpClient, logger, transport });
+            try {
+                await connection.start(TransferFormat.Text);
+                transport.onclose!();
+                await connection.stop();
+                await connection.start(TransferFormat.Text);
+
+                expect(httpClient.sentRequests.length).toBe(4);
+                expect(httpClient.sentRequests[0].headers![HeaderNames.Authorization]).toBeUndefined();
+                expect(httpClient.sentRequests[1].headers![HeaderNames.Authorization]).toBe("Bearer service-token");
+                expect(httpClient.sentRequests[2].headers![HeaderNames.Authorization]).toBeUndefined();
+                expect(httpClient.sentRequests[3].headers![HeaderNames.Authorization]).toBe("Bearer service-token");
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
     it("fails to start if negotiate redirects more than 100 times", async () => {
         await VerifyLogger.run(async (logger) => {
             const httpClient = new TestHttpClient()
