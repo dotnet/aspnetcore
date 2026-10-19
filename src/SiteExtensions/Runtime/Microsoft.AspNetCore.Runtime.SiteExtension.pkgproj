@@ -6,7 +6,7 @@
     <ContentTargetFolders>content</ContentTargetFolders>
 
     <Title>ASP.NET Core $(AspNetCoreMajorMinorVersion) ($(TargetArchitecture)) Runtime </Title>
-    <Description>This Azure App Service site extension installs the Microsoft.AspNetCore.App and Microsoft.NETCore.App shared runtimes and the latest native ASP.NET Core Module for IIS. It enables preview and nightly ASP.NET Core builds to run in App Service before they are available on the platform.</Description>
+    <Description>This Azure App Service site extension installs the Microsoft.AspNetCore.App and Microsoft.NETCore.App shared runtimes and the latest native ASP.NET Core Module for IIS.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
     <PackageId>AspNetCoreRuntime.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
