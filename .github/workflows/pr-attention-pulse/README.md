@@ -325,6 +325,19 @@ function Get-PublishedPulseSnapshot
     )
 
     $ErrorActionPreference = "Stop"
+    $publicationSuffixPattern = '(?s)(?<suffix>\n\n<!-- gh-aw-workflow-id: pr-attention-pulse -->\n\n' +
+        '<!-- gh-aw-agentic-workflow: ASP\.NET Core Scoped PR Attention Pulse(?:, engine: [^,\r\n]+, model: [^,\r\n]+)?, id: (?<agenticRun>[1-9][0-9]*), workflow_id: pr-attention-pulse, run: https://github\.com/dotnet/aspnetcore/actions/runs/\k<agenticRun> -->\n' +
+        '<!-- gh-aw-execution: (?<provenance>\{[^\r\n]+\}) -->)\n?\z'
+    $publicationSuffix = [regex]::Match($PublishedBody, $publicationSuffixPattern)
+    $canonicalBody = if ($publicationSuffix.Success)
+    {
+        $PublishedBody.Substring(0, $publicationSuffix.Index)
+    }
+    else
+    {
+        $PublishedBody
+    }
+
     $headerPattern = '(?m)^## Snapshot\n\n' +
         'Snapshot generated: `(?<time>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{7}Z)`\. ' +
         '\[Producing workflow run\]\(https://github\.com/dotnet/aspnetcore/actions/runs/(?<run>[1-9][0-9]*)/attempts/(?<attempt>[1-9][0-9]*)\)\.\n' +
@@ -333,10 +346,10 @@ function Get-PublishedPulseSnapshot
         '<details>\n<summary>Snapshot identity</summary>\n\n' +
         'Repository: `dotnet/aspnetcore`; run ID: `\k<run>`; attempt: `\k<attempt>`\.\n' +
         'JSON SHA-256: `(?<hash>[0-9a-f]{64})`\.\n\n</details>'
-    $identity = [regex]::Match($PublishedBody, $headerPattern)
+    $identity = [regex]::Match($canonicalBody, $headerPattern)
     $time = [datetimeoffset]::MinValue
     if (-not $identity.Success -or
-        [regex]::Matches($PublishedBody, '(?m)^## Snapshot$').Count -ne 1 -or
+        [regex]::Matches($canonicalBody, '(?m)^## Snapshot$').Count -ne 1 -or
         -not [datetimeoffset]::TryParseExact(
             $identity.Groups["time"].Value, "yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'",
             [Globalization.CultureInfo]::InvariantCulture,
@@ -348,9 +361,20 @@ function Get-PublishedPulseSnapshot
     $runId = $identity.Groups["run"].Value
     $attempt = $identity.Groups["attempt"].Value
     $hash = $identity.Groups["hash"].Value
+    if ($publicationSuffix.Success)
+    {
+        $provenance = $publicationSuffix.Groups["provenance"].Value | ConvertFrom-Json -Depth 20
+        if ($publicationSuffix.Groups["agenticRun"].Value -cne $runId -or
+            [string]$provenance.repository -cne "dotnet/aspnetcore" -or
+            [string]$provenance.aw_workflow_id -cne "pr-attention-pulse" -or
+            [string]$provenance.run_id -cne $runId)
+        {
+            throw "Invalid published workflow provenance."
+        }
+    }
     $repositoryPath = "repos/dotnet/aspnetcore"
     $utf8 = [Text.UTF8Encoding]::new($false, $true)
-    $tail = $PublishedBody.Substring($identity.Index + $identity.Length)
+    $tail = $canonicalBody.Substring($identity.Index + $identity.Length)
 
     # The embedded fenced JSON block's backtick fence is at least three backticks and
     # widens automatically whenever the JSON contains a run of backticks, so it can
@@ -517,7 +541,7 @@ function Get-PublishedPulseSnapshot
                     }
                 }
                 $body = $utf8.GetString($files["pulse-body.md"])
-                if (-not [string]::Equals($body, $PublishedBody, [StringComparison]::Ordinal))
+                if (-not [string]::Equals($body, $canonicalBody, [StringComparison]::Ordinal))
                 {
                     $rejections.Add("$($artifact.id): Published body/identity mismatch.")
                     continue
