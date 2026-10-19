@@ -786,6 +786,7 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <param name="value">The new attribute value.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="frameIndex"/> is outside the range of appended frames.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the frame at <paramref name="frameIndex"/> is not of type <see cref="RenderTreeFrameType.Attribute"/>.</exception>
+    [Experimental("ASP0032", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public void SetAttributeValue(int frameIndex, object? value)
     {
         var frames = _entries.Buffer;

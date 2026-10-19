@@ -1,0 +1,139 @@
+@page "/function-approval"
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Runtime.CompilerServices
+
+<PageTitle>Server function approval</PageTitle>
+
+<div class="function-approval-scenario"
+     data-tool-invocations="@_chatClient.InvocationCount">
+    <h1>Server function approval</h1>
+
+    <ChatPage Agent="_agent" Placeholder="Request an approved server tool">
+        <WelcomeContent>
+            <p>Send a message, then approve or reject the server weather tool.</p>
+        </WelcomeContent>
+    </ChatPage>
+</div>
+
+@code {
+    private readonly ApprovalFunctionChatClient _chatClient = new();
+    private UIAgent _agent = default!;
+
+    protected override void OnInitialized()
+    {
+        _chatClient.StateChanged = () => InvokeAsync(StateHasChanged);
+        _agent = new UIAgent(_chatClient);
+    }
+
+    public void Dispose() => _agent.Dispose();
+
+    private sealed class ApprovalFunctionChatClient : DelegatingChatClient
+    {
+        private readonly AIFunction _weatherTool;
+
+        public ApprovalFunctionChatClient()
+            : base(new FunctionInvokingChatClient(new ApprovalModelChatClient()))
+        {
+            _weatherTool = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(
+                GetWeather,
+                name: "get_weather",
+                description: "Get the weather for a given location."));
+        }
+
+        public Action? StateChanged { get; set; }
+
+        public int InvocationCount { get; private set; }
+
+        public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => base.GetStreamingResponseAsync(
+                messages,
+                AddWeatherTool(options),
+                cancellationToken);
+
+        public override Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => base.GetResponseAsync(messages, AddWeatherTool(options), cancellationToken);
+
+        private ChatOptions AddWeatherTool(ChatOptions? options)
+        {
+            var optionsWithTools = options?.Clone() ?? new ChatOptions();
+            optionsWithTools.Tools = [_weatherTool];
+
+            return optionsWithTools;
+        }
+
+        private string GetWeather(string location)
+        {
+            InvocationCount++;
+            StateChanged?.Invoke();
+
+            return "sunny";
+        }
+    }
+
+    private sealed class ApprovalModelChatClient : IChatClient
+    {
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var messageList = messages.ToList();
+            if (messageList.LastOrDefault()?.Role == ChatRole.Tool)
+            {
+                var result = messageList[^1].Contents
+                    .OfType<FunctionResultContent>()
+                    .FirstOrDefault()?.Result?.ToString();
+                yield return new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    MessageId = "aiapp-function-approval-response",
+                    Contents =
+                    [
+                        new TextContent(result == "Tool call invocation rejected."
+                            ? "The weather lookup was rejected and was not executed."
+                            : "The approved weather lookup returned sunny conditions.")
+                    ],
+                    FinishReason = ChatFinishReason.Stop,
+                };
+                yield break;
+            }
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = "aiapp-function-approval",
+                Contents =
+                [
+                    new FunctionCallContent(
+                        "aiapp-approval-call-1",
+                        "get_weather",
+                        new Dictionary<string, object?> { ["location"] = "Seattle" })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+
+            await Task.CompletedTask;
+        }
+
+        public Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => GetStreamingResponseAsync(messages, options, cancellationToken)
+                .ToChatResponseAsync(cancellationToken);
+
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => serviceType == typeof(IChatClient) ? this : null;
+
+        public void Dispose()
+        {
+        }
+    }
+}

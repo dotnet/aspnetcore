@@ -93,7 +93,8 @@ public class CacheTagHelper : CacheTagHelperBase
 
         var options = GetMemoryCacheEntryOptions();
         options.AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
-        options.SetSize(PlaceholderSize);
+        var cacheKeySize = cacheKey.GetEstimatedSize();
+        options.SetSize(PlaceholderSize + cacheKeySize);
         var tcs = new TaskCompletionSource<IHtmlContent>(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
 
         // The returned value is ignored, we only do this so that
@@ -117,7 +118,7 @@ public class CacheTagHelper : CacheTagHelperBase
 
             var result = ProcessContentAsync(output);
             content = await result;
-            options.SetSize(GetSize(content));
+            options.SetSize(GetSize(content) + cacheKeySize);
             entry.SetOptions(options);
 
             entry.Value = result;

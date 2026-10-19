@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// A component that describes a location in prerendered output where client-side code
 /// should insert an interactive component.
 /// </summary>
+[CacheBehavior(CacheBehavior.Rerender)]
 internal class SSRRenderModeBoundary : IComponent
 {
     private static readonly ConcurrentDictionary<Type, string> _componentTypeNameHashCache = new();
@@ -35,6 +36,9 @@ internal class SSRRenderModeBoundary : IComponent
     private ILogger? _renderFragmentSerializationLogger;
 
     public IComponentRenderMode RenderMode { get; }
+
+    [DynamicallyAccessedMembers(Component)]
+    internal Type ComponentType => _componentType;
 
     public SSRRenderModeBoundary(
         HttpContext httpContext,

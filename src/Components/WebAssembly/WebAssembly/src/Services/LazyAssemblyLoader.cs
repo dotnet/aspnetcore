@@ -72,24 +72,27 @@ public sealed partial class LazyAssemblyLoader
         var loadedAssemblies = new List<Assembly>();
         var pendingLoads = newAssembliesToLoad.Select(LazyAssemblyLoaderInterop.LoadLazyAssembly);
 
+        // this will download the files and install them into memory
+        // it would not load them into the VM until we call LoadFromAssemblyName below
         var loadedStatus = await Task.WhenAll(pendingLoads);
         int i = 0;
 
-        List<Assembly>? allAssemblies = null;
         foreach (var loaded in loadedStatus)
         {
             if (loaded)
             {
-                if (allAssemblies == null)
-                {
-                    allAssemblies = AssemblyLoadContext.Default.Assemblies.ToList();
-                }
-
                 var assemblyName = Path.GetFileNameWithoutExtension(newAssembliesToLoad[i]);
-                var assembly = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a => a.GetName().Name == assemblyName);
-                if (assembly != null)
+                try
                 {
-                    loadedAssemblies.Add(assembly);
+                    var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
+                    if (assembly != null)
+                    {
+                        loadedAssemblies.Add(assembly);
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+                    // no op
                 }
             }
 

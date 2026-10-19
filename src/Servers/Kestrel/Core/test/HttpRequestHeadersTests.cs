@@ -710,6 +710,27 @@ public class HttpRequestHeadersTests
             new HttpRequestHeaders().Append(contentLengthNameBytes, contentLengthValueBytes, checkForNewlineChars: false));
     }
 
+    [Theory]
+    [InlineData("+1")]
+    [InlineData("+0")]
+    [InlineData("-0")]
+    [InlineData("-1")]
+    [InlineData(" 1")]
+    [InlineData("1a")]
+    [InlineData("")]
+    public void ContentLengthWithCustomEncodingRejectsNonDigits(string value)
+    {
+        var contentLengthNameBytes = Encoding.ASCII.GetBytes(HeaderNames.ContentLength);
+        var contentLengthValueBytes = Encoding.UTF32.GetBytes(value);
+
+        var headers = new HttpRequestHeaders(encodingSelector: _ => Encoding.UTF32);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            headers.Append(contentLengthNameBytes, contentLengthValueBytes, checkForNewlineChars: false));
+    }
+
     [Fact]
     public void ValueReuseNeverWhenUnknownHeader()
     {

@@ -68,6 +68,10 @@
                 new Claim(ClaimTypes.Name, username),
                 new Claim("test-claim", "Test claim value"),
             };
+            if (Request.Query["nameIdentifier"] == "true")
+            {
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, username));
+            }
 
             var roles = Request.Query["roles"];
             if (!string.IsNullOrEmpty(roles))

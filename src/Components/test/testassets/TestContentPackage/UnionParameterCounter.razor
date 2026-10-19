@@ -1,0 +1,22 @@
+<p>Value: <span id="value-union">@DescribeValue()</span></p>
+<p>Interactive: <span id="is-interactive-union">@RendererInfo.IsInteractive</span></p>
+<p>Render mode: <span id="render-mode-union">@RendererInfo.Name</span></p>
+<p>Current count: <span id="count-union">@_currentCount</span></p>
+
+<button id="increment-union" @onclick="() => _currentCount++">Click me</button>
+
+@code {
+    private int _currentCount;
+
+    [Parameter]
+    public NullableIntOrString Value { get; set; }
+
+    private string DescribeValue() => Value switch
+    {
+        int number => $"int:{number}",
+        string text => $"string:{text}",
+        null => "active null",
+    };
+
+    public union NullableIntOrString(int?, string);
+}

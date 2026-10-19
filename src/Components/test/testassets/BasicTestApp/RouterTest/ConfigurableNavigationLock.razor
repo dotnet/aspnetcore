@@ -1,7 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JSRuntime
 
 <input class="block-internal-navigation" type="checkbox" @bind-value="_blockInternalNavigation" />Block internal navigation<br />
 <input class="confirm-external-navigation" type="checkbox" @bind-value="_confirmExternalNavigation" />Confirm external navigation<br />
+<input class="navigation-lock-ready" type="hidden" @ref="_navigationLockReadyElement" />
 
 <p class="navigation-log">
     @for (var i = 0; i < _log.Count; i++)
@@ -40,7 +44,19 @@
     private LocationChangingContext _context;
 
     private bool _blockInternalNavigation;
+    private bool _reportedBlockInternalNavigation;
     private bool _confirmExternalNavigation;
+    private ElementReference _navigationLockReadyElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_reportedBlockInternalNavigation != _blockInternalNavigation)
+        {
+            await Task.Yield();
+            await JSRuntime.InvokeVoidAsync("setElementValue", _navigationLockReadyElement, _blockInternalNavigation ? "true" : "false");
+            _reportedBlockInternalNavigation = _blockInternalNavigation;
+        }
+    }
 
     public async Task BlockNavigationAsync(LocationChangingContext context)
     {

@@ -11,6 +11,10 @@ internal unsafe class SequentialGenRandom : IBCryptGenRandom, IManagedGenRandom
 {
     private byte _value;
 
+    internal byte CurrentValue => _value;
+
+    internal void Reset() => _value = 0;
+
     public byte[] GenRandom(int numBytes)
     {
         byte[] bytes = new byte[numBytes];

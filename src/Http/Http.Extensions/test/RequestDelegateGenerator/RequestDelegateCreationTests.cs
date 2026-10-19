@@ -218,6 +218,35 @@ app.MapGet("/", getHeaderWithDefault);
         await VerifyResponseBodyAsync(httpContext, expectedBody, expectedStatusCode);
     }
 
+    [Fact]
+    public async Task MapAction_ExplicitHeaderParam_SharedDelegateSignature_PreservesBindingName()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/pull/67591#discussion_r3521138229.
+        // Two endpoints that share the same delegate signature (string) => string but differ only in
+        // their [FromHeader(Name = ...)] binding name must each get their own interceptor. Otherwise
+        // the second endpoint silently reuses the first endpoint's header name.
+        var source = """
+app.MapGet("/a", ([FromHeader(Name = "X-Custom-A")] string value) => value);
+app.MapGet("/b", ([FromHeader(Name = "X-Custom-B")] string value) => value);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(2, endpoints.Length);
+
+        var httpContextA = CreateHttpContext();
+        httpContextA.Request.Headers["X-Custom-A"] = "from-a";
+        httpContextA.Request.Headers["X-Custom-B"] = "from-b";
+        await endpoints[0].RequestDelegate(httpContextA);
+        await VerifyResponseBodyAsync(httpContextA, "from-a");
+
+        var httpContextB = CreateHttpContext();
+        httpContextB.Request.Headers["X-Custom-A"] = "from-a";
+        httpContextB.Request.Headers["X-Custom-B"] = "from-b";
+        await endpoints[1].RequestDelegate(httpContextB);
+        await VerifyResponseBodyAsync(httpContextB, "from-b");
+    }
+
     public static object[][] MapAction_ExplicitServiceParam_SimpleReturn_Data
     {
         get

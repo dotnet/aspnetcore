@@ -20,7 +20,6 @@ export interface CircuitStartOptions {
   reconnectionHandler?: ReconnectionHandler;
   initializers : ServerInitializers;
   circuitHandlers: CircuitHandler[];
-  onPauseRequested?: (signal: AbortSignal) => void | Promise<void>;
 }
 
 export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
@@ -43,6 +42,7 @@ export interface ReconnectionOptions {
 export interface CircuitHandler {
   onCircuitOpened?: () => void;
   onCircuitClosed?: () => void;
+  onCircuitPausing?: (signal: AbortSignal) => void | Promise<void>;
 }
 
 export interface ReconnectionHandler {

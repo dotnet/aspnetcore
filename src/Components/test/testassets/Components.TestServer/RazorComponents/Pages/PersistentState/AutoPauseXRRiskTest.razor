@@ -1,0 +1,32 @@
+@page "/persistent-state/auto-pause-xr-risk"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — XR session state risk</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<script>
+    if (!window.__xrHookInitialized) {
+        window.__xrHookInitialized = true;
+        window.__savedXRState = null;
+
+        // Mock XR session since headless Chrome has no XR hardware.
+        window.__mockXRSession = {
+            visibilityState: 'visible',
+            mode: 'immersive-vr',
+            ended: false
+        };
+
+        if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+            window.__mitigationHandler = function () {
+                var s = window.__mockXRSession;
+                window.__savedXRState = s.mode + ',' + s.visibilityState + ',' + s.ended;
+            };
+        }
+    }
+</script>

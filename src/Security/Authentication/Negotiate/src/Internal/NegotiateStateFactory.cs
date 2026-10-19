@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
 internal sealed class NegotiateStateFactory : INegotiateStateFactory
 {
-    public INegotiateState CreateInstance()
+    public INegotiateState CreateInstance(ReadOnlyMemory<byte> channelBindingToken)
     {
-        return new NegotiateState();
+        return new NegotiateState(channelBindingToken);
     }
 }

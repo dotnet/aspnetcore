@@ -40,12 +40,15 @@ usage()
   echo "  --projects <value>       Project or solution file(s) to build"
   echo "  --ci                     Set when running on CI server"
   echo "  --excludeCIBinarylog     Don't output binary log (short: -nobl)"
+  echo "  --pipelinesLog           Promote msbuild errors/warnings to Azure Pipelines timeline issues; defaults to on in CI (short: -pl)"
   echo "  --prepareMachine         Prepare machine for CI run, clean up processes after build"
   echo "  --nodeReuse <value>      Sets nodereuse msbuild parameter ('true' or 'false')"
+  echo "  --msbuildMultiThreaded <value> Sets MSBuild's multi-threaded mode, i.e. the -mt switch ('true' or 'false') (short: --mt)"
   echo "  --warnAsError <value>    Sets warnaserror msbuild parameter ('true' or 'false')"
   echo "  --warnNotAsError <value> Sets a semi-colon delimited list of warning codes that should not be treated as errors"
   echo "  --buildCheck <value>     Sets /check msbuild parameter"
   echo "  --fromVMR                Set when building from within the VMR"
+  echo "  --disablePipelineSetResult Set to disable masking the actual exit code in the pipeline when the build fails"
   echo ""
   echo "Command line arguments not listed above are passed thru to msbuild."
   echo "Arguments can also be passed in with a single hyphen."
@@ -68,6 +71,7 @@ build=false
 source_build=false
 product_build=false
 from_vmr=false
+disable_pipeline_set_result=false
 rebuild=false
 test=false
 integration_test=false
@@ -81,11 +85,14 @@ clean=false
 
 warn_as_error=true
 warn_not_as_error=''
-node_reuse=true
+# Empty means "not specified"; tools.sh defaults these to on for local builds and off on CI.
+node_reuse=''
+msbuild_multi_threaded=''
 build_check=false
 binary_log=false
 binary_log_name=''
 exclude_ci_binary_log=false
+pipelines_log=false
 
 projects=''
 configuration=''
@@ -124,6 +131,9 @@ while [[ $# -gt 0 ]]; do
     -excludecibinarylog|-nobl)
       exclude_ci_binary_log=true
       ;;
+    -pipelineslog|-pl)
+      pipelines_log=true
+      ;;
     -restore|-r)
       restore=true
       ;;
@@ -151,6 +161,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     -fromvmr|-from-vmr)
       from_vmr=true
+      ;;
+    -disablepipelinesetresult|-disable-pipeline-set-result)
+      disable_pipeline_set_result=true
       ;;
     -test|-t)
       test=true
@@ -189,6 +202,10 @@ while [[ $# -gt 0 ]]; do
       node_reuse=$2
       shift
       ;;
+    -msbuildmultithreaded|-mt)
+      msbuild_multi_threaded=$2
+      shift
+      ;;
     -buildcheck)
       build_check=true
       ;;
@@ -213,11 +230,7 @@ if [[ -z "$configuration" ]]; then
 fi
 
 if [[ "$ci" == true ]]; then
-  # Disable node reuse on CI unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
-  # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
-  if [[ "${MSBUILD_NODEREUSE_ENABLED:-}" != "1" ]]; then
-    node_reuse=false
-  fi
+  pipelines_log=true
   if [[ "$exclude_ci_binary_log" == false ]]; then
     binary_log=true
   fi
@@ -241,7 +254,7 @@ function Build {
     properties+=("/p:Projects=$projects")
   fi
 
-  local bl=""
+  local bl=()
   if [[ "$binary_log" == true ]]; then
     local binary_log_path=""
     if [[ -z "$binary_log_name" ]]; then
@@ -253,7 +266,7 @@ function Build {
     fi
 
     mkdir -p "$(dirname "$binary_log_path")"
-    bl="/bl:\"$binary_log_path\""
+    bl=("/bl:$binary_log_path")
   fi
 
   local check=""
@@ -261,8 +274,8 @@ function Build {
     check="/check"
   fi
 
-  MSBuild $_InitializeToolset \
-    $bl \
+  MSBuild "$_InitializeToolset" \
+    ${bl[@]+"${bl[@]}"} \
     $check \
     /p:Configuration=$configuration \
     /p:RepoRoot="$repo_root" \
@@ -286,7 +299,7 @@ function Build {
 
 if [[ "$clean" == true ]]; then
   if [ -d "$artifacts_dir" ]; then
-    rm -rf $artifacts_dir
+    rm -rf "$artifacts_dir"
     echo "Artifacts directory deleted."
   fi
   exit 0
