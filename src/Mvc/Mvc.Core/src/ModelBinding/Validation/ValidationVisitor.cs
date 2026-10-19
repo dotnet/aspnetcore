@@ -313,7 +313,7 @@ public class ValidationVisitor
 
         // Model and Strategy still describe the parent until StateManager.Recurse.
         if (Model is IUnion && Strategy is null &&
-            typeof(IUnion).IsAssignableFrom(Nullable.GetUnderlyingType(Metadata!.ModelType) ?? Metadata.ModelType))
+            (Metadata is null || typeof(IUnion).IsAssignableFrom(Nullable.GetUnderlyingType(Metadata.ModelType) ?? Metadata.ModelType)))
         {
             metadata = GetUnionCaseMetadata(metadata, model);
         }

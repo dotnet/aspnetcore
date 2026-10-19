@@ -205,6 +205,52 @@ public class UnionValidationIntegrationTest
         Assert.Equal(invalidCase ? "Invalid case." : "The field Value must be a string or array type with a maximum length of '3'.", Assert.Single(entry.Value.Errors).ErrorMessage);
     }
 
+    [Theory]
+    [InlineData("long", false)]
+    [InlineData("ok", true)]
+    public void Validate_TopLevelUnionValue_PreservesPropertyValidators(string value, bool isValid)
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        var model = new LengthUnion(value);
+        var metadata = services.GetRequiredService<IModelMetadataProvider>().GetMetadataForProperties(typeof(LengthUnion))
+            .Single(property => property.PropertyName == nameof(LengthUnion.Value));
+
+        ((ObjectModelValidator)services.GetRequiredService<IObjectModelValidator>()).Validate(
+            context, null, "model.Value", model.Value, metadata, container: model);
+
+        Assert.Equal(isValid, context.ModelState.IsValid);
+        if (isValid)
+        {
+            Assert.Empty(context.ModelState);
+        }
+        else
+        {
+            var entry = Assert.Single(context.ModelState);
+            Assert.Equal("model.Value", entry.Key);
+            Assert.Equal("The field Value must be a string or array type with a maximum length of '3'.", Assert.Single(entry.Value.Errors).ErrorMessage);
+        }
+    }
+
+    [Fact]
+    public void Validate_TopLevelUnionValue_UsesTypeLevelValidation()
+    {
+        using var services = CreateServices();
+        var context = CreateContext();
+        var value = new ValidatableCase("invalid");
+        var model = new ValidatableUnion(value);
+        var metadata = services.GetRequiredService<IModelMetadataProvider>().GetMetadataForProperties(typeof(ValidatableUnion))
+            .Single(property => property.PropertyName == nameof(IUnion.Value));
+
+        ((ObjectModelValidator)services.GetRequiredService<IObjectModelValidator>()).Validate(
+            context, null, "model.Value", value, metadata, container: model);
+
+        Assert.False(context.ModelState.IsValid);
+        var entry = Assert.Single(context.ModelState);
+        Assert.Equal("model.Value", entry.Key);
+        Assert.Equal("Invalid case.", Assert.Single(entry.Value.Errors).ErrorMessage);
+    }
+
     [Fact]
     public void Validate_ClassLevelSuppressedExplicitUnion_DoesNotInvokeGetter()
     {
