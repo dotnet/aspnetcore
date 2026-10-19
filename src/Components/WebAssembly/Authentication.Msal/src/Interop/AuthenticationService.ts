@@ -488,6 +488,10 @@ export class AuthenticationService {
         return AuthenticationService.instance.signIn(state);
     }
 
+    public static isTopLevelWindow() {
+        return window.self === window.top;
+    }
+
     // url is not used in the msal.js implementation but we keep it here
     // as it is part of the default RemoteAuthenticationService contract implementation.
     // The unused parameter here just reflects that.

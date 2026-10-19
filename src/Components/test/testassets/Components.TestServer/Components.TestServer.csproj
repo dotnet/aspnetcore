@@ -47,6 +47,7 @@
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
     <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.Authentication.WebAssembly.Msal" />
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
@@ -95,6 +96,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="..\Components.WasmMsalRemoteAuthentication\Components.WasmMsalRemoteAuthentication.csproj" />
     <ProjectReference Include="..\Components.WasmMinimal\Components.WasmMinimal.csproj" />
     <ProjectReference Include="..\Components.WasmRemoteAuthentication\Components.WasmRemoteAuthentication.csproj" />
   </ItemGroup>
