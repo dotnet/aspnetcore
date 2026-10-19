@@ -25,13 +25,6 @@ function createTarget(): DotNetObject & { calls: unknown[][] } {
   };
 }
 
-beforeEach(() => {
-  let nextId = 1;
-  (globalThis as Record<string, unknown>).DotNet = {
-    createJSObjectReference: () => ({ __jsObjectId: nextId++ }),
-  };
-});
-
 describe('createCallback', () => {
   test('forwards every argument that has a shape to Invoke', async () => {
     const target = createTarget();
@@ -72,10 +65,14 @@ describe('toDotNet', () => {
     expect(toDotNet({ a: [1, { b: true }] }, null)).toEqual({ a: [1, { b: true }] });
   });
 
-  test('sends browser objects as references', () => {
-    const value = toDotNet({ port: new BrowserObject(), ports: [new BrowserObject()] }, null);
+  test('sends a marker with the type name for objects that are not plain', () => {
+    const value = toDotNet({ port: new BrowserObject(), dates: [new Date(0)], callback: () => 1 }, null);
 
-    expect(value).toEqual({ port: { __jsObjectId: 1 }, ports: [{ __jsObjectId: 2 }] });
+    expect(value).toEqual({
+      port: { __unsupported: 'BrowserObject' },
+      dates: [{ __unsupported: 'Date' }],
+      callback: { __unsupported: 'Function' },
+    });
   });
 
   test('applies nested shapes and applies a shape to each array item', () => {

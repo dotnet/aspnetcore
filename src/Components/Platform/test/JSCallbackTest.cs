@@ -78,19 +78,22 @@ public class JSCallbackTest
     }
 
     [Fact]
-    public async Task Disposal_ReleasesFunctionsTargetsAndModule()
+    public async Task CreatedFunctions_StayValidUntilTheCallerReleasesThem()
     {
         var jsRuntime = new BrowserJSRuntime();
         var factory = new JSCallbackFactory(jsRuntime);
         var callback = new JSCallback<string> { Handler = _ => Task.CompletedTask };
-        await factory.CreateAsync(callback, "[null]");
+        var (_, target) = await factory.CreateAsync(callback, "[null]");
 
         await ((IInternalAsyncDisposal)factory).InternalDisposeAsync();
-        var result = await jsRuntime.InvokeLastCallbackAsync("""["text"]""");
+        var beforeRelease = await jsRuntime.InvokeLastCallbackAsync("""["text"]""");
+        target.Dispose();
+        var afterRelease = await jsRuntime.InvokeLastCallbackAsync("""["text"]""");
 
-        // The module is object 1 and the function is object 2.
-        Assert.Equal(["[2]", "[1]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
-        Assert.False(result.Success);
+        // The module is object 1, and the factory releases only the module.
+        Assert.Equal(["[1]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+        Assert.True(beforeRelease.Success);
+        Assert.False(afterRelease.Success);
         await Assert.ThrowsAsync<ObjectDisposedException>(() => factory.CreateAsync(callback, "[null]"));
     }
 }

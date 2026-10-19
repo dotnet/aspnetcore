@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Platform;
@@ -12,13 +13,23 @@ namespace Microsoft.AspNetCore.Components.Platform;
 public sealed class Window : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
+    private readonly JSCallbackFactory _callbacks;
+    private readonly ILogger _eventListenerLogger;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
     private bool _disposed;
 
-    internal Window(IJSRuntime jsRuntime)
+    internal Window(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
     {
         _jsRuntime = jsRuntime;
+        _callbacks = new JSCallbackFactory(jsRuntime);
+        _eventListenerLogger = loggerFactory.CreateLogger<EventListenerCollection>();
     }
+
+    /// <summary>
+    /// Creates the collection that a projection uses to add event listeners to its JavaScript object.
+    /// </summary>
+    internal EventListenerCollection CreateEventListenerCollection()
+        => new(_callbacks, _eventListenerLogger);
 
     /// <summary>
     /// Gets the projection of type <typeparamref name="T"/>, creating it on first access.
@@ -85,5 +96,8 @@ public sealed class Window : IInternalAsyncDisposal
                 await disposable.InternalDisposeAsync().ConfigureAwait(false);
             }
         }
+
+        // Features remove their listeners first, so the module is no longer needed.
+        await ((IInternalAsyncDisposal)_callbacks).InternalDisposeAsync().ConfigureAwait(false);
     }
 }

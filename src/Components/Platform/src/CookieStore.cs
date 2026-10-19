@@ -12,21 +12,23 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public sealed class CookieStore : IInternalAsyncDisposal
 {
-    // The change event crosses by value, and CookieListItem is a dictionary, so the lists are copied whole.
-    private const string OnChangeShapes = """[{"changed":null,"deleted":null}]""";
-
     private readonly IJSRuntime _jsRuntime;
-    private readonly JSCallbackFactory _callbacks;
-    private readonly JSCallback<CookieChangeEvent> _onChange = new();
+    private readonly EventListenerCollection _listeners;
     private Task<IJSObjectReference>? _referenceTask;
-    private Task<IJSObjectReference>? _onChangeFunctionTask;
     private bool _disposed;
 
-    internal CookieStore(IJSRuntime jsRuntime)
+    internal CookieStore(IJSRuntime jsRuntime, EventListenerCollection listeners)
     {
         _jsRuntime = jsRuntime;
-        _callbacks = new JSCallbackFactory(jsRuntime);
+        _listeners = listeners;
     }
+
+    // CookieListItem is a dictionary, so the lists are copied whole.
+    /// <summary>
+    /// Gets the event that fires when cookies visible to the current page change.
+    /// </summary>
+    public static EventType<CookieStore, CookieChangeEvent> ChangeEvent { get; }
+        = EventTypes.Create<CookieStore, CookieChangeEvent>("change", """[{"changed":null,"deleted":null}]""");
 
     /// <summary>
     /// Gets the first cookie with the specified name.
@@ -176,34 +178,25 @@ public sealed class CookieStore : IInternalAsyncDisposal
     }
 
     /// <summary>
-    /// Sets the handler that is called when cookies visible to the current page change, replacing any previous handler.
+    /// Adds a listener that is called each time the specified event fires on the cookie store.
+    /// Other listeners, including those added by JavaScript code of the page, are not affected.
+    /// An exception thrown by the listener is logged and does not remove the listener.
     /// </summary>
-    /// <param name="handler">The handler to call, or <see langword="null"/> to remove the current handler.</param>
-    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for, such as <see cref="ChangeEvent"/>.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <returns>An object that removes the listener when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
     /// <exception cref="NotSupportedException">The browser does not provide the Cookie Store API for the current page.</exception>
     [DynamicDependency(LinkerFlags.JsonSerialized, typeof(CookieListItem))]
-    public async ValueTask SetOnChangeAsync(Func<CookieChangeEvent, Task>? handler)
+    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<CookieStore, TEvent> type, Func<TEvent, Task> listener)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        // Swap the handler before any await, so the last call wins even if calls overlap.
-        _onChange.Handler = handler;
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(listener);
 
         var cookieStore = await GetReferenceAsync().ConfigureAwait(false);
 
-        if (handler is null)
-        {
-            await cookieStore.SetValueAsync<IJSObjectReference?>("onchange", null).ConfigureAwait(false);
-            return;
-        }
-
-        if (_onChangeFunctionTask is null || _onChangeFunctionTask.IsFaulted || _onChangeFunctionTask.IsCanceled)
-        {
-            _onChangeFunctionTask = _callbacks.CreateAsync(_onChange, OnChangeShapes);
-        }
-
-        var function = await _onChangeFunctionTask.ConfigureAwait(false);
-        await cookieStore.SetValueAsync("onchange", function).ConfigureAwait(false);
+        return await type.AddListenerAsync(_listeners, cookieStore, this, listener).ConfigureAwait(false);
     }
 
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
@@ -214,29 +207,15 @@ public sealed class CookieStore : IInternalAsyncDisposal
         }
 
         _disposed = true;
-        _onChange.Handler = null;
+
+        // Listeners need the cookie store reference to remove themselves, so they go first.
+        await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync().ConfigureAwait(false);
 
         // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
         if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
         {
-            var cookieStore = referenceTask.Result;
-
-            if (_onChangeFunctionTask is { IsCompletedSuccessfully: true })
-            {
-                try
-                {
-                    await cookieStore.SetValueAsync<IJSObjectReference?>("onchange", null).ConfigureAwait(false);
-                }
-                catch (JSDisconnectedException)
-                {
-                    // The page is already gone, so nothing can call the handler.
-                }
-            }
-
-            await cookieStore.DisposeAsync().ConfigureAwait(false);
+            await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
         }
-
-        await ((IInternalAsyncDisposal)_callbacks).InternalDisposeAsync().ConfigureAwait(false);
     }
 
     private Task<IJSObjectReference> GetReferenceAsync()

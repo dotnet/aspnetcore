@@ -9,10 +9,6 @@ export interface DotNetObject {
   invokeMethodAsync<T>(methodIdentifier: string, ...args: unknown[]): Promise<T>;
 }
 
-interface DotNetGlobal {
-  createJSObjectReference(jsObject: unknown): unknown;
-}
-
 // Creates a function that calls the Invoke method of the target with one argument per shape.
 // Arguments beyond the shapes are dropped. The returned promise settles when the .NET method completes.
 export function createCallback(target: DotNetObject, shapesJson: string): (...args: unknown[]) => Promise<unknown> {
@@ -43,7 +39,8 @@ export function toDotNet(value: unknown, shape: ArgumentShape): unknown {
 }
 
 // Web IDL dictionaries and sequences arrive as plain objects and arrays, so they are copied.
-// Any other object is a browser object whose identity must survive, so it crosses as a reference.
+// Any other object needs a shape that says how to send it. Without one it becomes a marker with its type name,
+// because a reference created here would have no owner to dispose it.
 export function toTransferable(value: unknown): unknown {
   if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
     return value;
@@ -58,5 +55,10 @@ export function toTransferable(value: unknown): unknown {
     return Object.fromEntries(Object.entries(value).map(([name, item]) => [name, toTransferable(item)]));
   }
 
-  return (globalThis as unknown as { DotNet: DotNetGlobal }).DotNet.createJSObjectReference(value);
+  return { __unsupported: typeNameOf(value) };
+}
+
+function typeNameOf(value: object): string {
+  return (value as { constructor?: { name?: string } }).constructor?.name
+    || Object.prototype.toString.call(value).slice('[object '.length, -1);
 }

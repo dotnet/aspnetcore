@@ -14,8 +14,6 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
     private const string ModulePath = "./_content/Microsoft.AspNetCore.Components.Platform/Microsoft.AspNetCore.Components.Platform.js";
 
     private readonly IJSRuntime _jsRuntime;
-    private readonly List<IDisposable> _targets = [];
-    private readonly List<IJSObjectReference> _functions = [];
     private Task<IJSObjectReference>? _moduleTask;
     private bool _disposed;
 
@@ -31,8 +29,11 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
     /// <param name="shapesJson">
     /// A JSON array with one <c>ArgumentShape</c> (see <c>js/Platform.ts</c>) per parameter of <paramref name="callback"/>.
     /// </param>
-    /// <returns>The function. It stays valid until this factory is disposed.</returns>
-    public async Task<IJSObjectReference> CreateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TCallback>(
+    /// <returns>
+    /// The function, and the reference that lets JavaScript reach <paramref name="callback"/>.
+    /// The caller owns both and releases them when the function is no longer used.
+    /// </returns>
+    public async Task<(IJSObjectReference Function, IDisposable Target)> CreateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TCallback>(
         TCallback callback,
         string shapesJson)
         where TCallback : class
@@ -41,19 +42,17 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
 
         var module = await GetModuleAsync().ConfigureAwait(false);
         var target = DotNetObjectReference.Create(callback);
-        _targets.Add(target);
 
-        var function = await module.InvokeAsync<IJSObjectReference>("createCallback", target, shapesJson).ConfigureAwait(false);
-
-        if (_disposed)
+        try
         {
-            await function.DisposeAsync().ConfigureAwait(false);
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            var function = await module.InvokeAsync<IJSObjectReference>("createCallback", target, shapesJson).ConfigureAwait(false);
+            return (function, target);
         }
-
-        _functions.Add(function);
-
-        return function;
+        catch
+        {
+            target.Dispose();
+            throw;
+        }
     }
 
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
@@ -65,19 +64,7 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
 
         _disposed = true;
 
-        foreach (var function in _functions)
-        {
-            await function.DisposeAsync().ConfigureAwait(false);
-        }
-
-        foreach (var target in _targets)
-        {
-            target.Dispose();
-        }
-
-        _functions.Clear();
-        _targets.Clear();
-
+        // Functions created from the module keep working after the module reference is released.
         if (_moduleTask is { IsCompletedSuccessfully: true } moduleTask)
         {
             await moduleTask.Result.DisposeAsync().ConfigureAwait(false);

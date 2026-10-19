@@ -157,7 +157,7 @@ public partial class CookieStoreTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task CookieStore_ReportsChangesToTheChangeHandler()
+    public async Task CookieStore_ReportsChangesToEachListener()
     {
         foreach (var path in CookieStorePaths)
         {
@@ -167,9 +167,11 @@ public partial class CookieStoreTests : BrowserTest
             await _page.Locator("#cookie-name").FillAsync(name);
             await _page.Locator("#cookie-value").FillAsync("value");
             await RunAsync("#watch-cookie-changes", "Watching changes.");
+            await RunAsync("#watch-cookie-changes-second", "Watching changes with a second listener.");
 
             await RunAsync("#set-cookie", $"Set: {name}");
             await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Changed: {name}=value");
+            await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Changed: {name}=value");
 
             // A change that does not come from .NET is reported too.
             await _page.EvaluateAsync("() => { document.cookie = 'external=1'; }");
@@ -180,8 +182,10 @@ public partial class CookieStoreTests : BrowserTest
             await RunAsync("#delete-cookie", $"Deleted: {name}");
             await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Deleted: {name}");
 
+            // Removing one listener leaves the other in place.
             await RunAsync("#unwatch-cookie-changes", "Stopped watching changes.");
             await SetCookieAndWaitForTheBrowserEventAsync(name);
+            await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Changed: {name}=value");
             // A round trip after the browser event lets a late notification arrive before the check.
             await RunAsync("#get-cookie", $"Found: {name}=value");
             await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Deleted: {name}");

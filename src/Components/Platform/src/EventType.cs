@@ -1,0 +1,52 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.JSInterop;
+
+namespace Microsoft.AspNetCore.Components.Platform;
+
+/// <summary>
+/// Identifies an event that a <typeparamref name="TTarget"/> fires, and the type of the event object that listeners receive.
+/// </summary>
+/// <typeparam name="TTarget">The type of the object that fires the event.</typeparam>
+/// <typeparam name="TEvent">The type of the event object.</typeparam>
+public sealed class EventType<TTarget, TEvent> where TTarget : class
+{
+    private readonly Func<EventListenerCollection, IJSObjectReference, TTarget, Func<TEvent, Task>, Task<IAsyncDisposable>> _addListenerAsync;
+
+    internal EventType(
+        string name,
+        Func<EventListenerCollection, IJSObjectReference, TTarget, Func<TEvent, Task>, Task<IAsyncDisposable>> addListenerAsync)
+    {
+        Name = name;
+        _addListenerAsync = addListenerAsync;
+    }
+
+    /// <summary>
+    /// Gets the name of the event, such as <c>"change"</c>.
+    /// </summary>
+    public string Name { get; }
+
+    internal Task<IAsyncDisposable> AddListenerAsync(EventListenerCollection listeners, IJSObjectReference target, TTarget owner, Func<TEvent, Task> listener)
+        => _addListenerAsync(listeners, target, owner, listener);
+}
+
+/// <summary>
+/// Creates <see cref="EventType{TTarget, TEvent}"/> instances. The event object types are known here,
+/// so the public methods that add listeners need no trimming annotations.
+/// </summary>
+internal static class EventTypes
+{
+    /// <summary>
+    /// Creates an event whose object crosses to .NET as <typeparamref name="TEvent"/> itself.
+    /// </summary>
+    /// <param name="name">The JavaScript event name.</param>
+    /// <param name="shapesJson">The <c>ArgumentShape</c> list (see <c>js/Platform.ts</c>) that copies the event object.</param>
+    public static EventType<TTarget, TEvent> Create<TTarget, [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TEvent>(
+        string name,
+        string shapesJson)
+        where TTarget : class
+        => new(name, (listeners, target, _, listener) => listeners.AddAsync(target, name, shapesJson, listener));
+}

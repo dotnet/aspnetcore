@@ -1,3 +1,4 @@
+@implements IAsyncDisposable
 @using Microsoft.JSInterop
 @inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
 @inject NavigationManager Navigation
@@ -31,10 +32,12 @@
 </div>
 <div>
     <button id="watch-cookie-changes" @onclick="WatchChangesAsync">Watch changes</button>
+    <button id="watch-cookie-changes-second" @onclick="WatchChangesWithSecondListenerAsync">Watch changes with a second listener</button>
     <button id="unwatch-cookie-changes" @onclick="UnwatchChangesAsync">Stop watching changes</button>
 </div>
 <p id="cookie-result" role="status" data-run="@runCount">@result</p>
 <p id="cookie-change" role="status">@change</p>
+<p id="cookie-change-second" role="status">@secondChange</p>
 
 @code {
     // A path other than the page path shows that the Path member reaches the browser.
@@ -45,6 +48,9 @@
     private string result = "No operation has run.";
     private int runCount;
     private string change = "No change has been reported.";
+    private string secondChange = "No change has been reported.";
+    private IAsyncDisposable? listener;
+    private IAsyncDisposable? secondListener;
 
     private Task SetAsync() => RunAsync("Set", async () =>
     {
@@ -159,26 +165,58 @@
 
     private async Task WatchChangesAsync()
     {
-        await Browser.Window.CookieStore.SetOnChangeAsync(OnCookieChangeAsync);
+        listener = await Browser.Window.CookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, OnCookieChangeAsync);
         result = "Watching changes.";
+    }
+
+    private async Task WatchChangesWithSecondListenerAsync()
+    {
+        secondListener = await Browser.Window.CookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, changeEvent =>
+        {
+            secondChange = Describe(changeEvent);
+            StateHasChanged();
+            return Task.CompletedTask;
+        });
+        result = "Watching changes with a second listener.";
     }
 
     private async Task UnwatchChangesAsync()
     {
-        await Browser.Window.CookieStore.SetOnChangeAsync(null);
+        if (listener is not null)
+        {
+            await listener.DisposeAsync();
+        }
+
         result = "Stopped watching changes.";
     }
 
+    // The listener runs on the renderer's dispatcher, so StateHasChanged needs no InvokeAsync.
     private Task OnCookieChangeAsync(CookieChangeEvent changeEvent)
     {
-        change = string.Join(
+        change = Describe(changeEvent);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private static string Describe(CookieChangeEvent changeEvent)
+        => string.Join(
             "; ",
             [
                 .. changeEvent.Changed.Select(cookie => $"Changed: {cookie.Name}={cookie.Value}"),
                 .. changeEvent.Deleted.Select(cookie => $"Deleted: {cookie.Name}"),
             ]);
 
-        return InvokeAsync(StateHasChanged);
+    public async ValueTask DisposeAsync()
+    {
+        if (listener is not null)
+        {
+            await listener.DisposeAsync();
+        }
+
+        if (secondListener is not null)
+        {
+            await secondListener.DisposeAsync();
+        }
     }
 
     private static string Format(CookieListItem? cookie)

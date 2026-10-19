@@ -21,9 +21,13 @@ internal sealed class BrowserJSRuntime : JSRuntime
     public IEnumerable<BrowserCall> CallsTo(string identifier) => Calls.Where(call => call.Identifier == identifier);
 
     // Calls the Invoke method of the DotNetObjectReference that the last createCallback call received.
-    public async Task<DotNetInvocationResult> InvokeLastCallbackAsync(string argsJson)
+    public Task<DotNetInvocationResult> InvokeLastCallbackAsync(string argsJson)
+        => InvokeCallbackAsync(CallsTo("createCallback").Count() - 1, argsJson);
+
+    // Calls the Invoke method of the DotNetObjectReference that the createCallback call at the index received.
+    public async Task<DotNetInvocationResult> InvokeCallbackAsync(int index, string argsJson)
     {
-        var createCallback = CallsTo("createCallback").Last();
+        var createCallback = CallsTo("createCallback").ElementAt(index);
         using var args = JsonDocument.Parse(createCallback.ArgsJson);
         var dotNetObjectId = args.RootElement[0].GetProperty("__dotNetObject").GetInt64();
         var callId = (_nextCallId++).ToString(System.Globalization.CultureInfo.InvariantCulture);
