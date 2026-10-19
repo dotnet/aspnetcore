@@ -196,11 +196,11 @@ try {
             throw "eng/Versions.props on origin/${targetBranch} does not define PreReleaseVersionLabel"
         }
         $preReleaseVersionLabel = $preReleaseVersionLabelNode.InnerText.Trim()
-        $validPreReleaseVersionLabels = @('alpha', 'preview', 'rc', 'rtm', 'servicing')
+        $validPreReleaseVersionLabels = @('alpha', 'preview', 'rc', 'rtm', 'servicing', 'hotfix')
         if ($preReleaseVersionLabel -notin $validPreReleaseVersionLabels) {
             throw "eng/Versions.props on origin/${targetBranch} has an unrecognized PreReleaseVersionLabel: '$preReleaseVersionLabel'"
         }
-        $isRtmOrServicing = $preReleaseVersionLabel -in @('rtm', 'servicing')
+        $isRtmOrServicing = $preReleaseVersionLabel -in @('rtm', 'servicing', 'hotfix')
 
         if ($changedFilesFromTarget) {
             foreach ($file in $changedFilesFromTarget) {

@@ -10,9 +10,9 @@ parameters:
 
   # GitHub App authentication for the OneLoc check-in PR.
   GitHubAppServiceConnection: 'dnceng-oneloc-githubapp'
-  GitHubAppClientId: 'Iv23lijBU8x3gc9lDOc9'
   GitHubAppKeyVaultName: 'EngKeyVault'
-  GitHubAppKeyName: 'oneloc-localization-app-key'
+  GitHubAppIdSecretName: 'oneloc-localization-app-app-id'
+  GitHubAppPrivateKeySecretName: 'oneloc-localization-app-app-private-key'
 
   SourcesDirectory: $(System.DefaultWorkingDirectory)
   CreatePr: true
@@ -102,8 +102,8 @@ jobs:
           ${{ else }}:
             azureSubscription: ${{ parameters.GitHubAppServiceConnection }}
           keyVaultName: ${{ parameters.GitHubAppKeyVaultName }}
-          keyName: ${{ parameters.GitHubAppKeyName }}
-          appClientId: ${{ parameters.GitHubAppClientId }}
+          appIdSecretName: ${{ parameters.GitHubAppIdSecretName }}
+          appPrivateKeySecretName: ${{ parameters.GitHubAppPrivateKeySecretName }}
           installationOwner: ${{ parameters.GitHubOrg }}
           outputVariableName: 'GitHubAppInstallationToken'
           condition: ${{ parameters.condition }}
