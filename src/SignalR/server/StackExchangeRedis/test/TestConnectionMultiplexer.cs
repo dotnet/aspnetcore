@@ -239,6 +239,14 @@ public class TestRedisServer
     private readonly ConcurrentDictionary<RedisChannel, List<(int, Action<RedisChannel, RedisValue>)>> _subscriptions =
         new ConcurrentDictionary<RedisChannel, List<(int, Action<RedisChannel, RedisValue>)>>();
 
+    public Func<RedisChannel, Exception> SubscribeExceptionFactory { get; set; }
+    public Func<RedisChannel, Exception> UnsubscribeExceptionFactory { get; set; }
+
+    public Dictionary<RedisChannel, List<(int, Action<RedisChannel, RedisValue>)>> GetSubscriptions()
+    {
+        return _subscriptions.ToDictionary();
+    }
+
     public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
     {
         AssertRedisChannel(channel);
@@ -261,6 +269,12 @@ public class TestRedisServer
     {
         AssertRedisChannel(messageQueue.Channel);
 
+        var exception = SubscribeExceptionFactory?.Invoke(messageQueue.Channel);
+        if (exception is not null)
+        {
+            throw exception;
+        }
+
         Action<RedisChannel, RedisValue> handler = (channel, value) =>
         {
             // Workaround for https://github.com/StackExchange/StackExchange.Redis/issues/969
@@ -282,6 +296,12 @@ public class TestRedisServer
     public void Unsubscribe(RedisChannel channel, int subscriberId, CommandFlags flags = CommandFlags.None)
     {
         AssertRedisChannel(channel);
+
+        var exception = UnsubscribeExceptionFactory?.Invoke(channel);
+        if (exception is not null)
+        {
+            throw exception;
+        }
 
         if (_subscriptions.TryGetValue(channel, out var list))
         {
