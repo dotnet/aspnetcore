@@ -447,6 +447,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         || (anchorModeIs.end && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached))) {
       flushPendingStyleMutations();
       scrollElement.scrollTop = scrollElement.scrollHeight;
+      pendingScrollCorrection = false;
       scrollActivity.ignoreNextScroll();
       // Start convergence only when there are more items to load (spacerAfter > 0).
       // When all items fit in DOM, the single scrollTop assignment above is sufficient.
