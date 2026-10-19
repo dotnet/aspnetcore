@@ -1,0 +1,78 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<p id="item-count">@items.Count</p>
+<p id="history-batches">@historyBatches</p>
+<p id="initial-history-count">@initialHistoryCount</p>
+
+<div id="scroll-container" style="height: 440px; overflow-y: auto;">
+    <Virtualize @ref="virtualize"
+                ItemsProvider="GetItemsAsync"
+                ItemSize="20"
+                OverscanCount="100"
+                AnchorMode="VirtualizeAnchorMode.End">
+        <div class="item" data-index="@context.Id" style="height: 20px;">Message @context.Id</div>
+        @if (context.Id == 0 && !historyStarted)
+        {
+            @LoadHistoryAfterRender
+        }
+    </Virtualize>
+</div>
+
+@code {
+    private readonly List<HistoryItem> items = [new(0, DateTimeOffset.UnixEpoch)];
+    private Virtualize<HistoryItem> virtualize;
+    private bool historyStarted;
+    private int historyBatches;
+    private int initialHistoryCount;
+
+    private RenderFragment LoadHistoryAfterRender => builder =>
+    {
+        builder.OpenComponent<HistoryLoader>(0);
+        builder.AddAttribute(1, nameof(HistoryLoader.OnRendered), EventCallback.Factory.Create(this, LoadHistoryAsync));
+        builder.CloseComponent();
+    };
+
+    private ValueTask<ItemsProviderResult<HistoryItem>> GetItemsAsync(ItemsProviderRequest request)
+        => ValueTask.FromResult(new ItemsProviderResult<HistoryItem>(
+            items.Skip(request.StartIndex).Take(request.Count).ToArray(),
+            items.Count));
+
+    private async Task LoadHistoryAsync()
+    {
+        if (historyStarted)
+        {
+            return;
+        }
+
+        historyStarted = true;
+        initialHistoryCount = items.Count;
+
+        for (var resource = 1; resource <= 7; resource++)
+        {
+            var timestamp = DateTimeOffset.UnixEpoch.AddMinutes(-resource);
+            var history = Enumerable.Range(1, 385)
+                .Select(number => new HistoryItem((resource - 1) * 385 + number, timestamp.AddMilliseconds(number)));
+
+            foreach (var batch in history.Chunk(128))
+            {
+                items.AddRange(batch);
+                historyBatches++;
+            }
+        }
+
+        items.Sort((left, right) => left.Timestamp.CompareTo(right.Timestamp));
+        await virtualize.RefreshDataAsync();
+    }
+
+    private sealed record HistoryItem(int Id, DateTimeOffset Timestamp);
+
+    // Start history loading when the first item renders, without waiting for observers to settle.
+    private sealed class HistoryLoader : ComponentBase
+    {
+        [Parameter]
+        public EventCallback OnRendered { get; set; }
+
+        protected override Task OnAfterRenderAsync(bool firstRender)
+            => firstRender ? OnRendered.InvokeAsync() : Task.CompletedTask;
+    }
+}
