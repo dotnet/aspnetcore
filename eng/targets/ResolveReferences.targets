@@ -161,7 +161,7 @@
     Note: Project reference providers have matching assembly and project names. %(Filename) matches work :)
   -->
   <Target Name="_TestWithPatchedAssemblies"
-      Condition=" $(UseProjectReferences) AND '$(PackagesInPatch)' != '' AND
+      Condition=" $(UseProjectReferences) AND '$(IsServicingBuild)' == 'true' AND
           (@(ResolvedCompileFileDefinitions->Count()) != 0 OR @(RuntimeCopyLocalItems->Count()) != 0) "
       AfterTargets="ResolvePackageAssets"
       BeforeTargets="AssignProjectConfiguration;
@@ -175,7 +175,6 @@
     <ItemGroup>
       <_ProjectsInPatch Remove="@(_ProjectsInPatch)" />
       <_ProjectsInPatch Include="@(ProjectReferenceProvider->'%(ProjectPath)')"
-          Condition=" $(PackagesInPatch.Contains(' %(ProjectReferenceProvider.Identity);')) "
           KeepMetadata="None" />
       <!-- dotnet-razorpagegenerator project is unique in overriding its package ID. -->
       <_ProjectsInPatch Include="@(ProjectReferenceProvider->WithMetadataValue('Identity', 'dotnet-razorpagegenerator')->'%(ProjectPath)')"
