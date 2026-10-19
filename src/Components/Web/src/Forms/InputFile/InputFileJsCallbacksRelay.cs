@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 internal sealed class InputFileJsCallbacksRelay : IDisposable
 {
+    private const long MaxFileListSize = 1024 * 1024;
+
     private readonly IInputFileJsCallbacks _callbacks;
     private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
     private readonly CancellationToken _disposeCancellationToken;
@@ -61,7 +63,7 @@ internal sealed class InputFileJsCallbacksRelay : IDisposable
     private static async Task<BrowserFile[]> ReadFilesAsync(IJSStreamReference fileList, CancellationToken cancellationToken)
     {
         await using (fileList)
-        await using (var stream = await fileList.OpenReadStreamAsync(maxAllowedSize: fileList.Length, cancellationToken))
+        await using (var stream = await fileList.OpenReadStreamAsync(maxAllowedSize: MaxFileListSize, cancellationToken))
         {
             return await JsonSerializer.DeserializeAsync(stream, InputFileJsonSerializerContext.Default.BrowserFileArray, cancellationToken)
                 ?? throw new JsonException("The file metadata must be a JSON array.");

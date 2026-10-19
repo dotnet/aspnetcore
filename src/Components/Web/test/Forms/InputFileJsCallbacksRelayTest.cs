@@ -6,12 +6,58 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputFileJsCallbacksRelayTest
 {
+    private const int MaxMetadataBytes = 1024 * 1024;
+
+    [Theory]
+    [InlineData(MaxMetadataBytes - 1)]
+    [InlineData(MaxMetadataBytes)]
+    public async Task NotifyChangeFromStream_AcceptsMetadataWithinByteLimit(int metadataBytes)
+    {
+        const string prefix = "[{\"id\":1,\"name\":\"";
+        const string suffix = "\"}]";
+        var name = new string('m', metadataBytes - prefix.Length - suffix.Length);
+        var bytes = Encoding.UTF8.GetBytes(prefix + name + suffix);
+        using var runtime = new MetadataJSRuntime(bytes);
+        var reference = runtime.CreateReference(bytes.Length);
+        var callbacks = new TestCallbacks();
+        using var relay = new InputFileJsCallbacksRelay(callbacks);
+
+        await relay.NotifyChangeFromStream(reference);
+
+        Assert.Equal(metadataBytes, bytes.Length);
+        Assert.Equal(name, Assert.Single(Assert.Single(callbacks.Notifications)).Name);
+        Assert.Equal(1, runtime.StreamReadCount);
+        Assert.True(runtime.ReferenceDisposed);
+    }
+
+    [Theory]
+    [InlineData(MaxMetadataBytes + 1L)]
+    [InlineData(long.MaxValue)]
+    public async Task NotifyChangeFromStream_RejectsOversizedMetadataBeforeReading(long declaredLength)
+    {
+        using var runtime = new MetadataJSRuntime(Encoding.UTF8.GetBytes("[]"));
+        var reference = runtime.CreateReference(declaredLength);
+        var callbacks = new TestCallbacks();
+        using var relay = new InputFileJsCallbacksRelay(callbacks);
+
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => relay.NotifyChangeFromStream(reference));
+
+        Assert.Equal("maxAllowedSize", exception.ParamName);
+        Assert.Equal(0, runtime.StreamReadCount);
+        Assert.Empty(callbacks.Notifications);
+        Assert.True(runtime.ReferenceDisposed);
+
+        await relay.NotifyChange([]).WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Empty(Assert.Single(callbacks.Notifications));
+    }
+
     [Fact]
     public async Task NotifyChangeFromStream_PreservesFileMetadata()
     {
@@ -125,7 +171,7 @@ public class InputFileJsCallbacksRelayTest
         var bytes = Encoding.UTF8.GetBytes(json);
         var reference = new Mock<IJSStreamReference>(MockBehavior.Strict);
         reference.SetupGet(stream => stream.Length).Returns(bytes.Length);
-        reference.Setup(stream => stream.OpenReadStreamAsync(bytes.Length, It.IsAny<CancellationToken>()))
+        reference.Setup(stream => stream.OpenReadStreamAsync(MaxMetadataBytes, It.IsAny<CancellationToken>()))
             .Returns(new ValueTask<Stream>(openStream ?? Task.FromResult<Stream>(new MemoryStream(bytes))));
         reference.Setup(stream => stream.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
@@ -142,5 +188,37 @@ public class InputFileJsCallbacksRelayTest
 
             return onChange?.Invoke(files) ?? Task.CompletedTask;
         }
+    }
+
+    private sealed class MetadataJSRuntime(byte[] bytes) : JSRuntime
+    {
+        public int StreamReadCount { get; private set; }
+
+        public bool ReferenceDisposed { get; private set; }
+
+        public IJSStreamReference CreateReference(long length)
+            => JsonSerializer.Deserialize<IJSStreamReference>(
+                $$"""{"__jsObjectId":1,"__jsStreamReferenceLength":{{length}}}""",
+                JsonSerializerOptions)!;
+
+        protected override Task<Stream> ReadJSDataAsStreamAsync(
+            IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)
+        {
+            StreamReadCount++;
+
+            return Task.FromResult<Stream>(new MemoryStream(bytes));
+        }
+
+        protected override void BeginInvokeJS(
+            long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            Assert.Equal("DotNet.disposeJSObjectReferenceById", identifier);
+            ReferenceDisposed = true;
+            DotNetDispatcher.EndInvokeJS(this, $$"""[{{taskId}},true,null]""");
+        }
+
+        protected override void EndInvokeDotNet(
+            DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
+            => throw new NotSupportedException();
     }
 }
