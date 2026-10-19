@@ -11,7 +11,7 @@ const ROOT_DIR = path.resolve(__dirname, '..', '..', '..');
 
 module.exports = {
   testEnvironment: 'node',
-  roots: ['<rootDir>/src','<rootDir>/test'],
+  roots: ['<rootDir>/src','<rootDir>/test','<rootDir>/../WebAssembly/Authentication.Msal/test'],
   testMatch: ['**/*.test.ts'],
   moduleFileExtensions: ['js', 'ts'],
   transform: {
