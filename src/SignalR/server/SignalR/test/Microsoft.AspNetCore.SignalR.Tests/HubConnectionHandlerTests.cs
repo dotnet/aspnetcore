@@ -693,6 +693,10 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             mockLifetimeManager
                 .Setup(m => m.OnConnectedAsync(It.IsAny<HubConnectionContext>()))
                 .Throws(new InvalidOperationException("Lifetime manager OnConnectedAsync failed."));
+            mockLifetimeManager
+                .Setup(m => m.OnDisconnectedAsync(It.IsAny<HubConnectionContext>()))
+                .Callback<HubConnectionContext>(connection => Assert.True(connection.ConnectionAborted.IsCancellationRequested))
+                .Returns(Task.CompletedTask);
             var mockHubActivator = new Mock<IHubActivator<Hub>>();
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
@@ -726,7 +730,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task HubOnDisconnectedAsyncCalledIfHubOnConnectedAsyncThrows()
+    public async Task LifetimeManagerOnDisconnectedAsyncCalledAfterConnectionAbortedIfHubOnConnectedAsyncThrows()
     {
         bool ExpectedErrors(WriteContext writeContext)
         {
@@ -737,6 +741,10 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog(ExpectedErrors))
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<OnConnectedThrowsHub>>();
+            mockLifetimeManager
+                .Setup(m => m.OnDisconnectedAsync(It.IsAny<HubConnectionContext>()))
+                .Callback<HubConnectionContext>(connection => Assert.True(connection.ConnectionAborted.IsCancellationRequested))
+                .Returns(Task.CompletedTask);
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
                 services.AddSingleton(mockLifetimeManager.Object);
