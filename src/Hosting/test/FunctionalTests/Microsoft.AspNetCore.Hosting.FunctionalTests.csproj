@@ -29,7 +29,8 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
 
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
   </ItemGroup>
 </Project>

@@ -1166,7 +1166,7 @@ finally
     $leaf = Split-Path -Leaf $resolved
     $parent = Split-Path -Parent $resolved
     Assert-True ([string]::Equals($parent, $knownParent, [StringComparison]::OrdinalIgnoreCase) -and $leaf -cmatch '^\.snapshot-retrieval-[0-9a-f]{32}$') "Cleanup must remain within the known retrieval fixture directory."
-    Assert-True (-not ((Get-Item -LiteralPath $resolved).Attributes -band [IO.FileAttributes]::ReparsePoint)) "Do not recursively remove a redirected fixture directory."
+    Assert-True (-not ((Get-Item -LiteralPath $resolved -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) "Do not recursively remove a redirected fixture directory."
     Remove-Item -LiteralPath $resolved -Recurse -Force
 }
 
