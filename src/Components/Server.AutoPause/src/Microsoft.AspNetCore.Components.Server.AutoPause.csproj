@@ -39,6 +39,8 @@
       ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\"
       BasePath="_content\$(PackageId)"
       CandidateAssets="@(_JsBuildOutput)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       RelativePathFilter="**.js"
       RelativePathPattern="**"
     >
