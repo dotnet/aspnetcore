@@ -82,6 +82,18 @@ describe('toDotNet', () => {
     expect(toDotNet([new BrowserObject()], { name: null })).toEqual([{ name: 'browser' }]);
   });
 
+  test('sends the name of a known global', () => {
+    const area = new BrowserObject();
+    const otherArea = new BrowserObject();
+    (globalThis as Record<string, unknown>).knownArea = area;
+    const shape = { $known: ['missingArea', 'knownArea'] };
+
+    expect(toDotNet(area, shape)).toBe('knownArea');
+    expect(toDotNet(null, shape)).toBeNull();
+    expect(toDotNet(otherArea, shape)).toEqual({ __unsupported: 'BrowserObject' });
+    expect(toDotNet({ storageArea: area }, { storageArea: shape })).toEqual({ storageArea: 'knownArea' });
+  });
+
   test('sends an empty object for an empty shape', () => {
     expect(toDotNet(new BrowserObject(), {})).toEqual({});
     expect(toDotNet(undefined, {})).toBeNull();

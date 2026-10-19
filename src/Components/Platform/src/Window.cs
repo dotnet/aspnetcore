@@ -15,7 +15,9 @@ public sealed class Window : IInternalAsyncDisposal
     private readonly IJSRuntime _jsRuntime;
     private readonly JSCallbackFactory _callbacks;
     private readonly ILogger _eventListenerLogger;
+    private readonly EventListenerCollection _listeners;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
+    private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
 
     internal Window(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
@@ -23,6 +25,27 @@ public sealed class Window : IInternalAsyncDisposal
         _jsRuntime = jsRuntime;
         _callbacks = new JSCallbackFactory(jsRuntime);
         _eventListenerLogger = loggerFactory.CreateLogger<EventListenerCollection>();
+        _listeners = CreateEventListenerCollection();
+    }
+
+    /// <summary>
+    /// Adds a listener that is called each time the specified event fires on the window.
+    /// Other listeners, including those added by JavaScript code of the page, are not affected.
+    /// An exception thrown by the listener is logged and does not remove the listener.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for, such as <c>Window.StorageEvent</c>.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <returns>An object that removes the listener when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<Window, TEvent> type, Func<TEvent, Task> listener)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(listener);
+
+        var window = await GetReferenceAsync().ConfigureAwait(false);
+
+        return await type.AddListenerAsync(_listeners, window, this, listener).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -30,6 +53,18 @@ public sealed class Window : IInternalAsyncDisposal
     /// </summary>
     internal EventListenerCollection CreateEventListenerCollection()
         => new(_callbacks, _eventListenerLogger);
+
+    private Task<IJSObjectReference> GetReferenceAsync()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (_referenceTask is null || _referenceTask.IsFaulted || _referenceTask.IsCanceled)
+        {
+            _referenceTask = _jsRuntime.GetValueAsync<IJSObjectReference>("window").AsTask();
+        }
+
+        return _referenceTask;
+    }
 
     /// <summary>
     /// Gets the projection of type <typeparamref name="T"/>, creating it on first access.
@@ -86,6 +121,16 @@ public sealed class Window : IInternalAsyncDisposal
         }
 
         _disposed = true;
+
+        // Listeners need the window reference to remove themselves, so they go first.
+        await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync().ConfigureAwait(false);
+
+        // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
+        if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
+        {
+            await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
+        }
+
         var features = _features.Values.ToArray();
         _features.Clear();
 

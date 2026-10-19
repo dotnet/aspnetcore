@@ -3,7 +3,12 @@
 
 // What one argument sends to .NET. null sends the whole value. An object sends only the named
 // properties, each with its own shape, so that a browser object such as an event can be copied.
-export type ArgumentShape = null | { [property: string]: ArgumentShape };
+// { $known: [...] } sends the name of the global that is the value, such as "localStorage".
+export type ArgumentShape = null | KnownObjectShape | { [property: string]: ArgumentShape };
+
+interface KnownObjectShape {
+  $known: string[];
+}
 
 export interface DotNetObject {
   invokeMethodAsync<T>(methodIdentifier: string, ...args: unknown[]): Promise<T>;
@@ -28,6 +33,10 @@ export function toDotNet(value: unknown, shape: ArgumentShape): unknown {
 
   if (Array.isArray(value)) {
     return value.map(item => toDotNet(item, shape));
+  }
+
+  if (isKnownObjectShape(shape)) {
+    return toKnownName(value, shape.$known);
   }
 
   const copy: Record<string, unknown> = {};
@@ -56,6 +65,24 @@ export function toTransferable(value: unknown): unknown {
   }
 
   return { __unsupported: typeNameOf(value) };
+}
+
+function isKnownObjectShape(shape: Exclude<ArgumentShape, null>): shape is KnownObjectShape {
+  return Array.isArray((shape as Partial<KnownObjectShape>).$known);
+}
+
+function toKnownName(value: unknown, names: string[]): unknown {
+  for (const name of names) {
+    try {
+      if ((globalThis as Record<string, unknown>)[name] === value) {
+        return name;
+      }
+    } catch {
+      // Reading a global such as localStorage throws when the browser blocks it, so it cannot be the value.
+    }
+  }
+
+  return toTransferable(value);
 }
 
 function typeNameOf(value: object): string {

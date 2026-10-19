@@ -62,6 +62,30 @@ public partial class StorageTests : BrowserTest
         }
     }
 
+    [TestMethod]
+    public async Task WebStorage_ReportsChangesFromAnotherPage()
+    {
+        foreach (var path in StoragePaths)
+        {
+            await NavigateAsync(path, "#watch-storage");
+            await _page.Locator("#watch-storage").ClickAsync();
+            await Expect(_page.Locator("#storage-result")).ToHaveTextAsync("Watching storage events.");
+
+            // The storage event fires only in other pages of the same origin.
+            var otherPage = await _page.Context.NewPageAsync();
+            await otherPage.GotoAsync($"{_server.TestUrl}{path}");
+
+            var value = path == "/storage-server" ? "server-event" : "wasm-event";
+            await otherPage.EvaluateAsync("value => localStorage.setItem('components-platform-e2e', value)", value);
+            await Expect(_page.Locator("#storage-event")).ToHaveTextAsync($"components-platform-e2e: (none) -> {value} in localStorage");
+
+            await otherPage.EvaluateAsync("() => localStorage.removeItem('components-platform-e2e')");
+            await Expect(_page.Locator("#storage-event")).ToHaveTextAsync($"components-platform-e2e: {value} -> (none) in localStorage");
+
+            await otherPage.CloseAsync();
+        }
+    }
+
     private async Task NavigateAsync(string path, string interactiveSelector)
     {
         await _page.GotoAsync($"{_server.TestUrl}{path}");

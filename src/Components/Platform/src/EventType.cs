@@ -49,4 +49,19 @@ internal static class EventTypes
         string shapesJson)
         where TTarget : class
         => new(name, (listeners, target, _, listener) => listeners.AddAsync(target, name, shapesJson, listener));
+
+    /// <summary>
+    /// Creates an event whose object crosses to .NET as <typeparamref name="TPayload"/> and is then converted,
+    /// for members such as <c>storageArea</c> that refer to an existing projection.
+    /// </summary>
+    /// <param name="name">The JavaScript event name.</param>
+    /// <param name="shapesJson">The <c>ArgumentShape</c> list (see <c>js/Platform.ts</c>) that copies the event object.</param>
+    /// <param name="convert">The function that creates the event object from the target and the payload.</param>
+    public static EventType<TTarget, TEvent> Create<TTarget, [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TPayload, TEvent>(
+        string name,
+        string shapesJson,
+        Func<TTarget, TPayload, TEvent> convert)
+        where TTarget : class
+        => new(name, (listeners, target, owner, listener) =>
+            listeners.AddAsync<TPayload>(target, name, shapesJson, payload => listener(convert(owner, payload))));
 }
