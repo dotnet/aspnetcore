@@ -114,7 +114,7 @@ public class MaxRequestBodySizeTests : LoggedTest
 
         var maxRequestBodySize = 3;
         var customApplicationResponse = "custom";
-        var chunkedPayload = $"5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n";
+        var chunkedPayload = $"5;random-chunk-extension\r\nHello\r\n6\r\n World\r\n0\r\n";
         Assert.True(chunkedPayload.Length > maxRequestBodySize);
 
         await using (var server = new TestServer(async context =>
@@ -412,7 +412,7 @@ public class MaxRequestBodySizeTests : LoggedTest
     [Fact]
     public async Task ChunkFramingAndExtensionsCountTowardsRequestBodySize()
     {
-        var chunkedPayload = "5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n\r\n";
+        var chunkedPayload = "5;random-chunk-extension\r\nHello\r\n6\r\n World\r\n0\r\n\r\n";
         var globalMaxRequestBodySize = chunkedPayload.Length - 1;
 #pragma warning disable CS0618 // Type or member is obsolete
         BadHttpRequestException requestRejectedEx = null;
@@ -461,7 +461,7 @@ public class MaxRequestBodySizeTests : LoggedTest
     [Fact]
     public async Task TrailingHeadersDoNotCountTowardsRequestBodySize()
     {
-        var chunkedPayload = $"5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n";
+        var chunkedPayload = $"5;random-chunk-extension\r\nHello\r\n6\r\n World\r\n0\r\n";
         var trailingHeaders = "Trailing-Header: trailing-value\r\n\r\n";
         var globalMaxRequestBodySize = chunkedPayload.Length;
 
@@ -503,7 +503,7 @@ public class MaxRequestBodySizeTests : LoggedTest
     [Fact]
     public async Task PerRequestMaxRequestBodySizeGetsReset()
     {
-        var chunkedPayload = "5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n\r\n";
+        var chunkedPayload = "5;random-chunk-extension\r\nHello\r\n6\r\n World\r\n0\r\n\r\n";
         var globalMaxRequestBodySize = chunkedPayload.Length - 1;
         var firstRequest = true;
 #pragma warning disable CS0618 // Type or member is obsolete

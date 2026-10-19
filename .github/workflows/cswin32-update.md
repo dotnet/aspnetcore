@@ -1,40 +1,32 @@
 ---
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
-
 on:
   permissions: {}
   schedule: every 1mo
   workflow_dispatch:
-
 description: >
-  Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version,
-  updates it, and removes any workarounds that are no longer necessary.
+  Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary.
 
 permissions:
   contents: read
   pull-requests: read
   issues: read
-
 network:
   allowed:
     - defaults
     - dotnet
     - containers
     - github
-
 tools:
   github:
   edit:
   bash: ["grep", "sed", "jq", "git", "cat", "ls", "find", "bash", "head", "tail", "dotnet", "source", "chmod"]
-  web-fetch:
-
 mcp-servers:
   nuget:
     container: "mcr.microsoft.com/dotnet/sdk:10.0"
     entrypoint: "dnx"
     entrypointArgs: ["NuGet.Mcp.Server", "--source", "https://api.nuget.org/v3/index.json", "--yes"]
     allowed: ["get-latest-package-version"]
-
 safe-outputs:
   report-failure-as-issue: false
   create-pull-request:
@@ -45,9 +37,7 @@ safe-outputs:
   add-comment:
     max: 1
     target: "*"
-
 timeout-minutes: 90
-
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
 # Run agentic jobs in an isolated `copilot-pat-pool` environment.
@@ -59,26 +49,11 @@ imports:
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
-
 environment: copilot-pat-pool
-
 engine:
   id: copilot
   env:
-    COPILOT_GITHUB_TOKEN: |
-      ${{ case(
-        needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
-        needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
-        needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2,
-        needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3,
-        needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4,
-        needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5,
-        needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6,
-        needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
-        needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
-        needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
-        'NO COPILOT PAT AVAILABLE')
-      }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 ---
 
 # Update CsWin32 Package

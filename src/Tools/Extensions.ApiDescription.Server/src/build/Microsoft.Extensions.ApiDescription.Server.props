@@ -31,5 +31,12 @@
     -->
     <OpenApiDocumentsDirectory
         Condition=" '$(OpenApiDocumentsDirectory)' == '' ">$(BaseIntermediateOutputPath)</OpenApiDocumentsDirectory>
+
+    <!--
+      The environment name to use when generating OpenAPI documents. This is passed to the application host
+      as the 'environment' setting, which is equivalent to the ASPNETCORE_ENVIRONMENT / DOTNET_ENVIRONMENT
+      environment variable.
+    -->
+    <OpenApiGenerationEnvironment Condition=" '$(OpenApiGenerationEnvironment)' == '' " />
   </PropertyGroup>
 </Project>

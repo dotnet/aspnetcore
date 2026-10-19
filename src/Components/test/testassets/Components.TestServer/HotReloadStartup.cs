@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Net.WebSockets;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace TestServer;
@@ -12,7 +11,9 @@ public class HotReloadStartup
 {
     public HotReloadStartup()
     {
-        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
+        // Every in-process server is started with the process defaults restored, so this override only
+        // applies for as long as this server is the one under test.
+        TestFeatureSwitches.SetHotReloadSupported(true);
     }
 
     public void ConfigureServices(IServiceCollection services)

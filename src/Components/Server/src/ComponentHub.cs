@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -72,6 +73,15 @@ internal sealed partial class ComponentHub : Hub
     /// </summary>
     public static PathString DefaultPath { get; } = "/_blazor";
 
+    public override Task OnConnectedAsync()
+    {
+        // ComponentHub owns authentication state at the circuit layer and does not use SignalR
+        // groups or user routing, so it can accept an identity change without rekeying those.
+        Context.Features.Get<IConnectionAuthenticationRefreshFeature>()?.OnAuthenticationRefresh = static _ => Task.FromResult(true);
+
+        return Task.CompletedTask;
+    }
+
     public override Task OnDisconnectedAsync(Exception exception)
     {
         // If the CircuitHost is gone now this isn't an error. This could happen if the disconnect
@@ -83,6 +93,14 @@ internal sealed partial class ComponentHub : Hub
         }
 
         return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+    }
+
+    public override Task OnAuthenticationRefreshedAsync()
+    {
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        circuitHost?.SetCircuitUser(Context.User);
+
+        return Task.CompletedTask;
     }
 
     public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
@@ -161,7 +179,7 @@ internal sealed partial class ComponentHub : Hub
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
-            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize. See the server logs for more information.");
             Context.Abort();
             return null;
         }
@@ -417,7 +435,7 @@ internal sealed partial class ComponentHub : Hub
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
-            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize. See the server logs for more information.");
             Context.Abort();
             return null;
         }

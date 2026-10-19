@@ -1,0 +1,51 @@
+@page "/forms"
+@rendermode InteractiveServer
+
+<NativeAotStatus />
+<h1>Dashboard input matrix</h1>
+
+<EditForm Model="Model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <label>Name <InputText id="form-name" @bind-Value="Model.Name" /></label>
+    <ValidationMessage For="() => Model.Name" />
+
+    <label>Count <InputNumber id="form-count" @bind-Value="Model.Count" /></label>
+    <label>Enabled <InputCheckbox id="form-enabled" @bind-Value="Model.Enabled" /></label>
+
+    <label>
+        Mode
+        <InputSelect id="form-mode" @bind-Value="Model.Mode">
+            <option value="Compact">Compact</option>
+            <option value="Detailed">Detailed</option>
+        </InputSelect>
+    </label>
+
+    <label>
+        Optional mode
+        <InputSelect id="form-optional-mode" @bind-Value="Model.OptionalMode">
+            <option value="">(none)</option>
+            <option value="Compact">Compact</option>
+            <option value="Detailed">Detailed</option>
+        </InputSelect>
+    </label>
+
+    <label>Nested label <InputText id="form-nested" @bind-Value="Model.Nested.Label" /></label>
+    <label>List value <InputText id="form-list" @bind-Value="Model.Items[0].Value" /></label>
+
+    <button id="form-submit" type="submit">Submit</button>
+</EditForm>
+
+<p id="form-result">@_result</p>
+
+@code {
+    private string _result = "(unsubmitted)";
+
+    public DashboardInput Model { get; } = new();
+
+    private void HandleValidSubmit()
+    {
+        _result = $"{Model.Name}|{Model.Count}|{Model.Enabled}|{Model.Mode}|{Model.OptionalMode}|" +
+            $"{Model.Nested.Label}|{Model.Items[0].Value}";
+    }
+}

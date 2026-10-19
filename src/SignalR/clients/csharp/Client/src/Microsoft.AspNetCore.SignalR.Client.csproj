@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
-    <Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\clients\csharp\Client.Core\src\Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\clients\csharp\Http.Connections.Client\src\Microsoft.AspNetCore.Http.Connections.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

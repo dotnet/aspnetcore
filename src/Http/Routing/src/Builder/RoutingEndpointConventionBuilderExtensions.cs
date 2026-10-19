@@ -207,8 +207,8 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <param name="memoryBufferThreshold">Configures how many bytes of the body will be buffered in memory. Defaults to 65,536 bytes, which is approximately 64KB.</param>
     /// <param name="bufferBodyLengthLimit">Limit for the total number of bytes that will be buffered. Defaults to 128MB.</param>
     /// <param name="valueCountLimit">Limit for the number of form entries to allow. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>.</param>
-    /// <param name="keyLengthLimit">Limit on the length of individual keys. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/>.</param>
-    /// <param name="valueLengthLimit">Limit on the length of individual form values. Defaults to <see cref="FormReader.DefaultValueLengthLimit"/>.</param>
+    /// <param name="keyLengthLimit">Limit on the length of individual keys for <c>application/x-www-form-urlencoded</c> forms. For <c>multipart/form-data</c> forms, the length of a key is limited by <paramref name="multipartHeadersLengthLimit"/>. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/>.</param>
+    /// <param name="valueLengthLimit">Limit on the length of individual form values for <c>application/x-www-form-urlencoded</c> forms. For <c>multipart/form-data</c> forms, use <paramref name="multipartBodyLengthLimit"/>. Defaults to <see cref="FormReader.DefaultValueLengthLimit"/>.</param>
     /// <param name="multipartBoundaryLengthLimit">Limit for the length of the boundary identifier. Defaults to 128 bytes.</param>
     /// <param name="multipartHeadersCountLimit">Limit for the number of headers to allow in each multipart section. Defaults to <see cref="MultipartReader.DefaultHeadersCountLimit"/>.</param>
     /// <param name="multipartHeadersLengthLimit">Limit for the total length of the header keys and values in each multipart section. Defaults to <see cref="MultipartReader.DefaultHeadersLengthLimit"/>.</param>

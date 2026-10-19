@@ -100,4 +100,16 @@ describe('autopause initializer', () => {
     const attached = blazor.added.filter(h => !blazor.removed.includes(h));
     expect(attached).toHaveLength(1);
   });
+
+  it('server start reads auto-pause configuration discovered during enhanced navigation', () => {
+    const blazor = createBlazor();
+
+    beforeWebStart({ circuit: { autoPauseEnabled: false } });
+    afterWebStarted(blazor);
+    expect(blazor.added).toHaveLength(0);
+
+    beforeServerStart({ autoPauseEnabled: true, autoPauseHiddenDelayMilliseconds: 100 });
+    afterServerStarted(blazor);
+    expect(blazor.added).toHaveLength(1);
+  });
 });

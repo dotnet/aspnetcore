@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" role="img" aria-labelledby="title description">
+  <title id="title">Ancient pond at night</title>
+  <desc id="description">A stylized moonlit pond with reeds and mountain silhouettes.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f172a" />
+      <stop offset="1" stop-color="#334155" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#sky)" />
+  <circle cx="640" cy="90" r="48" fill="#f8fafc" opacity="0.9" />
+  <path d="M0 230 150 130 280 220 430 110 620 230 800 150 800 400 0 400Z" fill="#111827" />
+  <path d="M0 285 Q200 250 400 285 T800 285 V400 H0Z" fill="#164e63" />
+  <path d="M0 310 Q200 275 400 310 T800 310" fill="none" stroke="#67e8f9" stroke-width="5" opacity="0.45" />
+  <g stroke="#0f172a" stroke-width="8">
+    <path d="M80 350V245M105 360V260M130 355V235M705 355V245M730 360V260M755 350V230" />
+  </g>
+</svg>

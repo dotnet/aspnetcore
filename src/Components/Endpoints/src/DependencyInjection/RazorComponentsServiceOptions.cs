@@ -23,6 +23,16 @@ public sealed class RazorComponentsServiceOptions
     public bool DetailedErrors { get; set; }
 
     /// <summary>
+    /// Gets or sets a value that determines whether client-side validation is disabled for all
+    /// forms rendered with static server-side rendering. When <see langword="false"/> (the default),
+    /// forms using <see cref="Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator"/> emit
+    /// client-side validation rules so user errors can be reported without a round trip to the
+    /// server. When <see langword="true"/>, no client-side validation rules are emitted and only
+    /// server-side validation runs.
+    /// </summary>
+    public bool DisableClientValidation { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum number of elements allowed in a form collection.
     /// </summary>
     public int MaxFormMappingCollectionSize

@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -21,20 +24,20 @@ public class InputNumberTest
     }
 
     [Fact]
-    public async Task ValidationErrorUsesDisplayAttributeName()
+    public async Task ValidationErrorUsesExplicitDisplayName()
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<int, TestInputNumberComponent>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.SomeNumber,
+            ValueExpression = () => model.NumberWithDisplayAttribute,
             AdditionalAttributes = new Dictionary<string, object>
                 {
                     { "DisplayName", "Some number" }
                 }
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.SomeNumber);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.NumberWithDisplayAttribute);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act
@@ -44,6 +47,26 @@ public class InputNumberTest
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
         Assert.Contains("The Some number field must be a number.", validationMessages);
+    }
+
+    [Fact]
+    public Task ValidationErrorUsesDisplayAttributeOnModel()
+    {
+        var model = new TestModel();
+
+        return AssertValidationErrorUsesDisplayName(
+            () => model.NumberWithDisplayAttribute,
+            "The Display attribute number field must be a number.");
+    }
+
+    [Fact]
+    public Task ValidationErrorUsesDisplayNameAttributeName()
+    {
+        var model = new TestModel();
+
+        return AssertValidationErrorUsesDisplayName(
+            () => model.NumberWithDisplayNameAttribute,
+            "The DisplayName attribute number field must be a number.");
     }
 
     [Fact]
@@ -128,6 +151,24 @@ public class InputNumberTest
         Assert.Equal("custom-number-id", idAttribute.AttributeValue);
     }
 
+    private static async Task AssertValidationErrorUsesDisplayName(
+        Expression<Func<int>> valueExpression,
+        string expectedValidationMessage)
+    {
+        var fieldIdentifier = FieldIdentifier.Create(valueExpression);
+        var rootComponent = new TestInputHostComponent<int, TestInputNumberComponent>
+        {
+            EditContext = new EditContext(fieldIdentifier.Model),
+            ValueExpression = valueExpression,
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync("notANumber");
+
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Contains(expectedValidationMessage, validationMessages);
+    }
+
     private async Task<int> RenderAndGetTestInputNumberComponentIdAsync(TestInputHostComponent<int, TestInputNumberComponent> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
@@ -139,6 +180,12 @@ public class InputNumberTest
     private class TestModel
     {
         public int SomeNumber { get; set; }
+
+        [Display(Name = "Display attribute number")]
+        public int NumberWithDisplayAttribute { get; set; }
+
+        [DisplayName("DisplayName attribute number")]
+        public int NumberWithDisplayNameAttribute { get; set; }
     }
 
     private class TestInputNumberComponent : InputNumber<int>

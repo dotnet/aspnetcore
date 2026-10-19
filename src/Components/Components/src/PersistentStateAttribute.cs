@@ -23,8 +23,9 @@ public sealed class PersistentStateAttribute : CascadingParameterAttributeBase
     public RestoreBehavior RestoreBehavior { get; set; } = RestoreBehavior.Default;
 
     /// <summary>
-    /// Gets or sets a value whether the component wants to receive updates to the parameter
-    /// beyond the initial value provided during initialization.
+    /// Gets or sets a value indicating whether the component wants to receive updates to the
+    /// parameter beyond the initial value provided during initialization when the updates are
+    /// supplied during enhanced navigation.
     /// </summary>
     public bool AllowUpdates { get; set; }
 }
