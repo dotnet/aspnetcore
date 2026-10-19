@@ -1,0 +1,51 @@
+<!-- Licensed to the .NET Foundation under one or more agreements.
+     The .NET Foundation licenses this file to you under the MIT license. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Concurrent MSAL initialization</title>
+</head>
+<body>
+    <h1>Concurrent MSAL initialization</h1>
+    <pre id="result" data-status="running">Running...</pre>
+    <script src="_content/Microsoft.Authentication.WebAssembly.Msal/AuthenticationService.js"></script>
+    <script>
+        const settings = {
+            auth: {
+                clientId: "33333333-3333-3333-3333-333333333333",
+                authority: "https://login.microsoftonline.com/common",
+                redirectUri: location.origin + "/authentication/login-callback",
+                knownAuthorities: []
+            },
+            cache: { cacheLocation: "localStorage" },
+            loginMode: "popup",
+            defaultAccessTokenScopes: [],
+            additionalScopesToConsent: []
+        };
+        const loggingOptions = { debugEnabled: false, traceEnabled: false };
+
+        async function run() {
+            const first = AuthenticationService.init(structuredClone(settings), loggingOptions);
+            const firstClient = AuthenticationService.instance;
+            const second = AuthenticationService.init(structuredClone(settings), loggingOptions);
+            const sharedClient = firstClient === AuthenticationService.instance;
+            const results = await Promise.all([
+                first.then(() => AuthenticationService.completeSignIn(location.href)),
+                second.then(() => AuthenticationService.completeSignIn(location.href))
+            ]);
+            const passed = sharedClient && results.every(result => result.status === "operationCompleted");
+            const output = document.getElementById("result");
+            output.dataset.status = passed ? "PASS" : "FAIL";
+            output.textContent = output.dataset.status + "\n" + JSON.stringify({ sharedClient, results }, null, 2);
+        }
+
+        run().catch(error => {
+            const output = document.getElementById("result");
+            output.dataset.status = "ERROR";
+            output.textContent = "ERROR\n" + String(error);
+            console.error(error);
+        });
+    </script>
+</body>
+</html>
