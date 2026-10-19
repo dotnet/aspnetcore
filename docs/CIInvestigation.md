@@ -1,0 +1,7 @@
+# Investigating Azure Pipelines and Helix failures
+
+Azure Pipelines checks on ASP.NET Core pull requests can aggregate build, test, and reporting failures. A red check alone does not identify a failing product test.
+
+1. Locate the Azure Pipelines build behind each red check and inspect its timeline for failed jobs. For Helix jobs, find the affected work items and logs. Determine where each failure happened: restore before Helix submission, submission, test execution, result reporting, post-test work, or infrastructure. A merge conflict can prevent a build from being queued altogether.
+1. For each failure, record the job or work item, exit code, test-result presence, and relevant log signature. Compare it with the PR's changed files and build progression. Build Analysis and Build Insights/known-issue classifications are leads, not proof; when attribution remains uncertain, compare the same job, batch, or test on a target-branch build based on the target commit used for the PR build.
+1. Only retry after accounting for every current failure. For an external Azure Pipelines check that GitHub cannot rerequest, a scoped `/azp run <pipeline-name>` comment can queue the affected pipeline. Do not create an empty commit to rerun CI or repeatedly retry an unexplained failure. Confirm the bot acknowledged the request, a replacement build was queued for the intended PR source commit, and the build and Build Analysis/Build Insights checks reached their final states.

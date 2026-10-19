@@ -236,7 +236,13 @@ public class CacheTagHelperTest
         var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(mockCache.Object), new HtmlTestEncoder())
         {
             ViewContext = GetViewContext(),
+            VaryByHeader = "X-Custom-Header",
         };
+        cacheTagHelper1.ViewContext.HttpContext.Request.Headers["X-Custom-Header"] = "custom-header-value";
+        var cacheKeySize = (CacheTagHelper.CacheKeyPrefix.Length +
+            id.Length +
+            "X-Custom-Header".Length +
+            "custom-header-value".Length) * sizeof(char);
 
         // Act
         await cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1);
@@ -246,8 +252,8 @@ public class CacheTagHelperTest
         Assert.Empty(tagHelperOutput1.PostContent.GetContent());
         Assert.True(tagHelperOutput1.IsContentModified);
         Assert.Equal(childContent1, tagHelperOutput1.Content.GetContent());
-        tempEntry.VerifySet(e => e.Size = 64);
-        finalEntry.VerifySet(e => e.Size = childContent1.Length * 2);
+        tempEntry.VerifySet(e => e.Size = 64 + cacheKeySize);
+        finalEntry.VerifySet(e => e.Size = (childContent1.Length * sizeof(char)) + cacheKeySize);
     }
 
     [Fact]

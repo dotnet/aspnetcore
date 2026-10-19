@@ -11,6 +11,14 @@
 * Before implementing a reported issue, verify the behavior on the current default branch, inspect relevant history and documentation, and establish the smallest faithful reproduction. If the user asks only to investigate or characterize, do not change shipping code or create or update a pull request until implementation is explicitly requested.
 * Define the acceptance criteria before implementation. Do not claim completion or create or update a pull request until the requested acceptance criteria are green; identify any intentionally excluded cases or unverified boundaries.
 
+## Minimal diffs
+
+* Preserve untouched code exactly as written. Do not make behavior-neutral formatting, reflow, renaming, inlining, extraction, expression, or control-flow changes while implementing a functional change.
+* When an existing statement must change, preserve its explanatory locals and surrounding branch structure unless the requested behavior requires a different shape.
+* Behavior-neutral clarification is acceptable only at the exact changed seam. For example, when adding a Boolean argument to an invocation, prefer a named argument. Do not update otherwise-untouched invocations merely to add argument names.
+* Keep optional cleanup in a separate change rather than mixing it into the functional diff.
+* Before finalizing, inspect changed existing lines specifically for edits that neither alter behavior nor directly support the requested change.
+
 ## Public API Changes
 
 * Treat any new or changed `public` or `protected` type, member, signature, default, or convention as a potential public API change.
@@ -57,7 +65,7 @@
 
 ## Running tests
 
-* To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder. For example, to run the build with tests in the `src/Http` directory, run `./src/Http/build.sh -test`.
+* Follow [BuildFromSource](../docs/BuildFromSource.md#guide-to-the-build-script) and the product area's `AGENTS.md` when choosing how to build and test. Area build scripts are `build.cmd` on Windows and `build.sh` on Linux/macOS; use the platform-appropriate entry point.
 * Before claiming a bug fix is verified, confirm that the relevant test or check fails for the expected reason without the fix and passes with it. Reading the source or seeing a test pass on its own is not proof that the bug is fixed.
 * For a `[Theory]` or other parameterized test, confirm that each row fails for the expected reason without the fix and passes with it; a red test proves only that at least one row failed. `dotnet test --filter` cannot select an individual `InlineData` row by parameter value, so inspect every case in the test output instead of relying on the `Failed!` or `Passed!` summary. A row that passes because its targeted scenario or code path never ran, such as from unmet setup, a missing prerequisite, or conditional execution, does not verify the fix.
 * For behavioral review findings and bug-fix verification, use the smallest faithful test path. Include the component, service, runtime, or browser mechanism that owns or produces each disputed precondition, and observe the claimed material effect at the appropriate boundary, such as UI, protocol, persisted state, resource use, timing or performance, logging, or another contract-relevant behavior. Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
@@ -73,6 +81,10 @@
   * On Linux/Mac: `source activate.sh` (from repository root)
 * If not in the repository root, navigate there first or use the full path to the activation script.
 * This ensures that the correct version of .NET SDK is used for the repository.
+
+## CI investigation
+
+* For Azure Pipelines and Helix failures on a pull request, follow [CI investigation](../docs/CIInvestigation.md).
 
 ## ASP.NET Core Components Area
 * When working on issues under the src/Components area, follow the instructions in [./instructions/components.instructions.md](./instructions/components.instructions.md).

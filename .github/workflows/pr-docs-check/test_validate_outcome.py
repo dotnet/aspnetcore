@@ -4,6 +4,8 @@ import unittest
 from pathlib import Path
 
 from validate_outcome import OutcomeValidationError, build_outcome, main, validate_preflight
+from prepare_context import source_preflight
+from test_prepare_context import pull_request
 
 
 class ValidateOutcomeTests(unittest.TestCase):
@@ -27,12 +29,11 @@ class ValidateOutcomeTests(unittest.TestCase):
         self.assertEqual("drafted", result["render_kind"])
         self.assertEqual(9, result["docs_pr_number"])
 
-    def test_updated_draft_requires_push_and_metadata_update(self):
+    def test_updated_draft_requires_push_without_metadata_update(self):
         payload = self._payload(
             "drafted",
             "updated",
             {"type": "push_to_pull_request_branch", "pull_request_number": 9},
-            {"type": "update_pull_request", "pull_request_number": 9},
             existing_docs_pr_number=9,
         )
 
@@ -45,7 +46,7 @@ class ValidateOutcomeTests(unittest.TestCase):
             {
                 "found": True,
                 "blocked": False,
-                "selected": {"number": 9},
+                "selected": {"number": 9, "head_sha": "a" * 40},
             },
             "aspnetcore-docs-bot[bot]",
         )
@@ -79,7 +80,6 @@ class ValidateOutcomeTests(unittest.TestCase):
             "drafted",
             "updated",
             {"type": "push_to_pull_request_branch", "pull_request_number": 9},
-            {"type": "update_pull_request", "pull_request_number": 9},
             existing_docs_pr_number=9,
             confidence=75,
         )
@@ -94,8 +94,79 @@ class ValidateOutcomeTests(unittest.TestCase):
             },
         )
 
+    def test_preflight_rejects_metadata_updates(self):
+        for field, value in (("body", "Replacement"), ("title", "[docs] Replacement"), ("state", "closed")):
+            with self.subTest(field=field):
+                payload = self._payload(
+                    "drafted", "updated",
+                    {"type": "push_to_pull_request_branch", "pull_request_number": 9},
+                    {"type": "update_pull_request", "pull_request_number": 9, field: value},
+                    existing_docs_pr_number=9,
+                )
+                with self.assertRaisesRegex(OutcomeValidationError, "no metadata"):
+                    validate_preflight(
+                        payload, 42, {"found": True, "blocked": False, "selected": {"number": 9}},
+                    )
+
+    def test_trusted_source_gate_rejects_docs_mutations_for_early_paths(self):
+        for status in ("ineligible", "restricted"):
+            with self.subTest(status=status):
+                gate = {"source_repository": "dotnet/aspnetcore", "source_pr_number": 42, "status": status}
+                payload = self._payload(
+                    "drafted", "created", {"type": "create_pull_request", "branch": "docs/aspnetcore-pr-42"},
+                )
+                with self.assertRaisesRegex(OutcomeValidationError, "Source preflight requires"):
+                    validate_preflight(payload, 42, {"found": False, "blocked": False}, gate)
+                with self.assertRaisesRegex(OutcomeValidationError, "Source preflight requires"):
+                    build_outcome(payload, "dotnet/aspnetcore", 42, "", None, source_preflight=gate)
+
+    def test_early_outcomes_are_consistent_with_metadata_preflight(self):
+        for pr, result in (
+            ({**pull_request(), "merged": False}, "skipped"),
+            ({**pull_request(), "base": {**pull_request()["base"], "ref": "release/10.0"}}, "skipped"),
+            ({**pull_request(), "title": "Advisory update"}, "restricted"),
+        ):
+            with self.subTest(result=result, pr=pr):
+                gate = source_preflight("dotnet/aspnetcore", "42", pr)
+                payload = self._payload(result, "none", {"type": "noop"}, confidence=0, required=False)
+                validate_preflight(payload, 42, {"found": False, "blocked": False}, gate)
+                outcome = build_outcome(payload, "dotnet/aspnetcore", 42, "", None, source_preflight=gate)
+                self.assertEqual(result, outcome["render_kind"])
+                self.assertEqual("none", outcome["docs_pr_action"])
+
+    def test_source_preflight_identity_is_checked(self):
+        payload = self._payload("skipped", "none", {"type": "noop"}, confidence=0, required=False)
+        for gate in (
+            {"source_repository": "other/repo", "source_pr_number": 42, "status": "eligible"},
+            {"source_repository": "dotnet/aspnetcore", "source_pr_number": 43, "status": "eligible"},
+            {"source_repository": "dotnet/aspnetcore", "source_pr_number": 42, "status": "unknown"},
+        ):
+            with self.subTest(gate=gate):
+                with self.assertRaisesRegex(OutcomeValidationError, "does not match"):
+                    validate_preflight(payload, 42, {"found": False, "blocked": False}, gate)
+
+    def test_invalid_source_cli_accepts_only_noop_without_notification(self):
+        for number in ("bad", "0", "42"):
+            for notify in (False, True):
+                with self.subTest(number=number, notify=notify):
+                    with tempfile.TemporaryDirectory() as directory:
+                        root = Path(directory)
+                        output = root / "output.json"
+                        gate = root / "gate.json"
+                        output.write_text(json.dumps(
+                            self._payload("skipped", "none", {"type": "noop"}, confidence=0, required=False)
+                            if notify else {"items": [{"type": "noop"}]},
+                        ))
+                        gate.write_text(json.dumps(source_preflight("dotnet/aspnetcore", number, None)))
+                        result = main([
+                            "--preflight", "--agent-output", str(output),
+                            "--source-repository", "dotnet/aspnetcore", "--source-pr-number", number,
+                            "--source-preflight", str(gate),
+                        ])
+                        self.assertEqual(1 if notify else 0, result)
+
     def test_preflight_rejects_update_targeting_another_pull_request(self):
-        for mismatched_type in ("push_to_pull_request_branch", "update_pull_request"):
+        for mismatched_type in ("push_to_pull_request_branch",):
             with self.subTest(mismatched_type=mismatched_type):
                 payload = self._payload(
                     "drafted",
@@ -103,10 +174,6 @@ class ValidateOutcomeTests(unittest.TestCase):
                     {
                         "type": "push_to_pull_request_branch",
                         "pull_request_number": 10 if mismatched_type == "push_to_pull_request_branch" else 9,
-                    },
-                    {
-                        "type": "update_pull_request",
-                        "pull_request_number": 10 if mismatched_type == "update_pull_request" else 9,
                     },
                     existing_docs_pr_number=9,
                 )
@@ -129,7 +196,6 @@ class ValidateOutcomeTests(unittest.TestCase):
                     "drafted",
                     "updated",
                     {"type": "push_to_pull_request_branch", "pull_request_number": 9},
-                    {"type": "update_pull_request", "pull_request_number": 9},
                     existing_docs_pr_number=9,
                 )
 
@@ -312,6 +378,7 @@ class ValidateOutcomeTests(unittest.TestCase):
             },
             "head": {
                 "ref": head_ref,
+                "sha": "b" * 40,
                 "repo": {"full_name": "dotnet/AspNetCore.Docs.Automation"},
             },
             "user": {"login": "aspnetcore-docs-bot[bot]"},
