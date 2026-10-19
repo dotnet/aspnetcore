@@ -4,7 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 using BasicWebSite;
 using BasicWebSite.Services;
 using Microsoft.AspNetCore.InternalTesting;
@@ -173,7 +173,7 @@ public class ComponentRenderingFunctionalTests : LoggedTest
     private void AssertComponent(string expectedContent, string divId, string responseContent)
     {
         var parser = new HtmlParser();
-        var htmlDocument = parser.Parse(responseContent);
+        var htmlDocument = parser.ParseDocument(responseContent);
         var div = htmlDocument.Body.QuerySelector($"#{divId}");
         var content = div.InnerHtml;
         Assert.Equal(

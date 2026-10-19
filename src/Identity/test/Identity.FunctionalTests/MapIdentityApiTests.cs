@@ -3,12 +3,16 @@
 
 #nullable enable
 
+using System.Buffers.Binary;
 using System.Diagnostics.Metrics;
+using System.Formats.Cbor;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Identity.DefaultUI.WebSite;
@@ -35,6 +39,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests;
 
 public class MapIdentityApiTests : LoggedTest
 {
+    private const string KnownEmail = "known@example.com";
     private static string Email { get; } = $"{Guid.NewGuid()}@example.com";
     private static string Password { get; } = "[PLACEHOLDER]-1a";
     private static Uri BaseAddress { get; } = new Uri("http://example.com");
@@ -237,6 +242,557 @@ public class MapIdentityApiTests : LoggedTest
 
         await Assert.ThrowsAsync<InvalidOperationException>(()
             => client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email, Password }));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("unknown@example.com")]
+    [InlineData(KnownEmail)]
+    public async Task PasskeyRequestOptionsDoNotRevealWhetherAccountExists(string? email)
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client, email: KnownEmail);
+
+        var response = await client.PostAsJsonAsync("/identity/passkeys/requestOptions", new { email });
+
+        AssertOk(response);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.False(content.GetProperty("hasUser").GetBoolean());
+    }
+
+    [Fact]
+    public async Task PasskeyCreationOptionsRequireAuthorizationAndDescribeUser()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        AssertUnauthorizedAndEmpty(await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null));
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        var response = await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null);
+
+        AssertOk(response);
+        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.NotEmpty(Assert.IsType<string>(content.GetProperty("Id").GetString()));
+        Assert.Equal(Email, content.GetProperty("Name").GetString());
+        Assert.Equal(Email, content.GetProperty("DisplayName").GetString());
+    }
+
+    [Fact]
+    public async Task CanRegisterPasskey()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        var optionsResponse = await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null);
+        ApplyCookies(client, optionsResponse);
+
+        var registrationResponse = await client.PostAsJsonAsync("/identity/manage/passkeys", new
+        {
+            CredentialJson = "valid",
+            Name = "Laptop",
+        });
+
+        AssertOk(registrationResponse);
+        var registration = await registrationResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("AQID", registration.GetProperty("credentialId").GetString());
+        Assert.Equal("Laptop", registration.GetProperty("name").GetString());
+        var createdAt = registration.GetProperty("createdAt").GetDateTimeOffset();
+        Assert.NotEqual(default, createdAt);
+
+        var listResponse = await client.GetAsync("/identity/manage/passkeys");
+        AssertOk(listResponse);
+        var listedPasskey = Assert.Single((await listResponse.Content.ReadFromJsonAsync<JsonElement>()).EnumerateArray());
+        Assert.Equal("AQID", listedPasskey.GetProperty("credentialId").GetString());
+        Assert.Equal("Laptop", listedPasskey.GetProperty("name").GetString());
+        Assert.Equal(createdAt, listedPasskey.GetProperty("createdAt").GetDateTimeOffset());
+
+        await using var scope = app.Services.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = Assert.IsType<ApplicationUser>(await userManager.FindByEmailAsync(Email));
+        var passkey = Assert.Single(await userManager.GetPasskeysAsync(user));
+        Assert.Equal([1, 2, 3], passkey.CredentialId);
+        Assert.Equal("Laptop", passkey.Name);
+    }
+
+    [Fact]
+    public async Task CanRegisterAndLoginWithPasskeyUsingProductionHandler()
+    {
+        await using var app = await CreatePasskeyAppAsync(
+            useTestPasskeyHandler: false,
+            configureServices: services => services.Configure<IdentityPasskeyOptions>(
+                options => options.ResidentKeyRequirement = "required"));
+        using var registrationClient = app.GetTestClient();
+        registrationClient.DefaultRequestHeaders.Add(HeaderNames.Origin, BaseAddress.GetLeftPart(UriPartial.Authority));
+
+        await RegisterAsync(registrationClient);
+        await LoginAsync(registrationClient);
+
+        using var credential = new TestPasskeyCredential();
+        var creationOptionsResponse = await registrationClient.PostAsync(
+            "/identity/manage/passkeys/creationOptions",
+            content: null);
+        ApplyCookies(registrationClient, creationOptionsResponse);
+        var creationOptions = await creationOptionsResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        var registrationResponse = await registrationClient.PostAsJsonAsync("/identity/manage/passkeys", new
+        {
+            CredentialJson = credential.CreateAttestationCredentialJson(creationOptions),
+            Name = "Laptop",
+        });
+        AssertOk(registrationResponse);
+
+        using var loginClient = app.GetTestClient();
+        loginClient.DefaultRequestHeaders.Add(HeaderNames.Origin, BaseAddress.GetLeftPart(UriPartial.Authority));
+
+        var requestOptionsResponse = await loginClient.PostAsJsonAsync(
+            "/identity/passkeys/requestOptions",
+            new { Email });
+        ApplyCookies(loginClient, requestOptionsResponse);
+        var requestOptions = await requestOptionsResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        var loginResponse = await loginClient.PostAsJsonAsync("/identity/passkeys/login", new
+        {
+            CredentialJson = credential.CreateAssertionCredentialJson(requestOptions),
+        });
+
+        AssertOk(loginResponse);
+        var login = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var accessToken = login.GetProperty("accessToken").GetString();
+        Assert.NotNull(accessToken);
+
+        loginClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
+        Assert.Equal($"Hello, {Email}!", await loginClient.GetStringAsync("/auth/hello"));
+    }
+
+    [Fact]
+    public async Task PasskeyRegistrationRejectsLongName()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        var optionsResponse = await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null);
+        ApplyCookies(client, optionsResponse);
+
+        await AssertValidationProblemAsync(
+            await client.PostAsJsonAsync("/identity/manage/passkeys", new
+            {
+                CredentialJson = "valid",
+                Name = new string('a', 201),
+            }),
+            "InvalidPasskeyName");
+    }
+
+    [Fact]
+    public async Task PasskeyRegistrationRejectsEmptyCredential()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        await AssertValidationProblemAsync(
+            await client.PostAsJsonAsync("/identity/manage/passkeys", new { CredentialJson = "" }),
+            "InvalidPasskey");
+    }
+
+    [Fact]
+    public async Task PasskeyRegistrationRejectsInvalidCredential()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        var optionsResponse = await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null);
+        ApplyCookies(client, optionsResponse);
+
+        await AssertValidationProblemAsync(
+            await client.PostAsJsonAsync("/identity/manage/passkeys", new { CredentialJson = "invalid" }),
+            "InvalidPasskey");
+    }
+
+    [Fact]
+    public async Task PasskeyRegistrationRejectsMissingState()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        await AssertValidationProblemAsync(
+            await client.PostAsJsonAsync("/identity/manage/passkeys", new { CredentialJson = "valid" }),
+            "InvalidPasskeyState");
+    }
+
+    [Fact]
+    public async Task PasskeyRegistrationRejectsUserMismatch()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        var optionsResponse = await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null);
+        ApplyCookies(client, optionsResponse);
+
+        await AssertValidationProblemAsync(
+            await client.PostAsJsonAsync("/identity/manage/passkeys", new { CredentialJson = "mismatch" }),
+            "InvalidPasskey");
+    }
+
+    [Fact]
+    public async Task CanLoginWithPasskeyBearerToken()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+
+        var optionsResponse = await client.PostAsJsonAsync("/identity/passkeys/requestOptions", new { Email });
+        ApplyCookies(client, optionsResponse);
+
+        var loginResponse = await client.PostAsJsonAsync("/identity/passkeys/login", new { CredentialJson = Email });
+
+        AssertOk(loginResponse);
+        var login = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var accessToken = login.GetProperty("accessToken").GetString();
+        Assert.NotNull(accessToken);
+        Assert.True(login.TryGetProperty("refreshToken", out _));
+
+        client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
+        Assert.Equal($"Hello, {Email}!", await client.GetStringAsync("/auth/hello"));
+    }
+
+    [Theory]
+    [InlineData("?useCookies=true")]
+    [InlineData("?useSessionCookies=true")]
+    public async Task CanLoginWithPasskeyCookie(string query)
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+
+        var optionsResponse = await client.PostAsJsonAsync("/identity/passkeys/requestOptions", new { Email });
+        ApplyCookies(client, optionsResponse);
+
+        var loginResponse = await client.PostAsJsonAsync($"/identity/passkeys/login{query}", new { CredentialJson = Email });
+        ApplyCookies(client, loginResponse);
+
+        Assert.Equal($"Hello, {Email}!", await client.GetStringAsync("/auth/hello"));
+    }
+
+    [Fact]
+    public async Task PasskeyLoginRejectsMissingState()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+
+        await AssertValidationProblemAsync(
+            await client.PostAsJsonAsync("/identity/passkeys/login", new { CredentialJson = Email }),
+            "InvalidPasskeyState");
+    }
+
+    [Fact]
+    public async Task PasskeyLoginRejectsEmptyCredential()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await AssertValidationProblemAsync(
+            await client.PostAsJsonAsync("/identity/passkeys/login", new { CredentialJson = "" }),
+            "InvalidPasskey");
+    }
+
+    [Fact]
+    public async Task PasskeyLoginRejectsInvalidCredential()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+
+        var optionsResponse = await client.PostAsJsonAsync("/identity/passkeys/requestOptions", new { Email });
+        ApplyCookies(client, optionsResponse);
+
+        await AssertProblemAsync(
+            await client.PostAsJsonAsync("/identity/passkeys/login", new { CredentialJson = "invalid" }),
+            "Failed");
+    }
+
+    [Fact]
+    public async Task PasskeyLoginRejectsCreationState()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        var optionsResponse = await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null);
+        ApplyCookies(client, optionsResponse);
+
+        await AssertValidationProblemAsync(
+            await client.PostAsJsonAsync("/identity/passkeys/login", new { CredentialJson = Email }),
+            "InvalidPasskeyState");
+    }
+
+    [Fact]
+    public async Task PasskeyOptionsRequireTemporaryCookieScheme()
+    {
+        await using var app = await CreatePasskeyAppAsync(bearerOnly: true);
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(()
+            => client.PostAsJsonAsync("/identity/passkeys/requestOptions", new { Email }));
+    }
+
+    [Fact]
+    public async Task CanChangePasskeyResponseJsonOptions()
+    {
+        await using var app = await CreatePasskeyAppAsync(configureServices: services =>
+        {
+            services.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+            });
+        });
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        ApplyCookies(
+            client,
+            await client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email, Password }));
+
+        var optionsResponse = await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null);
+        ApplyCookies(client, optionsResponse);
+
+        var registrationResponse = await client.PostAsJsonAsync("/identity/manage/passkeys", new
+        {
+            credential_json = "valid",
+            name = "Laptop",
+        });
+
+        AssertOk(registrationResponse);
+        var registration = await registrationResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("AQID", registration.GetProperty("credential_id").GetString());
+        Assert.Equal("Laptop", registration.GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public async Task PasskeyManagementRequiresAuthenticatedUser()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        AssertUnauthorizedAndEmpty(await client.GetAsync("/identity/manage/passkeys"));
+        AssertUnauthorizedAndEmpty(await client.PutAsJsonAsync("/identity/manage/passkeys/AQID", new { Name = "Laptop" }));
+        AssertUnauthorizedAndEmpty(await client.DeleteAsync("/identity/manage/passkeys/AQID"));
+    }
+
+    [Fact]
+    public async Task CanListPasskeysWhenNoneAreRegistered()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        var listResponse = await client.GetAsync("/identity/manage/passkeys");
+
+        AssertOk(listResponse);
+        Assert.Empty((await listResponse.Content.ReadFromJsonAsync<JsonElement>()).EnumerateArray());
+    }
+
+    [Fact]
+    public async Task ListedPasskeyOnlyIncludesExpectedProperties()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+        await RegisterPasskeyAsync(client);
+
+        var listResponse = await client.GetAsync("/identity/manage/passkeys");
+
+        AssertOk(listResponse);
+        var passkey = Assert.Single((await listResponse.Content.ReadFromJsonAsync<JsonElement>()).EnumerateArray());
+        Assert.Equal("AQID", passkey.GetProperty("credentialId").GetString());
+        Assert.Equal("Laptop", passkey.GetProperty("name").GetString());
+        Assert.NotEqual(default, passkey.GetProperty("createdAt").GetDateTimeOffset());
+        Assert.Equal(3, passkey.EnumerateObject().Count());
+    }
+
+    [Fact]
+    public async Task CanRenamePasskey()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+        var registration = await RegisterPasskeyAsync(client);
+
+        var updateResponse = await client.PutAsJsonAsync("/identity/manage/passkeys/AQID", new { Name = "Desktop" });
+
+        AssertOk(updateResponse);
+        var updated = await updateResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("AQID", updated.GetProperty("credentialId").GetString());
+        Assert.Equal("Desktop", updated.GetProperty("name").GetString());
+        Assert.Equal(
+            registration.GetProperty("createdAt").GetDateTimeOffset(),
+            updated.GetProperty("createdAt").GetDateTimeOffset());
+
+        await using var scope = app.Services.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = Assert.IsType<ApplicationUser>(await userManager.FindByEmailAsync(Email));
+        var passkey = Assert.Single(await userManager.GetPasskeysAsync(user));
+        Assert.Equal("Desktop", passkey.Name);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task CanClearPasskeyName(string? name)
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+        await RegisterPasskeyAsync(client);
+
+        var updateResponse = await client.PutAsJsonAsync("/identity/manage/passkeys/AQID", new { Name = name });
+
+        AssertOk(updateResponse);
+        var updated = await updateResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(JsonValueKind.Null, updated.GetProperty("name").ValueKind);
+
+        await using var scope = app.Services.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = Assert.IsType<ApplicationUser>(await userManager.FindByEmailAsync(Email));
+        var passkey = Assert.Single(await userManager.GetPasskeysAsync(user));
+        Assert.Null(passkey.Name);
+    }
+
+    [Fact]
+    public async Task PasskeyRenameRejectsLongName()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+        await RegisterPasskeyAsync(client);
+
+        await AssertValidationProblemAsync(
+            await client.PutAsJsonAsync("/identity/manage/passkeys/AQID", new { Name = new string('a', 201) }),
+            "InvalidPasskeyName");
+    }
+
+    [Fact]
+    public async Task CanDeletePasskey()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+        await RegisterPasskeyAsync(client);
+
+        AssertOkAndEmpty(await client.DeleteAsync("/identity/manage/passkeys/AQID"));
+
+        var listResponse = await client.GetAsync("/identity/manage/passkeys");
+        AssertOk(listResponse);
+        Assert.Empty((await listResponse.Content.ReadFromJsonAsync<JsonElement>()).EnumerateArray());
+
+        await using var scope = app.Services.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = Assert.IsType<ApplicationUser>(await userManager.FindByEmailAsync(Email));
+        Assert.Empty(await userManager.GetPasskeysAsync(user));
+    }
+
+    [Fact]
+    public async Task CannotManageAnotherUsersPasskey()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+        await RegisterPasskeyAsync(client);
+
+        var otherEmail = $"{Guid.NewGuid()}@example.com";
+        using var otherClient = app.GetTestClient();
+        await RegisterAsync(otherClient, email: otherEmail);
+        await LoginAsync(otherClient, email: otherEmail);
+
+        var otherListResponse = await otherClient.GetAsync("/identity/manage/passkeys");
+        AssertOk(otherListResponse);
+        Assert.Empty((await otherListResponse.Content.ReadFromJsonAsync<JsonElement>()).EnumerateArray());
+
+        AssertNotFoundAndEmpty(await otherClient.PutAsJsonAsync("/identity/manage/passkeys/AQID", new { Name = "Stolen" }));
+        AssertNotFoundAndEmpty(await otherClient.DeleteAsync("/identity/manage/passkeys/AQID"));
+
+        await using var scope = app.Services.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = Assert.IsType<ApplicationUser>(await userManager.FindByEmailAsync(Email));
+        var passkey = Assert.Single(await userManager.GetPasskeysAsync(user));
+        Assert.Equal([1, 2, 3], passkey.CredentialId);
+        Assert.Equal("Laptop", passkey.Name);
+    }
+
+    [Fact]
+    public async Task PasskeyManagementRejectsMalformedCredentialId()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        await AssertValidationProblemAsync(
+            await client.PutAsJsonAsync("/identity/manage/passkeys/AQIDA", new { Name = "Laptop" }),
+            "InvalidCredentialId");
+        await AssertValidationProblemAsync(
+            await client.DeleteAsync("/identity/manage/passkeys/AQIDA"),
+            "InvalidCredentialId");
+    }
+
+    [Fact]
+    public async Task PasskeyManagementReturnsNotFoundForUnknownCredentialId()
+    {
+        await using var app = await CreatePasskeyAppAsync();
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+        await RegisterPasskeyAsync(client);
+
+        AssertNotFoundAndEmpty(await client.PutAsJsonAsync("/identity/manage/passkeys/BAUG", new { Name = "Laptop" }));
+        AssertNotFoundAndEmpty(await client.DeleteAsync("/identity/manage/passkeys/BAUG"));
     }
 
     [Fact]
@@ -1368,21 +1924,57 @@ public class MapIdentityApiTests : LoggedTest
     private static IdentityBuilder AddIdentityApiEndpoints(IServiceCollection services)
         => AddIdentityApiEndpoints<ApplicationUser, ApplicationDbContext>(services);
 
-    private static IdentityBuilder AddIdentityApiEndpointsBearerOnly(IServiceCollection services)
+    private static IdentityBuilder AddIdentityApiEndpointsBearerOnly<TUser, TContext>(IServiceCollection services)
+        where TUser : class, new()
+        where TContext : DbContext
     {
         services
             .AddAuthentication()
             .AddBearerToken(IdentityConstants.BearerScheme);
 
         return services
-            .AddDbContext<ApplicationDbContext>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()))
-            .AddIdentityCore<ApplicationUser>()
-            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDbContext<TContext>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()))
+            .AddIdentityCore<TUser>()
+            .AddEntityFrameworkStores<TContext>()
             .AddApiEndpoints();
     }
 
+    private static IdentityBuilder AddIdentityApiEndpointsBearerOnly(IServiceCollection services)
+        => AddIdentityApiEndpointsBearerOnly<ApplicationUser, ApplicationDbContext>(services);
+
     private Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
         => CreateAppAsync<ApplicationUser, ApplicationDbContext>(configureServices);
+
+    private Task<WebApplication> CreatePasskeyAppAsync(
+        bool bearerOnly = false,
+        bool useTestPasskeyHandler = true,
+        Action<IServiceCollection>? configureServices = null)
+    {
+        return CreateAppAsync<ApplicationUser, PasskeyDbContext>(services =>
+        {
+            if (bearerOnly)
+            {
+                AddIdentityApiEndpointsBearerOnly<ApplicationUser, PasskeyDbContext>(services);
+            }
+            else
+            {
+                AddIdentityApiEndpoints<ApplicationUser, PasskeyDbContext>(services);
+            }
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+            });
+            if (useTestPasskeyHandler)
+            {
+                services.AddScoped<IPasskeyHandler<ApplicationUser>, TestPasskeyHandler>();
+            }
+            configureServices?.Invoke(services);
+        });
+    }
+
+    private sealed class PasskeyDbContext(DbContextOptions<PasskeyDbContext> options)
+        : IdentityDbContext<ApplicationUser>(options);
 
     private static Dictionary<string, Action<IServiceCollection>> AddIdentityActions { get; } = new()
     {
@@ -1442,6 +2034,21 @@ public class MapIdentityApiTests : LoggedTest
         return refreshToken;
     }
 
+    private static async Task<JsonElement> RegisterPasskeyAsync(HttpClient client, string? name = "Laptop")
+    {
+        var optionsResponse = await client.PostAsync("/identity/manage/passkeys/creationOptions", content: null);
+        ApplyCookies(client, optionsResponse);
+
+        var registrationResponse = await client.PostAsJsonAsync("/identity/manage/passkeys", new
+        {
+            CredentialJson = "valid",
+            Name = name,
+        });
+
+        AssertOk(registrationResponse);
+        return await registrationResponse.Content.ReadFromJsonAsync<JsonElement>();
+    }
+
     private async Task<string> LoginWithEmailConfirmationAsync(HttpClient client, TestEmailSender emailSender, string? groupPrefix = null, string? email = null)
     {
         groupPrefix ??= "/identity";
@@ -1480,6 +2087,12 @@ public class MapIdentityApiTests : LoggedTest
     private static void AssertUnauthorizedAndEmpty(HttpResponseMessage response)
     {
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(0, response.Content.Headers.ContentLength);
+    }
+
+    private static void AssertNotFoundAndEmpty(HttpResponseMessage response)
+    {
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Equal(0, response.Content.Headers.ContentLength);
     }
 
@@ -1523,6 +2136,187 @@ public class MapIdentityApiTests : LoggedTest
         }
     }
 
+    private sealed class TestPasskeyCredential : IDisposable
+    {
+        private const byte UserPresentFlag = 1 << 0;
+        private const byte UserVerifiedFlag = 1 << 2;
+        private const byte AttestedCredentialDataFlag = 1 << 6;
+        private static readonly byte[] _credentialId = [1, 2, 3, 4, 5, 6, 7, 8];
+        private readonly ECDsa _key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        private string? _userHandle;
+
+        public string CreateAttestationCredentialJson(JsonElement creationOptions)
+        {
+            var rpId = creationOptions.GetProperty("rp").GetProperty("id").GetString()
+                ?? throw new InvalidOperationException("The relying party ID is missing.");
+            _userHandle = creationOptions.GetProperty("user").GetProperty("id").GetString()
+                ?? throw new InvalidOperationException("The user handle is missing.");
+
+            var publicKey = EncodePublicKey();
+            var attestedCredentialData = new byte[16 + sizeof(ushort) + _credentialId.Length + publicKey.Length];
+            var offset = 16;
+            BinaryPrimitives.WriteUInt16BigEndian(attestedCredentialData.AsSpan(offset), (ushort)_credentialId.Length);
+            offset += sizeof(ushort);
+            _credentialId.CopyTo(attestedCredentialData.AsSpan(offset));
+            offset += _credentialId.Length;
+            publicKey.CopyTo(attestedCredentialData.AsSpan(offset));
+
+            var authenticatorData = CreateAuthenticatorData(
+                rpId,
+                UserPresentFlag | UserVerifiedFlag | AttestedCredentialDataFlag,
+                signCount: 1,
+                attestedCredentialData);
+            var attestationObject = CreateAttestationObject(authenticatorData);
+            var clientDataJson = CreateClientDataJson(creationOptions, "webauthn.create");
+
+            return JsonSerializer.Serialize(new
+            {
+                id = WebEncoders.Base64UrlEncode(_credentialId),
+                response = new
+                {
+                    attestationObject = WebEncoders.Base64UrlEncode(attestationObject),
+                    clientDataJSON = WebEncoders.Base64UrlEncode(clientDataJson),
+                    transports = new[] { "internal" },
+                },
+                type = "public-key",
+                clientExtensionResults = new { },
+                authenticatorAttachment = "platform",
+            });
+        }
+
+        public string CreateAssertionCredentialJson(JsonElement requestOptions)
+        {
+            var rpId = requestOptions.GetProperty("rpId").GetString()
+                ?? throw new InvalidOperationException("The relying party ID is missing.");
+            var userHandle = _userHandle
+                ?? throw new InvalidOperationException("An attestation credential must be created first.");
+            var authenticatorData = CreateAuthenticatorData(
+                rpId,
+                UserPresentFlag | UserVerifiedFlag,
+                signCount: 2);
+            var clientDataJson = CreateClientDataJson(requestOptions, "webauthn.get");
+            var clientDataHash = SHA256.HashData(clientDataJson);
+            var dataToSign = new byte[authenticatorData.Length + clientDataHash.Length];
+            authenticatorData.CopyTo(dataToSign, 0);
+            clientDataHash.CopyTo(dataToSign, authenticatorData.Length);
+            var signature = _key.SignData(
+                dataToSign,
+                HashAlgorithmName.SHA256,
+                DSASignatureFormat.Rfc3279DerSequence);
+
+            return JsonSerializer.Serialize(new
+            {
+                id = WebEncoders.Base64UrlEncode(_credentialId),
+                response = new
+                {
+                    authenticatorData = WebEncoders.Base64UrlEncode(authenticatorData),
+                    clientDataJSON = WebEncoders.Base64UrlEncode(clientDataJson),
+                    signature = WebEncoders.Base64UrlEncode(signature),
+                    userHandle,
+                },
+                type = "public-key",
+                clientExtensionResults = new { },
+                authenticatorAttachment = "platform",
+            });
+        }
+
+        public void Dispose() => _key.Dispose();
+
+        private byte[] EncodePublicKey()
+        {
+            var parameters = _key.ExportParameters(includePrivateParameters: false);
+            var writer = new CborWriter(CborConformanceMode.Ctap2Canonical);
+            writer.WriteStartMap(5);
+            writer.WriteInt32((int)CoseKeyParameter.KeyType);
+            writer.WriteInt32((int)CoseKeyType.Ec2);
+            writer.WriteInt32((int)CoseKeyParameter.Algorithm);
+            writer.WriteInt32(-7);
+            writer.WriteInt32((int)CoseKeyParameter.Curve);
+            writer.WriteInt32((int)CoseCurve.P256);
+            writer.WriteInt32((int)CoseKeyParameter.X);
+            writer.WriteByteString(parameters.Q.X!);
+            writer.WriteInt32((int)CoseKeyParameter.Y);
+            writer.WriteByteString(parameters.Q.Y!);
+            writer.WriteEndMap();
+
+            return writer.Encode();
+        }
+
+        private static byte[] CreateAuthenticatorData(
+            string rpId,
+            byte flags,
+            uint signCount,
+            byte[]? attestedCredentialData = null)
+        {
+            const int RpIdHashLength = 32;
+            const int FlagsLength = 1;
+            const int SignCountLength = 4;
+            var result = new byte[
+                RpIdHashLength +
+                FlagsLength +
+                SignCountLength +
+                (attestedCredentialData?.Length ?? 0)];
+            var offset = 0;
+
+            SHA256.HashData(Encoding.UTF8.GetBytes(rpId)).CopyTo(result, offset);
+            offset += RpIdHashLength;
+            result[offset] = flags;
+            offset += FlagsLength;
+            BinaryPrimitives.WriteUInt32BigEndian(result.AsSpan(offset), signCount);
+            offset += SignCountLength;
+            attestedCredentialData?.CopyTo(result, offset);
+
+            return result;
+        }
+
+        private static byte[] CreateAttestationObject(byte[] authenticatorData)
+        {
+            var writer = new CborWriter(CborConformanceMode.Ctap2Canonical);
+            writer.WriteStartMap(3);
+            writer.WriteTextString("fmt");
+            writer.WriteTextString("none");
+            writer.WriteTextString("attStmt");
+            writer.WriteStartMap(0);
+            writer.WriteEndMap();
+            writer.WriteTextString("authData");
+            writer.WriteByteString(authenticatorData);
+            writer.WriteEndMap();
+
+            return writer.Encode();
+        }
+
+        private static byte[] CreateClientDataJson(JsonElement options, string type)
+        {
+            var challenge = options.GetProperty("challenge").GetString()
+                ?? throw new InvalidOperationException("The challenge is missing.");
+            return JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                challenge,
+                origin = BaseAddress.GetLeftPart(UriPartial.Authority),
+                type,
+            });
+        }
+
+        private enum CoseKeyParameter
+        {
+            Curve = -1,
+            X = -2,
+            Y = -3,
+            KeyType = 1,
+            Algorithm = 3,
+        }
+
+        private enum CoseKeyType
+        {
+            Ec2 = 2,
+        }
+
+        private enum CoseCurve
+        {
+            P256 = 1,
+        }
+    }
+
     private sealed class TestTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUser>
         where TUser : class
     {
@@ -1545,6 +2339,91 @@ public class MapIdentityApiTests : LoggedTest
         {
             return string.Join(":", userId, purpose, "ImmaToken");
         }
+    }
+
+    private sealed class TestPasskeyHandler : IPasskeyHandler<ApplicationUser>
+    {
+        private const string UnknownUserState = "unknown-user";
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public TestPasskeyHandler(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
+
+        public Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(
+            PasskeyUserEntity userEntity,
+            HttpContext httpContext)
+        {
+            return Task.FromResult(new PasskeyCreationOptionsResult
+            {
+                CreationOptionsJson = JsonSerializer.Serialize(new { userEntity.Id, userEntity.Name, userEntity.DisplayName }),
+                AttestationState = JsonSerializer.Serialize(userEntity),
+            });
+        }
+
+        public async Task<PasskeyRequestOptionsResult> MakeRequestOptionsAsync(
+            ApplicationUser? user,
+            HttpContext httpContext)
+        {
+            return new()
+            {
+                RequestOptionsJson = JsonSerializer.Serialize(new { hasUser = user is not null }),
+                AssertionState = user is null ? UnknownUserState : await _userManager.GetUserIdAsync(user),
+            };
+        }
+
+        public Task<PasskeyAttestationResult> PerformAttestationAsync(PasskeyAttestationContext context)
+        {
+            if (context.CredentialJson == "invalid")
+            {
+                return Task.FromResult(PasskeyAttestationResult.Fail(new PasskeyException("Invalid passkey.")));
+            }
+
+            var userEntity = JsonSerializer.Deserialize<PasskeyUserEntity>(context.AttestationState!);
+            Assert.NotNull(userEntity);
+
+            if (context.CredentialJson == "mismatch")
+            {
+                userEntity = new()
+                {
+                    Id = "different-user",
+                    Name = userEntity.Name,
+                    DisplayName = userEntity.DisplayName,
+                };
+            }
+
+            return Task.FromResult(PasskeyAttestationResult.Success(CreatePasskey(), userEntity));
+        }
+
+        public async Task<PasskeyAssertionResult<ApplicationUser>> PerformAssertionAsync(PasskeyAssertionContext context)
+        {
+            if (context.CredentialJson == "invalid")
+            {
+                return PasskeyAssertionResult.Fail<ApplicationUser>(new PasskeyException("Invalid passkey."));
+            }
+
+            var user = context.AssertionState == UnknownUserState
+                ? await _userManager.FindByEmailAsync(context.CredentialJson)
+                : await _userManager.FindByIdAsync(context.AssertionState!);
+
+            return user is null
+                ? PasskeyAssertionResult.Fail<ApplicationUser>(new PasskeyException("Invalid passkey."))
+                : PasskeyAssertionResult.Success(CreatePasskey(), user);
+        }
+
+        private static UserPasskeyInfo CreatePasskey()
+            => new(
+                credentialId: [1, 2, 3],
+                publicKey: [4, 5, 6],
+                createdAt: DateTimeOffset.UtcNow,
+                signCount: 0,
+                transports: [],
+                isUserVerified: true,
+                isBackupEligible: true,
+                isBackedUp: true,
+                attestationObject: [7, 8, 9],
+                clientDataJson: [10, 11, 12]);
     }
 
     private sealed class TestEmailSender : IEmailSender

@@ -4,13 +4,16 @@ Param(
   [string] $architecture = '',
   [string] $version = 'Latest',
   [string] $runtime = 'dotnet',
+  [string] $dotnetPath = '',
   [string] $RuntimeSourceFeed = '',
   [string] $RuntimeSourceFeedKey = ''
 )
 
 . $PSScriptRoot\tools.ps1
 
-if (-not [string]::IsNullOrEmpty($env:DOTNET_GLOBAL_INSTALL_DIR)) {
+if (-not [string]::IsNullOrEmpty($dotnetPath)) {
+  $dotnetRoot = $dotnetPath
+} elseif (-not [string]::IsNullOrEmpty($env:DOTNET_GLOBAL_INSTALL_DIR)) {
   $dotnetRoot = $env:DOTNET_GLOBAL_INSTALL_DIR
 } else {
   $dotnetRoot = Join-Path $RepoRoot '.dotnet'

@@ -12,14 +12,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal sealed partial class UrlGroup : IDisposable
 {
-    private static readonly int BindingInfoSize =
-        Marshal.SizeOf<HTTP_BINDING_INFO>();
-    private static readonly int QosInfoSize =
-        Marshal.SizeOf<HTTP_QOS_SETTING_INFO>();
-    private static readonly int RequestPropertyInfoSize =
-        Marshal.SizeOf<HTTP_BINDING_INFO>();
-    private static readonly int ChannelBindInfoSize =
-        Marshal.SizeOf<HTTP_CHANNEL_BIND_INFO>();
+    // See https://learn.microsoft.com/windows/win32/api/http/ns-http-http_channel_bind_info
+    private const uint HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN = 0x00000008;
+
+    private static readonly int BindingInfoSize = Marshal.SizeOf<HTTP_BINDING_INFO>();
+    private static readonly int QosInfoSize = Marshal.SizeOf<HTTP_QOS_SETTING_INFO>();
+    private static readonly int RequestPropertyInfoSize = Marshal.SizeOf<HTTP_BINDING_INFO>();
+    private static readonly int ChannelBindInfoSize = Marshal.SizeOf<HTTP_CHANNEL_BIND_INFO>();
 
     private readonly ILogger _logger;
 
@@ -44,17 +43,34 @@ internal sealed partial class UrlGroup : IDisposable
 
         Debug.Assert(urlGroupId != 0, "Invalid id returned by HttpCreateUrlGroup");
         Id = urlGroupId;
+    }
 
-        if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.EnableCBTHardening", out var enabled) && enabled)
+    // Sets HttpServerChannelBindProperty with the requested hardening level and the HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN flag
+    // so the per-request CBT is delivered to the app.
+    internal unsafe void SetChannelBindingProperty(HttpAuthenticationHardeningLevel level)
+    {
+        var info = new HTTP_CHANNEL_BIND_INFO
         {
-            var channelBindingSettings = new HTTP_CHANNEL_BIND_INFO
+            Hardening = level switch
             {
-                Hardening = HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium,
-                ServiceNames = (HTTP_SERVICE_BINDING_BASE**)IntPtr.Zero,
-                NumberOfServiceNames = 0,
-            };
-            SetProperty(HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty, new(&channelBindingSettings), (uint)ChannelBindInfoSize);
-        }
+                HttpAuthenticationHardeningLevel.Strict => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningStrict,
+                HttpAuthenticationHardeningLevel.Legacy => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningLegacy,
+                HttpAuthenticationHardeningLevel.Medium or _ => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium,
+            },
+            ServiceNames = (HTTP_SERVICE_BINDING_BASE**)IntPtr.Zero,
+            NumberOfServiceNames = 0,
+
+            // optimize: Flags control if CBT is included in NativeRequest, and if legacy level is used, no point to load the CBT data.
+            Flags = level == HttpAuthenticationHardeningLevel.Legacy
+                ? default
+                : HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN,
+        };
+
+        SetProperty(
+            HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty,
+            new IntPtr(&info),
+            (uint)ChannelBindInfoSize,
+            throwOnError: level == HttpAuthenticationHardeningLevel.Strict);
     }
 
     internal ulong Id { get; private set; }

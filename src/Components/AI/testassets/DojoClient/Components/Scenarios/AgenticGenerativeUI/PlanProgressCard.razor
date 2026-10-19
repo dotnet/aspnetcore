@@ -1,0 +1,87 @@
+<div class="plan-progress-card">
+    <div class="plan-progress-card__summary">
+        <div class="plan-progress-card__header">
+            <h3>Task Progress</h3>
+            <span class="plan-progress-card__count">
+                @CompletedCount/@TotalCount Complete
+            </span>
+        </div>
+
+        <div class="plan-progress-card__bar">
+            <div class="plan-progress-card__bar-fill"
+                 style="width: @ProgressPercent%"></div>
+            <div class="plan-progress-card__bar-shimmer"></div>
+        </div>
+    </div>
+
+    <ul class="plan-progress-card__steps">
+        @for (var i = 0; i < Plan.Steps.Count; i++)
+        {
+            var step = Plan.Steps[i];
+            var stepClass = GetStepClass(step, i);
+            var state = GetStepState(step, i);
+            <li class="plan-step @stepClass" data-step-state="@state">
+                <span class="plan-step__icon">@GetStepIcon(step, i)</span>
+                <span class="plan-step__content">
+                    <span class="plan-step__description">@step.Description</span>
+                    @if (state == "current")
+                    {
+                        <span class="plan-step__processing">Processing...</span>
+                    }
+                </span>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public PlanState Plan { get; set; } = default!;
+
+    private int CompletedCount => Plan.Steps.Count(step => step.Status == "completed");
+
+    private int TotalCount => Plan.Steps.Count;
+
+    private double ProgressPercent => TotalCount > 0
+        ? (double)CompletedCount / TotalCount * 100
+        : 0;
+
+    private int CurrentStepIndex
+    {
+        get
+        {
+            for (var i = 0; i < Plan.Steps.Count; i++)
+            {
+                if (Plan.Steps[i].Status == "pending")
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+    }
+
+    private string GetStepClass(PlanStep step, int index)
+        => $"plan-step--{GetStepState(step, index)}";
+
+    private string GetStepState(PlanStep step, int index)
+    {
+        if (step.Status == "completed")
+        {
+            return "completed";
+        }
+
+        return index == CurrentStepIndex ? "current" : "pending";
+    }
+
+    private string GetStepIcon(PlanStep step, int index)
+    {
+        if (step.Status == "completed")
+        {
+            return "\u2713";
+        }
+
+        return index == CurrentStepIndex ? "\u27f3" : "\u23f0";
+    }
+}

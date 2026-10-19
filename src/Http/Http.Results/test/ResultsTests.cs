@@ -1316,6 +1316,19 @@ public partial class ResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
+    [Fact]
+    public void Problem_WithDuplicateExtensionKeys_UsesLastValue()
+    {
+        // Arrange
+        var extensions = new List<KeyValuePair<string, object>> { new("test", "value1"), new("test", "value2") };
+
+        // Act
+        var result = Results.Problem(extensions: extensions) as ProblemHttpResult;
+
+        // Assert
+        Assert.Equal("value2", result.ProblemDetails.Extensions["test"]);
+    }
+
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
@@ -1452,6 +1465,20 @@ public partial class ResultsTests
         Assert.Equal(type, result.ProblemDetails.Type);
         Assert.Equal("application/problem+json", result.ContentType);
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void ValidationProblem_WithDuplicateExtensionKeys_UsesLastValue()
+    {
+        // Arrange
+        var errors = new List<KeyValuePair<string, string[]>> { new("testField", new[] { "test error" }) };
+        var extensions = new List<KeyValuePair<string, object>> { new("test", "value1"), new("test", "value2") };
+
+        // Act
+        var result = Results.ValidationProblem(errors, extensions: extensions) as ProblemHttpResult;
+
+        // Assert
+        Assert.Equal("value2", result.ProblemDetails.Extensions["test"]);
     }
 
     [Fact]

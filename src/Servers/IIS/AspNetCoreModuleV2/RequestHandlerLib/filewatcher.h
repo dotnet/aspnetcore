@@ -76,4 +76,5 @@ private:
     OVERLAPPED              _overlapped;
     std::unique_ptr<AppOfflineTrackingApplication, IAPPLICATION_DELETER> _pApplication;
     bool                    m_fRudeThreadTermination;
+    friend class FileWatcherTests;
 };

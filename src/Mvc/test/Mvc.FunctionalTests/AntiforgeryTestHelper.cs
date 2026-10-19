@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -14,7 +14,7 @@ public static class AntiforgeryTestHelper
     public static string RetrieveAntiforgeryToken(string htmlContent, string actionUrl)
     {
         var parser = new HtmlParser();
-        var htmlDocument = parser.Parse(htmlContent);
+        var htmlDocument = parser.ParseDocument(htmlContent);
 
         return htmlDocument.RetrieveAntiforgeryToken();
     }

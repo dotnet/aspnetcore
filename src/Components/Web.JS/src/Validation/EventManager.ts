@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { getElementForm } from './DomUtils';
+import { getElementForm, getFieldElements } from './DomUtils';
 import { ValidationEngine } from './ValidationEngine';
 import { ValidatableElement } from './ValidationTypes';
 
@@ -43,18 +43,25 @@ export class EventManager {
       return;
     }
 
+    // In order to support radio buttons, we need to attach listeners to all radio buttons in the group.
+    const targets = getFieldElements(element);
     const signal = state.listenerController.signal;
 
     const validate = () => {
+      // This runs only on user interaction (change, or input once invalid/submitted), so it is where the
+      // field is marked modified.
+      this.engine.markModified(element);
       this.engine.validateElement(element);
       this.engine.updateValidationSummary(form);
     };
 
-    // Explicit data-valevent override: listen to the specified event(s), no gating.
+    // Explicit triggerEvents override: listen to the specified event(s), no gating.
     if (state.triggerEvents !== 'default') {
       for (const eventType of state.triggerEvents.split(/\s+/)) {
         if (eventType) {
-          element.addEventListener(eventType, validate, { signal });
+          for (const t of targets) {
+            t.addEventListener(eventType, validate, { signal });
+          }
         }
       }
       return;
@@ -69,8 +76,10 @@ export class EventManager {
       }
     };
 
-    element.addEventListener('change', validate, { signal });
-    element.addEventListener('input', validateGated, { signal });
+    for (const t of targets) {
+      t.addEventListener('change', validate, { signal });
+      t.addEventListener('input', validateGated, { signal });
+    }
   }
 
   /** Attaches document-level submit and reset interceptors (capture phase). */

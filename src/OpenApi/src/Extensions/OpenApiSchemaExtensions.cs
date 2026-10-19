@@ -21,6 +21,23 @@ internal static class OpenApiSchemaExtensions
         };
     }
 
+    public static void MakeArrayItemsNullable(this IOpenApiSchema schema)
+    {
+        if (schema is not OpenApiSchema { Items: { } items } arraySchema)
+        {
+            return;
+        }
+
+        if (items is OpenApiSchema { Type: { } itemType } inlineItemSchema)
+        {
+            inlineItemSchema.Type = itemType | JsonSchemaType.Null;
+        }
+        else
+        {
+            arraySchema.Items = items.CreateOneOfNullableWrapper();
+        }
+    }
+
     public static bool IsComponentizedSchema(this OpenApiSchema schema)
         => schema.IsComponentizedSchema(out _);
 

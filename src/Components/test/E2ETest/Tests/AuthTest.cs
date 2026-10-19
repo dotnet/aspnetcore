@@ -225,9 +225,9 @@ public class AuthTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Exists(By.Id("auth-links"));
     }
 
-    protected IWebElement MountAndNavigateToAuthTest(string authLinkText)
+    protected IWebElement MountAndNavigateToAuthTest(string authLinkText, string queryString = "")
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}{queryString}");
         var appElement = Browser.MountTestComponent<BasicTestApp.AuthTest.AuthRouter>();
         Browser.Exists(By.Id("auth-links"));
         appElement.FindElement(By.LinkText(authLinkText)).Click();

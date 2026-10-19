@@ -35,18 +35,19 @@ internal sealed partial class CsrfProtectionMiddleware
     public Task InvokeAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
-        var antiforgeryMetadata = endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>();
-
-        // Skip stamping the marker on the hot non-antiforgery path to avoid allocating the lazy HttpContext.Items dictionary.
-        // Still set it when:
-        //   - endpoint is null (a later re-routing may fall into an antiforgery-required page (e.g. via UseStatusCodePagesWithReExecute); this middleware does not re-run on reroute)
-        //   - the endpoint carries any IAntiforgeryMetadata (DisableAntiforgery, or RequiresValidation:true).
-        if (endpoint is null || antiforgeryMetadata is not null)
+        if (endpoint is null)
         {
-            context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
+            return _next(context);
         }
 
-        if (antiforgeryMetadata is not { RequiresValidation: true })
+        var antiforgeryMetadata = endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>();
+        if (antiforgeryMetadata is null)
+        {
+            return _next(context);
+        }
+
+        context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
+        if (!antiforgeryMetadata.RequiresValidation)
         {
             return _next(context);
         }

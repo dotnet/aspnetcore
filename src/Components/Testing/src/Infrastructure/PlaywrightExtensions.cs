@@ -3,8 +3,6 @@
 
 using System.Linq;
 using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
@@ -13,15 +11,6 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// </summary>
 public static class PlaywrightExtensions
 {
-    // Cross-platform invalid file name characters. Path.GetInvalidFileNameChars()
-    // is OS-dependent (Linux only returns '/' and '\0'), so we use a fixed set
-    // covering Windows, macOS, and Linux to ensure consistent sanitization.
-    private static readonly HashSet<char> s_invalidFileNameChars =
-    [
-        '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0',
-        .. Enumerable.Range(1, 31).Select(i => (char)i)
-    ];
-
     // Toggle video recording via environment variable.
     // Set PLAYWRIGHT_RECORD_VIDEO=1 to enable video capture for all tests.
     private static readonly bool s_recordVideo =
@@ -30,11 +19,11 @@ public static class PlaywrightExtensions
             "1",
             StringComparison.Ordinal);
 
-    // Override the default artifact root directory via E2E_ARTIFACTS_DIR environment variable.
-    // Defaults to a test-artifacts/ subdirectory next to the test assembly.
-    private static readonly string s_artifactsRoot =
-        Environment.GetEnvironmentVariable("E2E_ARTIFACTS_DIR")
-        ?? Path.Combine(AppContext.BaseDirectory, "test-artifacts");
+    /// <summary>
+    /// Whether Playwright video recording is enabled for this test run
+    /// (set via the <c>PLAYWRIGHT_RECORD_VIDEO=1</c> environment variable).
+    /// </summary>
+    internal static bool RecordVideoEnabled => s_recordVideo;
 
     /// <summary>
     /// Sets the <c>X-Test-Backend</c> header on browser context options
@@ -61,7 +50,7 @@ public static class PlaywrightExtensions
     /// <param name="options">The browser context options to configure.</param>
     /// <param name="artifactDir">The directory to store video files in.</param>
     /// <returns>The same <paramref name="options"/> instance for chaining.</returns>
-    public static BrowserNewContextOptions WithArtifacts(
+    internal static BrowserNewContextOptions WithArtifacts(
         this BrowserNewContextOptions options, string? artifactDir = null)
     {
         if (s_recordVideo && artifactDir is not null)
@@ -74,46 +63,79 @@ public static class PlaywrightExtensions
     /// <summary>
     /// Starts tracing on an existing browser context. Returns a <see cref="TracingSession"/>
     /// that saves or discards the trace (and video) on disposal based on the
-    /// test outcome from <see cref="TestContext.Current"/>.
+    /// <paramref name="artifactManager"/>.
     /// </summary>
     /// <param name="context">The browser context to trace.</param>
     /// <param name="artifactDir">The directory to store trace artifacts in.</param>
+    /// <param name="artifactManager">Determines whether artifacts are retained and publishes retained files.</param>
     /// <returns>A <see cref="TracingSession"/> that manages trace lifecycle.</returns>
-    public static async Task<TracingSession> TraceAsync(
-        this IBrowserContext context, string artifactDir)
+    internal static async Task<TracingSession> TraceAsync(
+        IBrowserContext context,
+        string artifactDir,
+        ITestArtifactManager artifactManager)
     {
-        return await TracingSession.StartAsync(context, artifactDir, s_recordVideo).ConfigureAwait(false);
+        return await TracingSession.StartAsync(context, artifactDir, s_recordVideo, artifactManager)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Creates a new browser context with server routing, artifact capture (video if enabled),
-    /// and active tracing. Returns a <see cref="TracedContext"/> that wraps the context and tracing session.
+    /// Creates a new browser context on <paramref name="browser"/> with server routing,
+    /// artifact capture (video if enabled), and active tracing. Returns a
+    /// <see cref="TracedContext"/> that wraps the context and tracing session.
     /// </summary>
-    /// <remarks>
-    /// Internally calls <see cref="BrowserTest.NewContext"/> so the context is tracked
-    /// and auto-disposed by <see cref="BrowserTest"/>'s lifecycle.
-    /// </remarks>
-    /// <param name="test">The <see cref="BrowserTest"/> instance to create the context on.</param>
+    /// <param name="browser">The Playwright browser to create the context on.</param>
     /// <param name="server">The server instance to route traffic to.</param>
+    /// <param name="artifactDir">The directory to store trace artifacts in.</param>
+    /// <param name="artifactManager">Determines whether artifacts are retained and publishes retained files.</param>
     /// <param name="options">Optional browser context options. If <c>null</c>, defaults are used.</param>
     /// <returns>A <see cref="TracedContext"/> wrapping the browser context and tracing session.</returns>
-    public static async Task<TracedContext> NewTracedContextAsync(
-        this BrowserTest test,
+    internal static async Task<TracedContext> NewTracedContextAsync(
+        IBrowser browser,
         ServerInstance server,
+        string artifactDir,
+        ITestArtifactManager artifactManager,
         BrowserNewContextOptions? options = null)
     {
-        var testName = TestContext.Current.Test?.TestDisplayName ?? "unknown";
-        var sanitized = SanitizeFileName(testName);
-        var artifactDir = Path.Combine(s_artifactsRoot, sanitized);
+        ArgumentNullException.ThrowIfNull(browser);
+        ArgumentNullException.ThrowIfNull(server);
+        ArgumentNullException.ThrowIfNull(artifactDir);
+        ArgumentNullException.ThrowIfNull(artifactManager);
 
         options ??= new BrowserNewContextOptions();
         options = options
             .WithServerRouting(server)
             .WithArtifacts(artifactDir);
 
-        var context = await test.NewContext(options).ConfigureAwait(false);
-        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo).ConfigureAwait(false);
-        return new TracedContext(context, session);
+        var context = await browser.NewContextAsync(options).ConfigureAwait(false);
+        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo, artifactManager)
+            .ConfigureAwait(false);
+        // ownsContext: true — the IBrowser overload created the context, so the wrapper owns disposal.
+        return new TracedContext(context, session, ownsContext: true);
+    }
+
+    /// <summary>
+    /// Variant of <see cref="NewTracedContextAsync(IBrowser, ServerInstance, string, ITestArtifactManager, BrowserNewContextOptions?)"/>
+    /// that starts tracing on an existing <paramref name="context"/> instead of creating a
+    /// new one. Use this when you need to configure the context yourself (e.g. with
+    /// custom cookies, viewport, etc.) before tracing begins.
+    /// </summary>
+    /// <param name="context">An existing Playwright browser context. The caller owns its disposal.</param>
+    /// <param name="artifactDir">The directory to store trace artifacts in.</param>
+    /// <param name="artifactManager">Determines whether artifacts are retained and publishes retained files.</param>
+    /// <returns>A <see cref="TracedContext"/> wrapping the browser context and tracing session.</returns>
+    internal static async Task<TracedContext> NewTracedContextAsync(
+        IBrowserContext context,
+        string artifactDir,
+        ITestArtifactManager artifactManager)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(artifactDir);
+        ArgumentNullException.ThrowIfNull(artifactManager);
+
+        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo, artifactManager)
+            .ConfigureAwait(false);
+        // ownsContext: false — caller passed the context in and is responsible for disposing it.
+        return new TracedContext(context, session, ownsContext: false);
     }
 
     /// <summary>
@@ -190,15 +212,4 @@ public static class PlaywrightExtensions
         await navTask.ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Replaces characters that are invalid in file names with underscores.
-    /// Uses a fixed cross-platform set of invalid characters so that file names
-    /// are safe on Windows, macOS, and Linux regardless of the current OS.
-    /// </summary>
-    /// <param name="name">The file name to sanitize.</param>
-    /// <returns>A sanitized file name safe for use on the file system.</returns>
-    public static string SanitizeFileName(string name)
-    {
-        return string.Concat(name.Select(c => s_invalidFileNameChars.Contains(c) ? '_' : c));
-    }
 }

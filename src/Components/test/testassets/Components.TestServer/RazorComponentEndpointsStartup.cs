@@ -8,9 +8,11 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
+using Components.TestServer.RazorComponents.Pages.Redirections;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
@@ -34,17 +36,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     public void ConfigureServices(IServiceCollection services)
     {
         var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
-
-        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
-        // switch value once at static initialization and won't see subsequent AppContext changes.
-        // This write at fixture creation is only safe because the E2E suite runs serially
-        // (parallelizeAssembly/parallelizeTestCollections are false); enabling parallelization would
-        // let servers needing opposite values race on this process-global field and reintroduce #66883.
-        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
-            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
-        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
-            ?.SetValue(null, enableUrlNavigation);
+        TestFeatureSwitches.SetUrlBasedQuickGridNavigationAndSorting(enableUrlNavigation);
 
         if (Configuration.GetValue<bool>("EnableCultureTesting"))
         {
@@ -52,11 +44,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        services.AddSingleton<ExternalNavigationTarget>();
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
-#pragma warning restore ASP0029
-        services.AddValidationLocalization();
 
         // Increase 10 MB hub message limit (default 32 KB)
         if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
@@ -273,12 +263,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
                 .WithBrowserOptions(config =>
                 {
-                    config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
-                    config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                    config.InteractiveWebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
+                    config.InteractiveWebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
                     if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
                         || Configuration.GetValue<bool>("EnableOutOfProcessRenderer"))
                     {
-                        config.WebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
+                        config.InteractiveWebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
                     }
                 });
 
@@ -398,10 +388,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         endpoints.Map("/test-formaction", () => "Formaction url");
 
-        static Task PerformRedirection(HttpRequest request, HttpResponse response)
+        static Task PerformRedirection(
+            HttpRequest request,
+            HttpResponse response,
+            ExternalNavigationTarget externalNavigationTarget)
         {
             response.Redirect(request.Query["external"] == "true"
-                ? "https://microsoft.com"
+                ? externalNavigationTarget.Uri.AbsoluteUri
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");
             return Task.CompletedTask;
         }
