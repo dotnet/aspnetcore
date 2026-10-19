@@ -31,10 +31,12 @@ public class MvcTemplateTest : LoggedTest
         }
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
-    [Fact]
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_NoAuthNoHttpsFSharp() => await MvcTemplateCore(languageOverride: "F#", args: new[] { ArgConstants.NoHttps } );
 
     [ConditionalFact]
@@ -76,14 +78,17 @@ public class MvcTemplateTest : LoggedTest
 
         if (languageOverride == "F#")
         {
+            Assert.Contains("<UseRazorSourceGenerator>false</UseRazorSourceGenerator>", projectFileContents);
+            Assert.Contains("<RazorCompileOnBuild>true</RazorCompileOnBuild>", projectFileContents);
+            Assert.Contains("<RazorCompileOnPublish>true</RazorCompileOnPublish>", projectFileContents);
+
             var programFileContents = project.ReadFile("Program.fs");
             Assert.DoesNotContain("AddRazorRuntimeCompilation", programFileContents);
-        }
+            Assert.Contains("AddCompiledRazorViews", programFileContents);
 
-        // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
-        if (languageOverride != null)
-        {
-            return;
+            var mvcBuilderExtensionsFileContents = project.ReadFile("MvcBuilderExtensions.fs");
+            Assert.Contains("static member AddCompiledRazorViews", mvcBuilderExtensionsFileContents);
+            Assert.Contains("CompiledRazorAssemblyPart", mvcBuilderExtensionsFileContents);
         }
 
         await project.RunDotNetPublishAsync();

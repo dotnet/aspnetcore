@@ -228,7 +228,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             case CancelInvocationMessage cancelInvocationMessage:
                 // Check if there is an associated active invocation or stream and cancel it if it exists.
                 // The cts will be removed when the hub method completes executing
-                if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId!, out var cts))
+                if (connection.TryGetActiveRequestCancellationSource(cancelInvocationMessage.InvocationId!, out var cts))
                 {
                     Log.CancelInvocation(_logger, cancelInvocationMessage.InvocationId!);
                     cts.Cancel();
@@ -771,18 +771,18 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return IsHubMethodAuthorizedSlow(
             provider,
             hubCallerContext.User ?? new ClaimsPrincipal(),
-            descriptor.AuthorizationMetadata,
+            descriptor,
             new HubInvocationContext(hubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
     }
 
-    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IReadOnlyList<object> authorizationMetadata, HubInvocationContext resource)
+    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, HubMethodDescriptor descriptor, HubInvocationContext resource)
     {
         var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
-        var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, authorizationMetadata);
+        var authorizePolicy = await descriptor.GetAuthorizationPolicyAsync(policyProvider);
         if (authorizePolicy is null)
         {
-            // The method had attributes, but none of them contributed authorization metadata 
+            // The method had attributes, but none of them contributed authorization metadata
             return true;
         }
 
@@ -790,6 +790,20 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         var authorizationResult = await authService.AuthorizeAsync(principal, resource, authorizePolicy);
         // Only check authorization success, challenge or forbid wouldn't make sense from a hub method invocation
         return authorizationResult.Succeeded;
+    }
+
+    private static void EnsureNoAuthenticationSchemeSpecified(IReadOnlyList<object> authorizationMetadata)
+    {
+        // It's not meaningful to specify a nonempty scheme, since by the time hub method
+        // authorization runs, the connection already has a specific ClaimsPrincipal (we're stateful).
+        // To avoid any confusion, ensure the developer isn't trying to specify a scheme.
+        for (var i = 0; i < authorizationMetadata.Count; i++)
+        {
+            if (authorizationMetadata[i] is IAuthorizeData entry && !string.IsNullOrEmpty(entry.AuthenticationSchemes))
+            {
+                throw new NotSupportedException($"The authorization data specifies an authentication scheme with value '{entry.AuthenticationSchemes}'. Authentication schemes cannot be specified for hub methods.");
+            }
+        }
     }
 
     private async Task<bool> ValidateInvocationMode(HubMethodDescriptor hubMethodDescriptor, bool isStreamResponse,
@@ -915,6 +929,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
 
             var authorizationMetadata = methodInfo.GetCustomAttributes(inherit: true);
+            EnsureNoAuthenticationSchemeSpecified(authorizationMetadata);
             _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizationMetadata);
             _cachedMethodNames.Add(methodName);
 

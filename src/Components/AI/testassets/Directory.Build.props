@@ -11,8 +11,8 @@
 
   <!-- Remove auto-added xUnit v2 test infra from CSharp.Common.props -->
   <ItemGroup Condition=" $(IsTestProject) ">
-    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
-    <Reference Remove="Moq" />
+    <ProjectReference Remove="$(RepoRoot)src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj" />
+    <PackageReference Remove="Moq" />
     <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
   </ItemGroup>
 

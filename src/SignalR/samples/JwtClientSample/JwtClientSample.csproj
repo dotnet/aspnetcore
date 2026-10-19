@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
   </ItemGroup>
 
 </Project>
