@@ -546,4 +546,9 @@ public class HttpParsingData
             return data;
         }
     }
+
+    public static IEnumerable<object[]> FragmentRequestTargetData =>
+        from target in new[] { "/#", "/a#b?q=v", "/a?q=v#", "/%61#b", "/%61?q=v#" }
+        from version in new[] { "HTTP/1.0", "HTTP/1.1" }
+        select new object[] { target, version };
 }

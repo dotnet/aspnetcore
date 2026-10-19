@@ -325,6 +325,13 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             return false;
         }
 
+        // https://www.rfc-editor.org/rfc/rfc9113#section-8.3.1
+        if (path.Contains('#'))
+        {
+            ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
+            return false;
+        }
+
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 

@@ -90,6 +90,44 @@ public class RequestTargetProcessingTests : LoggedTest
     }
 
     [Theory]
+    [InlineData("/%23", "/#", "")]
+    [InlineData("/a?q=%23", "/a", "?q=%23")]
+    [InlineData("/a%3Fb%23c?q=%23", "/a?b#c", "?q=%23")]
+    [InlineData("http://localhost/%23", "/#", "")]
+    [InlineData("http://localhost/a?q=%23", "/a", "?q=%23")]
+    [InlineData("http://localhost/a%3Fb%23c?q=%23", "/a?b#c", "?q=%23")]
+    public async Task EncodedFragmentInRequestTarget_Accepted(string requestTarget, string expectedPath, string expectedQuery)
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(context =>
+        {
+            Assert.Equal(expectedPath, context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+            Assert.Equal(requestTarget, context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        }, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    $"GET {requestTarget} HTTP/1.1",
+                    "Host: localhost",
+                    "Connection: close",
+                    "",
+                    "");
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 0",
+                    "Connection: close",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+    }
+
+    [Theory]
     [InlineData(HttpMethod.Options, "*")]
     [InlineData(HttpMethod.Connect, "host")]
     public async Task NonPathRequestTargetSetInRawTarget(HttpMethod method, string requestTarget)
