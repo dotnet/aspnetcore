@@ -36,7 +36,7 @@ try
         -ExpectedRunId $ExpectedRunId -ExpectedRunAttempt $ExpectedRunAttempt
     $pulse = $snapshotInput.Pulse
     $expectedBody = Get-Content -LiteralPath $ExpectedBodyPath -Raw
-    $renderedBody = ConvertTo-PRAttentionPulseBody -Pulse $pulse -SnapshotContext $snapshot
+    $renderedBody = ConvertTo-PRAttentionPulseBody -Pulse $pulse -SnapshotContext $snapshot -Json $snapshotInput.Json
     [IO.File]::WriteAllText($renderedBodyPath, $renderedBody, [Text.UTF8Encoding]::new($false))
 
     $nodeScript = @'
@@ -65,6 +65,7 @@ fs.writeFileSync(process.argv[4], output, "utf8");
         -AgentOutput $agentOutput `
         -Pulse $pulse `
         -SnapshotContext $snapshot `
+        -Json $snapshotInput.Json `
         -ExpectedBody $expectedBody `
         -ExpectedIssueNumber $ExpectedIssueNumber
 }
