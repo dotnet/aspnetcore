@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" />
   </ItemGroup>
 
   <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->

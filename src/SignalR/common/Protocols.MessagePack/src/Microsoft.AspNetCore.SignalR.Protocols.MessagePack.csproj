@@ -22,9 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="MessagePack" />
-    <Reference Include="MessagePackAnalyzer" PrivateAssets="All" />
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="MessagePackAnalyzer" PrivateAssets="All" />
+
+    <ProjectReference Include="$(RepoRoot)src\SignalR\common\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
