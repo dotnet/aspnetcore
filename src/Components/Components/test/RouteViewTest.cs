@@ -163,6 +163,110 @@ public class RouteViewTest
             frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
     }
 
+    [Fact]
+    public async Task ClearsBodyWhenLayoutBecomesRoutedPage()
+    {
+        var childRoute = new RouteData(typeof(ComponentWithRoutableLayout), new Dictionary<string, object>());
+        var parentRoute = new RouteData(typeof(RoutableLayout), new Dictionary<string, object>
+        {
+            [nameof(RoutableLayout.Message)] = "Parent page",
+        });
+
+        await SetRouteAsync(childRoute);
+        var parentFrame = _renderer.Batches.Single().GetComponentFrames<RoutableLayout>().Single();
+        var parent = (RoutableLayout)parentFrame.Component;
+        Assert.NotNull(parent.Body);
+
+        await SetRouteAsync(parentRoute);
+
+        Assert.Null(parent.Body);
+        Assert.Equal("Parent page", parent.Message);
+        var outerLayoutId = _renderer.Batches.First().GetComponentFrames<TestLayout>().Single().ComponentId;
+        var parentPageFrame = _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
+            .Single(frame => frame.ComponentType == typeof(RoutableLayout));
+        Assert.Equal(parentFrame.ComponentId, parentPageFrame.ComponentId);
+
+        await SetRouteAsync(childRoute);
+
+        Assert.NotNull(parent.Body);
+        Assert.Equal(parentFrame.ComponentId, _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
+            .Single(frame => frame.ComponentType == typeof(RoutableLayout)).ComponentId);
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task RendersLayoutPageWithoutBody()
+    {
+        await SetRouteAsync(new RouteData(typeof(RoutableLayout), new Dictionary<string, object>()));
+
+        var parentFrame = _renderer.Batches.Single().GetComponentFrames<RoutableLayout>().Single();
+        Assert.Null(((RoutableLayout)parentFrame.Component).Body);
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
+    [Theory]
+    [InlineData(nameof(LayoutComponentBase.Body))]
+    [InlineData("body")]
+    public async Task ClearsPreviouslySuppliedBodyOnLayoutPage(string parameterName)
+    {
+        RenderFragment body = builder => builder.AddContent(0, "Previous body");
+        await SetRouteAsync(new RouteData(typeof(RoutableLayout), new Dictionary<string, object>
+        {
+            [parameterName] = body,
+        }));
+        var parentFrame = _renderer.Batches.Single().GetComponentFrames<RoutableLayout>().Single();
+        var parent = (RoutableLayout)parentFrame.Component;
+        Assert.Same(body, parent.Body);
+
+        await SetRouteAsync(new RouteData(typeof(RoutableLayout), new Dictionary<string, object>()));
+
+        Assert.Null(parent.Body);
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
+    [Theory]
+    [InlineData(nameof(LayoutComponentBase.Body))]
+    [InlineData("body")]
+    public async Task PreservesExplicitBodyOnLayoutPage(string parameterName)
+    {
+        RenderFragment body = builder => builder.AddContent(0, "Explicit body");
+        await SetRouteAsync(new RouteData(typeof(RoutableLayout), new Dictionary<string, object>
+        {
+            [parameterName] = body,
+        }));
+
+        var parentFrame = _renderer.Batches.Single().GetComponentFrames<RoutableLayout>().Single();
+        Assert.Same(body, ((RoutableLayout)parentFrame.Component).Body);
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
+    private Task SetRouteAsync(RouteData routeData) => _renderer.Dispatcher.InvokeAsync(() =>
+        _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(RouteView.RouteData)] = routeData,
+        })));
+
+    [Layout(typeof(TestLayout))]
+    private class RoutableLayout : LayoutComponentBase
+    {
+        [Parameter] public string Message { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, Message);
+            builder.AddContent(1, Body);
+        }
+    }
+
+    [Layout(typeof(RoutableLayout))]
+    private class ComponentWithRoutableLayout : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, "Child page");
+        }
+    }
+
     private class RouteViewTestNavigationManager : NavigationManager
     {
         public RouteViewTestNavigationManager() =>

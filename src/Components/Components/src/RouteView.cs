@@ -5,6 +5,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -15,6 +16,11 @@ namespace Microsoft.AspNetCore.Components;
 /// Displays the specified page component, rendering it inside its layout
 /// and any further nested layouts.
 /// </summary>
+/// <remarks>
+/// When the page derives from <see cref="LayoutComponentBase"/>, its
+/// <see cref="LayoutComponentBase.Body"/> is cleared unless explicitly supplied in
+/// <see cref="RouteData.RouteValues"/>.
+/// </remarks>
 public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
@@ -90,6 +96,13 @@ public class RouteView : IComponent
         foreach (var kvp in RouteData.RouteValues)
         {
             builder.AddComponentParameter(1, kvp.Key, kvp.Value);
+        }
+
+        if (typeof(LayoutComponentBase).IsAssignableFrom(RouteData.PageType)
+            && !RouteData.RouteValues.Keys.Contains(nameof(LayoutComponentBase.Body), StringComparer.OrdinalIgnoreCase))
+        {
+            // The page may be reusing an instance that was previously rendered as a layout.
+            builder.AddComponentParameter(2, nameof(LayoutComponentBase.Body), (RenderFragment)null);
         }
 
         builder.CloseComponent();
