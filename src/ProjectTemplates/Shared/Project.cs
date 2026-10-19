@@ -72,7 +72,8 @@ public class Project : IDisposable
         bool isItemTemplate = false,
         string[] args = null,
         // Used to set special options in MSBuild
-        IDictionary<string, string> environmentVariables = null)
+        IDictionary<string, string> environmentVariables = null,
+        string restoreArgs = null)
     {
         if (templateName.Contains(' '))
         {
@@ -143,6 +144,11 @@ public class Project : IDisposable
         if (!isItemTemplate)
         {
             argString = "restore /bl";
+            if (!string.IsNullOrEmpty(restoreArgs))
+            {
+                argString += $" {restoreArgs}";
+            }
+
             using var restoreExecution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
             await restoreExecution.Exited;
 
