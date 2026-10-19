@@ -357,6 +357,11 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             return;
         }
 
+        if (target.Contains((byte)'#'))
+        {
+            ThrowRequestTargetRejected(target);
+        }
+
         // Read raw target before mutating memory.
         var previousValue = _parsedRawTarget;
         if (ServerOptions.DisableStringReuse ||
@@ -533,6 +538,11 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         // From the spec:
         //    a server MUST accept the absolute-form in requests, even though
         //    HTTP/1.1 clients will only send them in requests to proxies.
+
+        if (target.Contains((byte)'#'))
+        {
+            ThrowRequestTargetRejected(target);
+        }
 
         var disableStringReuse = ServerOptions.DisableStringReuse;
         var previousValue = _parsedRawTarget;

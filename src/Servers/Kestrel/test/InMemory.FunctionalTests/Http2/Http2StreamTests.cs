@@ -399,11 +399,15 @@ public class Http2StreamTests : Http2TestBase
     [InlineData("/a/b/c/../d", "/a/b/d")] // Navigation processed
     [InlineData("/a/b/c/../../../../d", "/d")] // Navigation escape prevented
     [InlineData("/a/b/c/.%2E/d", "/a/b/d")] // Decode before navigation processing
-    public async Task HEADERS_Received_Path_DecodedAndNormalized(string input, string expected)
+    [InlineData("/%23", "/#")]
+    [InlineData("/a?q=%23", "/a", "?q=%23")]
+    [InlineData("/a%3Fb%23c?q=%23", "/a?b#c", "?q=%23")]
+    public async Task HEADERS_Received_Path_DecodedAndNormalized(string input, string expectedPath, string expectedQuery = "")
     {
         await InitializeConnectionAsync(context =>
         {
-            Assert.Equal(expected, context.Request.Path.Value);
+            Assert.Equal(expectedPath, context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
             Assert.Equal(input, context.Features.Get<IHttpRequestFeature>().RawTarget);
             return Task.CompletedTask;
         });
@@ -430,6 +434,28 @@ public class Http2StreamTests : Http2TestBase
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
+    }
+
+    [Theory]
+    [InlineData("/#")]
+    [InlineData("/a#b?q=v")]
+    [InlineData("/a?q=v#")]
+    [InlineData("/%61#b")]
+    [InlineData("/%61?q=v#")]
+    public async Task HEADERS_Received_FragmentInPath_Reset(string path)
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
+        };
+
+        await StartStreamAsync(1, headers, endStream: true);
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.FormatHttp2StreamErrorPathInvalid(path));
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
 
     [Theory]
