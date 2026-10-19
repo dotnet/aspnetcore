@@ -20,6 +20,7 @@
   <Import Project="..\..\..\src\Servers\IIS\build\assets.props" />
 
   <ItemGroup>
+    <None Include="PACKAGE.md" Pack="true" PackagePath="\" />
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
     <Content Include="install.cmd" />
