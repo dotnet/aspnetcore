@@ -11,12 +11,12 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Testing"
-                      Version="$(PackageConsumerVersion)" />
-    <PackageReference Include="MSTest.TestFramework"
-                      Version="$(PackageConsumerMSTestVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Testing" Version="$(PackageConsumerVersion)" />
     <PackageReference Include="MSTest.TestAdapter"
                       Version="$(PackageConsumerMSTestVersion)" />
+    <PackageReference Include="MSTest.TestFramework"
+                      Version="$(PackageConsumerMSTestVersion)" />
+
     <ProjectReference Include="..\App\PackageConsumer.App.csproj">
       <E2EApp>true</E2EApp>
       <E2EPublicUrl>https://package-consumer.invalid</E2EPublicUrl>

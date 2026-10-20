@@ -68,6 +68,8 @@ public class StateMapperContext
 
     internal object? StateValue { get; private set; }
 
+    internal bool IsPredictiveState { get; private set; }
+
     /// <summary>
     /// Sets the next typed state value.
     /// </summary>
@@ -76,6 +78,19 @@ public class StateMapperContext
     {
         ArgumentNullException.ThrowIfNull(value);
         StateValue = value;
+        IsPredictiveState = false;
+    }
+
+    /// <summary>
+    /// Sets a provisional typed state value that must be accepted or rejected before the turn
+    /// completes.
+    /// </summary>
+    /// <param name="value">The next provisional state value.</param>
+    public void SetPredictiveState(object value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        StateValue = value;
+        IsPredictiveState = true;
     }
 
     internal bool HasHandledContent => _handledCount > 0;

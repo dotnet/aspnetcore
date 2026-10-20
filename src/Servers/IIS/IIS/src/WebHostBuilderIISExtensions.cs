@@ -52,6 +52,7 @@ public static class WebHostBuilderIISExtensions
                         options =>
                         {
                             options.ServerAddresses = iisConfigData.pwzBindings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                            options.VirtualPath = iisConfigData.pwzVirtualApplicationPath;
                             options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled;
                             options.MaxRequestBodySize = iisConfigData.maxRequestBodySize;
                             options.IisMaxRequestSizeLimit = iisConfigData.maxRequestBodySize;

@@ -101,6 +101,9 @@ internal sealed class RecordedFrame
     /// <summary>The text chunks streamed for this checkpoint.</summary>
     public List<string> Chunks { get; init; } = [];
 
+    /// <summary>A predictive state snapshot emitted at this checkpoint.</summary>
+    public JsonElement? State { get; init; }
+
     /// <summary>A function call emitted at this checkpoint.</summary>
     public RecordedFunctionCall? FunctionCall { get; init; }
 }

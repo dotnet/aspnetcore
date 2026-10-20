@@ -99,10 +99,22 @@ internal sealed class ResponseCachingPolicyProvider : IResponseCachingPolicyProv
 
         // Do not cache responses varying by *
         var varyHeader = response.Headers.Vary;
-        if (varyHeader.Count == 1 && string.Equals(varyHeader, "*", StringComparison.OrdinalIgnoreCase))
+        for (var i = 0; i < varyHeader.Count; i++)
         {
-            context.Logger.ResponseWithVaryStarNotCacheable();
-            return false;
+            var rawHeader = varyHeader[i].AsSpan();
+            if (rawHeader.IsEmpty)
+            {
+                continue;
+            }
+
+            foreach (var segment in rawHeader.Split(','))
+            {
+                if (rawHeader[segment].Trim() is ['*'])
+                {
+                    context.Logger.ResponseWithVaryStarNotCacheable();
+                    return false;
+                }
+            }
         }
 
         // Check private
