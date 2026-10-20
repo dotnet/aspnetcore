@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private CancellationTokenSource _sendCts;
         private bool _activeSend;
         private long _startedSendTime;
+        private readonly object _userLock = new object();
+        private UserIdentitySnapshot _negotiatedUserIdentity;
+        private bool _hasNegotiatedUser;
         private readonly object _sendingLock = new object();
 
         internal CancellationToken SendingToken { get; private set; }
@@ -55,9 +58,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// <param name="id"></param>
         /// <param name="logger"></param>
         public HttpConnectionContext(string id, ILogger logger)
+            : this(id, logger, null)
+        {
+        }
+
+        internal HttpConnectionContext(string id, ILogger logger, ClaimsPrincipal negotiatedUser)
+            : this(id, logger, negotiatedUser, negotiatedUser != null)
+        {
+        }
+
+        internal HttpConnectionContext(string id, ILogger logger, ClaimsPrincipal negotiatedUser, bool hasNegotiatedUser)
         {
             ConnectionId = id;
             LastSeenUtc = DateTime.UtcNow;
+            _hasNegotiatedUser = hasNegotiatedUser;
+            _negotiatedUserIdentity = UserIdentitySnapshot.Capture(negotiatedUser);
 
             // The default behavior is that both formats are supported.
             SupportedFormats = TransferFormat.Binary | TransferFormat.Text;
@@ -184,6 +199,40 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     handler(state);
                 }
+            }
+        }
+
+        internal bool IsUserAssociatedWithConnection(ClaimsPrincipal user)
+        {
+            lock (_userLock)
+            {
+                if (!_hasNegotiatedUser)
+                {
+                    return true;
+                }
+
+                return UserIdentitySnapshot.Matches(_negotiatedUserIdentity, UserIdentitySnapshot.Capture(user));
+            }
+        }
+
+        internal bool HasNegotiatedUser
+        {
+            get
+            {
+                lock (_userLock)
+                {
+                    return _hasNegotiatedUser;
+                }
+            }
+        }
+
+        internal void SetUserAndReleaseNegotiatedUser(ClaimsPrincipal user)
+        {
+            lock (_userLock)
+            {
+                User = user;
+                _hasNegotiatedUser = false;
+                _negotiatedUserIdentity = null;
             }
         }
 

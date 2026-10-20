@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -409,7 +410,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             context.Response.ContentType = "application/json";
 
             // Establish the connection
-            var connection = CreateConnection(options);
+            var connection = CreateConnection(options, context.User);
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
@@ -482,6 +483,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 Log.PostNotAllowedForWebSockets(_logger);
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 await context.Response.WriteAsync("POST requests are not allowed for WebSocket connections.");
+                return;
+            }
+
+            if (await RejectIfConnectionUserChangedAsync(connection, context))
+            {
                 return;
             }
 
@@ -569,6 +575,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return;
             }
 
+            if (await RejectIfConnectionUserChangedAsync(connection, context))
+            {
+                return;
+            }
+
             Log.TerminatingConection(_logger);
 
             // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
@@ -589,6 +600,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return false;
             }
 
+            if (await RejectIfConnectionUserChangedAsync(connection, context))
+            {
+                return false;
+            }
+
             // Set the IHttpConnectionFeature now that we can access it.
             connection.Features.Set(context.Features.Get<IHttpConnectionFeature>());
 
@@ -606,7 +622,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
 
             // Setup the connection state from the http context
-            connection.User = context.User;
+            connection.SetUserAndReleaseNegotiatedUser(context.User);
 
             // Configure transport-specific features.
             if (transportType == HttpTransportType.LongPolling)
@@ -701,6 +717,23 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return newHttpContext;
         }
 
+        private async Task<bool> RejectIfConnectionUserChangedAsync(HttpConnectionContext connection, HttpContext context)
+        {
+            if (connection.IsUserAssociatedWithConnection(context.User))
+            {
+                return false;
+            }
+
+            Log.UserNameChanged(
+                _logger,
+                UserIdentitySnapshot.GetUserIdentityValue(connection.User),
+                UserIdentitySnapshot.GetUserIdentityValue(context.User));
+            context.Response.ContentType = "text/plain";
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsync("The user associated with this connection changed.");
+            return true;
+        }
+
         private async Task<HttpConnectionContext> GetConnectionAsync(HttpContext context)
         {
             var connectionId = GetConnectionId(context);
@@ -750,8 +783,28 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options)
         {
+            return CreateConnection(options, negotiatedUser: null, hasNegotiatedUser: false);
+        }
+
+        private HttpConnectionContext CreateConnection(
+            HttpConnectionDispatcherOptions options,
+            ClaimsPrincipal negotiatedUser)
+        {
+            return CreateConnection(options, negotiatedUser, hasNegotiatedUser: true);
+        }
+
+        private HttpConnectionContext CreateConnection(
+            HttpConnectionDispatcherOptions options,
+            ClaimsPrincipal negotiatedUser,
+            bool hasNegotiatedUser)
+        {
             var transportPipeOptions = new PipeOptions(pauseWriterThreshold: options.TransportMaxBufferSize, resumeWriterThreshold: options.TransportMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
             var appPipeOptions = new PipeOptions(pauseWriterThreshold: options.ApplicationMaxBufferSize, resumeWriterThreshold: options.ApplicationMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
+
+            if (hasNegotiatedUser)
+            {
+                return _manager.CreateConnection(transportPipeOptions, appPipeOptions, negotiatedUser);
+            }
 
             return _manager.CreateConnection(transportPipeOptions, appPipeOptions);
         }

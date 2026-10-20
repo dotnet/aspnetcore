@@ -49,6 +49,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             private static readonly Action<ILogger, string, Exception> _connectionDisposedWhileWriteInProgress =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(13, "ConnectionDisposedWhileWriteInProgress"), "Connection {TransportConnectionId} was disposed while a write was in progress.");
 
+            private static readonly Action<ILogger, string, string, Exception> _userNameChanged =
+                LoggerMessage.Define<string, string>(LogLevel.Warning, new EventId(14, "UserNameChanged"), "Rejecting the request because the name of the user changed from '{PreviousUserName}' to '{CurrentUserName}' for an existing connection.");
+
             public static void ConnectionDisposed(ILogger logger, string connectionId)
             {
                 _connectionDisposed(logger, connectionId, null);
@@ -112,6 +115,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             public static void ConnectionDisposedWhileWriteInProgress(ILogger logger, string connectionId, Exception ex)
             {
                 _connectionDisposedWhileWriteInProgress(logger, connectionId, ex);
+            }
+
+            public static void UserNameChanged(ILogger logger, string previousUserName, string currentUserName)
+            {
+                _userNameChanged(logger, previousUserName ?? "(null)", currentUserName ?? "(null)", null);
             }
         }
     }
