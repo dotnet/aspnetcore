@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             _requestTargetForm = HttpRequestTarget.OriginForm;
 
-            if (target.IndexOf((byte)'#') >= 0)
+            if (!ServerOptions.AllowFragmentInRequestTarget && target.IndexOf((byte)'#') >= 0)
             {
                 ThrowRequestTargetRejected(target);
             }
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             //    a server MUST accept the absolute-form in requests, even though
             //    HTTP/1.1 clients will only send them in requests to proxies.
 
-            if (target.IndexOf((byte)'#') >= 0)
+            if (!ServerOptions.AllowFragmentInRequestTarget && target.IndexOf((byte)'#') >= 0)
             {
                 ThrowRequestTargetRejected(target);
             }

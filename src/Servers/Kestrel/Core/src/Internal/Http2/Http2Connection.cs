@@ -667,7 +667,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // https://tools.ietf.org/html/rfc7540#section-8.1.2.3
             var path = _currentHeadersStream.RequestHeaders[":path"].ToString();
-            if (path.IndexOf('#') >= 0)
+            if (!_context.ServiceContext.ServerOptions.AllowFragmentInRequestTarget && path.IndexOf('#') >= 0)
             {
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId,
                     CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(path), Http2ErrorCode.PROTOCOL_ERROR);

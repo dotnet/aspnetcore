@@ -705,6 +705,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 headers, CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(path));
         }
 
+        [Fact]
+        public async Task HEADERS_Received_FragmentInPath_AcceptedWhenEnabled()
+        {
+            _connectionContext.ServiceContext.ServerOptions.AllowFragmentInRequestTarget = true;
+            var path = "/a#b?q=v";
+            var headers = _browserRequestHeaders.Select(header => header.Key == ":path"
+                ? new KeyValuePair<string, string>(":path", path)
+                : header);
+
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.Equal("/a#b", context.Request.Path.Value);
+                Assert.Equal("?q=v", context.Request.QueryString.Value);
+                Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+                return _readHeadersApplication(context);
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            VerifyDecodedRequestHeaders(headers);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
