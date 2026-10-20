@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>13</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <DefineConstants>PREPARE_REVIEW_TESTS</DefineConstants>
+    <NoWarn>$(NoWarn);CA1822;CA2007;xUnit1051</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../tests/PrepareReviewTests.cs" Link="PrepareReviewTests.cs" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+</Project>

@@ -12,23 +12,22 @@
     <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
     <TestRunnerAdditionalArguments>--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1</TestRunnerAdditionalArguments>
     <IsPackable>false</IsPackable>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001;NU1511</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="MSTest.TestFramework" />
-    <Reference Include="Microsoft.Testing.Extensions.TrxReport" />
-    <Reference Include="Microsoft.Playwright" />
+    <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <PackageReference Include="MSTest.TestFramework" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
+    <PackageReference Include="MSTest.TestAdapter" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
-    <ProjectReference Include="../NativeAotTestApp/NativeAotTestApp.csproj">
+    <ProjectReference Include="$(RepoRoot)src\Components\Testing\src\Microsoft.AspNetCore.Components.Testing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Testing\testassets\NativeAotTestApp\NativeAotTestApp.csproj">
       <E2EApp>true</E2EApp>
       <E2EAppMode>publish</E2EAppMode>
       <E2ENativeAot>true</E2ENativeAot>
@@ -37,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Components\Testing\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
