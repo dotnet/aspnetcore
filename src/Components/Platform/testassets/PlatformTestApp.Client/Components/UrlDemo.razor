@@ -54,11 +54,57 @@
         ];
         await using var sequenceOwner = await Browser.Window.UrlSearchParams.CreateAsync(sequence);
         var searchParams = sequenceOwner.Value;
-        await using var entries = await searchParams.EntriesAsync();
-        await searchParams.AppendAsync("item", "third");
-        var first = await entries.NextAsync();
-        await using var keys = await searchParams.KeysAsync();
-        await using var values = await searchParams.ValuesAsync();
+        var sequenceEntries = searchParams.EntriesAsync();
+        var entries = new List<KeyValuePair<string, string>>();
+        await foreach (var entry in sequenceEntries)
+        {
+            entries.Add(entry);
+            if (entries.Count == 1)
+            {
+                await searchParams.AppendAsync("item", "third");
+            }
+        }
+
+        var repeatedEntries = new List<KeyValuePair<string, string>>();
+        await foreach (var entry in sequenceEntries)
+        {
+            repeatedEntries.Add(entry);
+        }
+
+        var keys = new List<string>();
+        await foreach (var key in searchParams.KeysAsync())
+        {
+            keys.Add(key);
+        }
+
+        var values = new List<string>();
+        await foreach (var value in searchParams.ValuesAsync())
+        {
+            values.Add(value);
+        }
+
+        var first = string.Empty;
+        await foreach (var value in searchParams.ValuesAsync())
+        {
+            first = value;
+            break;
+        }
+
+        using var cancellation = new CancellationTokenSource();
+        var canceled = false;
+        var valuesBeforeCancellation = new List<string>();
+        try
+        {
+            await foreach (var value in searchParams.ValuesAsync().WithCancellation(cancellation.Token))
+            {
+                valuesBeforeCancellation.Add(value);
+                cancellation.Cancel();
+            }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            canceled = true;
+        }
 
         var passed =
             canParse &&
@@ -82,11 +128,14 @@
             (await searchParams.GetAllAsync("item")).SequenceEqual(["first", "second", "third"]) &&
             await searchParams.HasAsync("item") &&
             await searchParams.HasAsync("item", "second") &&
-            !first.Done &&
-            first.Value.Key == "item" &&
-            first.Value.Value == "first" &&
-            (await keys.NextAsync()).Value == "item" &&
-            (await values.NextAsync()).Value == "first";
+            entries.Select(entry => entry.Key).SequenceEqual(["item", "item", "item"]) &&
+            entries.Select(entry => entry.Value).SequenceEqual(["first", "second", "third"]) &&
+            repeatedEntries.SequenceEqual(entries) &&
+            keys.SequenceEqual(["item", "item", "item"]) &&
+            values.SequenceEqual(["first", "second", "third"]) &&
+            first == "first" &&
+            canceled &&
+            valuesBeforeCancellation.SequenceEqual(["first"]);
 
         await searchParams.DeleteAsync("item", "first");
         await searchParams.SetAsync("page", "2");

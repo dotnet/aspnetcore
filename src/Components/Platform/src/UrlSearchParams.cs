@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Platform;
@@ -172,40 +174,37 @@ public sealed class UrlSearchParams : IInternalAsyncDisposal
     }
 
     /// <summary>
-    /// Gets an iterator over the query parameter names and values.
+    /// Enumerates the live query parameter names and values.
     /// </summary>
-    /// <returns>An iterator over the query parameter names and values.</returns>
-    public async ValueTask<UrlSearchParamsIterator<KeyValuePair<string, string>>> EntriesAsync()
-    {
-        var reference = await GetReferenceAsync().ConfigureAwait(false);
-        var iterator = await reference.InvokeAsync<IJSObjectReference>("entries").ConfigureAwait(false);
-
-        return UrlSearchParamsIterator<KeyValuePair<string, string>>.CreateEntries(iterator);
-    }
+    /// <returns>An asynchronous sequence of query parameter names and values.</returns>
+    /// <remarks>
+    /// Each enumeration starts a new live iterator on its first advance. Keep the collection's owner alive
+    /// until enumeration ends. Cancellation is observed between browser operations; it does not abort an operation in progress.
+    /// </remarks>
+    public IAsyncEnumerable<KeyValuePair<string, string>> EntriesAsync()
+        => EnumerateAsync("entries", static value => new KeyValuePair<string, string>(value[0].GetString()!, value[1].GetString()!));
 
     /// <summary>
-    /// Gets an iterator over the query parameter names.
+    /// Enumerates the live query parameter names.
     /// </summary>
-    /// <returns>An iterator over the query parameter names.</returns>
-    public async ValueTask<UrlSearchParamsIterator<string>> KeysAsync()
-    {
-        var reference = await GetReferenceAsync().ConfigureAwait(false);
-        var iterator = await reference.InvokeAsync<IJSObjectReference>("keys").ConfigureAwait(false);
-
-        return UrlSearchParamsIterator<string>.CreateStrings(iterator);
-    }
+    /// <returns>An asynchronous sequence of query parameter names.</returns>
+    /// <remarks>
+    /// Each enumeration starts a new live iterator on its first advance. Keep the collection's owner alive
+    /// until enumeration ends. Cancellation is observed between browser operations; it does not abort an operation in progress.
+    /// </remarks>
+    public IAsyncEnumerable<string> KeysAsync()
+        => EnumerateAsync("keys", static value => value.GetString()!);
 
     /// <summary>
-    /// Gets an iterator over the query parameter values.
+    /// Enumerates the live query parameter values.
     /// </summary>
-    /// <returns>An iterator over the query parameter values.</returns>
-    public async ValueTask<UrlSearchParamsIterator<string>> ValuesAsync()
-    {
-        var reference = await GetReferenceAsync().ConfigureAwait(false);
-        var iterator = await reference.InvokeAsync<IJSObjectReference>("values").ConfigureAwait(false);
-
-        return UrlSearchParamsIterator<string>.CreateStrings(iterator);
-    }
+    /// <returns>An asynchronous sequence of query parameter values.</returns>
+    /// <remarks>
+    /// Each enumeration starts a new live iterator on its first advance. Keep the collection's owner alive
+    /// until enumeration ends. Cancellation is observed between browser operations; it does not abort an operation in progress.
+    /// </remarks>
+    public IAsyncEnumerable<string> ValuesAsync()
+        => EnumerateAsync("values", static value => value.GetString()!);
 
     /// <summary>
     /// Converts the query parameters to their serialized string form.
@@ -231,6 +230,42 @@ public sealed class UrlSearchParams : IInternalAsyncDisposal
         {
             await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
         }
+    }
+
+    private async IAsyncEnumerable<T> EnumerateAsync<T>(
+        string identifier,
+        Func<JsonElement, T> convertValue,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var reference = await GetReferenceAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        var iterator = await reference.InvokeAsync<IJSObjectReference>(identifier).ConfigureAwait(false);
+        await using (iterator.ConfigureAwait(false))
+        {
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                var result = await iterator.InvokeAsync<IteratorResult>("next").ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                ObjectDisposedException.ThrowIf(_disposed, this);
+
+                if (result.Done)
+                {
+                    yield break;
+                }
+
+                yield return convertValue(result.Value);
+            }
+        }
+    }
+
+    private sealed class IteratorResult
+    {
+        public bool Done { get; init; }
+
+        public JsonElement Value { get; init; }
     }
 
     private Task<IJSObjectReference> GetReferenceAsync()

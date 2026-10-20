@@ -15,6 +15,17 @@ namespace Microsoft.AspNetCore.Components.Platform.Tests;
 public class UrlTest
 {
     [Fact]
+    public void IterationMethods_ReturnAsyncEnumerables()
+    {
+        Assert.Equal(typeof(IAsyncEnumerable<KeyValuePair<string, string>>),
+            typeof(UrlSearchParams).GetMethod(nameof(UrlSearchParams.EntriesAsync))!.ReturnType);
+        Assert.Equal(typeof(IAsyncEnumerable<string>),
+            typeof(UrlSearchParams).GetMethod(nameof(UrlSearchParams.KeysAsync))!.ReturnType);
+        Assert.Equal(typeof(IAsyncEnumerable<string>),
+            typeof(UrlSearchParams).GetMethod(nameof(UrlSearchParams.ValuesAsync))!.ReturnType);
+    }
+
+    [Fact]
     public async Task AddBrowserPlatform_ProvidesStableConstructorFacadesWithoutInterop()
     {
         var jsRuntime = new RecordingJSRuntime();
@@ -110,16 +121,20 @@ public class UrlTest
         Assert.True(await searchParams.HasAsync("tag", "two"));
         Assert.Equal(3u, await searchParams.GetSizeAsync());
 
-        await using var entries = await searchParams.EntriesAsync();
-        await searchParams.AppendAsync("after", "iterator");
-        var first = await entries.NextAsync();
-        Assert.False(first.Done);
-        Assert.Equal(new KeyValuePair<string, string>("tag", "one"), first.Value);
+        var entries = new List<KeyValuePair<string, string>>();
+        await foreach (var entry in searchParams.EntriesAsync())
+        {
+            entries.Add(entry);
+            if (entries.Count == 1)
+            {
+                await searchParams.AppendAsync("after", "iterator");
+            }
+        }
 
-        await using var keys = await searchParams.KeysAsync();
-        await using var values = await searchParams.ValuesAsync();
-        Assert.Equal("tag", (await keys.NextAsync()).Value);
-        Assert.Equal("one", (await values.NextAsync()).Value);
+        Assert.Equal([new("tag", "one"), new("page", "3"), new("tag", "two"), new("after", "iterator")], entries);
+        Assert.Equal(["tag", "page", "tag", "after"], await CollectAsync(searchParams.KeysAsync()));
+        Assert.Equal(["one", "3", "two", "iterator"], await CollectAsync(searchParams.ValuesAsync()));
+        Assert.All(jsRuntime.Iterators, iterator => Assert.True(iterator.Disposed));
 
         await searchParams.DeleteAsync("tag", "one");
         await searchParams.DeleteAsync("after");
@@ -164,6 +179,145 @@ public class UrlTest
     }
 
     [Fact]
+    public async Task Enumeration_IsLazyAndCreatesIndependentIterators()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
+        var sequence = owner.Value.ValuesAsync();
+        await using var first = sequence.GetAsyncEnumerator();
+        await using var second = sequence.GetAsyncEnumerator();
+
+        Assert.Empty(jsRuntime.Iterators);
+        Assert.True(await first.MoveNextAsync());
+        Assert.Equal("first", first.Current);
+        Assert.True(await first.MoveNextAsync());
+        Assert.Equal("second", first.Current);
+        Assert.True(await second.MoveNextAsync());
+        Assert.Equal("first", second.Current);
+        Assert.Equal(["first", "second"], await CollectAsync(sequence));
+        Assert.Equal(3, jsRuntime.Iterators.Count);
+    }
+
+    [Fact]
+    public async Task Enumeration_DisposesIteratorOnBreakAndConsumerException()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
+
+        await foreach (var value in owner.Value.ValuesAsync())
+        {
+            Assert.Equal("first", value);
+            break;
+        }
+
+        Assert.True(jsRuntime.Iterators.Single().Disposed);
+        var exception = new InvalidOperationException("Consumer failed.");
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var value in owner.Value.ValuesAsync())
+            {
+                throw exception;
+            }
+        });
+
+        Assert.Same(exception, actual);
+        Assert.All(jsRuntime.Iterators, iterator => Assert.True(iterator.Disposed));
+        Assert.Equal(["first", "second"], await CollectAsync(owner.Value.ValuesAsync()));
+    }
+
+    [Fact]
+    public async Task Enumeration_DisposesIteratorOnBrowserException()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first");
+        await using var iterator = owner.Value.ValuesAsync().GetAsyncEnumerator();
+        Assert.True(await iterator.MoveNextAsync());
+        var reference = jsRuntime.Iterators.Single();
+        var exception = new JSException("Iterator failed.");
+        reference.NextException = exception;
+
+        var actual = await Assert.ThrowsAsync<JSException>(() => iterator.MoveNextAsync().AsTask());
+
+        Assert.Same(exception, actual);
+        Assert.True(reference.Disposed);
+    }
+
+    [Fact]
+    public async Task Enumeration_ObservesCancellationBetweenCallsAndDisposesIterator()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
+        using var cancellation = new CancellationTokenSource();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            await foreach (var value in owner.Value.ValuesAsync().WithCancellation(cancellation.Token))
+            {
+                Assert.Equal("first", value);
+                cancellation.Cancel();
+            }
+        });
+
+        var reference = jsRuntime.Iterators.Single();
+        Assert.Equal(1, reference.NextCount);
+        Assert.True(reference.Disposed);
+    }
+
+    [Fact]
+    public async Task Enumeration_DoesNotAbortPendingBrowserCallOnCancellation()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first");
+        using var cancellation = new CancellationTokenSource();
+        await using var iterator = owner.Value.ValuesAsync().GetAsyncEnumerator(cancellation.Token);
+        Assert.True(await iterator.MoveNextAsync());
+        var reference = jsRuntime.Iterators.Single();
+        reference.PendingNext = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var pendingMove = iterator.MoveNextAsync().AsTask();
+        cancellation.Cancel();
+
+        Assert.False(pendingMove.IsCompleted);
+        reference.PendingNext.SetResult("""{"Done":true}""");
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pendingMove);
+        Assert.True(reference.Disposed);
+    }
+
+    [Fact]
+    public async Task Enumeration_DoesNotAcquireIteratorWhenAlreadyCanceled()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync();
+        await using var iterator = owner.Value.ValuesAsync().GetAsyncEnumerator(new CancellationToken(canceled: true));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => iterator.MoveNextAsync().AsTask());
+
+        Assert.Empty(jsRuntime.Iterators);
+    }
+
+    [Fact]
+    public async Task Enumeration_RejectsParentDisposalAndDisposesIterator()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        await using var url = await provider.GetRequiredService<IBrowserPlatform>().Window.Url.CreateAsync("https://example.test/");
+        await url.SearchParams.AppendAsync("item", "first");
+        await using var iterator = url.SearchParams.ValuesAsync().GetAsyncEnumerator();
+        Assert.True(await iterator.MoveNextAsync());
+
+        await url.DisposeAsync();
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => iterator.MoveNextAsync().AsTask());
+        Assert.True(jsRuntime.Iterators.Single().Disposed);
+    }
+
+    [Fact]
     public async Task OwnedObjects_DisposeReferencesAndRejectFurtherOperations()
     {
         var jsRuntime = new RecordingJSRuntime();
@@ -174,7 +328,8 @@ public class UrlTest
         await borrowed.GetSizeAsync();
         var owner = await window.UrlSearchParams.CreateAsync();
         var owned = owner.Value;
-        await using var iterator = await owned.EntriesAsync();
+        await using var iterator = owned.EntriesAsync().GetAsyncEnumerator();
+        Assert.False(await iterator.MoveNextAsync());
 
         await url.DisposeAsync();
         await url.DisposeAsync();
@@ -190,7 +345,7 @@ public class UrlTest
         await Assert.ThrowsAsync<ObjectDisposedException>(() => borrowed.GetSizeAsync().AsTask());
         Assert.Throws<ObjectDisposedException>(() => _ = owner.Value);
         await Assert.ThrowsAsync<ObjectDisposedException>(() => owned.GetSizeAsync().AsTask());
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => iterator.NextAsync().AsTask());
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await CollectAsync(owned.EntriesAsync()));
     }
 
     [Fact]
@@ -245,6 +400,17 @@ public class UrlTest
 
         _ = constructor.CreateAsync(sequence);
         Assert.Equal("[[[\"name\",\"first\"],[\"name\",\"second\"]]]", runtime.ArgsJson);
+    }
+
+    private static async Task<List<T>> CollectAsync<T>(IAsyncEnumerable<T> source)
+    {
+        var values = new List<T>();
+        await foreach (var value in source)
+        {
+            values.Add(value);
+        }
+
+        return values;
     }
 
     private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime)
@@ -494,8 +660,23 @@ public class UrlTest
 
         private object? Set(object?[] args)
         {
-            Delete([args[0]]);
-            Append(args);
+            var name = (string)args[0]!;
+            var index = Entries.FindIndex(pair => pair.Key == name);
+            if (index < 0)
+            {
+                Append(args);
+            }
+            else
+            {
+                Entries[index] = new(name, (string)args[1]!);
+                for (var i = Entries.Count - 1; i > index; i--)
+                {
+                    if (Entries[i].Key == name)
+                    {
+                        Entries.RemoveAt(i);
+                    }
+                }
+            }
 
             return null;
         }
@@ -524,11 +705,23 @@ public class UrlTest
 
         public bool Disposed { get; private set; }
 
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        public int NextCount { get; private set; }
+
+        public Exception? NextException { get; set; }
+
+        public TaskCompletionSource<string>? PendingNext { get; set; }
+
+        public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
             Assert.Equal("next", identifier);
+            NextCount++;
 
-            var json = _index >= entries.Count
+            if (NextException is { } exception)
+            {
+                throw exception;
+            }
+
+            var json = PendingNext is { } pending ? await pending.Task : _index >= entries.Count
                 ? """{"Done":true}"""
                 : kind switch
                 {
@@ -538,14 +731,14 @@ public class UrlTest
                     _ => throw new InvalidOperationException(),
                 };
 
-            return ValueTask.FromResult(JsonSerializer.Deserialize<TValue>(json)!);
+            return JsonSerializer.Deserialize<TValue>(json)!;
         }
 
         public ValueTask<TValue> InvokeAsync<TValue>(
             string identifier,
             CancellationToken cancellationToken,
             object?[]? args)
-            => InvokeAsync<TValue>(identifier, args);
+            => throw new InvalidOperationException("Iterator calls must preserve the default interop timeout by omitting a cancellation token.");
 
         public ValueTask DisposeAsync()
         {
