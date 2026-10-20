@@ -74,7 +74,7 @@ public readonly struct ParameterView
                     result = (TValue)entry.Value;
                     return true;
                 }
-                catch (InvalidCastException ex)
+                catch (Exception ex) when (ex is InvalidCastException or NullReferenceException)
                 {
                     // The incoming value might be of any type, for example if the caller splatted
                     // attributes onto the component, so help developers identify the problem by

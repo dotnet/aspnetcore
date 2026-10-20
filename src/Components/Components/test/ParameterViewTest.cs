@@ -241,6 +241,36 @@ public partial class ParameterViewTest
     }
 
     [Fact]
+    public void FromDictionary_ThrowsIfNullValueTargetsNonNullableValueType()
+    {
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            ["Count"] = null,
+        });
+
+        var ex = Assert.Throws<InvalidCastException>(() => parameters.TryGetValue<int>("Count", out _));
+
+        Assert.Contains("'Count'", ex.Message);
+        Assert.Contains("'null'", ex.Message);
+        Assert.Contains(typeof(int).FullName!, ex.Message);
+        Assert.IsType<NullReferenceException>(ex.InnerException);
+    }
+
+    [Fact]
+    public void FromDictionary_AcceptsNullForNullableTargets()
+    {
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            ["Value"] = null,
+        });
+
+        Assert.True(parameters.TryGetValue<string>("Value", out var text));
+        Assert.Null(text);
+        Assert.True(parameters.TryGetValue<int?>("Value", out var number));
+        Assert.Null(number);
+    }
+
+    [Fact]
     public void FromDictionary_ThrowsIfTryGetValueWithIncorrectType()
     {
         // Arrange: simulates splatted attributes, where the dictionary contains a boxed
