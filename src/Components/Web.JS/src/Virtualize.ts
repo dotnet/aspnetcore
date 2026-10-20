@@ -389,7 +389,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerBefore);
   resizeObserver.observe(spacerAfter);
 
-  function refreshObservedElements(isLoading: boolean): void {
+  function refreshObservedElements(isLoading: boolean, refreshViewport: boolean): void {
+    if (refreshViewport) {
+      pendingCallbacks.clear();
+      reobserveSpacers();
+    }
+
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
@@ -1058,10 +1063,10 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   }
 }
 
-function refreshObservers(dotNetHelper: DotNet.DotNetObject, isLoading: boolean): void {
+function refreshObservers(dotNetHelper: DotNet.DotNetObject, isLoading: boolean, refreshViewport: boolean): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
-  entry?.refreshObservedElements?.(isLoading);
+  entry?.refreshObservedElements?.(isLoading, refreshViewport);
 }
 
 function setAnchorMode(dotNetHelper: DotNet.DotNetObject, mode: number): void {
