@@ -179,17 +179,22 @@ public class RouteViewTest
 
         await SetRouteAsync(parentRoute);
 
-        Assert.Null(parent.Body);
-        Assert.Equal("Parent page", parent.Message);
+        var parentPageFrame = _renderer.Batches.Last().GetComponentFrames<RoutableLayout>().Single();
+        var parentPage = (RoutableLayout)parentPageFrame.Component;
+        Assert.NotEqual(parentFrame.ComponentId, parentPageFrame.ComponentId);
+        Assert.Null(parentPage.Body);
+        Assert.Equal("Parent page", parentPage.Message);
         var outerLayoutId = _renderer.Batches.First().GetComponentFrames<TestLayout>().Single().ComponentId;
-        var parentPageFrame = _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
+        var renderedParentPageFrame = _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
             .Single(frame => frame.ComponentType == typeof(RoutableLayout));
-        Assert.Equal(parentFrame.ComponentId, parentPageFrame.ComponentId);
+        Assert.Equal(parentPageFrame.ComponentId, renderedParentPageFrame.ComponentId);
 
         await SetRouteAsync(childRoute);
 
-        Assert.NotNull(parent.Body);
-        Assert.Equal(parentFrame.ComponentId, _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
+        var returnedLayoutFrame = _renderer.Batches.Last().GetComponentFrames<RoutableLayout>().Single();
+        Assert.NotEqual(parentPageFrame.ComponentId, returnedLayoutFrame.ComponentId);
+        Assert.NotNull(((RoutableLayout)returnedLayoutFrame.Component).Body);
+        Assert.Equal(returnedLayoutFrame.ComponentId, _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
             .Single(frame => frame.ComponentType == typeof(RoutableLayout)).ComponentId);
         Assert.Empty(_renderer.HandledExceptions);
     }
@@ -201,6 +206,21 @@ public class RouteViewTest
 
         var parentFrame = _renderer.Batches.Single().GetComponentFrames<RoutableLayout>().Single();
         Assert.Null(((RoutableLayout)parentFrame.Component).Body);
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task PreservesConstructorInitializedBodyOnDirectArrival()
+    {
+        await SetRouteAsync(new RouteData(typeof(InitializedBodyPage), new Dictionary<string, object>()));
+
+        var pageFrame = _renderer.Batches.Single().GetComponentFrames<InitializedBodyPage>().Single();
+        var page = (InitializedBodyPage)pageFrame.Component;
+        Assert.NotNull(page.Body);
+        Assert.Collection(
+            _renderer.GetCurrentRenderTreeFrames(pageFrame.ComponentId).AsEnumerable(),
+            frame => AssertFrame.Region(frame, subtreeLength: 2),
+            frame => AssertFrame.Text(frame, "Default body", sequence: 0));
         Assert.Empty(_renderer.HandledExceptions);
     }
 
@@ -220,7 +240,9 @@ public class RouteViewTest
 
         await SetRouteAsync(new RouteData(typeof(RoutableLayout), new Dictionary<string, object>()));
 
-        Assert.Null(parent.Body);
+        var newParentFrame = _renderer.Batches.Last().GetComponentFrames<RoutableLayout>().Single();
+        Assert.NotEqual(parentFrame.ComponentId, newParentFrame.ComponentId);
+        Assert.Null(((RoutableLayout)newParentFrame.Component).Body);
         Assert.Empty(_renderer.HandledExceptions);
     }
 
@@ -255,6 +277,19 @@ public class RouteViewTest
         {
             builder.AddContent(0, Message);
             builder.AddContent(1, Body);
+        }
+    }
+
+    private class InitializedBodyPage : LayoutComponentBase
+    {
+        public InitializedBodyPage()
+        {
+            Body = builder => builder.AddContent(0, "Default body");
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, Body);
         }
     }
 

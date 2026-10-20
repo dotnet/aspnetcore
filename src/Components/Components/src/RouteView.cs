@@ -5,7 +5,6 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -16,15 +15,12 @@ namespace Microsoft.AspNetCore.Components;
 /// Displays the specified page component, rendering it inside its layout
 /// and any further nested layouts.
 /// </summary>
-/// <remarks>
-/// When the page derives from <see cref="LayoutComponentBase"/>, its
-/// <see cref="LayoutComponentBase.Body"/> is cleared unless explicitly supplied in
-/// <see cref="RouteData.RouteValues"/>.
-/// </remarks>
 public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
     private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
+    private static readonly object _routePageWithBodyKey = new();
+    private static readonly object _routePageWithoutBodyKey = new();
 
     static RouteView()
     {
@@ -92,17 +88,20 @@ public class RouteView : IComponent
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
         builder.OpenComponent(0, RouteData.PageType);
+        var bodyParameterSupplied = false;
 
         foreach (var kvp in RouteData.RouteValues)
         {
             builder.AddComponentParameter(1, kvp.Key, kvp.Value);
+            if (string.Equals(kvp.Key, nameof(LayoutComponentBase.Body), StringComparison.OrdinalIgnoreCase))
+            {
+                bodyParameterSupplied = true;
+            }
         }
 
-        if (typeof(LayoutComponentBase).IsAssignableFrom(RouteData.PageType)
-            && !RouteData.RouteValues.Keys.Contains(nameof(LayoutComponentBase.Body), StringComparer.OrdinalIgnoreCase))
+        if (typeof(LayoutComponentBase).IsAssignableFrom(RouteData.PageType))
         {
-            // The page may be reusing an instance that was previously rendered as a layout.
-            builder.AddComponentParameter(2, nameof(LayoutComponentBase.Body), (RenderFragment)null);
+            builder.SetKey(bodyParameterSupplied ? _routePageWithBodyKey : _routePageWithoutBodyKey);
         }
 
         builder.CloseComponent();
