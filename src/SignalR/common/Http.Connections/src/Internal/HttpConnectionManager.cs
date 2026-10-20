@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
@@ -60,7 +61,36 @@ internal sealed partial class HttpConnectionManager
     /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
     /// </summary>
     /// <returns></returns>
-    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0, bool useStatefulReconnect = false)
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion = 0,
+        bool useStatefulReconnect = false)
+    {
+        return CreateConnection(options, negotiateVersion, useStatefulReconnect, negotiatedUser: null, hasNegotiatedUser: false);
+    }
+
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return CreateConnection(options, negotiateVersion: 0, useStatefulReconnect: false, negotiatedUser: negotiatedUser);
+    }
+
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion,
+        bool useStatefulReconnect,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return CreateConnection(options, negotiateVersion, useStatefulReconnect, negotiatedUser, hasNegotiatedUser: true);
+    }
+
+    private HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion,
+        bool useStatefulReconnect,
+        ClaimsPrincipal? negotiatedUser,
+        bool hasNegotiatedUser)
     {
         string connectionToken;
         var id = MakeNewConnectionId();
@@ -78,7 +108,17 @@ internal sealed partial class HttpConnectionManager
         Log.CreatedNewConnection(_logger, id);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect);
+        var connection = new HttpConnectionContext(
+            id,
+            connectionToken,
+            _connectionLogger,
+            metricsContext,
+            pair.Application,
+            pair.Transport,
+            options,
+            useStatefulReconnect,
+            negotiatedUser,
+            hasNegotiatedUser);
 
         _connections.TryAdd(connectionToken, connection);
 
