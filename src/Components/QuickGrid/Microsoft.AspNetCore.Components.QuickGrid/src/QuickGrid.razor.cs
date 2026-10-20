@@ -636,28 +636,33 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         return AttributeUtilities.CombineClassNames(AdditionalAttributes, gridClass) ?? string.Empty;
     }
 
-    private static string? ColumnClass(ColumnBase<TGridItem> column) => column.Align switch
-    {
-        Align.Start => $"col-justify-start {column.Class}",
-        Align.Center => $"col-justify-center {column.Class}",
-        Align.End => $"col-justify-end {column.Class}",
-        Align.Left => $"col-justify-left {column.Class}",
-        Align.Right => $"col-justify-right {column.Class}",
-        _ => column.Class,
-    };
+    private static string? ColumnClass(ColumnBase<TGridItem> column)
+        => CombineColumnClass(column.Align, column.Class);
 
-    private static string? ColumnClass(ColumnBase<TGridItem> column, TGridItem? item = default)
+    private static string? ColumnClass(ColumnBase<TGridItem> column, TGridItem item)
     {
-        var classValue = item is not null ? column.GetClass(item) : column.Class;
-        return column.Align switch
+        var classValue = column.GetClass(item);
+        return CombineColumnClass(column.Align, classValue);
+    }
+
+    private static string? CombineColumnClass(Align align, string? classValue)
+    {
+        var alignClass = align switch
         {
-            Align.Start => $"col-justify-start {classValue}",
-            Align.Center => $"col-justify-center {classValue}",
-            Align.End => $"col-justify-end {classValue}",
-            Align.Left => $"col-justify-left {classValue}",
-            Align.Right => $"col-justify-right {classValue}",
-            _ => classValue,
+            Align.Start => "col-justify-start",
+            Align.Center => "col-justify-center",
+            Align.End => "col-justify-end",
+            Align.Left => "col-justify-left",
+            Align.Right => "col-justify-right",
+            _ => null,
         };
+
+        if (alignClass is null)
+        {
+            return classValue;
+        }
+
+        return string.IsNullOrEmpty(classValue) ? alignClass : $"{alignClass} {classValue}";
     }
 
     /// <inheritdoc />
