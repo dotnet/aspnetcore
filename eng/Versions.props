@@ -181,8 +181,8 @@
     <MicrosoftDataSqlClientVersion>6.1.7</MicrosoftDataSqlClientVersion>
     <SqlClientSystemSecurityCryptographyPkcs8Version>8.0.2</SqlClientSystemSecurityCryptographyPkcs8Version>
     <SqlClientSystemSecurityCryptographyPkcs9Version>9.0.21</SqlClientSystemSecurityCryptographyPkcs9Version>
-    <MicrosoftOpenApiVersion>[2.12.2,3.0.0)</MicrosoftOpenApiVersion>
-    <MicrosoftOpenApiYamlReaderVersion>[2.12.2,3.0.0)</MicrosoftOpenApiYamlReaderVersion>
+    <MicrosoftOpenApiVersion>[2.13.0,3.0.0)</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>[2.13.0,3.0.0)</MicrosoftOpenApiYamlReaderVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
     <DotnetServeVersion>1.10.93</DotnetServeVersion>
