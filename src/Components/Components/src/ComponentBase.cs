@@ -143,6 +143,14 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         }
     }
 
+    internal void RenderAfterError()
+    {
+        // The renderer queues an empty render to discard the failed subtree. A render
+        // already queued before it must not suppress the subsequent error content render.
+        _hasPendingQueuedRender = false;
+        StateHasChanged();
+    }
+
     /// <summary>
     /// Returns a flag to indicate whether the component should render.
     /// </summary>
