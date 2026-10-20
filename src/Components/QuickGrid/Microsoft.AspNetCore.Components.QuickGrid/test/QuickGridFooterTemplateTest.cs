@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -198,6 +199,49 @@ public class QuickGridFooterTemplateTest
         var frames = GetGridFrames(renderer);
         Assert.True(HasElement(frames, "tfoot"));
         Assert.True(ContainsContent(frames, "Page 1"));
+    }
+
+    [Theory]
+    [InlineData(7, 5, 1, true, true)]
+    [InlineData(7, 5, 1, true, false)]
+    [InlineData(7, 5, 1, false, true)]
+    [InlineData(7, 5, 1, false, false)]
+    [InlineData(0, 5, 0, true, true)]
+    [InlineData(5, 5, 0, true, true)]
+    [InlineData(2, 0, 0, true, true)]
+    [InlineData(0, 0, 0, true, true)]
+    public async Task FooterTemplate_AriaRows_IncludePaginationFillers(
+        int totalItemCount, int itemsPerPage, int pageIndex, bool hasColumnFooter, bool hasGridFooter)
+    {
+        var items = Enumerable.Range(1, totalItemCount)
+            .Select(id => new TestItem { Id = id })
+            .AsQueryable();
+        var pagination = itemsPerPage > 0 ? new PaginationState { ItemsPerPage = itemsPerPage } : null;
+        if (pagination is not null)
+        {
+            await pagination.SetCurrentPageIndexAsync(pageIndex);
+        }
+
+        var component = new GridWithAriaFooters(items, pagination, hasColumnFooter, hasGridFooter);
+        using var renderer = RenderGrid(component, out _);
+        var frames = GetGridFrames(renderer).ToArray();
+        var itemRowCount = pagination is null ? totalItemCount : Math.Min(itemsPerPage, totalItemCount - pageIndex * itemsPerPage);
+        var bodyRowCount = Math.Max(itemRowCount, itemsPerPage);
+        var footerRowCount = (hasColumnFooter ? 1 : 0) + (hasGridFooter ? 1 : 0);
+        var expectedRowCount = bodyRowCount + 1 + footerRowCount;
+
+        Assert.Empty(renderer.HandledExceptions);
+        Assert.Equal(expectedRowCount, CountElements(frames, "tr"));
+        var rowCount = Assert.Single(frames, frame =>
+            frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "aria-rowcount");
+        var rowIndices = frames
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "aria-rowindex")
+            .Select(frame => Convert.ToInt32(frame.AttributeValue, CultureInfo.InvariantCulture));
+        Assert.Multiple(
+            () => Assert.Equal(expectedRowCount, Convert.ToInt32(rowCount.AttributeValue, CultureInfo.InvariantCulture)),
+            () => Assert.Equal(
+                Enumerable.Range(2, itemRowCount).Concat(Enumerable.Range(bodyRowCount + 2, footerRowCount)),
+                rowIndices));
     }
 
     [Fact]
@@ -606,6 +650,35 @@ public class QuickGridFooterTemplateTest
             builder.CloseComponent();
 
             RenderedWithFooter = true;
+        }
+    }
+
+    private sealed class GridWithAriaFooters(
+        IQueryable<TestItem> items, PaginationState pagination, bool hasColumnFooter, bool hasGridFooter) : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<QuickGrid<TestItem>>(0);
+            builder.AddAttribute(1, nameof(QuickGrid<TestItem>.Items), items);
+            builder.AddAttribute(2, nameof(QuickGrid<TestItem>.Pagination), pagination);
+            builder.AddAttribute(3, nameof(QuickGrid<TestItem>.ChildContent), (RenderFragment)(b =>
+            {
+                b.OpenComponent<PropertyColumn<TestItem, int>>(0);
+                b.AddAttribute(1, nameof(PropertyColumn<TestItem, int>.Property),
+                    (System.Linq.Expressions.Expression<Func<TestItem, int>>)(item => item.Id));
+                if (hasColumnFooter)
+                {
+                    b.AddAttribute(2, nameof(ColumnBase<TestItem>.FooterTemplate),
+                        (RenderFragment)(footer => footer.AddContent(0, "Column footer")));
+                }
+                b.CloseComponent();
+            }));
+            if (hasGridFooter)
+            {
+                builder.AddAttribute(4, nameof(QuickGrid<TestItem>.FooterTemplate),
+                    (RenderFragment)(footer => footer.AddContent(0, "Grid footer")));
+            }
+            builder.CloseComponent();
         }
     }
 

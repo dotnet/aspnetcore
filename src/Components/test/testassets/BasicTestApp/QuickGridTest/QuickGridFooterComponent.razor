@@ -1,0 +1,25 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<label><input id="show-column-footers" type="checkbox" @bind="showColumnFooters" /> Show column footers</label>
+<label><input id="show-grid-footer" type="checkbox" @bind="showGridFooter" /> Show grid footer</label>
+
+<QuickGrid Items="@items" id="footer-grid" FooterTemplate="@(showGridFooter ? gridFooter : null)">
+    <PropertyColumn Property="@(item => item.Id)" FooterTemplate="@(showColumnFooters ? idFooter : null)" />
+    <PropertyColumn Property="@(item => item.Name)" />
+    <PropertyColumn Property="@(item => item.Amount)" Align="Align.Right" FooterTemplate="@(showColumnFooters ? amountFooter : null)" />
+</QuickGrid>
+
+@code {
+    private bool showColumnFooters = true;
+    private bool showGridFooter = true;
+    private readonly IQueryable<Entry> items = new[]
+    {
+        new Entry(1, "First", 10),
+        new Entry(2, "Second", 20),
+    }.AsQueryable();
+    private readonly RenderFragment idFooter = builder => builder.AddContent(0, "Totals");
+    private readonly RenderFragment amountFooter = builder => builder.AddContent(0, "30");
+    private readonly RenderFragment gridFooter = builder => builder.AddContent(0, "Grid total: 30");
+
+    private record Entry(int Id, string Name, int Amount);
+}
