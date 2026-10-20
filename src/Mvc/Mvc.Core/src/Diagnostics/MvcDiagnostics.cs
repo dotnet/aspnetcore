@@ -1029,7 +1029,7 @@ public sealed class AfterControllerActionMethodEventData : EventData
     protected override KeyValuePair<string, object> this[int index] => index switch
     {
         0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
-        1 => new KeyValuePair<string, object>(nameof(Controller), Controller),
+        1 => new KeyValuePair<string, object>(nameof(Arguments), Arguments),
         2 => new KeyValuePair<string, object>(nameof(Controller), Controller),
         3 => new KeyValuePair<string, object>(nameof(Result), Result),
         _ => throw new ArgumentOutOfRangeException(nameof(index))
