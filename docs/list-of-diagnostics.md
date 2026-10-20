@@ -35,7 +35,6 @@
 |  __`ASP0027`__ | Unnecessary public Program class declaration |
 |  __`ASP0028`__ | Consider using ListenAnyIP() instead of Listen(IPAddress.Any) |
 |  __`ASP0029`__ | Experimental warning for validations resolver APIs |
-|  __`ASP0030`__ | Experimental warning for QuickGrid virtualization anchoring APIs |
 |  __`ASP0031`__ | Experimental warning for Device Bound Sessions (DBSC) APIs |
 |  __`ASP0032`__ | Experimental warning for RenderFragment serialization APIs |
 |  __`ASP0033`__ | \[ValidatableType\] is applied to an inaccessible type |

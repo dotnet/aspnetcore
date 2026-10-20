@@ -7,11 +7,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace HelixTestRunner;
 
 public class TestRunner
 {
+    private const string GuaranteedTestClassName = "AlwaysTestTests.SuccessfulTests";
+    private const string GuaranteedTestFilter = $"FullyQualifiedName~{GuaranteedTestClassName}";
+
     public TestRunner(HelixTestRunnerOptions options)
     {
         Options = options;
@@ -205,16 +209,22 @@ public class TestRunner
             // Run test discovery to verify there are tests to run.
             // dotnet test accepts multiple DLL paths.
             var assemblyArgs = string.Join(" ", Options.Targets.Select(t => $"\"{t}\""));
+            var filterArgs = string.IsNullOrWhiteSpace(Options.TestFilter)
+                ? string.Empty
+                : $" --filter \"{Options.TestFilter}\"";
             ProcessUtil.PrintMessage($"Running test discovery for {Options.Targets.Length} assembly(ies).");
             var discoveryResult = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"test {assemblyArgs} --list-tests",
+                $"test {assemblyArgs} --list-tests{filterArgs}",
                 environmentVariables: EnvironmentVariables,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2 * Options.Targets.Length)).Token);
 
-            if (discoveryResult.StandardOutput.Contains("Exception thrown", StringComparison.Ordinal) ||
-                discoveryResult.StandardError.Contains("Exception thrown", StringComparison.Ordinal))
+            if (discoveryResult.ExitCode != 0 ||
+                discoveryResult.StandardOutput.Contains("Exception thrown", StringComparison.Ordinal) ||
+                discoveryResult.StandardError.Contains("Exception thrown", StringComparison.Ordinal) ||
+                discoveryResult.StandardOutput.Contains("No test matches the given testcase filter", StringComparison.Ordinal) ||
+                discoveryResult.StandardError.Contains("No test matches the given testcase filter", StringComparison.Ordinal))
             {
-                ProcessUtil.PrintMessage("Exception thrown during test discovery.");
+                ProcessUtil.PrintMessage("Test discovery failed.");
                 ProcessUtil.PrintMessage(discoveryResult.StandardOutput);
                 ProcessUtil.PrintMessage(discoveryResult.StandardError);
                 return false;
@@ -258,6 +268,10 @@ public class TestRunner
             var filter = Options.Quarantined
                 ? "Quarantined=true"
                 : "Quarantined!=true|Quarantined=false";
+            if (!string.IsNullOrWhiteSpace(Options.TestFilter))
+            {
+                filter = $"({filter})&(({Options.TestFilter})|({GuaranteedTestFilter}))";
+            }
             var filterDesc = Options.Quarantined ? "quarantined" : "non-quarantined";
 
             ProcessUtil.PrintMessage($"Running {filterDesc} tests for {Options.Targets.Length} assembly(ies).");
@@ -282,6 +296,12 @@ public class TestRunner
                     exitCode = result.ExitCode;
                 }
             }
+            else if (!Options.Quarantined &&
+                !string.IsNullOrWhiteSpace(Options.TestFilter) &&
+                !HasFilteredTestResults())
+            {
+                exitCode = 1;
+            }
         }
         catch (Exception e)
         {
@@ -289,6 +309,49 @@ public class TestRunner
             exitCode = 1;
         }
         return exitCode;
+    }
+
+    private bool HasFilteredTestResults()
+    {
+        const string resultsPath = "TestResults/TestResults.xml";
+
+        try
+        {
+            if (!File.Exists(resultsPath))
+            {
+                ProcessUtil.PrintMessage($"No test results were produced for filter '{Options.TestFilter}'.");
+                return false;
+            }
+
+            var results = XDocument.Load(resultsPath);
+            var hasFilteredTest = results
+                .Descendants()
+                .Where(element => element.Name.LocalName == "test")
+                .Any(element =>
+                {
+                    var testClass = element.Attribute("type")?.Value;
+                    if (!string.IsNullOrEmpty(testClass))
+                    {
+                        return !string.Equals(testClass, GuaranteedTestClassName, StringComparison.Ordinal);
+                    }
+
+                    var testName = element.Attribute("name")?.Value;
+                    return !string.IsNullOrEmpty(testName) &&
+                        !testName.StartsWith($"{GuaranteedTestClassName}.", StringComparison.Ordinal);
+                });
+
+            if (!hasFilteredTest)
+            {
+                ProcessUtil.PrintMessage($"The configured test filter '{Options.TestFilter}' did not select any tests.");
+            }
+
+            return hasFilteredTest;
+        }
+        catch (Exception e)
+        {
+            ProcessUtil.PrintMessage($"Exception validating test results for filter '{Options.TestFilter}': {e}");
+            return false;
+        }
     }
 
     public void UploadResults()

@@ -109,7 +109,8 @@
 
     <MSBuild Projects="@(TestConsoleApps)"
              Targets="Publish"
-             Properties="Configuration=$(Configuration);BuildProjectReferences=false" />
+             Properties="Configuration=$(Configuration);BuildProjectReferences=false"
+             RemoveProperties="NoBuild" />
   </Target>
 
   <Target Name="ExecuteApplications"

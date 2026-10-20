@@ -61,6 +61,23 @@ public class EventSourceValidatorTests
         EventSourceValidator.ValidateEventSourceIds<MultiParamEventSource>();
     }
 
+    [Fact]
+    public void ValidateEventSourceIds_PassesForValidMessageFormats()
+    {
+        EventSourceValidator.ValidateEventSourceIds<ValidMessageEventSource>();
+    }
+
+    [Theory]
+    [InlineData(typeof(OutOfRangeMessageEventSource))]
+    [InlineData(typeof(MalformedMessageEventSource))]
+    public void ValidateEventSourceIds_FailsForInvalidMessageFormat(Type eventSourceType)
+    {
+        var ex = Assert.ThrowsAny<Exception>(
+            () => EventSourceValidator.ValidateEventSourceIds(eventSourceType));
+
+        Assert.Contains("Invalid message format for event 1 ('EventOne')", ex.Message);
+    }
+
     // -- Test-only EventSource implementations --
 
     [EventSource(Name = "Test-Correct")]
@@ -115,5 +132,29 @@ public class EventSourceValidatorTests
 
         [Event(5, Level = EventLevel.Informational)]
         public void EventWithNoArgs() => WriteEvent(5);
+    }
+
+    [EventSource(Name = "Test-ValidMessage")]
+    private sealed class ValidMessageEventSource : EventSource
+    {
+        [Event(1, Message = "{{Value}} {0}, repeated {0}, count {1}.")]
+        public void EventOne(string value, int count) => WriteEvent(1, value, count);
+
+        [Event(2, Message = "No payload.")]
+        public void EventTwo() => WriteEvent(2);
+    }
+
+    [EventSource(Name = "Test-OutOfRangeMessage")]
+    private sealed class OutOfRangeMessageEventSource : EventSource
+    {
+        [Event(1, Message = "Value {1}.")]
+        public void EventOne(string value) => WriteEvent(1, value);
+    }
+
+    [EventSource(Name = "Test-MalformedMessage")]
+    private sealed class MalformedMessageEventSource : EventSource
+    {
+        [Event(1, Message = "Value {0.")]
+        public void EventOne(string value) => WriteEvent(1, value);
     }
 }

@@ -21,7 +21,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     [InlineData(BrowserKind.Chromium, "Auto")]
     [InlineData(BrowserKind.Chromium, "None", "Individual")]
     [InlineData(BrowserKind.Chromium, "Server", "None", true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66403")]
     public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None", bool allInteractive = false)
     {
         string[] args = allInteractive
@@ -279,6 +278,126 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         }
     }
 
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_PasskeyUpgradeRejectsRegistrationForDifferentAccount(BrowserKind browserKind)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"], onlyCreate: true);
+        AddPasskeyUpgradeTestEndpoints(project);
+        await project.RunDotNetBuildAsync();
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        await browser.SetExtraHTTPHeadersAsync(new Dictionary<string, string>
+        {
+            ["X-Passkey-Test-Outcome"] = "Success",
+        });
+        var page = await browser.NewPageAsync();
+        await using var cdpSession = await browser.NewCDPSessionAsync(page);
+        await cdpSession.SendAsync("WebAuthn.enable");
+        await cdpSession.SendAsync("WebAuthn.addVirtualAuthenticator", new Dictionary<string, object>
+        {
+            ["options"] = new
+            {
+                protocol = "ctap2",
+                transport = "internal",
+                hasResidentKey = true,
+                hasUserVerification = true,
+                isUserVerified = true,
+                automaticPresenceSimulation = true,
+            }
+        });
+        await page.AddInitScriptAsync("""
+            PublicKeyCredential.isConditionalMediationAvailable = () => Promise.resolve(false);
+            PublicKeyCredential.getClientCapabilities = async () => ({ conditionalCreate: false });
+            PublicKeyCredential.signalUnknownCredential = () => Promise.resolve();
+            """);
+
+        var listeningUri = aspNetProcess.ListeningUri.AbsoluteUri;
+        await page.GotoAsync($"{listeningUri}Account/Register", new() { WaitUntil = WaitUntilState.NetworkIdle });
+
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = "[PLACEHOLDER]-1a";
+        await Task.WhenAll(
+            page.WaitForURLAsync("**/Account/RegisterConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+            SubmitFormAsync(page, "register", new Dictionary<string, string>
+            {
+                ["Input.Email"] = userName,
+                ["Input.Password"] = password,
+                ["Input.ConfirmPassword"] = password,
+            }));
+        await Task.WhenAll(
+            page.WaitForURLAsync("**/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+            page.ClickAsync("text=Click here to confirm your account"));
+
+        await page.GotoAsync($"{listeningUri}Account/Login", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Task.WhenAll(
+            page.WaitForSelectorAsync("h1 >> text=Hello, world!"),
+            SubmitFormAsync(page, "login", new Dictionary<string, string>
+            {
+                ["Input.Email"] = userName,
+                ["Input.Password"] = password,
+            }));
+
+        await page.GotoAsync($"{listeningUri}Account/Register", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.FillAsync("[name=\"Input.Email\"]", $"{Guid.NewGuid()}@example.com");
+        await page.EvaluateAsync("""
+            () => {
+                const passkeySubmit = document.querySelector('passkey-submit[operation="Register"]');
+                if (!passkeySubmit?.attrs) {
+                    throw new Error('The registration passkey submit element was not initialized.');
+                }
+
+                const form = passkeySubmit.closest('form');
+                const handler = form?.querySelector('input[name="_handler"]');
+                if (!form || !handler) {
+                    throw new Error('The registration form was not found.');
+                }
+
+                passkeySubmit.attrs.name = 'Input';
+                form.action = '/Account/PasskeyUpgrade';
+                handler.value = 'passkey-upgrade';
+
+                const originalCreate = navigator.credentials.create.bind(navigator.credentials);
+                navigator.credentials.create = async options => {
+                    sessionStorage.setItem(
+                        'mismatched-registration-user-id',
+                        new TextDecoder().decode(options.publicKey.user.id));
+                    return await originalCreate(options);
+                };
+            }
+            """);
+
+        await Task.WhenAll(
+            page.WaitForSelectorAsync("h1 >> text=Hello, world!"),
+            page.ClickAsync("text=Sign up with a passkey"));
+
+        var account = await page.EvaluateAsync<JsonElement>("""
+            async () => {
+                const response = await fetch('/test/passkeys');
+                if (!response.ok) {
+                    throw new Error(`Passkey inspection failed: ${response.status}`);
+                }
+                return await response.json();
+            }
+            """);
+        var registrationUserId = await page.EvaluateAsync<string>(
+            "() => sessionStorage.getItem('mismatched-registration-user-id')");
+        Assert.NotEqual(account.GetProperty("id").GetString(), registrationUserId);
+        Assert.Equal(0, account.GetProperty("state").GetProperty("saveAttempts").GetInt32());
+        Assert.Empty(account.GetProperty("passkeys").EnumerateArray());
+    }
+
     private static void AddPasskeyUpgradeTestEndpoints(Project project)
     {
         var testAsset = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "TestAssets", "PasskeyUpgradeTest.cs"));
@@ -333,7 +452,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             {
                 protocol = "ctap2",
                 transport = "internal",
-                hasResidentKey = false,
+                hasResidentKey = true,
                 hasUserVerification = true,
                 isUserVerified = true,
                 automaticPresenceSimulation = true,
@@ -384,7 +503,10 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await page.FillAsync("[name=\"Input.Password\"]", password);
         await page.ClickAsync("text=Confirm password");
         await page.WaitForSelectorAsync("text=Add a new passkey");
-        Assert.Equal(200, await GetPasskeyCreationOptionsStatusAsync(page));
+        var creationOptions = await GetPasskeyCreationOptionsAsync(page);
+        var authenticatorSelection = creationOptions.GetProperty("authenticatorSelection");
+        Assert.Equal("required", authenticatorSelection.GetProperty("residentKey").GetString());
+        Assert.True(authenticatorSelection.GetProperty("requireResidentKey").GetBoolean());
 
         await page.ClickAsync("text=Add a new passkey");
         await page.WaitForSelectorAsync("text=Enter a name for your passkey");
@@ -466,6 +588,20 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 return (await fetch('/Account/Manage/PasskeyCreationOptions', {
                     method: 'POST',
                 })).status;
+            }
+            """);
+
+    private static Task<JsonElement> GetPasskeyCreationOptionsAsync(IPage page)
+        => page.EvaluateAsync<JsonElement>(
+            """
+            async () => {
+                const response = await fetch('/Account/Manage/PasskeyCreationOptions', {
+                    method: 'POST',
+                });
+                if (!response.ok) {
+                    throw new Error(`Passkey creation options failed: ${response.status}`);
+                }
+                return await response.json();
             }
             """);
 

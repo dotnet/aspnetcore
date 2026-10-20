@@ -655,6 +655,27 @@ public class DotNetDispatcherTest
         Assert.Equal(2468, resultDto2.IntVal);
     }
 
+    [Fact]
+    public async Task CanInvokeAsyncMethodReturningNonGenericTask()
+    {
+        var jsRuntime = new TestJSRuntime();
+        var targetInstance = new SomePublicType();
+        var targetReference = DotNetObjectReference.Create(targetInstance);
+        jsRuntime.Invoke<object>("unimportant", targetReference);
+
+        var callId = "123";
+        var resultTask = jsRuntime.NextInvocationTask;
+        DotNetDispatcher.BeginInvokeDotNet(
+            jsRuntime,
+            new DotNetInvocationInfo(null, nameof(SomePublicType.InvokableAsyncMethodReturningNonGenericTask), 1, callId),
+            "[]");
+        await resultTask;
+
+        Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+        Assert.True(jsRuntime.LastCompletionResult.Success);
+        Assert.Equal("null", jsRuntime.LastCompletionResult.ResultJson);
+    }
+
         [Fact]
         public async Task CanInvokeAsyncMethodReturningValueTask()
         {
@@ -751,6 +772,26 @@ public class DotNetDispatcherTest
         // Make sure the method that threw the exception shows up in the call stack
         // https://github.com/dotnet/aspnetcore/issues/8612
         Assert.Contains(nameof(ThrowingClass.AsyncThrowingMethod), jsRuntime.LastCompletionResult.Exception.ToString());
+    }
+
+    [Theory]
+    [InlineData(nameof(ThrowingClass.AsyncNonGenericThrowingMethod), typeof(InvalidTimeZoneException))]
+    [InlineData(nameof(ThrowingClass.CanceledMethod), typeof(TaskCanceledException))]
+    public async Task CanInvokeUnsuccessfulNonGenericTask(string methodIdentifier, Type expectedExceptionType)
+    {
+        var jsRuntime = new TestJSRuntime();
+
+        var callId = "123";
+        var resultTask = jsRuntime.NextInvocationTask;
+        DotNetDispatcher.BeginInvokeDotNet(
+            jsRuntime,
+            new DotNetInvocationInfo(thisAssemblyName, methodIdentifier, default, callId),
+            default);
+        await resultTask;
+
+        Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+        Assert.False(jsRuntime.LastCompletionResult.Success);
+        Assert.IsType(expectedExceptionType, jsRuntime.LastCompletionResult.Exception);
     }
 
     [Fact]
@@ -983,6 +1024,12 @@ public class DotNetDispatcherTest
         }
 
         [JSInvokable]
+        public async Task InvokableAsyncMethodReturningNonGenericTask()
+        {
+            await Task.Yield();
+        }
+
+        [JSInvokable]
         public async ValueTask<InvokableAsyncMethodResult> InvokableAsyncMethodReturningValueTask(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
         {
             var dtoByRef = dtoByRefWrapper.Value;
@@ -1050,6 +1097,16 @@ public class DotNetDispatcherTest
             await Task.Yield();
             throw new InvalidTimeZoneException();
         }
+
+        [JSInvokable]
+        public static async Task AsyncNonGenericThrowingMethod()
+        {
+            await Task.Yield();
+            throw new InvalidTimeZoneException();
+        }
+
+        [JSInvokable]
+        public static Task CanceledMethod() => Task.FromCanceled(new CancellationToken(canceled: true));
     }
 
     public class GenericType<TValue>
