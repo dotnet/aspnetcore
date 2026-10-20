@@ -871,6 +871,40 @@ public class NavigationManagerTest
     }
 
     [Fact]
+    public async Task LocationChangingContext_CancellationToken_IsCanceled_WhenLocationChangingHandlerExceptionEscapes()
+    {
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        var handlerCanceledTcs = new TaskCompletionSource();
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_WaitForCancellation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
+        Assert.StartsWith("To support navigation locks", ex.Message);
+        await handlerCanceledTcs.Task.WaitAsync(Timeout);
+
+        async ValueTask HandleLocationChanging_WaitForCancellation(LocationChangingContext context)
+        {
+            try
+            {
+                await Task.Delay(System.Threading.Timeout.Infinite, context.CancellationToken);
+            }
+            catch (TaskCanceledException ex) when (ex.CancellationToken == context.CancellationToken)
+            {
+                handlerCanceledTcs.SetResult();
+                throw;
+            }
+        }
+
+        static async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException("Thrown from a test handler");
+        }
+    }
+
+    [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {
         // Arrange

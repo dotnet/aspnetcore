@@ -515,20 +515,26 @@ public abstract class NavigationManager
         }
         catch (TaskCanceledException ex)
         {
+            navigationCanceled = true;
+
             if (ex.CancellationToken == cancellationToken)
             {
                 // This navigation was in progress when a successive navigation occurred.
                 // We treat this as a canceled navigation.
-                navigationCanceled = true;
                 return false;
             }
 
             throw;
         }
+        catch
+        {
+            navigationCanceled = true;
+            throw;
+        }
         finally
         {
             // Only signal cancellation of the LocationChangingContext.CancellationToken when the
-            // navigation was prevented or superseded by another navigation.
+            // navigation was prevented, superseded by another navigation, or failed.
             if (context.DidPreventNavigation || navigationCanceled)
             {
                 cts.Cancel();
