@@ -146,13 +146,23 @@ public class RewriteTokenizerTest
     }
 
     [Theory]
+    [InlineData(@"\e", "\u001b")]
+    [InlineData(@"\cA", "\u0001")]
+    [InlineData(@"\ca", "\u0001")]
+    [InlineData(@"\c@", "\0")]
+    [InlineData(@"\cZ", "\u001a")]
+    [InlineData(@"\c[", "\u001b")]
+    [InlineData(@"\c\", "\u001c")]
+    [InlineData(@"\c]", "\u001d")]
+    [InlineData(@"\c^", "\u001e")]
+    [InlineData(@"\c_", "\u001f")]
     [InlineData(@"\t", "\t")]
     [InlineData(@"\x41", "A")]
     [InlineData(@"\u0041", "A")]
     [InlineData(@"\101", "A")]
     public void Tokenize_UnescapesPreviouslySupportedEscapeSequences(string escaped, string unescaped)
     {
-        var testString = @"RewriteCond %{HTTPS} " + escaped + " !-f";
+        var testString = "RewriteCond %{HTTPS} \"" + escaped + "\" !-f";
         var tokens = Tokenizer.Tokenize(testString);
 
         var expected = new List<string>();

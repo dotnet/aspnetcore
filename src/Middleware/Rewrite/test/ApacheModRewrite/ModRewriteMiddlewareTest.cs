@@ -220,6 +220,32 @@ public class ModRewriteMiddlewareTest
         Assert.Equal("/?num=1", response);
     }
 
+    [Theory]
+    [InlineData(@"\e", "\u001b")]
+    [InlineData(@"\cA", "\u0001")]
+    [InlineData(@"\ca", "\u0001")]
+    public async Task Invoke_PreservesLegacyReplacementEscapes(string escaped, string expected)
+    {
+        var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^/source$ /" + escaped));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(context.Request.Path));
+                    });
+            }).Build();
+
+        await host.StartAsync();
+
+        var response = await host.GetTestServer().CreateClient().GetStringAsync("http://www.foo.org/source");
+
+        Assert.Equal("/" + expected, response);
+    }
+
     [Fact]
     public async Task Invoke_ShouldIgnorePorts()
     {

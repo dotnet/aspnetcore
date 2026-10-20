@@ -142,6 +142,12 @@ internal sealed class Tokenizer
                 case 'a':
                     builder.Append('\a');
                     break;
+                case 'e':
+                    builder.Append('\u001b');
+                    break;
+                case 'c' when i + 1 < token.Length && token[i + 1] is (>= '@' and <= '_') or (>= 'a' and <= 'z'):
+                    builder.Append((char)(char.ToUpperInvariant(token[++i]) - '@'));
+                    break;
                 case 'f':
                     builder.Append('\f');
                     break;
