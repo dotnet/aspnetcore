@@ -528,8 +528,8 @@ public abstract class NavigationManager
         finally
         {
             // Only signal cancellation of the LocationChangingContext.CancellationToken when the
-            // navigation was superseded by another navigation.
-            if (navigationCanceled)
+            // navigation was prevented or superseded by another navigation.
+            if (context.DidPreventNavigation || navigationCanceled)
             {
                 cts.Cancel();
             }

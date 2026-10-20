@@ -821,11 +821,21 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // The first navigation lock callback completed and removed its navigation controls
         Browser.DoesNotExist(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
 
-        // Preventing navigation does not cancel the other location changing handlers
-        Browser.Exists(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
+        // The second navigation lock callback was canceled and removed its navigation controls
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
 
-        // Complete the second navigation lock callback
-        Browser.FindElement(By.CssSelector("#navigation-lock-1 > div.blocking-controls > button.navigation-cancel")).Click();
+        // Start another navigation without manually completing the second callback from the previous navigation
+        var relativeUriPostNavigation = "/mysecondtestpath";
+        var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir{relativeUriPostNavigation}";
+        SetUrlViaPushState(relativeUriPostNavigation);
+
+        // Both navigation locks are now blocking the new navigation
+        Browser.Equal($"Blocking '{expectedAbsoluteUriPostNavigation}'", () => Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > span")).Text);
+        Browser.Equal($"Blocking '{expectedAbsoluteUriPostNavigation}'", () => Browser.FindElement(By.CssSelector("#navigation-lock-1 > div.blocking-controls > span")).Text);
+
+        // Cancel the new navigation using the first navigation lock
+        Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-cancel")).Click();
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
         Browser.DoesNotExist(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
 
         // The navigation was canceled and the URI has not changed
