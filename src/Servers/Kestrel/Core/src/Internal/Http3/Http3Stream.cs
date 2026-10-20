@@ -1128,7 +1128,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // https://www.rfc-editor.org/rfc/rfc9114#section-4.3.1
-        if (path.Contains('#'))
+        if (!ServerOptions.AllowFragmentInRequestTarget && path.Contains('#'))
         {
             Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.MessageError);
             return false;

@@ -259,6 +259,31 @@ public class Http3StreamTests : Http3TestBase
         Assert.Equal("0", responseHeaders["content-length"]);
     }
 
+    [Fact]
+    public async Task FragmentInPath_AcceptedWhenEnabled()
+    {
+        _serviceContext.ServerOptions.AllowFragmentInRequestTarget = true;
+
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/a#b?q=v")};
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(context =>
+        {
+            Assert.Equal("/a#b", context.Request.Path.Value);
+            Assert.Equal("?q=v", context.Request.QueryString.Value);
+            Assert.Equal("/a#b?q=v", context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        }, headers, endStream: true);
+
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        Assert.Equal(3, responseHeaders.Count);
+        Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", responseHeaders["content-length"]);
+    }
+
     [Theory]
     [InlineData("/#")]
     [InlineData("/a#b?q=v")]

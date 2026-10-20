@@ -128,6 +128,41 @@ public class RequestTargetProcessingTests : LoggedTest
     }
 
     [Theory]
+    [InlineData("/a#b?q=v", "/a#b", "?q=v")]
+    [InlineData("http://localhost/a#b?q=v", "/a", "?q=v")]
+    public async Task FragmentInRequestTarget_AcceptedWhenEnabled(string requestTarget, string expectedPath, string expectedQuery)
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+        testContext.ServerOptions.AllowFragmentInRequestTarget = true;
+
+        await using (var server = new TestServer(context =>
+        {
+            Assert.Equal(expectedPath, context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+            Assert.Equal(requestTarget, context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        }, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    $"GET {requestTarget} HTTP/1.1",
+                    "Host: localhost",
+                    "Connection: close",
+                    "",
+                    "");
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 0",
+                    "Connection: close",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+    }
+
+    [Theory]
     [InlineData(HttpMethod.Options, "*")]
     [InlineData(HttpMethod.Connect, "host")]
     public async Task NonPathRequestTargetSetInRawTarget(HttpMethod method, string requestTarget)

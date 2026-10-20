@@ -436,6 +436,42 @@ public class Http2StreamTests : Http2TestBase
         Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
+    [Fact]
+    public async Task HEADERS_Received_FragmentInPath_AcceptedWhenEnabled()
+    {
+        _serviceContext.ServerOptions.AllowFragmentInRequestTarget = true;
+
+        await InitializeConnectionAsync(context =>
+        {
+            Assert.Equal("/a#b", context.Request.Path.Value);
+            Assert.Equal("?q=v", context.Request.QueryString.Value);
+            Assert.Equal("/a#b?q=v", context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        });
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/a#b?q=v")
+        };
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(3, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders["content-length"]);
+    }
+
     [Theory]
     [InlineData("/#")]
     [InlineData("/a#b?q=v")]

@@ -338,7 +338,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         }
 
         // https://www.rfc-editor.org/rfc/rfc9113#section-8.3.1
-        if (path.Contains('#'))
+        if (!ServerOptions.AllowFragmentInRequestTarget && path.Contains('#'))
         {
             ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
             return false;
