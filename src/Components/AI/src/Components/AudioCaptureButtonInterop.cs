@@ -39,7 +39,7 @@ internal sealed class AudioCaptureButtonInterop(IJSRuntime jsRuntime) : IAsyncDi
             cancellationToken,
             maximumBytes,
             callbacks);
-        return await _recorder.InvokeAsync<string?>("start", cancellationToken);
+        return await _recorder.InvokeAsync<string?>("start", cancellationToken, maximumBytes);
     }
 
     public ValueTask<AudioCaptureResult> StopRecordingAsync(CancellationToken cancellationToken)

@@ -118,6 +118,33 @@ public class AudioCaptureButtonTests
     }
 
     [Fact]
+    public async Task Recording_ParameterChangeUpdatesRecorderLimit()
+    {
+        var (cut, _, recorder) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"));
+        var button = cut.FindComponent<AudioCaptureButton>();
+        await cut.InvokeAsync(() => button.Instance.SetParametersAsync(
+            ParameterView.FromDictionary(new Dictionary<string, object?>
+            {
+                [nameof(AudioCaptureButton.MaximumBytes)] = 1000L,
+            })));
+        await cut.InvokeAsync(() => ClickAsync(button));
+        Assert.Equal(1000L, recorder.MaximumBytes);
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        await cut.InvokeAsync(() => button.Instance.SetParametersAsync(
+            ParameterView.FromDictionary(new Dictionary<string, object?>
+            {
+                [nameof(AudioCaptureButton.MaximumBytes)] = 1_000_000L,
+            })));
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.Equal(2, recorder.StartCount);
+        Assert.Equal(1_000_000L, recorder.MaximumBytes);
+        await cut.InvokeAsync(() => ClickAsync(button));
+    }
+
+    [Fact]
     public async Task Recording_MissingMimeTypeReportsError()
     {
         var recorder = new TestAudioRecorder
@@ -706,6 +733,7 @@ public class AudioCaptureButtonTests
 
         private ValueTask<TValue> CreateAudioRecorder<TValue>(object?[]? args)
         {
+            recorder.MaximumBytes = (long)args![0]!;
             recorder.SetCallbacks(args![1]!);
             return ValueTask.FromResult((TValue)(object)recorder);
         }
@@ -723,6 +751,8 @@ public class AudioCaptureButtonTests
         internal int StopCount { get; private set; }
 
         internal int StartCount { get; private set; }
+
+        internal long MaximumBytes { get; set; }
 
         internal CancellationToken StartToken { get; private set; }
 
@@ -769,6 +799,10 @@ public class AudioCaptureButtonTests
         {
             if (identifier == "start")
             {
+                if (args is [long maximumBytes])
+                {
+                    MaximumBytes = maximumBytes;
+                }
                 return StartAsync<TValue>(cancellationToken);
             }
 

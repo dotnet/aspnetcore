@@ -259,11 +259,12 @@ class AudioRecorder {
         this.startGeneration = 0;
     }
 
-    async start() {
+    async start(maximumBytes) {
         if (this.recorder?.state === "recording") {
             return;
         }
 
+        this.maximumBytes = maximumBytes;
         const startGeneration = ++this.startGeneration;
         let stream;
         try {

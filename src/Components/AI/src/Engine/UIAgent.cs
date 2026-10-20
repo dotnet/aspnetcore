@@ -249,6 +249,14 @@ public class UIAgent : IDisposable
     public async Task<IReadOnlyList<ContentBlock>> RestoreAsync(
         CancellationToken cancellationToken = default)
     {
+        var groups = await RestoreBlockGroupsAsync(cancellationToken).ConfigureAwait(false);
+        return groups.SelectMany(group => group.Blocks).ToArray();
+    }
+
+    // Replay groups preserve user-message boundaries, not persisted exchange boundaries.
+    internal async Task<IReadOnlyList<(ChatRole? Role, IReadOnlyList<ContentBlock> Blocks)>> RestoreBlockGroupsAsync(
+        CancellationToken cancellationToken)
+    {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         var updates = _options.Thread?.GetUpdates();
@@ -259,7 +267,8 @@ public class UIAgent : IDisposable
 
         _history.Clear();
 
-        var blocks = new List<ContentBlock>();
+        var groups = new List<(ChatRole? Role, IReadOnlyList<ContentBlock> Blocks)>();
+        List<ContentBlock>? currentBlocks = null;
         var pipeline = new BlockMappingPipeline(_options, _logger);
         var assistantUpdates = new List<ChatResponseUpdate>();
 
@@ -274,18 +283,27 @@ public class UIAgent : IDisposable
                     AddResponseToHistory(assistantUpdates);
                     assistantUpdates.Clear();
 
-                    blocks.AddRange(pipeline.Finalize());
+                    foreach (var block in pipeline.Finalize())
+                    {
+                        AddBlock(block);
+                    }
                     pipeline = new BlockMappingPipeline(_options, _logger);
                 }
 
+                currentBlocks = new List<ContentBlock>();
+                groups.Add((update.Role, currentBlocks));
                 _history.Add(new ChatMessage(update.Role.Value, [.. update.Contents]));
                 await foreach (var block in pipeline.Process(update, cancellationToken).ConfigureAwait(false))
                 {
-                    blocks.Add(block);
+                    AddBlock(block);
                 }
 
-                blocks.AddRange(pipeline.Finalize());
+                foreach (var block in pipeline.Finalize())
+                {
+                    AddBlock(block);
+                }
                 pipeline = new BlockMappingPipeline(_options, _logger);
+                currentBlocks = null;
             }
             else
             {
@@ -299,7 +317,7 @@ public class UIAgent : IDisposable
 
                 await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
                 {
-                    blocks.Add(block);
+                    AddBlock(block);
                 }
             }
         }
@@ -309,10 +327,24 @@ public class UIAgent : IDisposable
             AddResponseToHistory(assistantUpdates);
         }
 
-        blocks.AddRange(pipeline.Finalize());
+        foreach (var block in pipeline.Finalize())
+        {
+            AddBlock(block);
+        }
         RejectPendingPredictiveState();
 
-        return blocks;
+        return groups;
+
+        void AddBlock(ContentBlock block)
+        {
+            if (currentBlocks is null)
+            {
+                currentBlocks = new List<ContentBlock>();
+                groups.Add((block.Role, currentBlocks));
+            }
+
+            currentBlocks.Add(block);
+        }
     }
 
     internal virtual ChatResponseUpdate ApplyStateMapper(ChatResponseUpdate update)

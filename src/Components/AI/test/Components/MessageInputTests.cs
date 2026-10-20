@@ -79,6 +79,141 @@ public class MessageInputTests
     }
 
     [Fact]
+    public async Task SubmitAsync_PendingCallbackPreventsOverlappingSubmission()
+    {
+        var callbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        MessageInputContext? inputContext = null;
+        var submittedMessages = new List<ChatMessage>();
+        var callbackCount = 0;
+        var firstAttachment = new DataContent(new byte[] { 1 }, "image/png");
+        var cut = RenderMessageInput(
+            _ => ResponseEmitters.EmitTextResponse("Hi"),
+            topContent: context => builder => inputContext = context,
+            onRequest: messages => submittedMessages.Add(messages.Last()),
+            onSubmitted: async _ =>
+            {
+                if (++callbackCount == 1)
+                {
+                    callbackStarted.SetResult();
+                    await releaseCallback.Task;
+                }
+            });
+        await cut.InvokeAsync(async () =>
+        {
+            inputContext!.Text = "  First  ";
+            await inputContext.AddAttachmentAsync(firstAttachment);
+        });
+        var firstSubmission = cut.InvokeAsync(() => inputContext!.SubmitAsync());
+        await callbackStarted.Task;
+
+        try
+        {
+            await cut.InvokeAsync(() => inputContext!.SubmitAsync());
+
+            Assert.Equal(1, callbackCount);
+            Assert.Empty(submittedMessages);
+            Assert.False(inputContext!.CanSubmit);
+            Assert.Contains("disabled", GetTextareaHtml(cut.GetHtml()));
+        }
+        finally
+        {
+            releaseCallback.SetResult();
+            await firstSubmission;
+        }
+
+        Assert.Equal("First", Assert.Single(submittedMessages).Text);
+        Assert.Same(firstAttachment, Assert.Single(submittedMessages[0].Contents.OfType<DataContent>()));
+        Assert.Empty(inputContext!.Text);
+        Assert.Empty(inputContext.Attachments);
+        Assert.False(inputContext.CanSubmit);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_RejectedSendPreservesDraft()
+    {
+        var responseGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        AgentContext? agentContext = null;
+        MessageInputContext? inputContext = null;
+        Task? otherSubmission = null;
+        var cut = RenderMessageInput(
+            ct => ResponseEmitters.EmitTokensWithGate(["Hi"], _ => responseGate.Task, ct),
+            topContent: context => builder => inputContext = context,
+            onSubmitted: _ =>
+            {
+                otherSubmission = agentContext!.SendMessageAsync("Other message");
+                return Task.CompletedTask;
+            });
+        agentContext = GetAgentContext(cut);
+        var attachment = new DataContent(new byte[] { 1 }, "image/png");
+        await cut.InvokeAsync(async () =>
+        {
+            inputContext!.Text = "Draft";
+            await inputContext.AddAttachmentAsync(attachment);
+        });
+
+        try
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => cut.InvokeAsync(() => inputContext!.SubmitAsync()));
+
+            Assert.Equal("A message is already being processed.", exception.Message);
+            Assert.Equal("Draft", inputContext!.Text);
+            Assert.Same(attachment, Assert.Single(inputContext.Attachments));
+            Assert.Single(agentContext.Turns);
+            Assert.DoesNotContain("Message sent.", cut.GetHtml());
+        }
+        finally
+        {
+            responseGate.SetResult();
+            if (otherSubmission is not null)
+            {
+                await otherSubmission;
+            }
+        }
+
+        Assert.True(inputContext!.CanSubmit);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_CallbackFailurePreservesDraftAndAllowsRetry()
+    {
+        MessageInputContext? inputContext = null;
+        var callbackCount = 0;
+        var submittedMessages = new List<ChatMessage>();
+        var exception = new InvalidOperationException("Pre-send processing failed.");
+        var cut = RenderMessageInput(
+            _ => ResponseEmitters.EmitTextResponse("Hi"),
+            topContent: context => builder => inputContext = context,
+            onRequest: messages => submittedMessages.Add(messages.Last()),
+            onSubmitted: _ => ++callbackCount == 1
+                ? Task.FromException(exception)
+                : Task.CompletedTask);
+        var attachment = new DataContent(new byte[] { 1, 2, 3 }, "image/png");
+        await cut.InvokeAsync(async () =>
+        {
+            inputContext!.Text = "Draft";
+            await inputContext.AddAttachmentAsync(attachment);
+        });
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.InvokeAsync(() => inputContext!.SubmitAsync()));
+
+        Assert.Same(exception, actual);
+        Assert.Equal("Draft", inputContext!.Text);
+        Assert.Same(attachment, Assert.Single(inputContext.Attachments));
+        Assert.True(inputContext.CanSubmit);
+        Assert.Empty(submittedMessages);
+        Assert.DoesNotContain("Message sent.", cut.GetHtml());
+
+        await cut.InvokeAsync(() => inputContext.SubmitAsync());
+
+        Assert.Equal("Draft", Assert.Single(submittedMessages).Text);
+        Assert.Equal(string.Empty, inputContext.Text);
+        Assert.Empty(inputContext.Attachments);
+    }
+
+    [Fact]
     public void Textarea_InputEventUpdatesValueAttribute()
     {
         var cut = RenderMessageInput(_ => ResponseEmitters.EmitTextResponse("Hi"));
@@ -368,7 +503,8 @@ public class MessageInputTests
         string? requestingMicrophonePermissionMessage = null,
         string? microphonePermissionDeniedMessage = null,
         string? microphoneUnavailableMessage = null,
-        Action<IReadOnlyList<ChatMessage>>? onRequest = null)
+        Action<IReadOnlyList<ChatMessage>>? onRequest = null,
+        Func<ChatMessage, Task>? onSubmitted = null)
     {
         var client = new DelegatingStreamingChatClient();
         client.SetHandler((messages, options, cancellationToken) =>
@@ -426,6 +562,13 @@ public class MessageInputTests
                         8,
                         nameof(MessageInput.MicrophoneUnavailableMessage),
                         microphoneUnavailableMessage);
+                }
+                if (onSubmitted is not null)
+                {
+                    builder.AddComponentParameter(
+                        9,
+                        nameof(MessageInput.OnSubmitted),
+                        EventCallback.Factory.Create(new object(), onSubmitted));
                 }
                 builder.CloseComponent();
             });

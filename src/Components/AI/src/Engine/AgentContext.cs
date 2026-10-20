@@ -110,29 +110,32 @@ public sealed class AgentContext : IDisposable
             throw new InvalidOperationException("A message is already being processed.");
         }
 
-        var blocks = await _agent.RestoreAsync(cancellationToken);
-        _turns.Clear();
-
+        var groups = await _agent.RestoreBlockGroupsAsync(cancellationToken);
+        var turns = new List<ConversationTurn>();
         ConversationTurn? currentTurn = null;
-        foreach (var block in blocks)
+        foreach (var group in groups)
         {
-            if (block.Role == ChatRole.User)
+            if (group.Role == ChatRole.User || currentTurn is null)
             {
                 currentTurn = new ConversationTurn();
-                _turns.Add(currentTurn);
-                currentTurn.AddRequestBlock(block);
+                turns.Add(currentTurn);
             }
-            else
-            {
-                if (currentTurn is null)
-                {
-                    currentTurn = new ConversationTurn();
-                    _turns.Add(currentTurn);
-                }
 
-                currentTurn.AddResponseBlock(block);
+            foreach (var block in group.Blocks)
+            {
+                if (group.Role == ChatRole.User)
+                {
+                    currentTurn.AddRequestBlock(block);
+                }
+                else
+                {
+                    currentTurn.AddResponseBlock(block);
+                }
             }
         }
+
+        _turns.Clear();
+        _turns.AddRange(turns);
     }
 
     /// <summary>

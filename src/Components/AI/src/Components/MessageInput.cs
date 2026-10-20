@@ -29,6 +29,7 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
     private string _text = string.Empty;
     private ConversationStatus _status;
     private bool _isComposing;
+    private bool _isSubmitting;
     private bool _keyboardBusy;
     private bool _isDisposed;
 
@@ -196,6 +197,7 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
     internal bool CanSubmit =>
         !IsConversationBusy &&
         !_isComposing &&
+        !_isSubmitting &&
         (!string.IsNullOrWhiteSpace(_text) || _attachments.Count > 0);
 
     internal string? StatusMessage { get; private set; }
@@ -301,7 +303,7 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
                 ? "sc-ai-input__textarea"
                 : $"sc-ai-input__textarea {TextAreaClass}");
         builder.AddAttribute(44, "placeholder", Placeholder ?? "Type a message...");
-        builder.AddAttribute(45, "disabled", IsConversationBusy || IsComposing);
+        builder.AddAttribute(45, "disabled", IsConversationBusy || IsComposing || _isSubmitting);
         builder.AddAttribute(46, "value", _text);
         builder.AddAttribute(47, "aria-label", Label ?? Placeholder ?? "Type a message...");
         builder.AddAttribute(
@@ -476,6 +478,7 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
             return;
         }
 
+        var attachments = _attachments.ToArray();
         var text = _text.Trim();
         if (text.Length == 0)
         {
@@ -484,17 +487,39 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
 
         var message = new ChatMessage(
             ChatRole.User,
-            [new TextContent(text), .. _attachments]);
+            [new TextContent(text), .. attachments]);
 
-        _text = string.Empty;
-        _attachments.Clear();
+        _isSubmitting = true;
         ErrorMessage = null;
-        StatusMessage = "Message sent.";
+        StatusMessage = null;
         Refresh();
 
-        await OnSubmitted.InvokeAsync(message);
-        await AgentContext.SendMessageAsync(message);
-        await FocusAsync();
+        try
+        {
+            await OnSubmitted.InvokeAsync(message);
+            var sendTask = AgentContext.SendMessageAsync(message);
+            if (sendTask.IsCompleted)
+            {
+                // Surface an immediate rejection before discarding the draft.
+                await sendTask;
+            }
+
+            _text = string.Empty;
+            foreach (var attachment in attachments)
+            {
+                _attachments.Remove(attachment);
+            }
+            StatusMessage = "Message sent.";
+            Refresh();
+
+            await sendTask;
+            await FocusAsync();
+        }
+        finally
+        {
+            _isSubmitting = false;
+            Refresh();
+        }
     }
 
     internal async Task CancelAsync()
