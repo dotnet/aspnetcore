@@ -25,6 +25,17 @@ public class PackageLayoutTests
 
     [ConditionalFact]
     [RequiresBuiltPackages(AutoPausePackageId)]
+    public void AutoPausePackage_DoesNotShipRawContent()
+    {
+        using var package = PackageArchive.Open(AutoPausePackageId);
+
+        Assert.DoesNotContain(package.EntryNames, entry =>
+            entry.StartsWith("content/", StringComparison.OrdinalIgnoreCase) ||
+            entry.StartsWith("contentFiles/", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [ConditionalFact]
+    [RequiresBuiltPackages(AutoPausePackageId)]
     public void AutoPausePackage_InitializerHasFingerprintedEndpoint()
     {
         using var package = PackageArchive.Open(AutoPausePackageId);
