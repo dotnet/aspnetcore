@@ -243,7 +243,7 @@ public partial class ParameterViewTest
     [Fact]
     public void FromDictionary_ThrowsIfNullValueTargetsNonNullableValueType()
     {
-        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
             ["Count"] = null,
         });
@@ -259,7 +259,7 @@ public partial class ParameterViewTest
     [Fact]
     public void FromDictionary_AcceptsNullForNullableTargets()
     {
-        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
             ["Value"] = null,
         });
