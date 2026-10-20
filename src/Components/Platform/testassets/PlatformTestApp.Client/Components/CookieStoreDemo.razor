@@ -29,7 +29,7 @@
     <button id="delete-cookie-with-options" @onclick="DeleteWithOptionsAsync">Delete with options</button>
     <button id="delete-cookie-partitioned" @onclick="DeletePartitionedAsync">Delete partitioned</button>
 </div>
-<p id="cookie-result" role="status">@result</p>
+<p id="cookie-result" role="status" data-run="@runCount">@result</p>
 
 @code {
     // A path other than the page path shows that the Path member reaches the browser.
@@ -38,20 +38,21 @@
     private string name = "cookie";
     private string value = "initial";
     private string result = "No operation has run.";
+    private int runCount;
 
-    private async Task SetAsync()
+    private Task SetAsync() => RunAsync("Set", async () =>
     {
         await Browser.Window.CookieStore.SetAsync(name, value);
-        result = $"Set: {name}";
-    }
+        return name;
+    });
 
-    private async Task SetWithDefaultsAsync()
+    private Task SetWithDefaultsAsync() => RunAsync("Set with defaults", async () =>
     {
         await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value });
-        result = $"Set with defaults: {name}";
-    }
+        return name;
+    });
 
-    private async Task SetWithOptionsAsync()
+    private Task SetWithOptionsAsync() => RunAsync("Set with options", async () =>
     {
         await Browser.Window.CookieStore.SetAsync(new CookieInit
         {
@@ -61,10 +62,10 @@
             Path = OptionsPath,
             SameSite = CookieSameSite.Lax,
         });
-        result = $"Set with options: {name}";
-    }
+        return name;
+    });
 
-    private async Task SetWithMaxAgeAsync()
+    private Task SetWithMaxAgeAsync() => RunAsync("Set with max age", async () =>
     {
         await Browser.Window.CookieStore.SetAsync(new CookieInit
         {
@@ -73,82 +74,81 @@
             MaxAge = 3600,
             SameSite = CookieSameSite.None,
         });
-        result = $"Set with max age: {name}";
-    }
+        return name;
+    });
 
-    private async Task SetWithOtherDomainAsync()
+    private Task SetWithOtherDomainAsync() => RunAsync("Set with another domain", async () =>
     {
         // The browser rejects a domain that does not match the page, so the error shows that Domain reaches it.
         try
         {
             await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, Domain = "example.com" });
-            result = $"Set with another domain: {name}";
+            return name;
         }
         catch (JSException)
         {
-            result = "Another domain was rejected.";
+            return "Rejected.";
         }
-    }
+    });
 
-    private async Task SetPartitionedAsync()
+    private Task SetPartitionedAsync() => RunAsync("Set partitioned", async () =>
     {
 #pragma warning disable ASP0040 // Partitioned is experimental.
         await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, Partitioned = true });
 #pragma warning restore ASP0040
-        result = $"Set partitioned: {name}";
-    }
+        return name;
+    });
 
-    private async Task GetAsync()
+    private Task GetAsync() => RunAsync("Get", async () =>
     {
         try
         {
-            result = Format(await Browser.Window.CookieStore.GetAsync(name));
+            return Format(await Browser.Window.CookieStore.GetAsync(name));
         }
         catch (NotSupportedException ex)
         {
-            result = $"Not supported: {ex.InnerException?.GetType().Name}";
+            return $"Not supported: {ex.InnerException?.GetType().Name}";
         }
-    }
+    });
 
-    private async Task GetWithOptionsAsync()
-    {
-        result = Format(await Browser.Window.CookieStore.GetAsync(new CookieStoreGetOptions { Name = name }));
-    }
+    private Task GetWithOptionsAsync() => RunAsync("Get with options", async () =>
+        Format(await Browser.Window.CookieStore.GetAsync(new CookieStoreGetOptions { Name = name })));
 
-    private async Task GetAllAsync()
-    {
-        result = Format(await Browser.Window.CookieStore.GetAllAsync());
-    }
+    private Task GetAllAsync() => RunAsync("Get all", async () =>
+        Format(await Browser.Window.CookieStore.GetAllAsync()));
 
-    private async Task GetAllWithNameAsync()
-    {
-        result = Format(await Browser.Window.CookieStore.GetAllAsync(name));
-    }
+    private Task GetAllWithNameAsync() => RunAsync("Get all with name", async () =>
+        Format(await Browser.Window.CookieStore.GetAllAsync(name)));
 
-    private async Task GetAllWithOptionsAsync()
-    {
-        // The browser accepts only the URL of the current page.
-        result = Format(await Browser.Window.CookieStore.GetAllAsync(new CookieStoreGetOptions { Name = name, Url = Navigation.Uri }));
-    }
+    // The browser accepts only the URL of the current page.
+    private Task GetAllWithOptionsAsync() => RunAsync("Get all with options", async () =>
+        Format(await Browser.Window.CookieStore.GetAllAsync(new CookieStoreGetOptions { Name = name, Url = Navigation.Uri })));
 
-    private async Task DeleteAsync()
+    private Task DeleteAsync() => RunAsync("Delete", async () =>
     {
         await Browser.Window.CookieStore.DeleteAsync(name);
-        result = $"Deleted: {name}";
-    }
+        return name;
+    });
 
-    private async Task DeleteWithOptionsAsync()
+    private Task DeleteWithOptionsAsync() => RunAsync("Delete with options", async () =>
     {
         await Browser.Window.CookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = name, Path = OptionsPath });
-        result = $"Deleted with options: {name}";
-    }
+        return name;
+    });
 
-    private async Task DeletePartitionedAsync()
+    private Task DeletePartitionedAsync() => RunAsync("Delete partitioned", async () =>
     {
 #pragma warning disable ASP0040 // Partitioned is experimental.
         await Browser.Window.CookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = name, Partitioned = true });
 #pragma warning restore ASP0040
-        result = $"Deleted partitioned: {name}";
+        return name;
+    });
+
+    private async Task RunAsync(string operation, Func<Task<string>> run)
+    {
+        result = $"{operation}: {await run()}";
+        // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
+        runCount++;
     }
 
     private static string Format(CookieListItem? cookie)

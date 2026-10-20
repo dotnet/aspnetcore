@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.AspNetCore.Components.Testing.Playwright;
 using Microsoft.Playwright;
@@ -40,15 +41,15 @@ public partial class CookieStoreTests : BrowserTest
             await RunAsync("#set-cookie", $"Set: {name}");
             AssertDefaultAttributes(await GetBrowserCookieAsync(name));
 
-            await RunAsync("#get-cookie", $"Found: {name}=value");
-            await RunAsync("#get-cookie-with-options", $"Found: {name}=value");
-            await RunAsync("#get-all-cookies", $"Found: {name}=value");
-            await RunAsync("#get-all-cookies-with-name", $"Found: {name}=value");
-            await RunAsync("#get-all-cookies-with-options", $"Found: {name}=value");
+            await RunAsync("#get-cookie", $"Get: Found: {name}=value");
+            await RunAsync("#get-cookie-with-options", $"Get with options: Found: {name}=value");
+            await RunAsync("#get-all-cookies", $"Get all: Found: {name}=value");
+            await RunAsync("#get-all-cookies-with-name", $"Get all with name: Found: {name}=value");
+            await RunAsync("#get-all-cookies-with-options", $"Get all with options: Found: {name}=value");
 
-            await RunAsync("#delete-cookie", $"Deleted: {name}");
-            await RunAsync("#get-cookie", "Cookie is missing.");
-            await RunAsync("#get-all-cookies", "No cookies.");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
+            await RunAsync("#get-cookie", "Get: Cookie is missing.");
+            await RunAsync("#get-all-cookies", "Get all: No cookies.");
         }
     }
 
@@ -68,12 +69,12 @@ public partial class CookieStoreTests : BrowserTest
             }
 
             // Cookies with the same path come back in the order of creation.
-            await RunAsync("#get-all-cookies", $"Found: {prefix}-first=value; {prefix}-second=value");
+            await RunAsync("#get-all-cookies", $"Get all: Found: {prefix}-first=value; {prefix}-second=value");
 
             foreach (var name in new[] { $"{prefix}-first", $"{prefix}-second" })
             {
                 await _page.Locator("#cookie-name").FillAsync(name);
-                await RunAsync("#delete-cookie", $"Deleted: {name}");
+                await RunAsync("#delete-cookie", $"Delete: {name}");
             }
         }
     }
@@ -90,7 +91,7 @@ public partial class CookieStoreTests : BrowserTest
 
             await RunAsync("#set-cookie-with-defaults", $"Set with defaults: {name}");
             AssertDefaultAttributes(await GetBrowserCookieAsync(name));
-            await RunAsync("#delete-cookie", $"Deleted: {name}");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
 
             await RunAsync("#set-cookie-with-options", $"Set with options: {name}");
             var cookie = await GetBrowserCookieAsync(name);
@@ -99,7 +100,7 @@ public partial class CookieStoreTests : BrowserTest
             Assert.AreEqual(SameSiteAttribute.Lax, cookie.SameSite);
             AssertExpiresIn(cookie, TimeSpan.FromDays(1));
 
-            await RunAsync("#delete-cookie-with-options", $"Deleted with options: {name}");
+            await RunAsync("#delete-cookie-with-options", $"Delete with options: {name}");
             Assert.DoesNotContain(name, (await _context.CookiesAsync()).Select(browserCookie => browserCookie.Name));
 
             await RunAsync("#set-cookie-with-max-age", $"Set with max age: {name}");
@@ -107,9 +108,9 @@ public partial class CookieStoreTests : BrowserTest
             Assert.AreEqual("/", cookie.Path);
             Assert.AreEqual(SameSiteAttribute.None, cookie.SameSite);
             AssertExpiresIn(cookie, TimeSpan.FromHours(1));
-            await RunAsync("#delete-cookie", $"Deleted: {name}");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
 
-            await RunAsync("#set-cookie-with-other-domain", "Another domain was rejected.");
+            await RunAsync("#set-cookie-with-other-domain", "Set with another domain: Rejected.");
             Assert.DoesNotContain(name, (await _context.CookiesAsync()).Select(browserCookie => browserCookie.Name));
         }
     }
@@ -127,15 +128,15 @@ public partial class CookieStoreTests : BrowserTest
             await RunAsync("#set-cookie-partitioned", $"Set partitioned: {name}");
             var cookie = await GetBrowserCookieAsync(name);
             Assert.IsNotNull(cookie.PartitionKey);
-            await RunAsync("#get-cookie", $"Found: {name}=initial");
+            await RunAsync("#get-cookie", $"Get: Found: {name}=initial");
 
             // Deleting without Partitioned leaves the partitioned cookie in place.
-            await RunAsync("#delete-cookie", $"Deleted: {name}");
-            await RunAsync("#get-cookie", $"Found: {name}=initial");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
+            await RunAsync("#get-cookie", $"Get: Found: {name}=initial");
             Assert.IsNotNull((await GetBrowserCookieAsync(name)).PartitionKey);
 
-            await RunAsync("#delete-cookie-partitioned", $"Deleted partitioned: {name}");
-            await RunAsync("#get-cookie", "Cookie is missing.");
+            await RunAsync("#delete-cookie-partitioned", $"Delete partitioned: {name}");
+            await RunAsync("#get-cookie", "Get: Cookie is missing.");
             Assert.DoesNotContain(name, (await _context.CookiesAsync()).Select(browserCookie => browserCookie.Name));
         }
     }
@@ -151,7 +152,7 @@ public partial class CookieStoreTests : BrowserTest
             await NavigateAsync(path, "#get-cookie");
             Assert.IsFalse(await _page.EvaluateAsync<bool>("'cookieStore' in window"));
 
-            await RunAsync("#get-cookie", "Not supported: JSException");
+            await RunAsync("#get-cookie", "Get: Not supported: JSException");
         }
     }
 
@@ -163,8 +164,13 @@ public partial class CookieStoreTests : BrowserTest
 
     private async Task RunAsync(string buttonSelector, string expectedResult)
     {
+        var result = _page.Locator("#cookie-result");
+        // Waiting for the next run keeps a step from passing on the text of the previous step.
+        var nextRun = int.Parse(await result.GetAttributeAsync("data-run") ?? "", CultureInfo.InvariantCulture) + 1;
+
         await _page.Locator(buttonSelector).ClickAsync();
-        await Expect(_page.Locator("#cookie-result")).ToHaveTextAsync(expectedResult);
+        await Expect(result).ToHaveAttributeAsync("data-run", nextRun.ToString(CultureInfo.InvariantCulture));
+        await Expect(result).ToHaveTextAsync(expectedResult);
     }
 
     private async Task<BrowserContextCookiesResult> GetBrowserCookieAsync(string name)
