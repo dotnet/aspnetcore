@@ -9,6 +9,8 @@ Microsoft.AspNetCore.Components.Platform.CookieInit.MaxAge.get -> long?
 Microsoft.AspNetCore.Components.Platform.CookieInit.MaxAge.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieInit.Name.get -> string!
 Microsoft.AspNetCore.Components.Platform.CookieInit.Name.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Partitioned.get -> bool
+Microsoft.AspNetCore.Components.Platform.CookieInit.Partitioned.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieInit.Path.get -> string!
 Microsoft.AspNetCore.Components.Platform.CookieInit.Path.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieInit.SameSite.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
@@ -41,6 +43,8 @@ Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Domain.get -> 
 Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Domain.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Name.get -> string!
 Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Name.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Partitioned.get -> bool
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Partitioned.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Path.get -> string!
 Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Path.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions

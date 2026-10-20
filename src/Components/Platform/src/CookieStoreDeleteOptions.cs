@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Components.Platform;
@@ -26,4 +27,13 @@ public sealed class CookieStoreDeleteOptions
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string Path { get; set; } = "/";
+
+    /// <summary>
+    /// Gets or sets a value that indicates whether the cookie to delete is partitioned. The default is <see langword="false"/>.
+    /// </summary>
+    /// <remarks>
+    /// A browser that does not support partitioned cookies ignores this setting and deletes the cookie that is not partitioned.
+    /// </remarks>
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public bool Partitioned { get; set; }
 }

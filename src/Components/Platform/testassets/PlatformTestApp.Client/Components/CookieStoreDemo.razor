@@ -15,6 +15,7 @@
     <button id="set-cookie-with-options" @onclick="SetWithOptionsAsync">Set with options</button>
     <button id="set-cookie-with-max-age" @onclick="SetWithMaxAgeAsync">Set with max age</button>
     <button id="set-cookie-with-other-domain" @onclick="SetWithOtherDomainAsync">Set with another domain</button>
+    <button id="set-cookie-partitioned" @onclick="SetPartitionedAsync">Set partitioned</button>
 </div>
 <div>
     <button id="get-cookie" @onclick="GetAsync">Get</button>
@@ -26,6 +27,7 @@
 <div>
     <button id="delete-cookie" @onclick="DeleteAsync">Delete</button>
     <button id="delete-cookie-with-options" @onclick="DeleteWithOptionsAsync">Delete with options</button>
+    <button id="delete-cookie-partitioned" @onclick="DeletePartitionedAsync">Delete partitioned</button>
 </div>
 <p id="cookie-result" role="status">@result</p>
 
@@ -88,6 +90,14 @@
         }
     }
 
+    private async Task SetPartitionedAsync()
+    {
+#pragma warning disable ASP0040 // Partitioned is experimental.
+        await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, Partitioned = true });
+#pragma warning restore ASP0040
+        result = $"Set partitioned: {name}";
+    }
+
     private async Task GetAsync()
     {
         try
@@ -131,6 +141,14 @@
     {
         await Browser.Window.CookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = name, Path = OptionsPath });
         result = $"Deleted with options: {name}";
+    }
+
+    private async Task DeletePartitionedAsync()
+    {
+#pragma warning disable ASP0040 // Partitioned is experimental.
+        await Browser.Window.CookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = name, Partitioned = true });
+#pragma warning restore ASP0040
+        result = $"Deleted partitioned: {name}";
     }
 
     private static string Format(CookieListItem? cookie)

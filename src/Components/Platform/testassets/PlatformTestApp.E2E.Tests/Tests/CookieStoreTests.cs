@@ -115,6 +115,32 @@ public partial class CookieStoreTests : BrowserTest
     }
 
     [TestMethod]
+    public async Task CookieStore_SetsAndDeletesPartitionedCookies()
+    {
+        foreach (var path in CookieStorePaths)
+        {
+            await NavigateAsync(path, "#set-cookie");
+
+            var name = path == "/cookiestore-server" ? "server-partitioned" : "wasm-partitioned";
+            await _page.Locator("#cookie-name").FillAsync(name);
+
+            await RunAsync("#set-cookie-partitioned", $"Set partitioned: {name}");
+            var cookie = await GetBrowserCookieAsync(name);
+            Assert.IsNotNull(cookie.PartitionKey);
+            await RunAsync("#get-cookie", $"Found: {name}=initial");
+
+            // Deleting without Partitioned leaves the partitioned cookie in place.
+            await RunAsync("#delete-cookie", $"Deleted: {name}");
+            await RunAsync("#get-cookie", $"Found: {name}=initial");
+            Assert.IsNotNull((await GetBrowserCookieAsync(name)).PartitionKey);
+
+            await RunAsync("#delete-cookie-partitioned", $"Deleted partitioned: {name}");
+            await RunAsync("#get-cookie", "Cookie is missing.");
+            Assert.DoesNotContain(name, (await _context.CookiesAsync()).Select(browserCookie => browserCookie.Name));
+        }
+    }
+
+    [TestMethod]
     public async Task CookieStore_ThrowsNotSupportedExceptionWithoutTheBrowserApi()
     {
         // Same as a page that is not a secure context. The context belongs to this test only.

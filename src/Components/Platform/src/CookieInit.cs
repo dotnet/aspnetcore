@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Components.Platform;
@@ -43,6 +44,15 @@ public sealed class CookieInit
     /// Gets or sets the SameSite attribute of the cookie. The default is <see cref="CookieSameSite.Strict"/>.
     /// </summary>
     public CookieSameSite SameSite { get; set; } = CookieSameSite.Strict;
+
+    /// <summary>
+    /// Gets or sets a value that indicates whether the cookie is partitioned by the top-level site. The default is <see langword="false"/>.
+    /// </summary>
+    /// <remarks>
+    /// A browser that does not support partitioned cookies ignores this setting and creates a cookie that is not partitioned.
+    /// </remarks>
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public bool Partitioned { get; set; }
 
     // Chromium crashes the page on maxAge: null, although null means the same as a missing member.
     /// <summary>

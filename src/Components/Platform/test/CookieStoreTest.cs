@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
+#pragma warning disable ASP0040 // Partitioned is experimental.
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -239,6 +240,7 @@ public class CookieStoreTest
             Domain = "example.com",
             Path = "/app",
             SameSite = CookieSameSite.Lax,
+            Partitioned = true,
             MaxAge = 3600,
         });
         await cookieStore.SetAsync(new CookieInit { Name = "c", Value = "3", Path = null! });
@@ -246,9 +248,9 @@ public class CookieStoreTest
 
         Assert.Equal(
             [
-                """[{"name":"a","value":"1","path":"/","sameSite":"strict"}]""",
-                """[{"name":"b","value":"2","expires":1767225600000,"domain":"example.com","path":"/app","sameSite":"lax","maxAge":3600}]""",
-                """[{"name":"c","value":"3","sameSite":"strict"}]""",
+                """[{"name":"a","value":"1","path":"/","sameSite":"strict","partitioned":false}]""",
+                """[{"name":"b","value":"2","expires":1767225600000,"domain":"example.com","path":"/app","sameSite":"lax","partitioned":true,"maxAge":3600}]""",
+                """[{"name":"c","value":"3","sameSite":"strict","partitioned":false}]""",
                 """["d","4"]""",
             ],
             jsRuntime.ArgumentsSentTo("set"));
@@ -292,14 +294,14 @@ public class CookieStoreTest
         var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
 
         await cookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = "a" });
-        await cookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = "b", Domain = "example.com", Path = "/app" });
+        await cookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = "b", Domain = "example.com", Path = "/app", Partitioned = true });
         await cookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = "c", Path = null! });
 
         Assert.Equal(
             [
-                """[{"name":"a","path":"/"}]""",
-                """[{"name":"b","domain":"example.com","path":"/app"}]""",
-                """[{"name":"c"}]""",
+                """[{"name":"a","path":"/","partitioned":false}]""",
+                """[{"name":"b","domain":"example.com","path":"/app","partitioned":true}]""",
+                """[{"name":"c","partitioned":false}]""",
             ],
             jsRuntime.ArgumentsSentTo("delete"));
     }
