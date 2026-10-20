@@ -42,6 +42,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         }
 
         services.AddHttpContextAccessor();
+        services.AddAuthorizationCore();
         services.AddCascadingAuthenticationState();
 
         if (Configuration.GetValue<bool>("UseSession"))

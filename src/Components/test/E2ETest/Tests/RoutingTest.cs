@@ -923,7 +923,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68642")]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_PushState()
     {
         SetUrlViaPushState("/");
@@ -1158,9 +1157,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66041")]
     public void NavigationLock_CanBlockExternalNavigation()
     {
+        InitializeBrowser(BrowserFixture.NavigationPromptContext);
+        InitializeAsyncCore();
+
         SetUrlViaPushState("/");
 
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
@@ -1173,9 +1174,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         SetAbsluteUrlViaPushState($"{_serverFixture.RootUri}/myexternalpath");
 
-        // Dismiss the confirmation prompt that pops up
-        Browser.SwitchTo().Alert().Dismiss();
-
         // The navigation was canceled and we're on the sarting URI
         var expectedStartingUri = $"{_serverFixture.RootUri}subdir/";
         Browser.Equal(expectedStartingUri, () => app.FindElement(By.Id("test-info")).Text);
@@ -1184,9 +1182,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.confirm-external-navigation")).Click();
 
         SetAbsluteUrlViaPushState($"{_serverFixture.RootUri}/myexternalpath2");
-
-        // Dismiss the confirmation prompt that pops up
-        Browser.SwitchTo().Alert().Dismiss();
 
         // The navigation was canceled again and we're on the sarting URI
         Browser.Equal(expectedStartingUri, () => app.FindElement(By.Id("test-info")).Text);

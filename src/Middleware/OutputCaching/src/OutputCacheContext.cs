@@ -81,6 +81,8 @@ public sealed class OutputCacheContext
 
     internal bool ResponseStarted { get; set; }
 
+    internal bool IsAuthenticatedOnRequest { get; set; }
+
     internal Stream OriginalResponseStream { get; set; } = default!;
 
     internal OutputCacheStream OutputCacheStream { get; set; } = default!;

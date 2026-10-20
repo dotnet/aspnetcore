@@ -10,8 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
-    <Reference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
   </ItemGroup>
 
 </Project>

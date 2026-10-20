@@ -32,7 +32,7 @@ public class MessageBufferTests
 
         var count = 0;
         while (count < 100)
-        { 
+        {
             var res = await pipes.Application.Input.ReadAsync().DefaultTimeout();
 
             var buffer = res.Buffer;
@@ -300,6 +300,27 @@ public class MessageBufferTests
         Assert.Throws<InvalidOperationException>(() => messageBuffer.ShouldProcessMessage(new SequenceMessage(2)));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(long.MinValue)]
+    public void ReceiveSequenceMessageWithNonPositiveIDThrows(long sequenceId)
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000, NullLogger.Instance);
+
+        Assert.True(messageBuffer.ShouldProcessMessage(new InvocationMessage("1", "Test", Array.Empty<object>())));
+        Assert.True(messageBuffer.ShouldProcessMessage(new InvocationMessage("2", "Test", Array.Empty<object>())));
+
+        var exception = Assert.Throws<InvalidOperationException>(() => messageBuffer.ShouldProcessMessage(new SequenceMessage(sequenceId)));
+        Assert.Equal("Sequence ID must be greater than 0.", exception.Message);
+
+        Assert.True(messageBuffer.ShouldProcessMessage(new InvocationMessage("3", "Test", Array.Empty<object>())));
+    }
+
     [Fact]
     public async Task WriteManyMessagesAckSomeProperlyBuffers()
     {
@@ -342,6 +363,68 @@ public class MessageBufferTests
         }
 
         Assert.False(pipes.Application.Input.TryRead(out res));
+    }
+
+    [Fact]
+    public async Task BufferedMessagesRemainOrderedAfterAcksAndAppends()
+    {
+        // Reclaim and append more blocks than the pool can hold.
+        const int initialMessageCount = 131;
+        const int ackedMessageCount = 115;
+        const int appendedMessageCount = 120;
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        var timeProvider = new FakeTimeProvider();
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance, timeProvider);
+
+        await WriteMessagesAsync(1, initialMessageCount);
+        await messageBuffer.AckAsync(new AckMessage(ackedMessageCount)).DefaultTimeout();
+        await WriteMessagesAsync(initialMessageCount + 1, appendedMessageCount);
+
+        var messageCount = initialMessageCount + appendedMessageCount;
+        await AssertResentMessagesAsync(ackedMessageCount + 1, messageCount - ackedMessageCount);
+
+        await messageBuffer.AckAsync(new AckMessage(messageCount)).DefaultTimeout();
+        await AssertResentMessagesAsync(messageCount + 1, 0);
+
+        await WriteMessagesAsync(messageCount + 1, 12);
+        await AssertResentMessagesAsync(messageCount + 1, 12);
+
+        async Task WriteMessagesAsync(int firstSequenceId, int count)
+        {
+            for (var i = firstSequenceId; i < firstSequenceId + count; i++)
+            {
+                await messageBuffer.WriteAsync(new StreamItemMessage("1", i), CancellationToken.None).DefaultTimeout();
+            }
+        }
+
+        async Task AssertResentMessagesAsync(int firstSequenceId, int count)
+        {
+            pipes.Application.Input.Complete();
+            DuplexPipe.UpdateConnectionPair(ref pipes, connection);
+            await messageBuffer.ResendAsync(pipes.Transport.Output).DefaultTimeout();
+
+            var res = await pipes.Application.Input.ReadAsync().DefaultTimeout();
+            var buffer = res.Buffer;
+            Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+            var sequenceMessage = Assert.IsType<SequenceMessage>(message);
+            Assert.Equal(firstSequenceId, sequenceMessage.SequenceId);
+            pipes.Application.Input.AdvanceTo(buffer.Start);
+
+            for (var i = firstSequenceId; i < firstSequenceId + count; i++)
+            {
+                res = await pipes.Application.Input.ReadAsync().DefaultTimeout();
+                buffer = res.Buffer;
+                Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+                var streamItemMessage = Assert.IsType<StreamItemMessage>(message);
+                Assert.Equal(i, Assert.IsType<JsonElement>(streamItemMessage.Item).GetInt32());
+                pipes.Application.Input.AdvanceTo(buffer.Start);
+            }
+
+            Assert.False(pipes.Application.Input.TryRead(out _));
+        }
     }
 
     [Fact]
