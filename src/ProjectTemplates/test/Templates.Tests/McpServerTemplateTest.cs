@@ -47,13 +47,13 @@ public class McpServerTemplateTest : LoggedTest
     [ConditionalFact]
     public async Task McpServerTemplate_Local_SelfContainedFalse()
     {
-        await McpServerTemplateCoreAsync("local", args: ["--self-contained", "false"]);
+        await McpServerTemplateCoreAsync("local", selfContained: false, args: ["--self-contained", "false"]);
     }
 
     [ConditionalFact]
     public async Task McpServerTemplate_Remote_SelfContainedFalse()
     {
-        await McpServerTemplateCoreAsync("remote", args: ["--self-contained", "false"]);
+        await McpServerTemplateCoreAsync("remote", selfContained: false, args: ["--self-contained", "false"]);
     }
 
     [ConditionalFact]
@@ -70,12 +70,12 @@ public class McpServerTemplateTest : LoggedTest
         await McpServerTemplateCoreAsync("remote", args: [ArgConstants.PublishNativeAot]);
     }
 
-    private async Task McpServerTemplateCoreAsync(string transport, string[] args = null)
+    private async Task McpServerTemplateCoreAsync(string transport, bool selfContained = true, string[] args = null)
     {
         var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
 
         var project = await ProjectFactory.CreateProject(Output);
-        if (nativeAot)
+        if (selfContained)
         {
             project.SetCurrentRuntimeIdentifier();
         }
@@ -86,7 +86,11 @@ public class McpServerTemplateTest : LoggedTest
             allArgs.AddRange(args);
         }
 
-        await project.RunDotNetNewAsync("mcpserver", args: allArgs.ToArray());
+        var runtimeArgs = selfContained
+            ? $"-r {project.RuntimeIdentifier} /p:RuntimeIdentifiers={project.RuntimeIdentifier}"
+            : null;
+
+        await project.RunDotNetNewAsync("mcpserver", args: allArgs.ToArray(), restoreArgs: runtimeArgs);
 
         if (transport == "remote")
         {
@@ -100,12 +104,12 @@ public class McpServerTemplateTest : LoggedTest
         }
 
         // Force a restore if native AOT so that RID-specific assets are restored
-        await project.RunDotNetPublishAsync(noRestore: !nativeAot);
+        await project.RunDotNetPublishAsync(additionalArgs: runtimeArgs, noRestore: !nativeAot);
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
-        await project.RunDotNetBuildAsync();
+        await project.RunDotNetBuildAsync(additionalArgs: runtimeArgs);
 
         if (transport == "local")
         {
