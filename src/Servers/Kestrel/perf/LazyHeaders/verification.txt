@@ -120,3 +120,18 @@ Baseline import defines LAZY_HEADERS_BASELINE only to omit the new HTTP/1 named-
 Historical JSON/CSV/raw measurements and DLL hashes above remain from the earlier multi-protocol prototype.
 They were not rerun or relabeled as measurements of this revision.
 No Crank jobs ran. HTTP/1.1 end-to-end baseline/off/on comparisons remain outstanding.
+
+=== new narrowed HTTP/1 diagnostic run ===
+Source and fixture: dff3b6a81dd5be2e7e76e706919293e76ef4d1df
+Shipping code: 651a4e198ff654bcb19d3a81af23055f9503c97b
+Shipping baseline: 2d105dd1fd119edff9a797a1b1aeca6d771c6134 (unchanged)
+Fixture SHA256: e8279f1ede552663f0ac97ad703e5087f644d81234d73d686d6a0bfb9baee1e9
+Both runs completed 16 of 16 benchmarks; all statistics have at least 6 retained values.
+Full JSON and exact compressed raw output: http1-only/{head,base}.full.json and http1-only/{head,base}.raw.txt.gz
+Derived 32-row CSV: http1-only/measurements.csv
+Head then baseline, shared container, not interleaved or isolated.
+Same Release in-process debug configuration and run arguments documented in README.
+Changing ignored HTTP/1 values: baseline/off/on allocations 88/88/0 bytes per operation.
+Baseline/off/on means: 45.59/47.68/25.45 ns.
+Stable read: 0 bytes for each; 15.61/18.92/25.81 ns.
+Narrow allocation mechanism only, not an overall win or Crank/end-to-end evidence.

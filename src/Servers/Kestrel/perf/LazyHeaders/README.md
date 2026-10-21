@@ -2,7 +2,7 @@
 
 Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962), not a shipping optimization. **No Crank benchmark has run, and no end-to-end throughput improvement is established.** The allocation result below is a diagnostic result only.
 
-**Current scope: HTTP/1.1 only.** The initial multi-protocol prototype and its raw measurements remain in history. The current implementation keeps HPACK/QPACK and HTTP/2/HTTP/3 literal-name ingestion eager even with the switch enabled. Their lazy-allocation experiments and performance comparisons are deferred; compatibility checks remain. The recorded timing table predates this narrowing and is not a measurement of the revised implementation.
+**Current scope: HTTP/1.1 only.** The initial multi-protocol prototype and its raw measurements remain in history. The current implementation keeps HPACK/QPACK and HTTP/2/HTTP/3 literal-name ingestion eager even with the switch enabled. Their lazy-allocation experiments and performance comparisons are deferred; compatibility checks remain. A new HTTP/1 diagnostic comparison is recorded below, separately from the historical table.
 
 ## Hypothesis and alternatives
 
@@ -64,6 +64,31 @@ dotnet test src/Servers/Kestrel/test/InMemory.FunctionalTests/InMemory.Functiona
 The initial bootstrap used `./eng/build.sh --restore --no-build --projects '<absolute Core/test/*.csproj>' /p:NuGetAudit=false` because audit metadata was unavailable. Dependency restore also needed invocation-only `--source` overrides for `https://api.nuget.org/v3/index.json`, `https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet12/nuget/v3/index.json`, and `https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json` after some public mirror downloads failed. Repository NuGet configuration and SDK pins were not changed.
 
 ## Diagnostic measurements
+
+### HTTP/1-only revision
+
+Measured prototype/fixture: `dff3b6a81dd5be2e7e76e706919293e76ef4d1df` (shipping code from `651a4e198ff654bcb19d3a81af23055f9503c97b`).
+Unmodified shipping baseline: `2d105dd1fd119edff9a797a1b1aeca6d771c6134`.
+Fixture SHA-256: `e8279f1ede552663f0ac97ad703e5087f644d81234d73d686d6a0bfb9baee1e9`.
+
+Both successful runs contain 16 cases: off/on x stable/changing x ignore/read/enumerate/duplicate, HTTP/1 ingestion only. The baseline import compiles the same fixture with `LAZY_HEADERS_BASELINE` solely to omit the new opt-in argument against the old API. Baseline on-switch rows remain eager; compare against baseline off-switch rows.
+
+| Values / access | Baseline ns | Head off ns | Head on ns | Bytes/request, base / off / on |
+| --- | ---: | ---: | ---: | ---: |
+| Stable / ignored | 16.20 | 19.20 | 24.80 | 0 / 0 / 0 |
+| Stable / read | 15.61 | 18.92 | 25.81 | 0 / 0 / 0 |
+| Stable / enumerate | 34.18 | 37.65 | 45.55 | 0 / 0 / 0 |
+| Stable / duplicate | 81.30 | 86.38 | 93.20 | 176 / 176 / 176 |
+| Changing / ignored | 45.59 | 47.68 | 25.45 | 88 / 88 / 0 |
+| Changing / read | 44.76 | 47.54 | 50.65 | 88 / 88 / 88 |
+| Changing / enumerate | 61.58 | 66.29 | 62.90 | 88 / 88 / 88 |
+| Changing / duplicate | 82.43 | 89.08 | 91.99 | 176 / 176 / 176 |
+
+[Head JSON](http1-only/head.full.json), [baseline JSON](http1-only/base.full.json), [32 derived rows with confidence margins](http1-only/measurements.csv), [head raw output](http1-only/head.raw.txt.gz), and [baseline raw output](http1-only/base.raw.txt.gz) preserve the new results and embedded environment. Release, BenchmarkDotNet 0.13.0, in-process emit, server GC, SDK `11.0.100-rc.1.26420.103`, runtime `12.0.0-alpha.1.26473.114`; 3 warmups, 8 measurement iterations at 100 ms, one launch, 6-8 retained measurements. Runs were sequential head then baseline on the same shared two-core AMD EPYC container, not interleaved or isolated.
+
+The allocation mechanism still works for changing unread HTTP/1 values, but stable/read/default-off timings expose costs. These diagnostic rows do not establish controlled cross-run significance, acceptable regressions, or end-to-end improvement. The parser-version gate and networking are not exercised by this collection-level fixture. Use the reproduction commands below with the current fixture/import; Crank remains the required outcome measurement.
+
+### Historical multi-protocol revision
 
 **Historical multi-protocol results, not current-head measurements.** The HTTP/1.1-only revision changes the ingestion signature, protocol gate, and fixture call. Do not relabel the old results or DLL hashes as measurements of the current code. New HTTP/1.1 baseline/off/on Crank comparisons remain required.
 
