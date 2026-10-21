@@ -169,13 +169,13 @@ After that setup is supplied, the concrete run command is:
 ```sh
 crank --config src/Servers/Kestrel/perf/lazy-headers.crank.yml \
   --config "$AUTHORIZED_PROFILE_CONFIG" --scenario lazy-headers --profile "$AUTHORIZED_PROFILE" \
-  --application.sources.default.localFolder "$HEAD_PUBLISH" \
+  --application.source.localFolder "$HEAD_PUBLISH" \
   --variable access=ignore --variable lazy=true --variable headerMode=changing \
   --variable headerScript=https://raw.githubusercontent.com/dotnet/aspnetcore/8065742caba07399236ab62a5bc9db7c1424696e/src/Servers/Kestrel/perf/lazy-headers.wrk.lua \
   --json head-on-ignore-changing.json
 ```
 
-First use `--debug resolved.json` and inspect paths, script, pinned versions, and endpoints. For the baseline use `BASE_PUBLISH` and `lazy=false`; for the default-off control use `HEAD_PUBLISH` and `lazy=false`. The configuration's branch URL is a convenience default only; the immutable script URL above is mandatory for recorded results.
+First use `--debug resolved.json` and assert that `Jobs.application.Sources.default.LocalFolder` equals the intended absolute payload directory; also inspect script, pinned versions, and endpoints. The pinned controller accepts the legacy `--application.source.localFolder` override for this YAML's `source:` shape. `--application.sources.default.localFolder` can silently retain the wrong configuration-relative folder and must not be used here. For the baseline use `BASE_PUBLISH` and `lazy=false`; for the default-off control use `HEAD_PUBLISH` and `lazy=false`. The configuration's branch URL is a convenience default only; the immutable script URL above is mandatory for recorded results.
 
 Run the full 3 accesses x 3 header modes x 3 variants matrix, with at least five interleaved/reordered repeats per case. Keep concurrency, request sizes, SDK/runtime, GC, machine configuration, and client revisions constant. The configuration starts with 256 connections / 16 threads / 15 s warmup / 30 s measurement; also examine low-connection reuse and cold-connection cases. **Keep pipeline=1:** the imported wrk job selects a different script when pipeline exceeds one, which would invalidate this workload.
 
