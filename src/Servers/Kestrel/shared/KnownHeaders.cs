@@ -392,7 +392,11 @@ public class KnownHeaders
         else
         {
             return $@"flag = {header.FlagBit()};
-                    values = ref _headers._{header.Identifier};
+                    {(header.Name == HeaderNames.UserAgent ? @"if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
+                    {
+                        return true;
+                    }
+                    " : "")}values = ref _headers._{header.Identifier};
                     nameStr = {header.StaticIdentifier};
                     break;";
         }
@@ -436,7 +440,11 @@ public class KnownHeaders
             {
                 return $@"
                         {extraIndent}flag = {header.FlagBit()};
-                        {extraIndent}values = ref _headers._{header.Identifier};
+                        {extraIndent}{(header.Name == HeaderNames.UserAgent ? $@"if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
+                        {extraIndent}{{
+                        {extraIndent}    return;
+                        {extraIndent}}}
+                        {extraIndent}" : "")}values = ref _headers._{header.Identifier};
                         {extraIndent}nameStr = {header.StaticIdentifier};";
             }
         }
@@ -1168,7 +1176,7 @@ $@"        private void Clear(long bitsToClear)
             {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
             if ({header.TestTempBit()})
             {{
-                _headers._{header.Identifier} = default;
+                {(header.Name == HeaderNames.UserAgent ? "_headers.ClearUserAgent();" : $"_headers._{header.Identifier} = default;")}
                 if({header.TestNotTempBit()})
                 {{
                     return;
@@ -1380,10 +1388,13 @@ $@"        private void Clear(long bitsToClear)
             }}
         }}" : "")}
 
-        private struct HeaderReferences
-        {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => @"
+        private {(loop.ClassName == "HttpRequestHeaders" ? "partial " : "")}struct HeaderReferences
+        {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength" && (loop.ClassName != "HttpRequestHeaders" || header.Name != HeaderNames.UserAgent)), header => @"
             public StringValues _" + header.Identifier + ";")}
-            {Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
+            {(loop.ClassName == "HttpRequestHeaders" ? @"private StringValues _userAgent;
+            private byte[]? _userAgentBytes;
+            private int _userAgentLength;
+            " : "")}{Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
             public byte[]? _raw" + header.Identifier + ";")}
         }}
 

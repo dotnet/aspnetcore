@@ -20,11 +20,76 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
 
     public bool ReuseHeaderValues { get; set; }
     public Func<string, Encoding?> EncodingSelector { get; set; }
+    public bool LazyUserAgent { get; }
 
-    public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null)
+    public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null, bool? lazyUserAgent = null)
     {
         ReuseHeaderValues = reuseHeaderValues;
         EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
+        LazyUserAgent = lazyUserAgent ??
+            (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent", out var enabled) && enabled);
+    }
+
+    private bool TryAppendLazyUserAgent(ReadOnlySpan<byte> value, long flag, bool checkForNewlineChars)
+    {
+        if (!LazyUserAgent || (_bits & flag) != 0 ||
+            !ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector) ||
+            value.IsEmpty || value.Length > 4096 ||
+            !Ascii.IsValid(value) || value.Contains((byte)0) ||
+            (checkForNewlineChars && value.IndexOfAny((byte)'\r', (byte)'\n') >= 0))
+        {
+            return false;
+        }
+
+        _headers.SetLazyUserAgent(value);
+        _previousBits &= ~flag;
+        _bits |= flag;
+        return true;
+    }
+
+    private partial struct HeaderReferences
+    {
+        // All generated read/ref/write paths use this accessor, including enumeration.
+        [System.Diagnostics.CodeAnalysis.UnscopedRef]
+        public ref StringValues _UserAgent
+        {
+            get
+            {
+                if (_userAgentLength != 0)
+                {
+                    _userAgent = Encoding.ASCII.GetString(_userAgentBytes!, 0, _userAgentLength);
+                    _userAgentLength = 0;
+                }
+
+                return ref _userAgent;
+            }
+        }
+
+        public void SetLazyUserAgent(ReadOnlySpan<byte> value)
+        {
+            if (_userAgent.Count == 1 &&
+                StringUtilities.BytesOrdinalEqualsStringAndAscii(_userAgent.ToString(), value))
+            {
+                _userAgentLength = 0;
+                return;
+            }
+
+            // Own the bytes before the parser/decoder can recycle its input. Retain at most 4 KiB.
+            if (_userAgentBytes is null || _userAgentBytes.Length < value.Length)
+            {
+                _userAgentBytes = new byte[value.Length];
+            }
+
+            value.CopyTo(_userAgentBytes);
+            _userAgentLength = value.Length;
+            _userAgent = default;
+        }
+
+        public void ClearUserAgent()
+        {
+            _userAgentLength = 0;
+            _userAgent = default;
+        }
     }
 
     public void OnHeadersComplete()

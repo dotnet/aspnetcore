@@ -6552,7 +6552,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8L) != 0)
             {
-                _headers._UserAgent = default;
+                _headers.ClearUserAgent();
                 if((tempBits & ~0x8L) == 0)
                 {
                     return;
@@ -7687,6 +7687,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4547412d52455355uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x544eu))
                     {
                         flag = 0x8L;
+                        if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
                         values = ref _headers._UserAgent;
                         nameStr = HeaderNames.UserAgent;
                     }
@@ -8080,6 +8084,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     break;
                 case 58:
                     flag = 0x8L;
+                    if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
+                    {
+                        return true;
+                    }
                     values = ref _headers._UserAgent;
                     nameStr = HeaderNames.UserAgent;
                     break;
@@ -8288,6 +8296,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     break;
                 case 95:
                     flag = 0x8L;
+                    if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
+                    {
+                        return true;
+                    }
                     values = ref _headers._UserAgent;
                     nameStr = HeaderNames.UserAgent;
                     break;
@@ -8338,12 +8350,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private struct HeaderReferences
+        private partial struct HeaderReferences
         {
             public StringValues _Accept;
             public StringValues _Connection;
             public StringValues _Host;
-            public StringValues _UserAgent;
             public StringValues _Authority;
             public StringValues _Method;
             public StringValues _Path;
@@ -8389,6 +8400,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _UpgradeInsecureRequests;
             public StringValues _Via;
             public StringValues _Warning;
+            private StringValues _userAgent;
+            private byte[]? _userAgentBytes;
+            private int _userAgentLength;
             
         }
 
