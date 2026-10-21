@@ -392,11 +392,7 @@ public class KnownHeaders
         else
         {
             return $@"flag = {header.FlagBit()};
-                    {(header.Name == HeaderNames.UserAgent ? @"if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
-                    {
-                        return true;
-                    }
-                    " : "")}values = ref _headers._{header.Identifier};
+                    values = ref _headers._{header.Identifier};
                     nameStr = {header.StaticIdentifier};
                     break;";
         }
@@ -440,7 +436,7 @@ public class KnownHeaders
             {
                 return $@"
                         {extraIndent}flag = {header.FlagBit()};
-                        {extraIndent}{(header.Name == HeaderNames.UserAgent ? $@"if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
+                        {extraIndent}{(header.Name == HeaderNames.UserAgent ? $@"if (allowLazyUserAgent && TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
                         {extraIndent}{{
                         {extraIndent}    return;
                         {extraIndent}}}
@@ -1321,7 +1317,7 @@ $@"        private void Clear(long bitsToClear)
             return result;
         }}")}
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars, bool allowLazyUserAgent = false)
         {{
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;

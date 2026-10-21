@@ -143,7 +143,8 @@ public class HttpRequestHeadersLazyTests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
-    public void IgnoredChangingValuesAllocateNoStringsAfterWarmup(int protocol)
+    [InlineData(4)]
+    public void IgnoredChangingValuesAreLazyOnlyForHttp1(int protocol)
     {
         var headers = new HttpRequestHeaders(lazyUserAgent: true);
         Append(headers, protocol, "first"u8);
@@ -157,7 +158,8 @@ public class HttpRequestHeadersLazyTests
             headers.OnHeadersComplete();
             headers.Reset();
         }
-        Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - before);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.Equal(protocol == 1 ? 0 : 3200, allocated);
     }
 
     [Theory]
@@ -195,13 +197,16 @@ public class HttpRequestHeadersLazyTests
         switch (protocol)
         {
             case 1:
-                headers.Append("uSeR-aGeNt"u8, value, checkForNewlineChars: true);
+                headers.Append("uSeR-aGeNt"u8, value, checkForNewlineChars: true, allowLazyUserAgent: true);
                 break;
             case 2:
                 Assert.True(headers.TryHPackAppend(58, value, checkForNewlineChars: true));
                 break;
             case 3:
                 Assert.True(headers.TryQPackAppend(95, value, checkForNewlineChars: true));
+                break;
+            case 4:
+                headers.Append("user-agent"u8, value, checkForNewlineChars: true);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(protocol));

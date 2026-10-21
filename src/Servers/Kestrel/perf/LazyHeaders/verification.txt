@@ -91,3 +91,32 @@ Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMidd
 Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http2ThrowsOnIncompatibleWindowsVersions
 Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http1AndHttp2DoesNotDowngradeOnCompatibleWindowsVersions
 Reasons for the four HTTPS middleware cases: downgrade/error logic only applies on Windows.
+
+=== HTTP/1.1-only scope revision (supersedes multi-protocol allocation claims above) ===
+The experimental parser callback enables lazy ingestion only for HTTP/1.1.
+HPACK and QPACK indexed ingestion no longer call the lazy helper.
+Named-header Append defaults to eager, preserving HTTP/2/HTTP/3 literal-name ingestion.
+Shared storage/accessors remain; no zero-overhead claim is made for other protocols.
+All following checks used Release builds after source activate.sh:
+
+dotnet test src/Servers/Kestrel/Core/test/Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj --no-restore -c Release --filter 'FullyQualifiedName~HttpRequestHeaders'
+Passed: 940, Failed: 0, Skipped: 0.
+IgnoredChangingValuesAreLazyOnlyForHttp1:
+100 changing five-byte values after warmup, lazy switch enabled:
+HTTP/1 explicitly allowed: 0 bytes.
+HPACK index 58: 3200 bytes.
+QPACK index 95: 3200 bytes.
+Default named-header ingestion (HTTP/2/HTTP/3 literal path): 3200 bytes.
+
+dotnet test src/Servers/Kestrel/Core/test/Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj --no-restore --no-build -c Release --filter 'FullyQualifiedName~Http1ConnectionTests'
+Passed: 3415, Failed: 0, Skipped: 0.
+
+dotnet test src/Servers/Kestrel/test/InMemory.FunctionalTests/InMemory.FunctionalTests.csproj --no-restore -c Release --filter 'FullyQualifiedName~Http2|FullyQualifiedName~Http3|FullyQualifiedName~LazyRequestHeadersTests' --logger 'console;verbosity=normal'
+Passed: 775, Failed: 0, Skipped: 5 (same skip reasons listed above).
+Includes hosted opt-in HTTP/1.1 body/keep-alive test and eager HTTP/2/HTTP/3 compatibility tests with the process switch enabled.
+
+Current Microbenchmarks project builds on head and unchanged baseline with 0 warnings/errors.
+Baseline import defines LAZY_HEADERS_BASELINE only to omit the new HTTP/1 named-append opt-in argument against the baseline API.
+Historical JSON/CSV/raw measurements and DLL hashes above remain from the earlier multi-protocol prototype.
+They were not rerun or relabeled as measurements of this revision.
+No Crank jobs ran. HTTP/1.1 end-to-end baseline/off/on comparisons remain outstanding.

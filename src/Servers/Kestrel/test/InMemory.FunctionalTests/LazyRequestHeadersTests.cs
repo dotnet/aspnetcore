@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 public class LazyRequestHeadersTests
 {
     [Fact]
-    public void LazyUserAgentSurvivesHttp2BodyReads()
+    public void Http2HeadersRemainCompatibleWithLazySwitchEnabled()
     {
         var options = new RemoteInvokeOptions();
         options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent", "true");
@@ -81,7 +81,7 @@ public class LazyRequestHeadersTests
     }
 
     [Fact]
-    public void LazyUserAgentSurvivesQPackDecodingAndStreamReuse()
+    public void QPackHeadersRemainCompatibleWithLazySwitchEnabled()
     {
         var options = new RemoteInvokeOptions();
         options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent", "true");

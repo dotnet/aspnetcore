@@ -7511,7 +7511,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars, bool allowLazyUserAgent = false)
         {
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
@@ -7687,7 +7687,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4547412d52455355uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x544eu))
                     {
                         flag = 0x8L;
-                        if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
+                        if (allowLazyUserAgent && TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
                         {
                             return;
                         }
@@ -8084,10 +8084,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     break;
                 case 58:
                     flag = 0x8L;
-                    if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
-                    {
-                        return true;
-                    }
                     values = ref _headers._UserAgent;
                     nameStr = HeaderNames.UserAgent;
                     break;
@@ -8296,10 +8292,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     break;
                 case 95:
                     flag = 0x8L;
-                    if (TryAppendLazyUserAgent(value, flag, checkForNewlineChars))
-                    {
-                        return true;
-                    }
                     values = ref _headers._UserAgent;
                     nameStr = HeaderNames.UserAgent;
                     break;

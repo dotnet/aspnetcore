@@ -2,6 +2,8 @@
 
 Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962), not a shipping optimization. **No Crank benchmark has run, and no end-to-end throughput improvement is established.** The allocation result below is a diagnostic result only.
 
+**Current scope: HTTP/1.1 only.** The initial multi-protocol prototype and its raw measurements remain in history. The current implementation keeps HPACK/QPACK and HTTP/2/HTTP/3 literal-name ingestion eager even with the switch enabled. Their lazy-allocation experiments and performance comparisons are deferred; compatibility checks remain. The recorded timing table predates this narrowing and is not a measurement of the revised implementation.
+
 ## Hypothesis and alternatives
 
 Deferring string creation for a changing header that an application never reads may reduce allocation pressure enough to improve a real workload. Stable known-header values already benefit from Kestrel's cross-request ASCII string reuse, so "fewer allocations than eager decoding" is not a sufficient hypothesis.
@@ -25,7 +27,7 @@ Set `Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent` through `Ap
 
 Only a first, nonempty, default-encoded ASCII `User-Agent` value of at most 4096 bytes is eligible. Validation still happens during append. Custom encoding selectors, non-ASCII values, oversized values, and duplicate appends go through the existing decoder/append path. A duplicate after an eligible first value materializes that first value and then appends normally.
 
-The generator routes HTTP/1 named headers, HPACK index 58, and QPACK index 95 through the same experiment. A ref-return accessor centralizes materialization for existing getters, mutations, enumeration, and copies. Clear/reset can discard an unread value without decoding it. Once decoded, an unchanged value can reuse the previous string.
+The HTTP/1 parser callback enables the experiment only for HTTP/1.1. Shared named-header ingestion defaults to eager, so HTTP/2 and HTTP/3 literal names remain eager; HPACK index 58 and QPACK index 95 also retain their eager paths. A ref-return accessor centralizes materialization for existing getters, mutations, enumeration, and copies. Clear/reset can discard an unread HTTP/1.1 value without decoding it. Once decoded, an unchanged value can reuse the previous string. Shared collection layout/accessor changes still affect all protocols; unchanged ingestion is not a claim of zero performance impact.
 
 Limitations to include in any interpretation:
 
@@ -33,19 +35,20 @@ Limitations to include in any interpretation:
 - Mutation through the ref accessor can materialize a value immediately before replacing/removing it. This POC prioritizes existing semantics over optimizing that case.
 - The default-off path still has layout/accessor/branch changes. It is a required control, not an assumption of zero cost.
 - `User-Agent` is one known header. This does not demonstrate the benefit of making every header lazy.
-- The prepared socket/Crank application is HTTP/1 only. HTTP/2 and HTTP/3 have direct ingestion tests, in-memory decoder/body-read coverage, and diagnostic rows, not full opt-in transport/QUIC performance evidence.
+- The prepared socket/Crank application is HTTP/1.1 only. HTTP/2/HTTP/3 tests now check compatibility with the switch enabled, not lazy allocation. Their original diagnostic rows describe the superseded multi-protocol prototype.
 
 ## Verified correctness
 
 See [verification.txt](verification.txt) for exact case identities and summaries.
 
-- 939 targeted request-header cases pass, including 28 new cases. Coverage includes owned input, case-insensitive lookup, duplicates, mutation/removal, enumeration/copy, reset with/without reuse, invalid input, custom encodings, and reuse of a decoded string.
-- Each of the three allocation checks fails on the eager control with 3200 bytes allocated for 100 changing five-byte values, then passes with zero bytes when the prototype is enabled. The control was an invocation-time test change, restored before committing.
+- 940 targeted request-header cases pass, including 29 experiment/compatibility cases. Coverage includes owned input, case-insensitive lookup, duplicates, mutation/removal, enumeration/copy, reset with/without reuse, invalid input, custom encodings, and reuse of a decoded string.
+- 3415 existing HTTP/1 connection/parser cases pass with no failures or skips after the HTTP/1.1 protocol gate was added.
+- The current allocation check measures zero bytes for 100 warmed changing five-byte values on the explicitly enabled HTTP/1 path, but exactly 3200 bytes each for HPACK, QPACK, and default named-header ingestion with the switch enabled. This checks that compressed and literal-name HTTP/2/HTTP/3 paths remain eager. The original three-protocol eager-control experiment is historical, not current behavior.
 - The process-isolated hosted HTTP/1 test passes through the actual parser, body consumption, and four keep-alive requests, including an unread value, a changed value, an absent value, and duplicates.
-- Two additional process-isolated tests pass through HTTP/2 with `SocketsHttpHandler` over the existing in-memory transport and HTTP/3 with the existing multiplexed transport/QPACK harness. Both consume request bodies before reading headers. HTTP/2 verifies four requests use one HTTP/2 connection; HTTP/3 verifies the same header collection is reused after stream disposal, including unread, changed, absent, and duplicate values. These three protocol tests are correctness checks, not performance or real-QUIC evidence.
+- Two additional process-isolated compatibility tests pass through HTTP/2 with `SocketsHttpHandler` over the existing in-memory transport and HTTP/3 with the existing multiplexed transport/QPACK harness while the process switch is enabled. These protocols no longer opt into lazy ingestion. Both consume request bodies before reading headers. HTTP/2 verifies four requests use one HTTP/2 connection; HTTP/3 verifies the same header collection is reused after stream disposal, including unread, changed, absent, and duplicate values. These three protocol tests are correctness checks, not performance or real-QUIC evidence.
 - The broader HTTP/2/HTTP/3 functional selection passes with 775 passed, 5 skipped, and no failures, including the three opt-in cases. The existing tests exercise the default-off path. Four skips are Windows-version-specific HTTPS checks; the fifth requires TLS 1.1 ciphers that are disabled by default. This is functional regression evidence, not an end-to-end load test.
-- The published workload passes 24 real-socket checks across off/on and ignore/read/enumerate. The same host with only the Core DLL replaced by the baseline passes another 12 checks. [Head](workload-smoke.json), [baseline](baseline-workload-smoke.json), and [Core DLL hashes](kestrel-core-sha256.json) are retained.
-- Full Core: baseline 9900 passed / 13 failed / 1 skipped; prototype 9928 passed / 13 failed / 1 skipped. The same 13 IPv6-expectation cases fail on both. This environment disables IPv6; changing the process setting did not eliminate the failures. **The full suite is not green.**
+- The earlier multi-protocol prototype's published workload passed 24 real-socket checks across off/on and ignore/read/enumerate. The same host with only the Core DLL replaced by the baseline passed another 12 checks. [Historical head](workload-smoke.json), [baseline](baseline-workload-smoke.json), and [historical Core DLL hashes](kestrel-core-sha256.json) are retained. These do not verify a republished current-head payload.
+- Earlier multi-protocol prototype full Core run: baseline 9900 passed / 13 failed / 1 skipped; prototype 9928 passed / 13 failed / 1 skipped. The same 13 IPv6-expectation cases fail on both. This environment disables IPv6; changing the process setting did not eliminate the failures. **The full suite was not green; these counts predate scope narrowing.**
 - The Lua script was checked with Lua 5.4, including distinct fixed-width values on each of 16 simulated persistent connections. Actual wrk execution remains unverified.
 
 Build/test entry points, from the repository root after the standard restore/bootstrap and `source activate.sh`:
@@ -62,11 +65,13 @@ The initial bootstrap used `./eng/build.sh --restore --no-build --projects '<abs
 
 ## Diagnostic measurements
 
+**Historical multi-protocol results, not current-head measurements.** The HTTP/1.1-only revision changes the ingestion signature, protocol gate, and fixture call. Do not relabel the old results or DLL hashes as measurements of the current code. New HTTP/1.1 baseline/off/on Crank comparisons remain required.
+
 Shipping baseline: `2d105dd1fd119edff9a797a1b1aeca6d771c6134`.
 Prototype and benchmark fixture: `ca7c5fb527f3c01ed6728855e2d3b27d5a43705f`.
 The fixture SHA-256 is `bf3d0c831612a287ffc82e212bc3757eeccd1a97232fb30b401a6282d91c3c94`.
 
-The identical fixture was compiled against an unmodified baseline Core using an extra compile-item import; no baseline shipping source was patched. Baseline `Lazy=true` rows still execute eager code because the switch does not exist there. Use baseline `Lazy=false` rows for the comparisons below.
+The identical original fixture was compiled against an unmodified baseline Core using an extra compile-item import; no baseline shipping source was patched. Baseline `Lazy=true` rows still execute eager code because the switch does not exist there. Use baseline `Lazy=false` rows for the comparisons below. The current fixture explicitly enables the HTTP/1 path; the baseline import defines `LAZY_HEADERS_BASELINE` solely to omit that new argument against the old API. Current HPACK/QPACK fixture rows are eager compatibility controls, not deferred-allocation experiments. To reproduce the historical results, use the fixture and import from the recorded commits, not the revised fixture.
 
 Both runs completed successfully, with 48 parameter combinations each. Run order was head, then baseline. BenchmarkDotNet 0.13.0; Release; in-process emit toolchain; .NET 12.0.0-alpha.1.26473.114 runtime; SDK 11.0.100-rc.1.26420.103; server GC; 3 warmup and 8 measurement iterations at 100 ms; one launch. Outlier filtering retains 6-8 measurement values per row. [Environment](environment.txt), [base JSON](base.full.json), [head JSON](head.full.json), [base raw output (gzip)](base.raw.txt.gz), [head raw output (gzip)](head.raw.txt.gz), and [derived CSV with confidence intervals](measurements.csv) are retained.
 
@@ -112,7 +117,7 @@ Run the same `--no-build --no-restore` command from that checkout with a separat
 
 ## Crank handoff: prepared, not executed
 
-Workload source: `8065742caba07399236ab62a5bc9db7c1424696e` (shipping prototype unchanged from `ca7c5fb5`). [Configuration](../lazy-headers.crank.yml), [Lua workload](../lazy-headers.wrk.lua), and [application](../../samples/LazyHeadersApp) are included. The imported wrk job and its source are pinned to Crank `0d35cad5102892b091d9a88a52ea1f7a91bb1381`.
+Workload source: `8065742caba07399236ab62a5bc9db7c1424696e`. The workload/configuration are unchanged, but **republish the current HTTP/1.1-only Core** rather than reusing the old prototype payload or its DLL hash. [Configuration](../lazy-headers.crank.yml), [Lua workload](../lazy-headers.wrk.lua), and [application](../../samples/LazyHeadersApp) are included. The imported wrk job and its source are pinned to Crank `0d35cad5102892b091d9a88a52ea1f7a91bb1381`.
 
 The application offers `ignore`, `read`, and `enumerate`. Every response includes `X-Observed-Length`, permitting a correctness smoke check before load. The Lua workload offers stable, changing, and duplicate values plus an unknown header and `Accept`. Changing mode uses a unique fixed-width sequence per wrk thread, not alternating values that could accidentally repeat on each connection. The 44-byte end-to-end `User-Agent` differs from the diagnostic fixture's value; compare each workload only against its own base/off/on controls.
 
@@ -150,4 +155,4 @@ Run the full 3 accesses x 3 header modes x 3 variants matrix, with at least five
 
 Retain resolved configuration, raw JSON and measurements, source/DLL identities, load and server CPU, RPS, latency distribution, bad-response counts, allocation rate, GC rate/time, and working set. Check that the client is not the bottleneck and report uncertainty rather than a single best run. The response-observation header and Lua formatting are workload overhead, not free instrumentation.
 
-HTTP/2/HTTP/3 end-to-end comparisons need an appropriate existing protocol-capable client/profile and equivalent header access/churn cases. Plaintext/JSON perf-lab controls are also useful but do not replace these header-aware workloads. This draft remains blocked on those end-to-end measurements and discussion of the observed default-off/read costs.
+HTTP/2/HTTP/3 lazy-allocation implementations and end-to-end comparisons are deferred, not acceptance requirements for this HTTP/1.1 POC. Plaintext/JSON perf-lab controls are also useful but do not replace these header-aware HTTP/1.1 workloads. This draft remains blocked on HTTP/1.1 end-to-end measurements and discussion of the observed default-off/read costs.

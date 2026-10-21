@@ -68,7 +68,11 @@ public class LazyRequestHeadersBenchmark
         switch (Protocol)
         {
             case 1:
+#if LAZY_HEADERS_BASELINE
                 _headers.Append("User-Agent"u8, value, checkForNewlineChars: true);
+#else
+                _headers.Append("User-Agent"u8, value, checkForNewlineChars: true, allowLazyUserAgent: true);
+#endif
                 break;
             case 2:
                 _headers.TryHPackAppend(58, value, checkForNewlineChars: true);

@@ -74,7 +74,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
                 return;
             }
 
-            // Own the bytes before the parser/decoder can recycle its input. Retain at most 4 KiB.
+            // Own the bytes before the HTTP/1 parser can recycle its input. Retain at most 4 KiB.
             if (_userAgentBytes is null || _userAgentBytes.Length < value.Length)
             {
                 _userAgentBytes = new byte[value.Length];
