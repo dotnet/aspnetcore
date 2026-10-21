@@ -12,12 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
-    <Reference Include="Microsoft.Extensions.ObjectPool" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\ObjectPool\src\Microsoft.Extensions.ObjectPool.csproj" />
   </ItemGroup>
 
   <ItemGroup>

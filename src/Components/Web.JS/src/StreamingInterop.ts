@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from './JSInterop/Microsoft.JSInterop';
 
 export async function getNextChunk(data: ArrayBufferView | Blob, position: number, nextChunkSize: number): Promise<Uint8Array> {
   if (data instanceof Blob) {
