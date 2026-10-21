@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks'">
+    <Compile Include="$(LazyHeadersHarnessRoot)/src/Servers/Kestrel/perf/Microbenchmarks/LazyRequestHeadersBenchmark.cs" />
+  </ItemGroup>
+</Project>

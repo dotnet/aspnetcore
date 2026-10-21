@@ -8,9 +8,9 @@ end
 
 request = function()
     sequence = sequence + 1
-    local value = "Mozilla/5.0 changing-user-agent-A"
-    if mode == "changing" and sequence % 2 == 0 then
-        value = "Mozilla/5.0 changing-user-agent-B"
+    local value = "Mozilla/5.0 changing-user-agent-000000000000"
+    if mode == "changing" then
+        value = string.format("Mozilla/5.0 changing-user-agent-%012d", sequence)
     end
 
     local extra = ""
