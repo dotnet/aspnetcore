@@ -263,6 +263,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
                 .WithBrowserOptions(config =>
                 {
+                    var environmentName = Configuration["BrowserConfigurationEnvironmentName"];
+                    if (environmentName is not null)
+                    {
+                        config.InteractiveWebAssembly.EnvironmentName = environmentName;
+                    }
                     config.InteractiveWebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
                     config.InteractiveWebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
                     if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
