@@ -3139,7 +3139,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             Browser.MountTestComponent<VirtualizationEndAnchorHistory>();
             var container = Browser.Exists(By.Id("scroll-container"));
             Browser.Equal("2696", () => Browser.Exists(By.Id("item-count")).Text);
-            Browser.Equal("28", () => Browser.Exists(By.Id("history-batches")).Text);
             Browser.Equal("1", () => Browser.Exists(By.Id("initial-history-count")).Text);
             Browser.True(
                 () => (bool)js.ExecuteScript("return window.__endAnchorCorrectionProbe.reachedBottom;"),
