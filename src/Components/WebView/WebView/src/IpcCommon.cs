@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.WebView;
@@ -29,13 +27,7 @@ internal sealed class IpcCommon
         // Note we do NOT need the JSRuntime specific JsonSerializerOptions as the args needing special handling
         // (JS/DotNetObjectReference & Byte Arrays) have already been serialized earlier in the JSRuntime.
         // We run the serialization here to add the `messageType`.
-        var buffer = new ArrayBufferWriter<byte>();
-        using (var writer = new Utf8JsonWriter(buffer))
-        {
-            JsonSerializer.Serialize(writer, args.Prepend(messageType), IpcJsonSerializerContext.Default.MessageSequence);
-        }
-
-        return $"{_ipcMessagePrefix}{Encoding.UTF8.GetString(buffer.WrittenSpan)}";
+        return $"{_ipcMessagePrefix}{JsonSerializer.Serialize(args.Prepend(messageType), IpcJsonSerializerContext.Default.MessageSequence)}";
     }
 
     private static bool TryDeserialize<T>(string message, out T messageType, out ArraySegment<JsonElement> args)
