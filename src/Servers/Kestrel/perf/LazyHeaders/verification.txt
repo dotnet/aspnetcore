@@ -135,3 +135,16 @@ Changing ignored HTTP/1 values: baseline/off/on allocations 88/88/0 bytes per op
 Baseline/off/on means: 45.59/47.68/25.45 ns.
 Stable read: 0 bytes for each; 15.61/18.92/25.81 ns.
 Narrow allocation mechanism only, not an overall win or Crank/end-to-end evidence.
+
+=== republished HTTP/1.1-only workload socket checks ===
+Shipping source: 651a4e198ff654bcb19d3a81af23055f9503c97b
+Release publication after scope revision; host/dependencies identical for both variants.
+Baseline variant replaces only Core DLL from 2d105dd1fd119edff9a797a1b1aeca6d771c6134.
+24 head checks (off/on x ignore/read/enumerate x four requests), 12 baseline checks.
+Asserted actual HTTP/1.1, response 200, exact Hello World body, exact observed header lengths,
+and same persistent socket for changed, absent and duplicate values.
+Verified actual loaded local Core DLL path through each process's memory mappings.
+Head Core SHA256: 12673a338e7c884ddf126ca292e5e61be70df750c6ae23d44cc85751aeba9d31
+Base Core SHA256: 7175498ad5d77f11fa7672fe89bf4a51ad7a8b8410ed1cbc4c85906ee1fe27f5
+Structured results and method: http1-only/workload-smoke.json
+Not Crank, throughput, counter collection or agent upload/layout evidence.
