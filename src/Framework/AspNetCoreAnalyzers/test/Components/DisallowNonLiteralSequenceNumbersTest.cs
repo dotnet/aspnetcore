@@ -89,4 +89,28 @@ static int ComputeSequenceNumber(int i) => i + 1;
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.StartsWith("'ComputeSequenceNumber(0)' should not be used as a sequence number.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
+
+    [Fact]
+    public async Task RenderTreeBuilderInvocationInGeneratedCode_Works()
+    {
+        var source = @"
+using System.CodeDom.Compiler;
+using Microsoft.AspNetCore.Components.Rendering;
+
+_ = new TestComponent();
+
+[GeneratedCode(""Razor"", ""1.0"")]
+public class TestComponent
+{
+    public void BuildRenderTree(RenderTreeBuilder builder, int sequence)
+    {
+        builder.OpenElement(sequence, ""div"");
+        builder.CloseElement();
+    }
+}
+";
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        Assert.Empty(diagnostics);
+    }
 }
