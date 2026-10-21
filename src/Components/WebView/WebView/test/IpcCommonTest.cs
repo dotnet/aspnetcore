@@ -115,7 +115,7 @@ public class IpcCommonTest
     public void Serialize_ThrowsForUnsupportedArgumentType()
     {
         // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(
+        var ex = Assert.Throws<NotSupportedException>(
             () => IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Navigate, Guid.Empty));
         Assert.Contains(typeof(Guid).FullName, ex.Message);
         Assert.Contains(nameof(IpcJsonSerializerContext), ex.Message);
