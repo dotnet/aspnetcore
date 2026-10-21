@@ -36,6 +36,7 @@ on:
           - skip
           - refresh
   roles: [admin, maintainer, write]
+  bots: ["dotnet-policy-service[bot]"]
   reaction: none
   status-comment: false
 
@@ -109,12 +110,12 @@ safe-outputs:
     report-as-issue: false
   steps:
     - name: Download trusted draft context
-      uses: actions/download-artifact@v8.0.1
+      uses: actions/download-artifact@v8.0.2
       with:
         name: pr-docs-check-context-${{ github.run_attempt }}
         path: ${{ runner.temp }}/pr-docs-check-context
     - name: Download trusted workspace evidence
-      uses: actions/download-artifact@v8.0.1
+      uses: actions/download-artifact@v8.0.2
       with:
         name: pr-docs-check-workspace-${{ github.run_attempt }}
         path: ${{ runner.temp }}/pr-docs-check-workspace
@@ -260,18 +261,18 @@ safe-outputs:
               .github/workflows/pr-docs-check/author_body.cjs
             sparse-checkout-cone-mode: false
         - name: Download trusted draft context
-          uses: actions/download-artifact@v8.0.1
+          uses: actions/download-artifact@v8.0.2
           with:
             name: pr-docs-check-context-${{ github.run_attempt }}
             path: ${{ runner.temp }}/pr-docs-check-context
         - name: Download trusted workspace evidence
-          uses: actions/download-artifact@v8.0.1
+          uses: actions/download-artifact@v8.0.2
           with:
             name: pr-docs-check-workspace-${{ github.run_attempt }}
             path: ${{ runner.temp }}/pr-docs-check-workspace
         - name: Mint ASP.NET Core docs bot token
           id: docs-bot-token
-          uses: actions/create-github-app-token@v3.2.0
+          uses: actions/create-github-app-token@v3.3.0
           with:
             client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
             private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
@@ -542,7 +543,7 @@ jobs:
           sparse-checkout-cone-mode: false
       - name: Mint ASP.NET Core docs bot token
         id: docs-bot-token
-        uses: actions/create-github-app-token@v3.2.0
+        uses: actions/create-github-app-token@v3.3.0
         with:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
@@ -577,7 +578,7 @@ jobs:
             --release-branches "${CONTEXT_DIR}/source-branches.json" \
             --output "${CONTEXT_DIR}/target-version.json"
       - name: Preserve trusted draft context
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: pr-docs-check-context-${{ github.run_attempt }}
           path: ${{ runner.temp }}/pr-docs-check/
@@ -589,13 +590,13 @@ jobs:
 
 pre-agent-steps:
   - name: Download trusted analysis context
-    uses: actions/download-artifact@v8.0.1
+    uses: actions/download-artifact@v8.0.2
     with:
       name: pr-docs-check-context-${{ github.run_attempt }}
       path: /tmp/gh-aw/pr-docs-check
   - name: Mint ASP.NET Core docs bot token
     id: docs-bot-token
-    uses: actions/create-github-app-token@v3.2.0
+    uses: actions/create-github-app-token@v3.3.0
     with:
       client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
@@ -642,7 +643,7 @@ post-steps:
         --argjson clean "${CLEAN}" '{base_sha: $base_sha, head_sha: $head_sha, clean: $clean}' \
         > "${RUNNER_TEMP}/pr-docs-check-workspace/workspace-evidence.json"
   - name: Preserve trusted workspace evidence
-    uses: actions/upload-artifact@v7.0.1
+    uses: actions/upload-artifact@v7.0.2
     with:
       name: pr-docs-check-workspace-${{ github.run_attempt }}
       path: ${{ runner.temp }}/pr-docs-check-workspace/workspace-evidence.json

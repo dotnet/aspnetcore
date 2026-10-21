@@ -86,6 +86,7 @@ internal sealed class WebTransportSession : IWebTransportSession
         }
 
         _pendingStreams.Writer.Complete();
+        _connection.RemoveWebTransportSession(this);
     }
 
     internal void Abort(ConnectionAbortedException exception, Http3ErrorCode error)
@@ -117,6 +118,7 @@ internal sealed class WebTransportSession : IWebTransportSession
         }
 
         _pendingStreams.Writer.Complete();
+        _connection.RemoveWebTransportSession(this);
     }
 
     public async ValueTask<ConnectionContext?> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
