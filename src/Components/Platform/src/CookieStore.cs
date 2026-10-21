@@ -121,7 +121,7 @@ public sealed class CookieStore : IInternalAsyncDisposal
     }
 
     /// <summary>
-    /// Sets a cookie with the specified options, replacing any existing cookie with the same name, domain, and path.
+    /// Sets a cookie with the specified options, replacing any existing cookie with the same name, domain, and path that has the same partitioning.
     /// </summary>
     /// <param name="options">The name, value, and attributes of the cookie.</param>
     /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
