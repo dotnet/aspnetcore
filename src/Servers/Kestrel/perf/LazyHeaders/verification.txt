@@ -1,0 +1,68 @@
+=== headers-tests-final.log ===
+Total tests: 939
+     Passed: 939
+
+=== functional-tests-final.log ===
+  Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesBodyReadsAndKeepAliveReuse [303 ms]
+Total tests: 1
+     Passed: 1
+
+=== allocation-eager-control.log ===
+[xUnit.net 00:00:02.16]     Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 1) [FAIL]
+[xUnit.net 00:00:02.17]         /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs(160,0): at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol)
+[xUnit.net 00:00:02.18]     Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 2) [FAIL]
+[xUnit.net 00:00:02.18]         /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs(160,0): at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol)
+[xUnit.net 00:00:02.18]            at InvokeStub_HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Object, Span`1)
+[xUnit.net 00:00:02.18]     Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 3) [FAIL]
+[xUnit.net 00:00:02.18]         /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs(160,0): at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol)
+[xUnit.net 00:00:02.18]            at InvokeStub_HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Object, Span`1)
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 1) [14 ms]
+Expected: 0
+Actual:   3200
+     at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol) in /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs:line 160
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 2) [1 ms]
+Expected: 0
+Actual:   3200
+     at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol) in /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs:line 160
+   at InvokeStub_HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Object, Span`1)
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 3) [1 ms]
+Expected: 0
+Actual:   3200
+     at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol) in /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs:line 160
+   at InvokeStub_HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Object, Span`1)
+Total tests: 3
+     Failed: 3
+
+=== base-tests.log ===
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithStaticPort_TransportsGetIPv6Any [569 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithEphemeralPort_TransportsGetIPv6Any [48 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.DoesNotReloadOnConfigurationChangeByDefault [99 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ReloadsOnConfigurationChangeWhenOptedIn [46 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithEphemeralPort_MultiplexedTransportsGetIPv6Any [36 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "*") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "contoso.com") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: ".localhost") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "+") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "randomhost") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://+:80") [1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://contoso.com:80") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://*:80") [< 1 ms]
+Failed!  - Failed:    13, Passed:  9900, Skipped:     1, Total:  9914, Duration: 9 s - Microsoft.AspNetCore.Server.Kestrel.Core.Tests.dll (net12.0)
+
+=== core-tests-final.log ===
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "*") [6 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "contoso.com") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: ".localhost") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "+") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "randomhost") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://+:80") [3 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://contoso.com:80") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://*:80") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithStaticPort_TransportsGetIPv6Any [71 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithEphemeralPort_TransportsGetIPv6Any [24 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.DoesNotReloadOnConfigurationChangeByDefault [64 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ReloadsOnConfigurationChangeWhenOptedIn [14 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithEphemeralPort_MultiplexedTransportsGetIPv6Any [10 ms]
+Failed!  - Failed:    13, Passed:  9928, Skipped:     1, Total:  9942, Duration: 9 s - Microsoft.AspNetCore.Server.Kestrel.Core.Tests.dll (net12.0)
+
+Baseline and head full-Core failing-case identities are identical (13 IPv6 expectations).

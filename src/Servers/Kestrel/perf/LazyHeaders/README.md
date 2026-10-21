@@ -1,0 +1,148 @@
+# Lazy request-header allocation experiment
+
+Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962), not a shipping optimization. **No Crank benchmark has run, and no end-to-end throughput improvement is established.** The allocation result below is a diagnostic result only.
+
+## Hypothesis and alternatives
+
+Deferring string creation for a changing header that an application never reads may reduce allocation pressure enough to improve a real workload. Stable known-header values already benefit from Kestrel's cross-request ASCII string reuse, so "fewer allocations than eager decoding" is not a sufficient hypothesis.
+
+| Approach | Existing representation or tradeoff | Decision |
+| --- | --- | --- |
+| Existing known-header reuse | Generated bitsets and `StringValues`; compares ASCII bytes to a previous decoded value. Stable values can already allocate zero. | Keep as the baseline; preserve reuse after a lazy value is read. |
+| Lazy values in owned storage | Copy validated bytes, decode when a value is exposed. Pays copying, validation, state, and first-read costs. | Prototype one known header, `User-Agent`, with at most 4 KiB of retained byte-array capacity per collection. |
+| Borrow parser/HPACK/QPACK buffers | Avoids a copy but the parser and compression decoder may recycle input before application access. | Deferred; would require a separate lifetime/ownership design. This POC never retains those buffers. |
+| Raw known-header representations | Response headers already have raw-byte setters for serialization. Request known-header names already use predefined names. | Reuse the generated lookup/bitset machinery, not the response serialization representation. |
+| Lazy unknown names and values | Unknown headers use a case-insensitive string-keyed dictionary; delaying names requires changing lookup, duplicates, keys, and enumeration together. Known names already avoid per-request name creation. | Deferred to avoid conflating a dictionary redesign with the value experiment. |
+| Declarative/opt-in materialization hints | Could target headers a workload ignores, but requires a consumer contract and must not mean silently dropping observable headers. | No existing hint contract found at these ingestion seams. Use an experimental process switch, not a new public API or an ignored-header declaration. |
+
+Public correctness prior art: [pseudo-header reuse fix #38585](https://github.com/dotnet/aspnetcore/pull/38585) and [HTTP/3 stream/header reuse coverage #42681](https://github.com/dotnet/aspnetcore/pull/42681). These are correctness references, not evidence of a prior lazy-allocation win.
+
+## Prototype boundaries
+
+Set `Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent` through `AppContext.SetSwitch` **before constructing Kestrel**. It is off by default and is not a supported product setting.
+
+Only a first, nonempty, default-encoded ASCII `User-Agent` value of at most 4096 bytes is eligible. Validation still happens during append. Custom encoding selectors, non-ASCII values, oversized values, and duplicate appends go through the existing decoder/append path. A duplicate after an eligible first value materializes that first value and then appends normally.
+
+The generator routes HTTP/1 named headers, HPACK index 58, and QPACK index 95 through the same experiment. A ref-return accessor centralizes materialization for existing getters, mutations, enumeration, and copies. Clear/reset can discard an unread value without decoding it. Once decoded, an unchanged value can reuse the previous string.
+
+Limitations to include in any interpretation:
+
+- The reusable array retains previous bytes and up to 4 KiB of capacity for the collection's lifetime. Cold allocation, additional collection state, and connection/stream counts matter; these costs are not amortized by a cold-connection benchmark.
+- Mutation through the ref accessor can materialize a value immediately before replacing/removing it. This POC prioritizes existing semantics over optimizing that case.
+- The default-off path still has layout/accessor/branch changes. It is a required control, not an assumption of zero cost.
+- `User-Agent` is one known header. This does not demonstrate the benefit of making every header lazy.
+- The prepared socket/Crank application is HTTP/1 only. HTTP/2 and HTTP/3 have direct ingestion tests and diagnostic rows, not full opt-in transport/QUIC performance evidence.
+
+## Verified correctness
+
+See [verification.txt](verification.txt) for exact case identities and summaries.
+
+- 939 targeted request-header cases pass, including 28 new cases. Coverage includes owned input, case-insensitive lookup, duplicates, mutation/removal, enumeration/copy, reset with/without reuse, invalid input, custom encodings, and reuse of a decoded string.
+- Each of the three allocation checks fails on the eager control with 3200 bytes allocated for 100 changing five-byte values, then passes with zero bytes when the prototype is enabled. The control was an invocation-time test change, restored before committing.
+- The process-isolated hosted HTTP/1 test passes through the actual parser, body consumption, and four keep-alive requests, including an unread value, a changed value, an absent value, and duplicates.
+- The published workload passes 24 real-socket checks across off/on and ignore/read/enumerate. The same host with only the Core DLL replaced by the baseline passes another 12 checks. [Head](workload-smoke.json), [baseline](baseline-workload-smoke.json), and [Core DLL hashes](kestrel-core-sha256.json) are retained.
+- Full Core: baseline 9900 passed / 13 failed / 1 skipped; prototype 9928 passed / 13 failed / 1 skipped. The same 13 IPv6-expectation cases fail on both. This environment disables IPv6; changing the process setting did not eliminate the failures. **The full suite is not green.**
+- The Lua script was checked with Lua 5.4, including distinct fixed-width values on each of 16 simulated persistent connections. Actual wrk execution remains unverified.
+
+Build/test entry points, from the repository root after the standard restore/bootstrap and `source activate.sh`:
+
+```sh
+dotnet test src/Servers/Kestrel/Core/test/Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj \
+  --no-restore -c Release --filter 'FullyQualifiedName~HttpRequestHeaders'
+dotnet test src/Servers/Kestrel/test/InMemory.FunctionalTests/InMemory.FunctionalTests.csproj \
+  --no-restore -c Release --filter 'FullyQualifiedName~LazyRequestHeadersTests'
+```
+
+The initial bootstrap used `./eng/build.sh --restore --no-build --projects '<absolute Core/test/*.csproj>' /p:NuGetAudit=false` because audit metadata was unavailable. Dependency restore also needed invocation-only `--source` overrides for `https://api.nuget.org/v3/index.json`, `https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet12/nuget/v3/index.json`, and `https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json` after some public mirror downloads failed. Repository NuGet configuration and SDK pins were not changed.
+
+## Diagnostic measurements
+
+Shipping baseline: `2d105dd1fd119edff9a797a1b1aeca6d771c6134`.
+Prototype and benchmark fixture: `ca7c5fb527f3c01ed6728855e2d3b27d5a43705f`.
+The fixture SHA-256 is `bf3d0c831612a287ffc82e212bc3757eeccd1a97232fb30b401a6282d91c3c94`.
+
+The identical fixture was compiled against an unmodified baseline Core using an extra compile-item import; no baseline shipping source was patched. Baseline `Lazy=true` rows still execute eager code because the switch does not exist there. Use baseline `Lazy=false` rows for the comparisons below.
+
+Both runs completed successfully, with 48 parameter combinations each. Run order was head, then baseline. BenchmarkDotNet 0.13.0; Release; in-process emit toolchain; .NET 12.0.0-alpha.1.26473.114 runtime; SDK 11.0.100-rc.1.26420.103; server GC; 3 warmup and 8 measurement iterations at 100 ms; one launch. Outlier filtering retains 6-8 measurement values per row. [Environment](environment.txt), [base JSON](base.full.json), [head JSON](head.full.json), [base raw output (gzip)](base.raw.txt.gz), [head raw output (gzip)](head.raw.txt.gz), and [derived CSV with confidence intervals](measurements.csv) are retained.
+
+Selected **HTTP/1 microbenchmark means**, in ns/request:
+
+| Values / access | Baseline | Head off | Head on | Bytes/request, base / off / on |
+| --- | ---: | ---: | ---: | ---: |
+| Stable / ignored | 16.13 | 18.61 | 24.52 | 0 / 0 / 0 |
+| Stable / read | 15.77 | 18.06 | 25.48 | 0 / 0 / 0 |
+| Stable / enumerate | 34.44 | 37.21 | 44.99 | 0 / 0 / 0 |
+| Stable / duplicate | 87.09 | 84.85 | 89.56 | 176 / 176 / 176 |
+| Changing / ignored | 44.74 | 46.14 | 24.78 | 88 / 88 / 0 |
+| Changing / read | 45.26 | 46.86 | 55.76 | 88 / 88 / 88 |
+| Changing / enumerate | 61.00 | 63.80 | 62.87 | 88 / 88 / 88 |
+| Changing / duplicate | 81.48 | 85.47 | 91.91 | 176 / 176 / 176 |
+
+This supports the narrow allocation mechanism and reveals read/default-off costs worth investigating. It does **not** establish a workload throughput improvement or an acceptable regression budget. This was a shared two-core container, with no machine isolation or randomized/interleaved launches. Do not treat the nanosecond differences or their within-run confidence intervals as controlled cross-run significance.
+
+The first attempt combined an in-process job with the default out-of-process job; the latter rejected the SDK/target-framework combination. Those mixed-job results are not used here. The successful runs use the repository's `debug` configuration **in Release**, which selects an in-process job. It has no table column provider, so its summary CSV is empty; `measurements.csv` was derived from the complete successful JSON statistics. This configuration is diagnostic, not a substitute for the normal perf-lab toolchain.
+
+Reproduce the head matrix:
+
+```sh
+source activate.sh
+dotnet build src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj -c Release
+dotnet run --no-build --no-restore -c Release \
+  --project src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj -- \
+  --config debug --filter '*LazyRequestHeadersBenchmark*' \
+  --warmupCount 3 --iterationCount 8 --iterationTime 100 --launchCount 1 \
+  --exporters json csv markdown --artifacts /absolute/path/to/head-results
+```
+
+For the baseline, use a separate checkout at the baseline SHA, perform its own normal bootstrap/restore, then compile the identical fixture:
+
+```sh
+dotnet build src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj \
+  --no-restore -c Release \
+  -p:CustomAfterMicrosoftCommonTargets="$HEAD_REPO/src/Servers/Kestrel/perf/LazyHeaders/baseline-harness.targets" \
+  -p:LazyHeadersHarnessRoot="$HEAD_REPO"
+```
+
+Run the same `--no-build --no-restore` command from that checkout with a separate artifact directory. `HEAD_REPO` is the absolute path to the prototype checkout. The persisted import has the same compile-item behavior as the fixed-path session import used for the recorded run.
+
+## Crank handoff: prepared, not executed
+
+Workload source: `8065742caba07399236ab62a5bc9db7c1424696e` (shipping prototype unchanged from `ca7c5fb5`). [Configuration](../lazy-headers.crank.yml), [Lua workload](../lazy-headers.wrk.lua), and [application](../../samples/LazyHeadersApp) are included. The imported wrk job and its source are pinned to Crank `0d35cad5102892b091d9a88a52ea1f7a91bb1381`.
+
+The application offers `ignore`, `read`, and `enumerate`. Every response includes `X-Observed-Length`, permitting a correctness smoke check before load. The Lua workload offers stable, changing, and duplicate values plus an unknown header and `Accept`. Changing mode uses a unique fixed-width sequence per wrk thread, not alternating values that could accidentally repeat on each connection. The 44-byte end-to-end `User-Agent` differs from the diagnostic fixture's value; compare each workload only against its own base/off/on controls.
+
+Prepare two published folders with the identical host and dependencies; replace only the Core DLL for the baseline, as already smoke-tested locally:
+
+```sh
+source activate.sh
+dotnet publish src/Servers/Kestrel/samples/LazyHeadersApp/LazyHeadersApp.csproj \
+  -c Release -o "$HEAD_PUBLISH"
+cp -a "$HEAD_PUBLISH" "$BASE_PUBLISH"
+cp "$BASE_REPO/artifacts/bin/Microsoft.AspNetCore.Server.Kestrel.Core/Release/net12.0/Microsoft.AspNetCore.Server.Kestrel.Core.dll" \
+  "$BASE_PUBLISH/Microsoft.AspNetCore.Server.Kestrel.Core.dll"
+```
+
+All variables above must be distinct absolute paths; `BASE_PUBLISH` must not already exist when copying. Record the Core DLL SHA-256 for both folders and verify the loaded server copy. The baseline checkout's Core must have been built in Release. This surgical DLL comparison isolates this PR's shipping-code change rather than silently replacing other runtime/framework components.
+
+The Crank controller `0.2.0-alpha.26316.1` was installed locally. With `DOTNET_ROLL_FORWARD=Major` for that net8 controller on the available net10 host, its `--debug` mode successfully rendered the scenario, local payload, pinned script, and access/lazy/churn overrides. A deliberately unreachable loopback profile produced the expected endpoint warnings. **This verifies configuration rendering only, not agent upload, executable layout, wrk execution, counter collection, or throughput.**
+
+Required external setup is an **existing authorized Linux server/load-agent profile**, preferably separate dedicated machines, with the pinned .NET runtime available for the published apphost. Do not provision machines or alter lab infrastructure for this draft. The profile must supply `serverAddress`, application/load endpoints, and the server's exact runtime environment (for example its existing `DOTNET_ROOT`). No authorized profile/endpoints were supplied in this environment.
+
+After that setup is supplied, the concrete run command is:
+
+```sh
+crank --config src/Servers/Kestrel/perf/lazy-headers.crank.yml \
+  --config "$AUTHORIZED_PROFILE_CONFIG" --scenario lazy-headers --profile "$AUTHORIZED_PROFILE" \
+  --application.sources.default.localFolder "$HEAD_PUBLISH" \
+  --variable access=ignore --variable lazy=true --variable headerMode=changing \
+  --variable headerScript=https://raw.githubusercontent.com/dotnet/aspnetcore/8065742caba07399236ab62a5bc9db7c1424696e/src/Servers/Kestrel/perf/lazy-headers.wrk.lua \
+  --json head-on-ignore-changing.json
+```
+
+First use `--debug resolved.json` and inspect paths, script, pinned versions, and endpoints. For the baseline use `BASE_PUBLISH` and `lazy=false`; for the default-off control use `HEAD_PUBLISH` and `lazy=false`. The configuration's branch URL is a convenience default only; the immutable script URL above is mandatory for recorded results.
+
+Run the full 3 accesses x 3 header modes x 3 variants matrix, with at least five interleaved/reordered repeats per case. Keep concurrency, request sizes, SDK/runtime, GC, machine configuration, and client revisions constant. The configuration starts with 256 connections / 16 threads / 15 s warmup / 30 s measurement; also examine low-connection reuse and cold-connection cases. **Keep pipeline=1:** the imported wrk job selects a different script when pipeline exceeds one, which would invalidate this workload.
+
+Retain resolved configuration, raw JSON and measurements, source/DLL identities, load and server CPU, RPS, latency distribution, bad-response counts, allocation rate, GC rate/time, and working set. Check that the client is not the bottleneck and report uncertainty rather than a single best run. The response-observation header and Lua formatting are workload overhead, not free instrumentation.
+
+HTTP/2/HTTP/3 end-to-end comparisons need an appropriate existing protocol-capable client/profile and equivalent header access/churn cases. Plaintext/JSON perf-lab controls are also useful but do not replace these header-aware workloads. This draft remains blocked on those end-to-end measurements and discussion of the observed default-off/read costs.
