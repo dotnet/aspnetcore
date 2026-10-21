@@ -73,3 +73,21 @@ Baseline and head full-Core failing-case identities are identical (13 IPv6 expec
   Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesBodyReadsAndKeepAliveReuse [205 ms]
 Total tests: 3
      Passed: 3
+
+=== broader existing protocol functional regression selection ===
+Source: b597192b98a516602dd80ddbef7de34a0c6df2c3
+Command after source activate.sh:
+dotnet test src/Servers/Kestrel/test/InMemory.FunctionalTests/InMemory.FunctionalTests.csproj --no-restore --no-build -c Release --filter 'FullyQualifiedName~Http2|FullyQualifiedName~Http3|FullyQualifiedName~LazyRequestHeadersTests' --logger 'console;verbosity=normal'
+Test Run Successful.
+Total tests: 780
+     Passed: 775
+    Skipped: 5
+No failures. Includes all three isolated opt-in cases; the existing tests run the default-off path. Not a performance result.
+Skipped cases:
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2.TlsTests.TlsHandshakeRejectsTlsLessThan12
+Reason: TLS 1.1 ciphers are now disabled by default: https://github.com/dotnet/docs/issues/20842
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http1AndHttp2DowngradeToHttp1ForHttpsOnIncompatibleWindowsVersions
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http2DoesNotThrowOnCompatibleWindowsVersions
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http2ThrowsOnIncompatibleWindowsVersions
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http1AndHttp2DoesNotDowngradeOnCompatibleWindowsVersions
+Reasons for the four HTTPS middleware cases: downgrade/error logic only applies on Windows.

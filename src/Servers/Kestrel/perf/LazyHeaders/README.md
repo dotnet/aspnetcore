@@ -17,6 +17,8 @@ Deferring string creation for a changing header that an application never reads 
 
 Public correctness prior art: [pseudo-header reuse fix #38585](https://github.com/dotnet/aspnetcore/pull/38585) and [HTTP/3 stream/header reuse coverage #42681](https://github.com/dotnet/aspnetcore/pull/42681). These are correctness references, not evidence of a prior lazy-allocation win.
 
+Related representation/API discussions: [#31492](https://github.com/dotnet/aspnetcore/issues/31492) weighs known-header fast-path coverage against per-collection memory; [#27467](https://github.com/dotnet/aspnetcore/issues/27467) concerns strongly typed header API consolidation, not a documented lazy-storage implementation. Neither supplies lazy-allocation performance evidence.
+
 ## Prototype boundaries
 
 Set `Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent` through `AppContext.SetSwitch` **before constructing Kestrel**. It is off by default and is not a supported product setting.
@@ -41,6 +43,7 @@ See [verification.txt](verification.txt) for exact case identities and summaries
 - Each of the three allocation checks fails on the eager control with 3200 bytes allocated for 100 changing five-byte values, then passes with zero bytes when the prototype is enabled. The control was an invocation-time test change, restored before committing.
 - The process-isolated hosted HTTP/1 test passes through the actual parser, body consumption, and four keep-alive requests, including an unread value, a changed value, an absent value, and duplicates.
 - Two additional process-isolated tests pass through HTTP/2 with `SocketsHttpHandler` over the existing in-memory transport and HTTP/3 with the existing multiplexed transport/QPACK harness. Both consume request bodies before reading headers. HTTP/2 verifies four requests use one HTTP/2 connection; HTTP/3 verifies the same header collection is reused after stream disposal, including unread, changed, absent, and duplicate values. These three protocol tests are correctness checks, not performance or real-QUIC evidence.
+- The broader HTTP/2/HTTP/3 functional selection passes with 775 passed, 5 skipped, and no failures, including the three opt-in cases. The existing tests exercise the default-off path. Four skips are Windows-version-specific HTTPS checks; the fifth requires TLS 1.1 ciphers that are disabled by default. This is functional regression evidence, not an end-to-end load test.
 - The published workload passes 24 real-socket checks across off/on and ignore/read/enumerate. The same host with only the Core DLL replaced by the baseline passes another 12 checks. [Head](workload-smoke.json), [baseline](baseline-workload-smoke.json), and [Core DLL hashes](kestrel-core-sha256.json) are retained.
 - Full Core: baseline 9900 passed / 13 failed / 1 skipped; prototype 9928 passed / 13 failed / 1 skipped. The same 13 IPv6-expectation cases fail on both. This environment disables IPv6; changing the process setting did not eliminate the failures. **The full suite is not green.**
 - The Lua script was checked with Lua 5.4, including distinct fixed-width values on each of 16 simulated persistent connections. Actual wrk execution remains unverified.
@@ -51,7 +54,8 @@ Build/test entry points, from the repository root after the standard restore/boo
 dotnet test src/Servers/Kestrel/Core/test/Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj \
   --no-restore -c Release --filter 'FullyQualifiedName~HttpRequestHeaders'
 dotnet test src/Servers/Kestrel/test/InMemory.FunctionalTests/InMemory.FunctionalTests.csproj \
-  --no-restore -c Release --filter 'FullyQualifiedName~LazyRequestHeadersTests'
+  --no-restore -c Release \
+  --filter 'FullyQualifiedName~Http2|FullyQualifiedName~Http3|FullyQualifiedName~LazyRequestHeadersTests'
 ```
 
 The initial bootstrap used `./eng/build.sh --restore --no-build --projects '<absolute Core/test/*.csproj>' /p:NuGetAudit=false` because audit metadata was unavailable. Dependency restore also needed invocation-only `--source` overrides for `https://api.nuget.org/v3/index.json`, `https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet12/nuget/v3/index.json`, and `https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json` after some public mirror downloads failed. Repository NuGet configuration and SDK pins were not changed.
