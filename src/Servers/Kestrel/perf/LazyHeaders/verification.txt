@@ -66,3 +66,10 @@ Failed!  - Failed:    13, Passed:  9900, Skipped:     1, Total:  9914, Duration:
 Failed!  - Failed:    13, Passed:  9928, Skipped:     1, Total:  9942, Duration: 9 s - Microsoft.AspNetCore.Server.Kestrel.Core.Tests.dll (net12.0)
 
 Baseline and head full-Core failing-case identities are identical (13 IPv6 expectations).
+
+=== additional opt-in protocol decoder checks ===
+  Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesQPackDecodingAndStreamReuse [242 ms]
+  Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesHttp2BodyReads [294 ms]
+  Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesBodyReadsAndKeepAliveReuse [205 ms]
+Total tests: 3
+     Passed: 3

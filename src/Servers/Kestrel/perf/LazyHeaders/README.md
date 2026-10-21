@@ -31,7 +31,7 @@ Limitations to include in any interpretation:
 - Mutation through the ref accessor can materialize a value immediately before replacing/removing it. This POC prioritizes existing semantics over optimizing that case.
 - The default-off path still has layout/accessor/branch changes. It is a required control, not an assumption of zero cost.
 - `User-Agent` is one known header. This does not demonstrate the benefit of making every header lazy.
-- The prepared socket/Crank application is HTTP/1 only. HTTP/2 and HTTP/3 have direct ingestion tests and diagnostic rows, not full opt-in transport/QUIC performance evidence.
+- The prepared socket/Crank application is HTTP/1 only. HTTP/2 and HTTP/3 have direct ingestion tests, in-memory decoder/body-read coverage, and diagnostic rows, not full opt-in transport/QUIC performance evidence.
 
 ## Verified correctness
 
@@ -40,6 +40,7 @@ See [verification.txt](verification.txt) for exact case identities and summaries
 - 939 targeted request-header cases pass, including 28 new cases. Coverage includes owned input, case-insensitive lookup, duplicates, mutation/removal, enumeration/copy, reset with/without reuse, invalid input, custom encodings, and reuse of a decoded string.
 - Each of the three allocation checks fails on the eager control with 3200 bytes allocated for 100 changing five-byte values, then passes with zero bytes when the prototype is enabled. The control was an invocation-time test change, restored before committing.
 - The process-isolated hosted HTTP/1 test passes through the actual parser, body consumption, and four keep-alive requests, including an unread value, a changed value, an absent value, and duplicates.
+- Two additional process-isolated tests pass through HTTP/2 with `SocketsHttpHandler` over the existing in-memory transport and HTTP/3 with the existing multiplexed transport/QPACK harness. Both consume request bodies before reading headers. HTTP/2 verifies four requests use one HTTP/2 connection; HTTP/3 verifies the same header collection is reused after stream disposal, including unread, changed, absent, and duplicate values. These three protocol tests are correctness checks, not performance or real-QUIC evidence.
 - The published workload passes 24 real-socket checks across off/on and ignore/read/enumerate. The same host with only the Core DLL replaced by the baseline passes another 12 checks. [Head](workload-smoke.json), [baseline](baseline-workload-smoke.json), and [Core DLL hashes](kestrel-core-sha256.json) are retained.
 - Full Core: baseline 9900 passed / 13 failed / 1 skipped; prototype 9928 passed / 13 failed / 1 skipped. The same 13 IPv6-expectation cases fail on both. This environment disables IPv6; changing the process setting did not eliminate the failures. **The full suite is not green.**
 - The Lua script was checked with Lua 5.4, including distinct fixed-width values on each of 16 simulated persistent connections. Actual wrk execution remains unverified.
