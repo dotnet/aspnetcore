@@ -1,10 +1,12 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
 
-const [actionsDir, lockPath, bodyPath, snapshotManifestPath] = process.argv.slice(2);
+const [actionsDir, lockPath, bodyPath, snapshotManifestPath, publishedBodyOutputPath] = process.argv.slice(2);
 const dashboardIssueNumber = 69328;
+const body = fs.readFileSync(bodyPath, "utf8");
+const snapshotRun = body.match(/Producing workflow run]\(https:\/\/github\.com\/dotnet\/aspnetcore\/actions\/runs\/([1-9][0-9]*)\/attempts\//);
+const testRunId = Number(snapshotRun?.[1] ?? 38956798671);
 const lock = fs.readFileSync(lockPath, "utf8");
 const job = lock.slice(lock.indexOf("\n  safe_outputs:"));
 const step = job.slice(job.indexOf("      - name: Process Safe Outputs"), job.indexOf("      - name:", job.indexOf("      - name: Process Safe Outputs") + 10));
@@ -12,30 +14,36 @@ const serializedConfig = JSON.parse(step.match(/GH_AW_SAFE_OUTPUTS_HANDLER_CONFI
 const config = JSON.parse(serializedConfig).update_issue;
 assert.equal(config.target, String(dashboardIssueNumber));
 const jobWorkflowId = JSON.parse(job.match(/^\s+GH_AW_WORKFLOW_ID: (.+)$/m)[1]);
+const workflowName = JSON.parse(job.match(/^\s+GH_AW_WORKFLOW_NAME: (.+)$/m)[1]);
 process.env.GH_AW_WORKFLOW_ID = jobWorkflowId;
-const preparation = job.match(/name: Preserve canonical Pulse body on publication\r?\n[\s\S]*?script: (.+)/)?.[1];
-if (preparation) {
-  vm.runInNewContext(preparation, {
-    core: {
-      exportVariable(name, value) {
-        assert.equal(name, "GH_AW_WORKFLOW_ID");
-        assert.equal(value, "");
-        process.env[name] = value;
-      },
-    },
-  });
-}
+process.env.GH_AW_WORKFLOW_NAME = workflowName;
 process.env.GH_AW_SAFE_OUTPUTS_URLS = "allowed-or-code-region";
 process.env.GH_AW_ALLOWED_GITHUB_REFS = "dotnet/aspnetcore";
 process.env.GH_AW_DETECTION_CONCLUSION = "success";
+process.env.GITHUB_REPOSITORY = "dotnet/aspnetcore";
+process.env.GITHUB_REPOSITORY_ID = "1";
+process.env.GITHUB_RUN_ID = String(testRunId);
+process.env.GITHUB_RUN_ATTEMPT = "1";
+process.env.GITHUB_JOB = "safe_outputs";
+process.env.GH_AW_JOB_CHECK_RUN_ID = "1";
 
 global.core = { info() {}, warning() {}, error() {}, debug() {} };
 global.context = {
   repo: { owner: "dotnet", repo: "aspnetcore" },
-  serverUrl: "https://github.com", runId: 1, eventName: "workflow_dispatch", payload: {},
+  serverUrl: "https://github.com", runId: testRunId, eventName: "workflow_dispatch", payload: {},
 };
 const { main } = require(path.join(actionsDir, "update_issue.cjs"));
-const body = fs.readFileSync(bodyPath, "utf8");
+const { appendExecutionProvenance } = require(path.join(actionsDir, "execution_provenance.cjs"));
+const { generateWorkflowIdMarker } = require(path.join(actionsDir, "generate_footer.cjs"));
+function publishedBody(canonicalBody) {
+  return appendExecutionProvenance(
+    `${canonicalBody}\n\n${generateWorkflowIdMarker(jobWorkflowId)}`,
+    workflowName,
+    `https://github.com/dotnet/aspnetcore/actions/runs/${testRunId}`);
+}
+if (publishedBodyOutputPath) {
+  fs.writeFileSync(publishedBodyOutputPath, publishedBody(body), "utf8");
+}
 const issue = {
   number: dashboardIssueNumber, title: "[pr-attention-pulse] ASP.NET Core PR Attention Pulse",
   state: "open", labels: [], assignees: [], html_url: `https://github.com/dotnet/aspnetcore/issues/${dashboardIssueNumber}`,
@@ -68,6 +76,8 @@ async function runSnapshotPublications() {
   const secondBody = fs.readFileSync(manifest.second.bodyPath, "utf8");
   const firstOutput = JSON.parse(fs.readFileSync(manifest.first.outputPath, "utf8"));
   const secondOutput = JSON.parse(fs.readFileSync(manifest.second.outputPath, "utf8"));
+  const firstPublishedBody = publishedBody(firstBody);
+  const secondPublishedBody = publishedBody(secondBody);
   assert.notEqual(firstBody, secondBody);
   assert.notEqual(firstBody.slice(firstBody.indexOf("## Snapshot")), secondBody.slice(secondBody.indexOf("## Snapshot")));
   assert.notEqual(firstBody.slice(0, firstBody.indexOf("## Snapshot")), secondBody.slice(0, secondBody.indexOf("## Snapshot")));
@@ -102,12 +112,12 @@ async function runSnapshotPublications() {
 
   const first = await dispatch(firstOutput);
   assert.equal(writes.length, 1);
-  assert.equal(currentBody, firstBody);
+  assert.equal(currentBody, firstPublishedBody);
   console.log("PASS SnapshotPublication/first-report-and-reference");
 
   const limited = await dispatch(secondOutput, first.handler);
   assert.equal(writes.length, 1);
-  assert.equal(currentBody, firstBody);
+  assert.equal(currentBody, firstPublishedBody);
   assert.equal(limited.result.results[0].success, false);
   assert.match(limited.result.results[0].error, /Max count of 1 reached/);
   console.log("PASS SnapshotPublication/one-item-guard-retains-first");
@@ -115,7 +125,7 @@ async function runSnapshotPublications() {
   currentTitle = "Unrelated issue";
   await dispatch(secondOutput);
   assert.equal(writes.length, 1);
-  assert.equal(currentBody, firstBody);
+  assert.equal(currentBody, firstPublishedBody);
   currentTitle = issue.title;
   console.log("PASS SnapshotPublication/title-guard-retains-first");
 
@@ -123,7 +133,7 @@ async function runSnapshotPublications() {
   wrongRepository.items[0].repo = "dotnet/runtime";
   await dispatch(wrongRepository);
   assert.equal(writes.length, 1);
-  assert.equal(currentBody, firstBody);
+  assert.equal(currentBody, firstPublishedBody);
   console.log("PASS SnapshotPublication/repository-guard-retains-first");
 
   for (const rejected of manifest.rejected) {
@@ -132,15 +142,15 @@ async function runSnapshotPublications() {
     const { result } = await dispatch(output);
     assert.equal(result.results.length, 0, "Invoke the real dispatcher even for quarantined publication attempts.");
     assert.equal(writes.length, 1);
-    assert.equal(currentBody, firstBody);
+    assert.equal(currentBody, firstPublishedBody);
     console.log(`PASS SnapshotPublication/rejected-${rejected.name}-retains-first`);
   }
 
   await dispatch(secondOutput);
   assert.equal(writes.length, 2, "Each successful report is a single body-only API write.");
-  assert.equal(writes[0].body, firstBody);
-  assert.equal(writes[1].body, secondBody);
-  assert.equal(currentBody, secondBody, "Report and reference must be replaced together, not appended independently.");
+  assert.equal(writes[0].body, firstPublishedBody);
+  assert.equal(writes[1].body, secondPublishedBody);
+  assert.equal(currentBody, secondPublishedBody, "Report and reference must be replaced together, not appended independently.");
   console.log("PASS SnapshotPublication/second-report-and-reference");
 }
 
@@ -155,7 +165,8 @@ async function run() {
       assert.equal(result.success, true);
       assert.equal(writes.length, 1);
       assert.deepEqual(Object.keys(writes[0]).sort(), ["body", "issue_number", "owner", "repo"]);
-      assert.equal(writes[0].body, body, "The real pinned issue handler must send the canonical body unchanged.");
+      assert.equal(writes[0].body, publishedBody(body), "The real pinned issue handler must preserve the canonical body and append trusted provenance.");
+      assert.ok(writes[0].body.length <= 65536, "The handler-emitted issue body must fit GitHub's issue body limit.");
       const repeated = await handler({ type: "update_issue", issue_number: dashboardIssueNumber, operation: "replace", body });
       assert.equal(repeated.success, false);
       assert.equal(writes.length, 1, "The one-item limit must still prevent another mutation.");

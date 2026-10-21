@@ -944,6 +944,39 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         await reconnectFeature.DisableReconnectCalled.DefaultTimeout();
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task ConnectionClosedWithErrorWhenNonPositiveSequenceIdReceived(long sequenceId)
+    {
+        var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+        var innerConnection = new TestConnection();
+        var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+        innerConnection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+        var delegateConnectionFactory = new DelegateConnectionFactory(
+            endPoint => innerConnection.StartAsync());
+        builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
+        var hubConnection = builder.Build();
+        var closedEventTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        hubConnection.Closed += e =>
+        {
+            closedEventTcs.SetResult(e);
+            return Task.CompletedTask;
+        };
+
+        await hubConnection.StartAsync().DefaultTimeout();
+
+        await innerConnection.ReceiveJsonMessage(new { type = HubProtocolConstants.SequenceMessageType, sequenceId });
+
+        var exception = Assert.IsType<InvalidOperationException>(await closedEventTcs.Task.DefaultTimeout());
+        Assert.Equal("Sequence ID must be greater than 0.", exception.Message);
+        Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
+    }
+
     [Fact]
     public async Task DisableReconnectCalledWhenSendingCloseMessage()
     {

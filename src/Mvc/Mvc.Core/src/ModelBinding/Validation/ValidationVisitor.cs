@@ -18,6 +18,7 @@ public class ValidationVisitor
 {
     private readonly ValidationStack _currentPath;
     private int? _maxValidationDepth;
+    private IValidationStrategy? _unionValidationStrategy;
 
     /// <summary>
     /// Creates a new <see cref="ValidationVisitor"/>.
@@ -310,6 +311,13 @@ public class ValidationVisitor
             };
         }
 
+        // Model and Strategy still describe the parent until StateManager.Recurse.
+        if (Model is IUnion && Strategy is null &&
+            (Metadata is null || typeof(IUnion).IsAssignableFrom(Nullable.GetUnderlyingType(Metadata.ModelType) ?? Metadata.ModelType)))
+        {
+            metadata = GetUnionCaseMetadata(metadata, model);
+        }
+
         var entry = GetValidationEntry(model);
         key = entry?.Key ?? key ?? string.Empty;
         metadata = entry?.Metadata ?? metadata;
@@ -351,6 +359,11 @@ public class ValidationVisitor
 
         using (StateManager.Recurse(this, key ?? string.Empty, metadata, model, strategy!))
         {
+            if (Model is IUnion && typeof(IUnion).IsAssignableFrom(Nullable.GetUnderlyingType(Metadata!.ModelType) ?? Metadata.ModelType))
+            {
+                return VisitComplexType(_unionValidationStrategy ??= new DefaultUnionValidationStrategy(MetadataProvider));
+            }
+
             if (Metadata!.IsEnumerableType)
             {
                 return VisitComplexType(DefaultCollectionValidationStrategy.Instance);
@@ -363,6 +376,32 @@ public class ValidationVisitor
 
             return VisitSimpleType();
         }
+    }
+
+    private ModelMetadata GetUnionCaseMetadata(ModelMetadata metadata, object? model)
+    {
+        if (metadata.ModelType != typeof(object) || model is null ||
+            (metadata.MetadataKind != ModelMetadataKind.Type && !DefaultUnionValidationStrategy.IsUnionValueProperty(metadata, Model!.GetType())))
+        {
+            return metadata;
+        }
+
+        // Retain property attributes even when the registered provider decorates the metadata's provider.
+        if (metadata.MetadataKind == ModelMetadataKind.Property)
+        {
+            if (MetadataProvider is ModelMetadataProvider provider &&
+                metadata is DefaultModelMetadata propertyMetadata &&
+                propertyMetadata.Details.Key.PropertyInfo is { } propertyInfo)
+            {
+                return provider.GetMetadataForProperty(propertyInfo, model.GetType());
+            }
+
+            return metadata is DefaultModelMetadata defaultMetadata
+                ? defaultMetadata.GetMetadataForRuntimeType(model.GetType())
+                : metadata;
+        }
+
+        return MetadataProvider.GetMetadataForType(model.GetType());
     }
 
     /// <summary>
