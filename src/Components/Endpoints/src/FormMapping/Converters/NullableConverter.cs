@@ -25,6 +25,15 @@ internal sealed class NullableConverter<T>(FormDataConverter<T> nonNullableConve
 
         var converter = (ISingleValueConverter<T>)_nonNullableConverter;
 
+        if (string.IsNullOrEmpty(value))
+        {
+            // Preserve custom empty values without counting a rejected empty value as a mapping error.
+            var emptyValueReader = reader;
+            emptyValueReader.ErrorHandler = static (_, _, _) => { };
+            result = converter.TryConvertValue(ref emptyValueReader, value, out var emptyValue) ? emptyValue : null;
+            return true;
+        }
+
         if (converter.TryConvertValue(ref reader, value, out var converted))
         {
             result = converted;
