@@ -103,8 +103,8 @@ public sealed class CookieStore : IInternalAsyncDisposal
     }
 
     /// <summary>
-    /// Sets a cookie with the specified name and value for the host of the current page and the path <c>"/"</c>,
-    /// replacing any existing cookie with the same name, host, and path.
+    /// Sets the unpartitioned cookie with the specified name and value for the host of the current page and the path <c>"/"</c>,
+    /// replacing any existing unpartitioned cookie with the same name, host, and path.
     /// </summary>
     /// <param name="name">The name of the cookie.</param>
     /// <param name="value">The value of the cookie.</param>
