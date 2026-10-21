@@ -25,6 +25,7 @@ public class PublicApiTest
     [Theory]
     [InlineData(typeof(Window))]
     [InlineData(typeof(Storage))]
+    [InlineData(typeof(UrlSearchParams))]
     public void SharedInstances_CannotBeDisposedByApplicationCode(Type type)
     {
         Assert.False(typeof(IAsyncDisposable).IsAssignableFrom(type));
@@ -38,6 +39,8 @@ public class PublicApiTest
         Type[] liveBrowserObjectTypes =
         [
             typeof(Storage),
+            typeof(Url),
+            typeof(UrlSearchParams),
         ];
 
         var synchronousMethods = liveBrowserObjectTypes
@@ -46,7 +49,8 @@ public class PublicApiTest
             .Where(method => !method.IsSpecialName)
             .Where(method => method.ReturnType != typeof(ValueTask))
             .Where(method => !method.ReturnType.IsGenericType ||
-                method.ReturnType.GetGenericTypeDefinition() != typeof(ValueTask<>));
+                (method.ReturnType.GetGenericTypeDefinition() != typeof(ValueTask<>) &&
+                method.ReturnType.GetGenericTypeDefinition() != typeof(IAsyncEnumerable<>)));
 
         Assert.Empty(synchronousMethods);
     }
