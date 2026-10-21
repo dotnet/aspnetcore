@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,
     IncludeFields = true)]
+[JsonSerializable(typeof(IEnumerable<object>), TypeInfoPropertyName = "MessageSequence")]
 [JsonSerializable(typeof(JsonElement[]))]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(bool))]
