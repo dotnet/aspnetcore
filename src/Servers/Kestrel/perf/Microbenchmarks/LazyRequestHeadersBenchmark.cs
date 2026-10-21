@@ -23,7 +23,7 @@ public class LazyRequestHeadersBenchmark
     [Params("Ignore", "Read", "Enumerate", "Duplicate")]
     public string Access { get; set; }
 
-    [Params(1, 2, 3)]
+    [Params(1)]
     public int Protocol { get; set; }
 
     [GlobalSetup]
