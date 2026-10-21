@@ -24,6 +24,8 @@ export interface InputElement extends HTMLInputElement {
 }
 
 let fileListStreamingEnabled = false;
+// Must match InputFileJsCallbacksRelay.MaxFileListSize.
+const maxFileListSize = 1024 * 1024;
 
 export function setFileListStreamingEnabled(enabled: boolean): void {
   fileListStreamingEnabled = enabled;
@@ -58,8 +60,9 @@ function init(callbackWrapper: any, elem: InputElement): void {
       return result;
     });
 
-    if (fileListStreamingEnabled) {
-      const fileListReference = createJSStreamReference(new Blob([JSON.stringify(fileList)]));
+    const fileListBlob = fileListStreamingEnabled ? new Blob([JSON.stringify(fileList)]) : undefined;
+    if (fileListBlob && fileListBlob.size <= maxFileListSize) {
+      const fileListReference = createJSStreamReference(fileListBlob);
       callbackWrapper.invokeMethodAsync('NotifyChangeFromStream', fileListReference)
         .finally(() => disposeJSObjectReference(fileListReference));
     } else {
