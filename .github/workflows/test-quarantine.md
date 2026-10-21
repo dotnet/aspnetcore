@@ -1343,7 +1343,7 @@ on:
         SCRIPT
 
     - name: Upload deterministic evidence for safe output validation
-      uses: actions/upload-artifact@v7.0.1
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: |
@@ -1402,7 +1402,7 @@ safe-outputs:
   steps:
     - name: Download deterministic quarantine evidence
       continue-on-error: true
-      uses: actions/download-artifact@v8.0.1
+      uses: actions/download-artifact@v8.0.2
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: ${{ runner.temp }}/test-quarantine-evidence
@@ -2139,6 +2139,14 @@ You are an automated workflow that manages flaky test quarantine in the dotnet/a
 1. **Quarantine** tests that are flaky and causing CI failures
 2. **Unquarantine** tests that have been reliably passing for 30+ days
 
+**Both tasks are mandatory analysis phases on every run.** An empty Case A/Case B
+eligibility list completes only Part 1; it does not make Part 2 optional. You must
+still query pipelines 84 and 87 and complete the Part 2 candidate analysis before
+reporting `noop`. Priority and budget rules may defer an identified unquarantine
+write after the analysis is complete, but they never permit skipping Part 2.
+If required data, tools, time, or turn budget prevent either analysis phase from
+completing, call `report_incomplete` instead of `noop`.
+
 ## Critical HTTP access rule
 
 For every Azure DevOps, VSTMR, Helix, or other HTTP request, run a
@@ -2515,7 +2523,7 @@ and unquarantine actions may still use the remaining PR/comment budget.
 
 ### Priority order
 
-**CRITICAL: Quarantining and re-quarantining MUST be done before any unquarantining.** Flaky tests actively break CI and block other developers. Unquarantining is just cleanup — it can always wait until the next run. You must complete ALL quarantine and re-quarantine actions before spending any budget on unquarantine actions.
+**CRITICAL: Quarantining and re-quarantining MUST be done before any unquarantining.** Flaky tests actively break CI and block other developers. You must complete ALL quarantine and re-quarantine actions before spending any output budget on unquarantine actions. This priority governs writes only: Part 2 analysis remains mandatory, and a run that skips it is incomplete rather than a no-op.
 
 Process items in this strict order:
 
@@ -2538,9 +2546,17 @@ You have a limited turn and token budget. **Reserve at least 15 turns for creati
 
 - If you have used 60+ turns and have not yet started creating PRs/issues via the safe-output tools, **stop investigating immediately** and execute with the candidates you have identified so far.
 - It is always better to produce fewer but complete outputs (issue + PR + comment) than to investigate exhaustively and run out of budget before creating any outputs.
-- Deferred work will be handled by the next daily run — if you have identified candidates but fail to create any outputs for them, that is the worst outcome.
+- Candidate writes that exceed the output or turn budget may be deferred to the next daily run after both analysis phases are complete. Never defer an entire required analysis phase; use `report_incomplete` if it cannot be completed.
 - When creating outputs, you **must invoke the safe-output MCP tools** as actual tool calls. The callable MCP tool names are underscore-based (`create_pull_request`, `create_quarantine_issue`, `add_comment`) and correspond to the safe-output entries in the frontmatter. Writing JSON descriptions of intended calls in your text response does NOT create them.
 - When passing string parameters to safe-output tools (e.g., `item_number`, `temporary_id`), pass them as **plain strings without extra quoting**. For example, use `item_number: "aw_myid"` — not `item_number: "\"aw_myid\""`. Extra quote characters will cause the handler to reject the value.
+
+### Completion check
+
+Before emitting any terminal safe output, verify that both Part 1 and Part 2
+analysis completed. A `noop` message must explicitly summarize the Part 1 Case A
+and Case B candidate counts and the Part 2 pipeline 84 and pipeline 87 analysis
+results. Never use `noop` to disclose that a required phase was skipped. If either
+phase is incomplete, emit `report_incomplete` with the missing phase and reason.
 
 ---
 
