@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 
@@ -31,25 +32,7 @@ internal sealed class IpcCommon
         var buffer = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            writer.WriteStartArray();
-            writer.WriteStringValue(messageType);
-
-            foreach (var arg in args)
-            {
-                if (arg is null)
-                {
-                    writer.WriteNullValue();
-                    continue;
-                }
-
-                // Arguments are serialized using source-generated metadata so that IPC is trimming and NativeAOT safe.
-                var typeInfo = IpcJsonSerializerContext.Default.GetTypeInfo(arg.GetType())
-                    ?? throw new InvalidOperationException(
-                        $"Type '{arg.GetType()}' is not supported as an IPC message argument. Add it to '{nameof(IpcJsonSerializerContext)}'.");
-                JsonSerializer.Serialize(writer, arg, typeInfo);
-            }
-
-            writer.WriteEndArray();
+            JsonSerializer.Serialize(writer, args.Prepend(messageType), IpcJsonSerializerContext.Default.MessageSequence);
         }
 
         return $"{_ipcMessagePrefix}{Encoding.UTF8.GetString(buffer.WrittenSpan)}";
