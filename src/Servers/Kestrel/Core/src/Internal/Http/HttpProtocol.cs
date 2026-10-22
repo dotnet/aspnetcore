@@ -551,7 +551,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         IncrementRequestHeadersCount();
 
         HttpRequestHeaders.Append(name, value, checkForNewlineChars,
-            allowLazyUserAgent: _httpVersion == Http.HttpVersion.Http11);
+            allowLazyValues: _httpVersion == Http.HttpVersion.Http11);
     }
 
     public virtual void OnHeader(int index, bool indexOnly, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)

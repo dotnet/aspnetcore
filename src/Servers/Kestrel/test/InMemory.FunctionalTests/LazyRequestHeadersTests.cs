@@ -19,10 +19,80 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 public class LazyRequestHeadersTests
 {
     [Fact]
+    public void FragmentedKnownAndUnknownValuesSurviveBodyReadsOnlyHttp11IsLazy()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyRequestHeaders", "true");
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
+        {
+            foreach (var version in new[] { "HTTP/1.0", "HTTP/1.1" })
+            {
+                foreach (var length in new[] { 255, 256, 257 })
+                {
+                    var value = new string('a', length);
+                    await using var server = new TestServer(async context =>
+                    {
+                        var headers = (HttpRequestHeaders)context.Request.Headers;
+                        Assert.True(headers.LazyRequestHeaders);
+                        Assert.Equal(version == "HTTP/1.1" ? 4 : 0, headers.LazyValueCount);
+                        await context.Request.Body.CopyToAsync(Stream.Null);
+                        Assert.Equal(value, context.Request.Headers.Accept);
+                        Assert.Equal(value, context.Request.Headers.AcceptLanguage);
+                        Assert.Equal(value, context.Request.Headers["X-Example"]);
+                        Assert.Equal(value, context.Request.Headers["X-Other"]);
+                        Assert.Equal(0, headers.LazyValueCount);
+                        context.Response.ContentLength = 1;
+                        await context.Response.WriteAsync("x");
+                    }, new TestServiceContext { Scheduler = PipeScheduler.Inline });
+                    using var connection = server.CreateConnection();
+                    var request = Encoding.ASCII.GetBytes(
+                        $"POST / {version}\r\nHost: localhost\r\nConnection: close\r\n" +
+                        $"Accept: {value}\r\nAccept-Language: {value}\r\nX-Example: {value}\r\nX-Other: {value}\r\n" +
+                        "Content-Length: 4\r\n\r\nbody");
+                    for (var offset = 0; offset < request.Length; offset += 32)
+                    {
+                        await connection.Stream.WriteAsync(request.AsMemory(offset, Math.Min(32, request.Length - offset)));
+                    }
+                    var response = await new StreamReader(connection.Stream).ReadToEndAsync().DefaultTimeout();
+                    Assert.StartsWith("HTTP/1.1 200 OK\r\n", response);
+                    Assert.EndsWith("\r\n\r\nx", response);
+                }
+            }
+        }, options);
+    }
+
+    [Fact]
+    public void InvalidHostAndContentLengthAreRejectedWithSwitchOn()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyRequestHeaders", "true");
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
+        {
+            await using var server = new TestServer(_ => throw new InvalidOperationException("Malformed request reached application."),
+                new TestServiceContext());
+            foreach (var headers in new[]
+            {
+                "Accept: unread",
+                "Host: bad host",
+                "Host: localhost\r\nContent-Length: +1",
+                "Host: localhost\r\nContent-Length: 9223372036854775808",
+                "Host: localhost\r\nContent-Length: 1\r\nContent-Length: 1",
+            })
+            {
+                using var connection = server.CreateConnection();
+                await connection.Stream.WriteAsync(Encoding.ASCII.GetBytes(
+                    $"GET / HTTP/1.1\r\nConnection: close\r\n{headers}\r\n\r\n"));
+                var response = await new StreamReader(connection.Stream).ReadToEndAsync().DefaultTimeout();
+                Assert.StartsWith("HTTP/1.1 400 Bad Request\r\n", response);
+            }
+        }, options);
+    }
+
+    [Fact]
     public void Http2HeadersRemainCompatibleWithLazySwitchEnabled()
     {
         var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent", "true");
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyRequestHeaders", "true");
 
         using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
@@ -30,7 +100,8 @@ public class LazyRequestHeadersTests
             var requestIndex = 0;
             await using var server = new TestServer(async context =>
             {
-                Assert.True(((HttpRequestHeaders)context.Request.Headers).LazyUserAgent);
+                Assert.True(((HttpRequestHeaders)context.Request.Headers).LazyRequestHeaders);
+                Assert.Equal(0, ((HttpRequestHeaders)context.Request.Headers).LazyValueCount);
                 await context.Request.Body.CopyToAsync(Stream.Null);
                 var index = requestIndex++;
                 if (index != 0)
@@ -42,6 +113,8 @@ public class LazyRequestHeadersTests
                     else
                     {
                         Assert.Equal(values[index], context.Request.Headers.UserAgent.ToString());
+                        Assert.Equal(values[index], context.Request.Headers.Accept.ToString());
+                        Assert.Equal(values[index], context.Request.Headers["X-Example"].ToString());
                     }
                 }
                 context.Response.ContentLength = 1;
@@ -70,6 +143,8 @@ public class LazyRequestHeadersTests
                 if (value is not null)
                 {
                     request.Headers.TryAddWithoutValidation("User-Agent", value);
+                    request.Headers.TryAddWithoutValidation("Accept", value);
+                    request.Headers.TryAddWithoutValidation("X-Example", value);
                 }
                 using var response = await client.SendAsync(request).DefaultTimeout();
                 Assert.Equal(new Version(2, 0), response.Version);
@@ -84,7 +159,7 @@ public class LazyRequestHeadersTests
     public void QPackHeadersRemainCompatibleWithLazySwitchEnabled()
     {
         var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent", "true");
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyRequestHeaders", "true");
 
         using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
@@ -95,7 +170,8 @@ public class LazyRequestHeadersTests
             var requestIndex = 0;
             await http3.InitializeConnectionAsync(async context =>
             {
-                Assert.True(((HttpRequestHeaders)context.Request.Headers).LazyUserAgent);
+                Assert.True(((HttpRequestHeaders)context.Request.Headers).LazyRequestHeaders);
+                Assert.Equal(0, ((HttpRequestHeaders)context.Request.Headers).LazyValueCount);
                 if (previousHeaders is not null)
                 {
                     Assert.Same(previousHeaders, context.Request.Headers);
@@ -108,12 +184,16 @@ public class LazyRequestHeadersTests
                         break;
                     case 1:
                         Assert.Equal("changed", context.Request.Headers.UserAgent);
+                        Assert.Equal("changed", context.Request.Headers.Accept);
+                        Assert.Equal("changed", context.Request.Headers["X-Example"]);
                         break;
                     case 2:
                         Assert.False(context.Request.Headers.ContainsKey("User-Agent"));
                         break;
                     case 3:
                         Assert.Equal(new[] { "first", "second" }, context.Request.Headers.UserAgent.ToArray());
+                        Assert.Equal(new[] { "first", "second" }, context.Request.Headers.Accept.ToArray());
+                        Assert.Equal(new[] { "first", "second" }, context.Request.Headers["X-Example"].ToArray());
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected request.");
@@ -133,6 +213,8 @@ public class LazyRequestHeadersTests
                     new(":authority", "localhost"),
                 };
                 headers.AddRange(values.Select(value => new KeyValuePair<string, string>("user-agent", value)));
+                headers.AddRange(values.Select(value => new KeyValuePair<string, string>("accept", value)));
+                headers.AddRange(values.Select(value => new KeyValuePair<string, string>("x-example", value)));
                 var request = await http3.CreateRequestStream(headers);
                 await request.SendDataAsync("body"u8.ToArray(), endStream: true);
                 var responseHeaders = await request.ExpectHeadersAsync();
@@ -150,10 +232,10 @@ public class LazyRequestHeadersTests
     }
 
     [Fact]
-    public void LazyUserAgentSurvivesBodyReadsAndKeepAliveReuse()
+    public void LazyHeadersSurviveBodyReadsAndKeepAliveReuse()
     {
         var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent", "true");
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyRequestHeaders", "true");
 
         using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
@@ -161,7 +243,7 @@ public class LazyRequestHeadersTests
             var request = 0;
             await using var server = new TestServer(async context =>
             {
-                Assert.True(((HttpRequestHeaders)context.Request.Headers).LazyUserAgent);
+                Assert.True(((HttpRequestHeaders)context.Request.Headers).LazyRequestHeaders);
                 await context.Request.Body.CopyToAsync(Stream.Null);
 
                 switch (request++)
@@ -171,12 +253,18 @@ public class LazyRequestHeadersTests
                         break;
                     case 1:
                         Assert.Equal("changed", context.Request.Headers.UserAgent);
+                        Assert.Equal("changed-accept", context.Request.Headers.Accept);
+                        Assert.Equal("changed-unknown", context.Request.Headers["X-Example"]);
+                        Assert.Equal("changed-other", context.Request.Headers["X-Other"]);
                         break;
                     case 2:
                         Assert.False(context.Request.Headers.ContainsKey("User-Agent"));
+                        Assert.False(context.Request.Headers.ContainsKey("Accept"));
+                        Assert.False(context.Request.Headers.ContainsKey("X-Example"));
                         break;
                     case 3:
                         Assert.Equal(new[] { "first", "second" }, context.Request.Headers.UserAgent.ToArray());
+                        Assert.Equal(new[] { "first", "second" }, context.Request.Headers["X-Example"].ToArray());
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected request.");
@@ -187,7 +275,13 @@ public class LazyRequestHeadersTests
             }, testContext);
 
             using var connection = server.CreateConnection();
-            foreach (var userAgent in new[] { "User-Agent: unread", "uSeR-aGeNt: changed", "X-Other: value", "User-Agent: first\r\nUser-Agent: second" })
+            foreach (var userAgent in new[]
+            {
+                "User-Agent: unread\r\nAccept: unread-accept\r\nX-Example: unread-unknown\r\nX-Other: unread-other",
+                "uSeR-aGeNt: changed\r\nAccept: changed-accept\r\nX-Example: changed-unknown\r\nX-Other: changed-other",
+                "X-Other: value",
+                "User-Agent: first\r\nUser-Agent: second\r\nX-Example: first\r\nx-example: second",
+            })
             {
                 await connection.Send(
                     "POST / HTTP/1.1",

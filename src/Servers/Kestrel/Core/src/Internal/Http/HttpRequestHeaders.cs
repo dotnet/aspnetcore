@@ -4,7 +4,9 @@
 using System.Buffers.Text;
 using System.Collections;
 using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
@@ -20,75 +22,142 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
 
     public bool ReuseHeaderValues { get; set; }
     public Func<string, Encoding?> EncodingSelector { get; set; }
-    public bool LazyUserAgent { get; }
+    private Dictionary<string, HeaderValue>? _unknown;
+    private Dictionary<string, HeaderValue> RequestUnknown => _unknown ??= new(StringComparer.OrdinalIgnoreCase);
+    public bool LazyRequestHeaders { get; }
 
-    public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null, bool? lazyUserAgent = null)
+    public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null, bool? lazyRequestHeaders = null)
     {
         ReuseHeaderValues = reuseHeaderValues;
         EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
-        LazyUserAgent = lazyUserAgent ??
-            (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyUserAgent", out var enabled) && enabled);
+        LazyRequestHeaders = lazyRequestHeaders ??
+            (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.LazyRequestHeaders", out var enabled) && enabled);
     }
 
-    private bool TryAppendLazyUserAgent(ReadOnlySpan<byte> value, long flag, bool checkForNewlineChars)
+    private bool CanStoreLazy(ReadOnlySpan<byte> value, bool checkForNewlineChars)
     {
-        if (!LazyUserAgent || (_bits & flag) != 0 ||
-            !ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector) ||
-            value.IsEmpty || value.Length > 4096 ||
-            !Ascii.IsValid(value) || value.Contains((byte)0) ||
-            (checkForNewlineChars && value.IndexOfAny((byte)'\r', (byte)'\n') >= 0))
+        return LazyRequestHeaders &&
+            ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector) &&
+            value.Length <= HeaderReferences.BufferBudget &&
+            Ascii.IsValid(value) && !value.Contains((byte)0) &&
+            (!checkForNewlineChars || value.IndexOfAny((byte)'\r', (byte)'\n') < 0);
+    }
+
+    private bool TryAppendLazy(ReadOnlySpan<byte> value, ref HeaderValue destination, long flag, bool checkForNewlineChars)
+    {
+        if ((_bits & flag) != 0 || !CanStoreLazy(value, checkForNewlineChars) ||
+            !_headers.TryStore(value, ref destination))
         {
             return false;
         }
 
-        _headers.SetLazyUserAgent(value);
+        if (destination.Length != 0)
+        {
+            _headers.RawBits |= flag;
+        }
         _previousBits &= ~flag;
         _bits |= flag;
         return true;
     }
 
+    internal int LazyValueCount
+    {
+        get
+        {
+            var count = BitOperations.PopCount((ulong)_headers.RawBits);
+            if (_unknown is not null)
+            {
+                foreach (var pair in _unknown)
+                {
+                    if (pair.Value.Length != 0)
+                    {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+    }
+
+    private struct HeaderValue
+    {
+        public StringValues Value;
+        public int Offset;
+        public int Length;
+    }
+
     private partial struct HeaderReferences
     {
-        // All generated read/ref/write paths use this accessor, including enumeration.
-        [System.Diagnostics.CodeAnalysis.UnscopedRef]
-        public ref StringValues _UserAgent
+        public const int BufferBudget = 4096;
+
+        public bool TryStore(ReadOnlySpan<byte> value, ref HeaderValue destination)
         {
-            get
+            if (destination.Value.Count == 1 &&
+                StringUtilities.BytesOrdinalEqualsStringAndAscii(destination.Value.ToString(), value))
             {
-                if (_userAgentLength != 0)
+                return true;
+            }
+            if (value.IsEmpty)
+            {
+                destination = new HeaderValue { Value = string.Empty };
+                return true;
+            }
+            if (value.Length > BufferBudget - _used)
+            {
+                return false;
+            }
+
+            var required = _used + value.Length;
+            if (_bytes is null || _bytes.Length < required)
+            {
+                var bytes = new byte[Math.Min(BufferBudget, Math.Max(required, (_bytes?.Length ?? 128) * 2))];
+                if (_bytes is not null)
                 {
-                    _userAgent = Encoding.ASCII.GetString(_userAgentBytes!, 0, _userAgentLength);
-                    _userAgentLength = 0;
+                    _bytes.AsSpan(0, _used).CopyTo(bytes);
+                    _bytes.AsSpan(0, _used).Clear();
                 }
-
-                return ref _userAgent;
+                _bytes = bytes;
             }
+
+            value.CopyTo(_bytes.AsSpan(_used));
+            destination = new HeaderValue { Offset = _used, Length = value.Length };
+            _used = required;
+            return true;
         }
 
-        public void SetLazyUserAgent(ReadOnlySpan<byte> value)
+        public void Discard(ref HeaderValue value)
         {
-            if (_userAgent.Count == 1 &&
-                StringUtilities.BytesOrdinalEqualsStringAndAscii(_userAgent.ToString(), value))
+            if (value.Length != 0)
             {
-                _userAgentLength = 0;
-                return;
+                _bytes.AsSpan(value.Offset, value.Length).Clear();
             }
-
-            // Own the bytes before the HTTP/1 parser can recycle its input. Retain at most 4 KiB.
-            if (_userAgentBytes is null || _userAgentBytes.Length < value.Length)
-            {
-                _userAgentBytes = new byte[value.Length];
-            }
-
-            value.CopyTo(_userAgentBytes);
-            _userAgentLength = value.Length;
-            _userAgent = default;
+            value = default;
         }
 
-        public void ClearUserAgent()
+        public void Set(ref HeaderValue destination, StringValues value, long flag)
         {
-            _userAgentLength = 0;
-            _userAgent = default;
+            Discard(ref destination);
+            RawBits &= ~flag;
+            destination.Value = value;
+        }
+
+        public ref StringValues Get(ref HeaderValue value, long flag)
+        {
+            if (value.Length != 0)
+            {
+                var decoded = Encoding.ASCII.GetString(_bytes!, value.Offset, value.Length);
+                Discard(ref value);
+                value.Value = decoded;
+                RawBits &= ~flag;
+            }
+            return ref value.Value;
+        }
+
+        public void ResetBuffer()
+        {
+            _bytes.AsSpan(0, _used).Clear();
+            _used = 0;
+            RawBits = 0;
         }
     }
 
@@ -123,6 +192,9 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
 
     protected override void ClearFast()
     {
+        var rawBits = _headers.RawBits;
+        Clear(rawBits);
+        _headers.ResetBuffer();
         if (!ReuseHeaderValues)
         {
             // If we aren't reusing headers clear them all
@@ -133,7 +205,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
             // If we are reusing headers, store the currently set headers for comparison later
             // Pseudo header bits were cleared at the start of a request to hide from the user.
             // Keep those values for reuse.
-            _previousBits = _bits | _pseudoBits;
+            _previousBits = (_bits | _pseudoBits) & ~rawBits;
         }
 
         // Mark no headers as currently in use
@@ -141,7 +213,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         _pseudoBits = 0;
         // Clear ContentLength and any unknown headers as we will never reuse them
         _contentLength = null;
-        MaybeUnknown?.Clear();
+        _unknown?.Clear();
         _enumeratorCache?.Reset();
     }
 
@@ -209,13 +281,15 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void SetValueUnknown(string key, StringValues value)
     {
-        Unknown[GetInternedHeaderName(key)] = value;
+        ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(RequestUnknown, GetInternedHeaderName(key), out _);
+        _headers.Discard(ref entry);
+        entry.Value = value;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private bool AddValueUnknown(string key, StringValues value)
     {
-        Unknown.Add(GetInternedHeaderName(key), value);
+        RequestUnknown.Add(GetInternedHeaderName(key), new HeaderValue { Value = value });
         // Return true, above will throw and exit for false
         return true;
     }
@@ -224,8 +298,67 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
     private void AppendUnknownHeaders(string name, string valueString)
     {
         name = GetInternedHeaderName(name);
-        Unknown.TryGetValue(name, out var existing);
-        Unknown[name] = AppendValue(existing, valueString);
+        ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(RequestUnknown, name, out _);
+        var existing = _headers.Get(ref entry, 0);
+        entry.Value = AppendValue(existing, valueString);
+    }
+
+    private void AppendUnknown(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars, bool allowLazy)
+    {
+        var nameString = name.GetHeaderName();
+        if (allowLazy && CanStoreLazy(value, checkForNewlineChars) && !RequestUnknown.ContainsKey(nameString))
+        {
+            var entry = default(HeaderValue);
+            if (_headers.TryStore(value, ref entry))
+            {
+                RequestUnknown.Add(GetInternedHeaderName(nameString), entry);
+                return;
+            }
+        }
+        AppendUnknownHeaders(nameString, value.GetRequestHeaderString(nameString, EncodingSelector, checkForNewlineChars));
+    }
+
+    protected override bool TryGetUnknown(string key, ref StringValues value)
+    {
+        if (_unknown is null)
+        {
+            return false;
+        }
+        ref var entry = ref CollectionsMarshal.GetValueRefOrNullRef(_unknown, key);
+        if (Unsafe.IsNullRef(ref entry))
+        {
+            return false;
+        }
+        value = _headers.Get(ref entry, 0);
+        return true;
+    }
+
+    protected override bool RemoveUnknown(string key)
+    {
+        if (_unknown is null || !_unknown.Remove(key, out var entry))
+        {
+            return false;
+        }
+        _headers.Discard(ref entry);
+        return true;
+    }
+
+    private void CopyUnknownTo(KeyValuePair<string, StringValues>[] array, int index)
+    {
+        if (_unknown is null)
+        {
+            return;
+        }
+        if (array.Length - index < _unknown.Count)
+        {
+            ThrowArgumentException();
+        }
+        foreach (var pair in _unknown)
+        {
+            StringValues value = default;
+            TryGetUnknown(pair.Key, ref value);
+            array[index++] = new(pair.Key, value);
+        }
     }
 
     public Enumerator GetEnumerator()
@@ -310,8 +443,8 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         private long _currentBits;
         private int _next;
         private KeyValuePair<string, StringValues> _current;
-        private readonly bool _hasUnknown;
-        private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
+        private bool _hasUnknown;
+        private Dictionary<string, HeaderValue>.Enumerator _unknownEnumerator;
 
         internal Enumerator(HttpRequestHeaders collection)
         {
@@ -319,9 +452,9 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
             _currentBits = collection._bits;
             _next = GetNext(_currentBits, collection.ContentLength.HasValue);
             _current = default;
-            _hasUnknown = collection.MaybeUnknown != null;
+            _hasUnknown = collection._unknown != null;
             _unknownEnumerator = _hasUnknown
-                ? collection.MaybeUnknown!.GetEnumerator()
+                ? collection._unknown!.GetEnumerator()
                 : default;
         }
 
@@ -337,6 +470,9 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         {
             _currentBits = _collection._bits;
             _next = GetNext(_currentBits, _collection.ContentLength.HasValue);
+            _current = default;
+            _hasUnknown = _collection._unknown is not null;
+            _unknownEnumerator = _hasUnknown ? _collection._unknown!.GetEnumerator() : default;
         }
     }
 }
