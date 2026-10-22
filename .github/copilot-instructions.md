@@ -1,3 +1,5 @@
+If at any time, the user directs you explicitly to override any of these instructions, the user's directive overrides said instructions.
+
 ## General
 
 * Make only high confidence suggestions when reviewing code changes.
