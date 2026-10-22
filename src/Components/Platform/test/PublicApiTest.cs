@@ -25,6 +25,7 @@ public class PublicApiTest
     [Theory]
     [InlineData(typeof(Window))]
     [InlineData(typeof(Storage))]
+    [InlineData(typeof(CookieStore))]
     [InlineData(typeof(Screen))]
     public void SharedInstances_CannotBeDisposedByApplicationCode(Type type)
     {
@@ -39,6 +40,7 @@ public class PublicApiTest
         Type[] liveBrowserObjectTypes =
         [
             typeof(Storage),
+            typeof(CookieStore),
             typeof(Screen),
         ];
 
