@@ -306,7 +306,15 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._interopMethodsForReconnection = undefined;
     }
 
-    if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
+    let circuitConnected: boolean;
+    try {
+      circuitConnected = await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId);
+    } catch (error) {
+      await this.stopConnectionAfterFailedCircuitInvocation();
+      throw error;
+    }
+
+    if (!circuitConnected) {
       if (isRendererAttached(WebRendererId.Server)) {
         this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
       }
@@ -316,6 +324,14 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
+  }
+
+  private async stopConnectionAfterFailedCircuitInvocation(): Promise<void> {
+    try {
+      await this._connection!.stop();
+    } catch (error) {
+      this._logger.log(LogLevel.Error, `Failed to stop the connection after a circuit invocation failed: ${error}`);
+    }
   }
 
   private abortPauseDeferrals(reason?: string): void {
@@ -495,6 +511,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return resumingPromise;
     } catch (error) {
       this._logger.log(LogLevel.Error, `Failed to resume the circuit: ${error}`);
+      await this.stopConnectionAfterFailedCircuitInvocation();
       this._resumingState.fail(error);
       return resumingPromise;
     }
