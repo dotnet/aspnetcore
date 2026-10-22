@@ -296,7 +296,6 @@ are expressed as central `<PackageVersion>` items.
       </ItemGroup>
       <ItemGroup Label="Build and project-specific dependencies">
         <PackageVersion Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" />
         <PackageVersion Include="Microsoft.AspNetCore.Hosting" Version="2.2.0" />
         <PackageVersion Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
         <PackageVersion Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
