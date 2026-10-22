@@ -308,8 +308,12 @@ try
         $body = [IO.File]::ReadAllText($publication.BodyPath)
         $collected = Invoke-PinnedCollector -Body $body
         Invoke-SnapshotValidation -Publication $publication -AgentOutput $collected
+        $publishedBodyPath = Join-Path $tempRoot "unicode-published-body.md"
+        & node (Join-Path $testRoot "Test-PulseIssueUpdate.cjs") `
+            $collectorJsRoot $lockPath $publication.BodyPath "" $publishedBodyPath
+        Assert-True ($LASTEXITCODE -eq 0) "The pinned issue handler must publish the sanitizer-stable embedded Unicode snapshot."
         & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseSnapshotRetrieval.ps1") `
-            -PulseInputPath $publication.InputPath -PublishedBodyPath $publication.BodyPath
+            -PulseInputPath $publication.InputPath -PublishedBodyPath $publishedBodyPath
         Assert-True ($LASTEXITCODE -eq 0) "The documented consumer must retrieve and verify the sanitizer-stable embedded Unicode snapshot."
     }
     $publicationA = $publications.complete
@@ -567,7 +571,7 @@ try
         }
     }
     Invoke-SnapshotCase "SnapshotBlockLimit/exact-fit" {
-        $maxSnapshotLength = 65000
+        $maxSnapshotLength = 64000
         $emptyBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json "" -MaxSnapshotLength $maxSnapshotLength
         $json = "x" * ($maxSnapshotLength - $emptyBlock.Length)
         $block = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
@@ -575,7 +579,7 @@ try
         Assert-True ($block.Contains("Snapshot JSON (exact sanitized bytes)", [StringComparison]::Ordinal)) "The exact-fit snapshot must use the embedded form."
     }
     Invoke-SnapshotCase "SnapshotBlockLimit/one-over-fallback" {
-        $maxSnapshotLength = 65000
+        $maxSnapshotLength = 64000
         $emptyBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json "" -MaxSnapshotLength $maxSnapshotLength
         $json = "x" * ($maxSnapshotLength - $emptyBlock.Length + 1)
         $block = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
@@ -584,14 +588,14 @@ try
         Assert-True (-not $block.Contains($json, [StringComparison]::Ordinal)) "The fallback form must not include oversized JSON."
     }
     Invoke-SnapshotCase "SnapshotBlockLimit/fallback-does-not-fit" {
-        $maxSnapshotLength = 65000
+        $maxSnapshotLength = 64000
         $json = "x" * $maxSnapshotLength
         $fallbackBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
         Assert-Throws {
             ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength ($fallbackBlock.Length - 1)
         } "A fallback block that exceeds the configured limit must fail closed." "identity block alone exceeds"
     }
-    foreach ($length in @(65000, 65001))
+    foreach ($length in @(64000, 64001))
     {
         Invoke-SnapshotCase "BodyLimit/$length" {
             $body = ("x" * ($length - $bodyA.Length)) + $bodyA
@@ -599,9 +603,13 @@ try
                 Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $body) -Pulse $pulseA -Json $jsonA `
                     -SnapshotContext $contextA -ExpectedBody $body -ExpectedIssueNumber 69328
             }
-            if ($length -eq 65000)
+            if ($length -eq 64000)
             {
                 & $action
+                $boundaryBodyPath = Join-Path $tempRoot "body-limit-$length.md"
+                [IO.File]::WriteAllText($boundaryBodyPath, $body, [Text.UTF8Encoding]::new($false))
+                & node (Join-Path $testRoot "Test-PulseIssueUpdate.cjs") $collectorJsRoot $lockPath $boundaryBodyPath
+                Assert-True ($LASTEXITCODE -eq 0) "The final handler-emitted body at the canonical limit must fit GitHub's issue body limit."
             }
             else
             {
@@ -640,8 +648,12 @@ try
         Assert-True ($LASTEXITCODE -eq 0) "The real pinned dispatcher and issue handler must atomically replace or retain the whole report and reference."
     }
     Invoke-SnapshotCase "Retrieval/documented-consumer" {
+        $publishedBodyPath = Join-Path $tempRoot "published-body.md"
+        & node (Join-Path $testRoot "Test-PulseIssueUpdate.cjs") `
+            $collectorJsRoot $lockPath $publicationA.BodyPath "" $publishedBodyPath
+        Assert-True ($LASTEXITCODE -eq 0) "The pinned issue handler must emit the published body used by the documented consumer."
         & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseSnapshotRetrieval.ps1") `
-            -PulseInputPath $publicationA.InputPath -PublishedBodyPath $publicationA.BodyPath
+            -PulseInputPath $publicationA.InputPath -PublishedBodyPath $publishedBodyPath
         Assert-True ($LASTEXITCODE -eq 0) "The documented published-reference retrieval algorithm must pass every local API/ZIP fixture."
     }
     Assert-True ($results.Count -gt 0) "No snapshot cases matched '$CasePattern'."
