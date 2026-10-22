@@ -35,7 +35,7 @@ Tradeoffs include scanning/copying/secret clearing, per-known-slot metadata, lar
 
 ## Validation and workload
 
-The generalized Core selection passes **9316 cases** at the current working source. It includes fresh independent read surfaces for eligible known names plus X-Example and typed-unknown Alt-Svc, on/off; source overwrite; duplicates; no-decode mutation; presence/empty/missing semantics; arena growth/exact budget/fallback/clearing; reset/reuse; custom encoding and malformed unread values; and existing header/parser/HTTP/1 tests.
+The generalized Core selection passes **9317 cases**. It includes fresh independent read surfaces for eligible known names plus X-Example and typed-unknown Alt-Svc, on/off; source overwrite; duplicates; no-decode mutation; presence/empty/missing semantics; arena growth/exact budget/fallback/clearing; reset/reuse; custom encoding and malformed unread values; CopyTo argument errors without materialization; and existing header/parser/HTTP/1 tests.
 
 Hosted coverage exercises four lazy known/unknown values, fragmented 255/256/257-byte values, body consumption before access, changed/absent/duplicate keep-alive values, eager HTTP/1.0, HTTP/2 and QPACK compatibility, and switch-enabled Host/Content-Length errors. The final broader HTTP/2/HTTP/3 selection passes **777 cases, five platform/TLS skips**. Two earlier selections each failed a different existing asynchronous test (timeout notification and incomplete-header injection); those nine focused cases subsequently passed together, followed by the passing full selection. Failed logs are retained; the passing repeat does not erase intermittency or establish a cause. Two private-layout reflection probes were adjusted from fields to properties while preserving their pooled-value clearing assertions.
 
@@ -62,6 +62,41 @@ dotnet run --no-restore -c Release --project tools/CodeGenerator/CodeGenerator.c
 The workload uses fixed-length stable/changing Accept, Accept-Language, User-Agent, X-Example and X-Request-Nonce, with Host/framing fixed. Access modes are ignore/read-one/read-all/enumerate. Supplemental modes duplicate a known or unknown header or exhaust the arena budget. The application exposes observed length and character-sum checksum; socket smoke checks must assert these plus exact response bytes. Wrk bad/socket counts alone do not assert response bodies.
 
 The intended primary comparison remains five interleaved repetitions of stable/changing x ignore/read-all x baseline/head-off/head-on, with identical application/dependencies/runtime and only the Core DLL replaced for baseline. Local shared-client/server limits, all errors, full run order and timestamped allocation/GC/CPU/working-set samples must remain explicit. Allocation rate in B/s is not bytes/request; no maximum-rate/total-request division is valid.
+
+The first three generalized pilot jobs at `6f75f595` had positive load/server measurements and zero errors; 96 socket requests passed exact body/length/checksum checks. The first full-duration baseline job subsequently reported **seven socket timeouts**, zero bad responses and 1,192,592 requests. Its error guard stopped the plan. It is retained, not a clean comparative result, and not evidence of a feature regression (the feature was absent).
+
+Before continuing, an additional CopyTo argument-compatibility correction was made and tested. The corrected source/payload will receive a new frozen plan. To avoid repeatedly abandoning or selecting results based on timeout noise, that plan records socket errors for **every predetermined case**, without filtering/replacement, while bad responses or missing/invalid measurements still fail. This changes the runner's stopping policy, not client load settings, and any resulting comparison must disclose errors. Initial pilots/failed plan remain separate from corrected-head evidence.
+
+## Local Crank reproduction
+
+Use existing local resources, original POC runtime `12.0.0-alpha.1.26473.114` (do not retarget the application), SDK `11.0.100-rc.1.26420.103`, and server GC as recorded in the runtimeconfig. Controller/agent/wrapper source is pinned to Crank `0d35cad5102892b091d9a88a52ea1f7a91bb1381`, built/published in Release on SDK 10.0.402/runtime 10.0.13. Build the official wrk 4.2.0 source at `a211dd5a7050b1f9e8a9870b95513060e72ac4a0` with `make -j2`; the frozen local binary is `d689dd6384794d71132d6f33b7377a6da6e9e73455d1c66d02d1583d0b73d446`.
+
+In a net10 tool shell (not the activated POC SDK), publish the pinned `src/Microsoft.Crank.Jobs.Wrk/Microsoft.Crank.Jobs.Wrk.csproj` to `$WRAPPER`; build pinned controller/agent projects in Release. `$CRANK_DLL` and `$AGENT_DLL` are their `artifacts/bin/Microsoft.Crank.{Controller,Agent}/Release/net10.0/{crank,crank-agent}.dll` outputs. Set absolute `$REPO`, `$HEAD_PUBLISH`, `$BASE_PUBLISH`, `$POC_DOTNET_ROOT`, `$WRAPPER`, `$NET10_ROOT` and an immutable 40-character `$SOURCE` containing the workload. Publish the application with the POC SDK into `$HEAD_PUBLISH`; copy that entire folder to `$BASE_PUBLISH` and replace **only** its Core DLL with the baseline `2d105dd1fd119edff9a797a1b1aeca6d771c6134` build, SHA-256 `7175498ad5d77f11fa7672fe89bf4a51ad7a8b8410ed1cbc4c85906ee1fe27f5`.
+
+```sh
+export TMPDIR=/tmp/lhp-7a143fff
+mkdir -p "$TMPDIR/.crank"
+cp "$WRK_BINARY" "$TMPDIR/.crank/wrk-linux-amd64"
+# In a separate foreground shell; stop only this owned agent after its queue is empty.
+dotnet "$AGENT_DLL" --url http://127.0.0.1:15010 --hostname 127.0.0.1 \
+  --dotnethome "$NET10_ROOT" --build-path "$TMPDIR/jobs"
+```
+
+Verify `curl --fail http://127.0.0.1:15010/jobs` is empty before running:
+
+```sh
+python "$REPO/src/Servers/Kestrel/perf/LazyHeaders/generalized/smoke.py" \
+  --head "$HEAD_PUBLISH" --base "$BASE_PUBLISH" --runtime "$POC_DOTNET_ROOT" \
+  --output "$SMOKE_OUTPUT"
+python "$REPO/src/Servers/Kestrel/perf/LazyHeaders/generalized/run.py" \
+  --controller "$CRANK_DLL" --repo "$REPO" --head "$HEAD_PUBLISH" \
+  --base "$BASE_PUBLISH" --runtime "$POC_DOTNET_ROOT" --wrapper "$WRAPPER" \
+  --source "$SOURCE" --output "$PRIMARY_OUTPUT" --record-errors
+```
+
+The runner fixes 16 connections, two threads, 10-second timeout, 15-second warmup, 30-second measurement, pipeline one and five interleaved repetitions. It renders/asserts legacy `--application.source.localFolder` and `--load.source.localFolder` payloads, clears both `--load.source.project ""` and `--load.project ""`, and supplies **both** `pocDotnetRoot` and `wrkWrapperPublish`. Using plural `--application.sources.default.localFolder` can silently select the wrong source. Same short TMPDIR for agent/controller/application/load is required for EventPipe socket discovery.
+
+Every run retains resolved config, exact command/timestamps, controller output, raw result/counter arrays, and actual uploaded Core/runtime identities. Inputs record full per-file payload, wrapper and shared-runtime manifests. `--resume` verifies source/settings and preserves interrupted directories; it never reruns/replaces completed cases. `--record-errors` retains socket errors, not bad responses or missing metrics. Missing metrics are not zero. No best-run selection or allocation-rate/total-request shortcut is used.
 
 ## Historical evidence
 

@@ -315,6 +315,18 @@ public class HttpRequestHeadersLazyTests
     }
 
     [Fact]
+    public void UnknownCopyToPreservesDictionaryArgumentErrorsWithoutMaterializing()
+    {
+        var headers = new HttpRequestHeaders(lazyRequestHeaders: true);
+        IHeaderDictionary dictionary = headers;
+        Append(headers, "X-Example", "unread"u8);
+        Assert.Throws<ArgumentNullException>(() => dictionary.CopyTo(null, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => dictionary.CopyTo(Array.Empty<KeyValuePair<string, StringValues>>(), 1));
+        Assert.Throws<ArgumentException>(() => dictionary.CopyTo(Array.Empty<KeyValuePair<string, StringValues>>(), 0));
+        Assert.Equal(1, headers.LazyValueCount);
+    }
+
+    [Fact]
     public void MissingEmptyReadOnlyAndTypedUnknownSemantics()
     {
         var headers = new HttpRequestHeaders(lazyRequestHeaders: true);

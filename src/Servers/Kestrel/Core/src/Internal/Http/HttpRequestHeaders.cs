@@ -349,6 +349,11 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         {
             return;
         }
+        ArgumentNullException.ThrowIfNull(array);
+        if ((uint)index > (uint)array.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
         if (array.Length - index < _unknown.Count)
         {
             ThrowArgumentException();

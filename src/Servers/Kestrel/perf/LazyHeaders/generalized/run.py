@@ -41,7 +41,8 @@ parser.add_argument("--warmup", type=int, default=15)
 parser.add_argument("--duration", type=int, default=30)
 parser.add_argument("--case", action="append", dest="cases")
 parser.add_argument("--resume", action="store_true")
-parser.add_argument("--record-errors", action="store_true")
+parser.add_argument("--record-errors", action="store_true",
+                    help="Retain socket errors and continue fixed cases; bad responses still fail")
 args = parser.parse_args()
 args.output.mkdir(parents=True, exist_ok=args.resume)
 assert len(args.source) == 40 and all(c in "0123456789abcdef" for c in args.source)
@@ -108,8 +109,8 @@ def verify_result(folder):
     assert metrics["http/requests"] > 0 and metrics["http/rps/mean"] > 0
     for percentile in ["50", "75", "90", "99"]:
         assert metrics[f"http/latency/{percentile}"] > 0
+    assert metrics["http/requests/badresponses"] == 0
     if not args.record_errors:
-        assert metrics["http/requests/badresponses"] == 0
         assert metrics["http/requests/errors"] == 0
     identity = json.loads((folder / "loaded-identity.json").read_text())
     expected = hashes["base" if json.loads((folder / "execution.json").read_text())["variant"] == "base" else "head"]
