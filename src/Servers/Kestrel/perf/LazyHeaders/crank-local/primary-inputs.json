@@ -1,0 +1,16 @@
+{
+  "startedUtc": "2026-10-22T00:14:59.871554+00:00",
+  "headPayload": "/root/.copilot/session-state/9e4e8454a8a64a58b1c512b207828d8e/files/http1-current-publish",
+  "basePayload": "/root/.copilot/session-state/9e4e8454a8a64a58b1c512b207828d8e/files/http1-current-base-publish",
+  "coreSha256": {
+    "base": "7175498ad5d77f11fa7672fe89bf4a51ad7a8b8410ed1cbc4c85906ee1fe27f5",
+    "head": "12673a338e7c884ddf126ca292e5e61be70df750c6ae23d44cc85751aeba9d31"
+  },
+  "controllerSha256": "d920e893fc7f295d36509166b8fe41e0212b4380eb6b1a1ebef639e91735ad88",
+  "configSha256": "6f42c21e808dd2d76f595fab4bbdbcb364fa5a4e238050b5e587661842a29560",
+  "profileSha256": "b7a81bb1731acbcaeaeb746519cc9191726f3d6a92159f420ac3d0d1f04177f9",
+  "warmupSeconds": 15,
+  "measurementSeconds": 30,
+  "sharedLoopback": true,
+  "serverRuntimeRoot": "/root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet"
+}

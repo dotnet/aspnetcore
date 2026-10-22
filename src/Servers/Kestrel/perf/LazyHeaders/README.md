@@ -1,6 +1,6 @@
 # Lazy request-header allocation experiment
 
-Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962), not a shipping optimization. **Genuine local Crank POC execution has started; the comparative repeat matrix is not yet complete and no end-to-end improvement is established.** Collection-level allocation results below remain diagnostic only.
+Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962), not a shipping optimization. **The 60-run local HTTP/1.1 Crank comparison is complete: allocation rate falls for changing unread values, but no trustworthy throughput improvement is established.** This shared client/server container cannot resolve small server-performance effects. Collection-level allocation results below remain diagnostic only.
 
 **Current scope: HTTP/1.1 only.** The initial multi-protocol prototype and its raw measurements remain in history. The current implementation keeps HPACK/QPACK and HTTP/2/HTTP/3 literal-name ingestion eager even with the switch enabled. Their lazy-allocation experiments and performance comparisons are deferred; compatibility checks remain. A new HTTP/1 diagnostic comparison is recorded below, separately from the historical table.
 
@@ -50,7 +50,7 @@ See [verification.txt](verification.txt) for exact case identities and summaries
 - The earlier multi-protocol prototype's published workload passed 24 real-socket checks across off/on and ignore/read/enumerate. The same host with only the Core DLL replaced by the baseline passed another 12 checks. [Historical head](workload-smoke.json), [baseline](baseline-workload-smoke.json), and [historical Core DLL hashes](kestrel-core-sha256.json) are retained. These do not verify a republished current-head payload.
 - The narrowed HTTP/1.1 workload was subsequently republished and passes **24 current-head and 12 baseline-Core real-socket checks**, across ignore/read/enumerate and off/on. Each process serves four requests on the same persistent connection, checking changed/absent/duplicate values, exact response body and observed header lengths. Actual local Core loading was verified through process mappings. [Current checks and DLL hashes](http1-only/workload-smoke.json) identify the new head DLL separately from the historical payload. These are correctness checks, not load measurements.
 - Earlier multi-protocol prototype full Core run: baseline 9900 passed / 13 failed / 1 skipped; prototype 9928 passed / 13 failed / 1 skipped. The same 13 IPv6-expectation cases fail on both. This environment disables IPv6; changing the process setting did not eliminate the failures. **The full suite was not green; these counts predate scope narrowing.**
-- The Lua script was checked with Lua 5.4, including distinct fixed-width values on each of 16 simulated persistent connections. Actual wrk execution remains unverified.
+- The Lua script was checked with Lua 5.4, including distinct fixed-width values on each of 16 simulated persistent connections, and subsequently executed through the real pinned Crank/wrk wrapper in the runs below.
 
 Build/test entry points, from the repository root after the standard restore/bootstrap and `source activate.sh`:
 
@@ -141,13 +141,47 @@ dotnet build src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Serve
 
 Run the same `--no-build --no-restore` command from that checkout with a separate artifact directory. `HEAD_REPO` is the absolute path to the prototype checkout. The persisted import has the same compile-item behavior as the fixed-path session import used for the recorded run.
 
-## Crank execution: local pilot verified, repeat matrix in progress
+## Crank execution: completed local HTTP/1.1 comparison
+
+All **60 primary runs** completed with positive requests/RPS/latency percentiles, application and load measurements, verified uploaded Core/runtime identities, and **zero bad responses or socket errors**. They served **70130567 measured requests** in total. Each stable/changing x ignore/read x baseline/off/on combination has five repetitions. Variants rotate by repetition; case ordering reverses on alternating repetitions. No best-run selection or outlier removal was applied.
+
+Measured application shipping code: `651a4e198ff654bcb19d3a81af23055f9503c97b`; baseline shipping source: `2d105dd1fd119edff9a797a1b1aeca6d771c6134`. Identical Release-published host/dependencies and server GC were used, replacing only `Microsoft.AspNetCore.Server.Kestrel.Core.dll`. Loaded copies and the original `12.0.0-alpha.1.26473.114` runtime were checked for every run. [Complete payload manifests/runtime/GC/environment](crank-local/payload-environment.json) and [tool/source hashes](crank-local/identities.json) identify the experiment independently of later documentation commits.
+
+Fixed primary settings: plaintext HTTP/1.1 GET `/`, keep-alive, pipeline=1, no request body, 44-byte `User-Agent`, 16 connections, 2 wrk threads, explicit 10-second timeout, 15-second warmup, 30-second measured load. The Lua sequence changes on every request in changing mode. Stable reuse, reads, and default-off controls are included; no cold-connection conclusion is supported.
+
+Median RPS over five repetitions, with observed min-max:
+
+| Access / values | Baseline | Head off | Head on |
+| --- | ---: | ---: | ---: |
+| Ignore / stable | 37912 (37386-39021) | 39419 (37350-39691) | 37948 (37024-39704) |
+| Ignore / changing | 39214 (38512-41274) | 38275 (37771-39917) | 39059 (38130-39968) |
+| Read / stable | 38682 (38325-41246) | 39346 (38236-44320) | 38586 (37698-40158) |
+| Read / changing | 38628 (37142-39240) | 38635 (37729-40478) | 38876 (37798-39199) |
+
+Median of each run's trimmed-window mean allocation rate, in decimal MB/second, followed by median p99 latency in ms:
+
+| Access / values | Base alloc / p99 | Off alloc / p99 | On alloc / p99 |
+| --- | ---: | ---: | ---: |
+| Ignore / stable | 10.05 / 5.67 | 10.45 / 5.23 | 10.07 / 5.32 |
+| Ignore / changing | 14.89 / 5.11 | 14.59 / 5.39 | 10.35 / 5.05 |
+| Read / stable | 10.39 / 5.39 | 10.43 / 5.43 | 10.14 / 5.26 |
+| Read / changing | 14.73 / 5.29 | 14.66 / 4.95 | 14.60 / 5.21 |
+
+Allocation-rate reduction in changing/ignored is observed at roughly similar throughput; reads still require allocation and stable values already reuse strings. **This does not establish an overall throughput win or acceptable regression budget.** Paired on/base RPS differences range from -4.52% to +1.92% for changing/ignored and -3.48% to +1.99% for changing/read. Stable/read on/base median paired difference is -1.22%, with -2.64% to +0.68% spread. Do not interpret the median ratios or these intervals as controlled statistical significance. The earlier microbenchmarks' read/default-off costs remain relevant even when this noisy end-to-end run cannot isolate them.
+
+CPU is a material limit: trimmed server process CPU averages about 110-114 core-percent and the wrk child about 48-52 core-percent, while agent/global overhead shares the same two reported processors. The client is not CPU-idle, and the experiment does not demonstrate a load-generator-independent server ceiling. Median server working set is roughly 71.5-72.5 MB; changing/ignored median Gen0 rates are base/off/on 5.75/5.625/4.0 per second. Coarse time-in-GC samples usually report zero despite nonzero collections: zero at this sampling resolution is not absence of GC.
+
+Allocation/GC/CPU/working-set summaries use timestamped samples in a trimmed window from 27 to 3 seconds before the wrapper's first RPS result event, approximating the interior of the 30-second measurement. All runs retain 24 server allocation-rate samples in this window. This is an explicitly defined window, not a maximum over startup/warmup. No rate is divided by a total count or called bytes/request; no missing measurement is treated as zero. Raw timestamps allow other window choices.
+
+[Per-run derived CSV](crank-local/primary-derived-runs.csv), [all median/min/max/stddev summaries](crank-local/primary-derived-summary.json), [exact run order](crank-local/primary-plan.json), and [all raw JSON/logs/resolved configurations/loaded identities and reproduction scripts](crank-local/primary-raw.tar.gz) are preserved. The raw archive also retains the interrupted attempt at run 54; runs 54-60 resumed after a session interruption, so the five repetitions are not one uninterrupted machine reservation. The first 53 successful runs were not repeated or replaced.
+
+### Pilot and setup failures (not selected outcome results)
 
 Pinned controller/agent/wrk-wrapper jobs have now run the actual published POC on its original net12 runtime. A short baseline changing/ignored feasibility run completed 178344 requests at 35653.49 requests/second, with positive latency percentiles, server/runtime counters, zero bad responses and zero socket errors. This is a five-second pilot, **not comparative outcome evidence**.
 
 [Executable/source identities](crank-local/identities.json) and [all early attempt logs/configs/results](crank-local/pilots-and-initial-timeouts.tar.gz) are preserved. Early failures include the agent's inability to shallow-clone a commit as a branch, stale wrapper source-cache/project metadata, and a runner parser failure after the real successful pilot. The first full-duration matrix stopped after 16 timeout errors on its default-off case; that attempt remains included, not hidden.
 
-The next fixed-settings primary matrix uses 16 connections / 2 wrk threads / explicit 10-second timeout / 15-second warmup / 30-second measurement, stable/changing x ignore/read x baseline/off/on, five rotating interleaved repetitions per case. It is running separately. Both processes share this two-core container; this cannot establish isolated-server capacity or small controlled performance gains.
+The subsequent fixed-settings matrix above retains all 60 completed runs separately. Both processes share this two-core container; this cannot establish isolated-server capacity or small controlled performance gains. The explicit timeout change is a disclosed harness setting, not evidence that the original timeout event was a product defect.
 
 The official wrk 4.2.0 commit `a211dd5a7050b1f9e8a9870b95513060e72ac4a0` was built locally with `make -j2` and frozen at the SHA-256 in the identities file. It is cached at `$TMPDIR/.crank/wrk-linux-amd64`; agent/application/load all use the same short `/tmp/lhp-7a143fff` temporary root, avoiding EventPipe Unix-socket path limits. The pinned wrapper is prepublished and uploaded too, avoiding the agent's unsupported shallow clone of a commit SHA and stale source-key cache.
 
@@ -170,27 +204,33 @@ All variables above must be distinct absolute paths; `BASE_PUBLISH` must not alr
 
 The Crank controller `0.2.0-alpha.26316.1` was installed locally. With `DOTNET_ROLL_FORWARD=Major` for that net8 controller on the available net10 host, its `--debug` mode successfully rendered the scenario, local payload, pinned script, and access/lazy/churn overrides. A deliberately unreachable loopback profile produced the expected endpoint warnings. **This verifies configuration rendering only, not agent upload, executable layout, wrk execution, counter collection, or throughput.**
 
-An authorized local path has now been selected: [loopback-poc.yml](loopback-poc.yml) runs both jobs through a local agent on `127.0.0.1:15010` and the HTTP/1.1 application on `127.0.0.1:15000`. Controller and agent source at Crank `0d35cad5102892b091d9a88a52ea1f7a91bb1381` build against existing SDK `10.0.402` / runtime `10.0.13`; the published POC stays on its original runtime, selected by `pocDotnetRoot`. The resolved payload path, server runtime root, client settings, and counter-provider list have been checked against the running local agent. This is local harness preparation, not a completed POC load run.
+The [loopback-poc.yml](loopback-poc.yml) profile runs both jobs through a local agent on `127.0.0.1:15010` and the HTTP/1.1 application on `127.0.0.1:15000`. Controller and agent source at Crank `0d35cad5102892b091d9a88a52ea1f7a91bb1381` build against existing SDK `10.0.402` / runtime `10.0.13`; the published POC stays on its original runtime, selected by `pocDotnetRoot`. The resolved payload path, server runtime root, client settings, and counter-provider list were checked for actual runs, not just configuration rendering.
 
 Local runs share the two-core container with the load client and agent. They can establish reproducible end-to-end behavior and distributions, not isolated-server capacity or controlled lab significance. A separate-machine profile is useful for follow-up, not a prerequisite for attempting local evidence. Do not provision machines or alter lab infrastructure.
 
-Set `AUTHORIZED_PROFILE_CONFIG` to this local profile, `AUTHORIZED_PROFILE=loopback-poc`, and supply `--variable pocDotnetRoot="$POC_DOTNET_ROOT"` below when running locally. `POC_DOTNET_ROOT` is the original verified application runtime directory, not the controller's net10 installation. The concrete command is:
+Set `AUTHORIZED_PROFILE_CONFIG` to this local profile and `AUTHORIZED_PROFILE=loopback-poc`. `POC_DOTNET_ROOT` is the original verified application runtime directory, not the controller's net10 installation. Publish `src/Microsoft.Crank.Jobs.Wrk/Microsoft.Crank.Jobs.Wrk.csproj` at the pinned Crank commit into `WRK_WRAPPER_PUBLISH`; use the existing net10 SDK/runtime and record the wrapper hash. The concrete local command is:
 
 ```sh
 crank --config src/Servers/Kestrel/perf/lazy-headers.crank.yml \
   --config "$AUTHORIZED_PROFILE_CONFIG" --scenario lazy-headers --profile "$AUTHORIZED_PROFILE" \
   --application.source.localFolder "$HEAD_PUBLISH" \
+  --load.source.localFolder "$WRK_WRAPPER_PUBLISH" --load.source.project "" --load.project "" \
+  --variable pocDotnetRoot="$POC_DOTNET_ROOT" --variable wrkWrapperPublish="$WRK_WRAPPER_PUBLISH" \
   --variable access=ignore --variable lazy=true --variable headerMode=changing \
   --variable headerScript=https://raw.githubusercontent.com/dotnet/aspnetcore/8065742caba07399236ab62a5bc9db7c1424696e/src/Servers/Kestrel/perf/lazy-headers.wrk.lua \
+  --load.variables.connections 16 --load.variables.threads 2 --load.variables.timeout 10 \
+  --load.variables.warmup 15 --load.variables.duration 30 \
   --json head-on-ignore-changing.json
 ```
 
 First use `--debug resolved.json` and assert that `Jobs.application.Sources.default.LocalFolder` equals the intended absolute payload directory; also inspect script, pinned versions, and endpoints. The pinned controller accepts the legacy `--application.source.localFolder` override for this YAML's `source:` shape. `--application.sources.default.localFolder` can silently retain the wrong configuration-relative folder and must not be used here. For the baseline use `BASE_PUBLISH` and `lazy=false`; for the default-off control use `HEAD_PUBLISH` and `lazy=false`. The configuration's branch URL is a convenience default only; the immutable script URL above is mandatory for recorded results.
 
-Run the full 3 accesses x 3 header modes x 3 variants matrix, with at least five interleaved/reordered repeats per case. Keep concurrency, request sizes, SDK/runtime, GC, machine configuration, and client revisions constant. The configuration starts with 256 connections / 16 threads / 15 s warmup / 30 s measurement. The local primary comparison is stable/changing values x ignore/read x baseline/off/on, with at least five interleaved/reordered repetitions. Enumeration and duplicates are supplemental; no cold-connection conclusion can be drawn from this keep-alive workload. **Keep pipeline=1:** the imported wrk job selects a different script when pipeline exceeds one, which would invalidate this workload.
+Keep concurrency, request sizes, SDK/runtime, GC, machine configuration, and client revisions constant. The generic configuration starts with 256 connections / 16 threads, but the completed local comparison explicitly overrides these to 16 / 2 as above. Reproduce the exact 60-case local primary plan and rotating order using `reproduction/run-loopback.py` in the raw archive; it renders/asserts each payload, captures loaded identities, checks measurements and errors, and retains every run. Its recorded default paths must be replaced with the reproduction machine's corresponding absolute paths. Enumeration and duplicates are supplemental; no cold-connection conclusion can be drawn from this keep-alive workload. **Keep pipeline=1:** the imported wrk job selects a different script when pipeline exceeds one, which would invalidate this workload.
+
+Before the controller, run the pinned agent with `TMPDIR=/tmp/lhp-7a143fff`, `--url http://127.0.0.1:15010 --hostname 127.0.0.1 --dotnethome "$NET10_ROOT" --build-path /tmp/lhp-7a143fff/jobs`. Verify `/jobs` responds and is empty. Use that same short `TMPDIR` for the controller and all jobs, and place the built official wrk binary at `/tmp/lhp-7a143fff/.crank/wrk-linux-amd64`. The local profile explicitly clears the imported wrapper source cache/repository/project metadata; without the legacy `--load.source.localFolder` override the controller may fail to upload the intended wrapper.
 
 Retain resolved configuration, raw JSON and measurements, source/DLL identities, load and server CPU, RPS, latency distribution, bad-response counts, allocation rate, GC rate/time, and working set. Check that the client is not the bottleneck and report uncertainty rather than a single best run. The response-observation header and Lua formatting are workload overhead, not free instrumentation.
 
 Do not divide a maximum runtime `alloc-rate` sample in bytes/second by a total request count and call it bytes/request. Preserve timestamped samples and align steady-state intervals/counts, or report allocation-rate distributions with their time window. Startup/warmup maxima are not measurement-window averages; missing metrics are not zero.
 
-HTTP/2/HTTP/3 lazy-allocation implementations and end-to-end comparisons are deferred, not acceptance requirements for this HTTP/1.1 POC. Plaintext/JSON perf-lab controls are also useful but do not replace these header-aware HTTP/1.1 workloads. This draft remains blocked on HTTP/1.1 end-to-end measurements and discussion of the observed default-off/read costs.
+HTTP/2/HTTP/3 lazy-allocation implementations and end-to-end comparisons are deferred, not acceptance requirements for this HTTP/1.1 POC. The bounded implementation/evidence draft is delivered; design acceptance remains a discussion. Isolated client/server follow-up, cold/low-reuse memory behavior and a read/default-off regression budget are needed before a shipping recommendation. No merge or rollout is proposed.

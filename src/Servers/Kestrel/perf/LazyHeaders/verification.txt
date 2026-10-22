@@ -148,3 +148,24 @@ Head Core SHA256: 12673a338e7c884ddf126ca292e5e61be70df750c6ae23d44cc85751aeba9d
 Base Core SHA256: 7175498ad5d77f11fa7672fe89bf4a51ad7a8b8410ed1cbc4c85906ee1fe27f5
 Structured results and method: http1-only/workload-smoke.json
 Not Crank, throughput, counter collection or agent upload/layout evidence.
+
+=== genuine local Crank HTTP/1.1 primary comparison ===
+Completed 60/60 primary runs: stable/changing x ignore/read x base/off/on x 5 repetitions.
+Original net12 server runtime and same Release host/dependencies/GC; only Core DLL replaced.
+Each run verifies actually uploaded/loaded Core SHA256 and runtime libcoreclr path/SHA256.
+Positive requests/RPS/latency percentiles, application and load raw measurements in every run.
+Total measured requests: 70130567. Bad responses: 0. Socket errors: 0.
+189806 timestamped measurements retained across application/load result sets.
+Fixed 16 connections,2wrk threads,10s timeout,15s warmup,30s measurement,keepalive,pipeline1.
+Variant order rotates and case order reverses per repetition; no outlier/best-run removal.
+First53 successful runs retained; interrupted attempt54 retained and54-60 resumed after session interruption.
+Primary raw archive contains exact logs/results/resolved configs/loaded identities and reproduction/analysis scripts.
+crank-local/primary-derived-runs.csv has all60rows and explicit sample counts/missing values.
+Each trimmed server allocation window contains24samples; all startup/warmup maxima excluded.
+Window is27to3seconds before first wrapper RPS result event, an approximate measurement interior.
+No allocation-rate/total-request division or bytes/request claim.
+Median changing-ignore base/off/on RPS39214/38275/39059; allocation14.89/14.59/10.35decimalMB/s.
+No trustworthy overall throughput gain established; read/default-off diagnostic costs remain.
+Shared two-core server/client/agent; loadCPU ~48-52core%,serverCPU ~110-114core%; no isolated ceiling claim.
+Tool/source/runtime/payload hashes and original serverGC config retained in crank-local/identities.json and payload-environment.json.
+Earlier pilot/setup/timeout failures retained in crank-local/pilots-and-initial-timeouts.tar.gz, not selected as outcome results.

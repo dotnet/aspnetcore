@@ -16,5 +16,5 @@
   "serverRuntime": "net12.0 12.0.0-alpha.1.26473.114",
   "environment": "Shared two-core container; server, agent and wrk on loopback",
   "pilot": "178344 measured requests,35653.49 RPS (see exact raw result),zero bad/socket errors; feasibility only",
-  "failedAttempts": "Preserved clone-SHA failure, stale source-key cache/project-path failures, runner-envelope parser failure after actual successful pilot, and initial primary matrix stopped on16 off-path timeouts. Fixed-settings complete matrix running separately with10s timeout; no failed results omitted."
+  "failedAttempts": "Preserved clone-SHA failure, stale source-key cache/project-path failures, runner-envelope parser failure after actual successful pilot, and initial primary matrix stopped on16 off-path timeouts. Subsequent fixed-settings primary matrix completed60runs with10s timeout and zero bad/socket errors; no failed results omitted."
 }
