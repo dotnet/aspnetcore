@@ -87,6 +87,42 @@ function Assert-TreeIsSafe {
     }
 }
 
+function Assert-EvalSpecIsRestricted {
+    param(
+        [string]$Path,
+        [string]$Description
+    )
+
+    $executorIndent = -1
+    foreach ($line in Get-Content $Path) {
+        $trimmed = $line.TrimStart()
+        if ($trimmed.Length -eq 0 -or $trimmed.StartsWith('#')) {
+            continue
+        }
+        $indent = $line.Length - $trimmed.Length
+        # YAML sequence items prefix their first key with "- "; strip it so key
+        # matching below sees the same key text as a mapping entry would.
+        $key = $trimmed -replace '^-\s+', ''
+
+        if ($executorIndent -ge 0 -and $indent -le $executorIndent) {
+            $executorIndent = -1
+        }
+
+        if ($key -match '^commands\s*:') {
+            throw "$Description declares a forbidden 'commands' field; staged fixture binaries are made executable automatically."
+        }
+        if ($key -match '^mcpServers\s*:') {
+            throw "$Description declares a forbidden 'mcpServers' field; per-eval MCP servers are not allowed."
+        }
+        if ($executorIndent -ge 0 -and $key -match '^provider\s*:') {
+            throw "$Description declares a forbidden 'executor.config.provider' override."
+        }
+        if ($key -match '^executor\s*:') {
+            $executorIndent = $indent
+        }
+    }
+}
+
 function Test-PathWithinRoot {
     param(
         [string]$Root,
@@ -136,6 +172,7 @@ if (-not (Test-Path $candidateEval -PathType Leaf)) {
     throw "Missing candidate eval specification at '$candidateEval'."
 }
 Assert-TreeIsSafe $candidateEval $candidateRootPath "Candidate eval '$EvalName'"
+Assert-EvalSpecIsRestricted $candidateEval "Candidate eval '$EvalName'"
 if (Test-Path $candidateFixtures) {
     if (-not (Test-Path $candidateFixtures -PathType Container)) {
         throw "Candidate fixtures path '$candidateFixtures' is not a directory."
@@ -169,7 +206,13 @@ try {
     New-Item -ItemType Directory -Path $evalTargetRoot -Force | Out-Null
     Copy-Item $candidateEval (Join-Path $evalTargetRoot 'eval.vally.yaml')
     if (Test-Path $candidateFixtures -PathType Container) {
-        Copy-Item $candidateFixtures (Join-Path $evalTargetRoot 'fixtures') -Recurse -Force
+        $fixturesTarget = Join-Path $evalTargetRoot 'fixtures'
+        Copy-Item $candidateFixtures $fixturesTarget -Recurse -Force
+        if (-not $IsWindows) {
+            Get-ChildItem $fixturesTarget -Recurse -File | ForEach-Object {
+                chmod +x $_.FullName
+            }
+        }
     }
 
     Assert-TreeIsSafe $destinationPath $destinationPath 'Staged evaluation tree'

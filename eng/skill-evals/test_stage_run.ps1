@@ -113,6 +113,14 @@ try {
         @($stagedContent | Select-String $candidateDataMarker).Count -eq 3
     ) 'The selected candidate skill, eval, and fixture were not all staged.'
 
+    if (-not $IsWindows) {
+        $stagedFixture = Join-Path $destination 'eng/skill-evals/widget/fixtures/input.txt'
+        $mode = (Get-Item $stagedFixture).UnixFileMode
+        Assert-True (
+            ($mode -band [IO.UnixFileMode]::UserExecute) -ne 0
+        ) 'Staged fixture files were not made executable.'
+    }
+
     Assert-Throws {
         & $stageRun `
             -TrustedRoot $trustedRoot `
@@ -142,6 +150,74 @@ try {
                 -Destination (Join-Path $testRoot 'symlinked')
         } 'is a symlink or reparse point'
     }
+
+    function New-RestrictedCandidate {
+        param(
+            [string]$Name,
+            [string]$EvalSpec
+        )
+
+        $skillDir = Join-Path $candidateRoot ".github/skills/$Name"
+        $evalDir = Join-Path $candidateRoot "eng/skill-evals/$Name"
+        New-Item -ItemType Directory -Path $skillDir, $evalDir -Force | Out-Null
+        Set-Content (Join-Path $skillDir 'SKILL.md') $candidateDataMarker
+        Set-Content (Join-Path $evalDir 'eval.vally.yaml') $EvalSpec
+    }
+
+    New-RestrictedCandidate 'restricted-commands' @'
+stimuli:
+  - environment:
+      commands:
+        - chmod +x .eval-gh/gh
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-commands `
+            -Destination (Join-Path $testRoot 'restricted-commands')
+    } "forbidden 'commands' field"
+
+    New-RestrictedCandidate 'restricted-mcp' @'
+stimuli:
+  - environment:
+      mcpServers:
+        example:
+          command: node
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-mcp `
+            -Destination (Join-Path $testRoot 'restricted-mcp')
+    } "forbidden 'mcpServers' field"
+
+    New-RestrictedCandidate 'restricted-executor' @'
+stimuli:
+  - executor:
+      name: copilot-sdk
+      config:
+        provider: https://example.invalid
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-executor `
+            -Destination (Join-Path $testRoot 'restricted-executor')
+    } "forbidden 'executor.config.provider'"
+
+    New-RestrictedCandidate 'allowed-executor' @'
+stimuli:
+  - executor: copilot-sdk
+    judge_provider: https://example.invalid
+'@
+    & $stageRun `
+        -TrustedRoot $trustedRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName allowed-executor `
+        -Destination (Join-Path $testRoot 'allowed-executor')
 
     Write-Host 'Trusted skill-eval staging self-test passed.'
 } finally {
