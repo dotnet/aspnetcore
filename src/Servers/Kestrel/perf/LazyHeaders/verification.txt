@@ -169,3 +169,16 @@ No trustworthy overall throughput gain established; read/default-off diagnostic 
 Shared two-core server/client/agent; loadCPU ~48-52core%,serverCPU ~110-114core%; no isolated ceiling claim.
 Tool/source/runtime/payload hashes and original serverGC config retained in crank-local/identities.json and payload-environment.json.
 Earlier pilot/setup/timeout failures retained in crank-local/pilots-and-initial-timeouts.tar.gz, not selected as outcome results.
+
+=== supplemental end-to-end cases ===
+9/9 predetermined cases completed: enumerate/changing,ignore/duplicate,read/duplicate x base/off/on.
+One repetition each, same16connections/2threads/10stimeout/15swarmup/30smeasurement.
+All have positive load requests/RPS/percentiles, application/load measurements and loaded identities.
+10400644 measured requests,0bad responses; baseline enumerate/changing has15timeouts.
+All other supplemental socket-error counts0.
+Runner stopped on that baseline error, then continued remaining planned cases in record-errors mode without replacement or rerun.
+Supplemental set is not error-free; not pooled with the60primaryruns, not used to claim a performance win.
+Exact raw results/logs/configs/identities: crank-local/supplemental-raw.tar.gz
+Per-run values: crank-local/supplemental-derived-runs.csv
+Archive/data SHA256: crank-local/artifact-sha256.txt
+Verified empty agent job queue and stopped owned agent after all runs.

@@ -175,6 +175,14 @@ Allocation/GC/CPU/working-set summaries use timestamped samples in a trimmed win
 
 [Per-run derived CSV](crank-local/primary-derived-runs.csv), [all median/min/max/stddev summaries](crank-local/primary-derived-summary.json), [exact run order](crank-local/primary-plan.json), and [all raw JSON/logs/resolved configurations/loaded identities and reproduction scripts](crank-local/primary-raw.tar.gz) are preserved. The raw archive also retains the interrupted attempt at run 54; runs 54-60 resumed after a session interruption, so the five repetitions are not one uninterrupted machine reservation. The first 53 successful runs were not repeated or replaced.
 
+### Supplemental enumeration and duplicate cases
+
+Nine additional cases used the same load settings, **one repetition each**, not a five-repeat performance comparison. Enumeration/changing baseline/off/on measured 37694/37453/37327 RPS; ignore/duplicate 38797/39969/38878; read/duplicate 37536/38707/39852. These single-run values are provided for transparency, not regression or improvement claims.
+
+All nine have positive requests/latencies/application and load measurements and verified loaded identities. **The baseline enumeration run reported 15 timeout errors**; all other supplemental cases reported zero socket errors and all reported zero bad responses. The runner initially stopped on that baseline error, then continued the remaining predetermined cases in record-errors mode without rerunning or replacing it. Thus the supplemental set is not error-free and cannot be pooled into the primary zero-error comparison. No product-regression attribution is justified from these shared-host observations.
+
+[Supplemental CSV](crank-local/supplemental-derived-runs.csv), [complete raw configurations/results/logs/identities](crank-local/supplemental-raw.tar.gz), and [artifact SHA-256 checksums](crank-local/artifact-sha256.txt) preserve every case. Supplemental measured requests total 10400644. The owned agent was stopped after confirming its job queue was empty; no server/load jobs were left running.
+
 ### Pilot and setup failures (not selected outcome results)
 
 Pinned controller/agent/wrk-wrapper jobs have now run the actual published POC on its original net12 runtime. A short baseline changing/ignored feasibility run completed 178344 requests at 35653.49 requests/second, with positive latency percentiles, server/runtime counters, zero bad responses and zero socket errors. This is a five-second pilot, **not comparative outcome evidence**.
