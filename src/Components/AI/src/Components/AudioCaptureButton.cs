@@ -27,6 +27,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     private bool _isStarting;
     private bool _isFinalizing;
     private bool _isRecording;
+    private bool _isStopping;
     private bool _isTranscribing;
     private bool _isDictating;
     private bool _isRequestingPermission;
@@ -217,6 +218,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         var isActive = !_isRequestingPermission &&
             (_isEnabled || _isRecording || _isTranscribing);
         var disabled = _isRequestingPermission ||
+            _isStopping ||
             (!isActive && (Context.IsConversationBusy || Context.IsComposing));
         var label = isActive ? StopLabel : StartLabel;
         var ariaLabel = isActive
@@ -274,7 +276,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
     private Task ToggleRecordingAsync()
     {
-        if (_isRequestingPermission)
+        if (_isRequestingPermission || _isStopping)
         {
             return Task.CompletedTask;
         }
@@ -381,6 +383,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 "Audio recording does not have an active operation.");
         var cancellationToken = operationCts.Token;
         _isRecording = false;
+        _isStopping = true;
         _isTranscribing = true;
         StateHasChanged();
 
@@ -389,7 +392,9 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             var hadInterimTranscript = _isDictating;
             await StopInterimTranscriptionAsync();
             var recording = await _interop!.StopRecordingAsync(cancellationToken);
+            _isStopping = false;
             cancellationToken.ThrowIfCancellationRequested();
+            StateHasChanged();
 
             if (recording.TooLarge || recording.Size > MaximumBytes)
             {
@@ -527,6 +532,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 _operationCts = null;
                 _isEnabled = false;
                 _isRecording = false;
+                _isStopping = false;
                 _isTranscribing = false;
                 if (!_isDisposed)
                 {
