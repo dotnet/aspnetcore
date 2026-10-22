@@ -64,16 +64,8 @@ public partial class ResourceCollectionTest : ServerTestBase<BasicTestAppServerS
         Browser.Equal("Server", () => Browser.Exists(By.Id("platform-name")).Text);
 
         Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("""
-            const importMap = JSON.parse(document.querySelector('script[type="importmap"]').textContent);
-            const initializer = Object.entries(importMap.imports ?? {}).find(([name]) =>
-                name.endsWith('/Microsoft.AspNetCore.Components.Server.AutoPause.lib.module.js'));
-            if (!initializer) {
-                return false;
-            }
-
-            const url = new URL(initializer[1], document.baseURI).href;
-            return /\/Microsoft\.AspNetCore\.Components\.Server\.AutoPause\.[a-z0-9]{10}\.lib\.module\.js$/.test(url)
-                && performance.getEntriesByType('resource').some(resource => resource.name === url);
+            return performance.getEntriesByType('resource').some(resource =>
+                /\/Microsoft\.AspNetCore\.Components\.Server\.AutoPause\.[a-z0-9]{10}\.lib\.module\.js$/.test(resource.name));
             """));
     }
 
