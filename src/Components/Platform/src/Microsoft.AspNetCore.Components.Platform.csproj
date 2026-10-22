@@ -17,4 +17,8 @@
     <ProjectReference Include="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Platform.Tests" />
+  </ItemGroup>
+
 </Project>

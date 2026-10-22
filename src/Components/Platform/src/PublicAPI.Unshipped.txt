@@ -1,6 +1,14 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Window.get -> Microsoft.AspNetCore.Components.Platform.Window!
+Microsoft.AspNetCore.Components.Platform.Navigator
+Microsoft.AspNetCore.Components.Platform.Navigator.GetCookieEnabledAsync() -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.Navigator.GetHardwareConcurrencyAsync() -> System.Threading.Tasks.ValueTask<ulong>
+Microsoft.AspNetCore.Components.Platform.Navigator.GetLanguageAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Navigator.GetLanguagesAsync() -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<string!>!>
+Microsoft.AspNetCore.Components.Platform.Navigator.GetMaxTouchPointsAsync() -> System.Threading.Tasks.ValueTask<int>
+Microsoft.AspNetCore.Components.Platform.Navigator.GetOnLineAsync() -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.Navigator.GetUserAgentAsync() -> System.Threading.Tasks.ValueTask<string!>
 Microsoft.AspNetCore.Components.Platform.Storage
 Microsoft.AspNetCore.Components.Platform.Storage.ClearAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.GetItemAsync(string! key) -> System.Threading.Tasks.ValueTask<string?>
@@ -9,6 +17,9 @@ Microsoft.AspNetCore.Components.Platform.Storage.KeyAsync(uint index) -> System.
 Microsoft.AspNetCore.Components.Platform.Storage.RemoveItemAsync(string! key) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.SetItemAsync(string! key, string! value) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Window
+Microsoft.AspNetCore.Components.Platform.WindowNavigatorExtensions
+Microsoft.AspNetCore.Components.Platform.WindowNavigatorExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
+Microsoft.AspNetCore.Components.Platform.WindowNavigatorExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).Navigator.get -> Microsoft.AspNetCore.Components.Platform.Navigator!
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
