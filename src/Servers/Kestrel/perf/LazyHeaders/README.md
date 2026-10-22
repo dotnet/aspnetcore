@@ -1,6 +1,6 @@
 # Lazy HTTP/1.1 request-header values
 
-Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962) and [draft #69963](https://github.com/dotnet/aspnetcore/pull/69963), not a shipping recommendation. **Current implementation covers ordinary known and unknown header values, not just User-Agent. Generalized end-to-end results are pending.** The prior 60-run plus nine supplemental User-Agent-only comparisons remain [historical evidence](historical-user-agent.md), not validation or performance evidence for this implementation.
+Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962) and [draft #69963](https://github.com/dotnet/aspnetcore/pull/69963), not a shipping recommendation. **Current implementation covers ordinary known and unknown header values, not just User-Agent. The generalized 60-run primary Crank comparison is complete: unread allocation rate falls, but 324 wrk-reported timeouts and shared-host uncertainty prevent a clean throughput conclusion.** Supplemental load cases are pending. The prior User-Agent-only comparisons remain [historical evidence](historical-user-agent.md), not generalized results.
 
 ## Hypothesis and alternatives
 
@@ -37,6 +37,8 @@ Tradeoffs include scanning/copying/secret clearing, per-known-slot metadata, lar
 
 The generalized Core selection passes **9317 cases**. It includes fresh independent read surfaces for eligible known names plus X-Example and typed-unknown Alt-Svc, on/off; source overwrite; duplicates; no-decode mutation; presence/empty/missing semantics; arena growth/exact budget/fallback/clearing; reset/reuse; custom encoding and malformed unread values; CopyTo argument errors without materialization; and existing header/parser/HTTP/1 tests.
 
+Typed-property reflection is case-insensitive so canonical lowercase gRPC/tracing names exercise their actual typed getters rather than falling back to indexers. The complete 9317-case selection passes again after this coverage correction; [log](generalized/final-core-reader-verification.tar.gz). Shipping code and frozen measured payloads are unchanged.
+
 Hosted coverage exercises four lazy known/unknown values, fragmented 255/256/257-byte values, body consumption before access, changed/absent/duplicate keep-alive values, eager HTTP/1.0, HTTP/2 and QPACK compatibility, and switch-enabled Host/Content-Length errors. The final broader HTTP/2/HTTP/3 selection passes **777 cases, five platform/TLS skips**. Two earlier selections each failed a different existing asynchronous test (timeout notification and incomplete-header injection); those nine focused cases subsequently passed together, followed by the passing full selection. Failed logs are retained; the passing repeat does not erase intermittency or establish a cause. Two private-layout reflection probes were adjusted from fields to properties while preserving their pooled-value clearing assertions.
 
 After the existing repository bootstrap and `source activate.sh`:
@@ -61,11 +63,45 @@ dotnet run --no-restore -c Release --project tools/CodeGenerator/CodeGenerator.c
 
 The workload uses fixed-length stable/changing Accept, Accept-Language, User-Agent, X-Example and X-Request-Nonce, with Host/framing fixed. Access modes are ignore/read-one/read-all/enumerate. Supplemental modes duplicate a known or unknown header or exhaust the arena budget. The application exposes observed length and character-sum checksum; socket smoke checks must assert these plus exact response bytes. Wrk bad/socket counts alone do not assert response bodies.
 
-The intended primary comparison remains five interleaved repetitions of stable/changing x ignore/read-all x baseline/head-off/head-on, with identical application/dependencies/runtime and only the Core DLL replaced for baseline. Local shared-client/server limits, all errors, full run order and timestamped allocation/GC/CPU/working-set samples must remain explicit. Allocation rate in B/s is not bytes/request; no maximum-rate/total-request division is valid.
+The completed primary comparison uses five interleaved repetitions of stable/changing x ignore/read-all x baseline/head-off/head-on, with identical application/dependencies/runtime and only the Core DLL replaced for baseline. Local shared-client/server limits, all errors, full run order and timestamped allocation/GC/CPU/working-set samples are retained. Allocation rate in B/s is not bytes/request; no maximum-rate/total-request division is valid.
 
 The first three generalized pilot jobs at `6f75f595` had positive load/server measurements and zero errors; 96 socket requests passed exact body/length/checksum checks. The first full-duration baseline job subsequently reported **seven socket timeouts**, zero bad responses and 1,192,592 requests. Its error guard stopped the plan. It is retained, not a clean comparative result, and not evidence of a feature regression (the feature was absent).
 
-Before continuing, an additional CopyTo argument-compatibility correction was made and tested. The corrected source/payload will receive a new frozen plan. To avoid repeatedly abandoning or selecting results based on timeout noise, that plan records socket errors for **every predetermined case**, without filtering/replacement, while bad responses or missing/invalid measurements still fail. This changes the runner's stopping policy, not client load settings, and any resulting comparison must disclose errors. Initial pilots/failed plan remain separate from corrected-head evidence.
+Before continuing, an additional CopyTo argument-compatibility correction was made and tested. The corrected source/payload received a new frozen plan. To avoid repeatedly abandoning or selecting results based on timeout noise, that plan records socket errors for **every predetermined case**, without filtering/replacement, while bad responses or missing/invalid measurements still fail. This changes the runner's stopping policy, not client load settings. Initial pilots/failed plan remain separate from corrected-head evidence.
+
+## Completed generalized primary comparison
+
+**60/60 predetermined runs completed, 67,899,721 measured requests, zero bad responses, 324 wrk-reported socket timeouts across 30 runs.** By variant, baseline/off/on reported **124/106/94** timeouts. These are not zero-error performance results and are not filtered, replaced, pooled with historical runs or attributed to a feature defect. All runs have positive RPS/latency metrics, server/load measurements and verified uploaded Core/runtime identities. The raw archive contains **188,023 timestamped measurements**.
+
+[Full raw archive, commands and reproduction assets](generalized/primary-raw.tar.gz), [all per-run values and sample counts](generalized/primary-derived-runs.csv), [group and paired distributions](generalized/primary-derived-summary.json), [exact run order](generalized/primary-plan.json), [inputs/hashes](generalized/primary-inputs.json), [completion record](generalized/primary-completed.json) and [shared-host environment](generalized/environment.json).
+
+Median RPS over five runs; parentheses show the complete observed range, not confidence intervals:
+
+| Case | Baseline | Head off | Head on |
+| --- | ---: | ---: | ---: |
+| Ignore stable | 37794 (35378-39287) | 38625 (38382-39550) | 39049 (38027-39483) |
+| Ignore changing | 37096 (36415-37822) | 37943 (35919-38409) | 38526 (35977-39109) |
+| Read-all stable | 38825 (36820-38889) | 37580 (36015-38487) | 36960 (35152-38473) |
+| Read-all changing | 37461 (35993-38400) | 36632 (36460-38054) | 37278 (35633-38483) |
+
+Decimal allocation MB/s is the median of per-run interior-window means. P99 is the median reported latency, **excluding samples wrk classifies as timed out**:
+
+| Case | Allocation MB/s base / off / on | P99 ms base / off / on | Timeouts base / off / on |
+| --- | ---: | ---: | ---: |
+| Ignore stable | 16.078 / 16.690 / 10.680 | 6.43 / 5.51 / 5.41 | 35 / 21 / 40 |
+| Ignore changing | 24.753 / 26.085 / 10.568 | 6.84 / 5.22 / 5.48 | 36 / 42 / 8 |
+| Read-all stable | 17.724 / 17.555 / 16.685 | 5.30 / 6.01 / 6.44 | 25 / 12 / 35 |
+| Read-all changing | 26.569 / 26.061 / 26.047 | 5.26 / 6.41 / 6.07 | 28 / 31 / 11 |
+
+Changing unread values show a substantial allocation-rate reduction. Stable known values already reuse decoded strings on baseline; stable unknown **values** still allocate on baseline, explaining the additional unread-stable saving. Names remain eager. Reading all changing values removes that allocation advantage.
+
+**No trustworthy overall throughput improvement or acceptable regression budget is established.** Paired on/base RPS changes for changing/ignore have median +1.86%, range -1.81% to +7.03%. Read-all/stable has median -2.26%, range -9.61% to +0.38%; its default-off control has median -2.54%, range -7.24% to +2.06%. Read-all/changing on/base has median -2.59%, range -4.03% to +5.50%. Read and default-off costs remain concerns, not waived by unread allocation savings.
+
+The pinned [wrk completion path](https://github.com/wg/wrk/blob/a211dd5a7050b1f9e8a9870b95513060e72ac4a0/src/wrk.c#L344-L345) increments its timeout counter when a latency cannot enter the bounded histogram; [stats_record](https://github.com/wg/wrk/blob/a211dd5a7050b1f9e8a9870b95513060e72ac4a0/src/stats.c#L22-L24) rejects out-of-range samples. Therefore reported P99/max do not bound timeout-classified observations. No root cause or specific transport failure is inferred from that counter alone. The official client was not patched and all errors remain visible.
+
+Allocation/GC/CPU/working-set means use an approximate trimmed interior from 27 to three seconds before the first wrapper RPS event, avoiding startup/warmup/completion. Every run has **24 server allocation samples**. There is no aligned request-count denominator and no bytes/request claim. Missing metrics remain null/empty, not zero; singleton standard deviation is null. Coarse zero time-in-GC samples do not imply no collections. Changing/ignore median Gen0/s is 9.46/10.00/4.08 base/off/on.
+
+Server CPU medians are about 111-113 core-percent, client 48-51, with roughly 73-75 MB server working set on this shared two-processor x64 host. No client/server bottleneck independence, isolated capacity or cold/low-reuse memory outcome is established. The retained arena/metadata costs and experimental 4096-byte budget remain discussion items.
 
 ## Local Crank reproduction
 

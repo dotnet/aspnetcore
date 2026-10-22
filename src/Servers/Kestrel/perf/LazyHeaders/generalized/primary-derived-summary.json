@@ -1,0 +1,1184 @@
+{
+  "source": "96def7878b6e2ff7fb5f1afd73e54b4be35c103d",
+  "runs": 60,
+  "requests": 67899721.0,
+  "badResponses": 0.0,
+  "socketErrors": 324.0,
+  "method": "All predetermined cases retained, including socket errors; no outlier filtering. Approximate timestamp window from 27 to 3 seconds before first wrapper RPS event. Allocation rate units B/s, no bytes/request inference; missing samples null, not zero.",
+  "groups": [
+    {
+      "access": "ignore",
+      "mode": "changing",
+      "variant": "base",
+      "repetitions": 5,
+      "requests": 5573373.0,
+      "bad_responses": 0.0,
+      "socket_errors": 36.0,
+      "rps": {
+        "count": 5,
+        "median": 37095.64,
+        "minimum": 36414.64,
+        "maximum": 37822.34,
+        "mean": 37064.65,
+        "standard_deviation": 561.2469316619904
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 6.84,
+        "minimum": 4.88,
+        "maximum": 8.6,
+        "mean": 6.788,
+        "standard_deviation": 1.3169358374651363
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 24752929.666666668,
+        "minimum": 24413047.666666668,
+        "maximum": 25752642.333333332,
+        "mean": 25028014.733333334,
+        "standard_deviation": 624513.3089135344
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 9.458333333333334,
+        "minimum": 8.583333333333334,
+        "maximum": 9.916666666666666,
+        "mean": 9.441666666666666,
+        "standard_deviation": 0.5373223220542558
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 111.08333333333333,
+        "minimum": 108.91304347826087,
+        "maximum": 111.71428571428571,
+        "mean": 110.72474120082816,
+        "standard_deviation": 1.1689037203267973
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 49.208333333333336,
+        "minimum": 46.75,
+        "maximum": 51.791666666666664,
+        "mean": 49.25517598343686,
+        "standard_deviation": 1.7891850572253656
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.08333333333333333,
+        "mean": 0.024999999999999998,
+        "standard_deviation": 0.037267799624996496
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 73.5,
+        "minimum": 72.82608695652173,
+        "maximum": 73.78260869565217,
+        "mean": 73.40890269151139,
+        "standard_deviation": 0.40849102636441365
+      }
+    },
+    {
+      "access": "ignore",
+      "mode": "changing",
+      "variant": "off",
+      "repetitions": 5,
+      "requests": 5628566.0,
+      "bad_responses": 0.0,
+      "socket_errors": 42.0,
+      "rps": {
+        "count": 5,
+        "median": 37942.89,
+        "minimum": 35918.61,
+        "maximum": 38408.56,
+        "mean": 37448.752,
+        "standard_deviation": 1002.2042026802708
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 5.22,
+        "minimum": 4.86,
+        "maximum": 6.3,
+        "mean": 5.522,
+        "standard_deviation": 0.6331034670573207
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 26085133.333333332,
+        "minimum": 24147248.666666668,
+        "maximum": 26225882.666666668,
+        "mean": 25712157.066666666,
+        "standard_deviation": 880996.623148951
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 10.0,
+        "minimum": 8.375,
+        "maximum": 10.125,
+        "mean": 9.566666666666666,
+        "standard_deviation": 0.7451230323465604
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 111.30434782608695,
+        "minimum": 110.04347826086956,
+        "maximum": 113.13636363636364,
+        "mean": 111.52364953886693,
+        "standard_deviation": 1.1926391803494307
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 50.82608695652174,
+        "minimum": 49.958333333333336,
+        "maximum": 51.333333333333336,
+        "mean": 50.79785902503294,
+        "standard_deviation": 0.5134280124415217
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.041666666666666664,
+        "minimum": 0.0,
+        "maximum": 0.16666666666666666,
+        "mean": 0.06666666666666667,
+        "standard_deviation": 0.07569125885243728
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.6086956521739,
+        "minimum": 74.0,
+        "maximum": 74.91304347826087,
+        "mean": 74.50207509881423,
+        "standard_deviation": 0.34154727743104013
+      }
+    },
+    {
+      "access": "ignore",
+      "mode": "changing",
+      "variant": "on",
+      "repetitions": 5,
+      "requests": 5702548.0,
+      "bad_responses": 0.0,
+      "socket_errors": 8.0,
+      "rps": {
+        "count": 5,
+        "median": 38525.76,
+        "minimum": 35977.08,
+        "maximum": 39108.63,
+        "mean": 37945.88,
+        "standard_deviation": 1347.3656133173347
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 5.48,
+        "minimum": 4.96,
+        "maximum": 7.48,
+        "mean": 5.84,
+        "standard_deviation": 1.0143224339429748
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 10567511.333333334,
+        "minimum": 9936108.333333334,
+        "maximum": 10702231.333333334,
+        "mean": 10399585.933333334,
+        "standard_deviation": 354053.68844101735
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 4.083333333333333,
+        "minimum": 3.8333333333333335,
+        "maximum": 4.125,
+        "mean": 4.008333333333333,
+        "standard_deviation": 0.14252192813739217
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 111.33333333333333,
+        "minimum": 110.43478260869566,
+        "maximum": 112.70833333333333,
+        "mean": 111.52608695652174,
+        "standard_deviation": 1.1328930037611735
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 50.75,
+        "minimum": 49.04545454545455,
+        "maximum": 51.625,
+        "mean": 50.62322134387352,
+        "standard_deviation": 1.0917555753798598
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.20833333333333,
+        "minimum": 73.33333333333333,
+        "maximum": 75.17391304347827,
+        "mean": 74.22246376811594,
+        "standard_deviation": 0.6903450469648776
+      }
+    },
+    {
+      "access": "ignore",
+      "mode": "stable",
+      "variant": "base",
+      "repetitions": 5,
+      "requests": 5666035.0,
+      "bad_responses": 0.0,
+      "socket_errors": 35.0,
+      "rps": {
+        "count": 5,
+        "median": 37794.08,
+        "minimum": 35377.98,
+        "maximum": 39286.86,
+        "mean": 37696.748,
+        "standard_deviation": 1572.0129901880566
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 6.43,
+        "minimum": 5.21,
+        "maximum": 7.24,
+        "mean": 6.148,
+        "standard_deviation": 0.8755112791963334
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 16078158.0,
+        "minimum": 15011892.333333334,
+        "maximum": 16730376.0,
+        "mean": 16015570.6,
+        "standard_deviation": 690007.1803642254
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 6.166666666666667,
+        "minimum": 5.791666666666667,
+        "maximum": 6.416666666666667,
+        "mean": 6.158333333333333,
+        "standard_deviation": 0.2558346905501458
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 112.875,
+        "minimum": 106.45833333333333,
+        "maximum": 113.95833333333333,
+        "mean": 111.62355072463768,
+        "standard_deviation": 2.9846456804358166
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 49.08695652173913,
+        "minimum": 45.375,
+        "maximum": 50.45454545454545,
+        "mean": 48.599967061923586,
+        "standard_deviation": 2.0849081676055103
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.041666666666666664,
+        "mean": 0.016666666666666666,
+        "standard_deviation": 0.02282177322938192
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 72.91666666666667,
+        "minimum": 72.83333333333333,
+        "maximum": 73.73913043478261,
+        "mean": 73.08043478260869,
+        "standard_deviation": 0.37291040721954166
+      }
+    },
+    {
+      "access": "ignore",
+      "mode": "stable",
+      "variant": "off",
+      "repetitions": 5,
+      "requests": 5836042.0,
+      "bad_responses": 0.0,
+      "socket_errors": 21.0,
+      "rps": {
+        "count": 5,
+        "median": 38624.82,
+        "minimum": 38382.03,
+        "maximum": 39549.7,
+        "mean": 38846.835999999996,
+        "standard_deviation": 512.3834498010256
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 5.51,
+        "minimum": 5.15,
+        "maximum": 6.22,
+        "mean": 5.648,
+        "standard_deviation": 0.46639039441223473
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 16689765.666666666,
+        "minimum": 16450704.0,
+        "maximum": 16905788.333333332,
+        "mean": 16700971.066666666,
+        "standard_deviation": 166145.15818577947
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 6.416666666666667,
+        "minimum": 6.333333333333333,
+        "maximum": 6.5,
+        "mean": 6.425,
+        "standard_deviation": 0.06180165405913057
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 113.43478260869566,
+        "minimum": 111.79166666666667,
+        "maximum": 114.25,
+        "mean": 113.24565217391304,
+        "standard_deviation": 1.0104203004046666
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 49.69565217391305,
+        "minimum": 49.1,
+        "maximum": 50.5,
+        "mean": 49.75804347826087,
+        "standard_deviation": 0.504368674606567
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.33333333333333,
+        "minimum": 73.83333333333333,
+        "maximum": 74.91304347826087,
+        "mean": 74.33985507246376,
+        "standard_deviation": 0.4935947637488229
+      }
+    },
+    {
+      "access": "ignore",
+      "mode": "stable",
+      "variant": "on",
+      "repetitions": 5,
+      "requests": 5827188.0,
+      "bad_responses": 0.0,
+      "socket_errors": 40.0,
+      "rps": {
+        "count": 5,
+        "median": 39049.28,
+        "minimum": 38026.89,
+        "maximum": 39483.07,
+        "mean": 38794.716,
+        "standard_deviation": 629.5660082390086
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 5.41,
+        "minimum": 5.13,
+        "maximum": 6.75,
+        "mean": 5.65,
+        "standard_deviation": 0.6363961030678927
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 10679826.0,
+        "minimum": 10292264.0,
+        "maximum": 10813862.333333334,
+        "mean": 10605389.533333333,
+        "standard_deviation": 217542.5628906524
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 4.125,
+        "minimum": 3.9583333333333335,
+        "maximum": 4.166666666666667,
+        "mean": 4.083333333333334,
+        "standard_deviation": 0.09771699499632153
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 112.68181818181819,
+        "minimum": 111.91304347826087,
+        "maximum": 114.5,
+        "mean": 112.94397233201582,
+        "standard_deviation": 0.9962609662726392
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 50.083333333333336,
+        "minimum": 48.166666666666664,
+        "maximum": 50.875,
+        "mean": 49.81,
+        "standard_deviation": 1.022717648664034
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.125,
+        "mean": 0.025,
+        "standard_deviation": 0.05590169943749474
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.125,
+        "minimum": 73.66666666666667,
+        "maximum": 74.66666666666667,
+        "mean": 74.18692358366272,
+        "standard_deviation": 0.409498553366895
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "changing",
+      "variant": "base",
+      "repetitions": 5,
+      "requests": 5598040.0,
+      "bad_responses": 0.0,
+      "socket_errors": 28.0,
+      "rps": {
+        "count": 5,
+        "median": 37460.83,
+        "minimum": 35993.47,
+        "maximum": 38400.05,
+        "mean": 37268.21,
+        "standard_deviation": 977.685255718833
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 5.26,
+        "minimum": 4.96,
+        "maximum": 6.45,
+        "mean": 5.606,
+        "standard_deviation": 0.7254860439732801
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 26568982.666666668,
+        "minimum": 25476408.666666668,
+        "maximum": 27097835.0,
+        "mean": 26452603.0,
+        "standard_deviation": 674075.2889159829
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 10.041666666666666,
+        "minimum": 8.5,
+        "maximum": 10.416666666666666,
+        "mean": 9.833333333333332,
+        "standard_deviation": 0.7911182310853133
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 111.72727272727273,
+        "minimum": 110.65217391304348,
+        "maximum": 112.54166666666667,
+        "mean": 111.62770092226614,
+        "standard_deviation": 0.7966561470525095
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 50.47826086956522,
+        "minimum": 49.63636363636363,
+        "maximum": 51.09090909090909,
+        "mean": 50.27630340673819,
+        "standard_deviation": 0.6254376567791281
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.041666666666666664,
+        "minimum": 0.0,
+        "maximum": 0.125,
+        "mean": 0.058333333333333334,
+        "standard_deviation": 0.06319062870042959
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.4090909090909,
+        "minimum": 73.79166666666667,
+        "maximum": 74.95652173913044,
+        "mean": 74.37295783926218,
+        "standard_deviation": 0.4164193559038684
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "changing",
+      "variant": "off",
+      "repetitions": 5,
+      "requests": 5538962.0,
+      "bad_responses": 0.0,
+      "socket_errors": 31.0,
+      "rps": {
+        "count": 5,
+        "median": 36632.23,
+        "minimum": 36459.54,
+        "maximum": 38053.93,
+        "mean": 36875.94,
+        "standard_deviation": 662.72579857736
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 6.41,
+        "minimum": 4.89,
+        "maximum": 7.15,
+        "mean": 6.27,
+        "standard_deviation": 0.8469061341140471
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 26061101.0,
+        "minimum": 25732642.0,
+        "maximum": 27230670.0,
+        "mean": 26264433.466666665,
+        "standard_deviation": 625417.1003892166
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 10.0,
+        "minimum": 8.291666666666666,
+        "maximum": 10.5,
+        "mean": 9.541666666666666,
+        "standard_deviation": 0.962851667357612
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 111.86363636363636,
+        "minimum": 110.81818181818181,
+        "maximum": 112.20833333333333,
+        "mean": 111.69350649350649,
+        "standard_deviation": 0.5328840197517417
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 49.583333333333336,
+        "minimum": 49.04545454545455,
+        "maximum": 50.333333333333336,
+        "mean": 49.62389422172031,
+        "standard_deviation": 0.4873944646617138
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.08333333333333333,
+        "minimum": 0.0,
+        "maximum": 0.16666666666666666,
+        "mean": 0.075,
+        "standard_deviation": 0.061801654059130524
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.77272727272727,
+        "minimum": 74.25,
+        "maximum": 75.0,
+        "mean": 74.69978354978355,
+        "standard_deviation": 0.2787900634476522
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "changing",
+      "variant": "on",
+      "repetitions": 5,
+      "requests": 5581371.0,
+      "bad_responses": 0.0,
+      "socket_errors": 11.0,
+      "rps": {
+        "count": 5,
+        "median": 37278.16,
+        "minimum": 35633.29,
+        "maximum": 38482.71,
+        "mean": 37149.428,
+        "standard_deviation": 1158.3464890610235
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 6.07,
+        "minimum": 5.17,
+        "maximum": 6.54,
+        "mean": 5.826,
+        "standard_deviation": 0.6040115892927884
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 26046986.0,
+        "minimum": 25089779.0,
+        "maximum": 27534449.0,
+        "mean": 26299452.666666668,
+        "standard_deviation": 1031277.3276901968
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 7.916666666666667,
+        "minimum": 6.958333333333333,
+        "maximum": 8.125,
+        "mean": 7.766666666666667,
+        "standard_deviation": 0.46454129107229125
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 111.65217391304348,
+        "minimum": 111.43478260869566,
+        "maximum": 113.20833333333333,
+        "mean": 112.01676548089591,
+        "standard_deviation": 0.7139145172894026
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 49.18181818181818,
+        "minimum": 48.833333333333336,
+        "maximum": 50.875,
+        "mean": 49.708465085639,
+        "standard_deviation": 0.9561169909667926
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.041666666666666664,
+        "minimum": 0.0,
+        "maximum": 0.125,
+        "mean": 0.049999999999999996,
+        "standard_deviation": 0.054326686710022075
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 75.43478260869566,
+        "minimum": 74.69565217391305,
+        "maximum": 76.26086956521739,
+        "mean": 75.45098814229249,
+        "standard_deviation": 0.556043042190994
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "stable",
+      "variant": "base",
+      "repetitions": 5,
+      "requests": 5765510.0,
+      "bad_responses": 0.0,
+      "socket_errors": 25.0,
+      "rps": {
+        "count": 5,
+        "median": 38825.29,
+        "minimum": 36819.81,
+        "maximum": 38888.68,
+        "mean": 38374.906,
+        "standard_deviation": 883.5666429477756
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 5.3,
+        "minimum": 4.93,
+        "maximum": 6.24,
+        "mean": 5.452,
+        "standard_deviation": 0.5106564402805472
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 17723704.0,
+        "minimum": 16673242.666666666,
+        "maximum": 17832121.0,
+        "mean": 17520243.2,
+        "standard_deviation": 482860.6809494042
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 6.833333333333333,
+        "minimum": 6.416666666666667,
+        "maximum": 6.875,
+        "mean": 6.758333333333334,
+        "standard_deviation": 0.19409691164753512
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 113.16666666666667,
+        "minimum": 112.375,
+        "maximum": 113.29166666666667,
+        "mean": 113.02717391304348,
+        "standard_deviation": 0.3773490279699867
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 49.69565217391305,
+        "minimum": 48.43478260869565,
+        "maximum": 49.791666666666664,
+        "mean": 49.43043478260869,
+        "standard_deviation": 0.5651805195145471
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.041666666666666664,
+        "mean": 0.008333333333333333,
+        "standard_deviation": 0.018633899812498248
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.04347826086956,
+        "minimum": 73.625,
+        "maximum": 74.54166666666667,
+        "mean": 74.06702898550725,
+        "standard_deviation": 0.327520500295543
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "stable",
+      "variant": "off",
+      "repetitions": 5,
+      "requests": 5633407.0,
+      "bad_responses": 0.0,
+      "socket_errors": 12.0,
+      "rps": {
+        "count": 5,
+        "median": 37579.66,
+        "minimum": 36014.74,
+        "maximum": 38487.22,
+        "mean": 37492.482,
+        "standard_deviation": 910.7998723759254
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 6.01,
+        "minimum": 4.97,
+        "maximum": 8.05,
+        "mean": 6.06,
+        "standard_deviation": 1.2190570126126181
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 17555404.0,
+        "minimum": 16220382.666666666,
+        "maximum": 17690901.666666668,
+        "mean": 17292551.4,
+        "standard_deviation": 616148.1375254933
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 6.75,
+        "minimum": 6.25,
+        "maximum": 6.833333333333333,
+        "mean": 6.658333333333333,
+        "standard_deviation": 0.23643768265185178
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 113.08695652173913,
+        "minimum": 111.6,
+        "maximum": 113.25,
+        "mean": 112.63245059288538,
+        "standard_deviation": 0.758714421240002
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 48.904761904761905,
+        "minimum": 47.21739130434783,
+        "maximum": 49.666666666666664,
+        "mean": 48.666821946169776,
+        "standard_deviation": 1.014875393941594
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.041666666666666664,
+        "mean": 0.016666666666666666,
+        "standard_deviation": 0.02282177322938192
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.54545454545455,
+        "minimum": 74.125,
+        "maximum": 75.34782608695652,
+        "mean": 74.59669960474308,
+        "standard_deviation": 0.45524702903140357
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "stable",
+      "variant": "on",
+      "repetitions": 5,
+      "requests": 5548679.0,
+      "bad_responses": 0.0,
+      "socket_errors": 35.0,
+      "rps": {
+        "count": 5,
+        "median": 36960.08,
+        "minimum": 35151.52,
+        "maximum": 38472.57,
+        "mean": 36925.672,
+        "standard_deviation": 1252.7726916603835
+      },
+      "latency_p99_ms": {
+        "count": 5,
+        "median": 6.44,
+        "minimum": 5.29,
+        "maximum": 8.51,
+        "mean": 6.51,
+        "standard_deviation": 1.232213455534389
+      },
+      "server_allocation_bytes_per_second_mean": {
+        "count": 5,
+        "median": 16684918.666666666,
+        "minimum": 15835831.333333334,
+        "maximum": 17677019.0,
+        "mean": 16695869.866666667,
+        "standard_deviation": 687052.0616810229
+      },
+      "server_gen0_per_second_mean": {
+        "count": 5,
+        "median": 6.416666666666667,
+        "minimum": 6.125,
+        "maximum": 6.791666666666667,
+        "mean": 6.433333333333334,
+        "standard_deviation": 0.25276251480171846
+      },
+      "server_gen1_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_gen2_per_second_mean": {
+        "count": 5,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0,
+        "mean": 0.0,
+        "standard_deviation": 0.0
+      },
+      "server_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 112.52173913043478,
+        "minimum": 108.54545454545455,
+        "maximum": 114.81818181818181,
+        "mean": 112.58540843214756,
+        "standard_deviation": 2.507229499885041
+      },
+      "client_cpu_core_percent_mean": {
+        "count": 5,
+        "median": 47.78260869565217,
+        "minimum": 45.95454545454545,
+        "maximum": 50.166666666666664,
+        "mean": 47.91119894598155,
+        "standard_deviation": 1.5268204635966005
+      },
+      "server_time_in_gc_percent_mean": {
+        "count": 5,
+        "median": 0.041666666666666664,
+        "minimum": 0.0,
+        "maximum": 0.3333333333333333,
+        "mean": 0.09999999999999999,
+        "standard_deviation": 0.14006446928309677
+      },
+      "server_working_set_mb_mean": {
+        "count": 5,
+        "median": 74.4090909090909,
+        "minimum": 74.20833333333333,
+        "maximum": 74.77272727272727,
+        "mean": 74.45431488801053,
+        "standard_deviation": 0.2349181041446493
+      }
+    }
+  ],
+  "paired": [
+    {
+      "access": "ignore",
+      "mode": "changing",
+      "variant": "off",
+      "rps_percent_change": {
+        "count": 5,
+        "median": 0.4455039006047823,
+        "minimum": -1.9682705518428323,
+        "maximum": 5.475599923547225,
+        "mean": 1.05031383408962,
+        "standard_deviation": 2.946443139189402
+      }
+    },
+    {
+      "access": "ignore",
+      "mode": "changing",
+      "variant": "on",
+      "rps_percent_change": {
+        "count": 5,
+        "median": 1.8598003190706924,
+        "minimum": -1.8086898993389111,
+        "maximum": 7.026130149851828,
+        "mean": 2.3831518562437415,
+        "standard_deviation": 3.530752561654889
+      }
+    },
+    {
+      "access": "ignore",
+      "mode": "stable",
+      "variant": "off",
+      "rps_percent_change": {
+        "count": 5,
+        "median": 3.5354208365478534,
+        "minimum": -2.110807532085801,
+        "maximum": 9.17757316839456,
+        "mean": 3.1863739696560933,
+        "standard_deviation": 4.256297107871104
+      }
+    },
+    {
+      "access": "ignore",
+      "mode": "stable",
+      "variant": "on",
+      "rps_percent_change": {
+        "count": 5,
+        "median": 1.3597008940421595,
+        "minimum": -0.6047314547408478,
+        "maximum": 8.081693754137454,
+        "mean": 3.0266205644253574,
+        "standard_deviation": 3.686902217267676
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "changing",
+      "variant": "off",
+      "rps_percent_change": {
+        "count": 5,
+        "median": -0.3302865253376419,
+        "minimum": -4.731243839526256,
+        "maximum": 1.8261090136627578,
+        "mean": -1.0115954744799982,
+        "standard_deviation": 2.537515965037951
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "changing",
+      "variant": "on",
+      "rps_percent_change": {
+        "count": 5,
+        "median": -2.5890122459155673,
+        "minimum": -4.029853581221509,
+        "maximum": 5.503053748360465,
+        "mean": -0.2619068278936897,
+        "standard_deviation": 4.149102947703952
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "stable",
+      "variant": "off",
+      "rps_percent_change": {
+        "count": 5,
+        "median": -2.537203436274149,
+        "minimum": -7.238967178352052,
+        "maximum": 2.063698862107133,
+        "mean": -2.250066834741038,
+        "standard_deviation": 3.5425316566001235
+      }
+    },
+    {
+      "access": "read-all",
+      "mode": "stable",
+      "variant": "on",
+      "rps_percent_change": {
+        "count": 5,
+        "median": -2.264887566161622,
+        "minimum": -9.609891618846422,
+        "maximum": 0.3809633998654638,
+        "mean": -3.7287843584287206,
+        "standard_deviation": 4.119737028626702
+      }
+    }
+  ]
+}

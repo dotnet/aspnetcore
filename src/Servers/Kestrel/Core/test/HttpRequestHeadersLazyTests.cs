@@ -94,11 +94,13 @@ public class HttpRequestHeadersLazyTests
                 Assert.Empty(dictionary);
                 return;
             case 10:
-                var property = typeof(IHeaderDictionary).GetProperty(name.Replace("-", ""));
+                var property = typeof(IHeaderDictionary).GetProperty(name.Replace("-", ""),
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
                 value = property is null ? dictionary[name] : (StringValues)property.GetValue(dictionary);
                 break;
             default:
-                var internalProperty = typeof(HttpRequestHeaders).GetProperty("Header" + name.Replace("-", ""));
+                var internalProperty = typeof(HttpRequestHeaders).GetProperty("Header" + name.Replace("-", ""),
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
                 value = internalProperty is null ? dictionary[name] : (StringValues)internalProperty.GetValue(headers);
                 break;
         }
