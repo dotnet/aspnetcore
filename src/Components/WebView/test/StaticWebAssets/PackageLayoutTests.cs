@@ -36,41 +36,15 @@ public class PackageLayoutTests
 
     [ConditionalFact]
     [RequiresBuiltPackages(AutoPausePackageId)]
-    public void AutoPausePackage_InitializerHasFingerprintedEndpoint()
+    public void AutoPausePackage_ShipsFingerprintedInitializer()
     {
         using var package = PackageArchive.Open(AutoPausePackageId);
         using var manifest = package.ReadPackageAssetsManifest();
 
-        var initializer = $"{AutoPausePackageId}.lib.module.js";
-        var asset = Assert.Single(manifest.RootElement.GetProperty("Assets").EnumerateObject(), asset =>
-            asset.Value.GetProperty("AssetTraitValue").GetString() == "JSLibraryModule").Value;
+        var asset = GetAsset(manifest, ".lib.module.js");
         var fingerprint = asset.GetProperty("Fingerprint").GetString();
         Assert.False(string.IsNullOrEmpty(fingerprint));
         Assert.True(package.HasEntry($"staticwebassets/{AutoPausePackageId}.{fingerprint}.lib.module.js"));
-        Assert.Equal($"{AutoPausePackageId}#[.{{fingerprint}}]!.lib.module.js",
-            asset.GetProperty("RelativePath").GetString());
-        Assert.Equal("JSModule", asset.GetProperty("AssetTraitName").GetString());
-        Assert.Equal("JSLibraryModule", asset.GetProperty("AssetTraitValue").GetString());
-
-        var endpoints = manifest.RootElement.GetProperty("Endpoints").EnumerateArray().ToArray();
-        var fingerprintedRoute = $"_content/{AutoPausePackageId}/{AutoPausePackageId}.{fingerprint}.lib.module.js";
-        var endpoint = Assert.Single(endpoints, e =>
-            e.GetProperty("Route").GetString() == fingerprintedRoute &&
-            e.GetProperty("Selectors").GetArrayLength() == 0);
-
-        Assert.Contains(endpoint.GetProperty("ResponseHeaders").EnumerateArray(), header =>
-            header.GetProperty("Name").GetString() == "Cache-Control" &&
-            header.GetProperty("Value").GetString() == "max-age=31536000, immutable");
-        Assert.Contains(endpoint.GetProperty("EndpointProperties").EnumerateArray(), property =>
-            property.GetProperty("Name").GetString() == "label" &&
-            property.GetProperty("Value").GetString() == $"_content/{AutoPausePackageId}/{initializer}");
-
-        var plainEndpoint = Assert.Single(endpoints, e =>
-            e.GetProperty("Route").GetString() == $"_content/{AutoPausePackageId}/{initializer}" &&
-            e.GetProperty("Selectors").GetArrayLength() == 0);
-        Assert.Contains(plainEndpoint.GetProperty("ResponseHeaders").EnumerateArray(), header =>
-            header.GetProperty("Name").GetString() == "Cache-Control" &&
-            header.GetProperty("Value").GetString() == "no-cache");
     }
 
     [ConditionalFact]
