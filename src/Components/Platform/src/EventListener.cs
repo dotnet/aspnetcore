@@ -31,10 +31,10 @@ internal sealed class EventListener<[DynamicallyAccessedMembers(LinkerFlags.Json
         _logger = logger;
     }
 
-    public async Task AddAsync(JSCallbackFactory callbacks, string shapesJson)
+    public async Task AddAsync(JSCallbackFactory callbackFactory, string shapesJson)
     {
         var callback = new JSCallback<TEvent> { Handler = InvokeListenerAsync };
-        (_function, _callbackReference) = await callbacks.CreateAsync(callback, shapesJson).ConfigureAwait(false);
+        (_function, _callbackReference) = await callbackFactory.CreateAsync(callback, shapesJson).ConfigureAwait(false);
 
         // Disposal can run while the function is being created, and then nothing else releases it.
         if (_removed)

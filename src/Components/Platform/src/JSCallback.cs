@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Platform;
 
-// Targets of the functions that JSCallbackFactory creates. The browser can call such a function
+// Objects that the functions created by JSCallbackFactory call. The browser can call such a function
 // before a handler is set or after it is removed, so a missing handler is not an error.
 
 internal sealed class JSCallback<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T1>

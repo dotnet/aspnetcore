@@ -14,12 +14,12 @@ export interface DotNetObject {
   invokeMethodAsync<T>(methodIdentifier: string, ...args: unknown[]): Promise<T>;
 }
 
-// Creates a function that calls the Invoke method of the target with one argument per shape.
+// Creates a function that calls the Invoke method of the callback reference with one argument per shape.
 // Arguments beyond the shapes are dropped. The returned promise settles when the .NET method completes.
-export function createCallback(target: DotNetObject, shapesJson: string): (...args: unknown[]) => Promise<unknown> {
+export function createCallback(callbackReference: DotNetObject, shapesJson: string): (...args: unknown[]) => Promise<unknown> {
   const shapes: ArgumentShape[] = JSON.parse(shapesJson);
 
-  return (...args) => target.invokeMethodAsync('Invoke', ...shapes.map((shape, index) => toDotNet(args[index], shape)));
+  return (...args) => callbackReference.invokeMethodAsync('Invoke', ...shapes.map((shape, index) => toDotNet(args[index], shape)));
 }
 
 export function toDotNet(value: unknown, shape: ArgumentShape): unknown {

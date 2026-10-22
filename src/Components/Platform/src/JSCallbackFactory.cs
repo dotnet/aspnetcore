@@ -33,7 +33,7 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
     /// The function, and the reference that lets JavaScript reach <paramref name="callback"/>.
     /// The caller owns both and releases them when the function is no longer used.
     /// </returns>
-    public async Task<(IJSObjectReference Function, IDisposable Target)> CreateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TCallback>(
+    public async Task<(IJSObjectReference Function, IDisposable CallbackReference)> CreateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TCallback>(
         TCallback callback,
         string shapesJson)
         where TCallback : class
@@ -41,16 +41,16 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         var module = await GetModuleAsync().ConfigureAwait(false);
-        var target = DotNetObjectReference.Create(callback);
+        var callbackReference = DotNetObjectReference.Create(callback);
 
         try
         {
-            var function = await module.InvokeAsync<IJSObjectReference>("createCallback", target, shapesJson).ConfigureAwait(false);
-            return (function, target);
+            var function = await module.InvokeAsync<IJSObjectReference>("createCallback", callbackReference, shapesJson).ConfigureAwait(false);
+            return (function, callbackReference);
         }
         catch
         {
-            target.Dispose();
+            callbackReference.Dispose();
             throw;
         }
     }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Platform;
 public sealed class Window : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
-    private readonly JSCallbackFactory _callbacks;
+    private readonly JSCallbackFactory _callbackFactory;
     private readonly ILogger _eventListenerLogger;
     private readonly EventListenerCollection _listeners;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
@@ -23,7 +23,7 @@ public sealed class Window : IInternalAsyncDisposal
     internal Window(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
     {
         _jsRuntime = jsRuntime;
-        _callbacks = new JSCallbackFactory(jsRuntime);
+        _callbackFactory = new JSCallbackFactory(jsRuntime);
         _eventListenerLogger = loggerFactory.CreateLogger<EventListenerCollection>();
         _listeners = CreateEventListenerCollection();
     }
@@ -52,7 +52,7 @@ public sealed class Window : IInternalAsyncDisposal
     /// Creates the collection that a projection uses to add event listeners to its JavaScript object.
     /// </summary>
     internal EventListenerCollection CreateEventListenerCollection()
-        => new(_callbacks, _eventListenerLogger);
+        => new(_callbackFactory, _eventListenerLogger);
 
     private Task<IJSObjectReference> GetReferenceAsync()
     {
@@ -143,6 +143,6 @@ public sealed class Window : IInternalAsyncDisposal
         }
 
         // Features remove their listeners first, so the module is no longer needed.
-        await ((IInternalAsyncDisposal)_callbacks).InternalDisposeAsync().ConfigureAwait(false);
+        await ((IInternalAsyncDisposal)_callbackFactory).InternalDisposeAsync().ConfigureAwait(false);
     }
 }

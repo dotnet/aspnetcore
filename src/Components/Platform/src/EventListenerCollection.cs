@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
 {
-    private readonly JSCallbackFactory _callbacks;
+    private readonly JSCallbackFactory _callbackFactory;
     private readonly ILogger _logger;
     private readonly List<IAsyncDisposable> _listeners = [];
     private bool _disposed;
 
-    public EventListenerCollection(JSCallbackFactory callbacks, ILogger logger)
+    public EventListenerCollection(JSCallbackFactory callbackFactory, ILogger logger)
     {
-        _callbacks = callbacks;
+        _callbackFactory = callbackFactory;
         _logger = logger;
     }
 
@@ -41,7 +41,7 @@ internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
 
         try
         {
-            await eventListener.AddAsync(_callbacks, shapesJson).ConfigureAwait(false);
+            await eventListener.AddAsync(_callbackFactory, shapesJson).ConfigureAwait(false);
         }
         catch
         {

@@ -83,11 +83,11 @@ public class JSCallbackTest
         var jsRuntime = new BrowserJSRuntime();
         var factory = new JSCallbackFactory(jsRuntime);
         var callback = new JSCallback<string> { Handler = _ => Task.CompletedTask };
-        var (_, target) = await factory.CreateAsync(callback, "[null]");
+        var (_, callbackReference) = await factory.CreateAsync(callback, "[null]");
 
         await ((IInternalAsyncDisposal)factory).InternalDisposeAsync();
         var beforeRelease = await jsRuntime.InvokeLastCallbackAsync("""["text"]""");
-        target.Dispose();
+        callbackReference.Dispose();
         var afterRelease = await jsRuntime.InvokeLastCallbackAsync("""["text"]""");
 
         // The module is object 1, and the factory releases only the module.

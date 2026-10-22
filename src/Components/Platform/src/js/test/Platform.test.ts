@@ -14,7 +14,7 @@ class BrowserObject {
   }
 }
 
-function createTarget(): DotNetObject & { calls: unknown[][] } {
+function createCallbackReference(): DotNetObject & { calls: unknown[][] } {
   const calls: unknown[][] = [];
   return {
     calls,
@@ -27,34 +27,34 @@ function createTarget(): DotNetObject & { calls: unknown[][] } {
 
 describe('createCallback', () => {
   test('forwards every argument that has a shape to Invoke', async () => {
-    const target = createTarget();
-    const callback = createCallback(target, '[null, null, null]');
+    const callbackReference = createCallbackReference();
+    const callback = createCallback(callbackReference, '[null, null, null]');
 
     const result = await callback('a', 2, { three: 3 });
 
     expect(result).toBe('result');
-    expect(target.calls).toEqual([['Invoke', 'a', 2, { three: 3 }]]);
+    expect(callbackReference.calls).toEqual([['Invoke', 'a', 2, { three: 3 }]]);
   });
 
   test('drops arguments beyond the shapes and sends null for missing ones', async () => {
-    const target = createTarget();
+    const callbackReference = createCallbackReference();
 
-    await createCallback(target, '[null]')('a', 'b');
-    await createCallback(target, '[null, null]')('a');
+    await createCallback(callbackReference, '[null]')('a', 'b');
+    await createCallback(callbackReference, '[null, null]')('a');
 
-    expect(target.calls).toEqual([['Invoke', 'a'], ['Invoke', 'a', undefined]]);
-    expect(JSON.stringify(target.calls[1])).toBe('["Invoke","a",null]');
+    expect(callbackReference.calls).toEqual([['Invoke', 'a'], ['Invoke', 'a', undefined]]);
+    expect(JSON.stringify(callbackReference.calls[1])).toBe('["Invoke","a",null]');
   });
 
   test('copies only the shaped properties of an event', async () => {
-    const target = createTarget();
+    const callbackReference = createCallbackReference();
     const event = new Event('change');
     Object.defineProperty(event, 'changed', { get: () => [{ name: 'a', value: '1' }] });
     Object.defineProperty(event, 'deleted', { get: () => [{ name: 'b' }] });
 
-    await createCallback(target, '[{"changed":null,"deleted":null}]')(event);
+    await createCallback(callbackReference, '[{"changed":null,"deleted":null}]')(event);
 
-    expect(JSON.stringify(target.calls[0])).toBe('["Invoke",{"changed":[{"name":"a","value":"1"}],"deleted":[{"name":"b"}]}]');
+    expect(JSON.stringify(callbackReference.calls[0])).toBe('["Invoke",{"changed":[{"name":"a","value":"1"}],"deleted":[{"name":"b"}]}]');
   });
 });
 
