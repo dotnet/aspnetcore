@@ -1,6 +1,6 @@
 # Lazy request-header allocation experiment
 
-Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962), not a shipping optimization. **No Crank benchmark has run, and no end-to-end throughput improvement is established.** The allocation result below is a diagnostic result only.
+Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962), not a shipping optimization. **Genuine local Crank POC execution has started; the comparative repeat matrix is not yet complete and no end-to-end improvement is established.** Collection-level allocation results below remain diagnostic only.
 
 **Current scope: HTTP/1.1 only.** The initial multi-protocol prototype and its raw measurements remain in history. The current implementation keeps HPACK/QPACK and HTTP/2/HTTP/3 literal-name ingestion eager even with the switch enabled. Their lazy-allocation experiments and performance comparisons are deferred; compatibility checks remain. A new HTTP/1 diagnostic comparison is recorded below, separately from the historical table.
 
@@ -141,7 +141,15 @@ dotnet build src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Serve
 
 Run the same `--no-build --no-restore` command from that checkout with a separate artifact directory. `HEAD_REPO` is the absolute path to the prototype checkout. The persisted import has the same compile-item behavior as the fixed-path session import used for the recorded run.
 
-## Crank handoff: prepared, not executed
+## Crank execution: local pilot verified, repeat matrix in progress
+
+Pinned controller/agent/wrk-wrapper jobs have now run the actual published POC on its original net12 runtime. A short baseline changing/ignored feasibility run completed 178344 requests at 35653.49 requests/second, with positive latency percentiles, server/runtime counters, zero bad responses and zero socket errors. This is a five-second pilot, **not comparative outcome evidence**.
+
+[Executable/source identities](crank-local/identities.json) and [all early attempt logs/configs/results](crank-local/pilots-and-initial-timeouts.tar.gz) are preserved. Early failures include the agent's inability to shallow-clone a commit as a branch, stale wrapper source-cache/project metadata, and a runner parser failure after the real successful pilot. The first full-duration matrix stopped after 16 timeout errors on its default-off case; that attempt remains included, not hidden.
+
+The next fixed-settings primary matrix uses 16 connections / 2 wrk threads / explicit 10-second timeout / 15-second warmup / 30-second measurement, stable/changing x ignore/read x baseline/off/on, five rotating interleaved repetitions per case. It is running separately. Both processes share this two-core container; this cannot establish isolated-server capacity or small controlled performance gains.
+
+The official wrk 4.2.0 commit `a211dd5a7050b1f9e8a9870b95513060e72ac4a0` was built locally with `make -j2` and frozen at the SHA-256 in the identities file. It is cached at `$TMPDIR/.crank/wrk-linux-amd64`; agent/application/load all use the same short `/tmp/lhp-7a143fff` temporary root, avoiding EventPipe Unix-socket path limits. The pinned wrapper is prepublished and uploaded too, avoiding the agent's unsupported shallow clone of a commit SHA and stale source-key cache.
 
 Workload source: `8065742caba07399236ab62a5bc9db7c1424696e`. The workload/configuration are unchanged, but **republish the current HTTP/1.1-only Core** rather than reusing the old prototype payload or its DLL hash. [Configuration](../lazy-headers.crank.yml), [Lua workload](../lazy-headers.wrk.lua), and [application](../../samples/LazyHeadersApp) are included. The imported wrk job and its source are pinned to Crank `0d35cad5102892b091d9a88a52ea1f7a91bb1381`.
 
