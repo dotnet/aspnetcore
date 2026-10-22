@@ -151,10 +151,12 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
     }
 
-    [Fact]
-    public void CanArriveAtRoutableLayoutPage()
+    [Theory]
+    [InlineData("routable-layout")]
+    [InlineData("custom-routable-layout")]
+    public void CanArriveAtRoutableLayoutPage(string route)
     {
-        SetUrlViaPushState("/routable-layout");
+        SetUrlViaPushState($"/{route}");
 
         var app = Browser.MountTestComponent<TestRouter>();
 
@@ -162,10 +164,12 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal(1, () => app.FindElements(By.CssSelector(".routable-layout > h1")).Count);
     }
 
-    [Fact]
-    public void CanNavigateFromChildToRoutableLayoutPage()
+    [Theory]
+    [InlineData("routable-layout")]
+    [InlineData("custom-routable-layout")]
+    public void CanNavigateFromChildToRoutableLayoutPage(string route)
     {
-        SetUrlViaPushState("/routable-layout/child");
+        SetUrlViaPushState($"/{route}/child");
 
         var app = Browser.MountTestComponent<TestRouter>();
         Browser.Equal("Child page", () => app.FindElement(By.Id("test-info")).Text);

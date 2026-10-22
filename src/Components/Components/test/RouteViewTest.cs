@@ -262,6 +262,101 @@ public class RouteViewTest
         Assert.Empty(_renderer.HandledExceptions);
     }
 
+    [Fact]
+    public async Task RecreatesCustomLayoutWhenItBecomesRoutedPage()
+    {
+        var parentRoute = new RouteData(typeof(CustomRoutableLayout), new Dictionary<string, object>());
+        var childRoute = new RouteData(typeof(ComponentWithCustomRoutableLayout), new Dictionary<string, object>());
+
+        await SetRouteAsync(childRoute);
+
+        var layoutFrame = _renderer.Batches.Single().GetComponentFrames<CustomRoutableLayout>().Single();
+        var outerLayoutId = _renderer.Batches.Single().GetComponentFrames<TestLayout>().Single().ComponentId;
+        Assert.NotNull(((CustomRoutableLayout)layoutFrame.Component).Body);
+
+        await SetRouteAsync(parentRoute);
+
+        var pageFrame = _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
+            .Single(frame => frame.ComponentType == typeof(CustomRoutableLayout));
+        Assert.NotEqual(layoutFrame.ComponentId, pageFrame.ComponentId);
+        Assert.Collection(
+            _renderer.GetCurrentRenderTreeFrames(pageFrame.ComponentId).AsEnumerable(),
+            frame => AssertFrame.Region(frame, subtreeLength: 2),
+            frame => AssertFrame.Text(frame, "Default body", sequence: 0));
+
+        await SetRouteAsync(childRoute);
+
+        var returnedLayoutFrame = _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
+            .Single(frame => frame.ComponentType == typeof(CustomRoutableLayout));
+        Assert.NotEqual(pageFrame.ComponentId, returnedLayoutFrame.ComponentId);
+        Assert.NotNull(((CustomRoutableLayout)returnedLayoutFrame.Component).Body);
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task PreservesCustomLayoutConstructorInitializedBodyOnDirectArrival()
+    {
+        await SetRouteAsync(new RouteData(typeof(CustomRoutableLayout), new Dictionary<string, object>()));
+
+        var pageFrame = _renderer.Batches.Single().GetComponentFrames<CustomRoutableLayout>().Single();
+        Assert.Collection(
+            _renderer.GetCurrentRenderTreeFrames(pageFrame.ComponentId).AsEnumerable(),
+            frame => AssertFrame.Region(frame, subtreeLength: 2),
+            frame => AssertFrame.Text(frame, "Default body", sequence: 0));
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
+    [Theory]
+    [InlineData(nameof(LayoutComponentBase.Body))]
+    [InlineData("body")]
+    public async Task RestoresCustomLayoutDefaultWhenExplicitBodyIsOmitted(string parameterName)
+    {
+        RenderFragment body = builder => builder.AddContent(0, "Explicit body");
+        await SetRouteAsync(new RouteData(typeof(CustomRoutableLayout), new Dictionary<string, object>
+        {
+            [parameterName] = body,
+        }));
+
+        var pageFrame = _renderer.Batches.Single().GetComponentFrames<CustomRoutableLayout>().Single();
+        var outerLayoutId = _renderer.Batches.Single().GetComponentFrames<TestLayout>().Single().ComponentId;
+        Assert.Same(body, ((CustomRoutableLayout)pageFrame.Component).Body);
+
+        await SetRouteAsync(new RouteData(typeof(CustomRoutableLayout), new Dictionary<string, object>()));
+
+        var newPageFrame = _renderer.GetCurrentRenderTreeFrames(outerLayoutId).AsEnumerable()
+            .Single(frame => frame.ComponentType == typeof(CustomRoutableLayout));
+        Assert.NotEqual(pageFrame.ComponentId, newPageFrame.ComponentId);
+        Assert.Collection(
+            _renderer.GetCurrentRenderTreeFrames(newPageFrame.ComponentId).AsEnumerable(),
+            frame => AssertFrame.Region(frame, subtreeLength: 2),
+            frame => AssertFrame.Text(frame, "Default body", sequence: 0));
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task PreservesPageInstanceWhenRouteParametersChange()
+    {
+        await SetRouteAsync(new RouteData(typeof(ComponentWithoutLayout), new Dictionary<string, object>
+        {
+            [nameof(ComponentWithoutLayout.Message)] = "First",
+        }));
+        var pageFrame = _renderer.Batches.Single().GetComponentFrames<ComponentWithoutLayout>().Single();
+        var layoutViewId = _renderer.Batches.Single().GetComponentFrames<LayoutView>().Single().ComponentId;
+
+        await SetRouteAsync(new RouteData(typeof(ComponentWithoutLayout), new Dictionary<string, object>
+        {
+            [nameof(ComponentWithoutLayout.Message)] = "Second",
+        }));
+
+        var newPageFrame = _renderer.GetCurrentRenderTreeFrames(layoutViewId).AsEnumerable()
+            .Single(frame => frame.ComponentType == typeof(ComponentWithoutLayout));
+        Assert.Equal(pageFrame.ComponentId, newPageFrame.ComponentId);
+        Assert.Collection(
+            _renderer.GetCurrentRenderTreeFrames(newPageFrame.ComponentId).AsEnumerable(),
+            frame => AssertFrame.Text(frame, "Hello from the page with message 'Second'", sequence: 0));
+        Assert.Empty(_renderer.HandledExceptions);
+    }
+
     private Task SetRouteAsync(RouteData routeData) => _renderer.Dispatcher.InvokeAsync(() =>
         _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
         {
@@ -290,6 +385,31 @@ public class RouteViewTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.AddContent(0, Body);
+        }
+    }
+
+    [Layout(typeof(TestLayout))]
+    private class CustomRoutableLayout : ComponentBase
+    {
+        public CustomRoutableLayout()
+        {
+            Body = builder => builder.AddContent(0, "Default body");
+        }
+
+        [Parameter] public RenderFragment Body { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, Body);
+        }
+    }
+
+    [Layout(typeof(CustomRoutableLayout))]
+    private class ComponentWithCustomRoutableLayout : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, "Child page");
         }
     }
 

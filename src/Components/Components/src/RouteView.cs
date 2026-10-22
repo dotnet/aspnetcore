@@ -21,7 +21,6 @@ public class RouteView : IComponent
     private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
     private static readonly object _routePageWithBodyKey = new();
     private static readonly object _routePageWithoutBodyKey = new();
-
     static RouteView()
     {
         if (HotReloadManager.IsSupported)
@@ -75,22 +74,23 @@ public class RouteView : IComponent
     [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
+        // An old layout can replay this fragment after RouteData changes, so capture its matching route.
+        var routeData = RouteData;
         var pageLayoutType = _layoutAttributeCache
-            .GetOrAdd(RouteData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
+            .GetOrAdd(routeData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
             ?? DefaultLayout;
 
         builder.OpenComponent<LayoutView>(0);
         builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)RenderPageWithParameters);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)(contentBuilder => RenderPageWithParameters(contentBuilder, routeData)));
         builder.CloseComponent();
     }
 
-    private void RenderPageWithParameters(RenderTreeBuilder builder)
+    private static void RenderPageWithParameters(RenderTreeBuilder builder, RouteData routeData)
     {
-        builder.OpenComponent(0, RouteData.PageType);
+        builder.OpenComponent(0, routeData.PageType);
         var bodyParameterSupplied = false;
-
-        foreach (var kvp in RouteData.RouteValues)
+         foreach (var kvp in routeData.RouteValues)
         {
             builder.AddComponentParameter(1, kvp.Key, kvp.Value);
             if (string.Equals(kvp.Key, nameof(LayoutComponentBase.Body), StringComparison.OrdinalIgnoreCase))
@@ -99,10 +99,8 @@ public class RouteView : IComponent
             }
         }
 
-        if (typeof(LayoutComponentBase).IsAssignableFrom(RouteData.PageType))
-        {
-            builder.SetKey(bodyParameterSupplied ? _routePageWithBodyKey : _routePageWithoutBodyKey);
-        }
+        // Layouts need not inherit LayoutComponentBase, so every routed page needs a distinct identity.
+        builder.SetKey(bodyParameterSupplied ? _routePageWithBodyKey : _routePageWithoutBodyKey);
 
         builder.CloseComponent();
     }
