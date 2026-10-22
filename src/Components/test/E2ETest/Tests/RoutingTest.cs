@@ -1594,7 +1594,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("With query parameters (none)")).Click();
 
-        Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+        Browser.Equal("Hello Abc .", () => app.FindElement(By.Id("test-info")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
