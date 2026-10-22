@@ -1,6 +1,6 @@
 # Lazy HTTP/1.1 request-header values
 
-Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962) and [draft #69963](https://github.com/dotnet/aspnetcore/pull/69963), not a shipping recommendation. **Current implementation covers ordinary known and unknown header values, not just User-Agent. The generalized 60-run primary Crank comparison is complete: unread allocation rate falls, but 324 wrk-reported timeouts and shared-host uncertainty prevent a clean throughput conclusion.** Supplemental load cases are pending. The prior User-Agent-only comparisons remain [historical evidence](historical-user-agent.md), not generalized results.
+Discussion POC for [#69962](https://github.com/dotnet/aspnetcore/issues/69962) and [draft #69963](https://github.com/dotnet/aspnetcore/pull/69963), not a shipping recommendation. **Current implementation covers ordinary known and unknown header values, not just User-Agent. The generalized 60-run primary and 24-run supplemental Crank comparisons are complete and preserved: unread allocation rate falls, but errors, shared-host uncertainty and read/default-off costs prevent an overall throughput recommendation.** The prior User-Agent-only comparisons remain [historical evidence](historical-user-agent.md), not generalized results.
 
 ## Hypothesis and alternatives
 
@@ -61,7 +61,7 @@ dotnet run --no-restore -c Release --project tools/CodeGenerator/CodeGenerator.c
   shared/TransportMultiplexedConnection.Generated.cs shared/TransportConnection.Generated.cs
 ```
 
-The workload uses fixed-length stable/changing Accept, Accept-Language, User-Agent, X-Example and X-Request-Nonce, with Host/framing fixed. Access modes are ignore/read-one/read-all/enumerate. Supplemental modes duplicate a known or unknown header or exhaust the arena budget. The application exposes observed length and character-sum checksum; socket smoke checks must assert these plus exact response bytes. Wrk bad/socket counts alone do not assert response bodies.
+The workload uses fixed-length stable/changing Accept, Accept-Language, User-Agent, X-Example and X-Request-Nonce, with Host/framing fixed. Access modes are ignore/read-one/read-all/enumerate; **read-all reads those five fixture fields**, whereas enumerate reads every header. Supplemental modes duplicate a known or unknown header or add a 4000-byte X-Budget (see its reuse-dependent limitation below). The application exposes observed length and character-sum checksum; socket smoke checks must assert these plus exact response bytes. Wrk bad/socket counts alone do not assert response bodies.
 
 The completed primary comparison uses five interleaved repetitions of stable/changing x ignore/read-all x baseline/head-off/head-on, with identical application/dependencies/runtime and only the Core DLL replaced for baseline. Local shared-client/server limits, all errors, full run order and timestamped allocation/GC/CPU/working-set samples are retained. Allocation rate in B/s is not bytes/request; no maximum-rate/total-request division is valid.
 
@@ -103,6 +103,27 @@ Allocation/GC/CPU/working-set means use an approximate trimmed interior from 27 
 
 Server CPU medians are about 111-113 core-percent, client 48-51, with roughly 73-75 MB server working set on this shared two-processor x64 host. No client/server bottleneck independence, isolated capacity or cold/low-reuse memory outcome is established. The retained arena/metadata costs and experimental 4096-byte budget remain discussion items.
 
+## Completed generalized supplemental diagnostics
+
+**24/24 predetermined runs completed, 26,054,458 measured requests, zero bad responses, nine wrk-reported timeouts across three runs.** Baseline/off/on timeouts are **0/2/7**: on/ignore/duplicate-unknown has two, off/read-all/budget two, and on/read-all/budget five. All other supplemental runs have zero reported errors. These remain separate from primary distributions: **one observation per variant/case, no repeat spread or significance claim**. The archive retains 75,380 timestamped measurements and 24 selected server allocation samples per run.
+
+[Raw results, commands, identities and reproduction assets](generalized/supplemental-raw.tar.gz), [per-run metrics](generalized/supplemental-derived-runs.csv), [summary](generalized/supplemental-derived-summary.json), [fixed plan](generalized/supplemental-plan.json), [inputs/hashes](generalized/supplemental-inputs.json), [completion record](generalized/supplemental-completed.json). [SHA-256 manifest for all generalized artifacts](generalized/artifact-sha256.txt).
+
+| Access / header mode | RPS base / off / on | Allocation MB/s base / off / on |
+| --- | ---: | ---: |
+| Read-one / changing | 36540 / 36107 / 38309 | 25.520 / 26.416 / 16.049 |
+| Enumerate / changing | 37735 / 38294 / 36730 | 26.853 / 27.613 / 26.482 |
+| Ignore / duplicate-known | 38633 / 37756 / 37280 | 23.547 / 22.653 / 17.089 |
+| Read-all / duplicate-known | 38440 / 36014 / 38170 | 24.788 / 22.832 / 24.367 |
+| Ignore / duplicate-unknown | 37016 / 37358 / 37409 | 20.594 / 20.803 / 18.650 |
+| Read-all / duplicate-unknown | 37270 / 36433 / 36561 | 22.192 / 21.450 / 21.501 |
+| Ignore / budget | 32642 / 31941 / 31029 | 278.097 / 269.738 / 257.475 |
+| Read-all / budget | 32469 / 32605 / 34122 | 278.887 / 280.054 / 17.017 |
+
+Duplicate and budget modes use **stable**, not changing, primary values. Duplicate ingestion forces the duplicated field eager; other unread fields can still defer. Reading one leaves other fields unread; enumerating materializes them. These diagnostic observations do not establish performance acceptance or negate the primary read/default-off concerns.
+
+**The budget case is not uniformly steady-state fallback.** Its five primary values total 143 bytes; adding 4000 exceeds 4096 when all five are copied, as in ignore. In read-all, decoded stable known values can reuse strings after warmup without consuming the copy budget. The two unknown primary values total 50 bytes, leaving room for the unread 4000-byte X-Budget to defer. Read-all does not read X-Budget, so its much lower allocation rate is not evidence of cheap eager fallback. This exact frozen fixture/result is retained and disclosed, not silently changed or replaced. Exact-budget/fallback correctness is separately exercised in regression and socket tests.
+
 ## Local Crank reproduction
 
 Frozen generalized shipping/workload source: **`96def7878b6e2ff7fb5f1afd73e54b4be35c103d`**. Baseline shipping source: **`2d105dd1fd119edff9a797a1b1aeca6d771c6134`**. Head Core SHA-256: `f486ecd632bb37ec9f4b7aa820493a2872e390d45054674acc4cfb3ca466496e`. [Complete per-file manifests](generalized/payload-manifests.json) prove that only Core DLL differs; identical head-side PDBs are retained but are not baseline debugging symbols. [Exact matched application/dependency binaries](generalized/matched-payloads.tar.gz) include repository license/notices. The original runtime remains a separate prerequisite.
@@ -132,6 +153,17 @@ python "$REPO/src/Servers/Kestrel/perf/LazyHeaders/generalized/run.py" \
   --controller "$CRANK_DLL" --repo "$REPO" --head "$HEAD_PUBLISH" \
   --base "$BASE_PUBLISH" --runtime "$POC_DOTNET_ROOT" --wrapper "$WRAPPER" \
   --source "$SOURCE" --output "$PRIMARY_OUTPUT" --record-errors
+python "$REPO/src/Servers/Kestrel/perf/LazyHeaders/generalized/run.py" \
+  --controller "$CRANK_DLL" --repo "$REPO" --head "$HEAD_PUBLISH" \
+  --base "$BASE_PUBLISH" --runtime "$POC_DOTNET_ROOT" --wrapper "$WRAPPER" \
+  --source "$SOURCE" --output "$SUPPLEMENTAL_OUTPUT" --record-errors --repetitions 1 \
+  --case read-one:changing --case enumerate:changing \
+  --case ignore:duplicate-known --case read-all:duplicate-known \
+  --case ignore:duplicate-unknown --case read-all:duplicate-unknown \
+  --case ignore:budget --case read-all:budget
+python "$REPO/src/Servers/Kestrel/perf/LazyHeaders/generalized/summarize.py" "$PRIMARY_OUTPUT"
+python "$REPO/src/Servers/Kestrel/perf/LazyHeaders/generalized/summarize.py" \
+  "$SUPPLEMENTAL_OUTPUT" --minimum-repetitions 1
 ```
 
 The runner fixes 16 connections, two threads, 10-second timeout, 15-second warmup, 30-second measurement, pipeline one and five interleaved repetitions. It renders/asserts legacy `--application.source.localFolder` and `--load.source.localFolder` payloads, clears both `--load.source.project ""` and `--load.project ""`, and supplies **both** `pocDotnetRoot` and `wrkWrapperPublish`. Using plural `--application.sources.default.localFolder` can silently select the wrong source. Same short TMPDIR for agent/controller/application/load is required for EventPipe socket discovery.
