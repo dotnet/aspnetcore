@@ -1,0 +1,16 @@
+@page "/routable-layout"
+@layout RouterTestLayout
+@inherits LayoutComponentBase
+
+<section class="routable-layout">
+    <h1>Routable layout</h1>
+    <a id="routable-layout-parent" href="routable-layout">Parent</a>
+    <a id="routable-layout-child" href="routable-layout/child">Child</a>
+
+    @if (Body is null)
+    {
+        <p id="test-info">Parent page</p>
+    }
+
+    @Body
+</section>
