@@ -4,6 +4,8 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Security.Authentication.ExtendedProtection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -615,6 +617,33 @@ public class IISMiddlewareTests
         Assert.True(nextInvoked);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ForwardedClientCertificatePreservesOriginalChannelBinding(bool hasOriginalFeature)
+    {
+        var expectedToken = new byte[] { 0x01, 0x23, 0x45, 0x67 };
+        var originalFeature = hasOriginalFeature ? new FakeTlsConnectionFeature { ChannelBindingToken = expectedToken } : null;
+        var context = new DefaultHttpContext();
+        context.Features.Set<ITlsConnectionFeature>(originalFeature);
+        context.Request.Headers["MS-ASPNETCORE-TOKEN"] = "TestToken";
+        context.Request.Headers["MS-ASPNETCORE-CLIENTCERT"] = "forwarded-certificate";
+
+        ITlsConnectionFeature forwardedFeature = null;
+        var middleware = CreateMiddleware(ctx =>
+        {
+            forwardedFeature = ctx.Features.Get<ITlsConnectionFeature>();
+            return Task.CompletedTask;
+        });
+
+        await middleware.Invoke(context);
+
+        Assert.NotNull(forwardedFeature);
+        Assert.NotSame(originalFeature, forwardedFeature);
+        Assert.Equal(hasOriginalFeature, forwardedFeature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var token));
+        Assert.Equal(hasOriginalFeature ? expectedToken : Array.Empty<byte>(), token.ToArray());
+    }
+
     private static DefaultHttpContext CreateContextWithFeature(IHttpMaxRequestBodySizeFeature feature)
     {
         var context = new DefaultHttpContext();
@@ -640,6 +669,21 @@ public class IISMiddlewareTests
         public bool IsReadOnly { get; init; }
 
         public long? MaxRequestBodySize { get; set; }
+    }
+
+    private sealed class FakeTlsConnectionFeature : ITlsConnectionFeature
+    {
+        public byte[] ChannelBindingToken { get; init; }
+
+        public X509Certificate2 ClientCertificate { get; set; }
+
+        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken) => Task.FromResult(ClientCertificate);
+
+        public bool TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+        {
+            channelBindingToken = ChannelBindingToken;
+            return true;
+        }
     }
 
     private sealed class TestHostApplicationLifetime : IHostApplicationLifetime
