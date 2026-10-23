@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// &lt;/MessageList&gt;
 /// </code>
 /// </example>
-public class BlockRenderer<TBlock> : IComponent, IDisposable where TBlock : ContentBlock
+public sealed class BlockRenderer<TBlock> : IComponent, IDisposable where TBlock : ContentBlock
 {
     private RenderHandle _renderHandle;
     private bool _initialized;
@@ -89,6 +89,5 @@ public class BlockRenderer<TBlock> : IComponent, IDisposable where TBlock : Cont
             ListContext?.RemoveRegistration(_registration);
         }
 
-        GC.SuppressFinalize(this);
     }
 }
