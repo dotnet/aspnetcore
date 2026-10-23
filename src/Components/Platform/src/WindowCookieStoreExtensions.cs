@@ -14,6 +14,6 @@ public static class WindowCookieStoreExtensions
         /// Gets the cookie store of the current page.
         /// </summary>
         public CookieStore CookieStore
-            => window.GetOrAddFeature(static jsRuntime => new CookieStore(jsRuntime));
+            => window.GetOrAddFeature(static context => new CookieStore(context.JSRuntime));
     }
 }
