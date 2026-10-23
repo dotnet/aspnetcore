@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -806,6 +807,34 @@ public class ResponseCachingMiddlewareTests
     }
 
     [Fact]
+    public async Task FinalizeCacheBody_DoNotCache_IfRequestAborted()
+    {
+        var cache = new TestResponseCache();
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
+        var context = TestUtils.CreateTestContext();
+
+        context.ShouldCacheResponse = true;
+        middleware.ShimResponseStream(context);
+        await context.HttpContext.Response.WriteAsync(new string('0', 10));
+
+        context.CachedResponse = new CachedResponse
+        {
+            Headers = new HeaderDictionary()
+        };
+        context.BaseKey = "BaseKey";
+        context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+        context.HttpContext.RequestAborted = new CancellationToken(canceled: true);
+
+        middleware.FinalizeCacheBody(context);
+
+        Assert.Equal(0, cache.SetCount);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.ResponseNotCached);
+    }
+
+    [Fact]
     public async Task FinalizeCacheBody_DoNotCache_IfShouldCacheResponseFalse()
     {
         var cache = new TestResponseCache();
@@ -901,6 +930,52 @@ public class ResponseCachingMiddlewareTests
 
         Assert.Equal(!rejectVaryRules, cache.Get(baseKey) is CachedVaryByRules);
         Assert.Equal(rejectVaryRules, cache.Get(storageVaryKey) is CachedResponse);
+    }
+
+    [Fact]
+    public async Task Invoke_DoesNotServeAbortedResponseToSubsequentRequests()
+    {
+        var responseCounter = 0;
+        var cache = new TestResponseCache();
+        var middleware = TestUtils.CreateTestMiddleware(
+            next: async context =>
+            {
+                responseCounter++;
+                await context.Response.WriteAsync("Hello" + responseCounter);
+
+                if (responseCounter == 1)
+                {
+                    context.RequestAborted = new CancellationToken(canceled: true);
+                }
+            },
+            cache: cache,
+            keyProvider: new TestResponseCachingKeyProvider("BaseKey"),
+            policyProvider: new TestResponseCachingPolicyProvider
+            {
+                AttemptResponseCachingValue = true,
+                AllowCacheLookupValue = true,
+                AllowCacheStorageValue = true
+            });
+
+        var memoryStream1 = new MemoryStream();
+        var context1 = TestUtils.CreateTestContext();
+        context1.HttpContext.Request.Method = HttpMethods.Get;
+        context1.HttpContext.Response.Body = memoryStream1;
+
+        await middleware.Invoke(context1.HttpContext);
+
+        Assert.Equal(0, cache.SetCount);
+
+        var memoryStream2 = new MemoryStream();
+        var context2 = TestUtils.CreateTestContext();
+        context2.HttpContext.Request.Method = HttpMethods.Get;
+        context2.HttpContext.Response.Body = memoryStream2;
+
+        await middleware.Invoke(context2.HttpContext);
+
+        Assert.Equal(2, responseCounter);
+        Assert.Equal("Hello1", Encoding.UTF8.GetString(memoryStream1.ToArray()));
+        Assert.Equal("Hello2", Encoding.UTF8.GetString(memoryStream2.ToArray()));
     }
 
     [Fact]
