@@ -12,7 +12,8 @@ import { RootComponentManager } from './RootComponentManager';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
-import { LogicalElement } from '../Rendering/LogicalElements';
+import { LogicalElement, toLogicalRootCommentElement } from '../Rendering/LogicalElements';
+import { releaseRootComponentElementReferences, retainRootComponentElementReferences } from '../Rendering/ElementReferenceCapture';
 import { JSEventRegistry } from './JSEventRegistry';
 
 type RootComponentOperationBatch = {
@@ -51,8 +52,6 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   private readonly _rootComponentsBySsrComponentId = new Map<number, RootComponentInfo>();
 
   private readonly _seenDescriptors = new Set<ComponentDescriptor>();
-
-  private readonly _pendingOperationBatches: { [batchId: number]: RootComponentOperationBatch } = {};
 
   private _nextOperationBatchId = 1;
 
@@ -335,7 +334,6 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         batchId: this._nextOperationBatchId++,
         operations,
       };
-      this._pendingOperationBatches[batch.batchId] = batch;
       const batchJson = JSON.stringify(batch);
 
       if (rendererId === WebRendererId.Server) {
@@ -472,6 +470,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
       // This component was removed from the document and we've assigned a renderer ID,
       // so we'll dispose it in .NET.
+      retainRootComponentElementReferences(component.ssrComponentId, toLogicalRootCommentElement(component.descriptor));
       component.hasPendingRemoveOperation = true;
       return { type: 'remove', ssrComponentId: component.ssrComponentId };
     }
@@ -486,20 +485,20 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     return component.descriptor;
   }
 
-  public onAfterUpdateRootComponents(batchId: number): void {
-    const batch = this._pendingOperationBatches[batchId];
-    delete this._pendingOperationBatches[batchId];
+  public onAfterDisposeRootComponent(ssrComponentId: number): void {
+    releaseRootComponentElementReferences(ssrComponentId);
+    const component = this._rootComponentsBySsrComponentId.get(ssrComponentId);
+    if (component) {
+      // Disposal completion is authoritative even if a removal acknowledgement was lost during disconnect.
+      this.unregisterComponent(component);
+    }
+  }
 
-    for (const operation of batch.operations) {
-      switch (operation.type) {
-        case 'remove': {
-          // We can stop tracking this component now that .NET has acknowledged its removal.
-          const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
-          if (component) {
-            this.unregisterComponent(component);
-          }
-          break;
-        }
+  public onRendererDisposed(browserRendererId: number): void {
+    for (const component of this._rootComponentsBySsrComponentId.values()) {
+      if (component.assignedRendererId === browserRendererId) {
+        releaseRootComponentElementReferences(component.ssrComponentId);
+        this.unregisterComponent(component);
       }
     }
   }
@@ -507,6 +506,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   public onComponentReload(browserRendererId: number): void {
     for (const [_, value] of this._rootComponentsBySsrComponentId.entries()) {
       if (value.assignedRendererId === browserRendererId) {
+        if (value.hasPendingRemoveOperation) {
+          releaseRootComponentElementReferences(value.ssrComponentId);
+          this.unregisterComponent(value);
+          continue;
+        }
+
         value.assignedRendererId = undefined;
         markAsInteractiveRootComponentElement(value.descriptor.start as unknown as LogicalElement, false);
         setClearContentOnRootComponentRerender(value.descriptor.start as unknown as LogicalElement);
