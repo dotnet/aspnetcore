@@ -129,10 +129,7 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
 
         if ((_mismatchLoggedIdentifiers ??= new()).Add(identifier))
         {
-            var logLevel = outletRenderMode is null && identifier is SectionIdentifier { IsPageTitle: true }
-                ? LogLevel.Debug
-                : LogLevel.Warning;
-            Log.SectionRenderModeMismatch(_logger, logLevel, DescribeIdentifier(identifier), DescribeRenderMode(outletRenderMode), DescribeRenderMode(contentRenderMode));
+            Log.SectionRenderModeMismatch(_logger, DescribeIdentifier(identifier), DescribeRenderMode(outletRenderMode), DescribeRenderMode(contentRenderMode));
         }
     }
 
@@ -177,16 +174,9 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         }
     }
 
-    internal sealed class SectionIdentifier(string name, bool isPageTitle)
-    {
-        internal bool IsPageTitle { get; } = isPageTitle;
-
-        public override string ToString() => name;
-    }
-
     private static partial class Log
     {
-        [LoggerMessage(EventId = 1, Message = "The section with ID '{SectionId}' has its SectionOutlet in render mode '{OutletRenderMode}' and its SectionContent in render mode '{ContentRenderMode}'. Sections cannot connect across render mode boundaries. Prerendered content may appear correctly, but subsequent interactive updates cannot cross the render mode boundary. Use the same render mode for the outlet and content if interactive updates are required. If only prerendered content is required, render both the outlet and content in the static component tree.", EventName = "SectionRenderModeMismatch")]
-        public static partial void SectionRenderModeMismatch(ILogger logger, LogLevel level, string sectionId, string outletRenderMode, string contentRenderMode);
+        [LoggerMessage(1, LogLevel.Warning, "The section with ID '{SectionId}' has its SectionOutlet in render mode '{OutletRenderMode}' and its SectionContent in render mode '{ContentRenderMode}'. Sections cannot connect across render mode boundaries, so the outlet will not display this content once the components become interactive.", EventName = "SectionRenderModeMismatch")]
+        public static partial void SectionRenderModeMismatch(ILogger logger, string sectionId, string outletRenderMode, string contentRenderMode);
     }
 }
