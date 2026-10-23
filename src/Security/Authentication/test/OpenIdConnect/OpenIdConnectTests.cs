@@ -291,6 +291,66 @@ public class OpenIdConnectTests
         Assert.Equal("http://www.example.com/specific_redirect_uri", properties.RedirectUri, true);
     }
 
+    [Theory]
+    // A leading run of '/' and '\' is collapsed so the post-logout target cannot resolve as a scheme-relative authority.
+    [InlineData("//attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("///attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("/\\attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("\\attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("////", "/")]
+    // Positive controls: only a leading run collapses, and absolute URIs are left alone.
+    [InlineData("/postlogout", "/postlogout")]
+    [InlineData("/a//b/", "/a//b/")]
+    [InlineData("https://example.com/postlogout", "https://example.com/postlogout")]
+    public async Task SignOutCallbackNormalizesLeadingSlashesInRedirectUri(string redirectUri, string expected)
+    {
+        var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
+        var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("OIDCTest"));
+        var server = TestServerBuilder.CreateServer(o =>
+        {
+            o.Authority = TestServerBuilder.DefaultAuthority;
+            o.ClientId = "Test Id";
+            o.Configuration = configuration;
+            o.StateDataFormat = stateFormat;
+        });
+
+        var state = stateFormat.Protect(new AuthenticationProperties { RedirectUri = redirectUri });
+        var transaction = await server.SendAsync("https://example.com/signout-callback-oidc?state=" + UrlEncoder.Default.Encode(state));
+
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        Assert.Equal(expected, transaction.Response.Headers.GetValues("Location").First());
+    }
+
+    [Fact]
+    public async Task SignOutCallbackNormalizesRedirectUriBeforeEventObservesIt()
+    {
+        // A SignedOutCallbackRedirect handler that takes over the response never reaches the handler's own
+        // Response.Redirect, so this only passes when the value is normalized before the event runs.
+        string observedRedirectUri = null;
+        var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
+        var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("OIDCTest"));
+        var server = TestServerBuilder.CreateServer(o =>
+        {
+            o.Authority = TestServerBuilder.DefaultAuthority;
+            o.ClientId = "Test Id";
+            o.Configuration = configuration;
+            o.StateDataFormat = stateFormat;
+            o.Events = new OpenIdConnectEvents
+            {
+                OnSignedOutCallbackRedirect = context =>
+                {
+                    observedRedirectUri = context.Properties.RedirectUri;
+                    return Task.FromResult(0);
+                }
+            };
+        });
+
+        var state = stateFormat.Protect(new AuthenticationProperties { RedirectUri = "//attacker.example/landing/" });
+        await server.SendAsync("https://example.com/signout-callback-oidc?state=" + UrlEncoder.Default.Encode(state));
+
+        Assert.Equal("/attacker.example/landing/", observedRedirectUri);
+    }
+
     [Fact]
     public async Task SignOut_WithMissingConfig_Throws()
     {
