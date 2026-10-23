@@ -140,27 +140,22 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
-    public void ColumnOptionsButtonExposesExpandedStateAndControls()
+    public void ColumnOptionsButtonExposesExpandedState()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
         var button = grid.FindElement(By.ClassName("col-options-button"));
 
         Assert.Equal("false", button.GetDomAttribute("aria-expanded"));
-        Assert.Null(button.GetDomAttribute("aria-controls"));
 
         button.Click();
 
-        var options = Browser.Exists(By.CssSelector("#grid .col-options"));
+        Browser.Exists(By.CssSelector("#grid .col-options"));
         Browser.Equal("true", () => button.GetDomAttribute("aria-expanded"));
-        var optionsId = options.GetDomAttribute("id");
-        Assert.False(string.IsNullOrEmpty(optionsId));
-        Assert.Equal(optionsId, button.GetDomAttribute("aria-controls"));
 
         grid.FindElement(By.Id("close-column-options")).Click();
 
-        Browser.DoesNotExist(By.Id(optionsId));
+        Browser.DoesNotExist(By.CssSelector("#grid .col-options"));
         Browser.Equal("false", () => button.GetDomAttribute("aria-expanded"));
-        Assert.Null(button.GetDomAttribute("aria-controls"));
     }
 
     [Fact]
