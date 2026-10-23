@@ -171,7 +171,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     {
         Browser.MountTestComponent<ToggleEventComponent>();
 
-        var detailsToggle = Browser.Exists(By.Id("details-toggle"));
+        var detailsToggle = Browser.Exists(By.CssSelector("#details-toggle > summary"));
 
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
@@ -180,7 +180,11 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var actions = new Actions(Browser).Click(detailsToggle);
 
         actions.Perform();
-        Browser.Equal("ontoggle,", () => output.Text);
+        Browser.Equal("ToggleEventArgs:closed->open,", () => output.Text);
+
+        actions = new Actions(Browser).Click(detailsToggle);
+        actions.Perform();
+        Browser.Equal("ToggleEventArgs:closed->open,ToggleEventArgs:open->closed,", () => output.Text);
     }
 
     [Fact]
