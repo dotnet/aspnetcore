@@ -818,7 +818,24 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Cancel the navigation using the first navigation lock
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-cancel")).Click();
 
-        // The second navigation lock callback has completed and has thus removed its navigation controls
+        // The first navigation lock callback completed and removed its navigation controls
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // The second navigation lock callback was canceled and removed its navigation controls
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
+
+        // Start another navigation without manually completing the second callback from the previous navigation
+        var relativeUriPostNavigation = "/mysecondtestpath";
+        var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir{relativeUriPostNavigation}";
+        SetUrlViaPushState(relativeUriPostNavigation);
+
+        // Both navigation locks are now blocking the new navigation
+        Browser.Equal($"Blocking '{expectedAbsoluteUriPostNavigation}'", () => Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > span")).Text);
+        Browser.Equal($"Blocking '{expectedAbsoluteUriPostNavigation}'", () => Browser.FindElement(By.CssSelector("#navigation-lock-1 > div.blocking-controls > span")).Text);
+
+        // Cancel the new navigation using the first navigation lock
+        Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-cancel")).Click();
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
         Browser.DoesNotExist(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
 
         // The navigation was canceled and the URI has not changed
@@ -1126,6 +1143,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
+        Browser.Equal("true", () => Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.navigation-lock-ready")).GetDomProperty("value"));
 
         // We have the expected initial URI
         var expectedStartingAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath1";

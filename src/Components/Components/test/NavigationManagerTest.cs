@@ -871,6 +871,40 @@ public class NavigationManagerTest
     }
 
     [Fact]
+    public async Task LocationChangingContext_CancellationToken_IsCanceled_WhenLocationChangingHandlerExceptionEscapes()
+    {
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        var handlerCanceledTcs = new TaskCompletionSource();
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_WaitForCancellation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
+        Assert.StartsWith("To support navigation locks", ex.Message);
+        await handlerCanceledTcs.Task.WaitAsync(Timeout);
+
+        async ValueTask HandleLocationChanging_WaitForCancellation(LocationChangingContext context)
+        {
+            try
+            {
+                await Task.Delay(System.Threading.Timeout.Infinite, context.CancellationToken);
+            }
+            catch (TaskCanceledException ex) when (ex.CancellationToken == context.CancellationToken)
+            {
+                handlerCanceledTcs.SetResult();
+                throw;
+            }
+        }
+
+        static async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException("Thrown from a test handler");
+        }
+    }
+
+    [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {
         // Arrange
@@ -917,6 +951,102 @@ public class NavigationManagerTest
             navigationPreventedTcs.SetResult();
 
             await completeHandlerTcs.Task;
+        }
+    }
+
+    [Fact]
+    public async Task LocationChangingContext_CancellationToken_IsNotCanceled_WhenNavigationSucceeds()
+    {
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        LocationChangingContext currentContext = null;
+        var tokenCanceled = false;
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
+
+        var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
+        var navigation1Result = await navigation1;
+
+        Assert.True(navigation1Result);
+        Assert.False(tokenCanceled);
+        Assert.False(currentContext.CancellationToken.IsCancellationRequested);
+
+        ValueTask HandleLocationChanging(LocationChangingContext context)
+        {
+            currentContext = context;
+            currentContext.CancellationToken.Register(() => tokenCanceled = true);
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task LocationChangingContext_CancellationToken_IsCanceled_WhenNavigationIsPreventedByHandler()
+    {
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        LocationChangingContext currentContext = null;
+        var tokenCanceled = false;
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
+
+        var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
+        var navigation1Result = await navigation1;
+
+        Assert.False(navigation1Result);
+        Assert.True(tokenCanceled);
+        Assert.True(currentContext.CancellationToken.IsCancellationRequested);
+
+        ValueTask HandleLocationChanging(LocationChangingContext context)
+        {
+            currentContext = context;
+            currentContext.CancellationToken.Register(() => tokenCanceled = true);
+            context.PreventNavigation();
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task LocationChangingContext_CancellationToken_IsCanceled_WhenNavigationIsSupersededBySuccessiveNavigation()
+    {
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        var firstHandlerBlockTcs = new TaskCompletionSource();
+        LocationChangingContext firstContext = null;
+        LocationChangingContext secondContext = null;
+        var firstTokenCanceled = false;
+        var secondTokenCanceled = false;
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
+
+        var firstNavigation = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
+
+        var secondNavigation = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir2", null, false);
+
+        firstHandlerBlockTcs.SetResult();
+
+        var firstResult = await firstNavigation;
+        var secondResult = await secondNavigation;
+
+        Assert.False(firstResult);
+        Assert.True(secondResult);
+        Assert.True(firstTokenCanceled);
+        Assert.True(firstContext.CancellationToken.IsCancellationRequested);
+        Assert.False(secondTokenCanceled);
+        Assert.False(secondContext.CancellationToken.IsCancellationRequested);
+
+        async ValueTask HandleLocationChanging(LocationChangingContext context)
+        {
+            if (firstContext == null)
+            {
+                firstContext = context;
+                firstContext.CancellationToken.Register(() => firstTokenCanceled = true);
+                await firstHandlerBlockTcs.Task;
+            }
+            else
+            {
+                secondContext = context;
+                secondContext.CancellationToken.Register(() => secondTokenCanceled = true);
+            }
         }
     }
 
