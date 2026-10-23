@@ -157,7 +157,7 @@ public class SharedFxTests
         }
     }
 
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/69595")]
+    [Fact]
     public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
     {
         // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.

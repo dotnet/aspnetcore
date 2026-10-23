@@ -459,6 +459,54 @@ public class FileBufferingReadStreamTests
     }
 
     [Fact]
+    public async Task FileBufferingReadStream_UsingPooledMemoryStream_RentsLazilyAndGrows()
+    {
+        var inner = MakeStream(10);
+        var rentedSizes = new List<int>();
+        var returnedBuffers = new List<byte[]>();
+        var arrayPool = new Mock<ArrayPool<byte>>();
+        arrayPool.Setup(p => p.Rent(It.IsAny<int>()))
+            .Returns((int size) =>
+            {
+                rentedSizes.Add(size);
+                return new byte[size];
+            });
+        arrayPool.Setup(p => p.Return(It.IsAny<byte[]>(), It.IsAny<bool>()))
+            .Callback((byte[] bytes, bool clear) => returnedBuffers.Add(bytes));
+
+        await using (var stream = new FileBufferingReadStream(inner, 16, bufferLimit: null, GetCurrentDirectory(), arrayPool.Object))
+        {
+            Assert.Empty(rentedSizes);
+
+            var buffer = new byte[4];
+            Assert.Equal(4, await stream.ReadAsync(buffer));
+            Assert.Equal([4], rentedSizes);
+            Assert.Empty(returnedBuffers);
+
+            Assert.Equal(4, await stream.ReadAsync(buffer));
+            Assert.Equal([4, 8], rentedSizes);
+            Assert.Single(returnedBuffers);
+
+            Assert.Equal(2, await stream.ReadAsync(buffer));
+            Assert.Equal([4, 8, 16], rentedSizes);
+            Assert.Equal(2, returnedBuffers.Count);
+        }
+
+        Assert.Equal(3, returnedBuffers.Count);
+    }
+
+    [Fact]
+    public async Task FileBufferingReadStream_UsingPooledMemoryStream_DoesNotRentForEmptyContent()
+    {
+        var inner = MakeStream(0);
+        var arrayPool = new Mock<ArrayPool<byte>>(MockBehavior.Strict);
+
+        await using var stream = new FileBufferingReadStream(inner, 16, bufferLimit: null, GetCurrentDirectory(), arrayPool.Object);
+
+        Assert.Equal(0, await stream.ReadAsync(new byte[4]));
+    }
+
+    [Fact]
     public async Task CopyToAsyncWorks()
     {
         // 4K is the lower bound on buffer sizes

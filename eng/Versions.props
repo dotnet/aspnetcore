@@ -68,9 +68,8 @@
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <!-- Disable XLIFF tasks -->
     <UsingToolXliff>false</UsingToolXliff>
-    <!-- Use the current SDK's nearest pruning data when targeting a newer .NET version. -->
-    <LoadPrunePackageDataFromNearestFramework Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</LoadPrunePackageDataFromNearestFramework>
-    <AllowMissingPrunePackageData Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</AllowMissingPrunePackageData>
+    <!-- Targetingpack support -->
+    <TargetingPackCurrentTargetFramework>$(DefaultNetCoreTargetFramework)</TargetingPackCurrentTargetFramework>
   </PropertyGroup>
 
   <!--
@@ -214,7 +213,7 @@
     <MicrosoftTestingExtensionsTrxReportVersion>2.2.3</MicrosoftTestingExtensionsTrxReportVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
-    <MicrosoftDataSqlClientVersion>7.1.0</MicrosoftDataSqlClientVersion>
+    <MicrosoftDataSqlClientVersion>7.1.1</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
     <MicrosoftOpenApiVersion>[3.11.0,4.0.0)</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiYamlReaderVersion>[3.11.0,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
