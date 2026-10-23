@@ -50,6 +50,23 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
         }
     }
 
+    [Fact]
+    public async Task BlazorWasmStandaloneTemplate_WeatherDoesNotOverflowAtNarrowViewport()
+    {
+        var project = await CreateBuildPublishAsync();
+        var (serveProcess, listeningUri) = project.ServePublishedStandaloneApp(Output);
+        using (serveProcess)
+        {
+            await using var browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
+            var page = await browser.NewPageAsync();
+            await page.SetViewportSizeAsync(320, 800);
+            await page.GotoAsync($"{listeningUri.TrimEnd('/')}/weather");
+            await page.WaitForFunctionAsync("() => document.querySelectorAll('article table>tbody>tr').length === 5");
+            var documentWidth = await page.EvaluateAsync<int>("document.documentElement.scrollWidth");
+            Assert.True(documentWidth <= 320, $"Weather document width was {documentWidth}px at a 320px viewport.");
+        }
+    }
+
     [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
