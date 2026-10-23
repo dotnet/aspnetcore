@@ -120,7 +120,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             }
             catch (NavigationException ex)
             {
-                await EndpointHtmlRenderer.HandleNavigationException(context, ex);
+                // Discard the rendered output: the render tree it points at was abandoned mid-diff.
+                htmlContent = await EndpointHtmlRenderer.HandleNavigationException(context, ex);
                 quiesceTask = Task.CompletedTask;
             }
         }
