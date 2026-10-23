@@ -317,6 +317,7 @@ public class Http2KeepAliveTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69853")]
     public async Task TimeoutExceeded_ConnectionFlowControlUsedUpThenPings_NoGoAway()
     {
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);

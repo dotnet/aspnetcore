@@ -182,6 +182,16 @@
       <_HelixFriendlyNameTargetQueue Condition="$(HelixTargetQueue.Contains('@'))">$(HelixTargetQueue.Substring(1, $([MSBuild]::Subtract($(HelixTargetQueue.LastIndexOf(')')), 1))))</_HelixFriendlyNameTargetQueue>
     </PropertyGroup>
 
+    <ItemGroup>
+      <_HelixTestShard Remove="@(_HelixTestShard)" />
+      <_HelixTestShard Include="$(HelixTestName)" Condition="'@(HelixTestShard)' == ''">
+        <WorkItemName>$(HelixTestName)</WorkItemName>
+      </_HelixTestShard>
+      <_HelixTestShard Include="@(HelixTestShard)" Condition="'@(HelixTestShard)' != ''">
+        <WorkItemName>$(HelixTestName)--%(HelixTestShard.Identity)</WorkItemName>
+      </_HelixTestShard>
+    </ItemGroup>
+
     <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="HelixTargetQueue;TestRunId" />
 
@@ -225,12 +235,13 @@
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
     </ConvertToAbsolutePath>
     <ItemGroup>
-      <HelixWorkItem Include="$(HelixTestName)">
+      <HelixWorkItem Include="%(_HelixTestShard.WorkItemName)">
         <PayloadDirectory>$(PublishAbsoluteDir)</PayloadDirectory>
         <TestAssembly>$(TargetFileName)</TestAssembly>
+        <TestFilter>%(_HelixTestShard.TestFilter)</TestFilter>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <SkipHelixWorkItemBatching Condition="'$(TestDependsOnIIS)' == 'true' OR '$(TestDependsOnPlaywright)' == 'true' OR '$(TestDependsOnJava)' == 'true' OR '$(TestDependsOnNode)' == 'true' OR '$(TestDependsOnMssql)' == 'true' OR '$(SkipHelixWorkItemBatching)' == 'true' OR '$(HelixTimeout)' != '$(DefaultHelixTimeout)'">true</SkipHelixWorkItemBatching>
+        <SkipHelixWorkItemBatching Condition="'$(TestDependsOnIIS)' == 'true' OR '$(TestDependsOnPlaywright)' == 'true' OR '$(TestDependsOnJava)' == 'true' OR '$(TestDependsOnNode)' == 'true' OR '$(TestDependsOnMssql)' == 'true' OR '$(SkipHelixWorkItemBatching)' == 'true' OR '$(HelixTimeout)' != '$(DefaultHelixTimeout)' OR '%(_HelixTestShard.TestFilter)' != ''">true</SkipHelixWorkItemBatching>
         <TargetFrameworkMoniker>$(TargetFramework)</TargetFrameworkMoniker>
         <RuntimeVersion>$(SharedFxVersion)</RuntimeVersion>
         <QueueName>$(_HelixFriendlyNameTargetQueue)</QueueName>
@@ -243,8 +254,8 @@
           All items use @targets.txt format; for non-batched items, targets.txt contains a single entry.
           The BatchSmallWorkItems target in helix.proj writes the targets.txt file.
         -->
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd @targets.txt $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh @targets.txt $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd @targets.txt $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright) &quot;%(_HelixTestShard.TestFilter)&quot;</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh @targets.txt $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright) &quot;%(_HelixTestShard.TestFilter)&quot;</Command>
         <Command Condition="'$(HelixCommand)' != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
