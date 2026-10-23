@@ -25,8 +25,13 @@
 </p>
 
 @code{
+    @*#if (UseWebAssembly && InteractiveAtRoot)
+    [CascadingParameter(Name = "HttpRequestId")]
+    private string? HttpRequestId { get; set; }
+    ##else
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
+    ##endif*@
 
     [PersistentState]
     public string? RequestId { get; set; }
@@ -35,6 +40,10 @@
 
     protected override void OnInitialized()
     {
+        @*#if (UseWebAssembly && InteractiveAtRoot)
+        RequestId ??= Activity.Current?.Id ?? HttpRequestId;
+        ##else
         RequestId ??= Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+        ##endif*@
     }
 }

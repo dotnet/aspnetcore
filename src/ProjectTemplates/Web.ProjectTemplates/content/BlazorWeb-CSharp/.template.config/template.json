@@ -66,6 +66,7 @@
           "condition": "(UseWebAssembly && InteractiveAtRoot)",
           "rename": {
             "BlazorWebCSharp.1/Components/Layout/": "./BlazorWebCSharp.1.Client/Layout/",
+            "BlazorWebCSharp.1/Components/Pages/Error.razor": "./BlazorWebCSharp.1.Client/Pages/Error.razor",
             "BlazorWebCSharp.1/Components/Pages/Home.razor": "./BlazorWebCSharp.1.Client/Pages/Home.razor",
             "BlazorWebCSharp.1/Components/Pages/NotFound.razor": "./BlazorWebCSharp.1.Client/Pages/NotFound.razor",
             "BlazorWebCSharp.1/Components/Pages/Weather.razor": "./BlazorWebCSharp.1.Client/Pages/Weather.razor",
