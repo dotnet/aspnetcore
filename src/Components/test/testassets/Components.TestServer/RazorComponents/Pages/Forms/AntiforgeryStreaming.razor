@@ -1,0 +1,54 @@
+@page "/forms/antiforgery-streaming"
+@attribute [StreamRendering]
+@using Microsoft.AspNetCore.Components.Forms
+@inject Components.TestServer.Services.AsyncOperationService Operations
+
+@if (Destination is not null)
+{
+    <a id="cross-site-link" href="@Destination" target="_blank">Open streaming page</a>
+}
+else
+{
+    <p id="fetch-site">@HttpContext.Request.Headers["Sec-Fetch-Site"]</p>
+    <p id="received-cookie">@HttpContext.Request.Cookies.Keys.Any(name => name.StartsWith(".AspNetCore.Antiforgery.", StringComparison.Ordinal))</p>
+    @if (!ready)
+    {
+        <p id="waiting">Waiting for release</p>
+    }
+    else
+    {
+        <p id="released">Released</p>
+        @if (RenderForm)
+        {
+            <form method="post" @formname="LateForm" @onsubmit="() => submitted = true">
+                <AntiforgeryToken />
+                <button id="send" type="submit">Send</button>
+            </form>
+        }
+    }
+    @if (submitted)
+    {
+        <p id="pass">Form submitted!</p>
+    }
+}
+
+@code {
+    [SupplyParameterFromQuery] public string Destination { get; set; }
+    [SupplyParameterFromQuery] public string Id { get; set; }
+    [SupplyParameterFromQuery] public bool RenderForm { get; set; }
+    [CascadingParameter] private HttpContext HttpContext { get; set; }
+
+    private bool ready;
+    private bool submitted;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Destination is null && !HttpMethods.IsPost(HttpContext.Request.Method))
+        {
+            var operation = Operations.Start(Id);
+            Operations.Complete($"{Id}-started");
+            await operation.WaitAsync(HttpContext.RequestAborted);
+        }
+        ready = true;
+    }
+}
