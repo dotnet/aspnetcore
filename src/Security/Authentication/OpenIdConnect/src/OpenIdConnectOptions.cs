@@ -170,9 +170,11 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     }
 
     /// <summary>
-    /// Gets or sets the 'max_age'. If set the 'max_age' parameter will be sent with the authentication request. If the identity
+    /// Gets or sets the 'max_age'. If set, the 'max_age' parameter will be sent with the authentication request. If the identity
     /// provider has not actively authenticated the user within the length of time specified, the user will be prompted to
-    /// re-authenticate. By default no max_age is specified.
+    /// re-authenticate. The handler validates the identity provider's signed 'auth_time' claim against the sent value, allowing
+    /// the clock skew configured by <see cref="TokenValidationParameters.ClockSkew"/>. This validation trusts the identity provider's
+    /// assertion and cannot prove that a particular authentication ceremony occurred. By default no max_age is specified.
     /// </summary>
     public TimeSpan? MaxAge { get; set; }
 
