@@ -24,9 +24,9 @@ Microsoft.AspNetCore.Components.Platform.CookieListItem.Name.init -> void
 Microsoft.AspNetCore.Components.Platform.CookieListItem.Value.get -> string?
 Microsoft.AspNetCore.Components.Platform.CookieListItem.Value.init -> void
 Microsoft.AspNetCore.Components.Platform.CookieSameSite
-Microsoft.AspNetCore.Components.Platform.CookieSameSite.Lax = 1 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
-Microsoft.AspNetCore.Components.Platform.CookieSameSite.None = 2 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
-Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict = 0 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.CookieSameSite() -> void
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.CookieSameSite(string! value) -> void
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.Value.get -> string!
 Microsoft.AspNetCore.Components.Platform.CookieStore
 Microsoft.AspNetCore.Components.Platform.CookieStore.DeleteAsync(Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions! options) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.CookieStore.DeleteAsync(string! name) -> System.Threading.Tasks.ValueTask
@@ -71,4 +71,8 @@ Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Mi
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).SessionStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
 Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions
+override Microsoft.AspNetCore.Components.Platform.CookieSameSite.ToString() -> string!
+static Microsoft.AspNetCore.Components.Platform.CookieSameSite.Lax.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+static Microsoft.AspNetCore.Components.Platform.CookieSameSite.None.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+static Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
 static Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions.AddBrowserPlatform(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
