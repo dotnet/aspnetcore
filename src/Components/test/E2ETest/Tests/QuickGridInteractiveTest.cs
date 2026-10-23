@@ -110,6 +110,18 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal(10, () => Browser.FindElements(By.CssSelector("#grid .quickgrid tbody tr")).Count);
     }
 
+    [Theory]
+    [InlineData(".first-paginator", "Pagination")]
+    [InlineData(".top-paginator", "Pagination")]
+    [InlineData(".bottom-paginator", "People pages")]
+    [InlineData(".labelled-paginator", "More people pages")]
+    public void PaginatorNavigationHasAccessibleName(string selector, string expectedName)
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+
+        Browser.Equal(expectedName, () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector($"{selector} .paginator nav"))).ComputedAccessibleLabel);
+    }
+
     [Fact]
     public void DualPaginatorsNavigatesAndBothUpdate()
     {

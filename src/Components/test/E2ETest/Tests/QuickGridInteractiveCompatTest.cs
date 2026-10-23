@@ -150,4 +150,16 @@ public class QuickGridInteractiveCompatTest : ServerTestBase<BasicTestAppServerS
         Assert.Contains("sort=PersonId", Browser.Url);
         Assert.Contains("direction=asc", Browser.Url);
     }
+
+    [Theory]
+    [InlineData(".first-paginator", "Pagination")]
+    [InlineData(".top-paginator", "Pagination")]
+    [InlineData(".bottom-paginator", "People pages")]
+    [InlineData(".labelled-paginator", "More people pages")]
+    public void PaginatorNavigationHasAccessibleName(string selector, string expectedName)
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+
+        Browser.Equal(expectedName, () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector($"{selector} .paginator nav"))).ComputedAccessibleLabel);
+    }
 }

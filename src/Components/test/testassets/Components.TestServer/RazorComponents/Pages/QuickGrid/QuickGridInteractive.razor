@@ -25,7 +25,11 @@
 </div>
 
 <div class="top-paginator">
-    <Paginator State="@pagination2" />
+    <Paginator State="@pagination2">
+        <SummaryTemplate>
+            <span aria-live="polite">Current page: @(pagination2.CurrentPageIndex + 1)</span>
+        </SummaryTemplate>
+    </Paginator>
 </div>
 <div id="grid2">
     <QuickGrid Items="@people" Pagination="@pagination2" QueryParameterNameOptions="@(new QueryParameterNameOptions("people_"))">
@@ -36,7 +40,11 @@
     </QuickGrid>
 </div>
 <div class="bottom-paginator">
-    <Paginator State="@pagination2" />
+    <Paginator State="@pagination2" aria-label="People pages" />
+</div>
+<h4 id="people-pages">More people pages</h4>
+<div class="labelled-paginator">
+    <Paginator State="@pagination2" aria-labelledby="people-pages" />
 </div>
 
 <div id="clicked-row-info">
