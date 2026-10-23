@@ -156,6 +156,37 @@
         }
       }
     },
+    "/unsupported": {
+      "x-oai-additionalOperations": {
+        "FOO": {
+          "tags": [
+            "Test"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query-with-body": {
       "x-oai-additionalOperations": {
         "QUERY": {
@@ -206,10 +237,207 @@
           }
         }
       }
+    },
+    "/multi-content-type": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/any-of": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/CurrentWeather"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MvcTodo"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dup-description": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "Use it!\n\nReturns a Todo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-pet": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-value": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-clinic": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-any-of": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Clinic"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Clinic": {
+        "required": [
+          "address",
+          "patient"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/UnionPet"
+          }
+        }
+      },
       "CurrentWeather": {
         "type": "object",
         "properties": {
@@ -219,6 +447,22 @@
             "type": "number",
             "format": "float",
             "default": 0.1
+          }
+        }
+      },
+      "Kitten": {
+        "required": [
+          "name",
+          "lives"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lives": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -240,6 +484,43 @@
             "type": "boolean"
           }
         }
+      },
+      "Puppy": {
+        "required": [
+          "name",
+          "breed"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "breed": {
+            "type": "string"
+          }
+        }
+      },
+      "UnionIntString": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "UnionPet": {
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Kitten"
+          },
+          {
+            "$ref": "#/components/schemas/Puppy"
+          }
+        ]
       }
     }
   },

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -37,6 +38,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly Dictionary<ulong, (int RenderedByComponentId, EventCallback Callback, string? attributeName)> _eventBindings = new();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
     private readonly ILogger _logger;
+    private readonly ILoggerFactory _loggerFactory;
+    private SectionRegistry? _sectionRegistry;
     private readonly ComponentFactory _componentFactory;
     private readonly ComponentsMetrics? _componentsMetrics;
     private readonly ComponentsActivitySource? _componentsActivitySource;
@@ -55,6 +58,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     private bool _hotReloadInitialized;
     private HotReloadRenderHandler? _hotReloadRenderHandler;
+    private HashSet<int>? _hotReloadRenderedComponentIds;
 
     /// <summary>
     /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -99,6 +103,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
+        _loggerFactory = loggerFactory;
         _componentFactory = new ComponentFactory(componentActivator, GetComponentPropertyActivatorOrDefault(serviceProvider), this);
         if (ComponentsMetrics.IsSupported)
         {
@@ -117,6 +122,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _componentsActivitySource;
+
+    internal SectionRegistry SectionRegistry => _sectionRegistry ??= new SectionRegistry(_loggerFactory);
 
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
@@ -149,6 +156,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a (metadata update) hot-reload change.
     /// </summary>
     internal bool IsRenderingOnMetadataUpdate { get; private set; }
+
+    /// <summary>
+    /// Returns <see langword="true"/> the first time the specified component requests a render during the current
+    /// metadata-update (hot-reload) pass, and <see langword="false"/> on every subsequent call within the same
+    /// pass. This allows <see cref="ComponentBase.StateHasChanged"/> to bypass <c>ShouldRender()</c> exactly once
+    /// per component so every component refreshes its UI while still letting <c>ShouldRender() == false</c>
+    /// break any synchronous re-render cycles that would otherwise run unboundedly.
+    /// </summary>
+    internal bool IsFirstHotReloadRender(int componentId)
+    {
+        _hotReloadRenderedComponentIds ??= new HashSet<int>();
+        return _hotReloadRenderedComponentIds.Add(componentId);
+    }
 
     /// <summary>
     /// Gets whether the renderer has been disposed.
@@ -195,6 +215,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
+        CascadingParameterState.ClearCache();
         ComponentFactory.ClearCache();
         ComponentProperties.ClearCache();
         DefaultComponentActivator.ClearCache();
@@ -219,6 +240,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             finally
             {
                 IsRenderingOnMetadataUpdate = false;
+                _hotReloadRenderedComponentIds = null;
             }
         });
     }

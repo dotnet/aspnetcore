@@ -1,0 +1,27 @@
+<Project>
+  <!--
+    Opt-in target to detect compiler/linker from init-compiler.sh and set NativeAOT linker props.
+    Callers enable this by setting UseCommonLocateNativeCompilerTarget=true.
+  -->
+  <Target Name="LocateNativeCompiler"
+          Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'"
+          BeforeTargets="SetupOSSpecificProps">
+    <PropertyGroup>
+      <CppCompilerAndLinker Condition="'$(CppCompilerAndLinker)' == ''">clang</CppCompilerAndLinker>
+      <SysRoot Condition="'$(CrossBuild)' == 'true'">$(ROOTFS_DIR)</SysRoot>
+    </PropertyGroup>
+
+    <Exec Command="sh -c 'build_arch=&quot;$(TargetArchitecture)&quot; compiler=&quot;$(CppCompilerAndLinker)&quot; . &quot;$(RepositoryEngineeringDir)/common/native/init-compiler.sh&quot; &amp;&amp; echo &quot;$CC;$LDFLAGS&quot;' 2>/dev/null"
+          EchoOff="true"
+          ConsoleToMsBuild="true"
+          StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_CC_LDFLAGS" />
+    </Exec>
+
+    <PropertyGroup>
+      <CppLinker>$(_CC_LDFLAGS.SubString(0, $(_CC_LDFLAGS.IndexOf(';'))))</CppLinker>
+      <_LDFLAGS>$(_CC_LDFLAGS.SubString($([MSBuild]::Add($(_CC_LDFLAGS.IndexOf(';')), 1))))</_LDFLAGS>
+      <LinkerFlavor Condition="$(_LDFLAGS.Contains('lld'))">lld</LinkerFlavor>
+    </PropertyGroup>
+  </Target>
+</Project>

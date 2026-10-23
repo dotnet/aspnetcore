@@ -517,7 +517,7 @@ GenerateTempFileName(
     if ( FAILED(hr) )
     {
         DBGERROR_HR(hr);
-        IISLogWrite(SETUP_LOG_SEVERITY_ERROR, L"Error apppending \\, hr=0x%x", hr);
+        IISLogWrite(SETUP_LOG_SEVERITY_ERROR, L"Error appending \\, hr=0x%x", hr);
         goto exit;
     }
 

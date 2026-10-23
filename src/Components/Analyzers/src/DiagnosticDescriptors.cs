@@ -111,4 +111,76 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
+
+    public static readonly DiagnosticDescriptor UnnecessaryStateHasChangedCall = new(
+        "BL0012",
+        CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Description)));
+
+    public static readonly DiagnosticDescriptor AuthenticationStateProviderCachedWithoutSubscription = new(
+        "BL0013",
+        CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Title)),
+        CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Description)));
+
+    public static readonly DiagnosticDescriptor ForLoopIteratorVariableUsedInClosure = new(
+        "BL0014",
+        CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Description)));
+
+    public static readonly DiagnosticDescriptor JSInvokableMethodShouldBePublic = new(
+        "BL0015",
+        CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Title)),
+        CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Description)));
+
+    public static readonly DiagnosticDescriptor UnguardedJSInteropCall = new(
+        "BL0016",
+        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeWithoutIDisposable = new(
+        "BL0017",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeAsyncWithoutIAsyncDisposable = new(
+        "BL0018",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Description)));
+  
+    public static readonly DiagnosticDescriptor VirtualizeSpacerElementIsInvalid = new(
+        "BL0019",
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Title)),
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Description)));
 }

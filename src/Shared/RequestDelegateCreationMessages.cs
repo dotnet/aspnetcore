@@ -46,8 +46,8 @@ internal static class RequestDelegateCreationLogging
 
     public const int InvalidAntiforgeryTokenEventId = 9;
     public const string InvalidAntiforgeryTokenEventName = "InvalidAntiforgeryToken";
-    public const string InvalidAntiforgeryTokenLogMessage = @"Invalid anti-forgery token found when reading parameter ""{ParameterType} {ParameterName}"" from the request body as form.";
-    public const string InvalidAntiforgeryTokenExceptionMessage = @"Invalid anti-forgery token found when reading parameter ""{0} {1}"" from the request body as form.";
+    public const string InvalidAntiforgeryTokenLogMessage = @"Antiforgery validation failed when reading parameter ""{ParameterType} {ParameterName}"" from the request body as form.";
+    public const string InvalidAntiforgeryTokenExceptionMessage = @"Antiforgery validation failed when reading parameter ""{0} {1}"" from the request body as form.";
 
     public const int FormDataMappingFailedEventId = 10;
     public const string FormDataMappingFailedEventName = "FormDataMappingFailed";

@@ -234,7 +234,11 @@ internal sealed class MultipartReaderStream : Stream
             {
                 stream.FinalBoundaryFound = true;
             }
-            Debug.Assert(stream.FinalBoundaryFound || remainder.IsEmpty, "Un-expected data found on the boundary line: " + remainder.ToString());
+
+            if (!stream.FinalBoundaryFound && !remainder.IsEmpty)
+            {
+                throw new IOException("Unexpected data found on the boundary line.");
+            }
             stream._finished = true;
             return 0;
         }
@@ -320,7 +324,11 @@ internal sealed class MultipartReaderStream : Stream
             {
                 stream.FinalBoundaryFound = true;
             }
-            Debug.Assert(stream.FinalBoundaryFound || string.Equals(string.Empty, remainder, StringComparison.Ordinal), "Un-expected data found on the boundary line: " + remainder);
+
+            if (!stream.FinalBoundaryFound && !string.Equals(string.Empty, remainder, StringComparison.Ordinal))
+            {
+                throw new IOException("Unexpected data found on the boundary line.");
+            }
 
             stream._finished = true;
             return 0;

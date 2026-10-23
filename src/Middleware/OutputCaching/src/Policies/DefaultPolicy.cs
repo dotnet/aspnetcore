@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.OutputCaching;
@@ -25,6 +26,8 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
         context.AllowCacheLookup = attemptOutputCaching;
         context.AllowCacheStorage = attemptOutputCaching;
         context.AllowLocking = true;
+        // Snapshot for ServeResponseAsync, which must only block users authenticated after this point (e.g. auth middleware after output caching).
+        context.IsAuthenticatedOnRequest = SecurityHelper.IsAuthenticated(context.HttpContext.User);
 
         // Vary by any query by default
         context.CacheVaryByRules.QueryKeys = "*";
@@ -45,6 +48,13 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
 
         // Verify existence of cookie headers
         if (!StringValues.IsNullOrEmpty(response.Headers.SetCookie))
+        {
+            context.AllowCacheStorage = false;
+            return ValueTask.CompletedTask;
+        }
+
+        // Users already authenticated on request were handled in CacheRequestAsync and may have been explicitly allowed by later policies.
+        if (!context.IsAuthenticatedOnRequest && SecurityHelper.IsAuthenticated(context.HttpContext.User))
         {
             context.AllowCacheStorage = false;
             return ValueTask.CompletedTask;
@@ -73,7 +83,7 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
         }
 
         // Verify existence of authorization headers
-        if (!StringValues.IsNullOrEmpty(request.Headers.Authorization) || request.HttpContext.User?.Identity?.IsAuthenticated == true)
+        if (!StringValues.IsNullOrEmpty(request.Headers.Authorization) || SecurityHelper.IsAuthenticated(request.HttpContext.User))
         {
             return false;
         }

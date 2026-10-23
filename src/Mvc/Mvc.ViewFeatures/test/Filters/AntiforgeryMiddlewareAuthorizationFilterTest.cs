@@ -11,13 +11,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test.Filters;
 
 public class AntiforgeryMiddlewareAuthorizationFilterTest
 {
+    private const string AntiforgeryInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
+
     [Fact]
     public async Task FiltersWorks_MiddlewareInvoked_InvalidFeature()
     {
         // Arrange
         var filter = new AntiforgeryMiddlewareAuthorizationFilter(NullLogger<AntiforgeryMiddlewareAuthorizationFilter>.Instance);
         var httpContext = new DefaultHttpContext();
-        httpContext.Items[AntiforgeryMiddlewareAuthorizationFilter.AntiforgeryMiddlewareWithEndpointInvokedKey] = new object();
+        httpContext.Items[AntiforgeryInvokedKey] = new object();
         httpContext.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(false, new AntiforgeryValidationException(string.Empty)));
         var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
         var context = new AuthorizationFilterContext(actionContext, new[] { filter });
@@ -35,7 +37,7 @@ public class AntiforgeryMiddlewareAuthorizationFilterTest
         // Arrange
         var filter = new AntiforgeryMiddlewareAuthorizationFilter(NullLogger<AntiforgeryMiddlewareAuthorizationFilter>.Instance);
         var httpContext = new DefaultHttpContext();
-        httpContext.Items[AntiforgeryMiddlewareAuthorizationFilter.AntiforgeryMiddlewareWithEndpointInvokedKey] = new object();
+        httpContext.Items[AntiforgeryInvokedKey] = new object();
         httpContext.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(true, null));
         var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
         var context = new AuthorizationFilterContext(actionContext, new[] { filter });

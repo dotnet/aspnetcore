@@ -121,6 +121,21 @@ public class HttpSysOptions
     public bool EnableKernelResponseBuffering { get; set; }
 
     /// <summary>
+    /// Configures the Http.Sys authentication hardening level. Non-<see cref="HttpAuthenticationHardeningLevel.Legacy"/>
+    /// values instruct Http.Sys to validate the RFC 5929 TLS channel binding token (CBT) against
+    /// authenticated requests and to expose the per-request CBT to the application via
+    /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.TryGetChannelBindingBytes"/>.
+    /// The default is <see cref="HttpAuthenticationHardeningLevel.Medium"/>.
+    /// </summary>
+    /// <remarks>
+    /// Setting this to <see cref="HttpAuthenticationHardeningLevel.Medium"/> or
+    /// <see cref="HttpAuthenticationHardeningLevel.Strict"/> both raises the hardening
+    /// level and sets the <c>HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN</c> flag on the URL
+    /// group's <c>HttpServerChannelBindProperty</c>.
+    /// </remarks>
+    public HttpAuthenticationHardeningLevel HttpAuthenticationHardeningLevel { get; set; } = HttpAuthenticationHardeningLevel.Medium;
+
+    /// <summary>
     /// Gets or sets the maximum number of concurrent connections to accept. Set `-1` for infinite.
     /// Set to `null` to use the registry's machine-wide setting.
     /// The default value is `null` (machine-wide setting).
@@ -276,5 +291,6 @@ public class HttpSysOptions
 
         Authentication.SetUrlGroupSecurity(urlGroup);
         Timeouts.SetUrlGroupTimeouts(urlGroup);
+        urlGroup.SetChannelBindingProperty(HttpAuthenticationHardeningLevel);
     }
 }

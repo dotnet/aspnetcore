@@ -1,0 +1,10 @@
+<Project>
+
+  <ItemGroup>
+    <StaticWebAssetGroup
+      Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(UsingMicrosoftNETSdkWeb)' == 'true'"
+      Include="BlazorFramework" Value="enabled"
+      SourceId="Microsoft.AspNetCore.App.Internal.Assets" />
+  </ItemGroup>
+
+</Project>

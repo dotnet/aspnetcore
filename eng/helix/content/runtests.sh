@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+# First arg is always @targets.txt
+targetsFile="${1#@}"
+
 helixQueue="$3"
 installPlaywright="$7"
+testFilter="$8"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -76,8 +80,8 @@ sync
 
 exit_code=0
 
-echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
-dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright
+echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --targets-file $targetsFile --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright --filter $testFilter"
+dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --targets-file "$targetsFile" --runtime "$2" --queue "$helixQueue" --arch "$4" --quarantined "$5" --helixTimeout "$6" --playwright "$installPlaywright" --filter "$testFilter"
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

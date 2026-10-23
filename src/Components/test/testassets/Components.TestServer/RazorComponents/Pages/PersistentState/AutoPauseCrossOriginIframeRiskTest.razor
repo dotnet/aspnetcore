@@ -1,0 +1,42 @@
+@page "/persistent-state/auto-pause-cross-origin-iframe-risk"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Cross-origin iframe state risk</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<iframe id="cross-iframe" sandbox="allow-scripts" src="/subdir/autopause-test-iframe.html" style="width:200px;height:50px"></iframe>
+
+<script>
+    if (!window.__iframeHookInitialized) {
+        window.__iframeHookInitialized = true;
+        window.__savedIframeState = null;
+        window.__iframeReady = false;
+        window.addEventListener('message', function handler(e) {
+            if (e.data && e.data.type === 'iframeReady') {
+                window.__iframeReady = true;
+                window.removeEventListener('message', handler);
+            }
+        });
+
+        if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+            window.__mitigationHandler = function () {
+                return new Promise(function (resolve) {
+                    window.addEventListener('message', function handler(e) {
+                        if (e.data && e.data.type === 'stateResponse') {
+                            window.__savedIframeState = e.data.value;
+                            window.removeEventListener('message', handler);
+                            resolve();
+                        }
+                    });
+                    document.getElementById('cross-iframe').contentWindow.postMessage({ type: 'getState' }, '*');
+                });
+            };
+        }
+    }
+</script>

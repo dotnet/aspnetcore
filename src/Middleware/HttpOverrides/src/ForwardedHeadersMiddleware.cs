@@ -220,15 +220,31 @@ public class ForwardedHeadersMiddleware
         for (; entriesConsumed < sets.Length; entriesConsumed++)
         {
             var set = sets[entriesConsumed];
-            // For the first instance, allow remoteIp to be null for servers that don't support it natively.
-            if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+            if (checkKnownIps)
             {
-                // Stop at the first unknown remote IP, but still apply changes processed so far.
-                if (_logger.IsEnabled(LogLevel.Debug))
+                // When trusted-proxy enforcement (KnownProxies/KnownNetworks) is configured, forwarders are
+                // only applied when the immediate peer can be attested as a known proxy.
+                if (currentValues.RemoteIpAndPort is null)
                 {
-                    _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                    // A request that arrives without a peer IP (e.g. over a Unix socket or named pipe) cannot
+                    // be attested as a known proxy, so fail closed and stop applying forwarders rather than
+                    // trusting the headers implicitly.
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug(1, "Unknown proxy: no remote IP address available.");
+                    }
+                    break;
                 }
-                break;
+
+                if (!CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+                {
+                    // Stop at the first unknown remote IP, but still apply changes processed so far.
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                    }
+                    break;
+                }
             }
 
             if (checkFor)
@@ -258,7 +274,7 @@ public class ForwardedHeadersMiddleware
 
             if (checkProto)
             {
-                if (!string.IsNullOrEmpty(set.Scheme) && set.Scheme.AsSpan().IndexOfAnyExcept(SchemeChars) < 0)
+                if (!string.IsNullOrEmpty(set.Scheme) && !set.Scheme.ContainsAnyExcept(SchemeChars))
                 {
                     applyChanges = true;
                     currentValues.Scheme = set.Scheme;
@@ -475,7 +491,7 @@ public class ForwardedHeadersMiddleware
             return false;
         }
 
-        return hostText.AsSpan(offset + 1).IndexOfAnyExceptInRange('0', '9') < 0;
+        return !hostText.AsSpan(offset + 1).ContainsAnyExceptInRange('0', '9');
     }
 
     private static string[] TruncateConsumedHeaderValues(string[] forwarded, int entriesConsumed)

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -215,8 +216,29 @@ public abstract class TextOutputFormatter : OutputFormatter
         return null;
     }
 
-    // There's no allocation-free way to sort an IList and we may have to filter anyway,
-    // so we're going to have to live with the copy + insertion sort.
+    // We may have to filter q=0 values and reorder the rest by quality. StringWithQualityHeaderValue
+    // is a reference type, so it can't live in a stack buffer, but its indices can. Real Accept-Charset
+    // headers are tiny (a handful of charsets at most), so for anything within the threshold we sort a
+    // stack-allocated inline-array buffer of indices with an insertion sort and never touch the heap for
+    // scratch. No real client sends more than a handful of charsets, so the >32 branch only exists for
+    // correctness; there we fall back to a plain List.Sort and don't bother preserving the tie ordering,
+    // because nothing observable can depend on it.
+    private const int SortStackAllocThreshold = 32;
+
+    // Inline-array buffer of SortStackAllocThreshold indices. Preferred over stackalloc because the
+    // compiler puts stronger guarantees on inline arrays (no stack cookie, better bounds analysis).
+    [InlineArray(SortStackAllocThreshold)]
+    private struct IndexBuffer
+    {
+#pragma warning disable CA1823 // Avoid unused private fields
+#pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable IDE0051 // Remove unused private members
+        private int _element0;
+#pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0044 // Add readonly modifier
+#pragma warning restore CA1823 // Avoid unused private fields
+    }
+
     private static IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
     {
         var sortNeeded = false;
@@ -239,31 +261,74 @@ public abstract class TextOutputFormatter : OutputFormatter
             return values;
         }
 
-        var sorted = new List<StringWithQualityHeaderValue>();
+        return values.Count <= SortStackAllocThreshold
+            ? SortSmall(values)
+            : SortLarge(values);
+    }
+
+    // Fast path for realistic headers. We insert the surviving indices into a stack-allocated buffer in
+    // descending quality order, filtering out the q=0 rejections as we go. Building descending directly
+    // (rather than sorting ascending and reversing) means an already-preferred-first header appends with
+    // no shifting, so the common case is O(n); the worst case is an O(n^2) insertion sort, which is
+    // irrelevant for at most SortStackAllocThreshold entries. QualityComparer keeps a concrete charset
+    // ahead of an equal-quality wildcard and treats two equal-quality concrete values as equal, so
+    // shifting past equals (Compare <= 0) lands a later header entry ahead of earlier equals, preserving
+    // the previous last-entry-wins selection.
+    private static IList<StringWithQualityHeaderValue> SortSmall(IList<StringWithQualityHeaderValue> values)
+    {
+        var buffer = new IndexBuffer();
+        Span<int> indices = buffer;
+        var count = 0;
+
         for (var i = 0; i < values.Count; i++)
         {
             var value = values[i];
             if (value.Quality == HeaderQuality.NoMatch)
             {
-                // Exclude this one
+                continue;
             }
-            else
+
+            var j = count;
+            while (j > 0 &&
+                StringWithQualityHeaderValueComparer.QualityComparer.Compare(values[indices[j - 1]], value) <= 0)
             {
-                // Doing an insertion sort.
-                var position = sorted.BinarySearch(value, StringWithQualityHeaderValueComparer.QualityComparer);
-                if (position >= 0)
-                {
-                    sorted.Insert(position + 1, value);
-                }
-                else
-                {
-                    sorted.Insert(~position, value);
-                }
+                indices[j] = indices[j - 1];
+                j--;
+            }
+
+            indices[j] = i;
+            count++;
+        }
+
+        var sorted = new List<StringWithQualityHeaderValue>(count);
+        for (var i = 0; i < count; i++)
+        {
+            sorted.Add(values[indices[i]]);
+        }
+
+        return sorted;
+    }
+
+    // Pathological path that no real client will ever exercise: more than SortStackAllocThreshold
+    // charsets in a single Accept-Charset header. We don't allocate an index buffer or preserve the
+    // tie ordering here; a plain List.Sort is unstable, but with this many client-declared charsets
+    // there is nothing observable that could depend on how equal-quality values are ordered.
+    private static IList<StringWithQualityHeaderValue> SortLarge(IList<StringWithQualityHeaderValue> values)
+    {
+        var sorted = new List<StringWithQualityHeaderValue>(values.Count);
+        for (var i = 0; i < values.Count; i++)
+        {
+            var value = values[i];
+            if (value.Quality != HeaderQuality.NoMatch)
+            {
+                sorted.Add(value);
             }
         }
 
-        // We want a descending sort, but BinarySearch does ascending
+        // QualityComparer sorts ascending; reverse for the descending order we return.
+        sorted.Sort(StringWithQualityHeaderValueComparer.QualityComparer);
         sorted.Reverse();
+
         return sorted;
     }
 }

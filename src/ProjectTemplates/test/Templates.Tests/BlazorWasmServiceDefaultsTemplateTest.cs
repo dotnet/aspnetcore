@@ -35,7 +35,7 @@ public class BlazorWasmServiceDefaultsTemplateTest : LoggedTest
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        await project.RunDotNetNewAsync("blazor-wasm-servicedefaults");
+        await project.RunDotNetNewAsync("blazorwasm-servicedefaults");
 
         await project.RunDotNetPublishAsync();
 
@@ -51,7 +51,7 @@ public class BlazorWasmServiceDefaultsTemplateTest : LoggedTest
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        await project.RunDotNetNewAsync("blazor-wasm-servicedefaults", args: new[] { "--hosted" });
+        await project.RunDotNetNewAsync("blazorwasm-servicedefaults", args: new[] { "--hosted" });
 
         await project.RunDotNetPublishAsync();
 

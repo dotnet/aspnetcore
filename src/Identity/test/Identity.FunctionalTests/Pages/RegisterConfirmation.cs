@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
-using AngleSharp.Dom.Html;
+using AngleSharp.Html.Dom;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests;

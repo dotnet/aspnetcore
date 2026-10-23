@@ -37,6 +37,62 @@ public class ModRewriteMiddlewareTest
         Assert.Equal("/hello", response);
     }
 
+    [Theory]
+    [InlineData("/legacy//example.com")]
+    [InlineData("/legacy///example.com")]
+    [InlineData(@"/legacy/\example.com")]
+    public async Task Invoke_RedirectCollapsesSchemeRelativeBackReference(string requestPath)
+    {
+        var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /legacy/(.*) /$1 [R=302,L]"));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Response.Headers.Location));
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetAsync(requestPath);
+
+        Assert.Equal("/example.com", response.Headers.Location.OriginalString);
+    }
+
+    [Theory]
+    [InlineData("/legacy//example.com")]
+    [InlineData("/legacy///example.com")]
+    [InlineData(@"/legacy/\example.com")]
+    public async Task Invoke_RewriteCollapsesSchemeRelativeBackReference(string requestPath)
+    {
+        var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /legacy/(.*) /$1"));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path));
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync(requestPath);
+
+        Assert.Equal("/example.com", response);
+    }
+
     [Fact]
     public async Task Invoke_RewritePathTerminatesOnFirstSuccessOfRule()
     {

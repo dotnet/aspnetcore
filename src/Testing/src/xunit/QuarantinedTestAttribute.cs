@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.InternalTesting;
 /// <example>
 /// <code>
 /// [Fact]
-/// [QuarantinedTest("Github Url")]
+/// [QuarantinedTest("GitHub URL")]
 /// public void FlakyTest()
 /// {
 ///     // Flakiness
@@ -45,11 +45,27 @@ public sealed class QuarantinedTestAttribute : Attribute, ITraitAttribute
     public string Reason { get; }
 
     /// <summary>
+    /// Gets the operating systems where the test is quarantined, or <see langword="null"/> when the test is quarantined on all operating systems.
+    /// </summary>
+    public OperatingSystems? OperatingSystems { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="QuarantinedTestAttribute"/> class with an optional <see cref="Reason"/>.
     /// </summary>
-    /// <param name="reason">A reason that this test is quarantined. Preferably a Github issue Url.</param>
+    /// <param name="reason">A reason that this test is quarantined. Preferably a GitHub issue URL.</param>
     public QuarantinedTestAttribute(string reason)
     {
         Reason = reason;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QuarantinedTestAttribute"/> class for the specified operating systems.
+    /// </summary>
+    /// <param name="reason">A reason that this test is quarantined. Preferably a GitHub issue URL.</param>
+    /// <param name="operatingSystems">The operating systems where the test is quarantined.</param>
+    public QuarantinedTestAttribute(string reason, OperatingSystems operatingSystems)
+    {
+        Reason = reason;
+        OperatingSystems = operatingSystems;
     }
 }

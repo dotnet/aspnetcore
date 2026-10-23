@@ -6,9 +6,6 @@
         "commandName": "Project",
         "dotnetRunMessages": true,
         "launchBrowser": true,
-        //#if (UseWebAssembly)
-        "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-        //#endif
         //#if (LocalhostTld)
         "applicationUrl": "http://LocalhostTldHostNamePrefix.dev.localhost:5500",
         //#else
@@ -28,9 +25,6 @@
         "commandName": "Project",
         "dotnetRunMessages": true,
         "launchBrowser": true,
-        //#if (UseWebAssembly)
-        "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-        //#endif
         //#if (LocalhostTld)
         "applicationUrl": "https://LocalhostTldHostNamePrefix.dev.localhost:5501;http://LocalhostTldHostNamePrefix.dev.localhost:5500",
         //#else

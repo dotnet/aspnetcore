@@ -21,7 +21,7 @@ public class FormFeature : IFormFeature
     private FormOptions _options;
     private Task<IFormCollection>? _parsedFormTask;
     private IFormCollection? _form;
-	private MediaTypeHeaderValue? _formContentType; // null iff _form is null
+    private MediaTypeHeaderValue? _formContentType; // null iff _form is null
 
     /// <summary>
     /// Initializes a new instance of <see cref="FormFeature"/>.
@@ -32,7 +32,7 @@ public class FormFeature : IFormFeature
         ArgumentNullException.ThrowIfNull(form);
 
         Form = form;
-		_formContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+        _formContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
         _options = FormOptions.Default;
     }
 
@@ -360,7 +360,11 @@ public class FormFeature : IFormFeature
         {
             return false;
         }
-        var hasInvokedMiddleware = _request.HttpContext.Items.ContainsKey("__AntiforgeryMiddlewareWithEndpointInvoked");
+
+        // Set by the antiforgery and the CSRF protection middleware respectively. Either marker means a
+        // middleware ran and recorded its verdict on IAntiforgeryValidationFeature.
+        var hasInvokedMiddleware = _request.HttpContext.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery)
+                                || _request.HttpContext.Items.ContainsKey(MiddlewareInvokedKeys.CsrfProtection);
         var hasInvalidToken = _request.HttpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false };
         return hasInvokedMiddleware && hasInvalidToken;
     }
@@ -369,7 +373,7 @@ public class FormFeature : IFormFeature
     {
         if (HasInvalidAntiforgeryValidationFeature)
         {
-            throw new InvalidOperationException("This form is being accessed with an invalid anti-forgery token. Validate the `IAntiforgeryValidationFeature` on the request before reading from the form.");
+            throw new InvalidOperationException("This form is being accessed with a failed antiforgery validation. Validate the `IAntiforgeryValidationFeature` on the request before reading from the form.");
         }
     }
 

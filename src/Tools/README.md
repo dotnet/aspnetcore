@@ -14,7 +14,7 @@ The folder contains command-line tools for ASP.NET Core. The following tools are
 
 ## Non-bundled tools
 
-The following tools are produced by us but not bundled in the .NET Core CLI. They must be aquired independently.
+The following tools are produced by us but not bundled in the .NET Core CLI. They must be acquired independently.
 
 - [Microsoft.dotnet-openapi](Microsoft.dotnet-openapi/README.md)
 

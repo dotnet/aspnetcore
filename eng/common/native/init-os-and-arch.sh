@@ -7,9 +7,17 @@ if command -v getprop && getprop ro.product.system.model 2>&1 | grep -qi android
     OSName="android"
 fi
 
+# OpenHarmony/HarmonyOS hosts report `HarmonyOS` (or `Linux` on some devices)
+# from uname, so query the OHOS parameter service as well.
+if command -v param >/dev/null 2>&1 && param get const.ohos.fullname 2>/dev/null | grep -qi '^openharmony'; then
+    OSName="openharmony"
+fi
+
 case "$OSName" in
 freebsd|linux|netbsd|openbsd|sunos|android|haiku)
     os="$OSName" ;;
+harmonyos|openharmony)
+    os=openharmony ;;
 darwin)
     os=osx ;;
 *)
@@ -27,6 +35,10 @@ if [ "$os" = "sunos" ]; then
         os="solaris"
     fi
     CPUName=$(isainfo -n)
+elif [ "$os" = "freebsd" ]; then
+    # FreeBSD's `uname -m` is the machine class ("powerpc" for every PowerPC
+    # variant); `uname -p` gives the specific processor (e.g. powerpc64le).
+    CPUName=$(uname -p)
 else
     # For the rest of the operating systems, use uname(1) to determine what the CPU is.
     CPUName=$(uname -m)
@@ -75,7 +87,7 @@ case "$CPUName" in
         arch=s390x
         ;;
 
-    ppc64le)
+    ppc64le|powerpc64le)
         arch=ppc64le
         ;;
     *)

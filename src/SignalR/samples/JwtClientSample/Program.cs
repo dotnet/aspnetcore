@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -21,24 +20,26 @@ class Program
 
     private const string ServerUrl = "http://localhost:54543";
 
-    private readonly ConcurrentDictionary<string, Task<string>> _tokens = new ConcurrentDictionary<string, Task<string>>(StringComparer.Ordinal);
-
     private async Task RunConnection(HttpTransportType transportType)
     {
         var userId = "C#" + transportType;
-        _tokens[userId] = GetJwtToken(userId);
 
         var hubConnection = new HubConnectionBuilder()
             .WithUrl(ServerUrl + "/broadcast", options =>
             {
                 options.Transports = transportType;
-                options.AccessTokenProvider = () => _tokens[userId];
+                options.AccessTokenProvider = () => GetJwtToken(userId);
+            })
+            .WithAuthenticationRefresh(o =>
+            {
+                o.RefreshBeforeExpiration = TimeSpan.FromSeconds(10);
             })
             .Build();
 
         var closedTcs = new TaskCompletionSource();
         hubConnection.Closed += e =>
         {
+            Console.WriteLine(e);
             closedTcs.SetResult();
             return Task.CompletedTask;
         };
@@ -56,20 +57,11 @@ class Program
             {
                 await Task.Delay(1000);
                 ticks++;
-                if (ticks % 15 == 0)
-                {
-                    // no need to refresh the token for websockets
-                    if (transportType != HttpTransportType.WebSockets)
-                    {
-                        _tokens[userId] = GetJwtToken(userId);
-                        Console.WriteLine($"[{userId}] Token refreshed");
-                    }
-                }
 
                 if (ticks % nextMsgAt == 0)
                 {
                     await hubConnection.SendAsync("Broadcast", userId, $"Hello at {DateTime.Now}");
-                    nextMsgAt = Random.Shared.Next(2, 5);
+                    nextMsgAt = Random.Shared.Next(20, 50);
                 }
             }
         }

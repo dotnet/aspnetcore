@@ -146,7 +146,7 @@ public class RangeHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out RangeHeaderValue? parsedValue)
     {
         var index = 0;
-        return Parser.TryParseValue(input, ref index, out parsedValue);
+        return Parser.TryParseValue(input, index, out _, out parsedValue);
     }
 
     private static int GetRangeLength(StringSegment input, int startIndex, out RangeHeaderValue? parsedValue)

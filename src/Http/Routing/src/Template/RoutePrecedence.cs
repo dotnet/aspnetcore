@@ -143,7 +143,7 @@ internal static class RoutePrecedence
     // Segments have the following order:
     // 5 - Literal segments
     // 4 - Multi-part segments && Constrained parameter segments
-    // 3 - Unconstrained parameter segements
+    // 3 - Unconstrained parameter segments
     // 2 - Constrained wildcard parameter segments
     // 1 - Unconstrained wildcard parameter segments
     private static int ComputeOutboundPrecedenceDigit(TemplateSegment segment)

@@ -625,6 +625,122 @@ public class AccessibilityTestType
     }
 
     [Fact]
+    public async Task ValidatesInternalTypes()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/internal-type", (InternalValidationType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+internal class InternalValidationType
+{
+    [Required]
+    public string PublicProperty { get; set; } = "";
+
+    public InternalNestedType Nested { get; set; } = new();
+}
+
+internal class InternalNestedType
+{
+    [Required]
+    public string RequiredProperty { get; set; } = "";
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/internal-type", async (endpoint, serviceProvider) =>
+        {
+            var payload = """
+            {
+                "PublicProperty": "",
+                "Nested": {
+                    "RequiredProperty": ""
+                }
+            }
+            """;
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Collection(problemDetails.Errors.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("Nested.RequiredProperty", kvp.Key);
+                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("PublicProperty", kvp.Key);
+                    Assert.Equal("The PublicProperty field is required.", kvp.Value.Single());
+                });
+        });
+    }
+
+    [Fact]
+    public async Task SkipsFileLocalTypes()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/file-local-type", (FileLocalType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+file class FileLocalType
+{
+    [Required]
+    public string RequiredProperty { get; set; } = "";
+}
+""";
+        await Verify(source, out var compilation);
+        // Verify that file-local types are not validated (they can't be referenced from generated code)
+        await VerifyEndpoint(compilation, "/file-local-type", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"RequiredProperty": ""}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            // File-local types should be skipped, so validation should pass (200 OK)
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
+
+    [Fact]
     public async Task ValidatesPropertiesWithJsonIgnoreWhenWritingConditions()
     {
         // Arrange
@@ -934,6 +1050,75 @@ public class Order
             await endpoint.RequestDelegate(context);
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
+
+    [Fact]
+    public async Task CanValidateMembersOfParsableType()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/parsable-with-validatable-members", (ParentWithParsableProperty parent) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class ParentWithParsableProperty
+{
+    public ParsableWithValidation Child { get; set; } = new();
+}
+
+public class ParsableWithValidation : IParsable<ParsableWithValidation>
+{
+    [Range(10, 100, ErrorMessage = "The field Value must be between 10 and 100.")]
+    public int Value { get; set; }
+
+    public static ParsableWithValidation Parse(string s, IFormatProvider? provider)
+        => new();
+
+    public static bool TryParse(string? s, IFormatProvider? provider, out ParsableWithValidation result)
+    {
+        result = new ParsableWithValidation();
+        return true;
+    }
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/parsable-with-validatable-members", async (endpoint, serviceProvider) =>
+        {
+            var payload = """
+            {
+              "Child": {
+                "Value": 5
+              }
+            }
+            """;
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+
+            Assert.Collection(problemDetails.Errors,
+                error =>
+                {
+                    Assert.Equal("Child.Value", error.Key);
+                    Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                });
         });
     }
 }

@@ -8,11 +8,21 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class RazorComponentsServiceCollectionExtensionsTest
 {
+    // AddRazorComponents calls AddMetrics, which calls OptionsBuilderExtensions.ValidateOnStart.
+    // As of .NET 11, ValidateOnStart registers IConfigureOptions<StartupValidatorOptions> twice
+    // (one configure action for synchronous validation and one for asynchronous validation), so this
+    // service type is expected to be registered more than once. StartupValidatorOptions is internal to
+    // Microsoft.Extensions.Options, so it is resolved via reflection.
+    private static readonly Type StartupValidatorConfigureOptionsType =
+        typeof(IConfigureOptions<>).MakeGenericType(
+            typeof(IConfigureOptions<>).Assembly.GetType("Microsoft.Extensions.Options.StartupValidatorOptions", throwOnError: true)!);
+
     [Fact]
     public void AddRazorComponents_RegistersServices()
     {
@@ -99,6 +109,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
                     typeof(ResourceCollectionProvider),
                     typeof(AntiforgeryStateProvider),
                 },
+                [StartupValidatorConfigureOptionsType] = Array.Empty<Type>(),
             };
         }
     }

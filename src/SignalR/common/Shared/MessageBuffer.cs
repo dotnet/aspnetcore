@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 internal sealed class MessageBuffer : IDisposable
 {
     private static readonly TaskCompletionSource<FlushResult> _completedTCS = new TaskCompletionSource<FlushResult>();
+    private static readonly TimeSpan _backpressureTimeout = TimeSpan.FromSeconds(5);
 
     public static TimeSpan AckRate => TimeSpan.FromSeconds(1);
 
@@ -27,6 +28,7 @@ internal sealed class MessageBuffer : IDisposable
     private readonly IHubProtocol _protocol;
     private readonly long _bufferLimit;
     private readonly ILogger _logger;
+    private readonly ConnectionContext _connection;
     private readonly AckMessage _ackMessage = new(0);
     private readonly SequenceMessage _sequenceMessage = new(0);
     private readonly Channel<long> _waitForAck = Channel.CreateBounded<long>(new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
@@ -53,8 +55,10 @@ internal sealed class MessageBuffer : IDisposable
     // Pool per connection
     private readonly Stack<LinkedBuffer> _pool = new();
 
-    private LinkedBuffer _buffer;
+    private LinkedBuffer _bufferHead;
+    private LinkedBuffer _bufferTail;
     private long _bufferedByteCount;
+    private int _disposed;
 
     static MessageBuffer()
     {
@@ -73,8 +77,9 @@ internal sealed class MessageBuffer : IDisposable
         _timer = new(AckRate, _timeProvider);
 #endif
 
-        _buffer = new LinkedBuffer();
+        _bufferHead = _bufferTail = new LinkedBuffer();
 
+        _connection = connection;
         _writer = connection.Transport.Output;
         _protocol = protocol;
         _bufferLimit = bufferLimit;
@@ -88,34 +93,46 @@ internal sealed class MessageBuffer : IDisposable
 
     private async Task RunTimer()
     {
-        using (_timer)
+        try
         {
-#if NET8_0_OR_GREATER
-            while (await _timer.WaitForNextTickAsync().ConfigureAwait(false))
-#else
-            while (await _timer)
-#endif
+            using (_timer)
             {
-                if (_lastAckedId < _latestReceivedSequenceId)
+#if NET8_0_OR_GREATER
+                while (await _timer.WaitForNextTickAsync().ConfigureAwait(false))
+#else
+                while (await _timer)
+#endif
                 {
-                    // TODO: consider a minimum time between sending these?
-
-                    var sequenceId = _latestReceivedSequenceId;
-
-                    _ackMessage.SequenceId = sequenceId;
-
-                    await _writeLock.WaitAsync().ConfigureAwait(false);
-                    try
+                    if (_lastAckedId < _latestReceivedSequenceId)
                     {
-                        _protocol.WriteMessage(_ackMessage, _writer);
-                        await _writer.FlushAsync().ConfigureAwait(false);
-                        _lastAckedId = sequenceId;
-                    }
-                    finally
-                    {
-                        _writeLock.Release();
+                        // TODO: consider a minimum time between sending these?
+
+                        var sequenceId = _latestReceivedSequenceId;
+
+                        _ackMessage.SequenceId = sequenceId;
+
+                        await _writeLock.WaitAsync().ConfigureAwait(false);
+                        try
+                        {
+                            using var cts = CreateBackpressureCancellationTokenSource();
+                            _protocol.WriteMessage(_ackMessage, _writer);
+                            await _writer.FlushAsync(cts.Token).ConfigureAwait(false);
+                            _lastAckedId = sequenceId;
+                        }
+                        finally
+                        {
+                            _writeLock.Release();
+                        }
                     }
                 }
+            }
+        }
+        catch (Exception ex)
+        {
+            if (Volatile.Read(ref _disposed) == 0)
+            {
+                _logger.LogDebug(ex, "Failure while sending an acknowledgment message.");
+                _connection.Abort();
             }
         }
     }
@@ -136,11 +153,7 @@ internal sealed class MessageBuffer : IDisposable
         // TODO: Add backpressure based on message count
         if (_bufferedByteCount > _bufferLimit)
         {
-#if NET
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5), _timeProvider);
-#else
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-#endif
+            using var cts = CreateBackpressureCancellationTokenSource();
             using var _ = CancellationTokenUtils.CreateLinkedToken(cts.Token, cancellationToken, out var linkedToken);
             // primitive backpressure if buffer is full
             while (await _waitForAck.Reader.WaitToReadAsync(linkedToken).ConfigureAwait(false))
@@ -170,7 +183,7 @@ internal sealed class MessageBuffer : IDisposable
             {
                 _totalMessageCount++;
                 _bufferedByteCount += messageBytes.Length;
-                _buffer.AddMessage(messageBytes, _totalMessageCount, _pool);
+                _bufferTail = _bufferTail.AddMessage(messageBytes, _totalMessageCount, _pool);
 
                 writeTask = _writer.WriteAsync(messageBytes, cancellationToken);
             }
@@ -197,8 +210,9 @@ internal sealed class MessageBuffer : IDisposable
         await _writeLock.WaitAsync(cancellationToken: default).ConfigureAwait(false);
         try
         {
-            var item = _buffer.RemoveMessages(ackMessage.SequenceId, _pool);
-            _buffer = item.Buffer;
+            var item = _bufferHead.RemoveMessages(ackMessage.SequenceId, _pool);
+            // RemoveMessages retains the last buffer, so _bufferTail remains valid even when all messages are acknowledged.
+            _bufferHead = item.Buffer;
             _bufferedByteCount -= item.ReturnCredit;
 
             newCount = _bufferedByteCount;
@@ -220,6 +234,11 @@ internal sealed class MessageBuffer : IDisposable
         if (message is SequenceMessage sequenceMessage)
         {
             // TODO: is a sequence message expected right now?
+
+            if (sequenceMessage.SequenceId < 1)
+            {
+                throw new InvalidOperationException("Sequence ID must be greater than 0.");
+            }
 
             if (sequenceMessage.SequenceId > _currentReceivingSequenceId)
             {
@@ -259,59 +278,114 @@ internal sealed class MessageBuffer : IDisposable
         _resend = tcs;
 
         FlushResult finalResult = new();
-        await _writeLock.WaitAsync().ConfigureAwait(false);
+        var cts = CreateBackpressureCancellationTokenSource();
         try
         {
-            // Complete previous pipe so transport reader can cleanup
-            _writer.Complete();
-            // Replace writer with new pipe that the transport will be reading from
-            _writer = writer;
-
-            _sequenceMessage.SequenceId = _totalMessageCount + 1;
-
-            var isFirst = true;
-            // Loop over all buffered messages and send them
-            foreach (var item in _buffer.GetMessages())
+            await _writeLock.WaitAsync(cts.Token).ConfigureAwait(false);
+            try
             {
-                if (item.SequenceId > 0)
+                cts = ResetBackpressureCancellationTokenSource(cts);
+
+                // Complete previous pipe so transport reader can cleanup
+                _writer.Complete();
+                // Replace writer with new pipe that the transport will be reading from
+                _writer = writer;
+
+                _sequenceMessage.SequenceId = _totalMessageCount + 1;
+
+                var isFirst = true;
+                // Loop over all buffered messages and send them
+                foreach (var item in _bufferHead.GetMessages())
                 {
-                    // The first message we send is a SequenceMessage with the ID of the first unacked message we're sending
-                    if (isFirst)
+                    if (item.SequenceId > 0)
                     {
-                        _sequenceMessage.SequenceId = item.SequenceId;
-                        // No need to flush since we're immediately calling WriteAsync after
-                        _protocol.WriteMessage(_sequenceMessage, _writer);
-                        isFirst = false;
-                    }
-                    // Use WriteAsync instead of doing all Writes and then a FlushAsync so we can observe backpressure
-                    finalResult = await _writer.WriteAsync(item.HubMessage).ConfigureAwait(false);
-                }
-            }
+                        // The first message we send is a SequenceMessage with the ID of the first unacked message we're sending
+                        if (isFirst)
+                        {
+                            _sequenceMessage.SequenceId = item.SequenceId;
+                            // No need to flush since we're immediately calling WriteAsync after
+                            _protocol.WriteMessage(_sequenceMessage, _writer);
+                            isFirst = false;
+                        }
+                        // Use WriteAsync instead of doing all Writes and then a FlushAsync so we can observe backpressure
+                        finalResult = await _writer.WriteAsync(item.HubMessage, cts.Token).ConfigureAwait(false);
+                        if (finalResult.IsCanceled || finalResult.IsCompleted)
+                        {
+                            break;
+                        }
 
-            // There were no buffered messages, we still need to send the SequenceMessage to let the client know what ID messages will start at
-            if (isFirst)
+                        cts = ResetBackpressureCancellationTokenSource(cts);
+                    }
+                }
+
+                // There were no buffered messages, we still need to send the SequenceMessage to let the client know what ID messages will start at
+                if (isFirst)
+                {
+                    _protocol.WriteMessage(_sequenceMessage, _writer);
+                    finalResult = await _writer.FlushAsync(cts.Token).ConfigureAwait(false);
+                }
+
+                tcs.TrySetResult(finalResult);
+            }
+            finally
             {
-                _protocol.WriteMessage(_sequenceMessage, _writer);
-                finalResult = await _writer.FlushAsync().ConfigureAwait(false);
+                _writeLock.Release();
             }
         }
         catch (Exception ex)
         {
-            tcs.SetException(ex);
+            tcs.TrySetException(ex);
             // Observe exception in case WriteAsync isn't waiting on the task
             _ = tcs.Task.Exception;
-            _logger.LogDebug(ex, "Failure while resending messages after a reconnect.");
+
+            if (Volatile.Read(ref _disposed) == 0)
+            {
+                _logger.LogDebug(ex, "Failure while resending messages after a reconnect.");
+                _connection.Abort();
+            }
         }
         finally
         {
-            _writeLock.Release();
-            tcs.TrySetResult(finalResult);
+            cts.Dispose();
         }
     }
 
+#if NET
+    private CancellationTokenSource CreateBackpressureCancellationTokenSource()
+    {
+        return new CancellationTokenSource(_backpressureTimeout, _timeProvider);
+    }
+
+    private CancellationTokenSource ResetBackpressureCancellationTokenSource(CancellationTokenSource cts)
+    {
+        if (cts.TryReset())
+        {
+            cts.CancelAfter(_backpressureTimeout);
+            return cts;
+        }
+
+        cts.Dispose();
+        return CreateBackpressureCancellationTokenSource();
+    }
+#else
+    private static CancellationTokenSource CreateBackpressureCancellationTokenSource()
+    {
+        return new CancellationTokenSource(_backpressureTimeout);
+    }
+
+    private static CancellationTokenSource ResetBackpressureCancellationTokenSource(CancellationTokenSource cts)
+    {
+        cts.Dispose();
+        return CreateBackpressureCancellationTokenSource();
+    }
+#endif
+
     public void Dispose()
     {
-        ((IDisposable)_timer).Dispose();
+        if (Interlocked.Exchange(ref _disposed, 1) == 0)
+        {
+            ((IDisposable)_timer).Dispose();
+        }
     }
 
     // Linked list of SerializedHubMessage arrays, sort of like ReadOnlySequence
@@ -327,45 +401,36 @@ internal sealed class MessageBuffer : IDisposable
 
         private readonly ReadOnlyMemory<byte>[] _messages = new ReadOnlyMemory<byte>[BufferLength];
 
-        public void AddMessage(ReadOnlyMemory<byte> hubMessage, long sequenceId, Stack<LinkedBuffer> pool)
+        public LinkedBuffer AddMessage(ReadOnlyMemory<byte> hubMessage, long sequenceId, Stack<LinkedBuffer> pool)
         {
-            if (_startingSequenceId < 0)
-            {
-                Debug.Assert(_currentIndex == -1);
-                _startingSequenceId = sequenceId;
-            }
+            Debug.Assert(_next is null);
 
-            if (_currentIndex < BufferLength - 1)
-            {
-                Debug.Assert(_startingSequenceId + _currentIndex + 1 == sequenceId);
-
-                _currentIndex++;
-                _messages[_currentIndex] = hubMessage;
-            }
-            else if (_next is null)
+            var buffer = this;
+            if (_currentIndex == BufferLength - 1)
             {
                 if (pool.Count != 0)
                 {
-                    _next = pool.Pop();
+                    buffer = pool.Pop();
                 }
                 else
                 {
-                    _next = new LinkedBuffer();
+                    buffer = new LinkedBuffer();
                 }
-                _next.AddMessage(hubMessage, sequenceId, pool);
+                _next = buffer;
             }
-            else
+
+            if (buffer._startingSequenceId < 0)
             {
-                // TODO: Should we avoid this path by keeping a tail pointer?
-
-                var linkedBuffer = _next;
-                while (linkedBuffer._next is not null)
-                {
-                    linkedBuffer = linkedBuffer._next;
-                }
-
-                linkedBuffer.AddMessage(hubMessage, sequenceId, pool);
+                Debug.Assert(buffer._currentIndex == -1);
+                buffer._startingSequenceId = sequenceId;
             }
+
+            Debug.Assert(buffer._startingSequenceId + buffer._currentIndex + 1 == sequenceId);
+
+            buffer._currentIndex++;
+            buffer._messages[buffer._currentIndex] = hubMessage;
+
+            return buffer;
         }
 
         public (LinkedBuffer Buffer, int ReturnCredit) RemoveMessages(long sequenceId, Stack<LinkedBuffer> pool)

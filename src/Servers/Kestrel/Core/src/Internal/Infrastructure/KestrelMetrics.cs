@@ -20,6 +20,12 @@ internal sealed class KestrelMetrics
 
     public const string ErrorTypeAttributeName = "error.type";
 
+    // Tag indicating whether a bare LF terminated request was accepted or rejected.
+    public const string BareLineFeedOutcomeAttributeName = "kestrel.bare_line_feed.outcome";
+    public const string BareLineFeedOutcomeAccepted = "accepted";
+    public const string BareLineFeedOutcomeRejected = "rejected";
+
+    public const string Http10 = "1.0";
     public const string Http11 = "1.1";
     public const string Http2 = "2";
     public const string Http3 = "3";
@@ -28,6 +34,7 @@ internal sealed class KestrelMetrics
     private readonly UpDownCounter<long> _activeConnectionsCounter;
     private readonly Histogram<double> _connectionDuration;
     private readonly Counter<long> _rejectedConnectionsCounter;
+    private readonly Counter<long> _bareLineFeedRequestsCounter;
     private readonly UpDownCounter<long> _queuedConnectionsCounter;
     private readonly UpDownCounter<long> _queuedRequestsCounter;
     private readonly UpDownCounter<long> _currentUpgradedRequestsCounter;
@@ -53,6 +60,11 @@ internal sealed class KestrelMetrics
            "kestrel.rejected_connections",
             unit: "{connection}",
             description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
+
+        _bareLineFeedRequestsCounter = _meter.CreateCounter<long>(
+           "kestrel.bare_line_feed_requests",
+            unit: "{request}",
+            description: "Number of HTTP/1.x requests that used a bare LF (instead of CRLF) as a line terminator in the request line, headers, or trailers.");
 
         _queuedConnectionsCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.queued_connections",
@@ -160,6 +172,21 @@ internal sealed class KestrelMetrics
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _rejectedConnectionsCounter.Add(1, tags);
+    }
+
+    public void BareLineFeedRequest(ConnectionMetricsContext metricsContext, bool rejected, string httpVersion)
+    {
+        if (!_bareLineFeedRequestsCounter.Enabled)
+        {
+            return;
+        }
+
+        var tags = new TagList();
+        InitializeConnectionTags(ref tags, metricsContext);
+        tags.Add("network.protocol.name", "http");
+        tags.Add("network.protocol.version", httpVersion);
+        tags.TryAddTag(BareLineFeedOutcomeAttributeName, rejected ? BareLineFeedOutcomeRejected : BareLineFeedOutcomeAccepted);
+        _bareLineFeedRequestsCounter.Add(1, tags);
     }
 
     public void ConnectionQueuedStart(ConnectionMetricsContext metricsContext)
@@ -341,7 +368,7 @@ internal sealed class KestrelMetrics
     public static bool TryGetHandshakeProtocol(SslProtocols protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
     {
         // Protocol should be either TLS 1.2 or 1.3. Many older SslProtocols are no longer supported.
-        // Logic for resolving older known values is still here out of an abundence of caution.
+        // Logic for resolving older known values is still here out of an abundance of caution.
 
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable SYSLIB0039 // Type or member is obsolete
@@ -401,7 +428,7 @@ internal sealed class KestrelMetrics
         {
             // Set end reason when either:
             // - Overwrite is true. For example, AppShutdownTimeout reason is forced when shutting down
-            //   the app reguardless of whether there is already a value.
+            //   the app regardless of whether there is already a value.
             // - New reason is an error type and there isn't already an error type set.
             //   In other words, first error wins.
             if (overwrite)

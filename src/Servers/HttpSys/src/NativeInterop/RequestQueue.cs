@@ -132,7 +132,7 @@ internal sealed partial class RequestQueue
     }
 
     /// <summary>
-    /// True if this instace created the queue instead of attaching to an existing one.
+    /// True if this instance created the queue instead of attaching to an existing one.
     /// </summary>
     internal bool Created { get; }
 
@@ -184,10 +184,9 @@ internal sealed partial class RequestQueue
         // Close the request queue handle first to cancel any pending IO operations.
         // This must happen before disposing BoundHandle, as pending operations need
         // to be cancelled and cleaned up using the BoundHandle.
-        PInvoke.HttpCloseRequestQueue(Handle);
+        Handle.Dispose();
 
         BoundHandle.Dispose();
-        Handle.SetHandleAsInvalid();
     }
 
     /// <summary>

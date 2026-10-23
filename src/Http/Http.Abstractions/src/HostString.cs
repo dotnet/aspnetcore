@@ -131,7 +131,7 @@ public readonly struct HostString : IEquatable<HostString>
     /// Returns the value properly formatted and encoded for use in a URI in a HTTP header.
     /// Any Unicode is converted to punycode. IPv6 addresses will have brackets added if they are missing.
     /// </summary>
-    /// <returns>The <see cref="HostString"/> value formated for use in a URI or HTTP header.</returns>
+    /// <returns>The <see cref="HostString"/> value formatted for use in a URI or HTTP header.</returns>
     public string ToUriComponent()
     {
         if (!HasValue)
@@ -263,7 +263,16 @@ public readonly struct HostString : IEquatable<HostString>
                 var allowedRoot = pattern.Subsegment(1);
 
                 var hostRoot = host.Subsegment(host.Length - allowedRoot.Length);
-                if (hostRoot.Equals(allowedRoot, StringComparison.OrdinalIgnoreCase))
+                if (hostRoot.Equals(allowedRoot, StringComparison.OrdinalIgnoreCase) &&
+                    // We don't want the wildcard to match a portion that contains an empty label
+                    // (i.e. starts with `.`, includes empty wildcard, or contains consecutive dots).
+                    // For example:
+                    //   - `*.example.com` should not match `.example.com`
+                    //   - `*.example.com` should not match `..example.com`
+                    //   - `*.example.com` should not match `foo..example.com`
+                    //   - `*.example.com` should not match `foo..bar.example.com`
+                    host[0] != '.' &&
+                    host.AsSpan().IndexOf("..") < 0)
                 {
                     return true;
                 }

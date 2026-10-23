@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" AllowExplicitReference="true" PrivateAssets="All" IsImplicitlyDefined="true" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" />
   </ItemGroup>
 
   <!--
@@ -43,6 +43,7 @@
     <GenerateFileFromTemplate
       TemplateFile="%(GeneratedContent.Identity)"
       Properties="$(GeneratedContentProperties);%(GeneratedContent.AdditionalProperties)"
+      SkipUnchanged="true"
       OutputPath="%(GeneratedContent.OutputPath)">
 
       <Output TaskParameter="ResolvedOutputPath" ItemName="FileWrites" />

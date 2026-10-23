@@ -163,7 +163,7 @@ internal static class RenderTreeDiffBuilder
                             //     we can pick either one to handle on this iteration, and the other will be
                             //     found and handled on the next iteration
                             // So all cases can be handled by the following simple criterion, which is pleasingly
-                            // symetrically opposite the case for newKey==null.
+                            // symmetrically opposite the case for newKey==null.
                             action = newKeyIsInOldTree ? DiffAction.Delete : DiffAction.Insert;
                         }
 

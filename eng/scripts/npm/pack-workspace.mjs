@@ -3,7 +3,7 @@
 import { resolve, dirname } from 'path';
 import { execSync } from 'child_process';
 import fsExtra from 'fs-extra';
-const { existsSync, writeJsonSync, readJsonSync, moveSync } = fsExtra;
+const { existsSync, writeJsonSync, readJsonSync, moveSync, copySync, removeSync } = fsExtra;
 import { applyVersions } from './update-dependency-versions.mjs';
 
 // Valid actions are --update-versions and --create-packages
@@ -67,6 +67,12 @@ if (action === '--update-versions') {
 
 // For each package to pack run npm pack
 function createPackages(packagesToPack) {
+  // The repo's LICENSE file lives at the root of the workspace next to package.json.
+  const licenseSourcePath = resolve(dirname(workspacePath), 'LICENSE.txt');
+  if (!existsSync(licenseSourcePath)) {
+    throw new Error(`The license file ${licenseSourcePath} does not exist.`);
+  }
+
   for (const [packagePath, packageJson] of packagesToPack) {
     const packageName = packageJson.name;
     const packageVersion = defaultPackageVersion;
@@ -74,12 +80,29 @@ function createPackages(packagesToPack) {
     const normalizedPackageName = packageName.replace('@', '').replace('/', '-');
     const packageFileName = `${normalizedPackageName}-${packageVersion}.tgz`;
     const packageTarball = resolve(packageDir, `${packageFileName}`);
-    console.log(`Packing ${packageName}...`);
-    // Log and execute the command
-    console.log(`npm pack ${packageDir} --pack-destination ${packageOutputPath}`);
-    execSync(`npm pack ${packageDir} --pack-destination ${packageOutputPath}`, { stdio: 'inherit' });
 
-    console.log(`Packed ${packageName} to ${resolve(packageOutputPath, packageTarball)}`);
+    // Copy the repo's LICENSE file into the package directory so that it ships in the published
+    // package. npm always includes a top-level LICENSE file in the tarball, even when the
+    // package.json "files" allowlist is specified, so no changes to "files" are required.
+    const licenseDestPath = resolve(packageDir, 'LICENSE.txt');
+    const licenseAlreadyPresent = existsSync(licenseDestPath);
+    if (!licenseAlreadyPresent) {
+      copySync(licenseSourcePath, licenseDestPath);
+    }
+
+    try {
+      console.log(`Packing ${packageName}...`);
+      // Log and execute the command
+      console.log(`npm pack ${packageDir} --pack-destination ${packageOutputPath}`);
+      execSync(`npm pack ${packageDir} --pack-destination ${packageOutputPath}`, { stdio: 'inherit' });
+
+      console.log(`Packed ${packageName} to ${resolve(packageOutputPath, packageTarball)}`);
+    } finally {
+      // Remove the copied LICENSE file so we don't leave build artifacts in the source tree.
+      if (!licenseAlreadyPresent) {
+        removeSync(licenseDestPath);
+      }
+    }
   }
 }
 

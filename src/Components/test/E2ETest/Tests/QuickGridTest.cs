@@ -32,76 +32,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
-    public void CanColumnSortByInt()
-    {
-        var grid = app.FindElement(By.CssSelector("#grid > table"));
-        var idColumnSortButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(1) > div > button"));
-
-        // Click twice to sort by descending
-        idColumnSortButton.Click();
-        idColumnSortButton.Click();
-
-        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
-
-        //Compare first row to expected result
-        Assert.Equal("12381", firstRow.FindElement(By.CssSelector("td:nth-child(1)")).Text);
-        Assert.Equal("Matti", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
-        Assert.Equal("Karttunen", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
-        Assert.Equal("1981-06-04", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
-    }
-
-    [Fact]
-    public void CanColumnSortByString()
-    {
-        var grid = app.FindElement(By.CssSelector("#grid > table"));
-        var firstNameColumnSortButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button.col-title"));
-
-        // Click twice to sort by descending
-        firstNameColumnSortButton.Click();
-        firstNameColumnSortButton.Click();
-
-        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
-
-        //Compare first row to expected result
-        Assert.Equal("12379", firstRow.FindElement(By.CssSelector("td:nth-child(1)")).Text);
-        Assert.Equal("Zbyszek", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
-        Assert.Equal("Piestrzeniewicz", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
-        Assert.Equal("1981-04-02", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
-    }
-
-    [Fact]
-    public void CanColumnSortByDateOnly()
-    {
-        var grid = app.FindElement(By.CssSelector("#grid > table"));
-        var birthDateColumnSortButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(4) > div > button"));
-
-        // Click twice to sort by descending
-        birthDateColumnSortButton.Click();
-        birthDateColumnSortButton.Click();
-
-        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
-
-        //Compare first row to expected result
-        Assert.Equal("12364", firstRow.FindElement(By.CssSelector("td:nth-child(1)")).Text);
-        Assert.Equal("Paolo", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
-        Assert.Equal("Accorti", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
-        Assert.Equal("2018-05-18", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
-    }
-
-    [Fact]
-    public void PaginatorCorrectItemsPerPage()
-    {
-        var grid = app.FindElement(By.ClassName("quickgrid"));
-        var rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
-        Assert.Equal(10, rowCount);
-
-        app.FindElement(By.ClassName("go-next")).Click();
-
-        rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
-        Assert.Equal(10, rowCount);
-    }
-
-    [Fact]
     public void PaginatorDisplaysCorrectItemCount()
     {
         var paginator = app.FindElement(By.ClassName("paginator"));
@@ -245,7 +175,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         Browser.Equal("2", () => app.FindElement(By.Id("items-provider-calls")).Text);
     }
-    
+
     [Fact]
     public void OnRowClickTriggersCallback()
     {

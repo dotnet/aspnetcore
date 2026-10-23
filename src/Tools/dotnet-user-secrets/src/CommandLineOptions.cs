@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
@@ -75,6 +77,11 @@ public class CommandLineOptions
         if (options.File != null && options.Project != null)
         {
             throw new CommandParsingException(app, Resources.Error_ProjectAndFileOptions);
+        }
+
+        if (options.File is not null && !string.Equals(Path.GetExtension(options.File), ".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new CommandParsingException(app, Resources.Error_FileInvalidExtension);
         }
 
         return options;

@@ -170,10 +170,10 @@ internal sealed partial class RequestStream : Stream
     }
 
     public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback? callback, object? state)
-        => TaskToApm.Begin(ReadAsync(buffer, offset, size, CancellationToken.None), callback, state);
+        => TaskToAsyncResult.Begin(ReadAsync(buffer, offset, size, CancellationToken.None), callback, state);
 
     public override int EndRead(IAsyncResult asyncResult)
-        => TaskToApm.End<int>(asyncResult);
+        => TaskToAsyncResult.End<int>(asyncResult);
 
     public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
     {

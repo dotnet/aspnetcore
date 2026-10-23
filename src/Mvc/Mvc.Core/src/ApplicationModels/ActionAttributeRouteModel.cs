@@ -130,7 +130,7 @@ internal static class ActionAttributeRouteModel
     {
         if (controllerMetadata != null)
         {
-            // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
+            // It is critical to get the order in which metadata appears in endpoint metadata correct. More significant metadata
             // must appear later in the sequence. In this case, the values in `controllerMetadata` should have their order
             // preserved, but appear earlier than the entries in `selector.EndpointMetadata`.
             for (var i = 0; i < controllerMetadata.Count; i++)

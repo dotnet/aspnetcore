@@ -1,0 +1,166 @@
+@page "/rich-text"
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Runtime.CompilerServices
+
+<PageTitle>Rich text rendering</PageTitle>
+
+<h1>Rich text rendering</h1>
+
+<ChatPage Agent="_agent" Placeholder="Request rich text" data-scenario="rich-text">
+    <WelcomeContent>
+        <p>Send a message to render the structured content matrix.</p>
+    </WelcomeContent>
+</ChatPage>
+
+@code {
+    private readonly UIAgent _agent = new(new RichTextChatClient());
+
+    public void Dispose() => _agent.Dispose();
+
+    private sealed class RichTextChatClient : IChatClient
+    {
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            yield return CreateUpdate(
+                "Components.AI rich text",
+                [
+                    Node<HeadingNode>(new TextNode("Components.AI rich text"), heading => heading.Level = 2),
+                    Node<ParagraphNode>(
+                        new TextNode("Streaming "),
+                        Node<StrongNode>(new TextNode("structured content"))),
+                ]);
+
+            await Task.Yield();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            yield return CreateUpdate("Complete structured content", CreateContentMatrix());
+        }
+
+        public Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => GetStreamingResponseAsync(messages, options, cancellationToken)
+                .ToChatResponseAsync(cancellationToken);
+
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => serviceType == typeof(IChatClient) ? this : null;
+
+        public void Dispose()
+        {
+        }
+
+        private static ChatResponseUpdate CreateUpdate(
+            string text,
+            IReadOnlyList<RichTextNode> nodes)
+            => new()
+            {
+                Role = ChatRole.Assistant,
+                MessageId = "aiapp-rich-text",
+                Contents = [new RichTextContent(text, nodes)],
+            };
+
+        private static IReadOnlyList<RichTextNode> CreateContentMatrix()
+        {
+            var safeLink = Node<LinkNode>(
+                new TextNode("Components documentation"),
+                link =>
+                {
+                    link.Url = "https://learn.microsoft.com/aspnet/core/blazor/";
+                    link.Title = "Blazor documentation";
+                });
+            var image = new ImageNode("/rich-text-image.svg", "Decorative rich text sample");
+            var task = Node<ListItemNode>(
+                Node<ParagraphNode>(new TextNode("Structured snapshots")));
+            task.Checked = true;
+            var table = new TableNode
+            {
+                Alignment = [TableColumnAlignment.Left, TableColumnAlignment.Right],
+            };
+            table.AddChild(Node<TableRowNode>(
+                Node<TableCellNode>(new TextNode("Node")),
+                Node<TableCellNode>(new TextNode("Rendered as"))));
+            table.AddChild(Node<TableRowNode>(
+                Node<TableCellNode>(new TextNode("StrongNode")),
+                Node<TableCellNode>(new TextNode("strong"))));
+
+            var footnoteDefinition = Node<FootnoteDefinitionNode>(
+                Node<ParagraphNode>(new TextNode("Snapshots replace the complete tree.")));
+            footnoteDefinition.Label = "snapshot";
+
+            return
+            [
+                Node<HeadingNode>(
+                    new TextNode("Components.AI rich text"),
+                    heading => heading.Level = 2),
+                Node<ParagraphNode>(
+                    new TextNode("Render "),
+                    Node<StrongNode>(new TextNode("strong")),
+                    new TextNode(", "),
+                    Node<EmphasisNode>(new TextNode("emphasized")),
+                    new TextNode(", and "),
+                    Node<StrikethroughNode>(new TextNode("struck-through")),
+                    new TextNode(" text with "),
+                    new InlineCodeNode("C#"),
+                    new TextNode(" and "),
+                    safeLink,
+                    new TextNode(".")),
+                Node<BlockQuoteNode>(
+                    Node<ParagraphNode>(new TextNode("Streaming never exposes a partial tree."))),
+                Node<ListNode>(
+                    Node<ListItemNode>(Node<ParagraphNode>(new TextNode("Headings and paragraphs"))),
+                    task),
+                new CodeBlockNode("Console.WriteLine(\"Rich text\");", "csharp"),
+                new ThematicBreakNode(),
+                table,
+                image,
+                Node<ParagraphNode>(
+                    new TextNode("Snapshot semantics"),
+                    new FootnoteReferenceNode { Label = "snapshot" }),
+                footnoteDefinition,
+                new DefinitionNode
+                {
+                    Label = "components",
+                    Url = "https://learn.microsoft.com/aspnet/core/blazor/",
+                    Title = "Components",
+                },
+                new ImageReferenceNode
+                {
+                    Label = "sample",
+                    Alt = "Image reference fallback",
+                    ReferenceKind = ReferenceKind.Collapsed,
+                },
+                new HtmlNode("<mark>Encoded HTML source</mark>"),
+            ];
+        }
+
+        private static TNode Node<TNode>(params RichTextNode[] children)
+            where TNode : RichTextNode, new()
+            => Node<TNode>(children, configure: null);
+
+        private static TNode Node<TNode>(
+            RichTextNode child,
+            Action<TNode> configure)
+            where TNode : RichTextNode, new()
+            => Node<TNode>([child], configure);
+
+        private static TNode Node<TNode>(
+            RichTextNode[] children,
+            Action<TNode>? configure)
+            where TNode : RichTextNode, new()
+        {
+            var node = new TNode();
+            configure?.Invoke(node);
+            foreach (var child in children)
+            {
+                node.AddChild(child);
+            }
+
+            return node;
+        }
+    }
+}

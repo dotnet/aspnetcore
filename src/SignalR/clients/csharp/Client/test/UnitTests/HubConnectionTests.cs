@@ -343,6 +343,35 @@ public partial class HubConnectionTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task CanCancelTokenDuringInvoke_SendsCancelInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            using var cts = new CancellationTokenSource();
+            var invokeTask = hubConnection.InvokeAsync<int>("TestMethod", cts.Token);
+
+            var item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            var invocationId = item["invocationId"];
+
+            // Cancel the invocation
+            cts.Cancel();
+
+            // Should receive CancelInvocationMessage
+            item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.CancelInvocationMessageType, item["type"]);
+            Assert.Equal(invocationId, item["invocationId"]);
+
+            // Invocation on client-side completes with cancellation
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask).DefaultTimeout();
+        }
+    }
+
+    [Fact]
     public async Task ConnectionTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -565,10 +594,14 @@ public partial class HubConnectionTests : VerifiableLoggedTest
                 await channel.Writer.WriteAsync(number);
             }
 
-            // the next sent message should be a completion message
+            // the next sent message should be a stream completion message
             var complete = await connection.ReadSentJsonAsync().DefaultTimeout();
             Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
             Assert.EndsWith("canceled by client.", ((string)complete["error"]));
+
+            // after stream completion, a cancel invocation message should be sent
+            var cancel = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.CancelInvocationMessageType, cancel["type"]);
         }
     }
 
@@ -909,6 +942,39 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         Assert.Null(exception);
 
         await reconnectFeature.DisableReconnectCalled.DefaultTimeout();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task ConnectionClosedWithErrorWhenNonPositiveSequenceIdReceived(long sequenceId)
+    {
+        var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+        var innerConnection = new TestConnection();
+        var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+        innerConnection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+        var delegateConnectionFactory = new DelegateConnectionFactory(
+            endPoint => innerConnection.StartAsync());
+        builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
+        var hubConnection = builder.Build();
+        var closedEventTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        hubConnection.Closed += e =>
+        {
+            closedEventTcs.SetResult(e);
+            return Task.CompletedTask;
+        };
+
+        await hubConnection.StartAsync().DefaultTimeout();
+
+        await innerConnection.ReceiveJsonMessage(new { type = HubProtocolConstants.SequenceMessageType, sequenceId });
+
+        var exception = Assert.IsType<InvalidOperationException>(await closedEventTcs.Task.DefaultTimeout());
+        Assert.Equal("Sequence ID must be greater than 0.", exception.Message);
+        Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
     }
 
     [Fact]

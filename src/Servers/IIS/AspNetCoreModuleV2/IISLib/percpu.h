@@ -200,6 +200,7 @@ PER_CPU<T>::ForEach(
     FunctionForEach Function
 )
 {
+    // codeql[SM02323] - Loop is counter-bounded: Index starts at 0, increments monotonically, and exits at m_VariablesCount.
     for(DWORD Index = 0; Index < m_VariablesCount; ++Index)
     {
         T * pObject = GetObject(Index);

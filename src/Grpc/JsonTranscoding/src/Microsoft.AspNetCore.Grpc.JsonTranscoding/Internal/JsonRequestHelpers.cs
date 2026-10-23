@@ -291,8 +291,7 @@ internal static class JsonRequestHelpers
                 if (CanBindQueryStringVariable(serverCallContext, item.Key))
                 {
                     var pathDescriptors = GetPathDescriptors(serverCallContext, requestMessage, item.Key);
-
-                    if (pathDescriptors != null)
+                    if (pathDescriptors != null && !ConflictsWithRouteParameter(serverCallContext, pathDescriptors))
                     {
                         var value = item.Value.Count == 1 ? (object?)item.Value[0] : item.Value;
                         ServiceDescriptorHelpers.RecursiveSetValue(requestMessage, pathDescriptors, value);
@@ -361,11 +360,18 @@ internal static class JsonRequestHelpers
 
     private static List<FieldDescriptor>? GetPathDescriptors(JsonTranscodingServerCallContext serverCallContext, IMessage requestMessage, string path)
     {
-        return serverCallContext.DescriptorInfo.PathDescriptorsCache.GetOrAdd(path, p =>
+        // Must not add null values for paths that don't resolve to a descriptor
+        var descriptorInfo = serverCallContext.DescriptorInfo;
+        if (descriptorInfo.PathDescriptorsCache.TryGetValue(path, out var pathDescriptors))
         {
-            ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, p.Split('.'), allowJsonName: true, out var pathDescriptors);
             return pathDescriptors;
-        });
+        }
+        if (ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, path.Split('.'), allowJsonName: true, out pathDescriptors))
+        {
+            descriptorInfo.TryAddPathDescriptors(path, pathDescriptors);
+            return pathDescriptors;
+        }
+        return null;
     }
 
     public static async ValueTask SendMessage<TResponse>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions, TResponse message, CancellationToken cancellationToken) where TResponse : class
@@ -408,24 +414,25 @@ internal static class JsonRequestHelpers
     {
         if (serverCallContext.DescriptorInfo.BodyDescriptor != null)
         {
-            var bodyFieldName = serverCallContext.DescriptorInfo.BodyFieldDescriptor?.Name;
+            var bodyFieldDescriptor = serverCallContext.DescriptorInfo.BodyFieldDescriptor;
 
-            // Null field name indicates "*" which means the entire message is bound to the body.
-            if (bodyFieldName == null)
+            // Null field descriptor indicates "*" which means the entire message is bound to the body.
+            if (bodyFieldDescriptor?.Name is null)
             {
                 return false;
             }
 
-            // Exact match
-            if (variable == bodyFieldName)
+            var bodyFieldName = bodyFieldDescriptor.Name;
+            var bodyFieldJsonName = bodyFieldDescriptor.JsonName;
+
+            // Exact match (proto name or JSON name)
+            if (variable == bodyFieldName || variable == bodyFieldJsonName)
             {
                 return false;
             }
 
-            // Nested field of field name.
-            if (bodyFieldName.Length + 1 < variable.Length &&
-                variable.StartsWith(bodyFieldName, StringComparison.Ordinal) &&
-                variable[bodyFieldName.Length] == '.')
+            // Nested field of body field (proto name prefix or JSON name prefix).
+            if (IsNestedBodyField(variable, bodyFieldName) || IsNestedBodyField(variable, bodyFieldJsonName))
             {
                 return false;
             }
@@ -437,5 +444,45 @@ internal static class JsonRequestHelpers
         }
 
         return true;
+    }
+
+    // A query string variable must not overwrite a value already bound from a route parameter.
+    // The variable is compared against route parameters by resolved field identity so that
+    // proto-name, JSON-name, and mixed-name spellings (e.g. "tenantScope.tenant_id") as well as
+    // ancestor paths (e.g. "timestamp_value" overwriting a route-bound "timestamp_value.seconds")
+    // are all detected.
+    private static bool ConflictsWithRouteParameter(JsonTranscodingServerCallContext serverCallContext, List<FieldDescriptor> pathDescriptors)
+    {
+        foreach (var routeParameter in serverCallContext.DescriptorInfo.RouteParameterDescriptors.Values)
+        {
+            if (PathsOverlap(pathDescriptors, routeParameter.DescriptorsPath))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Two field paths overlap when one is equal to, or an ancestor of, the other.
+    private static bool PathsOverlap(List<FieldDescriptor> first, List<FieldDescriptor> second)
+    {
+        var count = Math.Min(first.Count, second.Count);
+        for (var i = 0; i < count; i++)
+        {
+            if (first[i] != second[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsNestedBodyField(string variable, string bodyFieldName)
+    {
+        return bodyFieldName.Length + 1 < variable.Length &&
+            variable.StartsWith(bodyFieldName, StringComparison.Ordinal) &&
+            variable[bodyFieldName.Length] == '.';
     }
 }

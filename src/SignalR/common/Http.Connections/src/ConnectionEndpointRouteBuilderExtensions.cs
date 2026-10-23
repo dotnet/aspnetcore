@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Builder;
 public static class ConnectionEndpointRouteBuilderExtensions
 {
     private static readonly NegotiateMetadata _negotiateMetadata = new NegotiateMetadata();
+    private static readonly AuthenticationRefreshMetadata _authRefreshMetadata = new AuthenticationRefreshMetadata();
 
     /// <summary>
     /// Maps incoming requests with the specified path to the provided connection pipeline.
@@ -84,6 +85,9 @@ public static class ConnectionEndpointRouteBuilderExtensions
     public static ConnectionEndpointRouteBuilder MapConnections(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, HttpConnectionDispatcherOptions options, Action<IConnectionBuilder> configure)
     {
         var dispatcher = endpoints.ServiceProvider.GetRequiredService<HttpConnectionDispatcher>();
+        // This metadata instance identifies one MapConnections invocation. Do not cache or reuse it
+        // globally, because doing so would allow connection tokens to be used across mappings.
+        var connectionEndpointMetadata = new HttpConnectionEndpointMetadata();
 
         var connectionBuilder = new ConnectionBuilder(endpoints.ServiceProvider);
         configure(connectionBuilder);
@@ -106,6 +110,20 @@ public static class ConnectionEndpointRouteBuilderExtensions
         negotiateBuilder.WithMetadata(_negotiateMetadata);
         negotiateBuilder.WithMetadata(options);
 
+        // Build the refresh handler for authentication token refresh
+        if (options.EnableAuthenticationRefresh)
+        {
+            var refreshApp = endpoints.CreateApplicationBuilder();
+            refreshApp.Run(c => dispatcher.ExecuteRefreshAsync(c, options));
+            var refreshHandler = refreshApp.Build();
+
+            var refreshBuilder = endpoints.Map(pattern + "/refresh", refreshHandler);
+            conventionBuilders.Add(refreshBuilder);
+            // Add the authentication refresh metadata so this endpoint can be identified (e.g. by Azure SignalR Service SDK)
+            refreshBuilder.WithMetadata(_authRefreshMetadata);
+            refreshBuilder.WithMetadata(options);
+        }
+
         // build the execute handler part of the protocol
         app = endpoints.CreateApplicationBuilder();
         app.UseWebSockets();
@@ -121,6 +139,8 @@ public static class ConnectionEndpointRouteBuilderExtensions
         // Add metadata to all of Endpoints
         compositeConventionBuilder.Add(e =>
         {
+            e.Metadata.Add(connectionEndpointMetadata);
+
             // Add the authorization data as metadata
             foreach (var data in options.AuthorizationData)
             {

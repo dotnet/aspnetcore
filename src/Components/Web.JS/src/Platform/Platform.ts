@@ -7,7 +7,7 @@ import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 
 export interface Platform {
-  load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void): Promise<void>;
+  load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void>;
   start(): Promise<PlatformApi>;
 
   callEntryPoint(): Promise<unknown>;

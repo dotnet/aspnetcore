@@ -1,0 +1,33 @@
+@page "/file-upload"
+@rendermode InteractiveServer
+
+<NativeAotStatus />
+<h1>Input file streaming</h1>
+
+<EditForm Model="_upload" OnValidSubmit="Submit">
+    <InputFile id="file-input" OnChange="ReadFileAsync" />
+    <button id="file-submit" type="submit" disabled="@(_upload.Length == 0)">Submit</button>
+</EditForm>
+
+<p id="file-read">@_upload.Name|@_upload.Content|@_upload.Length</p>
+<p id="file-result">@_result</p>
+
+@code {
+    private readonly UploadState _upload = new();
+    private string _result = "(unsubmitted)";
+
+    private async Task ReadFileAsync(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        await using var stream = file.OpenReadStream(1024);
+        using var reader = new StreamReader(stream);
+        _upload.Name = file.Name;
+        _upload.Content = await reader.ReadToEndAsync();
+        _upload.Length = file.Size;
+    }
+
+    private void Submit()
+    {
+        _result = $"submitted:{_upload.Name}:{_upload.Content}:{_upload.Length}";
+    }
+}

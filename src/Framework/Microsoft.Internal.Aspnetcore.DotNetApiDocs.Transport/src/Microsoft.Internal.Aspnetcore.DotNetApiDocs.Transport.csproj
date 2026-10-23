@@ -18,10 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="@(AspNetCoreShippingAssembly)" />
+    <ProjectReference Include="@(AspNetCoreShippingAssembly->'%(ProjectPath)')" />
 
     <!-- This project does not produce a .dll -->
-    <Reference Remove="Microsoft.Extensions.ApiDescription.Server" />
+    <ProjectReference Remove="$(RepoRoot)src\Tools\Extensions.ApiDescription.Server\src\Microsoft.Extensions.ApiDescription.Server.csproj" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

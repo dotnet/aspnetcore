@@ -380,7 +380,7 @@ public class TargetingPackTests
         var frameworkListEntries = frameworkListDoc.Root.Descendants();
 
         var packageFolder = SkipOnHelixAttribute.OnHelix() ?
-            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            AppContext.BaseDirectory :
             TestData.GetPackagesFolder();
         var targetingPackPath = Path.Combine(
             packageFolder, "Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg");

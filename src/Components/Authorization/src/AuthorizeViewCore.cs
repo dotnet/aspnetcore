@@ -10,10 +10,13 @@ namespace Microsoft.AspNetCore.Components.Authorization;
 /// <summary>
 /// A base class for components that display differing content depending on the user's authorization status.
 /// </summary>
+[CacheBehavior(CacheBehavior.Throw)]
+[CacheCondition(CacheVaryBy.User)]
 public abstract class AuthorizeViewCore : ComponentBase
 {
     private AuthenticationState? currentAuthenticationState;
     private bool? isAuthorized;
+    private CancellationTokenSource? authorizationCts;
 
     /// <summary>
     /// The content that will be displayed if the user is authorized.
@@ -83,12 +86,27 @@ public abstract class AuthorizeViewCore : ComponentBase
             throw new InvalidOperationException($"Authorization requires a cascading parameter of type Task<{nameof(AuthenticationState)}>. Consider using {typeof(CascadingAuthenticationState).Name} to supply this.");
         }
 
+        // Newer parameters arriving need to cancel the evaluation in flight so that it does not apply superseded results.
+        authorizationCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        authorizationCts = cts;
+        var cancellationToken = cts.Token;
+
         // Clear the previous result of authorization
         // This will cause the Authorizing state to be displayed until the authorization has been completed
         isAuthorized = null;
 
-        currentAuthenticationState = await AuthenticationState;
-        isAuthorized = await IsAuthorizedAsync(currentAuthenticationState.User);
+        // Nothing in the authorization pipeline accepts a CancellationToken, so we cannot use it to abort the work.
+        var authenticationState = await AuthenticationState;
+        var authorized = await IsAuthorizedAsync(authenticationState.User);
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        currentAuthenticationState = authenticationState;
+        isAuthorized = authorized;
     }
 
     /// <summary>
@@ -96,32 +114,39 @@ public abstract class AuthorizeViewCore : ComponentBase
     /// </summary>
     protected abstract IAuthorizeData[]? GetAuthorizeData();
 
+    internal virtual object[]? GetAuthorizationMetadata() => GetAuthorizeData();
+
     private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
     {
-        var authorizeData = GetAuthorizeData();
-        if (authorizeData == null)
+        var metadata = GetAuthorizationMetadata();
+        if (metadata is null || metadata.Length == 0)
         {
             // No authorization applies, so no need to consult the authorization service
             return true;
         }
 
-        EnsureNoAuthenticationSchemeSpecified(authorizeData);
+        EnsureNoAuthenticationSchemeSpecified(metadata);
 
         var policy = await AuthorizationPolicy.CombineAsync(
-            AuthorizationPolicyProvider, authorizeData);
-        var result = await AuthorizationService.AuthorizeAsync(user, Resource, policy!);
+            AuthorizationPolicyProvider, metadata);
+        if (policy is null)
+        {
+            // The metadata contained nothing that contributes to a policy.
+            return true;
+        }
+
+        var result = await AuthorizationService.AuthorizeAsync(user, Resource, policy);
         return result.Succeeded;
     }
 
-    private static void EnsureNoAuthenticationSchemeSpecified(IAuthorizeData[] authorizeData)
+    private static void EnsureNoAuthenticationSchemeSpecified(object[] metadata)
     {
         // It's not meaningful to specify a nonempty scheme, since by the time Components
         // authorization runs, we already have a specific ClaimsPrincipal (we're stateful).
         // To avoid any confusion, ensure the developer isn't trying to specify a scheme.
-        for (var i = 0; i < authorizeData.Length; i++)
+        for (var i = 0; i < metadata.Length; i++)
         {
-            var entry = authorizeData[i];
-            if (!string.IsNullOrEmpty(entry.AuthenticationSchemes))
+            if (metadata[i] is IAuthorizeData entry && !string.IsNullOrEmpty(entry.AuthenticationSchemes))
             {
                 throw new NotSupportedException($"The authorization data specifies an authentication scheme with value '{entry.AuthenticationSchemes}'. Authentication schemes cannot be specified for components.");
             }
