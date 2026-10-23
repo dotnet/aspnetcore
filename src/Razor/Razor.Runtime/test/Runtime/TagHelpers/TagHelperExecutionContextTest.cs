@@ -580,6 +580,127 @@ public class TagHelperExecutionContextTest
         Assert.Same(tagHelper2, tagHelpers[1]);
     }
 
+    [Fact]
+    public async Task SetOutputContentAsync_PrependsChildContent_WhenContentWasAppendedTo()
+    {
+        // Arrange
+        var tagHelperContent = new DefaultTagHelperContent();
+        var executionContext = new TagHelperExecutionContext(
+            "select",
+            tagMode: TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                tagHelperContent.AppendHtml("<option value=\"0\">Default</option>");
+                return Task.CompletedTask;
+            },
+            startTagHelperWritingScope: _ => { },
+            endTagHelperWritingScope: () => tagHelperContent);
+
+        // Act - Simulate a TagHelper appending content (without replacing)
+        executionContext.Output.Content.AppendHtml("<option value=\"1\">Added</option>");
+        await executionContext.SetOutputContentAsync();
+
+        // Assert - Child content should appear before the appended content
+        var result = executionContext.Output.Content.GetContent();
+        Assert.Equal(
+            "<option value=\"0\">Default</option><option value=\"1\">Added</option>",
+            result);
+    }
+
+    [Fact]
+    public async Task SetOutputContentAsync_SetsChildContent_WhenContentWasNotModified()
+    {
+        // Arrange
+        var tagHelperContent = new DefaultTagHelperContent();
+        var executionContext = new TagHelperExecutionContext(
+            "p",
+            tagMode: TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                tagHelperContent.SetContent("Child content");
+                return Task.CompletedTask;
+            },
+            startTagHelperWritingScope: _ => { },
+            endTagHelperWritingScope: () => tagHelperContent);
+
+        // Act
+        await executionContext.SetOutputContentAsync();
+
+        // Assert
+        Assert.Equal("Child content", executionContext.Output.Content.GetContent());
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsFalse_WhenContentIsOnlyAppendedTo()
+    {
+        // Arrange
+        var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
+
+        // Act
+        executionContext.Output.Content.AppendHtml("<span>appended</span>");
+
+        // Assert
+        Assert.False(executionContext.Output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsTrue_WhenContentIsSet()
+    {
+        // Arrange
+        var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
+
+        // Act
+        executionContext.Output.Content.SetHtmlContent("replaced");
+
+        // Assert
+        Assert.True(executionContext.Output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsTrue_WhenContentIsCleared()
+    {
+        // Arrange
+        var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
+
+        // Act
+        executionContext.Output.Content.Clear();
+
+        // Assert
+        Assert.True(executionContext.Output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsTrue_AfterSuppressOutput()
+    {
+        // Arrange
+        var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
+
+        // Act
+        executionContext.Output.Content.AppendHtml("something");
+        executionContext.Output.SuppressOutput();
+
+        // Assert
+        Assert.True(executionContext.Output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsFalse_AfterReinitialize()
+    {
+        // Arrange
+        var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
+        executionContext.Output.Content.AppendHtml("something");
+
+        // Act
+        executionContext.Output.Reinitialize("p", TagMode.StartTagAndEndTag);
+
+        // Assert
+        Assert.False(executionContext.Output.IsContentModified);
+    }
+
     private class PTagHelper : TagHelper
     {
     }
