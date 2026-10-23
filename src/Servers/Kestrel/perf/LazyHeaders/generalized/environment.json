@@ -1,0 +1,17 @@
+{
+  "capturedUtc": "2026-10-22T03:57:17.556270+00:00",
+  "platform": "Linux-6.12.8+-x86_64-with-glibc2.39",
+  "architecture": "x86_64",
+  "hostReportedCpuCount": 2,
+  "sharedClientAndServer": true,
+  "configuration": "16 connections,2 wrk threads,pipeline1,10s timeout,15s warmup,30s measurement,5 interleaved repeats",
+  "files": {
+    "/etc/os-release": "PRETTY_NAME=\"Ubuntu 24.04.3 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.3 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
+    "/sys/fs/cgroup/cpuset.cpus.effective": "0-1\n"
+  },
+  "notes": "Host CPU count is not container effective processor count; cgroup quotas govern. Server GC configured true in matched runtimeconfigs; runtime mode not separately queried. No isolated server/client bottleneck established.",
+  "missingFiles": [
+    "/sys/fs/cgroup/cpu.max",
+    "/sys/fs/cgroup/memory.max"
+  ]
+}

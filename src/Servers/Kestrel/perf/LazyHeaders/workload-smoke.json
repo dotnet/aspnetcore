@@ -1,0 +1,212 @@
+[
+  {
+    "lazy": "false",
+    "access": "ignore",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "false",
+    "access": "ignore",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "false",
+    "access": "ignore",
+    "values": [],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "false",
+    "access": "ignore",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "false",
+    "access": "read",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 5
+  },
+  {
+    "lazy": "false",
+    "access": "read",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 7
+  },
+  {
+    "lazy": "false",
+    "access": "read",
+    "values": [],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "false",
+    "access": "read",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 12
+  },
+  {
+    "lazy": "false",
+    "access": "enumerate",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 20
+  },
+  {
+    "lazy": "false",
+    "access": "enumerate",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 22
+  },
+  {
+    "lazy": "false",
+    "access": "enumerate",
+    "values": [],
+    "status": 200,
+    "observedLength": 15
+  },
+  {
+    "lazy": "false",
+    "access": "enumerate",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 26
+  },
+  {
+    "lazy": "true",
+    "access": "ignore",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "true",
+    "access": "ignore",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "true",
+    "access": "ignore",
+    "values": [],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "true",
+    "access": "ignore",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "true",
+    "access": "read",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 5
+  },
+  {
+    "lazy": "true",
+    "access": "read",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 7
+  },
+  {
+    "lazy": "true",
+    "access": "read",
+    "values": [],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "lazy": "true",
+    "access": "read",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 12
+  },
+  {
+    "lazy": "true",
+    "access": "enumerate",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 20
+  },
+  {
+    "lazy": "true",
+    "access": "enumerate",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 22
+  },
+  {
+    "lazy": "true",
+    "access": "enumerate",
+    "values": [],
+    "status": 200,
+    "observedLength": 15
+  },
+  {
+    "lazy": "true",
+    "access": "enumerate",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 26
+  }
+]

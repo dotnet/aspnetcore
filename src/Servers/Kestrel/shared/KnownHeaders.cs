@@ -373,6 +373,11 @@ public class KnownHeaders
                     values = AppendValue(values, valueStr);
                 }}";
 
+    static bool CanBeLazy(KnownHeader header) =>
+        header.Name != HeaderNames.ContentLength && header.Name != HeaderNames.Host &&
+        header.Name != HeaderNames.Connection && header.Name != HeaderNames.TransferEncoding &&
+        !header.Name.StartsWith(':');
+
     static string AppendIndexedSwitchSection(KnownHeader header)
     {
         if (header.Name == HeaderNames.ContentLength)
@@ -392,7 +397,7 @@ public class KnownHeaders
         else
         {
             return $@"flag = {header.FlagBit()};
-                    values = ref _headers._{header.Identifier};
+                    values = ref _headers.Get{header.Identifier}();
                     nameStr = {header.StaticIdentifier};
                     break;";
         }
@@ -436,7 +441,11 @@ public class KnownHeaders
             {
                 return $@"
                         {extraIndent}flag = {header.FlagBit()};
-                        {extraIndent}values = ref _headers._{header.Identifier};
+                        {extraIndent}{(CanBeLazy(header) ? $@"if (allowLazyValues && TryAppendLazy(value, ref _headers._value{header.Identifier}, flag, checkForNewlineChars))
+                        {extraIndent}{{
+                        {extraIndent}    return;
+                        {extraIndent}}}
+                        {extraIndent}" : "")}values = ref _headers.Get{header.Identifier}();
                         {extraIndent}nameStr = {header.StaticIdentifier};";
             }
         }
@@ -962,8 +971,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }}")}
         protected override int GetCountFast()
         {{
-            return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (MaybeUnknown?.Count ?? 0);
+            return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + ({(loop.ClassName == "HttpRequestHeaders" ? "_unknown" : "MaybeUnknown")}?.Count ?? 0);
         }}
+{(loop.ClassName == "HttpRequestHeaders" ? $@"
+        protected override ICollection<string> GetKeysFast()
+        {{
+            var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+{Each(loop.Headers.Where(header => header.Name != HeaderNames.ContentLength), header => $@"
+            if ({header.TestBit()})
+            {{
+                keys.Add({header.StaticIdentifier});
+            }}")}
+            if (_contentLength.HasValue)
+            {{
+                keys.Add(HeaderNames.ContentLength);
+            }}
+            if (_unknown is not null)
+            {{
+                keys.UnionWith(_unknown.Keys);
+            }}
+            return keys;
+        }}
+
+        protected override bool ContainsKeyFast(string key)
+        {{
+            switch (key.Length)
+            {{{Each(loop.HeadersByLength, byLength => $@"
+                case {byLength.Key}:{Each(byLength, header => $@"
+                    if (ReferenceEquals({header.StaticIdentifier}, key) || {header.StaticIdentifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {{
+                        return {(header.Name == HeaderNames.ContentLength ? "_contentLength.HasValue" : header.TestBit())};
+                    }}")}
+                    break;")}
+            }}
+            return _unknown?.ContainsKey(key) ?? false;
+        }}
+" : "")}
 
         protected override bool TryGetValueFast(string key, out StringValues value)
         {{
@@ -1203,7 +1246,7 @@ $@"        private void Clear(long bitsToClear)
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }}
-            ((ICollection<KeyValuePair<string, StringValues>>?)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            {(loop.ClassName == "HttpRequestHeaders" ? "CopyUnknownTo(array, arrayIndex);" : "((ICollection<KeyValuePair<string, StringValues>>?)MaybeUnknown)?.CopyTo(array, arrayIndex);")}
 
             return true;
         }}
@@ -1313,7 +1356,7 @@ $@"        private void Clear(long bitsToClear)
             return result;
         }}")}
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars, bool allowLazyValues = false)
         {{
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
@@ -1330,11 +1373,7 @@ $@"        private void Clear(long bitsToClear)
             else
             {{
                 // The header was not one of the ""known"" headers.
-                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
-                // this method with rep stosd, which is slower than necessary.
-                nameStr = name.GetHeaderName();
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
-                AppendUnknownHeaders(nameStr, valueStr);
+                AppendUnknown(name, value, checkForNewlineChars, allowLazyValues);
             }}
         }}
 
@@ -1380,10 +1419,23 @@ $@"        private void Clear(long bitsToClear)
             }}
         }}" : "")}
 
-        private struct HeaderReferences
-        {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => @"
-            public StringValues _" + header.Identifier + ";")}
-            {Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
+        private {(loop.ClassName == "HttpRequestHeaders" ? "partial " : "")}struct HeaderReferences
+        {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => loop.ClassName == "HttpRequestHeaders" && CanBeLazy(header) ? $@"
+            public HeaderValue _value{header.Identifier};
+            public StringValues _{header.Identifier}
+            {{
+                get => Get(ref _value{header.Identifier}, {header.FlagBit()});
+                set => Set(ref _value{header.Identifier}, value, {header.FlagBit()});
+            }}
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues Get{header.Identifier}() => ref Get(ref _value{header.Identifier}, {header.FlagBit()});
+" : $@"
+            public StringValues _{header.Identifier};{(loop.ClassName == "HttpRequestHeaders" ? $@"
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues Get{header.Identifier}() => ref _{header.Identifier};" : "")}")}
+{(loop.ClassName == "HttpRequestHeaders" ? @"            private byte[]? _bytes;
+            private int _used;
+            public long RawBits;" : "")}{Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
             public byte[]? _raw" + header.Identifier + ";")}
         }}
 
@@ -1413,7 +1465,10 @@ $@"        private void Clear(long bitsToClear)
                             {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = default;
                             ")}return false;
                         }}
-                        _current = _unknownEnumerator.Current;
+                        {(loop.ClassName == "HttpRequestHeaders" ? @"var key = _unknownEnumerator.Current.Key;
+                        StringValues value = default;
+                        _collection.TryGetUnknown(key, ref value);
+                        _current = new KeyValuePair<string, StringValues>(key, value);" : "_current = _unknownEnumerator.Current;")}
                         {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.Unknown;
                         ")}return true;
                 }}
