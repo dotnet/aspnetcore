@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -554,6 +556,73 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
     [Route("/form-model")]
     private void ActionWithFormModel([FromForm] Todo todo) { }
+
+#nullable enable
+    [Theory]
+    [InlineData(nameof(ActionWithRequiredFormModel))]
+    [InlineData(nameof(ActionWithRequiredFormModelAndOptionalParameter))]
+    [InlineData(nameof(ActionWithRequiredFormModelWithRequiredContainer))]
+    public async Task GetOpenApiRequestBody_HandlesRequiredPropertiesInFromFormPoco_MvcAction(string actionName)
+    {
+        var action = CreateActionDescriptor(actionName);
+
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            Assert.NotNull(paths.Operations);
+            var operation = paths.Operations[HttpMethod.Get];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            foreach (var content in operation.RequestBody.Content.Values)
+            {
+                var schema = Assert.IsType<OpenApiSchema>(content.Schema);
+                var requiredSchema = schema.AllOf is null
+                    ? schema
+                    : Assert.IsType<OpenApiSchema>(Assert.Single(schema.AllOf.Where(schema => schema.Properties?.ContainsKey("DocumentId") == true)));
+
+                Assert.NotNull(requiredSchema.Properties);
+                Assert.Equal(["DocumentId", "Name", "file_upload"], requiredSchema.Required?.OrderBy(name => name, StringComparer.Ordinal));
+                Assert.Contains("OptionalValue", requiredSchema.Properties);
+                Assert.Contains("NullableName", requiredSchema.Properties);
+                Assert.DoesNotContain("OptionalValue", requiredSchema.Required!);
+                Assert.DoesNotContain("NullableName", requiredSchema.Required!);
+
+                if (schema.AllOf is not null)
+                {
+                    Assert.DoesNotContain("optional", schema.Required ?? new HashSet<string>());
+                    var optionalParameterSchema = Assert.IsType<OpenApiSchema>(Assert.Single(schema.AllOf.Where(schema => schema.Properties?.ContainsKey("optional") == true)));
+                    Assert.DoesNotContain("optional", optionalParameterSchema.Required ?? new HashSet<string>());
+                }
+            }
+        });
+    }
+
+    [Route("/form-model-required")]
+    private void ActionWithRequiredFormModel([FromForm] RequiredFormModel model) { }
+
+    [Route("/form-model-required-with-optional")]
+    private void ActionWithRequiredFormModelAndOptionalParameter([FromForm] RequiredFormModel model, [FromForm] string? optional) { }
+
+    [Route("/form-model-required-container")]
+    private void ActionWithRequiredFormModelWithRequiredContainer([FromForm, Required] RequiredFormModel model) { }
+
+    private sealed class RequiredFormModel
+    {
+        [BindRequired]
+        public long DocumentId { get; set; }
+
+        [Required]
+        public string? Name { get; set; }
+
+        [FromForm(Name = "file_upload")]
+        [Required]
+        public IFormFile File { get; set; } = null!;
+
+        public int OptionalValue { get; set; }
+
+        public string? NullableName { get; set; }
+    }
+#nullable restore
 
     // Test coverage for https://github.com/dotnet/aspnetcore/issues/53831
     [Fact]
