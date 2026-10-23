@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit.Sdk;
 
@@ -170,7 +172,10 @@ public class NegotiateHandlerTests
         int expectedTlsReads)
     {
         var factory = new TestNegotiateStateFactory();
-        using var host = await CreateHostAsync(options => options.StateFactory = factory);
+        var sink = new TestSink();
+        using var host = await CreateHostAsync(
+            options => options.StateFactory = factory,
+            services => services.AddSingleton<ILoggerFactory>(new TestLoggerFactory(sink, enabled: true)));
         var server = host.GetTestServer();
         var connection = new TestConnection
         {
@@ -192,6 +197,39 @@ public class NegotiateHandlerTests
         {
             Assert.Equal(ChannelBindingKind.Endpoint, connection.RequestedKinds[0]);
         }
+        Assert.Equal(isHttps ? 1 : 0, sink.Writes.Count(w => w.EventId.Name == "ChannelBindingUnavailable"));
+    }
+
+    [Fact]
+    public async Task NtlmStage1Auth_CertificateForwardingHeaderPresent_UsesConnectionChannelBinding()
+    {
+        var expectedToken = new byte[] { 0x01, 0x23, 0x45, 0x67 };
+        var factory = new TestNegotiateStateFactory();
+        using var host = await CreateHostAsync(
+            options => options.StateFactory = factory,
+            configurePipeline: app =>
+            {
+                // Simulates a proxy forwarding the client certificate; the header value is never parsed here.
+                app.Use((context, next) =>
+                {
+                    context.Request.Headers["X-Client-Cert"] = "forwarded-certificate";
+                    return next(context);
+                });
+                app.UseCertificateForwarding();
+            });
+        var server = host.GetTestServer();
+        var connection = new TestConnection
+        {
+            IsHttps = true,
+            HasTlsConnectionFeature = true,
+            ChannelBindingAvailable = true,
+            ChannelBindingToken = expectedToken,
+        };
+
+        await NtlmStage1Auth(server, connection);
+
+        Assert.Equal(ChannelBindingKind.Endpoint, Assert.Single(connection.RequestedKinds));
+        Assert.Equal(expectedToken, Assert.Single(factory.ChannelBindingTokens).ToArray());
     }
 
     [Theory]
@@ -455,22 +493,30 @@ public class NegotiateHandlerTests
         Assert.Equal("Negotiate ServerNtlmBlob2", result.Response.Headers.WWWAuthenticate);
     }
 
-    private static async Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
+    private static async Task<IHost> CreateHostAsync(
+        Action<NegotiateOptions> configureOptions = null,
+        Action<IServiceCollection> configureServices = null,
+        Action<IApplicationBuilder> configurePipeline = null)
     {
         var builder = new HostBuilder()
-            .ConfigureServices(services => services
-                .AddRouting()
-                .AddAuthentication()
-                .AddNegotiate(options =>
-                {
-                    options.StateFactory = new TestNegotiateStateFactory();
-                    configureOptions?.Invoke(options);
-                }))
+            .ConfigureServices(services =>
+            {
+                services
+                    .AddRouting()
+                    .AddAuthentication()
+                    .AddNegotiate(options =>
+                    {
+                        options.StateFactory = new TestNegotiateStateFactory();
+                        configureOptions?.Invoke(options);
+                    });
+                configureServices?.Invoke(services);
+            })
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder.UseTestServer();
                 webHostBuilder.Configure(app =>
                 {
+                    configurePipeline?.Invoke(app);
                     app.UseRouting();
                     app.UseAuthentication();
                     app.UseEndpoints(ConfigureEndpoints);
