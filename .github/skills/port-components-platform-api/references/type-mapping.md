@@ -74,6 +74,7 @@ public sealed class CookieInit
 
     public CookieSameSite SameSite { get; set; } = CookieSameSite.Strict;
 
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public bool Partitioned { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

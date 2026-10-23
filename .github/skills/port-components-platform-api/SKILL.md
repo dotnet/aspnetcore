@@ -18,7 +18,9 @@ description: >-
 Create one reviewable vertical slice, a typed projection of one browser API family with its tests.
 Web Storage (`Storage.cs`, `WindowWebStorageExtensions.cs`, and `test/StorageTest.cs`) is the
 reference implementation. Read it before writing code, and copy its shape unless a rule below says
-otherwise.
+otherwise. Cookie Store (`CookieStore.cs`, its dictionaries and enum, `test/CookieStoreTest.cs`,
+and `CookieStoreTests` in the E2E tests) shows what Web Storage lacks: a browser object that can be
+missing, dictionaries, an enum, an `[Experimental]` member, and JSON assertions in unit tests.
 
 ## Scope
 
@@ -50,9 +52,9 @@ examples below use the Cookie Store API.
   `Window` too, but only through another entry point, `ServiceWorkerRegistration.cookies`, so it
   belongs to a separate slice. Check the `Exposed` attribute in the Web IDL before you give such a
   reason.
-- Check the browser support of each member in the browser compatibility data on MDN. When a member
-  is not Baseline, stop and raise it. Such a member would need `[Experimental]`, and the package
-  has no diagnostic ID for it yet. A dictionary member that was added recently is a typical case.
+- Check the browser support of each member in the browser compatibility data on MDN. Plan a member
+  that is not Baseline as `[Experimental]`, as the next section describes. A dictionary member that
+  was added recently is a typical case, such as `CookieInit.partitioned`.
 - Write the planned public API as C# signatures, following the next section.
 - Collect every open question that the rules in this skill tell you to raise into one list.
 - Start the implementation only after the proposal is agreed. Then file the API proposal issue
@@ -95,6 +97,11 @@ examples below use the Cookie Store API.
   yet, such as `Navigator`, stop and raise it as an open question. Keep the property synchronous
   and non-nullable even when the browser object can be missing. "Implement" below says how to
   handle that.
+- Mark each member that is not Baseline with
+  `[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]`. The whole package
+  shares this ID, so never allocate a new one. Write its lines in `PublicAPI.Unshipped.txt` without
+  an ID prefix. In tests and demo pages, suppress the warning with `#pragma warning disable ASP0040`
+  around the use, not with `NoWarn`.
 - Leave value checks to the browser. For example, do not check in .NET that `CookieInit` sets both
   `expires` and `maxAge`. The browser already throws `TypeError` for that, and a copy in .NET can
   drift when the browser changes. Check only a `null` argument for a non-nullable parameter, and
@@ -131,10 +138,8 @@ examples below use the Cookie Store API.
   `null` or `undefined`. Code copied from Web Storage passes the `JSException` to the caller, or
   fails with `NullReferenceException` for a `null` reference. In both cases, fail the acquisition
   with `NotSupportedException`, so it is not kept, and set the `JSException` as its inner
-  exception. Translate only `JSException`. A disconnect or a timeout must reach the caller as it
-  is. `NotSupportedException` is only the default that the Cookie Store API proposal (#69844)
-  proposes. Until API review approves it, raise this behavior as an open question in the API
-  proposal of the family. Do not add an API that only reports whether the object exists. Web IDL has no such member,
+  exception, as `CookieStore` does. Translate only `JSException`. A disconnect or a timeout must
+  reach the caller as it is. Do not add an API that only reports whether the object exists. Web IDL has no such member,
   so it would be a convenience API.
 - Wrap identity-bearing objects and preserve identity. `Window` owns a shared wrapper, such as
   `Storage`, and hands the same one to every caller. So never implement `IAsyncDisposable` or a
@@ -196,7 +201,7 @@ internals. Follow the majority phrasing in this repository and `ProtectedBrowser
   mock of `IJSRuntime`, like the one in `StorageTest`, records the .NET objects before
   serialization. So it cannot catch a missing `[JsonIgnore]` that sends `"path":null`, or an enum
   value with the wrong string. Use a test runtime that derives from `JSRuntime` and records the
-  `ArgsJson` it receives in `BeginInvokeJS`. Cover each member with a default set to `null`, an
+  `ArgsJson` it receives in `BeginInvokeJS`, such as `SerializingJSRuntime` in `CookieStoreTest`. Cover each member with a default set to `null`, an
   empty options object, and each enum value. Trimming is a separate risk. Only the trimmed
   WebAssembly app below can show it.
 - Keep tests few and readable. Avoid tricks that depend on ordering. When ordering cannot be
@@ -207,6 +212,10 @@ internals. Follow the majority phrasing in this repository and `ProtectedBrowser
   `PlatformTestApp.E2E.Tests`. These E2E tests run on Helix in CI with a prebuilt app. A local run
   from the build output does not use that layout, so also run the tests from the output of
   `dotnet publish` on the E2E project.
+- Keep each E2E step from passing on the text of the previous step. Show each result as
+  `<operation>: <result>` in one status element with a `data-run` counter that goes up when a run
+  completes. Read the counter before the click, and wait for it to go up by one before checking the
+  text, as `CookieStoreDemo` and `CookieStoreTests` do.
 - Publish a trimmed WebAssembly application. Confirm that the unused families and the unused
   members of a used family are gone. When the family passes or returns a dictionary, also confirm
   that every dictionary member reaches the browser and comes back. Trimming can drop a member
