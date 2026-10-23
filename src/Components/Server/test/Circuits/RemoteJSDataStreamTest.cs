@@ -28,6 +28,31 @@ public class RemoteJSDataStreamTest
     }
 
     [Fact]
+    public async Task CreateRemoteJSDataStreamAsync_RemovesStreamWhenStartupFails()
+    {
+        var expectedException = new InvalidOperationException("Failed to start the stream.");
+        var jsRuntime = new TestRemoteJSRuntime(
+            Options.Create(new CircuitOptions()),
+            Options.Create(new HubOptions<ComponentHub>()),
+            Mock.Of<ILogger<RemoteJSRuntime>>())
+        {
+            InvokeException = expectedException,
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+                jsRuntime,
+                Mock.Of<IJSStreamReference>(),
+                totalLength: 100,
+                signalRMaximumIncomingBytes: 10_000,
+                jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1),
+                cancellationToken: CancellationToken.None));
+
+        Assert.Same(expectedException, exception);
+        Assert.Empty(jsRuntime.RemoteJSDataStreamInstances);
+    }
+
+    [Fact]
     public async Task ReceiveData_DoesNotFindStream()
     {
         // Arrange
@@ -358,9 +383,16 @@ public class RemoteJSDataStreamTest
         {
         }
 
+        public Exception InvokeException { get; init; }
+
         public new ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
             Assert.Equal("Blazor._internal.sendJSDataStream", identifier);
+            if (InvokeException is not null)
+            {
+                return ValueTask.FromException<TValue>(InvokeException);
+            }
+
             return ValueTask.FromResult<TValue>(default);
         }
     }
