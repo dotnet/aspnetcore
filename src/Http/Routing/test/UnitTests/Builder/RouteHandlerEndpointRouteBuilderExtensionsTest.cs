@@ -228,7 +228,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
-        Assert.Contains("Endpoint: HTTP: GET /todos/{id} => GetTodo", ex.Message);
+        Assert.Contains($"Endpoint: HTTP: GET /todos/{{id}} => GetTodo{Environment.NewLine}{Environment.NewLine}Below is the list of parameters that we found:", ex.Message);
     }
 
     [Fact]
@@ -644,7 +644,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         _ = builder.MapGet("/", ([FromRoute] int id) => { });
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
-        Assert.Equal("'id' is not a route parameter.", ex.Message);
+        Assert.Equal($"'id' is not a route parameter.{Environment.NewLine}Endpoint: HTTP: GET /", ex.Message);
     }
 
     [Fact]
@@ -702,7 +702,57 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         _ = builder.MapGet("/{id}", ([FromRoute(Name = "value")] int id, HttpContext httpContext) => { });
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
-        Assert.Equal("'value' is not a route parameter.", ex.Message);
+        Assert.Equal($"'value' is not a route parameter.{Environment.NewLine}Endpoint: HTTP: GET /{{id}}", ex.Message);
+    }
+
+    [Fact]
+    public void MapGetWithNestedAsParameters_ThrowsWithEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapGet("/todos", ([AsParameters] NestedAsParameters args) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
+        Assert.Equal($"Nested AsParametersAttribute is not supported and should be used only for handler parameters.{Environment.NewLine}Endpoint: HTTP: GET /todos", ex.Message);
+    }
+
+    [Fact]
+    public void MapGetWithNullableAsParameters_ThrowsWithEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapGet("/todos", ([AsParameters] AsParametersRecord? args) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Equal($"The nullable type 'AsParametersRecord' is not supported, mark the parameter as non-nullable.{Environment.NewLine}Endpoint: HTTP: GET /todos", ex.Message);
+    }
+
+    [Fact]
+    public void MapPostWithNamedFromFormFileCollection_ThrowsWithEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapPost("/upload", ([TestFromForm(Name = "files")] IFormFileCollection files) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
+        Assert.Equal($"Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.{Environment.NewLine}Endpoint: HTTP: POST /upload", ex.Message);
+    }
+
+    [Fact]
+    public void MapPostWithNamedFromFormCollection_ThrowsWithEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapPost("/upload", ([TestFromForm(Name = "form")] IFormCollection form) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
+        Assert.Equal($"Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormCollection.{Environment.NewLine}Endpoint: HTTP: POST /upload", ex.Message);
+    }
+
+    private record AsParametersRecord(int Id);
+
+    private record NestedAsParameters([AsParameters] AsParametersRecord Inner);
+
+    [AttributeUsage(AttributeTargets.Parameter)]
+    private class TestFromFormAttribute : Attribute, IFromFormMetadata
+    {
+        public string? Name { get; set; }
     }
 
     [Fact]
