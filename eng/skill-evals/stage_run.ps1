@@ -16,6 +16,12 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
 
+# Matches the "yaml" package version resolved by evaluation-tools/package-lock.json
+# (a transitive dependency of the pinned @microsoft/vally-cli). Using its bundled
+# CLI gives Assert-EvalSpecIsRestricted a real YAML parse instead of a line scan,
+# so flow mappings, quoted keys, and block scalars are handled correctly.
+$script:yamlCliVersion = '2.9.1'
+
 function Resolve-Directory {
     param(
         [string]$Path,
@@ -87,39 +93,77 @@ function Assert-TreeIsSafe {
     }
 }
 
+function ConvertFrom-EvalSpecYaml {
+    param([string]$Path)
+
+    $yamlText = Get-Content $Path -Raw
+    $jsonText = $yamlText | & npx `
+        --yes `
+        --registry=https://packagefeedproxy.microsoft.io/npm/ `
+        "yaml@$script:yamlCliVersion" `
+        --json --single --strict
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not parse '$Path' as a single, strict YAML document."
+    }
+    if ([string]::IsNullOrWhiteSpace($jsonText)) {
+        return $null
+    }
+    return $jsonText | ConvertFrom-Json -AsHashtable -Depth 100
+}
+
+function Find-ForbiddenEvalField {
+    param($Node)
+
+    if ($Node -is [System.Collections.IDictionary]) {
+        foreach ($environmentKey in 'environment', 'agent_environment') {
+            $environmentBlock = $Node[$environmentKey]
+            if ($environmentBlock -is [System.Collections.IDictionary]) {
+                if ($environmentBlock.Contains('commands')) {
+                    return "declares a forbidden '$environmentKey.commands' field; staged fixture binaries are made executable automatically."
+                }
+                if ($environmentBlock.Contains('mcpServers')) {
+                    return "declares a forbidden '$environmentKey.mcpServers' field; per-eval MCP servers are not allowed."
+                }
+            }
+        }
+
+        $executorBlock = $Node['executor']
+        if ($executorBlock -is [System.Collections.IDictionary]) {
+            $executorConfig = $executorBlock['config']
+            if ($executorConfig -is [System.Collections.IDictionary] -and
+                $executorConfig.Contains('provider')) {
+                return "declares a forbidden 'executor.config.provider' override."
+            }
+        }
+
+        foreach ($value in $Node.Values) {
+            $found = Find-ForbiddenEvalField $value
+            if ($found) {
+                return $found
+            }
+        }
+    } elseif ($Node -is [System.Collections.IEnumerable] -and $Node -isnot [string]) {
+        foreach ($item in $Node) {
+            $found = Find-ForbiddenEvalField $item
+            if ($found) {
+                return $found
+            }
+        }
+    }
+
+    return $null
+}
+
 function Assert-EvalSpecIsRestricted {
     param(
         [string]$Path,
         [string]$Description
     )
 
-    $executorIndent = -1
-    foreach ($line in Get-Content $Path) {
-        $trimmed = $line.TrimStart()
-        if ($trimmed.Length -eq 0 -or $trimmed.StartsWith('#')) {
-            continue
-        }
-        $indent = $line.Length - $trimmed.Length
-        # YAML sequence items prefix their first key with "- "; strip it so key
-        # matching below sees the same key text as a mapping entry would.
-        $key = $trimmed -replace '^-\s+', ''
-
-        if ($executorIndent -ge 0 -and $indent -le $executorIndent) {
-            $executorIndent = -1
-        }
-
-        if ($key -match '^commands\s*:') {
-            throw "$Description declares a forbidden 'commands' field; staged fixture binaries are made executable automatically."
-        }
-        if ($key -match '^mcpServers\s*:') {
-            throw "$Description declares a forbidden 'mcpServers' field; per-eval MCP servers are not allowed."
-        }
-        if ($executorIndent -ge 0 -and $key -match '^provider\s*:') {
-            throw "$Description declares a forbidden 'executor.config.provider' override."
-        }
-        if ($key -match '^executor\s*:') {
-            $executorIndent = $indent
-        }
+    $parsed = ConvertFrom-EvalSpecYaml $Path
+    $violation = Find-ForbiddenEvalField $parsed
+    if ($violation) {
+        throw "$Description $violation"
     }
 }
 
@@ -209,7 +253,7 @@ try {
         $fixturesTarget = Join-Path $evalTargetRoot 'fixtures'
         Copy-Item $candidateFixtures $fixturesTarget -Recurse -Force
         if (-not $IsWindows) {
-            Get-ChildItem $fixturesTarget -Recurse -File | ForEach-Object {
+            Get-ChildItem $fixturesTarget -Recurse -File -Force | ForEach-Object {
                 chmod +x $_.FullName
             }
         }

@@ -44,7 +44,7 @@ stimuli:
       -DisablePersonalInbox -OutputFormat Json -Now 2026-09-10T00:00:00Z`. Report what is in the
       ASP.NET Core Blazor review queue right now versus what is stuck and needs rescue. Do not
       review or comment on anything.
-    environment:
+    agent_environment:
       files:
         - src: fixtures/gh
           dest: .eval-gh/gh
@@ -86,7 +86,7 @@ stimuli:
       -Now 2026-09-10T00:00:00Z`. Give me an actionable queue for ASP.NET Core PRs labeled
       area-identity or touching src/Identity/**. Echo the exact filter and separate reviewer work
       from rescue work. Do not review or comment on anything.
-    environment:
+    agent_environment:
       files:
         - src: fixtures/gh
           dest: .eval-gh/gh
