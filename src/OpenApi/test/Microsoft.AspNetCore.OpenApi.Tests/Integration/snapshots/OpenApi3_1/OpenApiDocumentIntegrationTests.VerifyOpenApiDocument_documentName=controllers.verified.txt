@@ -82,6 +82,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "schema": {
+                "required": [
+                  "Title",
+                  "Description"
+                ],
                 "type": "object",
                 "properties": {
                   "Title": {
