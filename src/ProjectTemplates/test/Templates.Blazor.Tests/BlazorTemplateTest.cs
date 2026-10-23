@@ -619,7 +619,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             // Asynchronously loads and displays the table of weather forecasts
             await page.WaitForSelectorAsync("table>tbody>tr");
-            Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
+            Assert.Equal(5, await page.Locator("article table>tbody>tr").CountAsync());
         }
 
         if (!pagesToExclude.HasFlag(BlazorTemplatePages.Home))
