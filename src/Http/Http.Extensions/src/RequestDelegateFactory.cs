@@ -704,7 +704,7 @@ public static partial class RequestDelegateFactory
         isAsParameters = false;
         if (parameter.Name is null)
         {
-            throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
+            throw new InvalidOperationException(WithEndpointDisplayName($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.", factoryContext));
         }
 
         if (parameter.ParameterType.IsByRef)
@@ -720,7 +720,7 @@ public static partial class RequestDelegateFactory
                 attribute = "out";
             }
 
-            throw new NotSupportedException($"The by reference parameter '{attribute} {TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)} {parameter.Name}' is not supported.");
+            throw new NotSupportedException(WithEndpointDisplayName($"The by reference parameter '{attribute} {TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)} {parameter.Name}' is not supported.", factoryContext));
         }
 
         var parameterCustomAttributes = parameter.GetCustomAttributes();
@@ -731,7 +731,7 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribute);
             if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(routeName, StringComparer.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"'{routeName}' is not a route parameter.");
+                throw new InvalidOperationException(WithEndpointDisplayName($"'{routeName}' is not a route parameter.", factoryContext));
             }
 
             return BindParameterFromProperty(parameter, RouteValuesExpr, RouteValuesIndexerProperty, routeName, factoryContext, "route");
@@ -768,7 +768,7 @@ public static partial class RequestDelegateFactory
                 if (!string.IsNullOrEmpty(formAttribute.Name))
                 {
                     throw new NotSupportedException(
-                        $"Assigning a value to the {nameof(IFromFormMetadata)}.{nameof(IFromFormMetadata.Name)} property is not supported for parameters of type {nameof(IFormFileCollection)}.");
+                        WithEndpointDisplayName($"Assigning a value to the {nameof(IFromFormMetadata)}.{nameof(IFromFormMetadata.Name)} property is not supported for parameters of type {nameof(IFormFileCollection)}.", factoryContext));
                 }
 
                 return BindParameterFromFormFiles(parameter, factoryContext);
@@ -782,7 +782,7 @@ public static partial class RequestDelegateFactory
                 if (!string.IsNullOrEmpty(formAttribute.Name))
                 {
                     throw new NotSupportedException(
-                        $"Assigning a value to the {nameof(IFromFormMetadata)}.{nameof(IFromFormMetadata.Name)} property is not supported for parameters of type {nameof(IFormCollection)}.");
+                        WithEndpointDisplayName($"Assigning a value to the {nameof(IFromFormMetadata)}.{nameof(IFromFormMetadata.Name)} property is not supported for parameters of type {nameof(IFormCollection)}.", factoryContext));
 
                 }
                 return BindParameterFromFormCollection(parameter, factoryContext);
@@ -807,7 +807,7 @@ public static partial class RequestDelegateFactory
             if (parameterCustomAttributes.FirstOrDefault(a => typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.GetType())) is not null)
             {
                 throw new NotSupportedException(
-                    $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
+                    WithEndpointDisplayName($"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.", factoryContext));
             }
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribute);
             return BindParameterFromService(parameter, factoryContext);
@@ -816,7 +816,7 @@ public static partial class RequestDelegateFactory
         {
             if (factoryContext.ServiceProviderIsService is not IServiceProviderIsKeyedService)
             {
-                throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
+                throw new InvalidOperationException(WithEndpointDisplayName($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.", factoryContext));
             }
             var key = keyedServicesAttribute.Key;
             return BindParameterFromKeyedService(parameter, key, factoryContext);
@@ -827,7 +827,7 @@ public static partial class RequestDelegateFactory
             if (parameter is PropertyAsParameterInfo)
             {
                 throw new NotSupportedException(
-                    $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters.");
+                    WithEndpointDisplayName($"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters.", factoryContext));
             }
 
             return BindParameterFromProperties(parameter, factoryContext);
@@ -1598,7 +1598,7 @@ public static partial class RequestDelegateFactory
 
         if (isNullable)
         {
-            throw new InvalidOperationException($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.");
+            throw new InvalidOperationException(WithEndpointDisplayName($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.", factoryContext));
         }
 
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
@@ -1718,7 +1718,7 @@ public static partial class RequestDelegateFactory
         if (tryParseMethodCall is null)
         {
             var typeName = TypeNameHelper.GetTypeDisplayName(targetParseType, fullName: false);
-            throw new InvalidOperationException($"{parameter.Name} must have a valid TryParse method to support converting from a string. No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.");
+            throw new InvalidOperationException(WithEndpointDisplayName($"{parameter.Name} must have a valid TryParse method to support converting from a string. No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.", factoryContext));
         }
 
         // string tempSourceString;
@@ -2907,6 +2907,7 @@ public static partial class RequestDelegateFactory
     {
         var errorMessage = new StringBuilder();
         errorMessage.AppendLine("Failure to infer one or more parameters.");
+        AppendEndpointDisplayName(factoryContext, errorMessage);
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
@@ -2924,6 +2925,7 @@ public static partial class RequestDelegateFactory
     {
         var errorMessage = new StringBuilder();
         errorMessage.AppendLine("Body was inferred but the method does not allow inferred body parameters.");
+        AppendEndpointDisplayName(factoryContext, errorMessage);
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
@@ -2941,6 +2943,7 @@ public static partial class RequestDelegateFactory
     {
         var errorMessage = new StringBuilder();
         errorMessage.AppendLine("An action cannot use both form and JSON body parameters.");
+        AppendEndpointDisplayName(factoryContext, errorMessage);
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
@@ -2949,6 +2952,24 @@ public static partial class RequestDelegateFactory
         FormatTrackedParameters(factoryContext, errorMessage);
 
         return errorMessage.ToString();
+    }
+
+    private static void AppendEndpointDisplayName(RequestDelegateFactoryContext factoryContext, StringBuilder errorMessage)
+    {
+        if (factoryContext.EndpointBuilder.DisplayName is { } displayName)
+        {
+            errorMessage.AppendLine(FormattableString.Invariant($"Endpoint: {displayName}")).AppendLine();
+        }
+    }
+
+    private static string WithEndpointDisplayName(string message, RequestDelegateFactoryContext factoryContext)
+    {
+        if (factoryContext.EndpointBuilder.DisplayName is { } displayName)
+        {
+            return FormattableString.Invariant($"{message}{Environment.NewLine}Endpoint: {displayName}");
+        }
+
+        return message;
     }
 
     private static void FormatTrackedParameters(RequestDelegateFactoryContext factoryContext, StringBuilder errorMessage)
