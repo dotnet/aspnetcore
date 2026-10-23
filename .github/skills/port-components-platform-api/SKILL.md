@@ -19,8 +19,8 @@ Create one reviewable vertical slice, a typed projection of one browser API fami
 Web Storage (`Storage.cs`, `WindowWebStorageExtensions.cs`, and `test/StorageTest.cs`) is the
 reference implementation. Read it before writing code, and copy its shape unless a rule below says
 otherwise. Cookie Store (`CookieStore.cs`, its dictionaries and enum, `test/CookieStoreTest.cs`,
-and `CookieStoreTests` in the E2E tests) shows what Web Storage lacks: a browser object that can be
-missing, dictionaries, an enum, an `[Experimental]` member, and JSON assertions in unit tests.
+and `CookieStoreTests` in the E2E tests) shows what Web Storage lacks. It has a browser object that
+can be missing, dictionaries, an enum, an `[Experimental]` member, and JSON assertions in unit tests.
 
 ## Scope
 
