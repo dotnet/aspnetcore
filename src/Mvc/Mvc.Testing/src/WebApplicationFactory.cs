@@ -141,6 +141,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// An <see cref="Action{IWebHostBuilder}"/> to configure the <see cref="IWebHostBuilder"/>.
     /// </param>
     /// <returns>A new <see cref="WebApplicationFactory{TEntryPoint}"/>.</returns>
+    /// <remarks>
+    /// The new factory inherits the Kestrel configuration of this factory and initializes its own server.
+    /// </remarks>
     public WebApplicationFactory<TEntryPoint> WithWebHostBuilder(Action<IWebHostBuilder> configuration) =>
         WithWebHostBuilderCore(configuration);
 
@@ -163,9 +166,23 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 configuration(builder);
             });
 
-        _derivedFactories.Add(factory);
+        ConfigureDerivedFactory(factory);
 
         return factory;
+    }
+
+    private void ConfigureDerivedFactory(WebApplicationFactory<TEntryPoint> factory)
+    {
+        factory._useKestrel = _useKestrel;
+        factory._kestrelPort = _kestrelPort;
+        factory._configureKestrelOptions = _configureKestrelOptions;
+        // The parent's automatically assigned address belongs to its own server.
+        if (ReferenceEquals(ClientOptions.BaseAddress, _webHostAddress))
+        {
+            factory.ClientOptions.BaseAddress = WebApplicationFactoryClientOptions.DefaultBaseAddres;
+        }
+
+        _derivedFactories.Add(factory);
     }
 
     /// <summary>
@@ -385,6 +402,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private void ConfigureHostBuilder(IHostBuilder hostBuilder)
     {
+        hostBuilder.Properties[typeof(WebApplicationFactory<TEntryPoint>)] = this;
+
         hostBuilder.ConfigureWebHost(webHostBuilder =>
         {
             SetContentRoot(webHostBuilder);
@@ -655,7 +674,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     protected virtual IHost CreateHost(IHostBuilder builder)
     {
         var host = builder.Build();
-        TryConfigureServerPort(() => GetServerAddressFeature(host));
+        var factory = builder.Properties.TryGetValue(typeof(WebApplicationFactory<TEntryPoint>), out var value)
+            && value is WebApplicationFactory<TEntryPoint> activeFactory ? activeFactory : this;
+        factory.TryConfigureServerPort(() => GetServerAddressFeature(host));
         host.Start();
         return host;
     }
@@ -784,19 +805,40 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        if (_useKestrel)
+        // A derived factory delegates this callback to its ancestor.
+        var factory = FindClientFactory(client) ?? this;
+        if (factory._useKestrel)
         {
-            if (_webHost is null && _host is null)
+            if (factory._webHost is null && factory._host is null)
             {
                 throw new InvalidOperationException(Resources.ServerNotInitialized);
             }
 
-            client.BaseAddress = _webHostAddress;
+            client.BaseAddress = factory._webHostAddress;
         }
         else
         {
             client.BaseAddress = new Uri("http://localhost");
         }
+    }
+
+    private WebApplicationFactory<TEntryPoint>? FindClientFactory(HttpClient client)
+    {
+        if (_clients.Contains(client))
+        {
+            return this;
+        }
+
+        foreach (var factory in _derivedFactories)
+        {
+            var clientFactory = factory.FindClientFactory(client);
+            if (clientFactory is not null)
+            {
+                return clientFactory;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -940,7 +982,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         internal override WebApplicationFactory<TEntryPoint> WithWebHostBuilderCore(Action<IWebHostBuilder> configuration)
         {
-            return new DelegatedWebApplicationFactory(
+            var factory = new DelegatedWebApplicationFactory(
                 ClientOptions,
                 _createServer,
                 _createServerFromServiceProvider,
@@ -954,6 +996,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                     _configuration(builder);
                     configuration(builder);
                 });
+
+            ConfigureDerivedFactory(factory);
+
+            return factory;
         }
     }
 }
