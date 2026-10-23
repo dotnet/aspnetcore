@@ -3,7 +3,10 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Moq;
 
@@ -92,6 +95,56 @@ public class Http2FrameWriterTests
     {
         var sut = CreateFrameWriter(new Pipe());
         sut.UpdateMaxFrameSize((int)Math.Pow(2, 24) - 1);
+    }
+
+    [Fact]
+    public void UpdateMaxFrameSize_To_SmallerSize_DoesNotReplaceHeaderEncodingBuffer()
+    {
+        var sut = CreateFrameWriter(new Pipe());
+        sut.UpdateMaxFrameSize((int)Http2PeerSettings.MaxAllowedMaxFrameSize);
+
+        var headerEncodingBuffer = GetHeaderEncodingBuffer(sut);
+
+        sut.UpdateMaxFrameSize((int)Http2PeerSettings.MinAllowedMaxFrameSize);
+
+        Assert.Equal((int)Http2PeerSettings.MinAllowedMaxFrameSize, GetMaxFrameSize(sut));
+        Assert.Same(headerEncodingBuffer, GetHeaderEncodingBuffer(sut));
+    }
+
+    [Fact]
+    public async Task WriteResponseHeaders_AfterMaxFrameSizeDecreases_DoesNotExceedFrameSize()
+    {
+        var pipe = new Pipe();
+        var sut = CreateFrameWriter(pipe);
+        sut.UpdateMaxFrameSize((int)Http2PeerSettings.MaxAllowedMaxFrameSize);
+        sut.UpdateMaxFrameSize((int)Http2PeerSettings.MinAllowedMaxFrameSize);
+
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers["Custom"] = new string('a', 64 * 1024);
+
+        sut.WriteResponseHeaders(1, StatusCodes.Status200OK, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)headers);
+        var flushTask = sut.WriteSettingsAckAsync();
+
+        var result = await pipe.Reader.ReadAsync();
+        var frameHeader = result.Buffer.Slice(0, Http2FrameReader.HeaderLength).ToArray();
+        pipe.Reader.AdvanceTo(result.Buffer.End);
+        await flushTask;
+        var payloadLength = (frameHeader[0] << 16) | (frameHeader[1] << 8) | frameHeader[2];
+
+        Assert.Equal((byte)Http2FrameType.HEADERS, frameHeader[3]);
+        Assert.InRange(payloadLength, 0, (int)Http2PeerSettings.MinAllowedMaxFrameSize);
+    }
+
+    private static byte[] GetHeaderEncodingBuffer(Http2FrameWriter frameWriter)
+    {
+        const BindingFlags PrivateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
+        return (byte[])typeof(Http2FrameWriter).GetField("_headerEncodingBuffer", PrivateInstance)!.GetValue(frameWriter)!;
+    }
+
+    private static int GetMaxFrameSize(Http2FrameWriter frameWriter)
+    {
+        const BindingFlags PrivateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
+        return (int)typeof(Http2FrameWriter).GetField("_maxFrameSize", PrivateInstance)!.GetValue(frameWriter)!;
     }
 }
 
