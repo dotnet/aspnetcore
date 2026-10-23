@@ -1,29 +1,26 @@
 //! Licensed to the .NET Foundation under one or more agreements.
 //! The .NET Foundation licenses this file to you under the MIT license.
-//! This is generated file, see src/native/rollup.config.js
+//!
+//! This is generated file, see src/mono/browser/runtime/rollup.config.js
 
 //! This is not considered public API with backward compatibility guarantees. 
 
-interface NativePointer {
+declare interface NativePointer {
     __brandNativePointer: "NativePointer";
 }
-interface VoidPtr extends NativePointer {
+declare interface VoidPtr extends NativePointer {
     __brand: "VoidPtr";
 }
-interface VoidPtrPtr extends NativePointer {
-    __brand: "VoidPtrPtr";
-}
-interface CharPtr extends NativePointer {
+declare interface CharPtr extends NativePointer {
     __brand: "CharPtr";
 }
-interface Int32Ptr extends NativePointer {
+declare interface Int32Ptr extends NativePointer {
     __brand: "Int32Ptr";
 }
-interface EmscriptenModule {
+declare interface EmscriptenModule {
     _malloc(size: number): VoidPtr;
     _free(ptr: VoidPtr): void;
     _sbrk(size: number): VoidPtr;
-    _posix_memalign(res: VoidPtrPtr, alignment: number, size: number): number;
     out(message: string): void;
     err(message: string): void;
     ccall<T>(ident: string, returnType?: string | null, argTypes?: string[], args?: any[], opts?: any): T;
@@ -36,18 +33,33 @@ interface EmscriptenModule {
     UTF8ArrayToString(u8Array: Uint8Array, idx?: number, maxBytesToRead?: number): string;
     stringToUTF8Array(str: string, heap: Uint8Array, outIdx: number, maxBytesToWrite: number): void;
     lengthBytesUTF8(str: string): number;
+    FS_createPath(parent: string, path: string, canRead?: boolean, canWrite?: boolean): string;
+    FS_createDataFile(parent: string, name: string, data: TypedArray, canRead: boolean, canWrite: boolean, canOwn?: boolean): string;
+    addFunction(fn: Function, signature: string): number;
     stackSave(): VoidPtr;
     stackRestore(stack: VoidPtr): void;
     stackAlloc(size: number): VoidPtr;
-    safeSetTimeout(func: Function, delay: number): number;
+    instantiateWasm?: InstantiateWasmCallBack;
+    preInit?: (() => any)[] | (() => any);
+    preRun?: (() => any)[] | (() => any);
+    onRuntimeInitialized?: () => any;
+    postRun?: (() => any)[] | (() => any);
+    onAbort?: {
+        (error: any): void;
+    };
+    onExit?: {
+        (code: number): void;
+    };
 }
-type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
+type InstantiateWasmSuccessCallback = (instance: WebAssembly.Instance, module: WebAssembly.Module | undefined) => void;
+type InstantiateWasmCallBack = (imports: WebAssembly.Imports, successCallback: InstantiateWasmSuccessCallback) => any;
+declare type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
 
 interface DotnetHostBuilder {
     /**
      * @param config default values for the runtime configuration. It will be merged with the default values.
      */
-    withConfig(config: LoaderConfig): DotnetHostBuilder;
+    withConfig(config: MonoConfig): DotnetHostBuilder;
     /**
      * @deprecated This method is no longer supported and will be removed in a future version.
      */
@@ -100,22 +112,39 @@ interface DotnetHostBuilder {
      */
     withApplicationCulture(applicationCulture?: string): DotnetHostBuilder;
     /**
+     * Sets a callback that is invoked after each resource finishes downloading.
+     */
+    withDownloadResourceProgress(callback?: (resourcesLoaded: number, totalResources: number) => void): DotnetHostBuilder;
+    /**
+     * Sets a callback that is invoked after the runtime configuration is loaded.
+     */
+    withConfigLoaded(callback?: (config: MonoConfig) => void | Promise<void>): DotnetHostBuilder;
+    /**
      * Overrides the built-in boot resource loading mechanism so that boot resources can be fetched
      * from a custom source, such as an external CDN.
      */
     withResourceLoader(loadBootResource?: LoadBootResourceCallback): DotnetHostBuilder;
     /**
      * Downloads all the assets but doesn't create the runtime instance.
-     * @param httpCacheOnly If true, resources are only fetched into the browser HTTP cache
-     *   and discarded. A subsequent create() call will re-fetch from cache and do full init.
-     *   If false (default), resources are downloaded and loaded into WASM memory, so that
-     *   a subsequent create() call only needs to initialize the managed runtime.
      */
-    download(httpCacheOnly?: boolean): Promise<void>;
+    download(): Promise<void>;
     /**
      * Starts the runtime and returns promise of the API object.
      */
     create(): Promise<RuntimeAPI>;
+    /**
+     * @deprecated use runMain() or runMainAndExit() instead.
+     */
+    run(): Promise<number>;
+    /**
+     * Runs the Main() method of the application and exits the runtime.
+     * You can provide "command line" arguments for the Main() method using
+     * - dotnet.withApplicationArguments("A", "B", "C")
+     * - dotnet.withApplicationArgumentsFromQuery()
+     * Note: after the runtime exits, it would reject all further calls to the API.
+     * You can use runMain() if you want to keep the runtime alive.
+     */
+    runMainAndExit(): Promise<number>;
     /**
      * Runs the Main() method of the application and keeps the runtime alive.
      * You can provide "command line" arguments for the Main() method using
@@ -123,17 +152,12 @@ interface DotnetHostBuilder {
      * - dotnet.withApplicationArgumentsFromQuery()
      */
     runMain(): Promise<number>;
-    /**
-     * Runs the Main() method of the application and exits the runtime.
-     * You can provide "command line" arguments for the Main() method using
-     * - dotnet.withApplicationArguments("A", "B", "C")
-     * - dotnet.withApplicationArgumentsFromQuery()
-     * Note: after the runtime exits, it would reject all further calls to the API.
-     * You can use run() if you want to keep the runtime alive.
-     */
-    runMainAndExit(): Promise<number>;
 }
-type LoaderConfig = {
+type MonoConfig = {
+    /**
+     * Additional search locations for assets.
+     */
+    remoteSources?: string[];
     /**
      * It will not fail the startup is .pdb files can't be downloaded
      */
@@ -240,12 +264,11 @@ type ResourceExtensions = {
 };
 interface Assets {
     hash?: string;
-    coreAssembly: AssemblyAsset[];
-    assembly: AssemblyAsset[];
+    coreAssembly?: AssemblyAsset[];
+    assembly?: AssemblyAsset[];
     lazyAssembly?: AssemblyAsset[];
     corePdb?: PdbAsset[];
     pdb?: PdbAsset[];
-    jsModuleWorker?: JsAsset[];
     jsModuleDiagnostics?: JsAsset[];
     jsModuleNative: JsAsset[];
     jsModuleRuntime: JsAsset[];
@@ -284,16 +307,19 @@ type Asset = {
 type WasmAsset = Asset & {
     name: string;
     hash?: string | null | "";
+    cache?: RequestCache;
 };
 type AssemblyAsset = Asset & {
     virtualPath: string;
     name: string;
     hash?: string | null | "";
+    cache?: RequestCache;
 };
 type PdbAsset = Asset & {
     virtualPath: string;
     name: string;
     hash?: string | null | "";
+    cache?: RequestCache;
 };
 type JsAsset = Asset & {
     /**
@@ -305,16 +331,20 @@ type JsAsset = Asset & {
 };
 type SymbolsAsset = Asset & {
     name: string;
+    hash?: string | null | "";
+    cache?: RequestCache;
 };
 type VfsAsset = Asset & {
     virtualPath: string;
     name: string;
     hash?: string | null | "";
+    cache?: RequestCache;
 };
 type IcuAsset = Asset & {
     virtualPath: string;
     name: string;
     hash?: string | null | "";
+    cache?: RequestCache;
 };
 /**
  * A "key" is name of the file, a "value" is optional hash for integrity check.
@@ -335,57 +365,12 @@ type ResourceList = {
  */
 type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string, behavior: AssetBehaviors) => string | Promise<Response> | Promise<BootModule> | null | undefined;
 type BootModule = {
-    config: LoaderConfig;
+    config: MonoConfig;
 };
 interface LoadingResource {
     name: string;
     url: string;
     response: Promise<Response>;
-}
-interface AssetEntry {
-    /**
-     * the name of the asset, including extension.
-     */
-    name: string;
-    /**
-     * determines how the asset will be handled once loaded
-     */
-    behavior: AssetBehaviors;
-    /**
-     * this should be absolute url to the asset
-     */
-    resolvedUrl?: string;
-    /**
-     * the integrity hash of the asset (if any)
-     */
-    hash?: string | null | "";
-    /**
-     * If specified, overrides the path of the asset in the virtual filesystem and similar data structures once downloaded.
-     */
-    virtualPath?: string;
-    /**
-     * Culture code
-     */
-    culture?: string;
-    /**
-     * If true, the runtime startup would not fail if the asset download was not successful.
-     */
-    isOptional?: boolean;
-    /**
-     * If provided, runtime doesn't have to fetch the data.
-     * Runtime would set the buffer to null after instantiation to free the memory.
-     */
-    buffer?: ArrayBuffer | Promise<ArrayBuffer>;
-    /**
-     * If provided, runtime doesn't have to import it's JavaScript modules.
-     * This will not work for multi-threaded runtime.
-     */
-    moduleExports?: any | Promise<any>;
-    /**
-     * It's metadata + fetch-like Promise<Response>
-     * If provided, the runtime doesn't have to initiate the download. It would just await the response.
-     */
-    pendingDownload?: LoadingResource;
 }
 type SingleAssetBehaviors = 
 /**
@@ -396,10 +381,6 @@ type SingleAssetBehaviors =
  * The javascript module for loader.
  */
  | "js-module-dotnet"
-/**
- * The javascript module for threads.
- */
- | "js-module-threads"
 /**
  * The javascript module for diagnostic server and client.
  */
@@ -448,11 +429,7 @@ type AssetBehaviors = SingleAssetBehaviors |
 /**
  * The javascript module that came from nuget package .
  */
- | "js-module-library-initializer"
-/**
- * Managed assembly packaged as Webcil v 1.0
- */
- | "webcil";
+ | "js-module-library-initializer";
 declare const enum GlobalizationMode {
     /**
      * Load sharded ICU data.
@@ -472,10 +449,7 @@ declare const enum GlobalizationMode {
     Custom = "custom"
 }
 type DotnetModuleConfig = {
-    config?: LoaderConfig;
-    onConfigLoaded?: (config: LoaderConfig) => void | Promise<void>;
-    onDotnetReady?: () => void | Promise<void>;
-    onDownloadResourceProgress?: (resourcesLoaded: number, totalResources: number) => void;
+    config?: MonoConfig;
     imports?: any;
     exports?: string[];
 } & Partial<EmscriptenModule>;
@@ -504,6 +478,10 @@ type RunAPIType = {
      */
     exit: (code: number, reason?: any) => void;
     /**
+     * @deprecated use withEnvironmentVariable() on the host builder instead.
+     */
+    setEnvironmentVariable: (name: string, value: string) => void;
+    /**
      * Returns the [JSExport] methods of the assembly with the given name
      * @param assemblyName
      */
@@ -517,10 +495,10 @@ type RunAPIType = {
     /**
      * Returns the configuration object used to start the runtime.
      */
-    getConfig: () => LoaderConfig;
+    getConfig: () => MonoConfig;
     /**
      * Executes scripts which were loaded during runtime bootstrap.
-     * You can register the scripts using LoaderConfig.resources.modulesAfterConfigLoaded and LoaderConfig.resources.modulesAfterRuntimeReady.
+     * You can register the scripts using MonoConfig.resources.modulesAfterConfigLoaded and MonoConfig.resources.modulesAfterRuntimeReady.
      */
     invokeLibraryInitializers: (functionName: string, args: any[]) => Promise<void>;
 };
@@ -728,6 +706,7 @@ type ModuleAPI = {
 };
 type CreateDotnetRuntimeType = (moduleFactory: DotnetModuleConfig | ((api: RuntimeAPI) => DotnetModuleConfig)) => Promise<RuntimeAPI>;
 type WebAssemblyBootResourceType = "assembly" | "pdb" | "dotnetjs" | "dotnetwasm" | "globalization" | "manifest" | "configuration";
+
 interface IDisposable {
     dispose(): void;
     get isDisposed(): boolean;
@@ -751,15 +730,16 @@ interface IMemoryView extends IDisposable {
     get length(): number;
     get byteLength(): number;
 }
-declare function exit(exitCode: number, reason?: any): void;
-declare const dotnet: DotnetHostBuilder;
 
-declare const createDotnetRuntime: CreateDotnetRuntimeType;
+declare function mono_exit(exit_code: number, reason?: any): void;
+
+declare const dotnet: DotnetHostBuilder;
+declare const exit: typeof mono_exit;
+
 declare global {
     function getDotnetRuntime(runtimeId: number): RuntimeAPI | undefined;
 }
-
-type MonoConfig = LoaderConfig;
+declare const createDotnetRuntime: CreateDotnetRuntimeType;
 
 export { GlobalizationMode, createDotnetRuntime as default, dotnet, exit };
-export type { AssemblyAsset, Asset, AssetBehaviors, AssetEntry, Assets, BootModule, CreateDotnetRuntimeType, DotnetHostBuilder, DotnetModuleConfig, EmscriptenModule, IMemoryView, IcuAsset, JsAsset, LoadBootResourceCallback, LoaderConfig, LoadingResource, ModuleAPI, MonoConfig, PdbAsset, ResourceExtensions, ResourceList, RuntimeAPI, SymbolsAsset, VfsAsset, WasmAsset, WebAssemblyBootResourceType };
+export type { AssemblyAsset, Asset, AssetBehaviors, Assets, BootModule, CreateDotnetRuntimeType, DotnetHostBuilder, DotnetModuleConfig, EmscriptenModule, IMemoryView, IcuAsset, JsAsset, LoadBootResourceCallback, LoadingResource, ModuleAPI, MonoConfig, PdbAsset, ResourceExtensions, ResourceList, RuntimeAPI, SymbolsAsset, VfsAsset, WasmAsset, WebAssemblyBootResourceType };
