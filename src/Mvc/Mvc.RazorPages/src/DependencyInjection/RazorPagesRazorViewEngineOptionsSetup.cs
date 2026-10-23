@@ -60,15 +60,15 @@ internal sealed class RazorPagesRazorViewEngineOptionsSetup : IConfigureOptions<
         options.ViewLocationExpanders.Add(new PageViewLocationExpander());
     }
 
-    private static string CombinePath(string path1, string path2)
+    internal static string CombinePath(string path1, string path2)
     {
-        if (path1.EndsWith('/') || path2.StartsWith('/'))
-        {
-            return path1 + path2;
-        }
-        else if (path1.EndsWith('/') && path2.StartsWith('/'))
+        if (path1.EndsWith('/') && path2.StartsWith('/'))
         {
             return string.Concat(path1, path2.AsSpan(1));
+        }
+        else if (path1.EndsWith('/') || path2.StartsWith('/'))
+        {
+            return path1 + path2;
         }
 
         return path1 + "/" + path2;
