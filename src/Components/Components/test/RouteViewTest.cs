@@ -163,6 +163,115 @@ public class RouteViewTest
             frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
     }
 
+    [Fact]
+    public async Task ChangingPageWithDifferentLayoutOnlyInstantiatesPageOnce()
+    {
+        var recorder = new PageInstanceRecorder();
+        using var services = new ServiceCollection().AddSingleton(recorder).BuildServiceProvider();
+        using var renderer = new TestRenderer(services);
+        var host = new CascadingRouteViewHost(recorder, isFixed: false);
+        var hostId = renderer.AssignRootComponentId(host);
+
+        await renderer.RenderRootComponentAsync(hostId, RouteParameters(typeof(PageWithNestedLayout), "first"));
+        var outgoingPage = Assert.Single(recorder.Pages);
+
+        await renderer.RenderRootComponentAsync(hostId, RouteParameters(typeof(PageWithOuterLayout), "second"));
+
+        Assert.Equal(2, recorder.Pages.Count);
+        Assert.IsType<PageWithOuterLayout>(recorder.Pages[1]);
+        Assert.Equal("second", recorder.Pages[1].Message);
+        Assert.Same(outgoingPage, Assert.Single(recorder.DisposedPages));
+    }
+
+    private static ParameterView RouteParameters(Type pageType, string message)
+        => ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(RouteView.RouteData)] = new RouteData(pageType, new Dictionary<string, object>
+            {
+                [nameof(TrackedPage.Message)] = message,
+            })
+        });
+
+    private sealed class PageInstanceRecorder
+    {
+        public List<TrackedPage> Pages { get; } = [];
+        public List<TrackedPage> DisposedPages { get; } = [];
+    }
+
+    private sealed class CascadingRouteViewHost(PageInstanceRecorder recorder, bool isFixed) : ComponentBase
+    {
+        [Parameter]
+        public RouteData RouteData { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<CascadingValue<PageInstanceRecorder>>(0);
+            builder.AddComponentParameter(1, nameof(CascadingValue<PageInstanceRecorder>.Value), recorder);
+            builder.AddComponentParameter(2, nameof(CascadingValue<PageInstanceRecorder>.IsFixed), isFixed);
+            builder.AddComponentParameter(3, nameof(CascadingValue<PageInstanceRecorder>.ChildContent), (RenderFragment)(contentBuilder =>
+            {
+                contentBuilder.OpenComponent<RouteView>(0);
+                contentBuilder.AddComponentParameter(1, nameof(RouteView.RouteData), RouteData);
+                contentBuilder.AddComponentParameter(2, nameof(RouteView.DefaultLayout), typeof(CascadingNestedLayout));
+                contentBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class CascadingOuterLayout : LayoutComponentBase
+    {
+        [CascadingParameter]
+        public PageInstanceRecorder CascadedRecorder { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, Body);
+    }
+
+    [Layout(typeof(CascadingOuterLayout))]
+    private sealed class CascadingNestedLayout : LayoutComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, Body);
+    }
+
+    private abstract class TrackedPage : ComponentBase, IDisposable
+    {
+        private readonly PageInstanceRecorder _recorder;
+
+        protected TrackedPage(PageInstanceRecorder recorder)
+        {
+            _recorder = recorder;
+            recorder.Pages.Add(this);
+        }
+
+        [Parameter]
+        public string Message { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, Message);
+
+        public void Dispose()
+        {
+            _recorder.DisposedPages.Add(this);
+        }
+    }
+
+    private sealed class PageWithNestedLayout : TrackedPage
+    {
+        public PageWithNestedLayout(PageInstanceRecorder recorder) : base(recorder)
+        {
+        }
+    }
+
+    [Layout(typeof(CascadingOuterLayout))]
+    private sealed class PageWithOuterLayout : TrackedPage
+    {
+        public PageWithOuterLayout(PageInstanceRecorder recorder) : base(recorder)
+        {
+        }
+    }
+
     private class RouteViewTestNavigationManager : NavigationManager
     {
         public RouteViewTestNavigationManager() =>
