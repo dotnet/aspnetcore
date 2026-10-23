@@ -8,12 +8,16 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.StaticAssets.Tests;
@@ -339,6 +343,135 @@ public class StaticAssetsIntegrationTests
         Assert.Equal("Hello, World!", await response.Content.ReadAsStringAsync());
 
         Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task ConventionsAreAppliedToRuntimeFallbackEndpoints()
+    {
+        // Arrange
+        var appName = nameof(ConventionsAreAppliedToRuntimeFallbackEndpoints);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [new TestResource("sample.txt", "Hello, World!", false)]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        var addMetadata = new object();
+        var finallyMetadata = new object();
+        IEndpointRouteBuilder routeBuilder = null;
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            routeBuilder = endpoints;
+            endpoints.MapStaticAssets();
+            var staticAssets = endpoints.MapStaticAssets();
+            staticAssets.Add(b => b.Metadata.Add(addMetadata));
+            staticAssets.Finally(b => b.Metadata.Add(finallyMetadata));
+        });
+
+        await app.StartAsync();
+
+        // Act
+        var endpoints = routeBuilder.DataSources.SelectMany(ds => ds.Endpoints).OfType<RouteEndpoint>().ToArray();
+
+        // Assert
+        var fallbacks = endpoints.Where(e => e.RoutePattern.RawText == "{**path:file}").ToArray();
+        Assert.Equal(2, fallbacks.Length);
+        Assert.All(fallbacks, fallback =>
+        {
+            Assert.Contains(addMetadata, fallback.Metadata);
+            Assert.Contains(finallyMetadata, fallback.Metadata);
+        });
+
+        var asset = Assert.Single(endpoints, e => e.Metadata.GetMetadata<StaticAssetDescriptor>() != null);
+        Assert.Contains(addMetadata, asset.Metadata);
+        Assert.Contains(finallyMetadata, asset.Metadata);
+
+        await app.StopAsync();
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task RequireAuthorizationIsAppliedToRuntimeFallbackEndpoint()
+    {
+        // Arrange
+        var appName = nameof(RequireAuthorizationIsAppliedToRuntimeFallbackEndpoint);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [new TestResource("sample.txt", "Hello, World!", false)]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+            services.AddAuthorization();
+            services.AddAuthentication("Test")
+                .AddScheme<AuthenticationSchemeOptions, NoResultAuthenticationHandler>("Test", null);
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets().RequireAuthorization();
+        });
+
+        await app.StartAsync();
+
+        File.WriteAllText(Path.Combine(webRoot, "added-after-build.txt"), "Hello, World!");
+
+        var client = app.GetTestClient();
+
+        // Act
+        var manifestResponse = await client.GetAsync("/sample.txt");
+        var fallbackResponse = await client.GetAsync("/added-after-build.txt");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, manifestResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, fallbackResponse.StatusCode);
+
+        await app.StopAsync();
+        Directory.Delete(webRoot, true);
+    }
+
+    private sealed class NoResultAuthenticationHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder)
+        : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+    {
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync() => Task.FromResult(AuthenticateResult.NoResult());
     }
 
     [Fact]
