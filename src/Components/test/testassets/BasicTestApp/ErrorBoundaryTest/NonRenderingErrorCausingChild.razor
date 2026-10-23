@@ -1,0 +1,13 @@
+<button class="throw-nonrendering-after-disposal" @onclick="@NonRenderingEventHandler.Wrap(ThrowAfterRemovalAsync)">Remove and throw</button>
+
+@code {
+    [Parameter] public EventCallback OnRemove { get; set; }
+    [Parameter] public Task AfterRemoval { get; set; }
+
+    private async Task ThrowAfterRemovalAsync()
+    {
+        await OnRemove.InvokeAsync();
+        await AfterRemoval;
+        throw new InvalidOperationException("Non-rendering event failed after removal");
+    }
+}
