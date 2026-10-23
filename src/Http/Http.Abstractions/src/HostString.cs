@@ -139,6 +139,16 @@ public readonly struct HostString : IEquatable<HostString>
             return string.Empty;
         }
 
+        int index;
+        if (!_value.Contains('[')
+            && (index = _value.IndexOf(':')) >= 0
+            && index < _value.Length - 1
+            && _value.IndexOf(':', index + 1) >= 0)
+        {
+            // IPv6 without brackets ::1 is the only type of host with 2 or more colons
+            return $"[{_value}]";
+        }
+
         if (!_value.AsSpan().ContainsAnyExcept(s_safeHostStringChars))
         {
             return _value;

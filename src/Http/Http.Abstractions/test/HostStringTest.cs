@@ -173,4 +173,34 @@ public class HostStringTests
     {
         Assert.Throws<FormatException>(() => HostString.MatchesAny("example.com:1abc", new StringSegment[] { "example.com" }));
     }
+
+    [Theory]
+    [InlineData("::1", "[::1]")]
+    [InlineData("2001:db8:a0b:12f0::1", "[2001:db8:a0b:12f0::1]")]
+    [InlineData("::", "[::]")]
+    [InlineData("fe80::1%1", "[fe80::1%1]")]
+    [InlineData("[::1]", "[::1]")]
+    [InlineData("[::1]:80", "[::1]:80")]
+    [InlineData("localhost", "localhost")]
+    [InlineData("localhost:5000", "localhost:5000")]
+    [InlineData("127.0.0.1", "127.0.0.1")]
+    [InlineData("127.0.0.1:80", "127.0.0.1:80")]
+    [InlineData("點看", "xn--c1yn36f")]
+    [InlineData("點看:80", "xn--c1yn36f:80")]
+    public void ToUriComponent_ReturnsProperlyFormattedHost(string sourceValue, string expectedUriComponent)
+    {
+        var hostString = new HostString(sourceValue);
+
+        Assert.Equal(expectedUriComponent, hostString.ToUriComponent());
+        Assert.Equal(expectedUriComponent, hostString.ToString());
+    }
+
+    [Fact]
+    public void ToUriComponent_DefaultHostString_ReturnsEmpty()
+    {
+        var hostString = default(HostString);
+
+        Assert.Equal(string.Empty, hostString.ToUriComponent());
+        Assert.Equal(string.Empty, hostString.ToString());
+    }
 }
