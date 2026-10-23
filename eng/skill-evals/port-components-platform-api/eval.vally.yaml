@@ -277,9 +277,8 @@ stimuli:
     rubric:
       - The plan keeps isExtended as GetIsExtendedAsync returning ValueTask<bool> rather than dropping or deferring it for its browser support.
       - "GetIsExtendedAsync is marked [Experimental(\"ASP0040\", UrlFormat = \"https://aka.ms/aspnet/analyzer/{0}\")], and the Baseline members are not marked experimental."
-      - The plan reuses the package-wide ASP0040 diagnostic ID and does not allocate a new diagnostic ID or add a new entry to the list of diagnostics.
       - The PublicAPI.Unshipped.txt lines for the experimental member have no diagnostic ID prefix.
-      - Tests and demo pages suppress the ASP0040 warning with "#pragma warning disable ASP0040" around the use, not with NoWarn in a project file.
+      - The ASP0040 warning is suppressed only around the code that uses the experimental member, not for a whole project with NoWarn.
       - The answer does not treat the experimental marking itself as an unresolved open question that blocks the design.
       - Callers reach the family through a synchronous Screen extension property on Window, and the other attributes become GetWidthAsync, GetHeightAsync, and GetColorDepthAsync with int, int, and uint results.
       - No source implementation is attempted before the proposal is agreed.
@@ -345,8 +344,7 @@ stimuli:
       - "The demo shows each result in one shared status element as text that starts with the operation name, such as \"<operation>: <result>\"."
       - The status element carries a run counter, such as a data-run attribute, that goes up by one when an operation completes.
       - Each test step reads the counter before the click and waits for it to go up by one before checking the result text.
-      - The counter goes up only after the operation finishes, so an exception fails the test at its own step.
-      - The same steps run in both Interactive Server and WebAssembly, and the plan also runs the tests from the published output.
+      - The counter goes up only after the operation finishes, not when the click starts.
     graders:
       - type: skill-invocation
         config:
