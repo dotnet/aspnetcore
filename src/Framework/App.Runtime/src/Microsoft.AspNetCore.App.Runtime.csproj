@@ -179,7 +179,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RedistArchiveOutputPath>$(InstallersOutputPath)$(RedistArchiveOutputFileName)</RedistArchiveOutputPath>
     <CompositeArchiveOutputFileName>$(RuntimeInstallerBaseName)-composite-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</CompositeArchiveOutputFileName>
     <CompositeArchiveOutputPath>$(InstallersOutputPath)$(CompositeArchiveOutputFileName)</CompositeArchiveOutputPath>
-    <_TarOwnershipArguments Condition="'$(DotNetBuildFromSource)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">--numeric-owner --owner=2001 --group=2001</_TarOwnershipArguments>
+    <_TarOwnershipArguments Condition="$([MSBuild]::IsOSPlatform('Linux'))">--numeric-owner --owner=2001 --group=2001</_TarOwnershipArguments>
   </PropertyGroup>
 
   <!-- Target chain -->
