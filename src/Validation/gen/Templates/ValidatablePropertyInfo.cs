@@ -287,16 +287,13 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
             attribute,
             result);
 
-        if (errorMessage is not null)
+        var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
         {
-            var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
-            {
-                Name = Name,
-                Path = context.CurrentValidationPath,
-                ErrorMessage = errorMessage,
-                Container = container,
-            };
-            context.AddValidationError(errorContext);
-        }
+            Name = Name,
+            Path = context.CurrentValidationPath,
+            ErrorMessage = errorMessage,
+            Container = container,
+        };
+        context.AddValidationError(errorContext);
     }
 }
