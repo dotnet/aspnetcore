@@ -76,6 +76,47 @@ webApp.MapGet("/", (string[] names) => {});
     }
 
     [Fact]
+    public async Task Handler_DelegateCreation_WithParameter_DoesNotThrow()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.MapGet("/", new Func<int, string>(Handlers.Size));
+
+static class Handlers
+{
+    public static string Size(int size) => size.ToString();
+}
+""";
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task Handler_LambdaUnderCast_WithParameter_DoesNotThrow()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.MapGet("/", (Func<int, string>)(size => size.ToString()));
+""";
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
     public async Task QueryString_Parameter_withUri_Works()
     {
         // Arrange
