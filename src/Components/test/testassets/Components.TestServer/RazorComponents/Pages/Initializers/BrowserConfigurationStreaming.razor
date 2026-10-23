@@ -1,0 +1,82 @@
+@page "/browser-configuration-streaming"
+@attribute [StreamRendering]
+@using System.Collections.Concurrent
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using TestContentPackage
+
+<ConfigureBrowser Options="_options" />
+<p id="browser-configuration-streaming-status">@(_boundaryDelivered ? "Boundary delivered" : "Waiting")</p>
+@if (InitialBoundary || _boundaryDelivered)
+{
+    <Counter IncrementAmount="1" IdSuffix="browser-configuration" @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public string OperationId { get; set; } = "";
+
+    [SupplyParameterFromQuery]
+    public bool InitialBoundary { get; set; }
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = default!;
+
+    private static readonly ConcurrentDictionary<string, StreamingOperation> Operations = new();
+    private readonly BrowserOptions _options = CreateOptions();
+    private bool _boundaryDelivered;
+
+    private static BrowserOptions CreateOptions()
+    {
+        var options = new BrowserOptions { LogLevel = LogLevel.Debug };
+        options.InteractiveServer.ReconnectionDialogId = "streamed-configuration-dialog";
+        options.InteractiveServer.ReconnectionMaxRetries = 17;
+        return options;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var operation = new StreamingOperation();
+        if (!Operations.TryAdd(OperationId, operation))
+        {
+            throw new InvalidOperationException($"Streaming operation '{OperationId}' already exists.");
+        }
+
+        try
+        {
+            await operation.Boundary.Task.WaitAsync(HttpContext.RequestAborted);
+            _boundaryDelivered = true;
+            StateHasChanged();
+            await operation.Finish.Task.WaitAsync(HttpContext.RequestAborted);
+        }
+        finally
+        {
+            Operations.TryRemove(OperationId, out _);
+        }
+    }
+
+    public static void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapPost("/browser-configuration-streaming/{operationId}/{finish:bool}",
+            (string operationId, bool finish, HttpResponse response) =>
+            {
+                if (!Operations.TryGetValue(operationId, out var operation))
+                {
+                    response.StatusCode = StatusCodes.Status404NotFound;
+                    return;
+                }
+
+                operation.Boundary.TrySetResult();
+                if (finish)
+                {
+                    operation.Finish.TrySetResult();
+                }
+            });
+    }
+
+    private sealed class StreamingOperation
+    {
+        public TaskCompletionSource Boundary { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Finish { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+}
