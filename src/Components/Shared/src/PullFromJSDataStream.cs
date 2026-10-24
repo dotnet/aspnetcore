@@ -14,8 +14,9 @@ internal sealed class PullFromJSDataStream : Stream
     private readonly IJSRuntime _runtime;
     private readonly IJSStreamReference _jsStreamReference;
     private readonly long _totalLength;
-    private readonly CancellationToken _streamCancellationToken;
+    private readonly CancellationTokenSource _streamCts;
     private long _offset;
+    private bool _isDisposed;
 
     public static PullFromJSDataStream CreateJSDataStream(
         IJSRuntime runtime,
@@ -36,8 +37,9 @@ internal sealed class PullFromJSDataStream : Stream
         _runtime = runtime;
         _jsStreamReference = jsStreamReference;
         _totalLength = totalLength;
-        _streamCancellationToken = cancellationToken;
+        _streamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _offset = 0;
+
     }
 
     public override bool CanRead => true;
@@ -88,7 +90,7 @@ internal sealed class PullFromJSDataStream : Stream
     private void ThrowIfCancellationRequested(CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested ||
-            _streamCancellationToken.IsCancellationRequested)
+            _streamCts.IsCancellationRequested)
         {
             throw new TaskCanceledException();
         }
@@ -104,10 +106,53 @@ internal sealed class PullFromJSDataStream : Stream
         }
 
         _offset += bytesRead.Length;
-        if (_offset == _totalLength)
-        {
-            Dispose(true);
-        }
         return bytesRead;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+        _streamCts?.Cancel();
+        _streamCts?.Dispose();
+        try
+        {
+            _ = _jsStreamReference?.DisposeAsync().Preserve();
+        }
+        catch
+        {
+        }
+
+        _isDisposed = true;
+
+        base.Dispose(disposing);
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _streamCts?.Cancel();
+        _streamCts?.Dispose();
+
+        try
+        {
+            if (_jsStreamReference is not null)
+            {
+                await _jsStreamReference.DisposeAsync();
+            }
+        }
+        catch
+        {
+        }
+
+        _isDisposed = true;
+
+        await base.DisposeAsync();
     }
 }
