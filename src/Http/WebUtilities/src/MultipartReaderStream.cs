@@ -116,6 +116,11 @@ internal sealed class MultipartReaderStream : Stream
         throw new NotSupportedException();
     }
 
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        throw new NotSupportedException();
+    }
+
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
@@ -164,6 +169,9 @@ internal sealed class MultipartReaderStream : Stream
     }
 
     public override int Read(byte[] buffer, int offset, int count)
+        => Read(buffer.AsSpan(offset, count));
+
+    public override int Read(Span<byte> buffer)
     {
         if (_finished)
         {
@@ -184,7 +192,7 @@ internal sealed class MultipartReaderStream : Stream
             if (index != 0)
             {
                 // Sync, it's already buffered
-                var slice = buffer.AsSpan(offset, Math.Min(count, index));
+                var slice = buffer[..Math.Min(buffer.Length, index)];
 
                 var readAmount = _innerStream.Read(slice);
                 return UpdatePosition(readAmount);
@@ -204,7 +212,7 @@ internal sealed class MultipartReaderStream : Stream
             // We found a possible match, return any data before it.
             if (matchOffset > bufferedData.Offset)
             {
-                read = _innerStream.Read(buffer, offset, Math.Min(count, matchOffset - bufferedData.Offset));
+                read = _innerStream.Read(buffer[..Math.Min(buffer.Length, matchOffset - bufferedData.Offset)]);
                 return UpdatePosition(read);
             }
 
@@ -215,7 +223,7 @@ internal sealed class MultipartReaderStream : Stream
         }
 
         // No possible boundary match within the buffered data, return the data from the buffer.
-        read = _innerStream.Read(buffer, offset, Math.Min(count, bufferedData.Count));
+        read = _innerStream.Read(buffer[..Math.Min(buffer.Length, bufferedData.Count)]);
         return UpdatePosition(read);
 
         static int ReadBoundary(MultipartReaderStream stream, int length)
