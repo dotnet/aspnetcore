@@ -195,6 +195,27 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     }
 
     [Fact]
+    public void CanBindCheckbox_WithDynamicInputType()
+    {
+        var target = Browser.Exists(By.Id("checkbox-dynamic-type"));
+        var literalTypeTarget = Browser.Exists(By.Id("checkbox-literal-type"));
+        var boundValue = Browser.Exists(By.Id("checkbox-dynamic-type-value"));
+        var invertButton = Browser.Exists(By.Id("checkbox-dynamic-type-invert"));
+
+        Assert.True(target.Selected);
+        Assert.True(literalTypeTarget.Selected);
+        Assert.Equal("True", boundValue.Text);
+
+        target.Click();
+        Browser.False(() => target.Selected);
+        Browser.Equal("False", () => boundValue.Text);
+
+        invertButton.Click();
+        Browser.True(() => target.Selected);
+        Browser.Equal("True", () => boundValue.Text);
+    }
+
+    [Fact]
     public void CanBindSelect()
     {
         var target = new SelectElement(Browser.Exists(By.Id("select-box")));
