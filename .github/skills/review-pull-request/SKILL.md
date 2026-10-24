@@ -105,7 +105,11 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 Launch exactly one fresh reviewer worker per routed guide as a full-capability
 `general-purpose` agent, never an explore, fast, or other lightweight agent, explicitly
 using
-`gpt-5.6-sol` (the evaluated configuration). If the user explicitly selected a different
+`gpt-5.6-sol` (the evaluated configuration). Use `mode: "background"` so the same worker
+can receive follow-ups through `write_agent`. Wait for its completion notification, then
+collect the actual report with `read_agent` using `wait: true`; after each same-worker
+clarification, wait and collect its completed follow-up the same way before synthesis.
+If the user explicitly selected a different
 worker model, report the run as unevaluated. Record each requested agent type/model and
 any runtime-reported values; record unavailable runtime values as `unknown`, which alone
 does not make a guide incomplete. A confirmed mismatch or unavailable agent type/model
