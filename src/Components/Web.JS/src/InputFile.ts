@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { createJSStreamReference, disposeJSObjectReference } from './JSInterop/Microsoft.JSInterop';
+
 export const InputFile = {
   init,
   toImageFile,
@@ -19,6 +21,14 @@ interface BrowserFile {
 export interface InputElement extends HTMLInputElement {
   _blazorInputFileNextFileId: number;
   _blazorFilesById: { [id: number]: BrowserFile };
+}
+
+let fileListStreamingEnabled = false;
+// Must match InputFileJsCallbacksRelay.MaxFileListSize.
+const maxFileListSize = 1024 * 1024;
+
+export function setFileListStreamingEnabled(enabled: boolean): void {
+  fileListStreamingEnabled = enabled;
 }
 
 function init(callbackWrapper: any, elem: InputElement): void {
@@ -50,7 +60,14 @@ function init(callbackWrapper: any, elem: InputElement): void {
       return result;
     });
 
-    callbackWrapper.invokeMethodAsync('NotifyChange', fileList);
+    const fileListBlob = fileListStreamingEnabled ? new Blob([JSON.stringify(fileList)]) : undefined;
+    if (fileListBlob && fileListBlob.size <= maxFileListSize) {
+      const fileListReference = createJSStreamReference(fileListBlob);
+      callbackWrapper.invokeMethodAsync('NotifyChangeFromStream', fileListReference)
+        .finally(() => disposeJSObjectReference(fileListReference));
+    } else {
+      callbackWrapper.invokeMethodAsync('NotifyChange', fileList);
+    }
   });
 
   // The 'cancel' event is fired when the user cancels the file picker dialog.
