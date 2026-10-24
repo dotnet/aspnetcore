@@ -30,11 +30,12 @@ public class NewlineEndingTest : LoggedTest
     [InlineData("Web.ProjectTemplates")]
     [InlineData("Web.ItemTemplates")]
     [InlineData("Web.Client.ItemTemplates")]
-    public void TemplateFiles_ShouldEndWithNewline(string projectName)
+    public void TemplateFiles_ShouldUseLfLineEndingsAndEndWithNewline(string projectName)
     {
         var templateDirectoryPath = GetTemplateDirectoryPath(projectName);
 
         var filesWithoutNewlineEnding = new List<string>();
+        var filesWithCarriageReturns = new List<string>();
 
         // Get all template source files (excluding third-party libraries and auto-generated localization files)
         var files = Directory.GetFiles(templateDirectoryPath, "*.cs", SearchOption.AllDirectories)
@@ -66,19 +67,23 @@ public class NewlineEndingTest : LoggedTest
                 continue;
             }
 
-            // Check if file ends with newline (0x0a)
-            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            fileStream.Seek(-1, SeekOrigin.End);
-            var lastByte = fileStream.ReadByte();
+            var fileContents = File.ReadAllBytes(filePath);
 
-            if (lastByte != 0x0a) // LF
+            if (fileContents[^1] != 0x0a)
             {
                 Output.WriteLine($"File {filePath} does not end with a newline.");
                 filesWithoutNewlineEnding.Add(filePath);
             }
+
+            if (fileContents.Contains((byte)0x0d))
+            {
+                Output.WriteLine($"File {filePath} contains a carriage return.");
+                filesWithCarriageReturns.Add(filePath);
+            }
         }
 
         Assert.False(filesWithoutNewlineEnding.Any(), $"Found {filesWithoutNewlineEnding.Count} file(s) without newline ending.");
+        Assert.False(filesWithCarriageReturns.Any(), $"Found {filesWithCarriageReturns.Count} file(s) with CRLF or CR line endings.");
     }
 
     private string GetTemplateDirectoryPath(string projectName)

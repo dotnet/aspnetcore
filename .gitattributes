@@ -3,6 +3,22 @@
 ###############################################################################
 * text=auto
 
+# Keep project-template text assets at LF so generated projects do not depend on checkout settings.
+/src/ProjectTemplates/**/*.cs text eol=lf
+/src/ProjectTemplates/**/*.fs text eol=lf
+/src/ProjectTemplates/**/*.razor text eol=lf
+/src/ProjectTemplates/**/*.cshtml text eol=lf
+/src/ProjectTemplates/**/*.css text eol=lf
+/src/ProjectTemplates/**/*.js text eol=lf
+/src/ProjectTemplates/**/*.ts text eol=lf
+/src/ProjectTemplates/**/*.tsx text eol=lf
+/src/ProjectTemplates/**/*.html text eol=lf
+/src/ProjectTemplates/**/*.json text eol=lf
+/src/ProjectTemplates/**/*.xml text eol=lf
+/src/ProjectTemplates/**/*.csproj text eol=lf
+/src/ProjectTemplates/**/*.fsproj text eol=lf
+/src/ProjectTemplates/**/*.in text eol=lf
+
 ###############################################################################
 # Make sh files under the build directory always have LF as line endings
 ###############################################################################
