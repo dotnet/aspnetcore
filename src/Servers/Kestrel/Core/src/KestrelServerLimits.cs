@@ -358,6 +358,8 @@ public class KestrelServerLimits
     /// Defaults to 240 bytes/second with a 5 second grace period.
     /// </summary>
     /// <remarks>
+    /// The rate is calculated as the total request body bytes read divided by the total time Kestrel has spent waiting for data.
+    /// Enforcement begins after the grace period. The connection is aborted if the rate is below the configured minimum.
     /// </remarks>
     public MinDataRate? MinRequestBodyDataRate { get; set; } =
         // Matches the default IIS minBytesPerSecond
@@ -377,10 +379,9 @@ public class KestrelServerLimits
     /// Contrary to the request body minimum data rate, this rate applies to the response status line and headers as well.
     /// </para>
     /// <para>
-    /// This rate is enforced per write operation instead of being averaged over the life of the response. Whenever the server
-    /// writes a chunk of data, a timer is set to the maximum of the grace period set in this property or the length of the write in
-    /// bytes divided by the data rate (i.e. the maximum amount of time that write should take to complete with the specified data rate).
-    /// The connection is aborted if the write has not completed by the time that timer expires.
+    /// This rate is enforced per write operation, not averaged over the life of the response. Each write is allowed at least
+    /// the greater of the grace period or the write size divided by the configured rate. The grace period applies to every
+    /// write, not just the first. The connection is aborted if the write has not completed within its allowed time.
     /// </para>
     /// <para>
     /// This rate may not accurately measure how much data a client is reading.
