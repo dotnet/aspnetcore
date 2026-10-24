@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Shared;
 
 internal static class ConnectionEndpointTags
 {
+    // The local port is almost always one of the few ports the server listens on, so reuse the most recently boxed
+    // value. Reference reads and writes are atomic, and a race only results in an extra allocation.
+    private static object? s_lastBoxedPort;
+
     /// <summary>
     /// Adds connection endpoint tags to a TagList using <see cref="IConnectionEndPointFeature"/>.
     /// </summary>
@@ -57,7 +61,7 @@ internal static class ConnectionEndpointTags
         if (localEndpoint is IPEndPoint localIPEndPoint)
         {
             tags.Add("server.address", localIPEndPoint.Address.ToString());
-            tags.Add("server.port", localIPEndPoint.Port);
+            tags.Add("server.port", GetBoxedPort(localIPEndPoint.Port));
 
             switch (localIPEndPoint.Address.AddressFamily)
             {
@@ -86,5 +90,19 @@ internal static class ConnectionEndpointTags
             tags.Add("server.address", localEndpoint.ToString());
             tags.Add("network.transport", localEndpoint.AddressFamily.ToString());
         }
+    }
+
+    private static object GetBoxedPort(int port)
+    {
+        var last = s_lastBoxedPort;
+        if (last is not null && (int)last == port)
+        {
+            return last;
+        }
+
+        object boxed = port;
+        s_lastBoxedPort = boxed;
+
+        return boxed;
     }
 }
