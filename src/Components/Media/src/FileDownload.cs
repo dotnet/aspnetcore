@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
@@ -96,6 +97,7 @@ public sealed class FileDownload : MediaComponentBase
         builder.CloseElement();
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The download payload uses framework-owned types with registered converters and primitive values.")]
     private async Task OnClickAsync()
     {
         if (Source is null || !IsInteractive || string.IsNullOrWhiteSpace(FileName))
