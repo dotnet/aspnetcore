@@ -2056,6 +2056,92 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.", nse.Message);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestDelegatePopulatesNullableIFormFileParameterAsNullWhenRequestHasNoBody(bool throwOnBadRequest)
+    {
+        IFormFile? fileArgument = null;
+        var invoked = false;
+
+        void TestAction(IFormFile? file)
+        {
+            fileArgument = file;
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new RequestDelegateFactoryOptions { ThrowOnBadRequest = throwOnBadRequest });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.True(invoked);
+        Assert.Null(fileArgument);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestDelegateSets400ResponseForRequiredIFormFileWhenRequestHasNoBody(bool throwOnBadRequest)
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new RequestDelegateFactoryOptions { ThrowOnBadRequest = throwOnBadRequest });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        if (throwOnBadRequest)
+        {
+            var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+            Assert.Equal(400, exception.StatusCode);
+            Assert.Contains("Unexpected request without body", exception.Message);
+        }
+        else
+        {
+            await requestDelegate(httpContext);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+        }
+
+        Assert.False(invoked);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesNullableIFormFileCollectionParameterAsEmptyWhenRequestHasNoBody()
+    {
+        IFormFileCollection? fileCollectionArgument = null;
+        var invoked = false;
+
+        void TestAction(IFormFileCollection? fileCollection)
+        {
+            fileCollectionArgument = fileCollection;
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.True(invoked);
+        Assert.NotNull(fileCollectionArgument);
+        Assert.Empty(fileCollectionArgument);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
     private readonly struct TraceIdentifier
     {
         private TraceIdentifier(string id)
