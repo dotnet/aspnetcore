@@ -1,7 +1,8 @@
 name: port-components-platform-api
 description: >-
   Verifies that the Components Platform API porting skill reproduces the API shape, ownership,
-  lifetime, and verification patterns established by the merged Web Storage projection.
+  lifetime, and verification patterns established by the merged Web Storage and Cookie Store
+  projections.
 version: "1"
 type: capability
 
@@ -234,6 +235,116 @@ stimuli:
       - The E2E plan includes execution from published output because CI consumes a prebuilt application layout.
       - The release plan publishes a trimmed WebAssembly application and verifies that used Storage members still work while unused families and unused members are removable.
       - The answer keeps mocked forwarding and disposal assertions in unit tests rather than claiming browser coverage replaces them.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: design-member-that-is-not-baseline
+    prompt: |
+      Design the public .NET projection for the following part of the Screen API in
+      Microsoft.AspNetCore.Components.Platform. The person who asked for the port wants every member
+      below. Produce only the design proposal and planned C# signatures, and say how the plan
+      handles browser support in the source, PublicAPI.Unshipped.txt, unit tests, and demo pages.
+      Do not edit files or begin implementation. Treat this as the complete pinned Web IDL input
+      and do not use the network:
+
+        [Exposed=Window]
+        interface Screen {
+          readonly attribute long width;
+          readonly attribute long height;
+          readonly attribute unsigned long colorDepth;
+          [SecureContext] readonly attribute boolean isExtended;
+        };
+
+        partial interface Window {
+          [SameObject, Replaceable] readonly attribute Screen screen;
+        };
+
+      Browser compatibility data on MDN: width, height, and colorDepth are Baseline widely
+      available. isExtended is supported only in Chromium-based browsers and is not Baseline.
+    tags:
+      network: none
+      phase: design
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - The plan keeps isExtended as GetIsExtendedAsync returning ValueTask<bool> rather than dropping or deferring it for its browser support.
+      - "GetIsExtendedAsync is marked [Experimental(\"ASP0040\", UrlFormat = \"https://aka.ms/aspnet/analyzer/{0}\")], and the Baseline members are not marked experimental."
+      - The PublicAPI.Unshipped.txt lines for the experimental member have no diagnostic ID prefix.
+      - The ASP0040 warning is suppressed only around the code that uses the experimental member, not for a whole project with NoWarn.
+      - The answer does not treat the experimental marking itself as an unresolved open question that blocks the design.
+      - Callers reach the family through a synchronous Screen extension property on Window, and the other attributes become GetWidthAsync, GetHeightAsync, and GetColorDepthAsync with int, int, and uint results.
+      - No source implementation is attempted before the proposal is agreed.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: design-missing-browser-object
+    prompt: |
+      The Components.Platform projection of the Cookie Store API is reached through a Window.CookieStore
+      extension property. window.cookieStore does not exist on an insecure page or in an older
+      browser, and the JavaScript property can also hold null. Plan how the projection behaves in
+      that case. Cover the public surface, the acquisition of the JavaScript reference, the XML
+      documentation, and the unit tests. Do not edit files or begin implementation.
+    tags:
+      network: none
+      phase: design
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - Window.CookieStore stays a synchronous, non-nullable property even though the browser object can be missing.
+      - Every member that reaches the browser object throws NotSupportedException when window.cookieStore is missing or null, and the answer treats this as the fixed package rule rather than an open question.
+      - The acquisition translates only JSException into NotSupportedException and keeps the JSException as the inner exception, while a disconnect or a timeout reaches the caller unchanged.
+      - A null reference also fails the acquisition with NotSupportedException instead of a NullReferenceException.
+      - The failed acquisition is not cached, so a later call acquires the reference again.
+      - The answer does not add an API that only reports whether the Cookie Store API exists, such as IsSupported or IsAvailableAsync.
+      - The XML documentation adds an exception element for NotSupportedException to each member that reaches the browser object and does not document JSException.
+      - Unit coverage includes both a JSException from the acquisition and a null reference, and shows that disposal still does not throw.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: verify-e2e-step-results
+    prompt: |
+      Plan the PlatformTestApp demo component and the E2E test steps for the Components.Platform
+      Cookie Store projection. The demo has one button for each operation, such as Set, Get, and
+      Delete, and shows the result of the last operation on the page. The test clicks the buttons in
+      order and checks the shown result after each click. Some steps expect the same result as an
+      earlier step. For example, Get shows that the cookie is missing both before Set and after
+      Delete. Describe how the demo shows results and how each test step waits for its own result.
+      Do not edit files or run tests.
+    tags:
+      network: none
+      phase: verification
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - The answer identifies that a step that waits only for the result text can pass on the text of the previous step.
+      - "The demo shows each result in one shared status element as text that starts with the operation name, such as \"<operation>: <result>\"."
+      - The status element carries a run counter, such as a data-run attribute, that goes up by one when an operation completes.
+      - Each test step reads the counter before the click and waits for it to go up by one before checking the result text.
+      - The counter goes up only after the operation finishes, not when the click starts.
     graders:
       - type: skill-invocation
         config:
