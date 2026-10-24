@@ -448,7 +448,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             for (var i = 0; i < pathSegment.Length; i++)
             {
                 var ch = pathSegment[i];
-                if (ch > byte.MaxValue)
+                if (ch < 0x20 || ch > 0x7E)
                 {
                     ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
                     return false;
