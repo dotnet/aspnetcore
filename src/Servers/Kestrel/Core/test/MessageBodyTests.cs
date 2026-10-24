@@ -453,8 +453,10 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
-    public async Task ReadThrowsGivenChunkPrefixGreaterThanMaxInt()
+    [Theory]
+    [InlineData("80000000\r\n")]
+    [InlineData("FFFFFFFF\r\n")]
+    public async Task ReadThrowsGivenChunkPrefixGreaterThanMaxInt(string chunkPrefix)
     {
         using (var input = new TestInput())
         {
@@ -463,13 +465,16 @@ public class MessageBodyTests : LoggedTest
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
             reader.StartAcceptingReads(body);
 
-            input.Add("80000000\r\n");
+            input.Add(chunkPrefix);
 
             var buffer = new byte[1024];
-            var ex = await Assert.ThrowsAsync<IOException>(async () =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            var ex = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
                 await stream.ReadAsync(buffer, 0, buffer.Length));
-            Assert.IsType<OverflowException>(ex.InnerException);
+
             Assert.Equal(CoreStrings.BadRequest_BadChunkSizeData, ex.Message);
+            Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
 
             await body.StopAsync();
         }
