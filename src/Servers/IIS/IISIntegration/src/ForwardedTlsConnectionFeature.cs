@@ -29,7 +29,7 @@ internal sealed class ForwardedTlsConnectionFeature : ITlsConnectionFeature
                 try
                 {
                     var bytes = Convert.FromBase64String(_header.ToString());
-                    _certificate = new X509Certificate2(bytes);
+                    _certificate = X509CertificateLoader.LoadCertificate(bytes);
                 }
                 catch (Exception ex)
                 {

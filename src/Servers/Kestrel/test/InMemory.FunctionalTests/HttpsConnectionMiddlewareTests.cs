@@ -1549,7 +1549,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     {
         var certPath = TestResources.GetCertPath(testCertName);
         TestOutputHelper.WriteLine("Loading " + certPath);
-        var cert = new X509Certificate2(certPath, "testPassword");
+        var cert = X509CertificateLoader.LoadPkcs12FromFile(certPath, "testPassword");
         Assert.Empty(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
 
         CreateMiddleware(cert);
@@ -1562,7 +1562,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     {
         var certPath = TestResources.GetCertPath(testCertName);
         TestOutputHelper.WriteLine("Loading " + certPath);
-        var cert = new X509Certificate2(certPath, "testPassword");
+        var cert = X509CertificateLoader.LoadPkcs12FromFile(certPath, "testPassword");
         Assert.NotEmpty(cert.Extensions);
         var eku = Assert.Single(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
         Assert.NotEmpty(eku.EnhancedKeyUsages);
@@ -1581,7 +1581,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     {
         var certPath = TestResources.GetCertPath(testCertName);
         TestOutputHelper.WriteLine("Loading " + certPath);
-        var cert = new X509Certificate2(certPath, "testPassword");
+        var cert = X509CertificateLoader.LoadPkcs12FromFile(certPath, "testPassword");
         Assert.NotEmpty(cert.Extensions);
         var eku = Assert.Single(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
         Assert.NotEmpty(eku.EnhancedKeyUsages);
@@ -1602,7 +1602,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     {
         var certPath = TestResources.GetCertPath(testCertName);
         TestOutputHelper.WriteLine("Loading " + certPath);
-        var cert = new X509Certificate2(certPath, "testPassword");
+        var cert = X509CertificateLoader.LoadPkcs12FromFile(certPath, "testPassword");
         Assert.False(CertificateLoader.DoesCertificateHaveASubjectAlternativeName(cert));
 
         var testLogger = new TestApplicationErrorLogger();
