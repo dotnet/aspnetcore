@@ -82,6 +82,12 @@ public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
     public bool SuppressMapClientErrors { get; set; }
 
     /// <summary>
+    /// Gets or sets a value that determines if the status code pages middleware should be skipped
+    /// for controllers annotated with <see cref="ApiControllerAttribute"/>.
+    /// </summary>
+    public bool SkipStatusCodePages { get; set; }
+
+    /// <summary>
     /// Gets a map of HTTP status codes to <see cref="ClientErrorData"/>. Configured values
     /// are used to transform <see cref="IClientErrorActionResult"/> to an <see cref="ObjectResult"/>
     /// instance where the <see cref="ObjectResult.Value"/> is <see cref="ProblemDetails"/>.

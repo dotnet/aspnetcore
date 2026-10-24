@@ -124,6 +124,61 @@ public class ApiBehaviorApplicationModelProviderTest
     }
 
     [Fact]
+    public void OnProvidersExecuting_AddsSkipStatusCodePagesMetadata_WhenOptionIsTrueAndControllerIsApiController()
+    {
+        // Arrange
+        var (controllerModel, actionModel) = CreateControllerModel(typeof(TestApiController), isApiController: true);
+        var context = CreateContext(controllerModel);
+        var provider = GetProvider(new ApiBehaviorOptions
+        {
+            SkipStatusCodePages = true,
+        });
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var selector = Assert.Single(actionModel.Selectors);
+        var metadata = Assert.Single(selector.EndpointMetadata.OfType<SkipStatusCodePagesMetadata>());
+        Assert.Same(SkipStatusCodePagesMetadata.Instance, metadata);
+    }
+
+    [Fact]
+    public void OnProvidersExecuting_DoesNotAddSkipStatusCodePagesMetadata_WhenOptionIsTrueAndControllerIsNotApiController()
+    {
+        // Arrange
+        var (controllerModel, actionModel) = CreateControllerModel(typeof(TestMvcController), isApiController: false);
+        var context = CreateContext(controllerModel);
+        var provider = GetProvider(new ApiBehaviorOptions
+        {
+            SkipStatusCodePages = true,
+        });
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var selector = Assert.Single(actionModel.Selectors);
+        Assert.Empty(selector.EndpointMetadata);
+    }
+
+    [Fact]
+    public void OnProvidersExecuting_DoesNotAddSkipStatusCodePagesMetadata_WhenOptionIsFalseAndControllerIsApiController()
+    {
+        // Arrange
+        var (controllerModel, actionModel) = CreateControllerModel(typeof(TestApiController), isApiController: true);
+        var context = CreateContext(controllerModel);
+        var provider = GetProvider(new ApiBehaviorOptions());
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var selector = Assert.Single(actionModel.Selectors);
+        Assert.Empty(selector.EndpointMetadata);
+    }
+
+    [Fact]
     public void Constructor_SetsUpConventions()
     {
         // Arrange
@@ -221,9 +276,41 @@ public class ApiBehaviorApplicationModelProviderTest
             Mock.Of<IServiceProvider>());
     }
 
+    private static ApplicationModelProviderContext CreateContext(ControllerModel controllerModel)
+    {
+        var context = new ApplicationModelProviderContext(new[] { controllerModel.ControllerType });
+        context.Result.Controllers.Add(controllerModel);
+        return context;
+    }
+
+    private static (ControllerModel ControllerModel, ActionModel ActionModel) CreateControllerModel(
+        Type controllerType,
+        bool isApiController)
+    {
+        var controllerAttributes = isApiController ? new object[] { new ApiControllerAttribute() } : Array.Empty<object>();
+        var controllerModel = new ControllerModel(controllerType.GetTypeInfo(), controllerAttributes)
+        {
+            Selectors = { new SelectorModel { AttributeRouteModel = new AttributeRouteModel() } },
+        };
+
+        var actionModel = new ActionModel(controllerType.GetMethod(nameof(TestApiController.TestAction)), Array.Empty<object>())
+        {
+            Controller = controllerModel,
+            Selectors = { new SelectorModel { AttributeRouteModel = new AttributeRouteModel() } },
+        };
+        controllerModel.Actions.Add(actionModel);
+
+        return (controllerModel, actionModel);
+    }
+
     private class TestApiController : ControllerBase
     {
         public IActionResult TestAction(object value) => null;
         public IResult TestActionWithIResult(object value) => null;
+    }
+
+    private class TestMvcController : ControllerBase
+    {
+        public IActionResult TestAction(object value) => null;
     }
 }
