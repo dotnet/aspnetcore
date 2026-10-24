@@ -38,6 +38,7 @@ internal static class TemplatePackageInstaller
             "Microsoft.DotNet.Web.ProjectTemplates.9.0",
             "Microsoft.DotNet.Web.ProjectTemplates.10.0",
             "Microsoft.DotNet.Web.ProjectTemplates.11.0",
+            "Microsoft.DotNet.Web.ProjectTemplates",
             "Microsoft.AspNetCore.Blazor.Templates",
             "Microsoft.McpServer.ProjectTemplates",
         };
@@ -69,7 +70,8 @@ internal static class TemplatePackageInstaller
             DotNetMuxer.MuxerPathOrDefault(),
             //--debug:disable-sdk-templates means, don't include C:\Program Files\dotnet\templates, aka. what comes with SDK, so we don't need to uninstall
             //--debug:custom-hive means, don't install templates on CI/developer machine, instead create new temporary instance
-            $"new {arguments} --debug:disable-sdk-templates --debug:custom-hive \"{CustomHivePath}\"");
+            $"new {arguments} --debug:disable-sdk-templates --debug:custom-hive \"{CustomHivePath}\"",
+            envVarToRemove: "MSBuildSDKsPath");
 
         await proc.Exited;
 
@@ -87,7 +89,7 @@ internal static class TemplatePackageInstaller
         {
             packagesDir = typeof(TemplatePackageInstaller).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value;
+                .Single(a => a.Key == "ArtifactsNonShippingPackagesDir").Value;
         }
 
         var builtPackages = Directory.EnumerateFiles(packagesDir, "*Templates*.nupkg")

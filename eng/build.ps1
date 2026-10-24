@@ -100,8 +100,7 @@ Build the repository in product mode (short: -pb).
 Set when building from within the VMR.
 
 .PARAMETER MSBuildMultiThreaded
-Sets MSBuild's multi-threaded mode, i.e. the -mt switch (short: -mt). Opt-in for now, so off unless it is
-explicitly requested.
+Sets MSBuild's multi-threaded mode, i.e. the -mt switch (short: -mt). Defaults to on for both local and CI builds.
 
 .PARAMETER NodeReuse
 Sets the nodereuse msbuild parameter. Node reuse is disabled by default in this repository as a workaround for
@@ -216,7 +215,7 @@ param(
 
     # Passed through to tools.ps1 MSBuild function
     [Alias('mt')]
-    [bool]$msbuildMultiThreaded = $false,
+    [bool]$msbuildMultiThreaded = $true,
 
     # Passed through to tools.ps1 MSBuild function
     [bool]$nodeReuse = $false,
