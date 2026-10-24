@@ -21,12 +21,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 internal partial class CircuitHost : IAsyncDisposable
 #pragma warning restore CA1852 // Seal internal types
 {
+    private const int MaxPendingRootComponentUpdates = 10;
     private readonly AsyncServiceScope _scope;
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
     private readonly CircuitMetrics _circuitMetrics;
     private readonly CircuitActivitySource _circuitActivitySource;
+    private readonly object _rootComponentUpdateLock = new();
+    private readonly CancellationTokenSource _rootComponentUpdateCancellation = new();
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -34,6 +37,9 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _onConnectionUpFired;
     private bool _onConnectionDownFired;
     private bool _disposed;
+    private bool _rootComponentUpdateQueueOverflowed;
+    private int _pendingRootComponentUpdates;
+    private Task _rootComponentUpdateTask = Task.CompletedTask;
     private long _startTime;
     private ResumedPersistedCircuitState _persistedCircuitState;
 
@@ -197,6 +203,7 @@ internal partial class CircuitHost : IAsyncDisposable
     // client is already gone.
     public async ValueTask DisposeAsync()
     {
+        _rootComponentUpdateCancellation.Cancel();
         Log.DisposeStarted(_logger, CircuitId);
 
         await Renderer.Dispatcher.InvokeAsync(async () =>
@@ -769,102 +776,183 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.UpdateRootComponentsStarted(_logger);
 
-        return Renderer.Dispatcher.InvokeAsync(async () =>
+        var reportQueueOverflow = false;
+        lock (_rootComponentUpdateLock)
         {
-            var shouldClearStore = false;
-            var shouldWaitForQuiescence = false;
-            var operations = operationBatch.Operations;
-            var batchId = operationBatch.BatchId;
-            var postRemovalTask = Task.CompletedTask;
-            TaskCompletionSource? taskCompletionSource = null;
+            if (!_rootComponentUpdateCancellation.IsCancellationRequested && !_rootComponentUpdateQueueOverflowed)
+            {
+                if (_pendingRootComponentUpdates >= MaxPendingRootComponentUpdates)
+                {
+                    _rootComponentUpdateQueueOverflowed = true;
+                    reportQueueOverflow = true;
+                }
+                else
+                {
+                    _pendingRootComponentUpdates++;
+                    var previousUpdate = _rootComponentUpdateTask;
+                    var updateCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _rootComponentUpdateTask = updateCompletion.Task;
+                    return UpdateRootComponentsCore(
+                        previousUpdate,
+                        updateCompletion,
+                        operationBatch,
+                        store,
+                        isRestore,
+                        cancellation);
+                }
+            }
+        }
+
+        store?.Clear();
+        return reportQueueOverflow ? ReportRootComponentUpdateQueueOverflowAsync() : Task.CompletedTask;
+    }
+
+    private async Task ReportRootComponentUpdateQueueOverflowAsync()
+    {
+        var exception = new InvalidOperationException("The maximum number of pending root component updates has been exceeded.");
+        Log.RootComponentUpdateQueueOverflow(_logger, CircuitId, MaxPendingRootComponentUpdates, exception);
+        UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(exception, isTerminating: false));
+        await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(exception), exception);
+    }
+
+    private void CompleteRootComponentUpdate(TaskCompletionSource updateCompletion)
+    {
+        lock (_rootComponentUpdateLock)
+        {
+            _pendingRootComponentUpdates--;
+        }
+
+        updateCompletion.SetResult();
+    }
+
+    private async Task UpdateRootComponentsCore(
+        Task previousUpdate,
+        TaskCompletionSource updateCompletion,
+        RootComponentOperationBatch operationBatch,
+        IClearableStore store,
+        bool isRestore,
+        CancellationToken cancellation)
+    {
+        try
+        {
             try
             {
-                if (Descriptors.Count > 0)
-                {
-                    // Block updating components if they were provided during StartCircuit. This keeps
-                    // the footprint for Blazor Server closer to what it was before.
-                    throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
-                        " been provided during circuit start up.");
-                }
+                await previousUpdate.WaitAsync(_rootComponentUpdateCancellation.Token);
+                _rootComponentUpdateCancellation.Token.ThrowIfCancellationRequested();
+            }
+            catch (OperationCanceledException) when (_rootComponentUpdateCancellation.IsCancellationRequested)
+            {
+                store?.Clear();
+                return;
+            }
 
-                if (store != null)
-                {
-                    shouldClearStore = true;
-                    // We only do this if we have no root components. Otherwise, the state would have been
-                    // provided during the start up process
-                    var persistenceManager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
-                    if (_isFirstUpdate)
-                    {
-                        persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
-                    }
+            await Renderer.Dispatcher.InvokeAsync(() => UpdateRootComponentsOnDispatcher(operationBatch, store, isRestore, cancellation));
+        }
+        finally
+        {
+            CompleteRootComponentUpdate(updateCompletion);
+        }
+    }
 
-                    // Use the appropriate scenario based on whether this is a restore operation
-                    var context = (isRestore, _isFirstUpdate) switch
-                    {
-                        (_, false) => RestoreContext.ValueUpdate,
-                        (true, _) => RestoreContext.LastSnapshot,
-                        (false, _) => RestoreContext.InitialValue
-                    };
-                    if (context == RestoreContext.ValueUpdate)
-                    {
-                        taskCompletionSource = new();
-                        postRemovalTask = EnqueueRestore(taskCompletionSource, persistenceManager, context, store);
-                    }
-                    else
-                    {
-                        // Trigger the restore of the state right away.
-                        await persistenceManager.RestoreStateAsync(store, context);
-                    }
-                }
+    private async Task UpdateRootComponentsOnDispatcher(
+        RootComponentOperationBatch operationBatch,
+        IClearableStore store,
+        bool isRestore,
+        CancellationToken cancellation)
+    {
+        var shouldClearStore = false;
+        var shouldWaitForQuiescence = false;
+        var operations = operationBatch.Operations;
+        var batchId = operationBatch.BatchId;
+        var postRemovalTask = Task.CompletedTask;
+        TaskCompletionSource? taskCompletionSource = null;
+        try
+        {
+            if (Descriptors.Count > 0)
+            {
+                // Block updating components if they were provided during StartCircuit. This keeps
+                // the footprint for Blazor Server closer to what it was before.
+                throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
+                    " been provided during circuit start up.");
+            }
 
+            if (store != null)
+            {
+                shouldClearStore = true;
+                // We only do this if we have no root components. Otherwise, the state would have been
+                // provided during the start up process
+                var persistenceManager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
                 if (_isFirstUpdate)
                 {
-                    _isFirstUpdate = false;
-                    shouldWaitForQuiescence = true;
+                    persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
+                }
 
-                    // Retrieve the circuit handlers at this point.
-                    _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
-                    _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
-                    await OnCircuitOpenedAsync(cancellation);
-                    await OnConnectionUpAsync(cancellation);
+                // Use the appropriate scenario based on whether this is a restore operation
+                var context = (isRestore, _isFirstUpdate) switch
+                {
+                    (_, false) => RestoreContext.ValueUpdate,
+                    (true, _) => RestoreContext.LastSnapshot,
+                    (false, _) => RestoreContext.InitialValue
+                };
+                if (context == RestoreContext.ValueUpdate)
+                {
+                    taskCompletionSource = new();
+                    postRemovalTask = EnqueueRestore(taskCompletionSource, persistenceManager, context, store);
+                }
+                else
+                {
+                    // Trigger the restore of the state right away.
+                    await persistenceManager.RestoreStateAsync(store, context);
+                }
+            }
 
-                    for (var i = 0; i < operations.Length; i++)
+            if (_isFirstUpdate)
+            {
+                _isFirstUpdate = false;
+                shouldWaitForQuiescence = true;
+
+                // Retrieve the circuit handlers at this point.
+                _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
+                _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
+                await OnCircuitOpenedAsync(cancellation);
+                await OnConnectionUpAsync(cancellation);
+
+                for (var i = 0; i < operations.Length; i++)
+                {
+                    var operation = operations[i];
+                    if (operation.Type != RootComponentOperationType.Add)
                     {
-                        var operation = operations[i];
-                        if (operation.Type != RootComponentOperationType.Add)
-                        {
-                            throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
-                        }
+                        throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
                     }
                 }
-
-                var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
-                taskCompletionSource?.SetResult();
-
-                await operationsTask;
-
-                await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
-
-                Log.UpdateRootComponentsSucceeded(_logger);
             }
-            catch (Exception ex)
+
+            var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
+            taskCompletionSource?.SetResult();
+
+            await operationsTask;
+
+            await Client.SendAsync("JS.EndUpdateRootComponents", batchId, CancellationToken.None);
+
+            Log.UpdateRootComponentsSucceeded(_logger);
+        }
+        catch (Exception ex)
+        {
+            // Report errors asynchronously. UpdateRootComponents is designed not to throw.
+            Log.UpdateRootComponentsFailed(_logger, ex);
+            UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+        }
+        finally
+        {
+            if (shouldClearStore)
             {
-                // Report errors asynchronously. UpdateRootComponents is designed not to throw.
-                Log.UpdateRootComponentsFailed(_logger, ex);
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+                // At this point all components have successfully produced an initial render and we can clear the contents of the component
+                // application state store. This ensures the memory that was not used during the initial render of these components gets
+                // reclaimed since no-one else is holding on to it any longer.
+                store.Clear();
             }
-            finally
-            {
-                if (shouldClearStore)
-                {
-                    // At this point all components have successfully produced an initial render and we can clear the contents of the component
-                    // application state store. This ensures the memory that was not used during the initial render of these components gets
-                    // reclaimed since no-one else is holding on to it any longer.
-                    store.Clear();
-                }
-            }
-        });
+        }
     }
 
     private static async Task EnqueueRestore(
@@ -1102,6 +1190,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(116, LogLevel.Debug, "The root component operation of type 'Update' was invalid: {Message}", EventName = nameof(InvalidComponentTypeForUpdate))]
         public static partial void InvalidComponentTypeForUpdate(ILogger logger, string message);
+
+        [LoggerMessage(117, LogLevel.Error, "Circuit '{CircuitId}' exceeded the limit of {MaxPendingRootComponentUpdates} pending root component updates.", EventName = nameof(RootComponentUpdateQueueOverflow))]
+        public static partial void RootComponentUpdateQueueOverflow(ILogger logger, CircuitId circuitId, int maxPendingRootComponentUpdates, Exception exception);
 
         [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
         public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);
