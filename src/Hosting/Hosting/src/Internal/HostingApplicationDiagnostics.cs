@@ -173,6 +173,10 @@ internal sealed class HostingApplicationDiagnostics
         var startTimestamp = context.StartTimestamp;
         long currentTimestamp = 0;
 
+        // The route is used by both metrics and tracing, so it's resolved at most once.
+        string? route = null;
+        var routeResolved = false;
+
         // startTimestamp has a value if:
         // - Information logging was enabled at for this request (and calculated time will be wildly wrong)
         //   Is used as proxy to reduce calls to virtual: _logger.IsEnabled(LogLevel.Information)
@@ -180,7 +184,7 @@ internal sealed class HostingApplicationDiagnostics
         if (startTimestamp != 0)
         {
             currentTimestamp = Stopwatch.GetTimestamp();
-            var reachedPipelineEnd = httpContext.Items.ContainsKey(RequestUnhandledKey);
+            var reachedPipelineEnd = GetItemsIfCreated(httpContext)?.ContainsKey(RequestUnhandledKey) == true;
 
             // Non-inline
             LogRequestFinished(context, startTimestamp, currentTimestamp);
@@ -189,9 +193,10 @@ internal sealed class HostingApplicationDiagnostics
             {
                 Debug.Assert(context.MetricsTagsFeature != null, "MetricsTagsFeature should be set if MetricsEnabled is true.");
 
-                var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+                var endpoint = GetOriginalEndpoint(httpContext);
                 var disableHttpRequestDurationMetric = endpoint?.Metadata.GetMetadata<IDisableHttpMetricsMetadata>() != null || context.MetricsTagsFeature.MetricsDisabled;
-                var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+                route = GetRoute(endpoint);
+                routeResolved = true;
 
                 _metrics.RequestEnd(
                     context.MetricsTagsFeature.Protocol!,
@@ -249,7 +254,7 @@ internal sealed class HostingApplicationDiagnostics
         // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
-            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener);
+            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener, routeResolved, route);
         }
 
         if (context.EventLogEnabled)
@@ -534,11 +539,16 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener)
+    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener, bool routeResolved, string? route)
     {
         if (!SuppressActivityOpenTelemetryData && activity.IsAllDataRequested)
         {
-            SetActivityEndTags(httpContext, activity, exception);
+            if (!routeResolved)
+            {
+                route = GetRoute(GetOriginalEndpoint(httpContext));
+            }
+
+            SetActivityEndTags(httpContext, activity, exception, route);
         }
 
         if (hasDiagnosticListener)
@@ -551,7 +561,7 @@ internal sealed class HostingApplicationDiagnostics
         }
     }
 
-    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception)
+    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception, string? route)
     {
         var response = httpContext.Response;
 
@@ -562,8 +572,6 @@ internal sealed class HostingApplicationDiagnostics
             activity.SetTag(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
         }
 
-        var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
-        var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
         if (route is not null)
         {
             var resolvedRoute = RouteDiagnosticsHelpers.ResolveHttpRoute(route);
@@ -590,6 +598,40 @@ internal sealed class HostingApplicationDiagnostics
             // other middleware rewriting it (like ForwardedHeadersMiddleware)
             activity.SetTag(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
         }
+    }
+
+    private static Endpoint? GetOriginalEndpoint(HttpContext httpContext)
+    {
+        var endpoint = httpContext.GetEndpoint();
+
+        // Some middleware re-execute the middleware pipeline with the HttpContext. Before they do this,
+        // they clear state from context, such as the previously matched endpoint. The original endpoint
+        // is stashed with a known key in HttpContext.Items. Use it as a fallback.
+        if (endpoint is null &&
+            GetItemsIfCreated(httpContext) is { } items &&
+            items.TryGetValue(HttpExtensions.OriginalEndpointKey, out var e) &&
+            e is Endpoint originalEndpoint)
+        {
+            endpoint = originalEndpoint;
+        }
+
+        return endpoint;
+    }
+
+    private static string? GetRoute(Endpoint? endpoint) => endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+
+    private static IDictionary<object, object?>? GetItemsIfCreated(HttpContext httpContext)
+    {
+        // Telemetry only reads values that other components may have added to HttpContext.Items.
+        // Reading DefaultHttpContext.Items when the request hasn't used it would allocate the
+        // items collection and add it to the server's features.
+        if (httpContext.GetType() == typeof(DefaultHttpContext))
+        {
+            // DefaultHttpContext stores Items in IItemsFeature, which is only added to the features when Items is first used.
+            return httpContext.Features.Get<IItemsFeature>()?.Items;
+        }
+
+        return httpContext.Items;
     }
 
     // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
