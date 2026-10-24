@@ -82,7 +82,7 @@ public class SessionMiddleware
         }
 
         var feature = new SessionFeature();
-        feature.Session = _sessionStore.Create(sessionKey, _options.IdleTimeout, _options.IOTimeout, tryEstablishSession, isNewSessionKey);
+        feature.Session = _sessionStore.Create(sessionKey, _options.IdleTimeout, _options.IOTimeout, tryEstablishSession, isNewSessionKey, context);
         context.Features.Set<ISessionFeature>(feature);
 
         try
