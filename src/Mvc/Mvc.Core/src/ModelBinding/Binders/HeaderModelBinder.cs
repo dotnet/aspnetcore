@@ -52,6 +52,16 @@ public class HeaderModelBinder : IModelBinder
 
         _logger.AttemptingToBindModel(bindingContext);
 
+        var modelMetadata = bindingContext.ModelMetadata;
+
+        if (InnerModelBinder is not null &&
+            modelMetadata.IsComplexType &&
+            !modelMetadata.IsEnumerableType)
+        {
+            await BindComplexModelAsync(bindingContext);
+            return;
+        }
+
         // Property name can be null if the model metadata represents a type (rather than a property or parameter).
         var headerName = bindingContext.FieldName;
 
@@ -89,6 +99,32 @@ public class HeaderModelBinder : IModelBinder
             bindingContext.ValueProvider = headerValueProvider;
 
             await InnerModelBinder.BindModelAsync(bindingContext);
+            result = bindingContext.Result;
+        }
+
+        bindingContext.Result = result;
+
+        _logger.DoneAttemptingToBindModel(bindingContext);
+    }
+
+    private async Task BindComplexModelAsync(ModelBindingContext bindingContext)
+    {
+        // Capture the top level object here as entering nested scope would make it 'false'.
+        var isTopLevelObject = bindingContext.IsTopLevelObject;
+
+        var allHeadersValueProvider = new AllHeadersValueProvider(bindingContext.HttpContext.Request.Headers);
+
+        ModelBindingResult result;
+        using (bindingContext.EnterNestedScope(
+                bindingContext.ModelMetadata,
+                fieldName: bindingContext.FieldName,
+                modelName: bindingContext.ModelName,
+                model: bindingContext.Model))
+        {
+            bindingContext.IsTopLevelObject = isTopLevelObject;
+            bindingContext.ValueProvider = allHeadersValueProvider;
+
+            await InnerModelBinder!.BindModelAsync(bindingContext);
             result = bindingContext.Result;
         }
 
