@@ -47,9 +47,11 @@ namespace Grpc.Shared;
 
 // Source here is from https://github.com/protocolbuffers/protobuf
 // Most of this code will be replaced over time with optimized implementations.
-internal static class Legacy
+internal static partial class Legacy
 {
-    private static readonly Regex TimestampRegex = new Regex(@"^(?<datetime>[0-9]{4}-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9])(?<subseconds>\.[0-9]{1,9})?(?<offset>(Z|[+-][0-1][0-9]:[0-5][0-9]))$", RegexOptions.Compiled);
+    [GeneratedRegex(@"^(?<datetime>[0-9]{4}-[01][0-9]-[0-3][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9])(?<subseconds>\.[0-9]{1,9})?(?<offset>(Z|[+-][0-1][0-9]:[0-5][0-9]))$", RegexOptions.Compiled)]
+    internal static partial Regex TimestampRegex();
+
     private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
     // Constants determined programmatically, but then hard-coded so they can be constant expressions.
     private const long BclSecondsAtUnixEpoch = 62135596800;
@@ -58,11 +60,12 @@ internal static class Legacy
     internal const int MaxNanos = Duration.NanosecondsPerSecond - 1;
     private static readonly int[] SubsecondScalingFactors = { 0, 100000000, 100000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10, 1 };
 
-    private static readonly Regex DurationRegex = new Regex(@"^(?<sign>-)?(?<int>[0-9]{1,12})(?<subseconds>\.[0-9]{1,9})?s$", RegexOptions.Compiled);
+    [GeneratedRegex(@"^(?<sign>-)?(?<int>[0-9]{1,12})(?<subseconds>\.[0-9]{1,9})?s$", RegexOptions.Compiled)]
+    internal static partial Regex DurationRegex();
 
     public static (long seconds, int nanos) ParseTimestamp(string value)
     {
-        var match = TimestampRegex.Match(value);
+        var match = TimestampRegex().Match(value);
         if (!match.Success)
         {
             throw new InvalidOperationException($"Invalid Timestamp value: {value}");
@@ -177,7 +180,7 @@ internal static class Legacy
 
     public static (long seconds, int nanos) ParseDuration(string value)
     {
-        var match = DurationRegex.Match(value);
+        var match = DurationRegex().Match(value);
         if (!match.Success)
         {
             throw new InvalidOperationException("Invalid Duration value: " + value);
