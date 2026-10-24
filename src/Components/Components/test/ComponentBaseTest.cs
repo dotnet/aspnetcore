@@ -437,6 +437,39 @@ public class ComponentBaseTest
     }
 
     [Fact]
+    public void ErrorBoundaryRendersErrorContentWhenMultipleChildrenThrowInSameBatch()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+
+        // Several children failing in one batch each route an error to the same error boundary.
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                for (var i = 0; i < 3; i++)
+                {
+                    childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(i);
+                    childBuilder.CloseComponent();
+                }
+            }));
+            builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootComponentId);
+
+        // Assert
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary.ReceivedException);
+    }
+
+    [Fact]
     public async Task ComponentBaseDoesntRenderWhenOnInitializedAsyncFaultedTask()
     {
         // Arrange
