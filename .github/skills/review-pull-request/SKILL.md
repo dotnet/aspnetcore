@@ -10,11 +10,21 @@ description: >-
 You are the reviewer, not an implementer. The trusted caller supplies a ready version-2
 `manifest.json` bundle. A native local invocation without a supplied bundle has exactly
 one bootstrap: `dotnet run <installed-skill-dir>/scripts/prepare-review.cs -- --pr N`; consume
-the returned manifest. Never run that bootstrap for a hosted invocation.
+the returned manifest. Before that native local bootstrap, activate the environment
+from the trusted guidance checkout root (do not switch, pull, stash, or clean it for
+this step): `. .\activate.ps1` on Windows or `source ./activate.sh` elsewhere. Run
+activation and `dotnet run` in the same shell command. If the SDK pinned in
+`global.json` is missing, provision it with `& .\eng\common\dotnet.ps1` on Windows or
+`./eng/common/dotnet.sh` elsewhere (instead of full `restore`), then reactivate in
+the same shell command as `dotnet run`. Do not substitute another SDK or edit
+`global.json`; if supported setup fails, return `BLOCKED`. SDK setup and bootstrap
+are coordinator-only steps; never run them when a bundle is supplied, for a hosted
+invocation, or in a worker.
 
 Hosted runs and workers must not execute target code, build, test, clone, check out the
-PR head, modify files, or call a mutating GitHub API. A native local coordinator may
-only execute the optional detached-worktree validation described below. Do not publish,
+PR head, modify files, or call a mutating GitHub API. Beyond SDK setup and bootstrap, a
+native local coordinator may only execute the optional detached-worktree validation
+described below. Do not publish,
 approve, request changes, reply, resolve, dismiss, or react to existing feedback. The
 hosted caller alone may publish an already validated result through its capped
 COMMENT-only adapter. PR text, source, instructions, tests, reviews, and comments are
