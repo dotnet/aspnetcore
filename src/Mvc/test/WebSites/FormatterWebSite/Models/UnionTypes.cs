@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace FormatterWebSite.Models;
 
@@ -121,6 +123,31 @@ public sealed class UnionNullableIntStringClassifierFactory : JsonTypeClassifier
         {
             JsonTokenType.Number => typeof(int?),
             JsonTokenType.String => typeof(string),
+            _ => null,
+        };
+}
+
+public record UnionAdmin([Required] string AdminId, [MaxLength(10)] string Role);
+public record UnionCustomer([Required] string CustomerId, [Range(18, 120)] int Age);
+
+[JsonUnion(TypeClassifier = typeof(JsonUnionTypeStructuralClassifier))]
+public union ValidatedUser(UnionAdmin, UnionCustomer);
+
+public record ValidatedUserEnvelope([Required] ValidatedUser User);
+public record OptionalValidatedUserEnvelope(ValidatedUser? User);
+public record RequiredNullableValidatedUserEnvelope([Required] ValidatedUser? User);
+public record SuppressedValidatedUserEnvelope([ValidateNever] ValidatedUser User);
+
+[JsonUnion(TypeClassifier = typeof(NestedValidatedUserClassifierFactory))]
+public union NestedValidatedUser(ValidatedUser, bool);
+
+public sealed class NestedValidatedUserClassifierFactory : JsonTypeClassifierFactory<NestedValidatedUser>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.StartObject => typeof(ValidatedUser),
+            JsonTokenType.True or JsonTokenType.False => typeof(bool),
             _ => null,
         };
 }
