@@ -14,12 +14,12 @@ public static class WindowWebStorageExtensions
         /// Gets storage shared by pages from the same origin.
         /// </summary>
         public Storage LocalStorage
-            => window.GetOrAddFeature("localStorage", static jsRuntime => new Storage(jsRuntime, "localStorage"));
+            => window.GetOrAddFeature("localStorage", static context => new Storage(context.JSRuntime, "localStorage"));
 
         /// <summary>
         /// Gets storage scoped to the current browser tab.
         /// </summary>
         public Storage SessionStorage
-            => window.GetOrAddFeature("sessionStorage", static jsRuntime => new Storage(jsRuntime, "sessionStorage"));
+            => window.GetOrAddFeature("sessionStorage", static context => new Storage(context.JSRuntime, "sessionStorage"));
     }
 }
