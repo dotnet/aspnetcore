@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing;
 /// root for the web application represented by <c>TEntryPoint</c>.
 /// <see cref="WebApplicationFactory{TEntryPoint}"/> will iterate over all the instances of
 /// <see cref="WebApplicationFactoryContentRootAttribute"/>, filter the instances whose
-/// <see cref="Key"/> is equal to <c>TEntryPoint</c> <see cref="Assembly.FullName"/>,
+/// <see cref="Key"/> is equal to the <see cref="Assembly.FullName"/> of the assembly containing <c>TEntryPoint</c>,
 /// order them by <see cref="Priority"/> in ascending order.
 /// <see cref="WebApplicationFactory{TEntryPoint}"/> will check for the existence of the marker
 /// in <c>Path.Combine(<see cref="ContentRootPath"/>, Path.GetFileName(<see cref="ContentRootTest"/>))"</c>
