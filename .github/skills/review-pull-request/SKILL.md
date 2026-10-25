@@ -52,14 +52,23 @@ submodule only a commit pointer, and LFS content only a pointer; do not infer be
 from unavailable target bytes. Use `diff.patch` and `files.json` for changed-line
 anchors, `feedback.json` for deduplication, and `pull.json` for context. Read full
 relevant source bodies in bounded ranges rather than relying on a search hit, summary,
-or truncated response. A missing, unreadable, malformed, or empty routed guide, policy,
+or truncated response. In hosted runs, use authorized native `view`, `rg`, and `glob`
+to read/search the bundle, not shell commands such as `jq` or `cat`, even for read-only
+inspection. Page large JSON/text with `view_range` and narrow ranges when needed; a
+size warning or truncated output is not a content read, even if the tool reports success.
+For a single oversized line, use `forceReadLargeFiles: true` only if the tool supports it
+and returns the complete required content.
+
+A missing, unreadable, malformed, or empty routed guide, policy,
 diff, changed-file source, frozen feedback, or required source role blocks completion.
 If a tool refuses to read a bundle file, record the tool, affected input, and exact error.
 State only the cause the error states, otherwise `unknown`; never attribute it to content
-exclusion, policy, or sandboxing unless the error says so. If a bundle read fails with
-`Permission denied and could not request permission from user`, tell the user to rerun
-interactively and approve access, or rerun with `--allow-all-paths`, which grants access
-to every path. Do not claim that this generic error proves a long-path cause.
+exclusion, policy, or sandboxing unless the error says so. A shell-execution denial does
+not establish that its input file is unreadable. Continue with authorized native reads
+of the same frozen input unless file access was explicitly denied; do not request a
+rerun, broaden permissions, or propose `--allow-all-paths` for a shell denial.
+Never work around a file-access or content-exclusion denial. If required bytes remain
+unavailable, return `BLOCKED`. Do not infer a long-path cause from a generic error.
 Never silently fetch product source through live GitHub tools, infer it from memory, or
 fall back to another revision.
 
@@ -115,6 +124,8 @@ any runtime-reported values; record unavailable runtime values as `unknown`, whi
 does not make a guide incomplete. A confirmed mismatch or unavailable agent type/model
 makes that guide `incomplete`. Give each worker the **entire guide text**, all applicable
 policy clauses, frozen identities, changed-file list, diff, and source-root paths. A
+hosted worker's brief must also require native-only reads/searches and paged recovery,
+with no shell fallback. A
 worker applies every guide topic, performs source-only review, returns *candidates rather
 than publishing*, and reports `complete`, `incomplete` only for a required-input/read
 failure or worker-configuration mismatch, or `excluded`
