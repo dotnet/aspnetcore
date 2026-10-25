@@ -79,22 +79,26 @@ def preflight():
     )
     denied = subprocess.run(
         ["curl", "--fail", "--silent", "--show-error", "--max-time", "15",
+         "--proxy", os.environ["HTTP_PROXY"],
          "--output", "/dev/null", "--write-out", "%{http_code}", "http://example.com"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
     direct = subprocess.run(
         ["curl", "--noproxy", "*", "--silent", "--show-error", "--connect-timeout", "5",
          "--max-time", "8", "--output", "/dev/null", "--write-out", "%{http_code}",
-         "http://example.com"],
+         "http://1.1.1.1"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
     explicit_denial = denied.returncode == 22 and denied.stdout == b"403"
-    direct_denial = direct.returncode != 0 and direct.stdout == b"000"
+    direct_denial = direct.returncode in (7, 28) and direct.stdout == b"000"
     probes = {
         "allowed_exit": allowed.returncode, "denied_exit": denied.returncode,
         "explicit_proxy_denial": explicit_denial, "credential_env_names": forbidden,
         "denied_http_status": denied.stdout.decode("ascii", errors="replace"),
         "direct_exit": direct.returncode, "direct_egress_denied": direct_denial,
+        "direct_target": "http://1.1.1.1",
+        "denied_error": denied.stderr.decode("utf-8", errors="replace")[:512],
+        "direct_error": direct.stderr.decode("utf-8", errors="replace")[:512],
         "exposed_paths": exposed, "control_read_only": read_only,
         "dev_null_masked_socket_paths": masked_sockets,
         "uid": os.getuid(), "gid": os.getgid(),
