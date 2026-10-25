@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: PureWeen/aspnetcore
-          ref: 8ccf465a1cb3188b46330d21f2fe794e7ddfd7a5
+          ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 1
           submodules: false
@@ -34,7 +34,7 @@ jobs:
 
       - name: Run the one-shot credential-free target sandbox
         env:
-          PILOT_IMPLEMENTATION_SHA: 8ccf465a1cb3188b46330d21f2fe794e7ddfd7a5
+          PILOT_IMPLEMENTATION_SHA: ${{ github.sha }}
         run: python3 .github/scripts/review-build-sandbox/host.py
 
       - name: Preserve bounded receipt and untrusted diagnostic files

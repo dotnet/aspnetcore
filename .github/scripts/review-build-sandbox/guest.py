@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -48,8 +49,14 @@ def preflight():
     ]
     if forbidden:
         raise RuntimeError("Unexpected credential environment names: " + ", ".join(forbidden))
+    masked_sockets = []
+    for path in ("/var/run/docker.sock", "/run/docker.sock"):
+        if Path(path).exists():
+            info = Path(path).stat()
+            if not stat.S_ISCHR(info.st_mode) or info.st_rdev != os.makedev(1, 3):
+                raise RuntimeError("Docker socket is not masked by /dev/null")
+            masked_sockets.append(path)
     forbidden_paths = [
-        "/var/run/docker.sock", "/run/docker.sock",
         "/home/runner/.config/gh/hosts.yml", "/home/runner/.docker/config.json",
         "/home/runner/.copilot/config.json", "/home/runner/.gitconfig",
         "/home/runner/work/_temp/_runner_file_commands",
@@ -80,6 +87,7 @@ def preflight():
         "allowed_exit": allowed.returncode, "denied_exit": denied.returncode,
         "explicit_proxy_denial": explicit_denial, "credential_env_names": forbidden,
         "exposed_paths": exposed, "control_read_only": read_only,
+        "dev_null_masked_socket_paths": masked_sockets,
         "uid": os.getuid(), "gid": os.getgid(),
     }
     (OUT / "probes.json").write_text(json.dumps(probes, indent=2))
