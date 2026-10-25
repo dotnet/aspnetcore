@@ -19,6 +19,14 @@ The following contains a description of each sub-directory in the `ProjectTempla
 
 Generated-project .NET CLI commands must clear inherited `MSBuildSDKsPath` so restore, build, and publish use the same copied SDK and pack layout.
 
+### Blazor Counter sample
+
+The Blazor Web App template keeps `Counter.razor` and its `PageTitle` static when using per-page/component
+interactivity. Only the `CounterContent` child component selects an interactive render mode. This keeps
+`PageTitle` in the same render mode as the static `HeadOutlet`, without suppressing section render-mode
+warnings. With global interactivity, both components inherit the application's render mode.
+Interactive title updates require `PageTitle` and `HeadOutlet` to use the same interactive render mode.
+
 ## Submitting pull requests
 
 You can submit changes for templates in this repo by submitting a pull request. If you make changes to any

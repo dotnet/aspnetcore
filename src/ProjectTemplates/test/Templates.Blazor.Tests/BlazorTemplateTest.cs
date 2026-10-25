@@ -145,7 +145,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             // Initially displays the home page
             await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
 
-            Assert.Equal("Home", (await page.TitleAsync()).Trim());
+            await Assertions.Expect(page).ToHaveTitleAsync("Home");
         }
 
         if (!pagesToExclude.HasFlag(BlazorTemplatePages.Counter))
@@ -157,8 +157,23 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 page.WaitForSelectorAsync("p >> text=Current count: 0"),
                 page.ClickAsync("a[href=counter]"));
 
+            await Assertions.Expect(page).ToHaveTitleAsync("Counter");
+
             // Clicking the counter button works
             await IncrementCounterAsync(page);
+
+            await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
+            await Assertions.Expect(page).ToHaveTitleAsync("Counter");
+            await IncrementCounterAsync(page);
+
+            if (!pagesToExclude.HasFlag(BlazorTemplatePages.Home))
+            {
+                await page.ClickAsync("a[href='']");
+                await Assertions.Expect(page).ToHaveTitleAsync("Home");
+                await page.ClickAsync("a[href=counter]");
+                await Assertions.Expect(page).ToHaveTitleAsync("Counter");
+                await IncrementCounterAsync(page);
+            }
         }
 
         if (authenticationFeatures.HasFlag(AuthenticationFeatures.RegisterAndLogIn))
