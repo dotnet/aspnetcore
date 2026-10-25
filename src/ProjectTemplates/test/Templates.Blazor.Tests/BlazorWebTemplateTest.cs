@@ -61,6 +61,23 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_PerPageCounterDoesNotLogRenderModeMismatch(BrowserKind browserKind)
+    {
+        var project = await CreateBuildPublishAsync(args: ["-int", "Server"], onlyCreate: true);
+        await project.RunDotNetBuildAsync();
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        await TestBasicInteractionInNewPageAsync(
+            browserKind,
+            aspNetProcess.ListeningUri.AbsoluteUri,
+            project.ProjectName,
+            pagesToExclude: BlazorTemplatePages.Home);
+
+        Assert.DoesNotContain("has its SectionOutlet in render mode", aspNetProcess.Process.Output);
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69095")]
     public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
