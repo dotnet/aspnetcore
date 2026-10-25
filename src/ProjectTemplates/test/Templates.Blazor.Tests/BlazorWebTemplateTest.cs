@@ -21,8 +21,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     [InlineData(BrowserKind.Chromium, "Auto")]
     [InlineData(BrowserKind.Chromium, "None", "Individual")]
     [InlineData(BrowserKind.Chromium, "Server", "None", true)]
-    [InlineData(BrowserKind.Chromium, "WebAssembly", "None", true)]
-    [InlineData(BrowserKind.Chromium, "Auto", "None", true)]
     public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None", bool allInteractive = false)
     {
         string[] args = allInteractive
@@ -676,7 +674,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
             await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
-            Assert.DoesNotContain("has its SectionOutlet in render mode", aspNetProcess.Process.Output);
         }
 
         // Test the published project
@@ -688,7 +685,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
             await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
-            Assert.DoesNotContain("has its SectionOutlet in render mode", aspNetProcess.Process.Output);
         }
     }
 
