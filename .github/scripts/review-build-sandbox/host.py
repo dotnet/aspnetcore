@@ -147,6 +147,12 @@ def audit_container():
         raise RuntimeError("Unexpected privileged/host-network container")
     if container["HostConfig"]["Memory"] != 6 * 1024 ** 3:
         raise RuntimeError("Unexpected memory limit")
+    networks = container["NetworkSettings"]["Networks"]
+    if len(networks) != 1:
+        raise RuntimeError("Agent must be attached to exactly one internal network")
+    network = json.loads(text(["docker", "network", "inspect", next(iter(networks))]))[0]
+    if not network["Internal"]:
+        raise RuntimeError("Agent has a non-internal network")
     services = text(["docker", "ps", "--format", "{{.Names}}"]).splitlines()
     if any("cli-proxy" in name or "mcp" in name for name in services):
         raise RuntimeError("Unexpected CLI/MCP sidecar")
@@ -162,6 +168,7 @@ def audit_container():
     receipt["container_audit"] = {
         "environment_names": names, "mounts": mounts, "services": services,
         "credential_free_api_proxy_environment_names": list(proxy_env),
+        "agent_network_internal": network["Internal"],
         "image_id": container["Image"], "host_config": {
             key: container["HostConfig"][key]
             for key in ("Memory", "Privileged", "NetworkMode", "CapAdd", "CapDrop")
@@ -239,7 +246,7 @@ try:
     audit_container()
     probes = json.loads(bounded("probes.json"))
     if not (
-        probes["allowed_exit"] == 0 and probes["explicit_proxy_denial"]
+        probes["allowed_exit"] == 0 and probes["explicit_proxy_denial"] and probes["direct_egress_denied"]
         and not probes["exposed_paths"] and not probes["credential_env_names"]
         and probes["control_read_only"] and probes["uid"] != 0
     ):
@@ -293,7 +300,8 @@ try:
     }
     receipt["acceptance"].update({
         "nonzero_tests": True, "five_regression_rows": True, "pinned_sdk": True,
-        "allow_and_deny": probes["allowed_exit"] == 0 and probes["explicit_proxy_denial"],
+        "allow_and_deny": probes["allowed_exit"] == 0 and probes["explicit_proxy_denial"]
+        and probes["direct_egress_denied"],
         "no_credentials_or_control_paths": not probes["exposed_paths"] and not probes["credential_env_names"],
         "exact_head_and_tree": True, "disk_reserve": True,
         "memory_reserve": True,

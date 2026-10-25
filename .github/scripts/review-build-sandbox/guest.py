@@ -78,20 +78,29 @@ def preflight():
         stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=False,
     )
     denied = subprocess.run(
-        ["curl", "--silent", "--show-error", "--max-time", "15", "https://example.com"],
+        ["curl", "--fail", "--silent", "--show-error", "--max-time", "15",
+         "--output", "/dev/null", "--write-out", "%{http_code}", "http://example.com"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
-    # A failed CONNECT is evidence of an active proxy denial, unlike a DNS/timeout failure.
-    explicit_denial = denied.returncode == 56 and b"403" in denied.stderr
+    direct = subprocess.run(
+        ["curl", "--noproxy", "*", "--silent", "--show-error", "--connect-timeout", "5",
+         "--max-time", "8", "--output", "/dev/null", "--write-out", "%{http_code}",
+         "http://example.com"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+    )
+    explicit_denial = denied.returncode == 22 and denied.stdout == b"403"
+    direct_denial = direct.returncode != 0 and direct.stdout == b"000"
     probes = {
         "allowed_exit": allowed.returncode, "denied_exit": denied.returncode,
         "explicit_proxy_denial": explicit_denial, "credential_env_names": forbidden,
+        "denied_http_status": denied.stdout.decode("ascii", errors="replace"),
+        "direct_exit": direct.returncode, "direct_egress_denied": direct_denial,
         "exposed_paths": exposed, "control_read_only": read_only,
         "dev_null_masked_socket_paths": masked_sockets,
         "uid": os.getuid(), "gid": os.getgid(),
     }
     (OUT / "probes.json").write_text(json.dumps(probes, indent=2))
-    if allowed.returncode or not explicit_denial or os.getuid() == 0:
+    if allowed.returncode or not explicit_denial or not direct_denial or os.getuid() == 0:
         raise RuntimeError("Network/identity acceptance failed")
     (OUT / "ready").touch()
     deadline = time.monotonic() + 120
