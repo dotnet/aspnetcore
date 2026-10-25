@@ -9,6 +9,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import threading
 import time
 import xml.etree.ElementTree as ET
 
@@ -42,6 +43,8 @@ receipt = {
     "workflow_sha": os.environ["GITHUB_SHA"],
     "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
     "launcher_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    "guest_sha256": hashlib.sha256(Path(__file__).with_name("guest.py").read_bytes()).hexdigest(),
+    "implementation_sha": os.environ["PILOT_IMPLEMENTATION_SHA"],
     "awf_version": "v0.28.57", "image_pins": PINS, "allow_domains": DOMAINS,
     "resources": [], "acceptance": {}, "status": "failed",
 }
@@ -51,6 +54,8 @@ clean_env = {
     "GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0",
 }
 process = None
+log_thread = None
+oversize_log = threading.Event()
 started = time.monotonic()
 
 
@@ -80,6 +85,16 @@ def sample():
     receipt["resources"].append(data)
 
 
+def capture_log(pipe):
+    remaining = 8 * 1024 * 1024
+    with (EVIDENCE / "awf.log").open("wb") as log:
+        while data := pipe.read(65536):
+            log.write(data[:remaining])
+            if len(data) > remaining:
+                oversize_log.set()
+            remaining = max(0, remaining - len(data))
+
+
 def bounded(name, limit=8 * 1024 * 1024):
     path = OUT / name
     fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
@@ -107,7 +122,8 @@ def audit_container():
     allowed_system = {
         "/usr", "/bin", "/sbin", "/lib", "/lib64", "/opt", "/sys", "/dev", "/dev/null",
         "/etc/ssl", "/etc/ca-certificates", "/etc/alternatives", "/etc/passwd", "/etc/group",
-        "/etc/resolv.conf", "/etc/hosts", "/etc/localtime", "/etc/nsswitch.conf", "/tmp",
+        "/etc/resolv.conf", "/etc/hosts", "/etc/localtime", "/etc/nsswitch.conf",
+        "/etc/ld.so.cache", "/etc/pki/ca-trust/extracted", "/etc/pki/tls/certs", "/tmp",
     }
     mounts = container["Mounts"]
     for mount in mounts:
@@ -132,10 +148,20 @@ def audit_container():
     if container["HostConfig"]["Memory"] != 6 * 1024 ** 3:
         raise RuntimeError("Unexpected memory limit")
     services = text(["docker", "ps", "--format", "{{.Names}}"]).splitlines()
-    if any("api-proxy" in name or "cli-proxy" in name or "mcp" in name for name in services):
-        raise RuntimeError("Unexpected AI/MCP sidecar")
+    if any("cli-proxy" in name or "mcp" in name for name in services):
+        raise RuntimeError("Unexpected CLI/MCP sidecar")
+    # v0.28.57 always starts this sidecar. It must have zero usable credentials.
+    proxy = json.loads(text(["docker", "inspect", "awf-api-proxy"]))[0]
+    proxy_env = dict(value.split("=", 1) for value in proxy["Config"]["Env"] if "=" in value)
+    if any(value for key, value in proxy_env.items()
+           if re.search(r"TOKEN|SECRET|PASSWORD|CREDENTIAL|API_KEY|PRIVATE_KEY", key, re.I)):
+        raise RuntimeError("Mandatory API proxy has credential material")
+    expected_proxy = f"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.57@{PINS['api-proxy']}"
+    if proxy["Config"]["Image"] != expected_proxy:
+        raise RuntimeError("Unexpected API proxy image")
     receipt["container_audit"] = {
         "environment_names": names, "mounts": mounts, "services": services,
+        "credential_free_api_proxy_environment_names": list(proxy_env),
         "image_id": container["Image"], "host_config": {
             key: container["HostConfig"][key]
             for key in ("Memory", "Privileged", "NetworkMode", "CapAdd", "CapDrop")
@@ -149,6 +175,8 @@ try:
     if os.environ["GITHUB_RUN_ATTEMPT"] != "1":
         raise RuntimeError("No automatic/manual reruns: use a newly approved dispatch")
     EVIDENCE.mkdir()
+    if text(["git", "rev-parse", "HEAD"]) != os.environ["PILOT_IMPLEMENTATION_SHA"]:
+        raise RuntimeError("Probe helper revision mismatch")
     if hashlib.sha256(Path(shutil.which("awf")).read_bytes()).hexdigest() != (
         "2c9f800e56fad5ee974f3fdc5610b2a5b5632655a25b55d7bbae0c3d6dff165a"
     ):
@@ -175,7 +203,6 @@ try:
         run(["docker", "pull", f"ghcr.io/github/gh-aw-firewall/{name}:0.28.57@{PINS[name]}"])
     config = {
         "network": {"allowDomains": DOMAINS, "isolation": True},
-        "apiProxy": {"enabled": False},
         "container": {
             "imageTag": "0.28.57," + ",".join(f"{key}={value}" for key, value in PINS.items()),
             "agentTimeout": 30,
@@ -196,32 +223,47 @@ try:
         "--", "python3", str(CONTROL / "guest.py"),
     ]
     receipt["awf_command"] = command
-    with (EVIDENCE / "awf.log").open("wb") as log:
-        process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT)
-        deadline = time.monotonic() + 180
-        while not (OUT / "ready").exists():
-            if process.poll() is not None:
-                raise RuntimeError("AWF/preflight exited before approval")
-            if time.monotonic() > deadline:
-                raise RuntimeError("AWF/preflight startup timeout")
-            time.sleep(2)
-        audit_container()
-        (OUT / "approved").touch()
-        receipt["acceptance"]["container_gate"] = True
-        deadline = time.monotonic() + 30 * 60
-        while process.poll() is None:
-            if time.monotonic() > deadline:
-                raise RuntimeError("30-minute worker budget exceeded")
-            sample()
-            if receipt["resources"][-1]["disk_free_bytes"] < 4 * 1024 ** 3:
-                raise RuntimeError("Less than 4 GiB disk reserve")
-            if receipt["resources"][-1]["memory_available_kb"] < 512 * 1024:
-                raise RuntimeError("Less than 512 MiB VM memory reserve")
-            time.sleep(15)
-        receipt["awf_exit"] = process.returncode
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    log_thread = threading.Thread(target=capture_log, args=(process.stdout,), daemon=True)
+    log_thread.start()
+    deadline = time.monotonic() + 180
+    while not (OUT / "ready").exists():
+        if oversize_log.is_set():
+            raise RuntimeError("AWF log exceeded 8 MiB")
+        if process.poll() is not None:
+            raise RuntimeError("AWF/preflight exited before approval")
+        if time.monotonic() > deadline:
+            raise RuntimeError("AWF/preflight startup timeout")
+        time.sleep(2)
+    audit_container()
+    probes = json.loads(bounded("probes.json"))
+    if not (
+        probes["allowed_exit"] == 0 and probes["explicit_proxy_denial"]
+        and not probes["exposed_paths"] and not probes["credential_env_names"]
+        and probes["control_read_only"] and probes["uid"] != 0
+    ):
+        raise RuntimeError("Pre-target probe evidence failed")
+    receipt["probes"] = probes
+    (OUT / "approved").touch()
+    receipt["acceptance"]["container_gate"] = True
+    deadline = time.monotonic() + 30 * 60
+    while process.poll() is None:
+        if oversize_log.is_set():
+            raise RuntimeError("AWF log exceeded 8 MiB")
+        if time.monotonic() > deadline:
+            raise RuntimeError("30-minute worker budget exceeded")
+        sample()
+        if receipt["resources"][-1]["disk_free_bytes"] < 4 * 1024 ** 3:
+            raise RuntimeError("Less than 4 GiB disk reserve")
+        if receipt["resources"][-1]["memory_available_kb"] < 512 * 1024:
+            raise RuntimeError("Less than 512 MiB VM memory reserve")
+        time.sleep(15)
+    receipt["awf_exit"] = process.returncode
+    log_thread.join(timeout=10)
+    if log_thread.is_alive() or oversize_log.is_set():
+        raise RuntimeError("AWF log was oversized or did not close")
     if process.returncode:
         raise RuntimeError(f"AWF/target failed: exit {process.returncode}")
-    probes = json.loads(bounded("probes.json"))
     phases = json.loads(bounded("phases.json"))
     receipt.update({"probes": probes, "phases": phases})
     for name in ("bootstrap", "sdk", "restore", "build", "test"):
@@ -266,6 +308,8 @@ finally:
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait()
+    if log_thread is not None:
+        log_thread.join(timeout=10)
     if EVIDENCE.exists():
         for name in ("failure.txt", "probes.json", "phases.json", "bootstrap.log", "sdk.log",
                      "restore.log", "build.log", "test.log", "tests.xml"):

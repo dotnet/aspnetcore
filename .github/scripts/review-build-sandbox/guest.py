@@ -3,6 +3,7 @@
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
@@ -111,10 +112,14 @@ try:
     ]
     phase("restore", common + ["--restore", "--no-build", "--no-test"])
     phase("build", common + ["--no-restore", "--build", "--no-test"])
+    os.environ["TestRunnerAdditionalArguments"] = f"-class {CLASS}"
     phase("test", common + [
         "--no-restore", "--no-build", "--test",
-        f"-p:TestRunnerAdditionalArguments=-class {CLASS} -xml {OUT}/tests.xml",
     ], 300)
+    shutil.copyfile(
+        SOURCE / "artifacts/TestResults/Debug/Microsoft.AspNetCore.ResponseCaching.Tests_net11.0_x64.xml",
+        OUT / "tests.xml",
+    )
 except Exception as error:
     (OUT / "failure.txt").write_text(f"{type(error).__name__}: {error}\n")
     sys.exit(1)
