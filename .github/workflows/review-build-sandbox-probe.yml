@@ -1,0 +1,47 @@
+name: Temporary review build sandbox probe
+run-name: Phase 1 non-AI AWF probe for upstream PR 69210
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: review-build-sandbox-probe-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: github.repository == 'PureWeen/aspnetcore' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out reviewed probe helpers, never target code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: PureWeen/aspnetcore
+          ref: 5416af0aa368d41261309c24f9d99926ef38e5fb
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+
+      - name: Install reviewed standalone AWF
+        uses: github/gh-aw-firewall@5953f2a985320a549f579a4a9d1977e603435744 # v0.28.57
+        with:
+          version: v0.28.57
+          pull-images: "false"
+
+      - name: Run the one-shot credential-free target sandbox
+        env:
+          PILOT_IMPLEMENTATION_SHA: 5416af0aa368d41261309c24f9d99926ef38e5fb
+        run: python3 .github/scripts/review-build-sandbox/host.py
+
+      - name: Preserve bounded receipt and untrusted diagnostic files
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: phase1-review-build-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/review-build-evidence
+          if-no-files-found: error
+          retention-days: 7
