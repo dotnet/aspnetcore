@@ -97,6 +97,13 @@
           ]
         },
         {
+          "condition": "(InteractiveAtRoot)",
+          "exclude": [
+            "BlazorWebCSharp.1/Components/Pages/CounterContent.razor",
+            "BlazorWebCSharp.1.Client/Pages/CounterContent.razor"
+          ]
+        },
+        {
           "condition": "(!UseServer)",
           "exclude": [
             "BlazorWebCSharp.1/Components/Layout/ReconnectModal.razor",
