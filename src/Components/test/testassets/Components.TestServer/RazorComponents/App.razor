@@ -42,7 +42,9 @@
 
     private void OnNotFoundEvent(object sender, NotFoundEventArgs e)
     {
-        var type = typeof(CustomNotFoundPage);
+        var type = string.Equals(UseAuthorizedNotFoundPage, "true", StringComparison.OrdinalIgnoreCase)
+            ? typeof(AuthorizedNotFoundPage)
+            : typeof(CustomNotFoundPage);
         var routeAttributes = type.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
         if (routeAttributes.Length == 0)
         {
