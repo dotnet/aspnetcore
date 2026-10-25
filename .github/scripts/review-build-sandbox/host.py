@@ -175,6 +175,7 @@ try:
     if os.environ["GITHUB_RUN_ATTEMPT"] != "1":
         raise RuntimeError("No automatic/manual reruns: use a newly approved dispatch")
     EVIDENCE.mkdir()
+    AWF_STATE.mkdir(mode=0o700)
     if text(["git", "rev-parse", "HEAD"]) != os.environ["PILOT_IMPLEMENTATION_SHA"]:
         raise RuntimeError("Probe helper revision mismatch")
     if hashlib.sha256(Path(shutil.which("awf")).read_bytes()).hexdigest() != (
