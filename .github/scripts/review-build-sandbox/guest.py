@@ -13,6 +13,7 @@ ROOT = Path("/var/lib/review-build-phase1")
 SOURCE = ROOT / "work"
 OUT = ROOT / "out"
 CONTROL = ROOT / "control"
+TOOLS = ROOT / "tools"
 CLASS = "Microsoft.AspNetCore.ResponseCaching.Tests.ResponseCachingPolicyProviderTests"
 PROJECT = SOURCE / "src/Middleware/ResponseCaching/test/Microsoft.AspNetCore.ResponseCaching.Tests.csproj"
 phases = []
@@ -117,11 +118,13 @@ def preflight():
 try:
     preflight()
     os.environ.update({
+        "HOME": str(TOOLS),
+        "DOTNET_CLI_HOME": str(TOOLS),
         "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
         "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
         "DOTNET_NOLOGO": "1",
-        "NUGET_PACKAGES": str(ROOT / "home/.nuget/packages"),
-        "NUGET_HTTP_CACHE_PATH": str(ROOT / "home/.nuget/http-cache"),
+        "NUGET_PACKAGES": str(TOOLS / ".nuget/packages"),
+        "NUGET_HTTP_CACHE_PATH": str(TOOLS / ".nuget/http-cache"),
         "MSBUILDDISABLENODEREUSE": "1",
     })
     phase("bootstrap", ["bash", "-c", "source ./activate.sh && bash ./eng/common/dotnet.sh --info"], 600)

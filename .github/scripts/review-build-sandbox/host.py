@@ -17,6 +17,7 @@ ROOT = Path("/var/lib/review-build-phase1")
 SOURCE = ROOT / "work"
 CONTROL = ROOT / "control"
 OUT = ROOT / "out"
+TOOLS = ROOT / "tools"
 EVIDENCE = Path(os.environ["RUNNER_TEMP"]) / "review-build-evidence"
 AWF_STATE = Path(os.environ["RUNNER_TEMP"]) / "review-build-awf"
 SHA = "d9476ed1cb52fc9501e36d5e0cf1b4796b67aefd"
@@ -191,7 +192,7 @@ try:
         raise RuntimeError("AWF binary differs from reviewed release checksum")
     run(["sudo", "mkdir", "-p", str(ROOT)])
     run(["sudo", "chown", f"{os.getuid()}:{os.getgid()}", str(ROOT)])
-    for path in (SOURCE, CONTROL, OUT, ROOT / "home"):
+    for path in (SOURCE, CONTROL, OUT, TOOLS, ROOT / "home"):
         path.mkdir()
     shutil.copyfile(Path(__file__).with_name("guest.py"), CONTROL / "guest.py")
     (CONTROL / "read-only-canary").write_text("read-only\n")
@@ -228,6 +229,7 @@ try:
         "--config", str(config_path), "--work-dir", str(AWF_STATE),
         "--container-workdir", str(SOURCE), "--memory-limit", "6g", "--skip-pull",
         "--mount", f"{CONTROL}:{CONTROL}:ro", "--mount", f"{OUT}:{OUT}:rw",
+        "--mount", f"{TOOLS}:{TOOLS}:rw",
         "--", "python3", str(CONTROL / "guest.py"),
     ]
     receipt["awf_command"] = command
