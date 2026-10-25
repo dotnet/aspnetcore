@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
-    <!-- E2E NativeAOT harness is not supported on openharmony (toolchain not wired up). -->
-    <PublishAot Condition="!$(RuntimeIdentifier.StartsWith('openharmony-')) and !$(TargetRuntimeIdentifier.StartsWith('openharmony-'))">true</PublishAot>
+    <!-- E2E NativeAOT harness follows the repo-wide NativeAOT support switch. -->
+    <PublishAot Condition="'$(NativeAotSupported)' == 'true'">true</PublishAot>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifiers>$(PackageConsumerRuntimeIdentifiers)</RuntimeIdentifiers>
   </PropertyGroup>
