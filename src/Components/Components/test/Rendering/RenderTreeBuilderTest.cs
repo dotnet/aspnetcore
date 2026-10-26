@@ -2174,7 +2174,7 @@ public class RenderTreeBuilderTest
         Assert.Collection(
             builder.GetFrames().AsEnumerable(),
             frame => AssertFrame.Element(frame, "div", 2, 0),
-            frame => AssertFrame.Attribute(frame, attributeName, 1));
+            frame => AssertFrame.Attribute(frame, attributeName, value, 1));
     }
 
     [Fact]
