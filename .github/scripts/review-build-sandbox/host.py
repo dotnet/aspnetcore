@@ -1,4 +1,4 @@
-"""Fork-only, one-shot AWF probe. Never execute target files on the host."""
+"""Execute a bounded managed-test profile in a separate, non-AI AWF sandbox."""
 
 import hashlib
 import json
@@ -12,18 +12,21 @@ import sys
 import threading
 import time
 import xml.etree.ElementTree as ET
+from contract import ROOT as ROOT_PATH, PROFILES, validate_test_classes
 
-ROOT = Path("/var/lib/review-build-phase1")
+ROOT = Path(ROOT_PATH)
 SOURCE = ROOT / "work"
 CONTROL = ROOT / "control"
 OUT = ROOT / "out"
 TOOLS = ROOT / "tools"
 EVIDENCE = Path(os.environ["RUNNER_TEMP"]) / "review-build-evidence"
 AWF_STATE = Path(os.environ["RUNNER_TEMP"]) / "review-build-awf"
-SHA = "d9476ed1cb52fc9501e36d5e0cf1b4796b67aefd"
-TREE = "601a8b72acdb4c02d32e41f1c0b5069181646fa9"
-SDK = "11.0.100-rc.1.26420.103"
-CLASS = "Microsoft.AspNetCore.ResponseCaching.Tests.ResponseCachingPolicyProviderTests"
+SHA = os.environ["REVIEW_HEAD"]
+BASE = os.environ["REVIEW_BASE"]
+MERGE_BASE = os.environ["REVIEW_MERGE_BASE"]
+REPOSITORY = os.environ["GITHUB_REPOSITORY"]
+WORKFLOW_SHA = os.environ["GITHUB_WORKFLOW_SHA"]
+PROFILE = PROFILES[0]
 PINS = {
     "agent": "sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a",
     "squid": "sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac",
@@ -38,14 +41,14 @@ DOMAINS = [
     "https://data.nuget.org", "https://api.nuget.org", "https://globalcdn.nuget.org",
 ]
 receipt = {
-    "schema": 1, "repository": "dotnet/aspnetcore", "pull_request": 69210,
-    "head_sha": SHA, "tree_sha": TREE, "sdk": SDK,
-    "workflow_repository": os.environ["GITHUB_REPOSITORY"],
-    "workflow_sha": os.environ["GITHUB_SHA"],
+    "schema": 2, "repository": REPOSITORY, "pull_request": os.environ["REVIEW_PR"],
+    "head_sha": SHA, "base_tip": BASE, "merge_base": MERGE_BASE,
+    "workflow_repository": REPOSITORY, "workflow_sha": WORKFLOW_SHA,
     "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
     "launcher_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     "guest_sha256": hashlib.sha256(Path(__file__).with_name("guest.py").read_bytes()).hexdigest(),
-    "implementation_sha": os.environ["PILOT_IMPLEMENTATION_SHA"],
+    "contract_sha256": hashlib.sha256(Path(__file__).with_name("contract.py").read_bytes()).hexdigest(),
+    "implementation_sha": WORKFLOW_SHA,
     "awf_version": "v0.28.57", "image_pins": PINS, "allow_domains": DOMAINS,
     "resources": [], "acceptance": {}, "status": "failed",
 }
@@ -178,14 +181,16 @@ def audit_container():
 
 
 try:
-    if os.environ["GITHUB_REPOSITORY"] != "PureWeen/aspnetcore":
-        raise RuntimeError("Fork-only guard")
-    if os.environ["GITHUB_RUN_ATTEMPT"] != "1":
-        raise RuntimeError("No automatic/manual reruns: use a newly approved dispatch")
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", REPOSITORY):
+        raise RuntimeError("Invalid workflow repository")
+    if any(not re.fullmatch(r"[a-f0-9]{40}", value) for value in (SHA, BASE, MERGE_BASE, WORKFLOW_SHA)):
+        raise RuntimeError("Invalid frozen revision")
+    if not re.fullmatch(r"[1-9][0-9]*", os.environ["REVIEW_PR"]):
+        raise RuntimeError("Invalid frozen pull request")
     EVIDENCE.mkdir()
     AWF_STATE.mkdir(mode=0o700)
-    if text(["git", "rev-parse", "HEAD"]) != os.environ["PILOT_IMPLEMENTATION_SHA"]:
-        raise RuntimeError("Probe helper revision mismatch")
+    if text(["git", "-C", str(Path(__file__).resolve().parents[3]), "rev-parse", "HEAD"]) != WORKFLOW_SHA:
+        raise RuntimeError("Execution helper revision mismatch")
     if hashlib.sha256(Path(shutil.which("awf")).read_bytes()).hexdigest() != (
         "2c9f800e56fad5ee974f3fdc5610b2a5b5632655a25b55d7bbae0c3d6dff165a"
     ):
@@ -195,17 +200,35 @@ try:
     for path in (SOURCE, CONTROL, OUT, TOOLS, ROOT / "home"):
         path.mkdir()
     shutil.copyfile(Path(__file__).with_name("guest.py"), CONTROL / "guest.py")
+    shutil.copyfile(Path(__file__).with_name("contract.py"), CONTROL / "contract.py")
     (CONTROL / "read-only-canary").write_text("read-only\n")
     Path("/home/runner/phase1-host-only").write_text("harmless host-only sentinel\n")
     # No checkout action, Git credential helper, hook, submodule, LFS or PR script.
     run(["git", "-c", "core.hooksPath=/dev/null", "init", "--quiet", str(SOURCE)], env=clean_env)
     git = ["git", "-C", str(SOURCE), "-c", "core.hooksPath=/dev/null"]
-    run(git + ["fetch", "--quiet", "--depth=1", "https://github.com/dotnet/aspnetcore.git", SHA], env=clean_env)
-    run(git + ["checkout", "--quiet", "--detach", "FETCH_HEAD"], env=clean_env)
-    if text(git + ["rev-parse", "HEAD"]) != SHA or text(git + ["rev-parse", "HEAD^{tree}"]) != TREE:
+    run(git + ["fetch", "--quiet", "--depth=1", f"https://github.com/{REPOSITORY}.git",
+               SHA, MERGE_BASE], env=clean_env)
+    run(git + ["checkout", "--quiet", "--detach", SHA], env=clean_env)
+    if text(git + ["rev-parse", "HEAD"]) != SHA:
         raise RuntimeError("Target revision mismatch")
-    if json.loads((SOURCE / "global.json").read_text())["sdk"]["version"] != SDK:
-        raise RuntimeError("Target SDK changed")
+    receipt["tree_sha"] = text(git + ["rev-parse", "HEAD^{tree}"])
+    changed = subprocess.check_output(git + [
+        "diff", "--name-only", "--no-renames", "-z", MERGE_BASE, SHA,
+    ]).decode("utf-8").split("\0")
+    changed = [path for path in changed if path]
+    if len(changed) > 1000 or not any(path.startswith(PROFILE["changed_root"]) for path in changed):
+        receipt["status"] = "unsupported"
+        receipt["reason"] = "No supported bounded managed-test profile matched this change."
+        sys.exit(0)
+    receipt["profile"] = PROFILE
+    receipt["uncovered_changed_paths"] = [
+        path for path in changed if not path.startswith(PROFILE["changed_root"])
+    ]
+    SDK = json.loads(subprocess.check_output(git + ["show", SHA + ":global.json"]))["sdk"]["version"]
+    if not isinstance(SDK, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?", SDK):
+        raise RuntimeError("Target must declare a pinned SDK version")
+    receipt["sdk"] = SDK
+    (CONTROL / "profile.json").write_text(json.dumps(PROFILE))
     receipt["acquisition_seconds"] = round(time.monotonic() - started, 3)
     # Pin pulls explicitly; setup action's pull-images fallback to latest is not used.
     for name in ("agent", "squid", "api-proxy"):
@@ -287,21 +310,26 @@ try:
     if len(assemblies) != 1:
         raise RuntimeError("Expected exactly one test assembly")
     assembly = assemblies[0]
-    if not assembly.get("name", "").endswith("Microsoft.AspNetCore.ResponseCaching.Tests.dll"):
+    if not assembly.get("name", "").endswith(PROFILE["assembly"] + ".dll"):
         raise RuntimeError("Unexpected test assembly")
     tests = assembly.findall(".//test")
     executed = [test for test in tests if test.get("result") in ("Pass", "Fail")]
-    vary = [test for test in executed if "IsResponseCacheable_VaryHeaderByStar_NotAllowed" in test.get("name", "")]
-    if not executed or len(vary) != 5 or any(test.get("type") != CLASS for test in tests):
-        raise RuntimeError("Missing intended test class or five Vary-star theory rows")
+    if not executed or int(assembly.get("errors", "0")):
+        raise RuntimeError("No executed tests or an assembly-level test error")
+    if any(test.get("result") not in ("Pass", "Fail", "Skip") for test in tests):
+        raise RuntimeError("Unknown test outcome")
+    validate_test_classes(tests, PROFILE["assembly"])
     if any(test.get("result") != "Pass" for test in executed):
         raise RuntimeError("Tests failed")
+    if (int(assembly.attrib["total"]) != len(tests) or int(assembly.attrib["passed"]) != len(executed)
+            or int(assembly.attrib["failed"]) != 0 or int(assembly.attrib["skipped"]) != len(tests) - len(executed)):
+        raise RuntimeError("Contradictory test result counts")
     receipt["tests"] = {
         "executed": len(executed), "skipped": len(tests) - len(executed),
-        "vary_star_rows": len(vary), "assembly": assembly.attrib,
+        "passed": len(executed), "failed": 0, "assembly": assembly.attrib,
     }
     receipt["acceptance"].update({
-        "nonzero_tests": True, "five_regression_rows": True, "pinned_sdk": True,
+        "nonzero_tests": True, "pinned_sdk": True,
         "allow_and_deny": probes["allowed_exit"] == 0 and probes["explicit_proxy_denial"]
         and probes["direct_egress_denied"],
         "no_credentials_or_control_paths": not probes["exposed_paths"] and not probes["credential_env_names"],
@@ -337,4 +365,4 @@ finally:
         (EVIDENCE / "receipt.json").write_text(json.dumps(receipt, indent=2))
     print(json.dumps({"status": receipt["status"], "error": receipt.get("error"),
                       "tests": receipt.get("tests"), "seconds": receipt.get("total_seconds")}))
-sys.exit(0 if receipt["status"] == "passed" else 1)
+sys.exit(0 if receipt["status"] in ("passed", "unsupported") else 1)

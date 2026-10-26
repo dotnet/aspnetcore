@@ -1,4 +1,4 @@
-"""Temporary, non-AI Phase 1 probe. All target execution stays in AWF."""
+"""Trusted command runner. All target execution stays in the non-AI sandbox."""
 
 import json
 import os
@@ -8,14 +8,14 @@ import stat
 import subprocess
 import sys
 import time
+from contract import ROOT as ROOT_PATH, commands
 
-ROOT = Path("/var/lib/review-build-phase1")
+ROOT = Path(ROOT_PATH)
 SOURCE = ROOT / "work"
 OUT = ROOT / "out"
 CONTROL = ROOT / "control"
 TOOLS = ROOT / "tools"
-CLASS = "Microsoft.AspNetCore.ResponseCaching.Tests.ResponseCachingPolicyProviderTests"
-PROJECT = SOURCE / "src/Middleware/ResponseCaching/test/Microsoft.AspNetCore.ResponseCaching.Tests.csproj"
+profile = json.loads((CONTROL / "profile.json").read_text())
 phases = []
 
 
@@ -127,23 +127,13 @@ try:
         "NUGET_HTTP_CACHE_PATH": str(TOOLS / ".nuget/http-cache"),
         "MSBUILDDISABLENODEREUSE": "1",
     })
-    phase("bootstrap", ["bash", "-c", "source ./activate.sh && bash ./eng/common/dotnet.sh --info"], 600)
-    phase("sdk", ["bash", "-c", "source ./activate.sh && dotnet --version"], 30)
-    common = [
-        "bash", "./eng/build.sh", "--projects", str(PROJECT), "--configuration", "Debug",
-        "--no-build-native", "--no-build-nodejs", "--no-build-java", "--no-build-installers",
-        "--msbuildMultiThreaded", "false",
-    ]
-    phase("restore", common + ["--restore", "--no-build", "--no-test"])
-    phase("build", common + ["--no-restore", "--build", "--no-test"])
-    os.environ["TestRunnerAdditionalArguments"] = f"-class {CLASS}"
-    phase("test", common + [
-        "--no-restore", "--no-build", "--test",
-    ], 300)
-    shutil.copyfile(
-        SOURCE / "artifacts/TestResults/Debug/Microsoft.AspNetCore.ResponseCaching.Tests_net11.0_x64.xml",
-        OUT / "tests.xml",
-    )
+    planned = commands(profile)
+    for name, timeout in (("bootstrap", 600), ("sdk", 30), ("restore", 900), ("build", 900), ("test", 300)):
+        phase(name, planned[name], timeout)
+    reports = list((SOURCE / "artifacts/TestResults/Debug").glob(profile["assembly"] + "_net*_x64.xml"))
+    if len(reports) != 1:
+        raise RuntimeError("Expected one test report for the selected assembly")
+    shutil.copyfile(reports[0], OUT / "tests.xml")
 except Exception as error:
     (OUT / "failure.txt").write_text(f"{type(error).__name__}: {error}\n")
     sys.exit(1)

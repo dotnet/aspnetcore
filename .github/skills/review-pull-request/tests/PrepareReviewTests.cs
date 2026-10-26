@@ -107,6 +107,106 @@ public class PrepareReviewTests
     }
 
     [Fact]
+    public async Task KeepsCallerFrozenBaseWhenTheBranchAdvances()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var baseTip = fixture.BaseTip;
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = baseTip,
+            MergeBase = fixture.MergeBase,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+        fixture.BaseTip = fixture.Commit(new() { ["src/Unchanged.cs"] = "ADVANCED_BRANCH\n" }, baseTip);
+
+        var manifest = await fixture.PrepareAsync(options);
+
+        Assert.Equal(baseTip, manifest["target"]!["baseTip"]!.GetValue<string>());
+        Assert.Equal(fixture.MergeBase, manifest["target"]!["mergeBase"]!.GetValue<string>());
+        Assert.Equal("BASE_TIP_DEPENDENCY\n", await fixture.SourceAsync(manifest, "baseTip", "src/Unchanged.cs"));
+        Assert.Equal(0, fixture.BranchRefCalls);
+    }
+
+    [Fact]
+    public async Task RejectsARetargetedPullRequestWithCallerFrozenBase()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = fixture.BaseTip,
+            MergeBase = fixture.MergeBase,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+        fixture.Pull["base"]!["ref"] = "release/different";
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Equal("The live PR base ref differs from the expected frozen base.", exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
+    public async Task RejectsADifferentCallerFrozenMergeBase()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = fixture.BaseTip,
+            MergeBase = fixture.BaseTip,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Equal("The comparison differs from the expected frozen merge base.", exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
+    public async Task AcceptsCallerFrozenBaseArgumentsAtTheCommandLine()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var exitCode = await PrepareReviewProgram.RunAsync([
+            "--repo", "owner/product", "--pr", "42", "--head", fixture.Head,
+            "--base-tip", fixture.BaseTip, "--merge-base", fixture.MergeBase,
+            "--base-ref", fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+            "--guidance-root", fixture.GuidanceRoot, "--output", fixture.Output,
+        ], fixture.CreateDependencies());
+
+        Assert.Equal(0, exitCode);
+        var manifest = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "manifest.json")))!;
+        Assert.Equal(fixture.BaseTip, manifest["target"]!["baseTip"]!.GetValue<string>());
+        Assert.Equal(fixture.MergeBase, manifest["target"]!["mergeBase"]!.GetValue<string>());
+        Assert.Equal(0, fixture.BranchRefCalls);
+    }
+
+    [Theory]
+    [InlineData("head")]
+    [InlineData("base-tip")]
+    [InlineData("merge-base")]
+    [InlineData("base-ref")]
+    public async Task RejectsIncompleteCallerFrozenBase(string missing)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = missing == "head" ? null : fixture.Head,
+            BaseTip = missing == "base-tip" ? null : fixture.BaseTip,
+            MergeBase = missing == "merge-base" ? null : fixture.MergeBase,
+            BaseRef = missing == "base-ref" ? null : fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Contains("A frozen base requires", exception.Message);
+        Assert.Equal(0, fixture.PullRequestCalls);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
     public async Task IncludesExactRequiredPolicySectionFromSelectedGuidanceSnapshot()
     {
         await using var fixture = await Fixture.CreateAsync();
@@ -999,6 +1099,7 @@ public class PrepareReviewTests
         public bool FailFetch { get; set; }
         public bool FailApi { get; set; }
         public int PullRequestCalls { get; private set; }
+        public int BranchRefCalls { get; private set; }
         public Action<int>? BeforePullResponse { get; set; }
 
         public static Task<Fixture> CreateAsync(bool components = false)
@@ -1077,12 +1178,20 @@ public class PrepareReviewTests
             if (FailReviews && endpoint.Contains("/reviews?", StringComparison.Ordinal)) throw new InvalidOperationException("Review feedback unavailable");
             if (endpoint.Contains("/comments?", StringComparison.Ordinal) || endpoint.Contains("/reviews?", StringComparison.Ordinal)) return Node(new JsonArray());
             if (endpoint.Contains("/files?", StringComparison.Ordinal)) return Node(Files.DeepClone());
-            if (endpoint.Contains("/git/ref/heads/", StringComparison.Ordinal)) return Node(new JsonObject { ["object"] = new JsonObject { ["sha"] = BaseTip } });
-            if (endpoint.Contains("/compare/", StringComparison.Ordinal)) return Node(new JsonObject
+            if (endpoint.Contains("/git/ref/heads/", StringComparison.Ordinal))
             {
-                ["base_commit"] = new JsonObject { ["sha"] = BaseTip },
-                ["merge_base_commit"] = new JsonObject { ["sha"] = MergeBase },
-            });
+                BranchRefCalls++;
+                return Node(new JsonObject { ["object"] = new JsonObject { ["sha"] = BaseTip } });
+            }
+            if (endpoint.Contains("/compare/", StringComparison.Ordinal))
+            {
+                var comparisonBase = endpoint.Split("/compare/", StringSplitOptions.None)[1].Split("...", StringSplitOptions.None)[0];
+                return Node(new JsonObject
+                {
+                    ["base_commit"] = new JsonObject { ["sha"] = comparisonBase },
+                    ["merge_base_commit"] = new JsonObject { ["sha"] = MergeBase },
+                });
+            }
             if (endpoint.EndsWith("/pulls/42", StringComparison.Ordinal))
             {
                 PullRequestCalls++;
