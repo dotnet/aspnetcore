@@ -268,8 +268,12 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.success(user && user.state);
             }
         } catch (error) {
-            if (requiresLogin || window.self !== window.top || !stateExists) {
+            if (window.self !== window.top) {
                 return this.operationCompleted();
+            }
+
+            if (requiresLogin || !stateExists) {
+                return this.redirect();
             }
 
             return this.error('There was an error signing in.');
@@ -455,10 +459,6 @@ export class AuthenticationService {
 
     public static signIn(context: AuthenticationContext) {
         return AuthenticationService.instance.signIn(context);
-    }
-
-    public static isTopLevelWindow() {
-        return window.self === window.top;
     }
 
     public static async completeSignIn(url: string) {

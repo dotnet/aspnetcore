@@ -21,6 +21,8 @@ public class RemoteAuthenticationTest :
     {
     }
 
+    public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
+
     [Fact]
     public void ConcurrentMsalInitialization_UsesSingleInitializedClient()
     {

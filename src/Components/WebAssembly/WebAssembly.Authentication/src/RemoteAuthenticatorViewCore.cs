@@ -251,9 +251,9 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
         switch (result.Status)
         {
             case RemoteAuthenticationStatus.Redirect:
-                // There should not be any redirects as the only time CompleteSignInAsync finishes
-                // is when we are doing a redirect sign in flow.
-                throw new InvalidOperationException("Should not redirect.");
+                Log.NavigatingToUrl(Logger, ApplicationPaths.LogInPath);
+                Navigation.NavigateTo(ApplicationPaths.LogInPath, AuthenticationNavigationOptions);
+                break;
             case RemoteAuthenticationStatus.Success:
                 Log.LoginRedirectCompletedSuccessfully(Logger);
                 if (OnLogInSucceeded.HasDelegate)
@@ -266,11 +266,6 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 Navigation.NavigateTo(redirectUrl, AuthenticationNavigationOptions);
                 break;
             case RemoteAuthenticationStatus.OperationCompleted:
-                if (await JSRuntime.InvokeAsync<bool>("AuthenticationService.isTopLevelWindow"))
-                {
-                    Log.NavigatingToUrl(Logger, ApplicationPaths.LogInPath);
-                    Navigation.NavigateTo(ApplicationPaths.LogInPath, AuthenticationNavigationOptions);
-                }
                 break;
             case RemoteAuthenticationStatus.Failure:
                 Log.LoginCallbackFailed(Logger, result.ErrorMessage!);

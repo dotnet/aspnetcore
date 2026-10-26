@@ -11,12 +11,12 @@
 <body>
     <Components.WasmRemoteAuthentication.Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
-    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script src="@Assets["_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"]"></script>
     <script>
-        const isTopLevelWindow = AuthenticationService.isTopLevelWindow.bind(AuthenticationService);
-        AuthenticationService.isTopLevelWindow = () => {
-            const result = isTopLevelWindow();
-            if (!result) {
+        const completeSignIn = AuthenticationService.completeSignIn.bind(AuthenticationService);
+        AuthenticationService.completeSignIn = async (...args) => {
+            const result = await completeSignIn(...args);
+            if (window.self !== window.top) {
                 window.top.__authenticationCallbackCompletedInIframe = true;
             }
             return result;
