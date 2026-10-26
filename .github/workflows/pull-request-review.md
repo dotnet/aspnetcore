@@ -460,7 +460,7 @@ pre-agent-steps:
         --base-tip "$REVIEW_BASE" --merge-base "$REVIEW_MERGE_BASE" --base-ref "$REVIEW_BASE_REF" \
         --guidance "$REVIEW_REPO@$GITHUB_WORKFLOW_SHA" --output /tmp/gh-aw/review-bundle
       test -s /tmp/gh-aw/review-bundle/manifest.json
-      for filename in receipt.py contract.py host.py guest.py; do
+      for filename in receipt.py contract.py host.py guest.py criteria.py; do
         gh api -H 'Accept: application/vnd.github.raw' \
           "repos/$REVIEW_REPO/contents/.github/scripts/review-build-sandbox/$filename?ref=$GITHUB_WORKFLOW_SHA" \
           > "$producer_dir/$filename"
@@ -469,6 +469,8 @@ pre-agent-steps:
       python3 "$producer_dir/receipt.py" \
         "$RUNNER_TEMP/review-execution-input/receipt.json" /tmp/gh-aw/review-bundle/manifest.json \
         /tmp/gh-aw/review-bundle/execution.json
+      python3 "$producer_dir/criteria.py" /tmp/gh-aw/review-bundle/manifest.json \
+        "$GITHUB_WORKSPACE" "$REVIEW_HEAD" "$GITHUB_WORKFLOW_SHA"
   - name: Preserve validated execution status for publication preflight
     uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
     with:
@@ -537,9 +539,13 @@ gap-free recovery and actual EOF for all four JSON files, plus any unrecovered r
 Worker reads cannot satisfy coordinator coverage. Include your own ledger in the terminal
 result; unrecovered truncation or gaps make the review incomplete, not `NO_FINDINGS`.
 
-Follow the skill's complete guide and candidate-validation contract, with one worker per
-routed **guide**. Include its entire unabridged text and applicable policy clauses verbatim
-in the worker brief; never paraphrase criteria or omit them to represent an exclusion.
+Follow the skill's complete guide and candidate-validation contract, with exactly one fresh
+full-capability `general-purpose` background worker per routed **guide**. The trusted caller
+has materialized every entire guide, applicable policy clause and explicit exclusion in
+workspace `.github/copilot-instructions.md`, loaded as native instructions, not a custom
+agent profile. Apply only the assigned guide and its matching policies; do not regenerate
+or copy criteria into task prompts. Include the guide identity, frozen manifest and assignment
+in the brief; never paraphrase criteria or omit them to represent an exclusion.
 Do not correct, qualify, normalize, or otherwise rewrite copied text, identifiers, whitespace,
 punctuation, or code spans, even an apparent typo.
 Also supply the exact `<guidance.root>/<guide.path><suffix>` path from the validated manifest,
@@ -550,7 +556,7 @@ completed topics, and any read failure. Missing full text or an incomplete requi
 makes that guide incomplete, not `NO_FINDINGS`.
 Supply the exact validated manifest path and applicable policy indices/identities and ranges.
 Before analysis, require the worker to natively read the complete manifest through EOF and
-compare every applicable `manifest.policies[].body` with its delivered clause using exact
+compare every applicable `manifest.policies[].body` with its delivered native clause using exact
 decoded-string equality, not semantic equivalence. For each policy, report its identity,
 native ranges read, complete-body recovery, exact-match result, and any error. Truncation,
 a mismatch, or an unavailable canonical body makes the guide incomplete; do not silently
@@ -560,6 +566,8 @@ explicitly for workers; no Anthropic model, automatic substitution, nested panel
 worker safe-output call. Start every brief with the `per-guide-worker` role: skill invocation
 is not applicable to this scoped task. Explicitly repeat that workers must not invoke any
 skill, launch subagents, call safe outputs or `rename_session`, or write files.
+Require the actual worker result to start with `PATH: per-guide-worker`; collect its returned
+result and use only the same worker ID for any follow-up.
 Workers must not call `rename_session`, invoke any skill,
 copy or re-export the bundle, or modify it; they read the bundle in place. Record each
 guide's completion, exclusions, read failures, and unresolved candidates.
