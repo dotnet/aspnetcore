@@ -56,6 +56,15 @@ or truncated response. In hosted runs, use authorized native `view`, `rg`, and `
 to read/search the bundle, not shell commands such as `jq` or `cat`, even for read-only
 inspection. Page large JSON/text with `view_range` and narrow ranges when needed; a
 size warning or truncated output is not a content read, even if the tool reports success.
+Track coverage from content actually returned, not requested range ends; a filled
+finite range does not establish EOF. Read required whole-file inputs (manifest,
+metadata, diff, and routed guides) through confirmed EOF and applicable policy
+clauses completely; relevant source-body reads remain bounded to the full body.
+If output cuts a line short, re-read starting at that same line with a narrower
+range, even if the tool suggests the next line. The coordinator must complete its
+own required reads before dispatch, and each worker its assigned required reads
+before reporting completion; a worker's recovery does not satisfy the coordinator's
+gate.
 For a single oversized line, use `forceReadLargeFiles: true` only if the tool supports it
 and returns the complete required content.
 
