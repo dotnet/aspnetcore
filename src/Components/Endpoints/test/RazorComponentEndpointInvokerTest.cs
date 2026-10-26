@@ -203,7 +203,7 @@ public class RazorComponentEndpointInvokerTest
         public IFileProvider WebRootFileProvider { get => new NullFileProvider(); set => throw new NotImplementedException(); }
         public string EnvironmentName { get => "Development"; set => throw new NotImplementedException(); }
         public string ApplicationName { get => "Test"; set => throw new NotImplementedException(); }
-        public string ContentRootPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
         public IFileProvider ContentRootFileProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }
