@@ -1,0 +1,88 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<h2>Abort link</h2>
+
+<div>
+    <button id="fetch-not-canceled" @onclick="FetchNotCanceledAsync">Not canceled</button>
+    <button id="fetch-without-token" @onclick="FetchWithoutTokenAsync">Without token</button>
+</div>
+<div>
+    <button id="cancel-before-headers" @onclick="CancelBeforeHeadersAsync">Cancel before headers</button>
+    <button id="cancel-during-body" @onclick="CancelDuringBodyAsync">Cancel during body</button>
+    <button id="cancel-before-start" @onclick="CancelBeforeStartAsync">Cancel before start</button>
+</div>
+<p id="abortlink-result" role="status" data-run="@runCount" data-request-id="@requestId">@result</p>
+
+@code {
+    private string result = "No operation has run.";
+    private string requestId = "";
+    private int runCount;
+
+    private Task FetchNotCanceledAsync() => RunAsync("Not canceled", async id =>
+    {
+        using var cts = new CancellationTokenSource();
+        return await FetchTextAsync($"/abortlink/slow-headers?id={id}&delay=100", cts.Token);
+    });
+
+    private Task FetchWithoutTokenAsync() => RunAsync("Without token", id =>
+        FetchTextAsync($"/abortlink/slow-headers?id={id}&delay=100", CancellationToken.None));
+
+    private Task CancelBeforeHeadersAsync() => RunAsync("Cancel before headers", async id =>
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+        return await FetchTextAsync($"/abortlink/slow-headers?id={id}&delay=10000", cts.Token);
+    });
+
+    private Task CancelDuringBodyAsync() => RunAsync("Cancel during body", async id =>
+    {
+        using var cts = new CancellationTokenSource();
+        return await FetchTextAsync($"/abortlink/slow-body?id={id}", cts.Token, onHeaders: () => cts.CancelAfter(500));
+    });
+
+    private Task CancelBeforeStartAsync() => RunAsync("Cancel before start", id =>
+        FetchTextAsync($"/abortlink/slow-headers?id={id}&delay=100", new CancellationToken(canceled: true)));
+
+    // Calls the browser the way a family does with an AbortSignal.
+    private async Task<string> FetchTextAsync(string url, CancellationToken cancellationToken, Action? onHeaders = null)
+    {
+        var link = await AbortLink.CreateAsync(JS, cancellationToken);
+        try
+        {
+            // CancellationToken.None also turns off the interop timeout. Only the link cancels the request.
+            await using var response = await JS.InvokeAsync<IJSObjectReference>("fetch", CancellationToken.None, [url, new { signal = link?.Signal }]);
+            // The browser may have answered just before the abort reached it.
+            cancellationToken.ThrowIfCancellationRequested();
+            onHeaders?.Invoke();
+
+            return await response.InvokeAsync<string>("text", CancellationToken.None, []);
+        }
+        catch (JSException ex) when (cancellationToken.IsCancellationRequested)
+        {
+            throw AbortLink.CreateCanceledException(ex, cancellationToken);
+        }
+        finally
+        {
+            if (link is not null)
+            {
+                await link.DisposeAsync();
+            }
+        }
+    }
+
+    private async Task RunAsync(string operation, Func<string, Task<string>> run)
+    {
+        requestId = Guid.NewGuid().ToString("N");
+        try
+        {
+            result = $"{operation}: {await run(requestId)}";
+        }
+        catch (OperationCanceledException ex)
+        {
+            var inner = ex.InnerException?.GetType().Name ?? "no inner exception";
+            result = $"{operation}: Canceled ({inner})";
+        }
+        // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
+        runCount++;
+    }
+}
