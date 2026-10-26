@@ -117,12 +117,14 @@ public class NginxDeployer : SelfHostDeployer
                     {
                         FileName = "whoami",
                         RedirectStandardOutput = true,
+                        InheritedHandles = [],
                     }
             })
             {
                 process.Start();
-                process.WaitForExit(10_000);
-                return process.StandardOutput.ReadToEnd();
+                string output = process.StandardOutput.ReadToEnd();
+                process.WaitForExitStatus();
+                return output;
             }
         }
 
@@ -158,7 +160,7 @@ public class NginxDeployer : SelfHostDeployer
             {
                 FileName = "nginx",
                 Arguments = $"-c {_configFile}",
-                UseShellExecute = false,
+                InheritedHandles = [],
                 CreateNoWindow = true,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
@@ -169,9 +171,12 @@ public class NginxDeployer : SelfHostDeployer
             using (var runNginx = new Process() { StartInfo = startInfo })
             {
                 runNginx.StartAndCaptureOutAndErrToLogger("nginx start", Logger);
-                runNginx.WaitForExit(_waitTime);
+                if (!runNginx.TryWaitForExitStatus(TimeSpan.FromMilliseconds(_waitTime), out ProcessExitStatus status))
+                {
+                    throw new InvalidOperationException($"nginx start command did not exit within {_waitTime} milliseconds.");
+                }
 
-                if (runNginx.ExitCode != 0)
+                if (status.ExitCode != 0)
                 {
                     throw new InvalidOperationException("Failed to start nginx");
                 }
@@ -200,7 +205,7 @@ public class NginxDeployer : SelfHostDeployer
                 {
                     FileName = "nginx",
                     Arguments = $"-s stop -c {_configFile}",
-                    UseShellExecute = false,
+                    InheritedHandles = [],
                     CreateNoWindow = true,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
@@ -211,7 +216,10 @@ public class NginxDeployer : SelfHostDeployer
                 using (var runNginx = new Process() { StartInfo = startInfo })
                 {
                     runNginx.StartAndCaptureOutAndErrToLogger("nginx stop", Logger);
-                    runNginx.WaitForExit(_waitTime);
+                    if (!runNginx.TryWaitForExitStatus(TimeSpan.FromMilliseconds(_waitTime), out _))
+                    {
+                        Logger.LogWarning("nginx stop command did not exit within {timeout} milliseconds.", _waitTime);
+                    }
                     Logger.LogInformation("nginx stop command issued");
                 }
 

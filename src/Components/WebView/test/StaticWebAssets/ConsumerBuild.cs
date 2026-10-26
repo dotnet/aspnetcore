@@ -132,7 +132,7 @@ internal sealed class ConsumerBuild : IDisposable
             WorkingDirectory = _root,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false,
+            InheritedHandles = [],
         };
 
         // Keep the build hermetic: pin the repo runtime and stop the SDK from reaching outside the
@@ -147,22 +147,34 @@ internal sealed class ConsumerBuild : IDisposable
 
         var output = new StringBuilder();
         using var process = new Process { StartInfo = psi };
-        process.OutputDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
-        process.ErrorDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
-
         process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
 
-        if (!process.WaitForExit(milliseconds: 5 * 60 * 1000))
+        TimeSpan timeout = TimeSpan.FromMinutes(5);
+        long startTimestamp = Stopwatch.GetTimestamp();
+        ProcessExitStatus status;
+        try
+        {
+            foreach (ProcessOutputLine line in process.ReadAllLines(timeout))
+            {
+                output.AppendLine(line.Content);
+            }
+
+            TimeSpan remaining = timeout - Stopwatch.GetElapsedTime(startTimestamp);
+            if (remaining <= TimeSpan.Zero || !process.TryWaitForExitStatus(remaining, out ProcessExitStatus? exitStatus))
+            {
+                throw new TimeoutException();
+            }
+
+            status = exitStatus!;
+        }
+        catch (TimeoutException)
         {
             try { process.Kill(entireProcessTree: true); } catch { }
             _preserve = true;
             throw new TimeoutException($"'dotnet {verb}' timed out. Binlog: {binlogPath}\n{output}");
         }
 
-        process.WaitForExit();
-        var result = new ProcessResult(process.ExitCode, output.ToString(), binlogPath);
+        var result = new ProcessResult(status.ExitCode, output.ToString(), binlogPath);
 
         _output.WriteLine(result.Output);
         _output.WriteLine($"Exit code: {result.ExitCode}. Binlog: {binlogPath}");

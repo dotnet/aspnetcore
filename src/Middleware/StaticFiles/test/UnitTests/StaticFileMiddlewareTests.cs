@@ -50,7 +50,10 @@ public class StaticFileMiddlewareTests : LoggedTest
     {
         var badLink = Path.Combine(AppContext.BaseDirectory, Path.GetRandomFileName() + ".txt");
 
-        Process.Start("ln", $"-s \"/tmp/{Path.GetRandomFileName()}\" \"{badLink}\"").WaitForExit();
+        Process.Run(new ProcessStartInfo("ln", ["-s", $"/tmp/{Path.GetRandomFileName()}", badLink])
+        {
+            InheritedHandles = [],
+        });
         Assert.True(File.Exists(badLink), "Should have created a symlink");
 
         try

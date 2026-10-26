@@ -133,7 +133,7 @@ internal static partial class PrepareReviewProgram
             RedirectStandardInput = input is not null,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false,
+            InheritedHandles = [],
             CreateNoWindow = true,
         };
         start.Environment["GIT_TERMINAL_PROMPT"] = "0";
@@ -141,7 +141,7 @@ internal static partial class PrepareReviewProgram
         {
             start.ArgumentList.Add(arg);
         }
-        using var process = Process.Start(start) ?? throw new InvalidOperationException($"Cannot start {command}.");
+        using var process = Process.Start(start)!;
         if (input is not null)
         {
             process.StandardInput.BaseStream.Write(input);
@@ -685,14 +685,14 @@ internal static partial class PrepareReviewProgram
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false,
+            InheritedHandles = [],
             CreateNoWindow = true,
         };
         foreach (var arg in GitArguments("--git-dir", store, "cat-file", "--batch"))
         {
             start.ArgumentList.Add(arg);
         }
-        using var child = Process.Start(start) ?? throw new InvalidOperationException("Cannot start git.");
+        using var child = Process.Start(start)!;
         var inputTask = WriteBlobRequestsAsync(child, blobs);
         var stderrTask = child.StandardError.ReadToEndAsync();
         using var stdout = new BufferedByteReader(child.StandardOutput.BaseStream, 1024 * 1024);

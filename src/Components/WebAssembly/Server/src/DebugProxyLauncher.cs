@@ -66,7 +66,7 @@ internal static class DebugProxyLauncher
         {
             FileName = muxerPath,
             Arguments = $"exec \"{executablePath}\" --OwnerPid {ownerPid} --DevToolsUrl {devToolsHost} --IsFirefoxDebugging {isFirefox} --FirefoxProxyPort 6001 {ignoreProxyForLocalAddress}",
-            UseShellExecute = false,
+            InheritedHandles = [],
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
