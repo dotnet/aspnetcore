@@ -25,11 +25,6 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
-.table-responsive:focus-visible {
-    outline: 2px solid #258cfb;
-    outline-offset: 2px;
-}
-
 /*#endif*/
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
