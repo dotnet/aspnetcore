@@ -126,6 +126,33 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Assert.Contains("people_page=2", Browser.Url);
     }
 
+    [Theory]
+    [InlineData("first-paginator", "5", "43 items")]
+    [InlineData("bottom-paginator", "9", "Custom summary")]
+    public void PaginatorExposesPageChangesWithoutMovingFocus(string paginatorClass, string pageCount, string summaryText)
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.Id("quickgrid-interactive-ready"));
+
+        var paginator = Browser.FindElement(By.ClassName(paginatorClass));
+        var status = paginator.FindElement(By.ClassName("pagination-text"));
+        var summary = paginator.FindElement(By.ClassName("summary"));
+        var next = paginator.FindElement(By.CssSelector("a.go-next"));
+
+        Assert.Equal($"Page 1 of {pageCount}", status.Text);
+        Assert.Equal("polite", status.GetDomAttribute("aria-live"));
+        Assert.Equal("true", status.GetDomAttribute("aria-atomic"));
+        Assert.Null(summary.GetDomAttribute("aria-live"));
+
+        next.SendKeys(Keys.Enter);
+
+        Browser.Equal($"Page 2 of {pageCount}", () => status.Text);
+        Browser.Equal(next, () => Browser.SwitchTo().ActiveElement());
+        Assert.Equal("polite", status.GetDomAttribute("aria-live"));
+        Assert.Equal("true", status.GetDomAttribute("aria-atomic"));
+        Assert.Equal(summaryText, summary.Text);
+    }
+
     [Fact]
     public void TwoGridsSortIndependently()
     {
