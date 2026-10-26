@@ -1,0 +1,250 @@
+name: port-components-platform-api
+description: >-
+  Verifies that the Components Platform API porting skill reproduces the API shape, ownership,
+  lifetime, and verification patterns established by the merged Web Storage projection.
+version: "1"
+type: capability
+
+tags:
+  area: components
+  feature: platform-api
+
+defaults:
+  runs: 5
+  timeout: 600s
+  model: gpt-5.6-sol
+  judge_model: gpt-5.6-sol
+
+stimuli:
+  - name: design-web-storage-projection
+    prompt: |
+      Design the public .NET projection for the Web Storage API in
+      Microsoft.AspNetCore.Components.Platform. Produce only the design proposal and planned C#
+      signatures. Do not edit files or begin implementation. Treat this as the complete pinned Web
+      IDL input and do not use the network:
+
+        [Exposed=Window]
+        interface Storage {
+          readonly attribute unsigned long length;
+          DOMString? key(unsigned long index);
+          getter DOMString? getItem(DOMString key);
+          setter undefined setItem(DOMString key, DOMString value);
+          deleter undefined removeItem(DOMString key);
+          undefined clear();
+        };
+
+        partial interface Window {
+          [SameObject] readonly attribute Storage localStorage;
+          [SameObject] readonly attribute Storage sessionStorage;
+        };
+
+      Show how an application reaches both browser objects from IBrowserPlatform. Account for
+      SameObject identity, the relationship between localStorage and sessionStorage, method names,
+      nullability, numeric types, asynchronous return types, cancellation, and disposal ownership.
+    tags:
+      network: none
+      phase: design
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - The proposed public surface has one sealed Storage projection type shared by localStorage and sessionStorage rather than separate LocalStorage and SessionStorage types.
+      - Callers reach the family through synchronous LocalStorage and SessionStorage extension properties on Window, starting from IBrowserPlatform.Window.
+      - Repeated access to each property returns the same Storage wrapper, while LocalStorage and SessionStorage return distinct wrappers.
+      - "The planned Storage methods match the merged projection: GetLengthAsync, KeyAsync, GetItemAsync, SetItemAsync, RemoveItemAsync, and ClearAsync."
+      - "The return types match the Web IDL mapping: ValueTask<uint> for length, ValueTask<string?> for key/getItem, and ValueTask for mutating operations."
+      - Non-nullable key and value parameters remain string and receive null argument checks; missing keys and out-of-range indexes remain nullable results.
+      - No CancellationToken is added because the Web IDL operations have no AbortSignal.
+      - Storage has no public DisposeAsync or IAsyncDisposable contract; its JavaScript reference is owned and disposed by the Window scope.
+      - No source implementation is attempted before the proposal is agreed.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: review-web-storage-proposal
+    prompt: |
+      Review this proposed Components.Platform projection of the Web Storage API. Return a corrected
+      public API proposal and explain each material correction. Do not edit files or begin
+      implementation.
+
+        public sealed class LocalStorage : IAsyncDisposable
+        {
+            public Task<int> LengthAsync(CancellationToken cancellationToken = default);
+            public Task<string> GetAsync(string? key, CancellationToken cancellationToken = default);
+            public Task SetAsync(string? key, string? value, CancellationToken cancellationToken = default);
+            public ValueTask DisposeAsync();
+        }
+
+        public sealed class SessionStorage : IAsyncDisposable
+        {
+            public Task<int> LengthAsync(CancellationToken cancellationToken = default);
+            public Task<string> GetAsync(string? key, CancellationToken cancellationToken = default);
+            public Task SetAsync(string? key, string? value, CancellationToken cancellationToken = default);
+            public ValueTask DisposeAsync();
+        }
+
+        public static class WindowStorageExtensions
+        {
+            public static ValueTask<LocalStorage> GetLocalStorageAsync(this Window window);
+            public static ValueTask<SessionStorage> GetSessionStorageAsync(this Window window);
+        }
+
+      The source Web IDL defines one Storage interface, exposes SameObject localStorage and
+      sessionStorage attributes on Window, maps length to unsigned long, and defines key, getItem,
+      setItem, removeItem, and clear operations. None accepts AbortSignal.
+    tags:
+      network: none
+      phase: design
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - The review replaces the two projection types with one sealed Storage type while preserving two distinct Window-owned instances.
+      - The review replaces asynchronous GetLocalStorageAsync/GetSessionStorageAsync methods with synchronous LocalStorage and SessionStorage properties in an extension(Window window) block.
+      - The corrected members follow the Web IDL names and merged projection instead of convenience names such as GetAsync and SetAsync.
+      - The review changes Task returns to ValueTask and maps unsigned long length to uint rather than int.
+      - KeyAsync and GetItemAsync return string? because the browser can return null.
+      - GetItemAsync, SetItemAsync, and RemoveItemAsync use non-nullable string parameters with argument-null checks.
+      - CancellationToken parameters are removed because the Web IDL has no AbortSignal and cancellation would not stop the browser operation.
+      - Public IAsyncDisposable and DisposeAsync are removed because one caller must not be able to invalidate a scope-shared wrapper.
+      - The corrected proposal includes RemoveItemAsync and ClearAsync rather than omitting Web IDL operations.
+      - No source implementation is attempted before the corrected proposal is agreed.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: verify-web-storage-forwarding
+    prompt: |
+      Prepare only the focused unit-test plan for identity, JavaScript forwarding, and lazy
+      acquisition in the merged-shape Components.Platform Web Storage projection. Do not cover
+      disposal, browser E2E, publishing, or trimming in this answer. Do not edit files or run tests.
+
+      - IBrowserPlatform is scoped and exposes a stable Window facade.
+      - Window has synchronous LocalStorage and SessionStorage extension properties.
+      - Both properties return the same sealed Storage projection type.
+      - Storage exposes GetLengthAsync, KeyAsync, GetItemAsync, SetItemAsync, RemoveItemAsync, and
+        ClearAsync.
+      - Each JavaScript Storage object is acquired lazily and a successful or pending acquisition
+        is shared by callers.
+      - A failed or canceled acquisition must not be cached permanently.
+
+      Identify the smallest unit scenarios that establish this contract. State the exact
+      JavaScript property or operation identifiers and arguments that each scenario observes.
+    tags:
+      network: none
+      phase: verification
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - Unit coverage proves IBrowserPlatform, Window, LocalStorage, and SessionStorage are stable within one scope, and that the two storage properties return distinct wrappers.
+      - Unit coverage proves merely reading the LocalStorage or SessionStorage property does not acquire a JavaScript reference.
+      - Acquisition coverage verifies the exact localStorage and sessionStorage Window property identifiers and proves that the two wrappers do not cross-route references.
+      - "Forwarding coverage verifies length through property access and the exact operation identifiers key, getItem, setItem, removeItem, and clear with their exact arguments."
+      - Unit coverage proves concurrent or repeated operations share one successful acquisition.
+      - Unit coverage proves a canceled or failed acquisition is retried on the next operation rather than cached permanently.
+      - The answer stays within forwarding and acquisition rather than substituting browser E2E for deterministic unit assertions.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: verify-web-storage-lifecycle
+    prompt: |
+      Prepare only the focused unit-test plan for ownership and disposal in the merged-shape
+      Components.Platform Web Storage projection. Do not cover operation forwarding, browser E2E,
+      publishing, or trimming in this answer. Do not edit files or run tests.
+
+      - LocalStorage and SessionStorage are stable, scope-shared Storage wrappers owned by Window.
+      - Applications must not be able to dispose either wrapper.
+      - An acquired JavaScript reference is released when the scope ends.
+      - Scope disposal must not wait for a pending acquisition.
+      - Window disposes features in access order, so one pending feature must not prevent later
+        already acquired features from being released.
+
+      Identify the smallest unit scenarios that establish this contract before first use, after a
+      successful acquisition, after a failed or canceled acquisition, and while an acquisition is
+      still pending. State the observable assertion for each scenario.
+    tags:
+      network: none
+      phase: verification
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - The public-surface check proves Storage cannot be disposed through IAsyncDisposable, DisposeAsync, or await using by application code.
+      - Unit coverage proves scope disposal releases an already acquired reference and later Storage calls throw ObjectDisposedException.
+      - Unit coverage proves disposal before first use performs no acquisition.
+      - Unit coverage proves failed and canceled acquisitions do not make disposal throw and are not treated as successfully acquired references.
+      - A pending-acquisition scenario leaves the first-accessed storage feature pending, acquires the other storage feature afterward, and proves disposal finishes without waiting while still disposing the later completed reference.
+      - The still-pending acquisition is not treated as an available reference to dispose.
+      - The answer stays within lifecycle behavior rather than replacing deterministic disposal assertions with browser E2E.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: verify-web-storage-browser-and-release
+    prompt: |
+      Prepare only the browser and release-verification plan for the merged-shape
+      Components.Platform Web Storage projection. Do not repeat unit-level identity, forwarding,
+      retry, or disposal tests. Do not edit files or run tests.
+
+      The public API exposes LocalStorage and SessionStorage through IBrowserPlatform.Window, with
+      GetItemAsync, SetItemAsync, RemoveItemAsync, and the remaining Web Storage operations. The
+      shipped behavior must work in Interactive Server and WebAssembly. Components E2E tests use a
+      prebuilt application in CI, and the package must remain correct when WebAssembly is trimmed.
+
+      Identify the smallest browser scenarios and release checks that prove consumer-observable
+      behavior through the public API. State the final browser observable for each operation and
+      distinguish browser evidence from unit-test evidence.
+    tags:
+      network: none
+      phase: verification
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - One shared browser scenario runs through the public API in both Interactive Server and WebAssembly.
+      - The browser scenario performs set, get, and remove and observes the stored value followed by its absence, rather than merely checking that interop was invoked.
+      - LocalStorage and SessionStorage use distinct values or keys so the browser scenario can observe that they reach distinct native stores.
+      - The E2E plan includes execution from published output because CI consumes a prebuilt application layout.
+      - The release plan publishes a trimmed WebAssembly application and verifies that used Storage members still work while unused families and unused members are removable.
+      - The answer keeps mocked forwarding and disposal assertions in unit tests rather than claiming browser coverage replaces them.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+scoring:
+  weights:
+    skill-invocation: 0.3
+    prompt: 0.7
+  threshold: 0.8
