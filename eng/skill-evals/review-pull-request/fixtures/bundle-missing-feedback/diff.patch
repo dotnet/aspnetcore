@@ -1,0 +1,33 @@
+diff --git a/src/Deleted.cs b/src/Deleted.cs
+deleted file mode 100644
+index 2609536..0000000
+--- a/src/Deleted.cs
++++ /dev/null
+@@ -1 +0,0 @@
+-DELETED_BYTES
+diff --git a/src/Mode.cs b/src/Mode.cs
+deleted file mode 100644
+index 63962dd..0000000
+--- a/src/Mode.cs
++++ /dev/null
+@@ -1 +0,0 @@
+-REGULAR_BYTES
+diff --git a/src/Mode.cs b/src/Mode.cs
+new file mode 120000
+index 0000000..9e7df81
+--- /dev/null
++++ b/src/Mode.cs
+@@ -0,0 +1 @@
++Value.cs
+\ No newline at end of file
+diff --git a/src/OldName.cs b/src/Renamed.cs
+similarity index 100%
+rename from src/OldName.cs
+rename to src/Renamed.cs
+diff --git a/src/Value.cs b/src/Value.cs
+index 5575887..4e492d6 100644
+--- a/src/Value.cs
++++ b/src/Value.cs
+@@ -1 +1 @@
+-MERGE_VALUE
++HEAD_VALUE

@@ -10,6 +10,7 @@ $testRoot = Join-Path ([IO.Path]::GetTempPath()) (
 $trustedRoot = Join-Path $testRoot 'trusted'
 $candidateRoot = Join-Path $testRoot 'candidate'
 $destination = Join-Path $testRoot 'staged'
+$trustedDestination = Join-Path $testRoot 'trusted-staged'
 $trustedMarker = 'TRUSTED_CONTROL_MARKER'
 $candidateControlMarker = 'CANDIDATE_CONTROL_CANARY_MUST_NOT_APPEAR'
 $candidateDataMarker = 'CANDIDATE_DATA_MARKER'
@@ -51,6 +52,7 @@ function Write-ControlPlane {
     Set-Content (Join-Path $evalRoot 'assert_results.ps1') $Marker
     Set-Content (Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml') $Marker
     Set-Content (Join-Path $evalRoot 'skills-smoke.experiment.yaml') $Marker
+    Set-Content (Join-Path $evalRoot 'trace-contract-grader.ps1') $Marker
 }
 
 New-Item -ItemType Directory -Path $trustedRoot, $candidateRoot | Out-Null
@@ -94,6 +96,7 @@ try {
         'eng/skill-evals/run.ps1'
         'eng/skill-evals/skills-smoke.experiment.yaml'
         'eng/skill-evals/skills-vs-baseline.experiment.yaml'
+        'eng/skill-evals/trace-contract-grader.ps1'
         'eng/skill-evals/widget/eval.vally.yaml'
         'eng/skill-evals/widget/fixtures/input.txt'
     ) | Sort-Object
@@ -107,11 +110,53 @@ try {
         @($stagedContent | Select-String $candidateControlMarker).Count -eq 0
     ) 'Candidate control-plane canary reached the staged tree.'
     Assert-True (
-        @($stagedContent | Select-String $trustedMarker).Count -eq 4
+        @($stagedContent | Select-String $trustedMarker).Count -eq 5
     ) 'The trusted runner, assertion, and experiments were not all staged.'
     Assert-True (
         @($stagedContent | Select-String $candidateDataMarker).Count -eq 3
     ) 'The selected candidate skill, eval, and fixture were not all staged.'
+
+    $trustedEvalRoot = Join-Path $trustedRoot 'eng/skill-evals/review-pull-request'
+    $candidateTrustedSkill = Join-Path $candidateRoot '.github/skills/review-pull-request'
+    $candidateTrustedEval = Join-Path $candidateRoot 'eng/skill-evals/review-pull-request'
+    New-Item -ItemType Directory -Path $trustedEvalRoot -Force | Out-Null
+    New-Item -ItemType Directory -Path (
+        Join-Path $trustedEvalRoot 'fixtures/contracts'
+    ) -Force | Out-Null
+    New-Item -ItemType Directory -Path $candidateTrustedSkill -Force | Out-Null
+    New-Item -ItemType Directory -Path (
+        Join-Path $candidateTrustedEval 'fixtures/contracts'
+    ) -Force | Out-Null
+    Set-Content (Join-Path $trustedEvalRoot 'eval.vally.yaml') $trustedMarker
+    Set-Content (
+        Join-Path $trustedEvalRoot 'fixtures/contracts/pagination.json'
+    ) $trustedMarker
+    Set-Content (Join-Path $candidateTrustedSkill 'SKILL.md') $candidateDataMarker
+    Set-Content (Join-Path $candidateTrustedEval 'eval.vally.yaml') $candidateControlMarker
+    Set-Content (
+        Join-Path $candidateTrustedEval 'fixtures/contracts/pagination.json'
+    ) $candidateControlMarker
+    Set-Content (
+        Join-Path $candidateTrustedEval 'fixtures/input.txt'
+    ) $candidateDataMarker
+
+    & $stageRun `
+        -TrustedRoot $trustedRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName review-pull-request `
+        -Destination $trustedDestination
+
+    $trustedStagedContent = Get-ChildItem $trustedDestination -Recurse -File -Force |
+        ForEach-Object { Get-Content $_.FullName -Raw }
+    Assert-True (
+        @($trustedStagedContent | Select-String $candidateControlMarker).Count -eq 0
+    ) 'Candidate executable eval configuration reached the staged tree.'
+    Assert-True (
+        @($trustedStagedContent | Select-String $trustedMarker).Count -eq 7
+    ) 'The trusted eval and pagination contract were not staged.'
+    Assert-True (
+        @($trustedStagedContent | Select-String $candidateDataMarker).Count -eq 2
+    ) 'The selected candidate skill and non-control fixture were not staged.'
 
     Assert-Throws {
         & $stageRun `

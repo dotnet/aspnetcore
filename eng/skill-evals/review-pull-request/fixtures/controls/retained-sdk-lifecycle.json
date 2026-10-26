@@ -1,0 +1,171 @@
+{
+  "provenance": {
+    "kind": "sanitized-retained-subject-trace",
+    "sourceRevision": "79fa20de4c51989bbd46eef2023f8c40154c0fa4",
+    "scope": "Selected SDK recovery and same-worker lifecycle events only; prompts, source, paths, and identities are omitted or synthetic."
+  },
+  "input": {
+    "trajectory": {
+      "workDir": "<worktree>",
+      "output": "STATUS: NO_FINDINGS\nPATH: per-guide\n",
+      "events": [
+        {
+          "type": "tool_call",
+          "data": {
+            "toolName": "powershell",
+            "toolCallId": "sdk-initial",
+            "arguments": {
+              "command": ". .\\activate.ps1; dotnet run .\\.github\\skills\\review-pull-request\\scripts\\prepare-review.cs -- --pr 70024"
+            }
+          }
+        },
+        {
+          "type": "tool_result",
+          "data": {
+            "toolName": "powershell",
+            "toolCallId": "sdk-initial",
+            "success": true,
+            "result": {
+              "content": "Enabled the .NET Core environment. The .NET SDK could not be found, run ./restore.cmd or ./restore.sh first.",
+              "exitCode": -2147450725
+            }
+          }
+        },
+        {
+          "type": "tool_call",
+          "data": {
+            "toolName": "powershell",
+            "toolCallId": "sdk-recovery",
+            "arguments": {
+              "command": "& .\\eng\\common\\dotnet.ps1; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; . .\\activate.ps1; dotnet run .\\.github\\skills\\review-pull-request\\scripts\\prepare-review.cs -- --pr 70024"
+            }
+          }
+        },
+        {
+          "type": "tool_result",
+          "data": {
+            "toolName": "powershell",
+            "toolCallId": "sdk-recovery",
+            "success": true,
+            "result": {
+              "content": "{\"manifest\":\"C:\\\\synthetic\\\\review-bundle\\\\manifest.json\",\"ready\":true}",
+              "exitCode": 0
+            }
+          }
+        },
+        {
+          "type": "tool_call",
+          "data": {
+            "toolName": "view",
+            "toolCallId": "manifest-read",
+            "arguments": {
+              "path": "C:\\synthetic\\review-bundle\\manifest.json",
+              "view_range": [
+                1,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "type": "tool_result",
+          "data": {
+            "toolName": "view",
+            "toolCallId": "manifest-read",
+            "success": true,
+            "result": "L1:{\nL2:  \"version\": 2,\nL3:  \"ready\": true\nL4:}"
+          }
+        },
+        {
+          "type": "tool_call",
+          "data": {
+            "toolName": "task",
+            "toolCallId": "worker-dispatch",
+            "arguments": {
+              "agent_type": "general-purpose",
+              "model": "gpt-5.6-sol",
+              "mode": "background"
+            }
+          }
+        },
+        {
+          "type": "tool_result",
+          "data": {
+            "toolName": "task",
+            "toolCallId": "worker-dispatch",
+            "success": true,
+            "result": "Agent started in background with agent_id: 3808c3c7-a0d6-4a0d-8175-26ead12116bc."
+          }
+        },
+        {
+          "type": "tool_call",
+          "data": {
+            "toolName": "read_agent",
+            "toolCallId": "initial-report",
+            "arguments": {
+              "agent_id": "3808c3c7-a0d6-4a0d-8175-26ead12116bc",
+              "wait": true,
+              "since_turn": 0
+            }
+          }
+        },
+        {
+          "type": "tool_result",
+          "data": {
+            "toolName": "read_agent",
+            "toolCallId": "initial-report",
+            "success": true,
+            "result": "Agent is idle, status: idle, total_turns: 1. Turn 0: PATH: per-guide-worker. Initial report complete with one candidate requiring frozen base-contract clarification."
+          }
+        },
+        {
+          "type": "tool_call",
+          "data": {
+            "toolName": "write_agent",
+            "toolCallId": "clarification",
+            "arguments": {
+              "agent_id": "3808c3c7-a0d6-4a0d-8175-26ead12116bc",
+              "message": "Clarify the candidate against the frozen base contract."
+            }
+          }
+        },
+        {
+          "type": "tool_result",
+          "data": {
+            "toolName": "write_agent",
+            "toolCallId": "clarification",
+            "success": true,
+            "result": "Message delivered to agent 3808c3c7-a0d6-4a0d-8175-26ead12116bc."
+          }
+        },
+        {
+          "type": "tool_call",
+          "data": {
+            "toolName": "read_agent",
+            "toolCallId": "follow-up-report",
+            "arguments": {
+              "agent_id": "3808c3c7-a0d6-4a0d-8175-26ead12116bc",
+              "wait": true,
+              "since_turn": 1
+            }
+          }
+        },
+        {
+          "type": "tool_result",
+          "data": {
+            "toolName": "read_agent",
+            "toolCallId": "follow-up-report",
+            "success": true,
+            "result": "Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: per-guide-worker. Clarification complete; the candidate remains unresolved."
+          }
+        },
+        {
+          "type": "assistant_message",
+          "data": {
+            "content": "STATUS: NO_FINDINGS"
+          }
+        }
+      ]
+    }
+  }
+}
