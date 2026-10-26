@@ -407,12 +407,13 @@ internal sealed class Http2FrameWriter
         {
             if (_maxFrameSize != maxFrameSize)
             {
-                if (maxFrameSize > _maxFrameSize)
+                if (maxFrameSize > _headerEncodingBuffer.Length)
                 {
                     // Safe multiply, MaxFrameSize is limited to 2^24-1 bytes by the protocol and by Http2PeerSettings.
                     // Ref: https://datatracker.ietf.org/doc/html/rfc7540#section-4.2
                     _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize, maxFrameSize * HeaderBufferSizeMultiplier);
-                    _headerEncodingBuffer = new byte[maxFrameSize];
+                    var newBufferSize = int.Min(_headerEncodingBuffer.Length * HeaderBufferSizeMultiplier, Http2PeerSettings.MaxAllowedMaxFrameSize);
+                    _headerEncodingBuffer = new byte[int.Max(maxFrameSize, newBufferSize)];
                 }
 
                 _maxFrameSize = maxFrameSize;

@@ -106,9 +106,24 @@ public class Http2FrameWriterTests
         var headerEncodingBuffer = GetHeaderEncodingBuffer(sut);
 
         sut.UpdateMaxFrameSize((int)Http2PeerSettings.MinAllowedMaxFrameSize);
+        sut.UpdateMaxFrameSize((int)Http2PeerSettings.MinAllowedMaxFrameSize * 2);
 
-        Assert.Equal((int)Http2PeerSettings.MinAllowedMaxFrameSize, GetMaxFrameSize(sut));
+        Assert.Equal((int)Http2PeerSettings.MinAllowedMaxFrameSize * 2, GetMaxFrameSize(sut));
         Assert.Same(headerEncodingBuffer, GetHeaderEncodingBuffer(sut));
+    }
+
+    [Fact]
+    public void UpdateMaxFrameSize_GrowsHeaderEncodingBufferGeometrically()
+    {
+        var sut = CreateFrameWriter(new Pipe());
+
+        sut.UpdateMaxFrameSize((int)Http2PeerSettings.MinAllowedMaxFrameSize + 1);
+
+        Assert.Equal((int)Http2PeerSettings.MinAllowedMaxFrameSize * 2, GetHeaderEncodingBuffer(sut).Length);
+
+        sut.UpdateMaxFrameSize((int)Http2PeerSettings.MinAllowedMaxFrameSize * 2 + 1);
+
+        Assert.Equal((int)Http2PeerSettings.MinAllowedMaxFrameSize * 4, GetHeaderEncodingBuffer(sut).Length);
     }
 
     [Fact]
