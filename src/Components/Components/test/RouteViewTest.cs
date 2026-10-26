@@ -77,6 +77,7 @@ public class RouteViewTest
         var testLayoutFrames = _renderer.GetCurrentRenderTreeFrames(testLayoutComponentId).AsEnumerable();
         Assert.Collection(testLayoutFrames,
             frame => AssertFrame.Text(frame, "Layout starts here", sequence: 0),
+            frame => AssertFrame.Region(frame, subtreeLength: 4),
             frame => AssertFrame.Region(frame, subtreeLength: 3),
             frame => AssertFrame.Component<ComponentWithLayout>(frame, sequence: 0, subtreeLength: 2),
             frame => AssertFrame.Attribute(frame, nameof(ComponentWithLayout.Message), "Test message", sequence: 1),
@@ -357,6 +358,76 @@ public class RouteViewTest
         Assert.Empty(_renderer.HandledExceptions);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RendersPageWhenLayoutInvokesBodyDirectlyMoreThanOnce(bool supplyBody)
+    {
+        var routeValues = new Dictionary<string, object>();
+        if (supplyBody)
+        {
+            routeValues[nameof(LayoutComponentBase.Body)] = (RenderFragment)(builder => builder.AddContent(0, "Explicit body"));
+        }
+
+        var routeData = new RouteData(typeof(InitializedBodyPage), routeValues);
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(RouteView.RouteData)] = routeData,
+                [nameof(RouteView.DefaultLayout)] = typeof(RepeatingBodyLayout),
+            })));
+        var layoutId = _renderer.Batches.Single().GetComponentFrames<RepeatingBodyLayout>().Single().ComponentId;
+        var originalPages = _renderer.GetCurrentRenderTreeFrames(layoutId).AsEnumerable()
+            .Where(frame => frame.ComponentType == typeof(InitializedBodyPage)).ToArray();
+        Assert.Equal(2, originalPages.Length);
+
+        await SetRouteAsync(new RouteData(typeof(InitializedBodyPage), routeValues));
+
+        Assert.Empty(_renderer.HandledExceptions);
+        var currentPages = _renderer.GetCurrentRenderTreeFrames(layoutId).AsEnumerable()
+            .Where(frame => frame.ComponentType == typeof(InitializedBodyPage)).ToArray();
+        Assert.Equal(originalPages.Select(frame => frame.ComponentId), currentPages.Select(frame => frame.ComponentId));
+        foreach (var page in currentPages)
+        {
+            Assert.Collection(
+                _renderer.GetCurrentRenderTreeFrames(page.ComponentId).AsEnumerable(),
+                frame => AssertFrame.Region(frame, subtreeLength: 2),
+                frame => AssertFrame.Text(frame, supplyBody ? "Explicit body" : "Default body", sequence: 0));
+        }
+    }
+
+    [Theory]
+    [InlineData("Body", "First")]
+    [InlineData("body", "First")]
+    [InlineData("Body", null)]
+    [InlineData("body", null)]
+    public async Task PreservesPageInstanceWhenOrdinaryBodyParameterIsSuppliedOrOmitted(string parameterName, string initialBody)
+    {
+        var routeValues = new Dictionary<string, object> { [parameterName] = initialBody };
+        await SetRouteAsync(new RouteData(typeof(PageWithStringBody), routeValues));
+        var pageFrame = _renderer.Batches.Single().GetComponentFrames<PageWithStringBody>().Single();
+        var page = (PageWithStringBody)pageFrame.Component;
+        var layoutViewId = _renderer.Batches.Single().GetComponentFrames<LayoutView>().Single().ComponentId;
+        page.LocalState = "Preserved state";
+
+        foreach (var values in new[] { routeValues, new Dictionary<string, object>(), new Dictionary<string, object> { [parameterName] = "Second" } })
+        {
+            await SetRouteAsync(new RouteData(typeof(PageWithStringBody), values));
+
+            var currentPage = _renderer.GetCurrentRenderTreeFrames(layoutViewId).AsEnumerable()
+                .Single(frame => frame.ComponentType == typeof(PageWithStringBody));
+            Assert.Equal(pageFrame.ComponentId, currentPage.ComponentId);
+            Assert.Same(page, currentPage.Component);
+            Assert.Equal(values.TryGetValue(parameterName, out var body) ? body : initialBody, page.Body);
+            Assert.Equal("Preserved state", page.LocalState);
+            Assert.Empty(_renderer.HandledExceptions);
+        }
+
+        Assert.Collection(
+            _renderer.GetCurrentRenderTreeFrames(pageFrame.ComponentId).AsEnumerable(),
+            frame => AssertFrame.Text(frame, "Preserved state: Second", sequence: 0));
+    }
+
     private Task SetRouteAsync(RouteData routeData) => _renderer.Dispatcher.InvokeAsync(() =>
         _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
         {
@@ -419,6 +490,29 @@ public class RouteViewTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.AddContent(0, "Child page");
+        }
+    }
+
+    private class RepeatingBodyLayout : ComponentBase
+    {
+        [Parameter] public RenderFragment Body { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            Body(builder);
+            Body(builder);
+        }
+    }
+
+    private class PageWithStringBody : ComponentBase
+    {
+        [Parameter] public string Body { get; set; }
+
+        public string LocalState { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"{LocalState}: {Body}");
         }
     }
 

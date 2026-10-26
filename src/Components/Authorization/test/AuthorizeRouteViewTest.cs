@@ -409,16 +409,16 @@ public class AuthorizeRouteViewTest
         Assert.Collection(diff.Edits,
             edit =>
             {
-                // Inside the layout, we remove the old content
-                Assert.Equal(RenderTreeEditType.RemoveFrame, edit.Type);
-                Assert.Equal(1, edit.SiblingIndex);
-            },
-            edit =>
-            {
-                // ... and add the new content
+                // Inside the layout, we add the new content
                 Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
                 Assert.Equal(1, edit.SiblingIndex);
                 AssertFrame.Text(batch2.ReferenceFrames[edit.ReferenceFrameIndex], "Not authorized");
+            },
+            edit =>
+            {
+                // ... and remove the old content
+                Assert.Equal(RenderTreeEditType.RemoveFrame, edit.Type);
+                Assert.Equal(2, edit.SiblingIndex);
             });
     }
 

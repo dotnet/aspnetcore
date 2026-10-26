@@ -5,8 +5,10 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
@@ -88,6 +90,8 @@ public class RouteView : IComponent
 
     private static void RenderPageWithParameters(RenderTreeBuilder builder, RouteData routeData)
     {
+        // Custom layouts can invoke the body directly more than once, so isolate each page's key.
+        builder.OpenRegion(0);
         builder.OpenComponent(0, routeData.PageType);
         var bodyParameterSupplied = false;
          foreach (var kvp in routeData.RouteValues)
@@ -95,13 +99,17 @@ public class RouteView : IComponent
             builder.AddComponentParameter(1, kvp.Key, kvp.Value);
             if (string.Equals(kvp.Key, nameof(LayoutComponentBase.Body), StringComparison.OrdinalIgnoreCase))
             {
-                bodyParameterSupplied = true;
+                bodyParameterSupplied = ComponentProperties.GetCandidateBindableProperties(routeData.PageType)
+                    .Any(property => string.Equals(property.Name, nameof(LayoutComponentBase.Body), StringComparison.OrdinalIgnoreCase)
+                        && property.PropertyType == typeof(RenderFragment)
+                        && property.IsDefined(typeof(ParameterAttribute)));
             }
         }
 
-        // Layouts need not inherit LayoutComponentBase, so every routed page needs a distinct identity.
+        // Only a layout-compatible Body parameter needs a different identity when supplied or omitted.
         builder.SetKey(bodyParameterSupplied ? _routePageWithBodyKey : _routePageWithoutBodyKey);
 
         builder.CloseComponent();
+        builder.CloseRegion();
     }
 }
