@@ -1,23 +1,20 @@
 export function init(tableElement) {
 
+    let stopColumnResize;
+
     const applyColumnWidth = (columnIndex, width) => {
         const headerCell = tableElement.tHead.rows[0].cells[columnIndex];
         if (headerCell) {
             headerCell.style.width = `${width}px`;
+            updateColumnResize(tableElement);
         }
-    };
-
-    const stopColumnResize = () => {
-        document.removeEventListener('pointermove', pointerMoveHandler);
-        document.removeEventListener('pointerup', stop);
-        document.removeEventListener('pointercancel', stop);
     };
 
     const startColumnResize = event => {
         if (event.button !== undefined && event.button !== 0) return;
 
         const handle = event.target.closest('.col-width-draghandle');
-        if (!handle || !tableElement.contains(handle)) return;
+        if (!handle || handle.closest('table') !== tableElement) return;
 
         event.preventDefault();
 
@@ -26,6 +23,8 @@ export function init(tableElement) {
 
         const headerCell = handle.closest('th');
         if (!headerCell) return;
+
+        stopColumnResize?.();
 
         const startWidth = headerCell.offsetWidth;
         const startX = event.clientX;
@@ -53,12 +52,15 @@ export function init(tableElement) {
             currentWidth = width;
 
             requestAnimationFrame(() => {
-                applyColumnWidth(columnIndex, currentWidth);
+                if (active) {
+                    applyColumnWidth(columnIndex, currentWidth);
+                }
             });
         };
 
         const stop = () => {
             active = false;
+            stopColumnResize = undefined;
 
             document.removeEventListener('pointermove', pointerMoveHandler);
             document.removeEventListener('pointerup', stop);
@@ -73,6 +75,7 @@ export function init(tableElement) {
             applyColumnWidth(columnIndex, currentWidth);
         };
 
+        stopColumnResize = stop;
         document.addEventListener('pointermove', pointerMoveHandler);
         document.addEventListener('pointerup', stop);
         document.addEventListener('pointercancel', stop);
@@ -92,7 +95,7 @@ export function init(tableElement) {
     };
     const keyDownResizeHandler = (event) => {
         const handle = event.target.closest('.col-width-draghandle');
-        if (!handle) return;
+        if (!handle || handle.closest('table') !== tableElement) return;
 
         const columnIndex = Number.parseInt(handle.dataset.columnIndex, 10);
         if (Number.isNaN(columnIndex)) return;
@@ -124,23 +127,32 @@ export function init(tableElement) {
     document.body.addEventListener('click', bodyClickHandler);
     document.body.addEventListener('mousedown', bodyClickHandler); // Otherwise it seems strange that it doesn't go away until you release the mouse button
     document.body.addEventListener('keydown', keyDownHandler);
-    if (tableElement.querySelectorAll('.col-width-draghandle').length > 0) {
-        tableElement.addEventListener('pointerdown', startColumnResize);
-        tableElement.addEventListener('keydown', keyDownResizeHandler);
-    }
+    tableElement.addEventListener('pointerdown', startColumnResize);
+    tableElement.addEventListener('keydown', keyDownResizeHandler);
 
     return {
         stop: () => {
-            stopColumnResize();
+            stopColumnResize?.();
             document.body.removeEventListener('click', bodyClickHandler);
             document.body.removeEventListener('mousedown', bodyClickHandler);
             document.body.removeEventListener('keydown', keyDownHandler);
-            if (tableElement.querySelectorAll('.col-width-draghandle').length > 0) {
-                tableElement.removeEventListener('pointerdown', startColumnResize);
-                tableElement.removeEventListener('keydown', keyDownResizeHandler);
-            }
+            tableElement.removeEventListener('pointerdown', startColumnResize);
+            tableElement.removeEventListener('keydown', keyDownResizeHandler);
         }
     };
+}
+
+export function updateColumnResize(tableElement) {
+    const tableWidth = tableElement.getBoundingClientRect().width;
+    for (const headerCell of tableElement.tHead.rows[0].cells) {
+        const handle = headerCell.querySelector(':scope > .col-width-draghandle');
+        if (handle) {
+            const width = headerCell.getBoundingClientRect().width;
+            // Separator values are percentages; value text exposes the measured pixel width.
+            handle.setAttribute('aria-valuenow', tableWidth > 0 ? Math.round(100 * width / tableWidth) : 0);
+            handle.setAttribute('aria-valuetext', `${Math.round(width)}px`);
+        }
+    }
 }
 
 export function checkColumnOptionsPosition(tableElement) {
@@ -166,4 +178,3 @@ export function checkColumnOptionsPosition(tableElement) {
         }
     }
 }
-

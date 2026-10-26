@@ -48,7 +48,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public string? Theme { get; set; } = "default";
 
     /// <summary>
-    /// If true, the grid renders column resize handles in the header row and allows users to drag to resize columns.
+    /// If true, the grid renders column resize handles in the header row and allows users to resize columns
+    /// by dragging or using the left and right arrow keys. Holding Shift increases the keyboard resize step.
     /// </summary>
     [Parameter] public bool ColumnResize { get; set; }
 
@@ -324,6 +325,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
                 return;
             }
             _jsEventDisposable = await _jsModule.InvokeAsync<IJSObjectReference>("init", _tableReference);
+        }
+
+        if (ColumnResize && !_wasDisposed && _jsModule is not null)
+        {
+            await _jsModule.InvokeVoidAsync("updateColumnResize", _tableReference);
         }
 
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)

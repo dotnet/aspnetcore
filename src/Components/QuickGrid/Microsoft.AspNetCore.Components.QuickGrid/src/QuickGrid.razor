@@ -109,7 +109,9 @@
 
                 @if (ColumnResize && columnIndex < _columns.Count - 1)
                 {
-                    <div class="col-width-draghandle" tabindex="0" data-column-index="@columnIndex"></div>
+                    <div class="col-width-draghandle" tabindex="0" data-column-index="@columnIndex"
+                         role="separator" aria-orientation="vertical" aria-label="@(string.IsNullOrWhiteSpace(col.Title) ? $"Resize column {columnIndex + 1}" : $"Resize {col.Title}")"
+                         aria-valuemin="0" aria-valuemax="100"></div>
                 }
             </th>
         }

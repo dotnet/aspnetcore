@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using TestServer;
 using Xunit.Abstractions;
 
@@ -169,9 +170,133 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid3 > table"));
 
-        var grid = Browser.FindElement(By.CssSelector("#grid3 > table"));
+        Browser.Equal(2, () => Browser.FindElement(By.CssSelector("#grid3 > table")).FindElements(By.CssSelector(".col-width-draghandle")).Count);
+        Browser.Contains("col-resize", () => Browser.FindElement(By.CssSelector("#grid3 > table")).GetAttribute("class"));
+    }
 
-        Browser.Equal(2, () => grid.FindElements(By.CssSelector(".col-width-draghandle")).Count);
-        Assert.Contains("col-resize", grid.GetAttribute("class"));
+    [Fact]
+    public void QuickGrid_ResizeHandlesExposeAccessibleWidths()
+    {
+        NavigateToResizeGrid(initiallyEnabled: true);
+        var header = Browser.FindElement(By.CssSelector("#resize-grid > table > thead th"));
+        var handle = header.FindElement(By.CssSelector(".col-width-draghandle"));
+
+        Assert.Equal("separator", handle.GetAttribute("role"));
+        Assert.Equal("vertical", handle.GetAttribute("aria-orientation"));
+        Assert.Equal("Resize Name", handle.GetAttribute("aria-label"));
+        Assert.Equal("0", handle.GetAttribute("aria-valuemin"));
+        Assert.Equal("100", handle.GetAttribute("aria-valuemax"));
+        Browser.Equal($"{header.Size.Width}px", () => handle.GetAttribute("aria-valuetext"));
+
+        var initialWidth = header.Size.Width;
+        handle.SendKeys(Keys.ArrowRight);
+        Browser.True(() => header.Size.Width > initialWidth);
+        Browser.Equal($"{header.Size.Width}px", () => handle.GetAttribute("aria-valuetext"));
+        Browser.Equal(
+            Math.Round(100.0 * header.Size.Width / Browser.FindElement(By.CssSelector("#resize-grid > table")).Size.Width).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            () => handle.GetAttribute("aria-valuenow"));
+
+        var keyboardWidth = header.Size.Width;
+        new Actions(Browser).MoveToElement(handle).ClickAndHold().MoveByOffset(20, 0).Release().Perform();
+        Browser.True(() => header.Size.Width > keyboardWidth);
+        Browser.Equal($"{header.Size.Width}px", () => handle.GetAttribute("aria-valuetext"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_CanEnableColumnResizeAfterRendering(bool rightToLeft)
+    {
+        NavigateToResizeGrid(rightToLeft: rightToLeft);
+        Assert.Empty(Browser.FindElements(By.CssSelector("#resize-grid .col-width-draghandle")));
+
+        Browser.Click(By.Id("toggle-resize"));
+        var handle = Browser.Exists(By.CssSelector("#resize-grid .col-width-draghandle"));
+        var header = Browser.FindElement(By.CssSelector("#resize-grid > table > thead th"));
+        var initialWidth = header.Size.Width;
+        handle.SendKeys(Keys.Shift + (rightToLeft ? Keys.ArrowLeft : Keys.ArrowRight) + Keys.Null);
+        Browser.True(() => header.Size.Width > initialWidth);
+
+        var keyboardWidth = header.Size.Width;
+        new Actions(Browser).MoveToElement(handle).ClickAndHold().MoveByOffset(rightToLeft ? -20 : 20, 0).Release().Perform();
+        Browser.True(() => header.Size.Width > keyboardWidth);
+        Browser.Equal($"{header.Size.Width}px", () => handle.GetAttribute("aria-valuetext"));
+
+        Browser.Click(By.Id("toggle-resize"));
+        Browser.Equal(0, () => Browser.FindElements(By.CssSelector("#resize-grid .col-width-draghandle")).Count);
+        Browser.Click(By.Id("toggle-resize"));
+        handle = Browser.Exists(By.CssSelector("#resize-grid .col-width-draghandle"));
+        var pointerWidth = header.Size.Width;
+        handle.SendKeys(rightToLeft ? Keys.ArrowLeft : Keys.ArrowRight);
+        Browser.True(() => header.Size.Width > pointerWidth);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_NestedResizeDoesNotResizeParent(bool usePointer)
+    {
+        NavigateToResizeGrid(initiallyEnabled: true, nested: true);
+        var parentHeader = Browser.FindElement(By.CssSelector("#resize-grid > table > thead th"));
+        var nestedHeader = Browser.FindElement(By.CssSelector("#nested-resize-grid th"));
+        var handle = nestedHeader.FindElement(By.CssSelector(".col-width-draghandle"));
+        var parentWidth = parentHeader.Size.Width;
+        var nestedWidth = nestedHeader.Size.Width;
+
+        if (usePointer)
+        {
+            new Actions(Browser).MoveToElement(handle).ClickAndHold().MoveByOffset(20, 0).Release().Perform();
+        }
+        else
+        {
+            handle.SendKeys(Keys.ArrowRight);
+        }
+
+        Browser.True(() => nestedHeader.Size.Width > nestedWidth);
+        Assert.Equal(parentWidth, parentHeader.Size.Width);
+        Browser.Equal($"{nestedHeader.Size.Width}px", () => handle.GetAttribute("aria-valuetext"));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void QuickGrid_CanDisposeResizeListeners(bool initiallyEnabled, bool duringDrag)
+    {
+        NavigateToResizeGrid(initiallyEnabled: initiallyEnabled);
+        if (duringDrag)
+        {
+            var handle = Browser.FindElement(By.CssSelector("#resize-grid .col-width-draghandle"));
+            new Actions(Browser).MoveToElement(handle).ClickAndHold().MoveByOffset(20, 0).Perform();
+        }
+
+        try
+        {
+            Browser.FindElement(By.Id("dispose-resize-grid")).SendKeys(Keys.Enter);
+            Browser.Equal("Completed", () => Browser.FindElement(By.Id("resize-disposal-result")).Text);
+        }
+        finally
+        {
+            if (duringDrag)
+            {
+                new Actions(Browser).Release().Perform();
+            }
+        }
+
+        var header = Browser.FindElement(By.CssSelector("#resize-grid > table > thead th"));
+        var width = header.Size.Width;
+        new Actions(Browser).MoveByOffset(30, 0).Perform();
+        Assert.Equal(width, header.Size.Width);
+        if (initiallyEnabled)
+        {
+            header.FindElement(By.CssSelector(".col-width-draghandle")).SendKeys(Keys.ArrowRight);
+            Assert.Equal(width, header.Size.Width);
+        }
+    }
+
+    private void NavigateToResizeGrid(bool initiallyEnabled = false, bool nested = false, bool rightToLeft = false)
+    {
+        Navigate($"{ServerPathBase}/quickgrid-resize?InitiallyEnabled={initiallyEnabled}&Nested={nested}&RightToLeft={rightToLeft}");
+        Browser.True(() => Browser.FindElement(By.Id("toggle-resize")).Enabled);
     }
 }
