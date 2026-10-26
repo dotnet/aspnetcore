@@ -166,8 +166,8 @@ public partial class CookieStoreTests : BrowserTest
             var name = path == "/cookiestore-server" ? "server-watched" : "wasm-watched";
             await _page.Locator("#cookie-name").FillAsync(name);
             await _page.Locator("#cookie-value").FillAsync("value");
-            await RunAsync("#watch-cookie-changes", "Watching changes.");
-            await RunAsync("#watch-cookie-changes-second", "Watching changes with a second listener.");
+            await RunAsync("#watch-cookie-changes", "Watch changes: added");
+            await RunAsync("#watch-cookie-changes-second", "Watch changes with a second listener: added");
 
             await RunAsync("#set-cookie", $"Set: {name}");
             await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Changed: {name}=value");
@@ -179,17 +179,17 @@ public partial class CookieStoreTests : BrowserTest
             await _page.EvaluateAsync("() => { document.cookie = 'external=; max-age=0'; }");
             await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync("Deleted: external");
 
-            await RunAsync("#delete-cookie", $"Deleted: {name}");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
             await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Deleted: {name}");
 
             // Removing one listener leaves the other in place.
-            await RunAsync("#unwatch-cookie-changes", "Stopped watching changes.");
+            await RunAsync("#unwatch-cookie-changes", "Stop watching changes: removed");
             await SetCookieAndWaitForTheBrowserEventAsync(name);
             await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Changed: {name}=value");
             // A round trip after the browser event lets a late notification arrive before the check.
-            await RunAsync("#get-cookie", $"Found: {name}=value");
+            await RunAsync("#get-cookie", $"Get: Found: {name}=value");
             await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Deleted: {name}");
-            await RunAsync("#delete-cookie", $"Deleted: {name}");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
         }
     }
 

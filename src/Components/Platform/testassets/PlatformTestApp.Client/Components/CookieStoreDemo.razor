@@ -163,13 +163,13 @@
         runCount++;
     }
 
-    private async Task WatchChangesAsync()
+    private Task WatchChangesAsync() => RunAsync("Watch changes", async () =>
     {
         listener = await Browser.Window.CookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, OnCookieChangeAsync);
-        result = "Watching changes.";
-    }
+        return "added";
+    });
 
-    private async Task WatchChangesWithSecondListenerAsync()
+    private Task WatchChangesWithSecondListenerAsync() => RunAsync("Watch changes with a second listener", async () =>
     {
         secondListener = await Browser.Window.CookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, changeEvent =>
         {
@@ -177,18 +177,18 @@
             StateHasChanged();
             return Task.CompletedTask;
         });
-        result = "Watching changes with a second listener.";
-    }
+        return "added";
+    });
 
-    private async Task UnwatchChangesAsync()
+    private Task UnwatchChangesAsync() => RunAsync("Stop watching changes", async () =>
     {
         if (listener is not null)
         {
             await listener.DisposeAsync();
         }
 
-        result = "Stopped watching changes.";
-    }
+        return "removed";
+    });
 
     // The listener runs on the renderer's dispatcher, so StateHasChanged needs no InvokeAsync.
     private Task OnCookieChangeAsync(CookieChangeEvent changeEvent)
