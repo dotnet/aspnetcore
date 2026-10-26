@@ -45,6 +45,47 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("5", totalPageNumber);
     }
 
+    [Theory]
+    [InlineData("ltr", false)]
+    [InlineData("ltr", true)]
+    [InlineData("rtl", false)]
+    [InlineData("rtl", true)]
+    public void PaginatorUsesLogicalAlignment(string direction, bool extraTextSpacing)
+    {
+        app = Browser.MountTestComponent<QuickGridDualPaginatorComponent>();
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            arguments[0].dir = arguments[1];
+            arguments[0].style.width = '800px';
+            arguments[0].style.lineHeight = arguments[2] ? '1.5' : '';
+            arguments[0].style.letterSpacing = arguments[2] ? '0.12em' : '';
+            arguments[0].style.wordSpacing = arguments[2] ? '0.16em' : '';
+        ", app, direction, extraTextSpacing);
+
+        var rightToLeft = direction == "rtl";
+        foreach (var selector in new[] { ".top-paginator .paginator", ".bottom-paginator .paginator" })
+        {
+            var paginator = app.FindElement(By.CssSelector(selector));
+            var summary = paginator.FindElement(By.ClassName("summary"));
+            var navigation = paginator.FindElement(By.TagName("nav"));
+
+            Browser.True(() => Math.Abs(summary.Location.X - (rightToLeft
+                ? paginator.Location.X + paginator.Size.Width - summary.Size.Width
+                : paginator.Location.X)) <= 1);
+            Browser.True(() => Math.Abs(navigation.Location.X - (rightToLeft
+                ? paginator.Location.X
+                : paginator.Location.X + paginator.Size.Width - navigation.Size.Width)) <= 1);
+
+            var controls = navigation.FindElements(By.CssSelector(":scope > *"));
+            Assert.Equal(5, controls.Count);
+            for (var i = 1; i < controls.Count; i++)
+            {
+                Assert.True(rightToLeft
+                    ? controls[i].Location.X < controls[i - 1].Location.X
+                    : controls[i].Location.X > controls[i - 1].Location.X);
+            }
+        }
+    }
+
     [Fact]
     public void AdditionalAttributesApplied()
     {

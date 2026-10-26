@@ -14,7 +14,9 @@
     </QuickGrid>
 </div>
 <div class="bottom-paginator">
-    <Paginator State="@pagination" />
+    <Paginator State="@pagination">
+        <SummaryTemplate>Custom summary: @pagination.TotalItemCount items</SummaryTemplate>
+    </Paginator>
 </div>
 
 @code {
