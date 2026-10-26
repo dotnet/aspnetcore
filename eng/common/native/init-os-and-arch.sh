@@ -7,9 +7,17 @@ if command -v getprop && getprop ro.product.system.model 2>&1 | grep -qi android
     OSName="android"
 fi
 
+# OpenHarmony/HarmonyOS hosts report `HarmonyOS` (or `Linux` on some devices)
+# from uname, so query the OHOS parameter service as well.
+if command -v param >/dev/null 2>&1 && param get const.ohos.fullname 2>/dev/null | grep -qi '^openharmony'; then
+    OSName="openharmony"
+fi
+
 case "$OSName" in
 freebsd|linux|netbsd|openbsd|sunos|android|haiku)
     os="$OSName" ;;
+harmonyos|openharmony)
+    os=openharmony ;;
 darwin)
     os=osx ;;
 *)
