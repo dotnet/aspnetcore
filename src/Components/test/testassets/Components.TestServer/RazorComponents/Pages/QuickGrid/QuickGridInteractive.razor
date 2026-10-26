@@ -2,7 +2,7 @@
 @rendermode RenderMode.InteractiveServer
 @using Microsoft.AspNetCore.Components.QuickGrid
 
-<h3>Sample QuickGrid Component</h3>
+<h3 id="@(interactiveReady ? "quickgrid-interactive-ready" : null)">Sample QuickGrid Component</h3>
 
 <div id="grid">
     <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" OnRowClick="@((Person p) => HandleRowClick(p))" custom-attrib="somevalue" class="custom-class-attrib">
@@ -36,7 +36,9 @@
     </QuickGrid>
 </div>
 <div class="bottom-paginator">
-    <Paginator State="@pagination2" />
+    <Paginator State="@pagination2">
+        <SummaryTemplate>Custom summary</SummaryTemplate>
+    </Paginator>
 </div>
 
 <div id="clicked-row-info">
@@ -60,6 +62,16 @@
     QuickGrid<Person> quickGridRef;
     Person clickedPerson;
     int clickCount;
+    bool interactiveReady;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            interactiveReady = true;
+            StateHasChanged();
+        }
+    }
 
     void HandleRowClick(Person person)
     {
