@@ -48,6 +48,10 @@ stimuli:
             - -File
             - .eval-grader/trace-contract-grader.ps1
             - sdk-recovery
+            - -ExpectedPr
+            - "70024"
+            - -ExpectedHead
+            - d3068c868d2fafeb5f3a37f94c4d8637ce063ed0
 
   - name: same-worker-clarification
     prompt: >-

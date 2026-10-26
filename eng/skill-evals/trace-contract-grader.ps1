@@ -4,7 +4,11 @@ param(
     [ValidateSet('sdk-recovery', 'same-worker-lifecycle', 'hosted-pagination', 'required-bytes-blocked')]
     [string]$Contract,
 
-    [string]$ContractPath
+    [string]$ContractPath,
+
+    [int]$ExpectedPr,
+
+    [string]$ExpectedHead
 )
 
 $ErrorActionPreference = 'Stop'
@@ -83,7 +87,7 @@ function Get-ReportedTurns {
     $turns = [Collections.Generic.List[object]]::new()
     foreach ($match in [regex]::Matches(
         $Text,
-        '(?is)\bTurn\s+(?<index>\d+).*?(?<content>PATH:\s*per-guide-worker\b.*?)(?=\bTurn\s+\d+|\z)'
+        '(?is)\bTurn\s+(?<index>\d+)\b(?:(?!\bTurn\s+\d+\b).)*?(?<content>PATH:\s*per-guide-worker\b.*?)(?=\bTurn\s+\d+\b|\z)'
     )) {
         $content = $match.Groups['content'].Value.Trim()
         $payload = [regex]::Replace(
@@ -98,6 +102,97 @@ function Get-ReportedTurns {
         })
     }
     return $turns.ToArray()
+}
+
+function Test-SuccessfulShellCall {
+    param([object]$Call)
+
+    if ($Call.ResultSuccess -ne $true) {
+        return $false
+    }
+    $exitCode = $Call.Result?.PSObject.Properties['exitCode']?.Value
+    return $null -eq $exitCode -or [int]$exitCode -eq 0
+}
+
+function Test-RunningRead {
+    param([object]$Call)
+
+    return (Get-ReadStatus $Call.ResultText) -eq 'running'
+}
+
+function Test-CompletedRead {
+    param([object]$Call)
+
+    return (Get-ReadStatus $Call.ResultText) -eq 'completed'
+}
+
+function Get-ReadStatus {
+    param([string]$Text)
+
+    $header = [regex]::Split($Text, '(?i)\bTurn\s+\d+\b', 2)[0]
+    $match = [regex]::Match(
+        $header,
+        '(?i)\bstatus\s*["'']?\s*[:=]\s*["'']?(?<status>running|in[_ -]?progress|idle|completed|failed|cancelled)\b'
+    )
+    if (-not $match.Success) {
+        $match = [regex]::Match(
+            $header,
+            '(?i)\bagent\s+is\s+(?:still\s+)?(?<status>running|in[_ -]?progress|idle|completed|failed|cancelled)\b'
+        )
+    }
+    if (-not $match.Success) {
+        return 'unknown'
+    }
+    $status = $match.Groups['status'].Value
+    if ($status -match '^(?i:running|in[_ -]?progress)$') {
+        return 'running'
+    }
+    if ($status -match '^(?i:idle|completed)$') {
+        return 'completed'
+    }
+    return 'failed'
+}
+
+function Test-SameShellActivation {
+    param([string]$Command)
+
+    $prepare = [regex]::Match($Command, '(?is)dotnet\s+run\b.*?prepare-review\.cs')
+    if (-not $prepare.Success) {
+        return $false
+    }
+    $prefix = $Command.Substring(0, $prepare.Index)
+    $powershell = $prefix -match '(?is)(?:^|[;&|]\s*)\.\s+["'']?[^;&|\r\n]*activate\.ps1["'']?\s*(?:;|&&)?\s*$'
+    $posix = $prefix -match '(?is)(?:^|[;&|]\s*)(?:source|\.)\s+["'']?[^;&|\r\n]*activate\.sh["'']?\s*(?:;|&&)?\s*$'
+    return $powershell -or $posix
+}
+
+function Test-PrepareCommand {
+    param(
+        [string]$Command,
+        [int]$Pr,
+        [string]$Head
+    )
+
+    $invocations = [regex]::Matches(
+        $Command,
+        '(?is)dotnet\s+run\b.*?prepare-review\.cs(?<arguments>.*?)(?=(?:\s*(?:;|&&|\|\|)\s*)|$)'
+    )
+    if ($invocations.Count -ne 1) {
+        return $false
+    }
+    $arguments = $invocations[0].Groups['arguments'].Value
+    $prMatches = [regex]::Matches(
+        $arguments,
+        "(?i)(?:^|\s)--pr(?:\s+|=)[`"']?(?<value>\d+)[`"']?(?=\s|$)"
+    )
+    $headMatches = [regex]::Matches(
+        $arguments,
+        "(?i)(?:^|\s)--head(?:\s+|=)[`"']?(?<value>[0-9a-f]{40})[`"']?(?=\s|$)"
+    )
+    return $prMatches.Count -eq 1 -and
+        [int]$prMatches[0].Groups['value'].Value -eq $Pr -and
+        $headMatches.Count -eq 1 -and
+        $headMatches[0].Groups['value'].Value -eq $Head
 }
 
 function Get-Calls {
@@ -149,13 +244,18 @@ function Get-Calls {
 function Test-SdkRecovery {
     param([object[]]$Calls)
 
+    if ($ExpectedPr -le 0 -or
+        $ExpectedHead -notmatch '^[0-9a-f]{40}$') {
+        Fail 'The SDK recovery grader requires an expected PR number and immutable head.'
+    }
     $rootCalls = @($Calls | Where-Object { [string]::IsNullOrEmpty($_.AgentId) })
     $shellCalls = @($rootCalls | Where-Object { Test-ShellTool $_.Name })
     $initial = $shellCalls |
         Where-Object {
             $command = [string](Get-Argument $_ 'command')
             $command -match '(?i)activate\.(ps1|sh)' -and
-            $command -match '(?i)dotnet\s+run\b.*prepare-review\.cs' -and
+            (Test-SameShellActivation $command) -and
+            (Test-PrepareCommand $command $ExpectedPr $ExpectedHead) -and
             $command -notmatch '(?i)eng[\\/]+common[\\/]+dotnet\.(ps1|sh)'
         } |
         Select-Object -First 1
@@ -163,7 +263,8 @@ function Test-SdkRecovery {
         Fail 'No initial activate-and-prepare attempt was observed.'
     }
     if ($initial.ResultText -notmatch '(?i)SDK could not be found|has not been installed|not installed yet' -or
-        $initial.ResultText -match '(?i)"?ready"?\s*[:=]\s*true') {
+        $initial.ResultText -match '(?i)"?ready"?\s*[:=]\s*true' -or
+        (Test-SuccessfulShellCall $initial)) {
         Fail 'The initial preparation attempt did not establish the naturally missing pinned SDK precondition.'
     }
 
@@ -173,33 +274,74 @@ function Test-SdkRecovery {
                 return $false
             }
             $command = [string](Get-Argument $_ 'command')
-            $windows = $command -match '(?is)eng[\\/]common[\\/]dotnet\.ps1.*activate\.ps1.*dotnet\s+run\b.*prepare-review\.cs'
-            $posix = $command -match '(?is)eng/common/dotnet\.sh.*activate\.sh.*dotnet\s+run\b.*prepare-review\.cs'
-            return $windows -or $posix
+            return (Test-SameShellActivation $command) -and
+                (Test-PrepareCommand $command $ExpectedPr $ExpectedHead) -and
+                (Test-SuccessfulShellCall $_) -and
+                $_.ResultText -match '(?i)"?ready"?\s*[:=]\s*true'
         } |
         Select-Object -First 1
     if ($null -eq $recovery) {
-        Fail 'No supported SDK install followed by same-invocation reactivation and preparation was observed.'
+        Fail 'No same-invocation reactivation and pinned-head preparation was observed.'
     }
-    if ($recovery.ResultSuccess -ne $true -or $recovery.ResultText -notmatch '(?i)"?ready"?\s*[:=]\s*true') {
-        Fail 'The supported recovery command did not return a ready preparation result.'
+
+    $recoveryCommand = [string](Get-Argument $recovery 'command')
+    $windowsRecovery = $recoveryCommand -match '(?i)activate\.ps1'
+    $installPattern = if ($windowsRecovery) {
+        '(?i)eng[\\/]common[\\/]dotnet\.ps1'
+    } else {
+        '(?i)eng/common/dotnet\.sh'
     }
+    $combinedInstallPattern = if ($windowsRecovery) {
+        '(?is)eng[\\/]common[\\/]dotnet\.ps1(?<between>.*?)activate\.ps1.*dotnet\s+run\b.*prepare-review\.cs'
+    } else {
+        '(?is)eng/common/dotnet\.sh(?<between>.*?)activate\.sh.*dotnet\s+run\b.*prepare-review\.cs'
+    }
+    $combinedMatch = [regex]::Match($recoveryCommand, $combinedInstallPattern)
+    $combinedInstall = $combinedMatch.Success -and (
+        $combinedMatch.Groups['between'].Value -match '&&' -or
+        $combinedMatch.Groups['between'].Value -match
+            '(?is)if\s*\(\s*\$LASTEXITCODE\s*-ne\s*0\s*\)\s*\{\s*exit\s+\$LASTEXITCODE\s*\}'
+    )
+    $priorInstall = $shellCalls |
+        Where-Object {
+            $_.CallIndex -gt $initial.ResultIndex -and
+            $_.ResultIndex -lt $recovery.CallIndex -and
+            [string](Get-Argument $_ 'command') -match $installPattern -and
+            (Test-SuccessfulShellCall $_)
+        } |
+        Select-Object -Last 1
+    if (-not $combinedInstall -and $null -eq $priorInstall) {
+        Fail 'No successful supported SDK install preceded the pinned-head preparation.'
+    }
+
+    if ($recovery.ResultText -notmatch '"manifest"\s*:\s*"(?<manifest>(?:\\.|[^"])*)"') {
+        Fail 'The ready preparation result did not identify its manifest.'
+    }
+    $preparedManifestPath = ('"' + $Matches.manifest + '"') | ConvertFrom-Json
 
     $manifestRead = $rootCalls |
         Where-Object {
+            $targetMatch = [regex]::Match(
+                $_.ResultText,
+                '(?is)"target"\s*:\s*\{(?<target>.*?)\}'
+            )
+            $targetText = $targetMatch.Groups['target'].Value
             $_.CallIndex -gt $recovery.ResultIndex -and
             $_.Name -eq 'view' -and
-            [string](Get-Argument $_ 'path') -match '(?i)manifest\.json$' -and
+            [string](Get-Argument $_ 'path') -eq $preparedManifestPath -and
             (Test-UsableResult $_) -and
             $_.ResultText -match '"version"\s*:\s*2' -and
-            $_.ResultText -match '"ready"\s*:\s*true'
+            $_.ResultText -match '"ready"\s*:\s*true' -and
+            $targetMatch.Success -and
+            $targetText -match "(?is)`"pr`"\s*:\s*$ExpectedPr\b" -and
+            $targetText -match "(?is)`"head`"\s*:\s*`"$([regex]::Escape($ExpectedHead))`""
         } |
         Select-Object -First 1
     if ($null -eq $manifestRead) {
-        Fail 'The recovered preparation was not verified through a content-bearing ready version-2 manifest read.'
+        Fail 'The recovered preparation was not verified through its content-bearing ready version-2 manifest at the pinned PR head.'
     }
 
-    Complete-Grading -Passed $true -Evidence 'Observed missing SDK, supported install, same-invocation reactivation, successful preparation, and a ready version-2 manifest read.'
+    Complete-Grading -Passed $true -Evidence 'Observed missing SDK, supported install, same-invocation reactivation, pinned-head preparation, and its ready version-2 manifest.'
 }
 
 function Test-SameWorkerLifecycle {
@@ -231,20 +373,8 @@ function Test-SameWorkerLifecycle {
     if ($writes.Count -ne 1) {
         Fail "Expected exactly one same-worker clarification; observed $($writes.Count)."
     }
-    $reads = @(
-        $rootCalls |
-            Where-Object {
-                $_.Name -eq 'read_agent' -and
-                (Get-Argument $_ 'wait') -eq $true
-            }
-    )
-    if ($reads.Count -ne 2) {
-        Fail "Expected exactly two completed report collections with wait:true; observed $($reads.Count)."
-    }
-    $initialRead = $reads[0]
-    $write = $writes[0]
-    $followUpRead = $reads[1]
-    foreach ($call in @($initialRead, $write, $followUpRead)) {
+    $allReads = @($rootCalls | Where-Object { $_.Name -eq 'read_agent' })
+    foreach ($call in @($allReads) + @($writes)) {
         if ((Get-Argument $call 'agent_id') -ne $workerId) {
             Fail 'A lifecycle call targeted a worker ID other than the runtime-returned dispatch ID.'
         }
@@ -252,30 +382,74 @@ function Test-SameWorkerLifecycle {
             Fail "The $($call.Name) call did not complete successfully."
         }
     }
+    if (@($allReads | Where-Object { (Get-Argument $_ 'wait') -ne $true }).Count -ne 0) {
+        Fail 'Every report collection attempt must use read_agent with wait:true.'
+    }
+    $reads = @(
+        $rootCalls |
+            Where-Object {
+                $_.Name -eq 'read_agent' -and
+                (Get-Argument $_ 'wait') -eq $true
+            }
+    )
+    if ($reads.Count -lt 2) {
+        Fail "Expected at least two report collection attempts with wait:true; observed $($reads.Count)."
+    }
+    $write = $writes[0]
+    $preWriteReads = @(
+        $reads |
+            Where-Object {
+                $_.CallIndex -gt $task.ResultIndex -and
+                $_.ResultIndex -lt $write.CallIndex
+            }
+    )
+    $postWriteReads = @(
+        $reads |
+            Where-Object { $_.CallIndex -gt $write.ResultIndex }
+    )
+    if ($preWriteReads.Count -eq 0 -or $postWriteReads.Count -eq 0 -or
+        $preWriteReads.Count + $postWriteReads.Count -ne $reads.Count) {
+        Fail 'The report collection attempts were not partitioned around the clarification.'
+    }
 
-    if (-not (
-        $task.ResultIndex -lt $initialRead.CallIndex -and
-        $initialRead.ResultIndex -lt $write.CallIndex -and
-        $write.ResultIndex -lt $followUpRead.CallIndex
-    )) {
-        Fail 'The worker dispatch, initial collection, clarification, and follow-up collection were not observed in the required order.'
+    for ($index = 0; $index -lt $preWriteReads.Count - 1; $index++) {
+        if (-not (Test-RunningRead $preWriteReads[$index])) {
+            Fail 'A pre-clarification retry was not a nonterminal running snapshot.'
+        }
+    }
+    $initialRead = $preWriteReads[-1]
+    if (-not (Test-CompletedRead $initialRead)) {
+        Fail 'The initial report collection did not reach a completed worker state.'
     }
     $initialTurns = @(Get-ReportedTurns $initialRead.ResultText)
-    $followUpTurns = @(Get-ReportedTurns $followUpRead.ResultText)
     $initialSubstantiveTurns = @(
         $initialTurns |
-            Where-Object { $_.Payload.Length -ge 20 }
-    )
-    $followUpSubstantiveTurns = @(
-        $followUpTurns |
             Where-Object { $_.Payload.Length -ge 20 }
     )
     if ($initialSubstantiveTurns.Count -eq 0) {
         Fail 'The initial read_agent result did not contain an actual completed worker report.'
     }
-    if ($followUpSubstantiveTurns.Count -eq 0 -or
-        ($followUpSubstantiveTurns | Measure-Object Index -Maximum).Maximum -le
-            ($initialSubstantiveTurns | Measure-Object Index -Maximum).Maximum) {
+    $initialMaxTurn = (
+        $initialSubstantiveTurns |
+            Measure-Object Index -Maximum
+    ).Maximum
+    for ($index = 0; $index -lt $postWriteReads.Count - 1; $index++) {
+        if (-not (Test-RunningRead $postWriteReads[$index])) {
+            Fail 'A post-clarification retry was not a nonterminal running snapshot.'
+        }
+    }
+    $followUpRead = $postWriteReads[-1]
+    if (-not (Test-CompletedRead $followUpRead)) {
+        Fail 'The follow-up report collection did not reach a completed worker state.'
+    }
+    $followUpSubstantiveTurns = @(
+        Get-ReportedTurns $followUpRead.ResultText |
+            Where-Object {
+                $_.Payload.Length -ge 20 -and
+                $_.Index -gt $initialMaxTurn
+            }
+    )
+    if ($followUpSubstantiveTurns.Count -eq 0) {
         Fail 'The follow-up read_agent result did not contain an actual completed worker follow-up.'
     }
 

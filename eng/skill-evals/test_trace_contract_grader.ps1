@@ -25,7 +25,9 @@ function Invoke-Control {
         [object]$GraderInput,
         [bool]$ExpectedPassed,
         [string]$ExpectedEvidence,
-        [string]$ContractPath
+        [string]$ContractPath,
+        [int]$ExpectedPr = 0,
+        [string]$ExpectedHead = ''
     )
 
     $inputPath = Join-Path $testRoot "$Name.json"
@@ -39,7 +41,13 @@ function Invoke-Control {
         $env:EVALUATE_GRADER_INPUT = $inputPath
         $arguments = @('-NoProfile', '-File', $grader, $Contract)
         if ($ContractPath) {
-            $arguments += $ContractPath
+            $arguments += @('-ContractPath', $ContractPath)
+        }
+        if ($ExpectedPr -gt 0) {
+            $arguments += @('-ExpectedPr', $ExpectedPr)
+        }
+        if ($ExpectedHead) {
+            $arguments += @('-ExpectedHead', $ExpectedHead)
         }
         $output = & pwsh @arguments
         if ($LASTEXITCODE -ne 0) {
@@ -157,17 +165,91 @@ try {
     $retained = Get-Content $controlPath -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
     $retainedLifecycle = Clone-Object $retained.input
     $retainedLifecycle.trajectory.events = @($retainedLifecycle.trajectory.events[6..14])
-    Invoke-Control retained-sdk sdk-recovery $retained.input $true 'ready version-2 manifest' ''
+    $expectedPr = 70024
+    $expectedHead = 'd3068c868d2fafeb5f3a37f94c4d8637ce063ed0'
+    Invoke-Control sdk-retained-unbound sdk-recovery $retained.input $false 'initial activate-and-prepare' '' $expectedPr $expectedHead
+
+    $sdkBound = Clone-Object $retained.input
+    $sdkBound.trajectory.events[0].data.arguments.command += " --head $expectedHead"
+    $sdkBound.trajectory.events[2].data.arguments.command += " --head $expectedHead"
+    $sdkBound.trajectory.events[5].data.result =
+        "L1:{`nL2:  `"version`": 2,`nL3:  `"ready`": true,`nL4:  `"target`": {`nL5:    `"pr`": $expectedPr,`nL6:    `"head`": `"$expectedHead`"`nL7:  }`nL8:}"
+    Invoke-Control sdk-bound-combined sdk-recovery $sdkBound $true 'pinned-head preparation' '' $expectedPr $expectedHead
+
+    $sdkSplit = Clone-Object $sdkBound
+    $splitInstall = New-Call powershell sdk-install @{
+        command = '& .\eng\common\dotnet.ps1'
+    } $true ([pscustomobject]@{ content = 'Installed the pinned SDK.'; exitCode = 0 })
+    $splitPrepare = New-Call powershell sdk-recovery @{
+        command = ". .\activate.ps1; dotnet run .\.github\skills\review-pull-request\scripts\prepare-review.cs -- --pr $expectedPr --head $expectedHead"
+    } $true $sdkSplit.trajectory.events[3].data.result
+    $sdkSplit.trajectory.events = @(
+        $sdkSplit.trajectory.events[0..1] +
+        $splitInstall +
+        $splitPrepare +
+        $sdkSplit.trajectory.events[4..($sdkSplit.trajectory.events.Count - 1)]
+    )
+    Invoke-Control sdk-split-install sdk-recovery $sdkSplit $true 'pinned-head preparation' '' $expectedPr $expectedHead
+
+    $sdkSplitFailed = Clone-Object $sdkSplit
+    $sdkSplitFailed.trajectory.events[3].data.success = $false
+    $sdkSplitFailed.trajectory.events[3].data.result = [pscustomobject]@{
+        content = 'SDK installation failed.'
+        exitCode = 1
+    }
+    Invoke-Control sdk-split-install-failed sdk-recovery $sdkSplitFailed $false 'No successful supported SDK install' '' $expectedPr $expectedHead
+
+    $sdkLateInstall = Clone-Object $sdkBound
+    $sdkLateInstall.trajectory.events[2].data.arguments.command =
+        ". .\activate.ps1; dotnet run .\.github\skills\review-pull-request\scripts\prepare-review.cs -- --pr $expectedPr --head $expectedHead; & .\eng\common\dotnet.ps1"
+    Invoke-Control sdk-late-install sdk-recovery $sdkLateInstall $false 'No successful supported SDK install' '' $expectedPr $expectedHead
+
+    $sdkUnguardedCombined = Clone-Object $sdkBound
+    $sdkUnguardedCombined.trajectory.events[2].data.arguments.command =
+        "& .\eng\common\dotnet.ps1; . .\activate.ps1; dotnet run .\.github\skills\review-pull-request\scripts\prepare-review.cs -- --pr $expectedPr --head $expectedHead"
+    Invoke-Control sdk-unguarded-combined sdk-recovery $sdkUnguardedCombined $false 'No successful supported SDK install' '' $expectedPr $expectedHead
+
     Invoke-Control retained-lifecycle same-worker-lifecycle $retainedLifecycle $true 'same ID' ''
 
-    $sdkNoReactivate = Clone-Object $retained.input
+    $sdkNoReactivate = Clone-Object $sdkBound
     $sdkNoReactivate.trajectory.events[2].data.arguments.command =
-        '& .\eng\common\dotnet.ps1; dotnet run .\.github\skills\review-pull-request\scripts\prepare-review.cs -- --pr 70024'
-    Invoke-Control sdk-missing-reactivation sdk-recovery $sdkNoReactivate $false 'same-invocation reactivation' ''
+        "& .\eng\common\dotnet.ps1; dotnet run .\.github\skills\review-pull-request\scripts\prepare-review.cs -- --pr $expectedPr --head $expectedHead"
+    Invoke-Control sdk-missing-reactivation sdk-recovery $sdkNoReactivate $false 'same-invocation reactivation' '' $expectedPr $expectedHead
 
-    $sdkNotV2 = Clone-Object $retained.input
+    $sdkNotV2 = Clone-Object $sdkBound
     $sdkNotV2.trajectory.events[5].data.result = '{"version":1,"ready":true}'
-    Invoke-Control sdk-not-v2 sdk-recovery $sdkNotV2 $false 'ready version-2 manifest' ''
+    Invoke-Control sdk-not-v2 sdk-recovery $sdkNotV2 $false 'ready version-2 manifest' '' $expectedPr $expectedHead
+
+    $sdkWrongCommandHead = Clone-Object $sdkBound
+    $sdkWrongCommandHead.trajectory.events[2].data.arguments.command =
+        $sdkWrongCommandHead.trajectory.events[2].data.arguments.command.Replace(
+            $expectedHead,
+            '0000000000000000000000000000000000000000'
+        )
+    Invoke-Control sdk-wrong-command-head sdk-recovery $sdkWrongCommandHead $false 'pinned-head preparation' '' $expectedPr $expectedHead
+
+    $sdkExpectedHeadOutsidePrepare = Clone-Object $sdkBound
+    $sdkExpectedHeadOutsidePrepare.trajectory.events[2].data.arguments.command =
+        "Write-Output '--pr $expectedPr --head $expectedHead'; . .\activate.ps1; dotnet run .\.github\skills\review-pull-request\scripts\prepare-review.cs -- --pr 1 --head 0000000000000000000000000000000000000000"
+    Invoke-Control sdk-expected-head-outside-prepare sdk-recovery $sdkExpectedHeadOutsidePrepare $false 'pinned-head preparation' '' $expectedPr $expectedHead
+
+    $sdkChildActivation = Clone-Object $sdkSplit
+    $sdkChildActivation.trajectory.events[4].data.arguments.command =
+        "& .\activate.ps1; dotnet run .\.github\skills\review-pull-request\scripts\prepare-review.cs -- --pr $expectedPr --head $expectedHead"
+    Invoke-Control sdk-child-activation sdk-recovery $sdkChildActivation $false 'same-invocation reactivation' '' $expectedPr $expectedHead
+
+    $sdkWrongManifestHead = Clone-Object $sdkBound
+    $sdkWrongManifestHead.trajectory.events[5].data.result =
+        $sdkWrongManifestHead.trajectory.events[5].data.result.Replace(
+            $expectedHead,
+            '0000000000000000000000000000000000000000'
+        )
+    Invoke-Control sdk-wrong-manifest-head sdk-recovery $sdkWrongManifestHead $false 'pinned PR head' '' $expectedPr $expectedHead
+
+    $sdkUnlinkedManifest = Clone-Object $sdkBound
+    $sdkUnlinkedManifest.trajectory.events[4].data.arguments.path =
+        'C:\synthetic\other-bundle\manifest.json'
+    Invoke-Control sdk-unlinked-manifest sdk-recovery $sdkUnlinkedManifest $false 'its content-bearing' '' $expectedPr $expectedHead
 
     $syncWorker = Clone-Object $retainedLifecycle
     $syncWorker.trajectory.events[0].data.arguments.mode = 'sync'
@@ -179,7 +261,7 @@ try {
 
     $missingInitialReport = Clone-Object $retainedLifecycle
     $missingInitialReport.trajectory.events[3].data.result = 'Agent is running.'
-    Invoke-Control lifecycle-missing-initial same-worker-lifecycle $missingInitialReport $false 'initial read_agent result' ''
+    Invoke-Control lifecycle-missing-initial same-worker-lifecycle $missingInitialReport $false 'initial report collection' ''
 
     $missingFollowUp = Clone-Object $retainedLifecycle
     $missingFollowUp.trajectory.events[7].data.success = $false
@@ -201,6 +283,42 @@ try {
     $pathOnly.trajectory.events[7].data.result =
         'Agent is idle, status: idle, total_turns: 2. Turn 1: PATH: per-guide-worker.'
     Invoke-Control lifecycle-path-only same-worker-lifecycle $pathOnly $false 'actual completed worker report' ''
+
+    $completedStatusWords = Clone-Object $retainedLifecycle
+    $completedStatusWords.trajectory.events[3].data.result +=
+        ' Running target code remained excluded; no required check failed or was cancelled.'
+    $completedStatusWords.trajectory.events[7].data.result +=
+        ' The in-progress candidate remained unresolved.'
+    Invoke-Control lifecycle-completed-status-words same-worker-lifecycle $completedStatusWords $true 'same ID' ''
+
+    $retryLifecycle = Clone-Object $retainedLifecycle
+    $preRetry = New-Call read_agent initial-running @{
+        agent_id = '3808c3c7-a0d6-4a0d-8175-26ead12116bc'
+        wait = $true
+        since_turn = 0
+    } $true 'Agent is still running, status: running, total_turns: 1. Turn 0: PATH: per-guide-worker. Initial report is partially available but not complete.'
+    $postRetry = New-Call read_agent follow-up-running @{
+        agent_id = '3808c3c7-a0d6-4a0d-8175-26ead12116bc'
+        wait = $true
+        since_turn = 0
+    } $true 'Agent is still running, status: running, total_turns: 2. Turn 0: PATH: per-guide-worker. Initial report complete with one candidate requiring frozen base-contract clarification. Turn 1: PATH: per-guide-worker. Follow-up reasoning is partially available but not complete.'
+    $retryLifecycle.trajectory.events = @(
+        $retryLifecycle.trajectory.events[0..1] +
+        $preRetry +
+        $retryLifecycle.trajectory.events[2..5] +
+        $postRetry +
+        $retryLifecycle.trajectory.events[6..8]
+    )
+    Invoke-Control lifecycle-running-retries same-worker-lifecycle $retryLifecycle $true 'same ID' ''
+
+    $runningFinal = Clone-Object $retainedLifecycle
+    $runningFinal.trajectory.events[7].data.result =
+        'Agent is still running, status: running, total_turns: 2. Turn 1: PATH: per-guide-worker. Clarification complete enough to report a candidate.'
+    Invoke-Control lifecycle-running-final same-worker-lifecycle $runningFinal $false 'did not reach a completed worker state' ''
+
+    $nonWaitRead = Clone-Object $retainedLifecycle
+    $nonWaitRead.trajectory.events[2].data.arguments.wait = $false
+    Invoke-Control lifecycle-nonwait-read same-worker-lifecycle $nonWaitRead $false 'wait:true' ''
 
     $pagination = New-PaginationInput
     Invoke-Control pagination-positive hosted-pagination $pagination $true 'gap-free' '.eval-grader/pagination.json'
