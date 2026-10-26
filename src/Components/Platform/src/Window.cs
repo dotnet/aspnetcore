@@ -43,9 +43,10 @@ public sealed class Window : IInternalAsyncDisposal
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(listener);
 
-        var window = await GetReferenceAsync().ConfigureAwait(false);
+        // Adding and removing listeners changes unlocked state, so these awaits keep the renderer's synchronization context.
+        var window = await GetReferenceAsync();
 
-        return await type.AddListenerAsync(_listeners, window, this, listener).ConfigureAwait(false);
+        return await type.AddListenerAsync(_listeners, window, this, listener);
     }
 
     /// <summary>
@@ -123,7 +124,7 @@ public sealed class Window : IInternalAsyncDisposal
         _disposed = true;
 
         // Listeners need the window reference to remove themselves, so they go first.
-        await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync().ConfigureAwait(false);
+        await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync();
 
         // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
         if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
@@ -143,6 +144,6 @@ public sealed class Window : IInternalAsyncDisposal
         }
 
         // Features remove their listeners first, so the module is no longer needed.
-        await ((IInternalAsyncDisposal)_callbackFactory).InternalDisposeAsync().ConfigureAwait(false);
+        await ((IInternalAsyncDisposal)_callbackFactory).InternalDisposeAsync();
     }
 }

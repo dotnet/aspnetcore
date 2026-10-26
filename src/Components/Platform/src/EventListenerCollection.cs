@@ -41,11 +41,12 @@ internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
 
         try
         {
-            await eventListener.AddAsync(_callbackFactory, shapesJson).ConfigureAwait(false);
+            await eventListener.AddAsync(_callbackFactory, shapesJson);
         }
         catch
         {
-            await eventListener.DisposeAsync().ConfigureAwait(false);
+            // The exception of the failed addition is the useful one.
+            await TryDisposeAsync(eventListener);
             throw;
         }
 
@@ -65,12 +66,27 @@ internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
 
         foreach (var listener in _listeners.ToArray())
         {
-            await listener.DisposeAsync().ConfigureAwait(false);
+            await TryDisposeAsync(listener);
+        }
+    }
+
+    private async ValueTask TryDisposeAsync(IAsyncDisposable listener)
+    {
+        try
+        {
+            await listener.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.ListenerRemovalFailed(_logger, ex);
         }
     }
 
     internal static partial class Log
     {
+        [LoggerMessage(2, LogLevel.Warning, "A listener could not be removed from its event target.", EventName = "ListenerRemovalFailed")]
+        public static partial void ListenerRemovalFailed(ILogger logger, Exception exception);
+
         [LoggerMessage(1, LogLevel.Error, "A listener for the '{EventType}' event threw an exception.", EventName = "ListenerThrew")]
         public static partial void ListenerThrew(ILogger logger, string eventType, Exception exception);
     }

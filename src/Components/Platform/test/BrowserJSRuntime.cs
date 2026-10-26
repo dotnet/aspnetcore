@@ -13,12 +13,35 @@ namespace Microsoft.AspNetCore.Components.Platform.Tests;
 internal sealed class BrowserJSRuntime : JSRuntime
 {
     private readonly Dictionary<string, TaskCompletionSource<DotNetInvocationResult>> _pendingDotNetCalls = [];
+    private readonly HashSet<string> _identifiersToFail = [];
+    private readonly HashSet<string> _identifiersToHold = [];
+    private readonly List<(string Identifier, long AsyncHandle, string Result)> _heldCalls = [];
     private long _nextObjectId = 1;
     private long _nextCallId = 1;
 
     public List<BrowserCall> Calls { get; } = [];
 
+    // Completes calls from a thread pool thread, as a transport that does not use the renderer's dispatcher does.
+    public bool CompleteOnThreadPool { get; init; }
+
     public IEnumerable<BrowserCall> CallsTo(string identifier) => Calls.Where(call => call.Identifier == identifier);
+
+    // Makes the next call to the identifier fail, as a browser exception or a timeout would.
+    public void FailNextCallTo(string identifier) => _identifiersToFail.Add(identifier);
+
+    // Keeps the calls to the identifier pending until ReleaseHeldCalls.
+    public void HoldCallsTo(string identifier) => _identifiersToHold.Add(identifier);
+
+    public void ReleaseHeldCalls(string identifier)
+    {
+        _identifiersToHold.Remove(identifier);
+
+        foreach (var held in _heldCalls.Where(held => held.Identifier == identifier).ToArray())
+        {
+            _heldCalls.Remove(held);
+            Complete(held.AsyncHandle, succeeded: true, held.Result);
+        }
+    }
 
     // Calls the Invoke method of the DotNetObjectReference that the last createCallback call received.
     public Task<DotNetInvocationResult> InvokeLastCallbackAsync(string argsJson)
@@ -41,16 +64,35 @@ internal sealed class BrowserJSRuntime : JSRuntime
 
     protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
-        Calls.Add(new BrowserCall(invocationInfo.Identifier, invocationInfo.CallType, invocationInfo.TargetInstanceId, invocationInfo.ArgsJson));
+        Calls.Add(new BrowserCall(
+            invocationInfo.Identifier,
+            invocationInfo.CallType,
+            invocationInfo.TargetInstanceId,
+            invocationInfo.ArgsJson,
+            SynchronizationContext.Current));
+
+        if (invocationInfo.AsyncHandle == 0)
+        {
+            return;
+        }
+
+        if (_identifiersToFail.Remove(invocationInfo.Identifier))
+        {
+            Complete(invocationInfo.AsyncHandle, succeeded: false, $"\"{invocationInfo.Identifier} failed.\"");
+            return;
+        }
 
         var result = invocationInfo.ResultType == JSCallResultType.JSObjectReference
             ? $$"""{"__jsObjectId":{{_nextObjectId++}}}"""
             : "null";
 
-        if (invocationInfo.AsyncHandle != 0)
+        if (_identifiersToHold.Contains(invocationInfo.Identifier))
         {
-            DotNetDispatcher.EndInvokeJS(this, $"[{invocationInfo.AsyncHandle},true,{result}]");
+            _heldCalls.Add((invocationInfo.Identifier, invocationInfo.AsyncHandle, result));
+            return;
         }
+
+        Complete(invocationInfo.AsyncHandle, succeeded: true, result);
     }
 
     protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
@@ -61,6 +103,25 @@ internal sealed class BrowserJSRuntime : JSRuntime
         _pendingDotNetCalls.Remove(invocationInfo.CallId!, out var completion);
         completion!.SetResult(invocationResult);
     }
+
+    private void Complete(long asyncHandle, bool succeeded, string result)
+    {
+        var json = $"[{asyncHandle},{(succeeded ? "true" : "false")},{result}]";
+
+        if (CompleteOnThreadPool)
+        {
+            ThreadPool.QueueUserWorkItem(_ => DotNetDispatcher.EndInvokeJS(this, json));
+        }
+        else
+        {
+            DotNetDispatcher.EndInvokeJS(this, json);
+        }
+    }
 }
 
-internal sealed record BrowserCall(string Identifier, JSCallType CallType, long TargetInstanceId, string ArgsJson);
+internal sealed record BrowserCall(
+    string Identifier,
+    JSCallType CallType,
+    long TargetInstanceId,
+    string ArgsJson,
+    SynchronizationContext? Context);

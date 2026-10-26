@@ -96,4 +96,21 @@ public class JSCallbackTest
         Assert.False(afterRelease.Success);
         await Assert.ThrowsAsync<ObjectDisposedException>(() => factory.CreateAsync(callback, "[null]"));
     }
+
+    [Fact]
+    public async Task CreateAsync_ReleasesTheModuleThatArrivesAfterDisposal()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        var factory = new JSCallbackFactory(jsRuntime);
+        jsRuntime.HoldCallsTo("import");
+
+        var creation = factory.CreateAsync(new JSCallback<string>(), "[null]");
+        await ((IInternalAsyncDisposal)factory).InternalDisposeAsync();
+        jsRuntime.ReleaseHeldCalls("import");
+
+        // The module is object 1.
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => creation);
+        Assert.Empty(jsRuntime.CallsTo("createCallback"));
+        Assert.Equal(["[1]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+    }
 }

@@ -194,9 +194,10 @@ public sealed class CookieStore : IInternalAsyncDisposal
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(listener);
 
-        var cookieStore = await GetReferenceAsync().ConfigureAwait(false);
+        // Adding and removing listeners changes unlocked state, so these awaits keep the renderer's synchronization context.
+        var cookieStore = await GetReferenceAsync();
 
-        return await type.AddListenerAsync(_listeners, cookieStore, this, listener).ConfigureAwait(false);
+        return await type.AddListenerAsync(_listeners, cookieStore, this, listener);
     }
 
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
@@ -209,7 +210,7 @@ public sealed class CookieStore : IInternalAsyncDisposal
         _disposed = true;
 
         // Listeners need the cookie store reference to remove themselves, so they go first.
-        await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync().ConfigureAwait(false);
+        await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync();
 
         // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
         if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)

@@ -34,16 +34,16 @@ internal sealed class EventListener<[DynamicallyAccessedMembers(LinkerFlags.Json
     public async Task AddAsync(JSCallbackFactory callbackFactory, string shapesJson)
     {
         var callback = new JSCallback<TEvent> { Handler = InvokeListenerAsync };
-        (_function, _callbackReference) = await callbackFactory.CreateAsync(callback, shapesJson).ConfigureAwait(false);
+        (_function, _callbackReference) = await callbackFactory.CreateAsync(callback, shapesJson);
 
         // Disposal can run while the function is being created, and then nothing else releases it.
         if (_removed)
         {
-            await ReleaseAsync().ConfigureAwait(false);
+            await ReleaseAsync();
             throw new ObjectDisposedException(GetType().Name);
         }
 
-        await _target.InvokeVoidAsync("addEventListener", _type, _function).ConfigureAwait(false);
+        await _target.InvokeVoidAsync("addEventListener", _type, _function);
     }
 
     public async ValueTask DisposeAsync()
@@ -56,7 +56,7 @@ internal sealed class EventListener<[DynamicallyAccessedMembers(LinkerFlags.Json
         _removed = true;
         _owner.Remove(this);
 
-        await ReleaseAsync().ConfigureAwait(false);
+        await ReleaseAsync();
     }
 
     private async Task InvokeListenerAsync(TEvent value)
@@ -79,23 +79,33 @@ internal sealed class EventListener<[DynamicallyAccessedMembers(LinkerFlags.Json
 
     private async ValueTask ReleaseAsync()
     {
-        if (_function is { } function)
-        {
-            _function = null;
-
-            try
-            {
-                await _target.InvokeVoidAsync("removeEventListener", _type, function).ConfigureAwait(false);
-            }
-            catch (JSDisconnectedException)
-            {
-                // The page is already gone, so nothing can call the listener.
-            }
-
-            await function.DisposeAsync().ConfigureAwait(false);
-        }
-
-        _callbackReference?.Dispose();
+        var function = _function;
+        var callbackReference = _callbackReference;
+        _function = null;
         _callbackReference = null;
+
+        // A failed removal still releases both references, and then reaches the caller.
+        try
+        {
+            if (function is not null)
+            {
+                try
+                {
+                    await _target.InvokeVoidAsync("removeEventListener", _type, function);
+                }
+                catch (JSDisconnectedException)
+                {
+                    // The page is already gone, so nothing can call the listener.
+                }
+                finally
+                {
+                    await function.DisposeAsync();
+                }
+            }
+        }
+        finally
+        {
+            callbackReference?.Dispose();
+        }
     }
 }

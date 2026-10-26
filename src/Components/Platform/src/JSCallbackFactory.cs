@@ -40,12 +40,12 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        var module = await GetModuleAsync().ConfigureAwait(false);
+        var module = await GetModuleAsync();
         var callbackReference = DotNetObjectReference.Create(callback);
 
         try
         {
-            var function = await module.InvokeAsync<IJSObjectReference>("createCallback", callbackReference, shapesJson).ConfigureAwait(false);
+            var function = await module.InvokeAsync<IJSObjectReference>("createCallback", callbackReference, shapesJson);
             return (function, callbackReference);
         }
         catch
@@ -67,7 +67,7 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
         // Functions created from the module keep working after the module reference is released.
         if (_moduleTask is { IsCompletedSuccessfully: true } moduleTask)
         {
-            await moduleTask.Result.DisposeAsync().ConfigureAwait(false);
+            await moduleTask.Result.DisposeAsync();
         }
     }
 
@@ -75,9 +75,23 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
     {
         if (_moduleTask is null || _moduleTask.IsFaulted || _moduleTask.IsCanceled)
         {
-            _moduleTask = _jsRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath).AsTask();
+            _moduleTask = ImportModuleAsync();
         }
 
         return _moduleTask;
+    }
+
+    private async Task<IJSObjectReference> ImportModuleAsync()
+    {
+        var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath);
+
+        // Disposal does not wait for the import, so nothing else releases a module that arrives after it.
+        if (_disposed)
+        {
+            await module.DisposeAsync();
+            throw new ObjectDisposedException(GetType().Name);
+        }
+
+        return module;
     }
 }
