@@ -87,7 +87,7 @@ public abstract class ErrorBoundaryBase : ComponentBase, IErrorBoundary
         }
 
         CurrentException = exception;
-        RenderAfterError();
+        StateHasChanged();
     }
 
     private async Task HandleOnErrorExceptions(Task onExceptionTask)

@@ -4556,10 +4556,13 @@ public class RendererTest
         for (var attempt = 1; attempt <= 3; attempt++)
         {
             var frames = renderer.GetCurrentRenderTreeFrames(boundaryId);
-            var button = Assert.Single(frames.AsEnumerable(), frame => frame.FrameType == RenderTreeFrameType.Attribute);
+            var button = Assert.Single(frames.AsEnumerable(),
+                frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "onclick");
             Assert.Equal("onclick", button.AttributeName);
             Assert.Equal($"Attempt {attempt}", Assert.Single(frames.AsEnumerable(), frame => frame.FrameType == RenderTreeFrameType.Text).TextContent);
             Assert.Equal(attempt, component.Attempts);
+            Assert.Equal(attempt, component.ErrorContentInitializations);
+            Assert.Equal(attempt - 1, component.ErrorContentDisposals);
 
             await renderer.DispatchEventAsync(button.AttributeEventHandlerId, EventArgs.Empty);
         }
@@ -4567,6 +4570,8 @@ public class RendererTest
         var finalFrames = renderer.GetCurrentRenderTreeFrames(boundaryId);
         Assert.Equal("Attempt 4", Assert.Single(finalFrames.AsEnumerable(), frame => frame.FrameType == RenderTreeFrameType.Text).TextContent);
         Assert.Equal(4, component.Attempts);
+        Assert.Equal(4, component.ErrorContentInitializations);
+        Assert.Equal(3, component.ErrorContentDisposals);
         Assert.Empty(renderer.HandledExceptions);
     }
 
@@ -6239,6 +6244,8 @@ public class RendererTest
 
         public int NestingDepth { get; set; }
         public int Attempts { get; private set; }
+        public int ErrorContentInitializations { get; private set; }
+        public int ErrorContentDisposals { get; private set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -6256,6 +6263,12 @@ public class RendererTest
                 contentBuilder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, () => _boundary.Recover()));
                 contentBuilder.AddContent(2, $"Attempt {Attempts}");
                 contentBuilder.CloseElement();
+                contentBuilder.OpenComponent<ErrorBoundaryRecoveryDetails>(3);
+                contentBuilder.AddComponentParameter(4, nameof(ErrorBoundaryRecoveryDetails.OnInitialize),
+                    (Action)(() => ErrorContentInitializations++));
+                contentBuilder.AddComponentParameter(5, nameof(ErrorBoundaryRecoveryDetails.OnDispose),
+                    (Action)(() => ErrorContentDisposals++));
+                contentBuilder.CloseComponent();
             }));
             builder.AddComponentReferenceCapture(3, instance => _boundary = (RecoverableErrorBoundary)instance);
             builder.CloseComponent();
@@ -6271,6 +6284,16 @@ public class RendererTest
             }
         }
 
+    }
+
+    private class ErrorBoundaryRecoveryDetails : ComponentBase, IDisposable
+    {
+        [Parameter] public Action OnInitialize { get; set; }
+        [Parameter] public Action OnDispose { get; set; }
+
+        protected override void OnInitialized() => OnInitialize();
+
+        public void Dispose() => OnDispose();
     }
 
     private class ErrorBoundaryRecoveryChild : ComponentBase

@@ -1,0 +1,15 @@
+@implements IDisposable
+
+<span class="error-content-initializations">@InitializationCount()</span>
+<span class="error-content-disposals">@DisposalCount()</span>
+
+@code {
+    [Parameter] public Action OnInitialize { get; set; }
+    [Parameter] public Action OnDispose { get; set; }
+    [Parameter] public Func<int> InitializationCount { get; set; }
+    [Parameter] public Func<int> DisposalCount { get; set; }
+
+    protected override void OnInitialized() => OnInitialize();
+
+    public void Dispose() => OnDispose();
+}
