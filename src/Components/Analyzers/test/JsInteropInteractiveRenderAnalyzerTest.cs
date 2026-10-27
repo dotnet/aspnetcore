@@ -1907,7 +1907,7 @@ namespace ConsoleApplication1
         VerifyCSharpDiagnostic(test);
     }
 
-    private static string CreateStoredDelegateTest(string statements)
+    private static string CreateOnInitializedAsyncTest(string statements)
     {
         var body = string.Join(Environment.NewLine, statements.Split('|').Select(statement => "            " + statement));
         return @"
@@ -1945,7 +1945,7 @@ namespace ConsoleApplication1
     [InlineData("Func<Task> invokeJS = InvokeJSAsync;|await invokeJS();", 16, 19)]
     public void JSInvokeInStoredDelegateInvokedWithoutIsInteractiveCheckShouldThrowWarning(string statements, int line, int column)
     {
-        VerifyCSharpDiagnostic(CreateStoredDelegateTest(statements),
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements),
             new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", line, column) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
         );
     }
@@ -1959,6 +1959,31 @@ namespace ConsoleApplication1
     [InlineData("Func<Task> invokeJS = InvokeJSAsync;|if (RendererInfo.IsInteractive)|{|    await invokeJS();|}")]
     public void JSInvokeInStoredDelegateNotInvokedWithoutIsInteractiveCheckShouldNotThrowWarning(string statements)
     {
-        VerifyCSharpDiagnostic(CreateStoredDelegateTest(statements));
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
+    }
+
+    [Theory]
+    [InlineData("if (RendererInfo.IsInteractive == false)|{|    await JS.InvokeVoidAsync(Identifier);|}", 23)]
+    [InlineData("if (RendererInfo.IsInteractive != true)|{|    await JS.InvokeVoidAsync(Identifier);|}", 23)]
+    [InlineData("if (RendererInfo.IsInteractive is false)|{|    await JS.InvokeVoidAsync(Identifier);|}", 23)]
+    [InlineData("if (true == RendererInfo.IsInteractive)|{|}|else|{|    await JS.InvokeVoidAsync(Identifier);|}", 26)]
+    public void JSInvokeWhenIsInteractiveComparedToFalseShouldThrowWarning(string statements, int line)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", line, 23) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData("if (RendererInfo.IsInteractive == false)|{|    return;|}|await JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("if (RendererInfo.IsInteractive != true)|{|    return;|}|await JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("if (false == RendererInfo.IsInteractive)|{|    return;|}|await JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("if (RendererInfo.IsInteractive is false)|{|    return;|}|await JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("if (RendererInfo.IsInteractive == false)|{|}|else|{|    await JS.InvokeVoidAsync(Identifier);|}")]
+    [InlineData("if (RendererInfo.IsInteractive != false)|{|    await JS.InvokeVoidAsync(Identifier);|}")]
+    [InlineData("if (RendererInfo.IsInteractive is true)|{|    await JS.InvokeVoidAsync(Identifier);|}")]
+    public void JSInvokeWhenIsInteractiveComparedToTrueShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
     }
 }

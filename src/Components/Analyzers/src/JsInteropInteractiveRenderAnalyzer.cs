@@ -274,6 +274,20 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         {
             return OperationChecksIsInteractive(unaryOperation.Operand, state, !negated);
         }
+        else if (operation is IBinaryOperation equalityOperation
+            && TryGetComparisonToBooleanConstant(equalityOperation, out var comparedOperation, out var comparisonNegates))
+        {
+            return OperationChecksIsInteractive(comparedOperation, state, negated != comparisonNegates);
+        }
+        // This analyzer builds against Microsoft.CodeAnalysis 3.3.1 to support VS 2019, which predates C# 9 patterns.
+        // `is not true` and `is not false` therefore cannot be matched and are not treated as IsInteractive checks.
+        else if (operation is IIsPatternOperation isPatternOperation
+            && isPatternOperation.Pattern is IConstantPatternOperation constantPattern
+            && constantPattern.Value.ConstantValue.HasValue
+            && constantPattern.Value.ConstantValue.Value is bool patternConstant)
+        {
+            return OperationChecksIsInteractive(isPatternOperation.Value, state, negated != !patternConstant);
+        }
         else if (operation is IBinaryOperation binaryOperation)
         {
             bool childConditionChecksInteractive = false;
@@ -286,6 +300,38 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             return childConditionChecksInteractive;
         }
         return false;
+    }
+
+    /// <summary>
+    /// Match `operand == true`, `operand != false` and their negating forms, with the constant on either side.
+    /// </summary>
+    private static bool TryGetComparisonToBooleanConstant(IBinaryOperation equalityOperation, out IOperation comparedOperation, out bool comparisonNegates)
+    {
+        comparedOperation = equalityOperation;
+        comparisonNegates = false;
+        if (equalityOperation.OperatorKind != BinaryOperatorKind.Equals && equalityOperation.OperatorKind != BinaryOperatorKind.NotEquals)
+        {
+            return false;
+        }
+
+        bool constant;
+        if (equalityOperation.RightOperand.ConstantValue is { HasValue: true, Value: bool rightConstant })
+        {
+            comparedOperation = equalityOperation.LeftOperand;
+            constant = rightConstant;
+        }
+        else if (equalityOperation.LeftOperand.ConstantValue is { HasValue: true, Value: bool leftConstant })
+        {
+            comparedOperation = equalityOperation.RightOperand;
+            constant = leftConstant;
+        }
+        else
+        {
+            return false;
+        }
+
+        comparisonNegates = constant == (equalityOperation.OperatorKind == BinaryOperatorKind.NotEquals);
+        return true;
     }
 
     /// <summary>
