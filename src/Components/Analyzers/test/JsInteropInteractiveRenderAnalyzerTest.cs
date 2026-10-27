@@ -48,6 +48,10 @@ namespace Microsoft.AspNetCore.Components
     {
     }
 
+    public delegate void RenderFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder);
+
+    public delegate RenderFragment RenderFragment<TValue>(TValue value);
+
     public class ChangeEventArgs : EventArgs
     {
         public object Value { get; set; }
@@ -1483,7 +1487,7 @@ namespace ConsoleApplication1
     [Theory]
     [InlineData("SomeInvokeMethod")]
     [InlineData("() => SomeInvokeMethod()")]
-    public void JSInvokeInEventHandlerMethodShouldThrowWarning(string handler)
+    public void JSInvokeInDomEventHandlerMethodShouldNotThrowWarning(string handler)
     {
         var test = @"
 namespace ConsoleApplication1
@@ -1512,13 +1516,89 @@ namespace ConsoleApplication1
 
         protected async Task SomeInvokeMethod()
         {
+            await JS.InvokeVoidAsync(""console.log"", ""This is fine."");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Theory]
+    [InlineData("SomeInvokeMethod")]
+    [InlineData("() => SomeInvokeMethod()")]
+    public void JSInvokeInFormSubmitHandlerMethodShouldThrowWarning(string handler)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.AspNetCore.Components.Web;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            //  <form method=""post"" @formname=""form"" @onsubmit=""SomeInvokeMethod""></form>
+            __builder.OpenElement(14, ""form"");
+            __builder.AddAttribute(12, ""onsubmit"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<System.EventArgs>(this,
+                " + handler + @"
+            ));
+            __builder.CloseElement();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
             await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
         }
     }
 }" + BaseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
-            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 28, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 27, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInComponentEventHandlerAddedWithAddAttributeShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.AspNetCore.Components.Web;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            //  <MyComponent OnClick=""SomeInvokeMethod""></MyComponent> (legacy codegen)
+            __builder.OpenComponent<ConsoleApplication1.Pages.MyComponent>(14);
+            __builder.AddAttribute(78, ""OnClick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, SomeInvokeMethod));
+            __builder.CloseComponent();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 25, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
         );
     }
 
@@ -1560,6 +1640,192 @@ namespace ConsoleApplication1
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 27, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData("SomeInvokeMethod")]
+    [InlineData("() => SomeInvokeMethod()")]
+    public void JSInvokeInDomEventHandlerMethodInChildContentShouldNotThrowWarning(string handler)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.AspNetCore.Components.Web;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            //  <MyComponent><button @onclick=""SomeInvokeMethod"">Button</button></MyComponent>
+            __builder.OpenComponent<ConsoleApplication1.Pages.MyComponent>(0);
+            __builder.AddComponentParameter(1, ""ChildContent"", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                __builder2.OpenElement(2, ""button"");
+                __builder2.AddAttribute(3, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,
+                    " + handler + @"
+                ));
+                __builder2.CloseElement();
+            }));
+            __builder.CloseComponent();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This is fine."");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Theory]
+    [InlineData("SomeInvokeMethod")]
+    [InlineData("() => SomeInvokeMethod()")]
+    public void JSInvokeInComponentEventHandlerMethodInChildContentShouldThrowWarning(string handler)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.AspNetCore.Components.Web;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            //  <MyComponent><MyComponent OnClick=""SomeInvokeMethod""></MyComponent></MyComponent>
+            __builder.OpenComponent<ConsoleApplication1.Pages.MyComponent>(0);
+            __builder.AddComponentParameter(1, ""ChildContent"", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                __builder2.OpenComponent<ConsoleApplication1.Pages.MyComponent>(2);
+                __builder2.AddComponentParameter(3, ""OnClick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,
+                    " + handler + @"
+                ));
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 31, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInEventHandlersInTemplatedChildContentShouldOnlyWarnForComponentHandler()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.AspNetCore.Components.Web;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            //  <MyComponent><button @onclick=""SomeInvokeMethod"" /><MyComponent OnClick=""SomeInvokeMethod"" /></MyComponent> with RenderFragment<T> ChildContent
+            __builder.OpenComponent<ConsoleApplication1.Pages.MyComponent>(0);
+            __builder.AddComponentParameter(1, ""ChildContent"", (Microsoft.AspNetCore.Components.RenderFragment<object>)((context) => (__builder2) => {
+                __builder2.OpenElement(2, ""button"");
+                __builder2.AddAttribute(3, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, SomeInvokeMethod));
+                __builder2.CloseElement();
+                __builder2.OpenComponent<ConsoleApplication1.Pages.MyComponent>(4);
+                __builder2.AddComponentParameter(5, ""OnClick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, SomeInvokeMethod));
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 32, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInEventHandlersInNestedChildContentShouldOnlyWarnForComponentHandler()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.AspNetCore.Components.Web;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            //  <MyComponent><MyComponent Context=""item""><MyComponent>
+            //      <button @onclick=""SomeInvokeMethod"" /><MyComponent OnClick=""SomeInvokeMethod"" />
+            //  </MyComponent></MyComponent></MyComponent>
+            __builder.OpenComponent<ConsoleApplication1.Pages.MyComponent>(0);
+            __builder.AddComponentParameter(1, ""ChildContent"", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                __builder2.OpenComponent<ConsoleApplication1.Pages.MyComponent>(2);
+                __builder2.AddComponentParameter(3, ""ChildContent"", (Microsoft.AspNetCore.Components.RenderFragment<object>)((item) => (__builder3) => {
+                    __builder3.OpenComponent<ConsoleApplication1.Pages.MyComponent>(4);
+                    __builder3.AddComponentParameter(5, ""ChildContent"", (Microsoft.AspNetCore.Components.RenderFragment)((__builder4) => {
+                        __builder4.OpenElement(6, ""button"");
+                        __builder4.AddAttribute(7, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, () => SomeInvokeMethod()));
+                        __builder4.CloseElement();
+                        __builder4.OpenComponent<ConsoleApplication1.Pages.MyComponent>(8);
+                        __builder4.AddComponentParameter(9, ""OnClick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, SomeInvokeMethod));
+                        __builder4.CloseComponent();
+                    }));
+                    __builder3.CloseComponent();
+                }));
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 42, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
         );
     }
 }

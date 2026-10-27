@@ -430,6 +430,11 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
+            if (targetMethod.Name == "AddAttribute" && IsInteractiveOnlyDomEventAttribute(invocation.Arguments[1].Value))
+            {
+                return;
+            }
+
             // Get the third argument, which is the value of the attribute/parameter. If it's a delegate, we need to analyze it for JSInterop calls.
             IOperation? suspectOperation = null;
             var valueArgument = invocation.Arguments[2].Value;
@@ -462,7 +467,12 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                 }
             }
 
-            if (suspectOperation is IAnonymousFunctionOperation anonymousFunction)
+            if (suspectOperation is IAnonymousFunctionOperation renderFragment
+                && IsRenderFragment(renderFragment.Symbol, state.AvailableTypes))
+            {
+                AnalyzeRendererForHandlers(renderFragment.Body, state);
+            }
+            else if (suspectOperation is IAnonymousFunctionOperation anonymousFunction)
             {
                 AnalyzeOperationsTree(anonymousFunction.Body, state.Clone());
             }
@@ -471,6 +481,35 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                 AnalyzeMethodReference(methodReference.Method, state);
             }
         }
+    }
+
+    private static bool IsRenderFragment(IMethodSymbol function, Dictionary<string, INamedTypeSymbol?> availableTypes)
+    {
+        var renderTreeBuilderType = availableTypes[ComponentsApi.RenderTreeBuilder.MetadataName];
+        if (renderTreeBuilderType is null)
+        {
+            return false;
+        }
+
+        // RenderFragment<TValue> lambdas return the RenderFragment lambda that builds the content.
+        return TakesRenderTreeBuilder(function, renderTreeBuilderType)
+            || (function.ReturnType is INamedTypeSymbol { DelegateInvokeMethod: { } returnedFunction }
+                && TakesRenderTreeBuilder(returnedFunction, renderTreeBuilderType));
+    }
+
+    private static bool TakesRenderTreeBuilder(IMethodSymbol function, INamedTypeSymbol renderTreeBuilderType)
+    {
+        return function.Parameters.Length == 1
+            && SymbolEqualityComparer.Default.Equals(function.Parameters[0].Type, renderTreeBuilderType);
+    }
+
+    private static bool IsInteractiveOnlyDomEventAttribute(IOperation attributeNameOperation)
+    {
+        // Named "onsubmit" handlers are dispatched by static SSR form posts, where RendererInfo.IsInteractive is false.
+        return attributeNameOperation.ConstantValue.HasValue
+            && attributeNameOperation.ConstantValue.Value is string attributeName
+            && attributeName.StartsWith("on", StringComparison.Ordinal)
+            && !string.Equals(attributeName, "onsubmit", StringComparison.Ordinal);
     }
 
     /// <summary>
