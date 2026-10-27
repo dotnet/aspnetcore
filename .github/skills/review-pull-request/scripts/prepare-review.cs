@@ -23,6 +23,13 @@ internal static partial class PrepareReviewProgram
     private const int MaximumProcessOutputBytes = 64 * 1024 * 1024;
     private const string TargetMovedDuringPreparationMessage =
         "The target or base branch moved during preparation; no ready manifest was written.";
+    private const string ExecutionExclusionScope =
+        "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree";
+    private const string ExecutionExclusionReason =
+        "Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
+        "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
+        "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
+        "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 
     internal sealed record Options(
@@ -1236,8 +1243,8 @@ internal static partial class PrepareReviewProgram
         {
             new JsonObject
             {
-                ["scope"] = "Running PR code, tests, CI, browser workflows, or implementation samples",
-                ["reason"] = "This is a source-only review; assess changed tests and contracts from source.",
+                ["scope"] = ExecutionExclusionScope,
+                ["reason"] = ExecutionExclusionReason,
             },
         };
         const string instructionPath = ".github/copilot-instructions.md";
@@ -1399,6 +1406,8 @@ internal static partial class PrepareReviewProgram
         }
         const string instructions = ".github/copilot-instructions.md";
         Require(manifest["exclusions"]!.AsArray().Count == 2
+            && manifest["exclusions"]![0]?["scope"]?.GetValue<string>() == ExecutionExclusionScope
+            && manifest["exclusions"]![0]?["reason"]?.GetValue<string>() == ExecutionExclusionReason
             && manifest["exclusions"]![1]!["body"]!.GetValue<string>() == ResolvePolicy(
                 await File.ReadAllTextAsync(Path.Combine(output, "guidance",
                     (instructions + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
