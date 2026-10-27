@@ -606,6 +606,11 @@ try {
             Name = 'transport-worker-complete-draft-resolution'
             Tool = 'complete_workspace_file_draft_resolution'
             Arguments = @{ request_id = 'request'; files = @() }
+        },
+        @{
+            Name = 'transport-worker-read-draft-conflict'
+            Tool = 'read_workspace_file_draft_conflict'
+            Arguments = @{ path = 'existing.txt' }
         }
     )) {
         $workerCoordinatorBehavior = Clone-Object $transport
@@ -641,6 +646,34 @@ try {
     }
     Invoke-Control transport-worker-combined-output ready-v2-transport $workerCombinedOutput $false 'coordinator aggregation output' '.eval-grader/inventory.json'
 
+    $workerIntermediateMessage = Clone-Object $transport
+    $workerIntermediateMessage.trajectory.events += [pscustomobject]@{
+        type = 'assistant_message'
+        agentId = '22222222-2222-2222-2222-222222222222'
+        data = [pscustomobject]@{
+            content = 'Reading the assigned guide now.'
+        }
+    }
+    Invoke-Control transport-worker-intermediate-message ready-v2-transport $workerIntermediateMessage $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $workerRunningReport = Clone-Object $transport
+    $workerRunningReport.trajectory.events += New-Call read_agent worker-cross-running-report @{
+        agent_id = '22222222-2222-2222-2222-222222222222'
+        wait = $true
+    } $true 'Agent is still running, status: running, total_turns: 0.'
+    Invoke-Control transport-worker-running-report ready-v2-transport $workerRunningReport $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $workerProseGuide = Clone-Object $transport
+    foreach ($toolCallId in @('worker-blazor-report', 'worker-cross-report')) {
+        $workerReport = Get-ControlEventIndexes -ControlInput $workerProseGuide -ToolCallId $toolCallId
+        $workerProseGuide.trajectory.events[$workerReport[1]].data.result =
+            $workerProseGuide.trajectory.events[$workerReport[1]].data.result.Replace(
+                'GUIDE: ',
+                '**Guide:** '
+            )
+    }
+    Invoke-Control transport-worker-prose-guide ready-v2-transport $workerProseGuide $true 'valid role separation' '.eval-grader/inventory.json'
+
     $workerReadAgentCombinedOutput = Clone-Object $transport
     $workerReport = Get-ControlEventIndexes -ControlInput $workerReadAgentCombinedOutput -ToolCallId 'worker-cross-report'
     $workerReadAgentCombinedOutput.trajectory.events[$workerReport[1]].data.result =
@@ -651,7 +684,7 @@ try {
     $workerReport = Get-ControlEventIndexes -ControlInput $workerMultipleGuides -ToolCallId 'worker-cross-report'
     $workerMultipleGuides.trajectory.events[$workerReport[1]].data.result =
         "Agent is idle, status: idle, total_turns: 1. Turn 0: PATH: per-guide-worker`nGUIDE: docs/CrossCuttingGuidance.md`nGUIDE: docs/BlazorComponentsGuidance.md"
-    Invoke-Control transport-worker-multiple-guides ready-v2-transport $workerMultipleGuides $false 'reported 2 distinct guides' '.eval-grader/inventory.json'
+    Invoke-Control transport-worker-multiple-guides ready-v2-transport $workerMultipleGuides $false 'named 2 distinct guides' '.eval-grader/inventory.json'
 
     $workerWrongGuide = Clone-Object $transport
     $workerReport = Get-ControlEventIndexes -ControlInput $workerWrongGuide -ToolCallId 'worker-cross-report'
@@ -673,6 +706,24 @@ try {
         output_mode = 'content'
     } $true 'match' '22222222-2222-2222-2222-222222222222'
     Invoke-Control transport-worker-cross-guide-search ready-v2-transport $workerCrossGuideSearch $false 'rg scope included unassigned guide' '.eval-grader/inventory.json'
+
+    $missingCompletedWorkerReport = Clone-Object $transport
+    $missingReportIndexes = Get-ControlEventIndexes -ControlInput $missingCompletedWorkerReport -ToolCallId 'worker-cross-report'
+    $missingCompletedWorkerReport.trajectory.events = @(
+        for ($index = 0; $index -lt $missingCompletedWorkerReport.trajectory.events.Count; $index++) {
+            if ($index -notin $missingReportIndexes) {
+                $missingCompletedWorkerReport.trajectory.events[$index]
+            }
+        }
+    )
+    Invoke-Control transport-worker-missing-completed-report ready-v2-transport $missingCompletedWorkerReport $false 'no completed collected report' '.eval-grader/inventory.json'
+
+    $unboundWorker = Clone-Object $transport
+    $unboundWorker.trajectory.events += New-Call view worker-unbound-read @{
+        path = '.review-bundle/guidance/docs/BlazorComponentsGuidance.md.source'
+        view_range = @(1, -1)
+    } $true 'L1:# Blazor components guidance' '33333333-3333-3333-3333-333333333333'
+    Invoke-Control transport-worker-unbound-id ready-v2-transport $unboundWorker $false 'unassigned worker' '.eval-grader/inventory.json'
 
     $missingWorkerPrompt = Clone-Object $transport
     $workerCall = Get-ControlEventIndexes -ControlInput $missingWorkerPrompt -ToolCallId 'worker'
@@ -911,14 +962,14 @@ try {
         pattern = 'Value'
         paths = '.review-bundle/diff.patch'
         output_mode = 'content'
-    } $true 'diff --git a/src/Value.cs b/src/Value.cs' '44444444-4444-4444-4444-444444444444'
+    } $true 'diff --git a/src/Value.cs b/src/Value.cs' '22222222-2222-2222-2222-222222222222'
     Invoke-Control transport-worker-rg-shared-scope ready-v2-transport $workerRgShared $true 'valid role separation' '.eval-grader/inventory.json'
 
     $workerDoesNotCredit = Clone-Object $transport
     $diffRead = Get-ControlEventIndexes -ControlInput $workerDoesNotCredit -ToolCallId 'read-diff-patch'
     foreach ($index in $diffRead) {
         $workerDoesNotCredit.trajectory.events[$index].agentId =
-            '44444444-4444-4444-4444-444444444444'
+            '22222222-2222-2222-2222-222222222222'
     }
     Invoke-Control transport-worker-shared-no-credit ready-v2-transport $workerDoesNotCredit $false 'No coordinator native view call' '.eval-grader/inventory.json'
 
@@ -931,7 +982,7 @@ try {
         for ($line = 1; $line -le $diffLines.Count; $line++) {
             "L${line}:$($diffLines[$line - 1])"
         }
-    ) -join "`n") '44444444-4444-4444-4444-444444444444'
+    ) -join "`n") '22222222-2222-2222-2222-222222222222'
     Invoke-Control transport-shared-worker-input ready-v2-transport $sharedWorkerDuplicate $true 'valid role separation' '.eval-grader/inventory.json'
 
     $lateManifest = Clone-Object $transport

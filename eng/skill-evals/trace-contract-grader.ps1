@@ -110,7 +110,8 @@ function Get-WorkerCoordinatorBehavior {
         'navigate_to',
         'navigate_to_my_work',
         'list_repositories',
-        'add_repository'
+        'add_repository',
+        'read_workspace_file_draft_conflict'
     )) {
         return 'agent or session orchestration'
     }
@@ -183,36 +184,25 @@ function Test-CoordinatorOutputText {
         $Text -match "(?im)$reportPrefix" + '(?:GUIDES|EXISTING_FEEDBACK_COVERAGE)\s*:'
 }
 
-function Get-ReportedGuidePaths {
-    param([string]$Text)
-
-    $reportPrefix = '(?:^|\bTurn\s+\d+\s*:\s*)\s*'
-    return @(
-        [regex]::Matches(
-            $Text,
-            "(?im)$reportPrefix" + 'GUIDE:\s*(?<guide>[^\r\n]+?)\s*$'
-        ) |
-            ForEach-Object { $_.Groups['guide'].Value.Trim() } |
-            Select-Object -Unique
-    )
-}
-
-function Assert-WorkerReportBoundary {
+function Assert-CompletedWorkerReportBoundary {
     param(
         [string]$Text,
         [string]$WorkerId,
-        [string]$ExpectedGuide
+        [string]$ExpectedGuide,
+        [string[]]$AllGuides
     )
 
     if (Test-CoordinatorOutputText $Text) {
         Fail "Guide worker '$WorkerId' emitted coordinator aggregation output."
     }
-    $reportedGuides = @(Get-ReportedGuidePaths $Text)
+    $reportedGuides = @($AllGuides | Where-Object {
+        $Text.IndexOf($_, [StringComparison]::Ordinal) -ge 0
+    })
     if ($reportedGuides.Count -ne 1) {
-        Fail "Guide worker '$WorkerId' reported $($reportedGuides.Count) distinct guides instead of exactly one."
+        Fail "Guide worker '$WorkerId' named $($reportedGuides.Count) distinct guides instead of exactly one."
     }
     if ($reportedGuides[0] -cne $ExpectedGuide) {
-        Fail "Guide worker '$WorkerId' reported guide '$($reportedGuides[0])' instead of assigned guide '$ExpectedGuide'."
+        Fail "Guide worker '$WorkerId' named guide '$($reportedGuides[0])' instead of assigned guide '$ExpectedGuide'."
     }
 }
 
@@ -1177,26 +1167,56 @@ function Test-ReadyV2Transport {
             Fail "Guide '$([string]$guide.path)' was not assigned to a worker task."
         }
     }
+    foreach ($call in $workerCalls) {
+        if (-not $workerGuideById.ContainsKey($call.AgentId)) {
+            Fail "Observed worker tool activity for unassigned worker '$($call.AgentId)'."
+        }
+    }
     foreach ($event in $Events) {
         $agentId = [string](
             $event.PSObject.Properties['agentId']?.Value ??
             $event.data.PSObject.Properties['agentId']?.Value
         )
         if ($event.type -eq 'assistant_message' -and
-            $workerGuideById.ContainsKey($agentId)) {
-            Assert-WorkerReportBoundary `
-                -Text ([string]$event.data.content) `
-                -WorkerId $agentId `
-                -ExpectedGuide ([string]$workerGuideById[$agentId])
+            -not [string]::IsNullOrEmpty($agentId)) {
+            if (-not $workerGuideById.ContainsKey($agentId)) {
+                Fail "Observed worker output for unassigned worker '$agentId'."
+            }
+            if (Test-CoordinatorOutputText ([string]$event.data.content)) {
+                Fail "Guide worker '$agentId' emitted coordinator aggregation output."
+            }
         }
     }
+    $completedWorkerReports = @{}
     foreach ($call in $rootCalls | Where-Object { $_.Name -eq 'read_agent' }) {
         $workerId = [string](Get-Argument $call 'agent_id')
         if ($workerGuideById.ContainsKey($workerId)) {
-            Assert-WorkerReportBoundary `
-                -Text $call.ResultText `
-                -WorkerId $workerId `
-                -ExpectedGuide ([string]$workerGuideById[$workerId])
+            if ((Get-Argument $call 'wait') -ne $true) {
+                Fail "Guide worker '$workerId' report collection did not use read_agent with wait:true."
+            }
+            if ($call.ResultSuccess -ne $true) {
+                Fail "Guide worker '$workerId' report collection did not complete successfully."
+            }
+            if (Test-CoordinatorOutputText $call.ResultText) {
+                Fail "Guide worker '$workerId' emitted coordinator aggregation output."
+            }
+            $readStatus = Get-ReadStatus $call.ResultText
+            if ($readStatus -eq 'failed' -or $readStatus -eq 'unknown') {
+                Fail "Guide worker '$workerId' report collection returned status '$readStatus'."
+            }
+            if ($readStatus -eq 'completed') {
+                Assert-CompletedWorkerReportBoundary `
+                    -Text $call.ResultText `
+                    -WorkerId $workerId `
+                    -ExpectedGuide ([string]$workerGuideById[$workerId]) `
+                    -AllGuides @($manifest.guides | ForEach-Object { [string]$_.path })
+                $completedWorkerReports[$workerId] = $true
+            }
+        }
+    }
+    foreach ($workerId in $workerGuideById.Keys) {
+        if (-not $completedWorkerReports.ContainsKey($workerId)) {
+            Fail "Guide worker '$workerId' had no completed collected report."
         }
     }
     foreach ($call in $workerCalls | Where-Object {
