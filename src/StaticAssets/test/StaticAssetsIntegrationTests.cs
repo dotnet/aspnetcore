@@ -20,6 +20,88 @@ namespace Microsoft.AspNetCore.StaticAssets.Tests;
 
 public class StaticAssetsIntegrationTests
 {
+    [Theory]
+    [InlineData("Development", false, false)]
+    [InlineData("Development", false, true)]
+    [InlineData("Development", true, false)]
+    [InlineData("Development", true, true)]
+    [InlineData("Production", false, false)]
+    [InlineData("Production", false, true)]
+    [InlineData("Production", true, false)]
+    [InlineData("Production", true, true)]
+    public async Task MissingAssetReturnsNonCacheableNotFound(string environment, bool compressed, bool warm)
+    {
+        var appName = $"{nameof(MissingAssetReturnsNonCacheableNotFound)}_{environment}_{compressed}_{warm}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        const string assetName = "boot.fingerprint.wasm";
+        const string content = "Boot resource";
+        CreateTestManifest(appName, webRoot,
+            [new TestResource(assetName, content, compressed, [new("Cache-Control", "public,max-age=31536000,immutable")])]);
+        string assetPath = Path.Combine(webRoot, assetName);
+        string compressedPath = assetPath + ".gz";
+        var compressedContent = compressed ? await File.ReadAllBytesAsync(compressedPath) : null;
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = environment,
+            WebRootPath = webRoot
+        });
+        builder.Configuration["ReloadStaticAssetsAtRuntime"] = (environment is "Development").ToString();
+        builder.Services.AddRouting();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+        app.MapStaticAssets();
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+        if (compressed)
+        {
+            client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip");
+        }
+
+        try
+        {
+            if (warm)
+            {
+                using var initial = await client.GetAsync($"/{assetName}");
+                Assert.Equal(HttpStatusCode.OK, initial.StatusCode);
+            }
+
+            File.Delete(assetPath);
+            if (compressed)
+            {
+                File.Delete(compressedPath);
+            }
+
+            using var missing = await client.GetAsync($"/{assetName}");
+            Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+            Assert.Equal("no-store", missing.Headers.CacheControl?.ToString());
+            Assert.Null(missing.Headers.ETag);
+            Assert.Empty(missing.Content.Headers.ContentEncoding);
+            Assert.Empty(await missing.Content.ReadAsByteArrayAsync());
+
+            await File.WriteAllTextAsync(assetPath, content);
+            if (compressedContent is not null)
+            {
+                await File.WriteAllBytesAsync(compressedPath, compressedContent);
+            }
+
+            using var restored = await client.GetAsync($"/{assetName}");
+            Assert.Equal(HttpStatusCode.OK, restored.StatusCode);
+            Assert.NotNull(restored.Headers.ETag);
+            Assert.False(restored.Headers.CacheControl?.NoStore ?? false);
+            if (environment is "Production" && !compressed)
+            {
+                Assert.Contains("immutable", restored.Headers.CacheControl!.ToString());
+            }
+        }
+        finally
+        {
+            Directory.Delete(webRoot, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task CanServeAssetsFromManifestAsync()
     {
