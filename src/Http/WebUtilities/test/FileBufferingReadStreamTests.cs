@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -289,6 +292,55 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             Assert.False(File.Exists(tempFileName));
+        }
+
+        [Fact]
+        public async Task FileBufferingReadStream_UsingPooledMemoryStream_RentsLazilyAndGrows()
+        {
+            var inner = MakeStream(10);
+            var rentedSizes = new List<int>();
+            var returnedBuffers = new List<byte[]>();
+            var arrayPool = new Mock<ArrayPool<byte>>();
+            arrayPool.Setup(p => p.Rent(It.IsAny<int>()))
+                .Returns((int size) =>
+                {
+                    rentedSizes.Add(size);
+                    return new byte[size];
+                });
+            arrayPool.Setup(p => p.Return(It.IsAny<byte[]>(), It.IsAny<bool>()))
+                .Callback((byte[] bytes, bool clear) => returnedBuffers.Add(bytes));
+
+            using (var stream = new FileBufferingReadStream(inner, 16, null, GetCurrentDirectory(), arrayPool.Object))
+            {
+                Assert.Empty(rentedSizes);
+
+                var buffer = new byte[4];
+                Assert.Equal(4, await stream.ReadAsync(buffer, 0, buffer.Length));
+                Assert.Equal(new[] { 4 }, rentedSizes);
+                Assert.Empty(returnedBuffers);
+
+                Assert.Equal(4, await stream.ReadAsync(buffer, 0, buffer.Length));
+                Assert.Equal(new[] { 4, 8 }, rentedSizes);
+                Assert.Single(returnedBuffers);
+
+                Assert.Equal(2, await stream.ReadAsync(buffer, 0, buffer.Length));
+                Assert.Equal(new[] { 4, 8, 16 }, rentedSizes);
+                Assert.Equal(2, returnedBuffers.Count);
+            }
+
+            Assert.Equal(3, returnedBuffers.Count);
+        }
+
+        [Fact]
+        public async Task FileBufferingReadStream_UsingPooledMemoryStream_DoesNotRentForEmptyContent()
+        {
+            var inner = MakeStream(0);
+            var arrayPool = new Mock<ArrayPool<byte>>(MockBehavior.Strict);
+
+            using (var stream = new FileBufferingReadStream(inner, 16, null, GetCurrentDirectory(), arrayPool.Object))
+            {
+                Assert.Equal(0, await stream.ReadAsync(new byte[4], 0, 4));
+            }
         }
 
         private static string GetCurrentDirectory()

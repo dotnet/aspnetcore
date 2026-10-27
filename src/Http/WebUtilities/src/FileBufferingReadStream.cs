@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         private string _tempFileName;
 
         private Stream _buffer;
-        private byte[] _rentedBuffer;
         private bool _inMemory = true;
         private bool _completelyBuffered;
 
@@ -62,9 +61,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             _bytePool = bytePool;
             if (memoryThreshold < _maxRentedBufferSize)
             {
-                _rentedBuffer = bytePool.Rent(memoryThreshold);
-                _buffer = new MemoryStream(_rentedBuffer);
-                _buffer.SetLength(0);
+                _buffer = new PooledMemoryStream(bytePool, memoryThreshold);
             }
             else
             {
@@ -106,9 +103,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             _bytePool = bytePool;
             if (memoryThreshold < _maxRentedBufferSize)
             {
-                _rentedBuffer = bytePool.Rent(memoryThreshold);
-                _buffer = new MemoryStream(_rentedBuffer);
-                _buffer.SetLength(0);
+                _buffer = new PooledMemoryStream(bytePool, memoryThreshold);
             }
             else
             {
@@ -219,23 +214,34 @@ namespace Microsoft.AspNetCore.WebUtilities
                 _inMemory = false;
                 var oldBuffer = _buffer;
                 _buffer = CreateTempFile();
-                if (_rentedBuffer == null)
+
+                using (oldBuffer)
                 {
-                    oldBuffer.Position = 0;
-                    var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
-                    var copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
-                    while (copyRead > 0)
+                    if (oldBuffer is PooledMemoryStream pooledBuffer)
                     {
-                        _buffer.Write(rentedBuffer, 0, copyRead);
-                        copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                        if (oldBuffer.Length > 0)
+                        {
+                            _buffer.Write(pooledBuffer.Buffer, 0, (int)oldBuffer.Length);
+                        }
                     }
-                    _bytePool.Return(rentedBuffer);
-                }
-                else
-                {
-                    _buffer.Write(_rentedBuffer, 0, (int)oldBuffer.Length);
-                    _bytePool.Return(_rentedBuffer);
-                    _rentedBuffer = null;
+                    else
+                    {
+                        oldBuffer.Position = 0;
+                        var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
+                        try
+                        {
+                            var copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                            while (copyRead > 0)
+                            {
+                                _buffer.Write(rentedBuffer, 0, copyRead);
+                                copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                            }
+                        }
+                        finally
+                        {
+                            _bytePool.Return(rentedBuffer);
+                        }
+                    }
                 }
             }
 
@@ -273,24 +279,35 @@ namespace Microsoft.AspNetCore.WebUtilities
                 _inMemory = false;
                 var oldBuffer = _buffer;
                 _buffer = CreateTempFile();
-                if (_rentedBuffer == null)
+
+                using (oldBuffer)
                 {
-                    oldBuffer.Position = 0;
-                    var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
-                    // oldBuffer is a MemoryStream, no need to do async reads.
-                    var copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
-                    while (copyRead > 0)
+                    if (oldBuffer is PooledMemoryStream pooledBuffer)
                     {
-                        await _buffer.WriteAsync(rentedBuffer, 0, copyRead, cancellationToken);
-                        copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                        if (oldBuffer.Length > 0)
+                        {
+                            await _buffer.WriteAsync(pooledBuffer.Buffer, 0, (int)oldBuffer.Length, cancellationToken);
+                        }
                     }
-                    _bytePool.Return(rentedBuffer);
-                }
-                else
-                {
-                    await _buffer.WriteAsync(_rentedBuffer, 0, (int)oldBuffer.Length, cancellationToken);
-                    _bytePool.Return(_rentedBuffer);
-                    _rentedBuffer = null;
+                    else
+                    {
+                        oldBuffer.Position = 0;
+                        var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
+                        try
+                        {
+                            // oldBuffer is a MemoryStream, no need to do async reads.
+                            var copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                            while (copyRead > 0)
+                            {
+                                await _buffer.WriteAsync(rentedBuffer, 0, copyRead, cancellationToken);
+                                copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                            }
+                        }
+                        finally
+                        {
+                            _bytePool.Return(rentedBuffer);
+                        }
+                    }
                 }
             }
 
@@ -331,11 +348,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (!_disposed)
             {
                 _disposed = true;
-                if (_rentedBuffer != null)
-                {
-                    _bytePool.Return(_rentedBuffer);
-                }
-
                 if (disposing)
                 {
                     _buffer.Dispose();
