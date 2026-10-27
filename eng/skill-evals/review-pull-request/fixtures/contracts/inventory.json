@@ -110,10 +110,10 @@
     },
     {
       "path": "guidance/.github/skills/review-pull-request/routing.md.source",
-      "utf8Bytes": 138,
+      "utf8Bytes": 135,
       "lineCount": 4,
-      "maxUtf8LineBytes": 54,
-      "sha256": "c77dfefdb5d2e05a3650242e18adf8dfebbe49bd10d4b26c91b59b654cd1caf2",
+      "maxUtf8LineBytes": 51,
+      "sha256": "b7aedbc55416ef0c98f7e82c4c747bd8ab26b8284f78a2198ec2e619cd1df08a",
       "readRoles": [
         "coordinator",
         "worker"
@@ -122,15 +122,27 @@
     },
     {
       "path": "guidance/docs/BlazorComponentsGuidance.md.source",
-      "utf8Bytes": 84,
-      "lineCount": 6,
-      "maxUtf8LineBytes": 25,
-      "sha256": "1f813f91873ca2634c15c2cfd0990cb9cc1839c9db5c47dada0996169f5c3432",
+      "utf8Bytes": 157,
+      "lineCount": 7,
+      "maxUtf8LineBytes": 72,
+      "sha256": "175ad9f5b8017d1d466e71328dc64d66a49d718dd1ea64d944370a6db4a150a9",
       "readRoles": [
         "coordinator",
         "worker"
       ],
-      "coordinatorRequired": false
+      "coordinatorRequired": true
+    },
+    {
+      "path": "guidance/docs/ComponentsPolicy.md.source",
+      "utf8Bytes": 86,
+      "lineCount": 3,
+      "maxUtf8LineBytes": 44,
+      "sha256": "bf33e29ac53883feddb007d88233c23db7083c3a7df5cc0c05ec5b1ea7a4d956",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": true
     },
     {
       "path": "guidance/docs/CrossCuttingGuidance.md.source",
@@ -158,10 +170,10 @@
     },
     {
       "path": "manifest.json",
-      "utf8Bytes": 4253,
-      "lineCount": 128,
+      "utf8Bytes": 4633,
+      "lineCount": 143,
       "maxUtf8LineBytes": 139,
-      "sha256": "c3e6a3c1cfd6786657157a2a00fea7d42af040946e82f59a4bb1922ff4d1b7e7",
+      "sha256": "724a199d6ac4b386379d3cc881301627159d67f00433fd60c337d4b7fd3678f5",
       "readRoles": [
         "coordinator"
       ],
@@ -250,6 +262,18 @@
       "lineCount": 2,
       "maxUtf8LineBytes": 36,
       "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "required/policies/0001.source",
+      "utf8Bytes": 66,
+      "lineCount": 2,
+      "maxUtf8LineBytes": 44,
+      "sha256": "d05f500b1132602209c6f5fa159c08d47590afc8ee560569fd7ea565c1fbd3cb",
       "readRoles": [
         "coordinator",
         "worker"

@@ -1,0 +1,27 @@
+{
+  "number": 42,
+  "state": "open",
+  "title": "Fixture pull request",
+  "body": {
+    "path": "required/pull/body.source",
+    "utf8Bytes": 24931,
+    "sha256": "f19acc465d5eb04758a6b0dca0f314e97e8d16d6f47d42b4680835770982cf40"
+  },
+  "draft": false,
+  "author": {
+    "login": "contributor",
+    "id": 2,
+    "type": "User"
+  },
+  "labels": [
+    {
+      "name": "area-test"
+    }
+  ],
+  "milestone": {
+    "number": 7,
+    "title": "Test milestone"
+  },
+  "createdAt": "2026-10-25T10:00:00Z",
+  "updatedAt": "2026-10-25T10:01:00Z"
+}

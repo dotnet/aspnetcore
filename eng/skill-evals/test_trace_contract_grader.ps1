@@ -147,6 +147,32 @@ function Add-NumberedRead {
     }
 }
 
+function New-WorkerPrompt {
+    param(
+        [object]$Manifest,
+        [object[]]$Files,
+        [object]$Guide,
+        [object]$Policy
+    )
+
+    $prompt = @(
+        'Review the assigned projected transport inputs.'
+        "Assigned guide: guidance/$($Guide.path).source"
+        "Applicable policy: $($Policy.body.path)"
+        'Projected changed-file metadata: files.json'
+        'Full diff: diff.patch'
+        "Head source root: $($Manifest.sources.head.root)"
+        "Merge-base source root: $($Manifest.sources.mergeBase.root)"
+        "Base-tip source root: $($Manifest.sources.baseTip.root)"
+        @($Files | ForEach-Object { "Relevant source: $($_.filename)" })
+        'Do not read pull.json; the coordinator owns that input.'
+    )
+    if ([string]$Guide.path -ceq 'docs/BlazorComponentsGuidance.md') {
+        $prompt += 'Do not read guidance/docs/CrossCuttingGuidance.md.source or required/policies/0000.source; those inputs are not assigned.'
+    }
+    return $prompt -join "`n"
+}
+
 function New-TransportInput {
     $events = [Collections.Generic.List[object]]::new()
     $contract = Get-Content $contractSource -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
@@ -157,17 +183,6 @@ function New-TransportInput {
     $files = @(Get-Content (
         Join-Path $testRoot '.review-bundle/files.json'
     ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100)
-    $workerPrompt = @(
-        'Review the assigned projected transport inputs.'
-        "Assigned guide: guidance/$($manifest.guides[0].path).source"
-        "Applicable policy: $($manifest.policies[0].body.path)"
-        'Projected changed-file metadata: files.json'
-        'Full diff: diff.patch'
-        "Head source root: $($manifest.sources.head.root)"
-        "Merge-base source root: $($manifest.sources.mergeBase.root)"
-        "Base-tip source root: $($manifest.sources.baseTip.root)"
-        @($files | ForEach-Object { "Relevant source: $($_.filename)" })
-    ) -join "`n"
     foreach ($path in @(
         'manifest.json',
         'guidance/.github/skills/review-pull-request/routing.md.source'
@@ -175,12 +190,28 @@ function New-TransportInput {
         $file = $required | Where-Object path -CEQ $path
         Add-NumberedRead $events $path 1 -1 ("read-" + $path.Replace('/', '-').Replace('.', '-'))
     }
+    foreach ($event in New-Call task worker-blazor @{
+        agent_type = 'general-purpose'
+        model = 'gpt-5.6-sol'
+        mode = 'background'
+        prompt = New-WorkerPrompt `
+            -Manifest $manifest `
+            -Files $files `
+            -Guide $manifest.guides[1] `
+            -Policy $manifest.policies[1]
+    } $true 'Agent started in background with agent_id: 11111111-1111-1111-1111-111111111111.') {
+        $events.Add($event)
+    }
     foreach ($event in New-Call task worker @{
         agent_type = 'general-purpose'
         model = 'gpt-5.6-sol'
         mode = 'background'
-        prompt = $workerPrompt
-    } $true 'Agent started in background with agent_id: 11111111-1111-1111-1111-111111111111.') {
+        prompt = New-WorkerPrompt `
+            -Manifest $manifest `
+            -Files $files `
+            -Guide $manifest.guides[0] `
+            -Policy $manifest.policies[0]
+    } $true 'Agent started in background with agent_id: 22222222-2222-2222-2222-222222222222.') {
         $events.Add($event)
     }
     foreach ($file in $required | Where-Object {
@@ -429,6 +460,111 @@ try {
         Invoke-Control "transport-wrong-worker-$argument" ready-v2-transport $wrongWorkerConfig $false 'not configured' '.eval-grader/inventory.json'
     }
 
+    $missingSecondWorker = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $missingSecondWorker -ToolCallId 'worker-blazor'
+    $missingSecondWorker.trajectory.events = @(
+        for ($index = 0; $index -lt $missingSecondWorker.trajectory.events.Count; $index++) {
+            if ($index -notin $secondWorker) {
+                $missingSecondWorker.trajectory.events[$index]
+            }
+        }
+    )
+    Invoke-Control transport-missing-second-worker ready-v2-transport $missingSecondWorker $false 'Expected exactly 2' '.eval-grader/inventory.json'
+
+    $overbroadSecondWorker = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $overbroadSecondWorker -ToolCallId 'worker-blazor'
+    $overbroadSecondWorker.trajectory.events[$secondWorker[0]].data.arguments.prompt +=
+        "`nAlso assigned guide: guidance/docs/CrossCuttingGuidance.md.source"
+    Invoke-Control transport-overbroad-second-worker ready-v2-transport $overbroadSecondWorker $false 'assigned guides instead of exactly one' '.eval-grader/inventory.json'
+
+    $duplicateSecondWorker = Clone-Object $transport
+    $firstWorker = Get-ControlEventIndexes -ControlInput $duplicateSecondWorker -ToolCallId 'worker'
+    $secondWorker = Get-ControlEventIndexes -ControlInput $duplicateSecondWorker -ToolCallId 'worker-blazor'
+    $duplicateSecondWorker.trajectory.events[$secondWorker[0]].data.arguments.prompt =
+        $duplicateSecondWorker.trajectory.events[$firstWorker[0]].data.arguments.prompt
+    Invoke-Control transport-duplicate-second-worker ready-v2-transport $duplicateSecondWorker $false 'assigned to more than one worker' '.eval-grader/inventory.json'
+
+    $missingSecondPolicy = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $missingSecondPolicy -ToolCallId 'worker-blazor'
+    $missingSecondPolicy.trajectory.events[$secondWorker[0]].data.arguments.prompt =
+        $missingSecondPolicy.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
+            'required/policies/0001.source',
+            'required/policies/missing.source'
+        )
+    Invoke-Control transport-missing-second-worker-policy ready-v2-transport $missingSecondPolicy $false 'omitted applicable policy' '.eval-grader/inventory.json'
+
+    foreach ($argument in @('agent_type', 'model', 'mode')) {
+        $wrongSecondWorker = Clone-Object $transport
+        $secondWorker = Get-ControlEventIndexes -ControlInput $wrongSecondWorker -ToolCallId 'worker-blazor'
+        $wrongSecondWorker.trajectory.events[$secondWorker[0]].data.arguments.$argument = 'wrong'
+        Invoke-Control "transport-wrong-second-worker-$argument" ready-v2-transport $wrongSecondWorker $false 'not configured' '.eval-grader/inventory.json'
+    }
+
+    $missingSecondSharedInput = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $missingSecondSharedInput -ToolCallId 'worker-blazor'
+    $missingSecondSharedInput.trajectory.events[$secondWorker[0]].data.arguments.prompt =
+        $missingSecondSharedInput.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
+            'Full diff: diff.patch',
+            'Full diff omitted.'
+        )
+    Invoke-Control transport-missing-second-shared-input ready-v2-transport $missingSecondSharedInput $false 'omitted required worker input' '.eval-grader/inventory.json'
+
+        $transportManifest = Get-Content (
+            Join-Path $testRoot '.review-bundle/manifest.json'
+        ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
+        $prohibitedSourceRoot = Clone-Object $transport
+        $firstWorker = Get-ControlEventIndexes -ControlInput $prohibitedSourceRoot -ToolCallId 'worker'
+        $headSourceRoot = [string]$transportManifest.sources.head.root
+        $prohibitedSourceRoot.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+            $prohibitedSourceRoot.trajectory.events[$firstWorker[0]].data.arguments.prompt.Replace(
+                "Head source root: $headSourceRoot",
+                "Do not use source root: $headSourceRoot"
+            )
+        Invoke-Control transport-prohibited-source-root ready-v2-transport $prohibitedSourceRoot $false 'omitted frozen source root' '.eval-grader/inventory.json'
+
+        $transportFiles = @(Get-Content (
+            Join-Path $testRoot '.review-bundle/files.json'
+        ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100)
+        $prohibitedChangedSource = Clone-Object $transport
+        $secondWorker = Get-ControlEventIndexes -ControlInput $prohibitedChangedSource -ToolCallId 'worker-blazor'
+        $changedFilename = [string]$transportFiles[0].filename
+        $prohibitedChangedSource.trajectory.events[$secondWorker[0]].data.arguments.prompt =
+            $prohibitedChangedSource.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
+                "Relevant source: $changedFilename",
+                "Ignore relevant source: $changedFilename"
+            )
+        Invoke-Control transport-prohibited-changed-source ready-v2-transport $prohibitedChangedSource $false 'omitted relevant changed source' '.eval-grader/inventory.json'
+
+        $nonApplicableSecondPolicy = Clone-Object $transport
+        $secondWorker = Get-ControlEventIndexes -ControlInput $nonApplicableSecondPolicy -ToolCallId 'worker-blazor'
+        $nonApplicableSecondPolicy.trajectory.events[$secondWorker[0]].data.arguments.prompt +=
+            "`nAdditional policy: required/policies/0000.source"
+    Invoke-Control transport-non-applicable-second-policy ready-v2-transport $nonApplicableSecondPolicy $false 'included non-applicable policy' '.eval-grader/inventory.json'
+
+    $partialCoordinatorContentLeak = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $partialCoordinatorContentLeak -ToolCallId 'worker-blazor'
+    $pullBodyLines = @(Get-Content (
+        Join-Path $testRoot '.review-bundle/required/pull/body.source'
+    ) -Encoding utf8)
+    $partialCoordinatorContentLeak.trajectory.events[$secondWorker[0]].data.arguments.prompt +=
+        "`nEmbedded coordinator excerpt:`n$($pullBodyLines[0])"
+    Invoke-Control transport-partial-coordinator-content-leak ready-v2-transport $partialCoordinatorContentLeak $false 'embedded or requested coordinator-only' '.eval-grader/inventory.json'
+
+    $coordinatorPathRequest = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $coordinatorPathRequest -ToolCallId 'worker-blazor'
+    $coordinatorPathRequest.trajectory.events[$secondWorker[0]].data.arguments.prompt =
+        $coordinatorPathRequest.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
+            'Do not read pull.json; the coordinator owns that input.',
+            'Pull metadata input: pull.json'
+        )
+    Invoke-Control transport-coordinator-path-request ready-v2-transport $coordinatorPathRequest $false 'embedded or requested coordinator-only' '.eval-grader/inventory.json'
+
+    $mixedCoordinatorPathRequest = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $mixedCoordinatorPathRequest -ToolCallId 'worker-blazor'
+    $mixedCoordinatorPathRequest.trajectory.events[$secondWorker[0]].data.arguments.prompt +=
+        "`nDo not publish feedback; Pull body input: required/pull/body.source"
+    Invoke-Control transport-mixed-coordinator-path-request ready-v2-transport $mixedCoordinatorPathRequest $false 'embedded or requested coordinator-only' '.eval-grader/inventory.json'
+
     $extraWorker = Clone-Object $transport
     $workerCall = Get-ControlEventIndexes -ControlInput $extraWorker -ToolCallId 'worker'
     $workerArguments = $extraWorker.trajectory.events[$workerCall[0]].data.arguments
@@ -438,7 +574,7 @@ try {
         mode = [string]$workerArguments.mode
         prompt = [string]$workerArguments.prompt
     } $true 'Agent started in background with agent_id: 22222222-2222-2222-2222-222222222222.'
-    Invoke-Control transport-extra-worker ready-v2-transport $extraWorker $false 'Expected exactly 1' '.eval-grader/inventory.json'
+    Invoke-Control transport-extra-worker ready-v2-transport $extraWorker $false 'Expected exactly 2' '.eval-grader/inventory.json'
 
     $oneCompleteRead = Clone-Object $transport
     $bodyA = Get-ControlEventIndexes -ControlInput $oneCompleteRead -ToolCallId 'read-required-pull-body-source-a'

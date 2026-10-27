@@ -555,15 +555,30 @@ function Test-PromptContainsFixtureInput {
 
     foreach ($relativePath in $RelativePaths) {
         $normalizedPath = $relativePath.Replace('\', '/')
-        if ($Prompt.IndexOf($normalizedPath, [StringComparison]::Ordinal) -ge 0) {
-            return $true
+        $fullPath = (Join-Path $BundleRoot (
+            $normalizedPath.Replace('/', [IO.Path]::DirectorySeparatorChar)
+        )).Replace('\', '/')
+        $aliases = @($normalizedPath, ".review-bundle/$normalizedPath", $fullPath)
+        foreach ($clause in Get-PromptClauses $Prompt) {
+            if (-not (Test-ProhibitionClause $clause) -and
+                @($aliases | Where-Object {
+                    $clause.IndexOf(
+                        $_,
+                        [StringComparison]::OrdinalIgnoreCase
+                    ) -ge 0
+                }).Count -gt 0) {
+                return $true
+            }
         }
 
         $fullPath = Join-Path $BundleRoot (
             $normalizedPath.Replace('/', [IO.Path]::DirectorySeparatorChar)
         )
         if (Test-Path $fullPath -PathType Leaf) {
-            $content = (Get-Content $fullPath -Raw -Encoding utf8).TrimEnd("`r", "`n")
+            $content = (Get-Content $fullPath -Raw -Encoding utf8).
+                Replace("`r`n", "`n").
+                Replace('\', '/').
+                TrimEnd("`n")
             if (-not [string]::IsNullOrEmpty($content) -and
                 $Prompt.IndexOf($content, [StringComparison]::Ordinal) -ge 0) {
                 return $true
@@ -572,6 +587,118 @@ function Test-PromptContainsFixtureInput {
     }
 
     return $false
+}
+
+function Test-PromptContainsFixtureContent {
+    param(
+        [string]$Prompt,
+        [string]$BundleRoot,
+        [string]$RelativePath
+    )
+
+    $path = Join-Path $BundleRoot (
+        $RelativePath.Replace('/', [IO.Path]::DirectorySeparatorChar)
+    )
+    if (-not (Test-Path $path -PathType Leaf)) {
+        return $false
+    }
+
+    $normalizedPrompt = $Prompt.Replace("`r`n", "`n").Replace('\', '/')
+    $content = (Get-Content $path -Raw -Encoding utf8).
+        Replace("`r`n", "`n").
+        Replace('\', '/').
+        TrimEnd("`n")
+    if ([string]::IsNullOrEmpty($content)) {
+        return $false
+    }
+
+    $lines = @($content -split "`n")
+    for ($index = 0; $index -lt $lines.Count; $index++) {
+        $line = [string]$lines[$index]
+        if ($line.Length -ge 24 -and
+            $normalizedPrompt.IndexOf($line, [StringComparison]::Ordinal) -ge 0) {
+            return $true
+        }
+        if ($index + 1 -lt $lines.Count) {
+            $pair = "$line`n$($lines[$index + 1])"
+            if ($pair.Length -ge 24 -and
+                $normalizedPrompt.IndexOf($pair, [StringComparison]::Ordinal) -ge 0) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
+function Get-PromptClauses {
+    param([string]$Prompt)
+
+    return @(
+        [regex]::Split(
+            $Prompt.Replace("`r`n", "`n").Replace('\', '/'),
+            '(?im)(?:\n|[;,]|\b(?:and|but|however|then)\b)'
+        ) |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+}
+
+function Test-ProhibitionClause {
+    param([string]$Clause)
+
+    return $Clause -match '(?i)\b(?:do not|don''t|must not|never|not assigned|coordinator[- ]only|coordinator owns|coordinator[- ]owned|exclude|prohibit|forbid|forbidden|skip|ignore|unavailable)\b'
+}
+
+function Test-PromptRequestsFixtureInput {
+    param(
+        [string]$Prompt,
+        [string]$BundleRoot,
+        [string]$RelativePath
+    )
+
+    $normalizedPath = $RelativePath.Replace('\', '/')
+    $fullPath = (Join-Path $BundleRoot (
+        $normalizedPath.Replace('/', [IO.Path]::DirectorySeparatorChar)
+    )).Replace('\', '/')
+    $aliases = @(
+        $normalizedPath,
+        ".review-bundle/$normalizedPath",
+        $fullPath
+    )
+    foreach ($clause in Get-PromptClauses $Prompt) {
+        if (@($aliases | Where-Object {
+            $clause.IndexOf($_, [StringComparison]::OrdinalIgnoreCase) -ge 0
+        }).Count -eq 0) {
+            continue
+        }
+        if (Test-ProhibitionClause $clause) {
+            continue
+        }
+        return $true
+    }
+
+    return $false
+}
+
+function Get-ApplicablePoliciesForGuide {
+    param(
+        [object]$Guide,
+        [object[]]$Policies,
+        [string]$BundleRoot
+    )
+
+    $guidePath = [string]$Guide.path
+    $guideFile = Join-Path $BundleRoot (
+        "guidance/$guidePath.source".Replace(
+            '/',
+            [IO.Path]::DirectorySeparatorChar
+        )
+    )
+    $guideContent = Get-Content $guideFile -Raw -Encoding utf8
+    return @($Policies | Where-Object {
+        $link = "$([IO.Path]::GetFileName([string]$_.path))#$([string]$_.anchor)"
+        $guideContent.IndexOf($link, [StringComparison]::Ordinal) -ge 0
+    })
 }
 
 function Get-ExactViewCoverage {
@@ -789,57 +916,119 @@ function Test-ReadyV2Transport {
     if ($tasks.Count -ne $expectedWorkerCount) {
         Fail "Expected exactly $expectedWorkerCount prescribed guide worker dispatch, but observed $($tasks.Count)."
     }
-    $task = $tasks[0]
-    if ([string](Get-Argument $task 'agent_type') -cne 'general-purpose' -or
-        [string](Get-Argument $task 'model') -cne 'gpt-5.6-sol' -or
-        [string](Get-Argument $task 'mode') -cne 'background') {
-        Fail 'The prescribed guide worker was not configured as background general-purpose gpt-5.6-sol.'
-    }
-    $workerPrompt = ([string](Get-Argument $task 'prompt')).Replace('\', '/')
-    if ([string]::IsNullOrWhiteSpace($workerPrompt)) {
-        Fail 'The prescribed guide worker was dispatched without its required inputs.'
+    $assignedGuides = @{}
+    foreach ($task in $tasks) {
+        if ([string](Get-Argument $task 'agent_type') -cne 'general-purpose' -or
+            [string](Get-Argument $task 'model') -cne 'gpt-5.6-sol' -or
+            [string](Get-Argument $task 'mode') -cne 'background') {
+            Fail 'A prescribed guide worker was not configured as background general-purpose gpt-5.6-sol.'
+        }
+        $workerPrompt = ([string](Get-Argument $task 'prompt')).Replace('\', '/')
+        if ([string]::IsNullOrWhiteSpace($workerPrompt)) {
+            Fail 'A prescribed guide worker was dispatched without its required inputs.'
+        }
+        foreach ($entry in $coordinatorOnlyEntries) {
+            $relativePath = [string]$entry.path
+            if ((Test-PromptContainsFixtureContent `
+                -Prompt $workerPrompt `
+                -BundleRoot $bundleRoot `
+                -RelativePath $relativePath) -or
+                (Test-PromptRequestsFixtureInput `
+                -Prompt $workerPrompt `
+                -BundleRoot $bundleRoot `
+                -RelativePath $relativePath)) {
+                Fail "A worker prompt embedded or requested coordinator-only fixture content '$relativePath'."
+            }
+        }
+
+        $matchingGuides = @($manifest.guides | Where-Object {
+            $guidePath = [string]$_.path
+            Test-PromptContainsFixtureInput `
+                -Prompt $workerPrompt `
+                -BundleRoot $bundleRoot `
+                -RelativePaths @($guidePath, "guidance/$guidePath.source")
+        })
+        if ($matchingGuides.Count -ne 1) {
+            Fail "A worker prompt matched $($matchingGuides.Count) assigned guides instead of exactly one."
+        }
+        $guide = $matchingGuides[0]
+        $guidePath = [string]$guide.path
+        if ($assignedGuides.ContainsKey($guidePath)) {
+            Fail "Guide '$guidePath' was assigned to more than one worker task."
+        }
+        $assignedGuides[$guidePath] = $task
+
+        $applicablePolicies = @(
+            Get-ApplicablePoliciesForGuide `
+                -Guide $guide `
+                -Policies @($manifest.policies) `
+                -BundleRoot $bundleRoot
+        )
+        foreach ($policy in $applicablePolicies) {
+            $policyPath = [string]$policy.path
+            $policyBodyPath = [string]$policy.body.path
+            if (-not (Test-PromptContainsFixtureInput `
+                -Prompt $workerPrompt `
+                -BundleRoot $bundleRoot `
+                -RelativePaths @(
+                    $policyPath,
+                    "guidance/$policyPath.source",
+                    $policyBodyPath
+                ))) {
+                Fail "The '$guidePath' worker prompt omitted applicable policy '$policyPath'."
+            }
+        }
+        foreach ($policy in @($manifest.policies | Where-Object {
+            [string]$_.path -notin @($applicablePolicies | ForEach-Object {
+                [string]$_.path
+            })
+        })) {
+            $policyPath = [string]$policy.path
+            if (Test-PromptContainsFixtureInput `
+                -Prompt $workerPrompt `
+                -BundleRoot $bundleRoot `
+                -RelativePaths @(
+                    $policyPath,
+                    "guidance/$policyPath.source",
+                    [string]$policy.body.path
+                )) {
+                Fail "The '$guidePath' worker prompt included non-applicable policy '$policyPath'."
+            }
+        }
+        foreach ($inputPath in @('files.json', 'diff.patch')) {
+            if (-not (Test-PromptContainsFixtureInput `
+                -Prompt $workerPrompt `
+                -BundleRoot $bundleRoot `
+                -RelativePaths @($inputPath))) {
+                Fail "The '$guidePath' worker prompt omitted required worker input '$inputPath'."
+            }
+        }
+        foreach ($source in @(
+            $manifest.sources.head,
+            $manifest.sources.mergeBase,
+            $manifest.sources.baseTip
+        )) {
+            $sourceRoot = [string]$source.root
+            if (-not (Test-PromptContainsFixtureInput `
+                -Prompt $workerPrompt `
+                -BundleRoot $bundleRoot `
+                -RelativePaths @($sourceRoot))) {
+                Fail "The '$guidePath' worker prompt omitted frozen source root '$sourceRoot'."
+            }
+        }
+        foreach ($file in $files) {
+            $filename = [string]$file.filename
+            if (-not (Test-PromptContainsFixtureInput `
+                -Prompt $workerPrompt `
+                -BundleRoot $bundleRoot `
+                -RelativePaths @($filename))) {
+                Fail "The '$guidePath' worker prompt omitted relevant changed source '$filename'."
+            }
+        }
     }
     foreach ($guide in @($manifest.guides)) {
-        $guidePath = [string]$guide.path
-        if (-not (Test-PromptContainsFixtureInput `
-            -Prompt $workerPrompt `
-            -BundleRoot $bundleRoot `
-            -RelativePaths @($guidePath, "guidance/$guidePath.source"))) {
-            Fail "The worker prompt omitted assigned guide '$guidePath'."
-        }
-    }
-    foreach ($policy in @($manifest.policies)) {
-        $policyPath = [string]$policy.path
-        $policyBodyPath = [string]$policy.body.path
-        if (-not (Test-PromptContainsFixtureInput `
-            -Prompt $workerPrompt `
-            -BundleRoot $bundleRoot `
-            -RelativePaths @($policyPath, "guidance/$policyPath.source", $policyBodyPath))) {
-            Fail "The worker prompt omitted applicable policy '$policyPath'."
-        }
-    }
-    foreach ($inputPath in @('files.json', 'diff.patch')) {
-        if (-not (Test-PromptContainsFixtureInput `
-            -Prompt $workerPrompt `
-            -BundleRoot $bundleRoot `
-            -RelativePaths @($inputPath))) {
-            Fail "The worker prompt omitted required worker input '$inputPath'."
-        }
-    }
-    foreach ($source in @(
-        $manifest.sources.head,
-        $manifest.sources.mergeBase,
-        $manifest.sources.baseTip
-    )) {
-        $sourceRoot = [string]$source.root
-        if ($workerPrompt.IndexOf($sourceRoot, [StringComparison]::Ordinal) -lt 0) {
-            Fail "The worker prompt omitted frozen source root '$sourceRoot'."
-        }
-    }
-    foreach ($file in $files) {
-        $filename = [string]$file.filename
-        if ($workerPrompt.IndexOf($filename, [StringComparison]::Ordinal) -lt 0) {
-            Fail "The worker prompt omitted relevant changed source '$filename'."
+        if (-not $assignedGuides.ContainsKey([string]$guide.path)) {
+            Fail "Guide '$([string]$guide.path)' was not assigned to a worker task."
         }
     }
     $firstTaskIndex = ($tasks | Measure-Object CallIndex -Minimum).Minimum

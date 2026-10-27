@@ -50,8 +50,22 @@ function Write-ControlPlane {
     New-Item -ItemType Directory -Path $evalRoot -Force | Out-Null
     Set-Content (Join-Path $evalRoot 'run.ps1') $Marker
     Set-Content (Join-Path $evalRoot 'assert_results.ps1') $Marker
-    Set-Content (Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml') $Marker
-    Set-Content (Join-Path $evalRoot 'skills-smoke.experiment.yaml') $Marker
+    Set-Content (Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml') @"
+$Marker
+variants:
+  skilled:
+    environment:
+      skills:
+        - "../../.github/skills/`${eval.parent}"
+"@
+    Set-Content (Join-Path $evalRoot 'skills-smoke.experiment.yaml') @"
+$Marker
+variants:
+  skilled:
+    environment:
+      skills:
+        - "../../.github/skills/`${eval.parent}"
+"@
     Set-Content (Join-Path $evalRoot 'trace-contract-grader.ps1') $Marker
 }
 
@@ -134,6 +148,9 @@ try {
     Set-Content (
         Join-Path $trustedEvalRoot 'fixtures/contracts/inventory.json'
     ) $trustedMarker
+    Set-Content (
+        Join-Path $trustedEvalRoot 'fixtures/contracts/inventory-same-worker.json'
+    ) $trustedMarker
     Set-Content (Join-Path $candidateTrustedSkill 'SKILL.md') $candidateDataMarker
     Set-Content (Join-Path $candidateTrustedEval 'eval.vally.yaml') $candidateControlMarker
     Set-Content (
@@ -141,6 +158,9 @@ try {
     ) $candidateControlMarker
     Set-Content (
         Join-Path $candidateTrustedEval 'fixtures/contracts/inventory.json'
+    ) $candidateControlMarker
+    Set-Content (
+        Join-Path $candidateTrustedEval 'fixtures/contracts/inventory-same-worker.json'
     ) $candidateControlMarker
     Set-Content (
         Join-Path $candidateTrustedEval 'fixtures/input.txt'
@@ -158,11 +178,48 @@ try {
         @($trustedStagedContent | Select-String $candidateControlMarker).Count -eq 0
     ) 'Candidate executable eval configuration reached the staged tree.'
     Assert-True (
-        @($trustedStagedContent | Select-String $trustedMarker).Count -eq 8
+        @($trustedStagedContent | Select-String $trustedMarker).Count -eq 9
     ) 'The trusted eval, fixture checker, and inventory contract were not staged.'
     Assert-True (
         @($trustedStagedContent | Select-String $candidateDataMarker).Count -eq 2
     ) 'The selected candidate skill and non-control fixture were not staged.'
+    Assert-True (
+        (Get-Content (
+            Join-Path $trustedDestination '.github/skills/review-pull-request/SKILL.md'
+        ) -Raw) -ceq "$candidateDataMarker`r`n" -or
+        (Get-Content (
+            Join-Path $trustedDestination '.github/skills/review-pull-request/SKILL.md'
+        ) -Raw) -ceq "$candidateDataMarker`n"
+    ) 'The staged runtime skill was not copied from the candidate root.'
+    foreach ($experiment in @(
+        'skills-vs-baseline.experiment.yaml',
+        'skills-smoke.experiment.yaml'
+    )) {
+        Assert-True (
+            (Get-Content (
+                Join-Path $trustedDestination "eng/skill-evals/$experiment"
+            ) -Raw).Contains(
+                '../../.github/skills/${eval.parent}',
+                [StringComparison]::Ordinal
+            )
+        ) "The trusted $experiment does not load the staged candidate skill."
+    }
+
+    $reviewEval = Get-Content (
+        Join-Path $PSScriptRoot 'review-pull-request/eval.vally.yaml'
+    ) -Raw
+    Assert-True (
+        $reviewEval.Contains(
+            'ref: 5f3aa6faa5dc66abc8f7cf6232945ccf614d12ff',
+            [StringComparison]::Ordinal
+        )
+    ) 'The native SDK recovery stimulus is not pinned to candidate 5f3aa6f.'
+    Assert-True (
+        -not $reviewEval.Contains(
+            'ref: 44edf700f5b4b0a8076b95c397af35ec25ca269c',
+            [StringComparison]::Ordinal
+        )
+    ) 'The native SDK recovery stimulus still clones the superseded candidate.'
 
     Assert-Throws {
         & $stageRun `

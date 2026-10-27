@@ -1,0 +1,42 @@
+[
+  {
+    "filename": "src/Value.cs",
+    "status": "modified",
+    "sha": "4e492d679db0faa21338adfc34546c881deae6d6",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2
+  },
+  {
+    "filename": "src/OldName.cs",
+    "status": "removed",
+    "sha": "a6e97d774c031274ecdc2ac8441bbbd3411ce6d6",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2
+  },
+  {
+    "filename": "src/Renamed.cs",
+    "status": "added",
+    "sha": "a6e97d774c031274ecdc2ac8441bbbd3411ce6d6",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2
+  },
+  {
+    "filename": "src/Deleted.cs",
+    "status": "removed",
+    "sha": "2609536e3eb1d146df877000bfd4dea3d1f5232d",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2
+  },
+  {
+    "filename": "src/Mode.cs",
+    "status": "modified",
+    "sha": "9e7df813488e5c70bd99ca859a3b84ec0d4b3e42",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2
+  }
+]

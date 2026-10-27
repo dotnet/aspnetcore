@@ -51,17 +51,23 @@
     "originalRoot": "<synthetic-helper-fixture>",
     "checkoutCommit": "1adbcf818c473ae3ce1aa102efbea93fde618c10",
     "workingTreeChanges": true,
-    "sha256": "ab3324585d5ac767f3ff8991b40a68f3050b3f8cfbc29f99d11e96482d92812f",
+    "sha256": "2fa674a9cd368ea147d95e6b0763dcba721595e7c06efcae905fb943e7d03609",
     "root": "guidance",
-    "files": 5
+    "files": 6
   },
   "routing": {
     "path": ".github/skills/review-pull-request/routing.md",
-    "sha256": "c77dfefdb5d2e05a3650242e18adf8dfebbe49bd10d4b26c91b59b654cd1caf2"
+    "sha256": "b7aedbc55416ef0c98f7e82c4c747bd8ab26b8284f78a2198ec2e619cd1df08a"
   },
   "guides": [
     {
       "path": "docs/CrossCuttingGuidance.md",
+      "topics": [
+        "Topic"
+      ]
+    },
+    {
+      "path": "docs/BlazorComponentsGuidance.md",
       "topics": [
         "Topic"
       ]
@@ -75,6 +81,15 @@
         "path": "required/policies/0000.source",
         "utf8Bytes": 55,
         "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f"
+      }
+    },
+    {
+      "path": "docs/ComponentsPolicy.md",
+      "anchor": "components-clause",
+      "body": {
+        "path": "required/policies/0001.source",
+        "utf8Bytes": 66,
+        "sha256": "d05f500b1132602209c6f5fa159c08d47590afc8ee560569fd7ea565c1fbd3cb"
       }
     }
   ],
@@ -110,8 +125,8 @@
   },
   "requiredText": {
     "root": "required",
-    "files": 8,
-    "sha256": "12bc870dfb9780677de04c367f75ecb0bd55eb4f8527a7c26fd117fee82c1c87"
+    "files": 9,
+    "sha256": "7a5d24adf3817a883a3e8f799343bd47cbe72452c593bf529d37aed4f5830bcd"
   },
   "timingsMs": {
     "apiFreeze": 0,

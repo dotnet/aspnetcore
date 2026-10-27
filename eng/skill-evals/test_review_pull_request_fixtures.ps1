@@ -5,7 +5,9 @@ Set-StrictMode -Version 3
 
 $fixtureRoot = Join-Path $PSScriptRoot 'review-pull-request/fixtures'
 $contractPath = Join-Path $fixtureRoot 'contracts/inventory.json'
+$sameWorkerContractPath = Join-Path $fixtureRoot 'contracts/inventory-same-worker.json'
 $validRoot = Join-Path $fixtureRoot 'bundle'
+$sameWorkerRoot = Join-Path $fixtureRoot 'bundle-same-worker'
 $missingRoot = Join-Path $fixtureRoot 'bundle-missing-feedback'
 $library = Join-Path $PSScriptRoot 'review-pull-request/fixture-contract.ps1'
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) (
@@ -177,7 +179,7 @@ try {
         -BundleRoot $validRoot `
         -ContractPath $contractPath `
         -BundleName valid
-    if ($valid.Files -lt 40 -or $valid.RequiredReferences -ne 8) {
+    if ($valid.Files -lt 42 -or $valid.RequiredReferences -ne 9) {
         throw "The valid fixture did not exercise the complete inventory and reference set."
     }
     $trustedInventory = Read-Json $contractPath
@@ -186,6 +188,8 @@ try {
         'feedback.json'
         'files.json'
         'guidance/.github/skills/review-pull-request/routing.md.source'
+        'guidance/docs/BlazorComponentsGuidance.md.source'
+        'guidance/docs/ComponentsPolicy.md.source'
         'guidance/docs/CrossCuttingGuidance.md.source'
         'guidance/docs/Policy.md.source'
         'manifest.json'
@@ -197,6 +201,7 @@ try {
         'required/feedback/inline/103.source'
         'required/feedback/reviews/102.source'
         'required/policies/0000.source'
+        'required/policies/0001.source'
         'required/pull/body.source'
     ) | Sort-Object -CaseSensitive
     $actualCoordinatorRequired = @(
@@ -237,6 +242,15 @@ try {
         throw 'The exact coordinator-only fixture role set changed.'
     }
     Write-Host '  [OK] valid-ready-v2-bundle'
+
+    $sameWorker = Assert-ReviewFixture `
+        -BundleRoot $sameWorkerRoot `
+        -ContractPath $sameWorkerContractPath `
+        -BundleName valid
+    if ($sameWorker.Files -lt 40 -or $sameWorker.RequiredReferences -ne 8) {
+        throw 'The single-guide lifecycle fixture changed unexpectedly.'
+    }
+    Write-Host '  [OK] same-worker-single-guide-bundle'
 
     $missing = Assert-ReviewFixture `
         -BundleRoot $missingRoot `

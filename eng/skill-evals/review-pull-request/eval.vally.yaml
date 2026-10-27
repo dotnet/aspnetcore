@@ -26,7 +26,7 @@ stimuli:
       git:
         type: clone
         url: https://github.com/dotnet/aspnetcore.git
-        ref: 44edf700f5b4b0a8076b95c397af35ec25ca269c
+        ref: 5f3aa6faa5dc66abc8f7cf6232945ccf614d12ff
         shallow: true
       files:
         - src: ../trace-contract-grader.ps1
@@ -66,9 +66,9 @@ stimuli:
           dest: .eval-grader/trace-contract-grader.ps1
         - src: fixture-contract.ps1
           dest: .eval-grader/fixture-contract.ps1
-        - src: fixtures/contracts/inventory.json
-          dest: .eval-grader/inventory.json
-        - src: fixtures/bundle
+        - src: fixtures/contracts/inventory-same-worker.json
+          dest: .eval-grader/inventory-same-worker.json
+        - src: fixtures/bundle-same-worker
           dest: .review-bundle
     tags:
       network: none
@@ -87,7 +87,7 @@ stimuli:
             - -File
             - .eval-grader/trace-contract-grader.ps1
             - same-worker-lifecycle
-            - .eval-grader/inventory.json
+            - .eval-grader/inventory-same-worker.json
 
   - name: hosted-ready-v2-transport
     prompt: >-
