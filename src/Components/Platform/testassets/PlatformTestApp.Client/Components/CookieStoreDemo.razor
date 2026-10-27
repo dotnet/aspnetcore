@@ -34,6 +34,7 @@
     <button id="watch-cookie-changes" @onclick="WatchChangesAsync">Watch changes</button>
     <button id="watch-cookie-changes-second" @onclick="WatchChangesWithSecondListenerAsync">Watch changes with a second listener</button>
     <button id="unwatch-cookie-changes" @onclick="UnwatchChangesAsync">Stop watching changes</button>
+    <button id="cancel-second-cookie-watch" @onclick="CancelSecondListenerAsync">Cancel the second listener</button>
 </div>
 <p id="cookie-result" role="status" data-run="@runCount">@result</p>
 <p id="cookie-change" role="status">@change</p>
@@ -50,7 +51,8 @@
     private string change = "No change has been reported.";
     private string secondChange = "No change has been reported.";
     private IAsyncDisposable? listener;
-    private IAsyncDisposable? secondListener;
+    // The second listener is removed by its token, so the component keeps no handle for it.
+    private readonly CancellationTokenSource secondListenerCancellation = new();
 
     private Task SetAsync() => RunAsync("Set", async () =>
     {
@@ -171,12 +173,15 @@
 
     private Task WatchChangesWithSecondListenerAsync() => RunAsync("Watch changes with a second listener", async () =>
     {
-        secondListener = await Browser.Window.CookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, changeEvent =>
-        {
-            secondChange = Describe(changeEvent);
-            StateHasChanged();
-            return Task.CompletedTask;
-        });
+        await Browser.Window.CookieStore.AddEventListenerAsync(
+            CookieStore.ChangeEvent,
+            changeEvent =>
+            {
+                secondChange = Describe(changeEvent);
+                StateHasChanged();
+                return Task.CompletedTask;
+            },
+            secondListenerCancellation.Token);
         return "added";
     });
 
@@ -188,6 +193,12 @@
         }
 
         return "removed";
+    });
+
+    private Task CancelSecondListenerAsync() => RunAsync("Cancel the second listener", () =>
+    {
+        secondListenerCancellation.Cancel();
+        return Task.FromResult("canceled");
     });
 
     // The listener runs on the renderer's dispatcher, so StateHasChanged needs no InvokeAsync.
@@ -213,10 +224,8 @@
             await listener.DisposeAsync();
         }
 
-        if (secondListener is not null)
-        {
-            await secondListener.DisposeAsync();
-        }
+        secondListenerCancellation.Cancel();
+        secondListenerCancellation.Dispose();
     }
 
     private static string Format(CookieListItem? cookie)

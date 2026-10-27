@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// <typeparam name="TEvent">The type of the event object.</typeparam>
 public sealed class EventType<TTarget, TEvent> where TTarget : class
 {
-    private readonly Func<EventListenerCollection, IJSObjectReference, TTarget, Func<TEvent, Task>, Task<IAsyncDisposable>> _addListenerAsync;
+    private readonly Func<EventListenerCollection, IJSObjectReference, TTarget, Func<TEvent, Task>, CancellationToken, Task<IAsyncDisposable>> _addListenerAsync;
 
     internal EventType(
         string name,
-        Func<EventListenerCollection, IJSObjectReference, TTarget, Func<TEvent, Task>, Task<IAsyncDisposable>> addListenerAsync)
+        Func<EventListenerCollection, IJSObjectReference, TTarget, Func<TEvent, Task>, CancellationToken, Task<IAsyncDisposable>> addListenerAsync)
     {
         Name = name;
         _addListenerAsync = addListenerAsync;
@@ -29,8 +29,8 @@ public sealed class EventType<TTarget, TEvent> where TTarget : class
     /// </summary>
     public string Name { get; }
 
-    internal Task<IAsyncDisposable> AddListenerAsync(EventListenerCollection listeners, IJSObjectReference target, TTarget owner, Func<TEvent, Task> listener)
-        => _addListenerAsync(listeners, target, owner, listener);
+    internal Task<IAsyncDisposable> AddListenerAsync(EventListenerCollection listeners, IJSObjectReference target, TTarget owner, Func<TEvent, Task> listener, CancellationToken cancellationToken)
+        => _addListenerAsync(listeners, target, owner, listener, cancellationToken);
 }
 
 /// <summary>
@@ -48,7 +48,7 @@ internal static class EventTypes
         string name,
         string shapesJson)
         where TTarget : class
-        => new(name, (listeners, target, _, listener) => listeners.AddAsync(target, name, shapesJson, listener));
+        => new(name, (listeners, target, _, listener, cancellationToken) => listeners.AddAsync(target, name, shapesJson, listener, cancellationToken));
 
     /// <summary>
     /// Creates an event whose object crosses to .NET as <typeparamref name="TPayload"/> and is then converted,
@@ -62,6 +62,6 @@ internal static class EventTypes
         string shapesJson,
         Func<TTarget, TPayload, TEvent> convert)
         where TTarget : class
-        => new(name, (listeners, target, owner, listener) =>
-            listeners.AddAsync<TPayload>(target, name, shapesJson, payload => listener(convert(owner, payload))));
+        => new(name, (listeners, target, owner, listener, cancellationToken) =>
+            listeners.AddAsync<TPayload>(target, name, shapesJson, payload => listener(convert(owner, payload)), cancellationToken));
 }

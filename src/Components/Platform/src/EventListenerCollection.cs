@@ -32,24 +32,41 @@ internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
         IJSObjectReference target,
         string type,
         string shapesJson,
-        Func<TEvent, Task> listener)
+        Func<TEvent, Task> listener,
+        CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        var eventListener = new EventListener<TEvent>(this, target, type, listener, _logger);
+        var eventListener = new EventListener<TEvent>(this, target, type, listener, cancellationToken, _logger);
         _listeners.Add(eventListener);
 
         try
         {
             await eventListener.AddAsync(_callbackFactory, shapesJson);
         }
-        catch
+        catch (Exception ex)
         {
             // The exception of the failed addition is the useful one.
             await TryDisposeAsync(eventListener);
+
+            // Decided by the token, not by the error, as for other canceled browser operations.
+            if (cancellationToken.IsCancellationRequested && ex is not OperationCanceledException)
+            {
+                throw new OperationCanceledException(ex.Message, ex, cancellationToken);
+            }
+
             throw;
         }
 
+        // The token can be canceled while addEventListener is on its way.
+        if (cancellationToken.IsCancellationRequested)
+        {
+            await TryDisposeAsync(eventListener);
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        eventListener.RemoveWhenCanceled();
         return eventListener;
     }
 
@@ -70,7 +87,7 @@ internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
         }
     }
 
-    private async ValueTask TryDisposeAsync(IAsyncDisposable listener)
+    internal async ValueTask TryDisposeAsync(IAsyncDisposable listener)
     {
         try
         {

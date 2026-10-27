@@ -190,6 +190,14 @@ public partial class CookieStoreTests : BrowserTest
             await RunAsync("#get-cookie", $"Get: Found: {name}=value");
             await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Deleted: {name}");
             await RunAsync("#delete-cookie", $"Delete: {name}");
+            await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Deleted: {name}");
+
+            // Canceling the token removes the second listener.
+            await RunAsync("#cancel-second-cookie-watch", "Cancel the second listener: canceled");
+            await SetCookieAndWaitForTheBrowserEventAsync(name);
+            await RunAsync("#get-cookie", $"Get: Found: {name}=value");
+            await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Deleted: {name}");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
         }
     }
 

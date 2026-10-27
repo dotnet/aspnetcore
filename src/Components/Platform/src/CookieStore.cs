@@ -181,23 +181,27 @@ public sealed class CookieStore : IInternalAsyncDisposal
     /// Adds a listener that is called each time the specified event fires on the cookie store.
     /// Other listeners, including those added by JavaScript code of the page, are not affected.
     /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Canceling <paramref name="cancellationToken"/> removes the listener, as disposing the returned object does.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event object.</typeparam>
     /// <param name="type">The event to listen for, such as <see cref="ChangeEvent"/>.</param>
     /// <param name="listener">The function to call with each event.</param>
+    /// <param name="cancellationToken">The token that removes the listener when canceled.</param>
     /// <returns>An object that removes the listener when disposed.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled before the listener was added.</exception>
     /// <exception cref="NotSupportedException">The browser does not provide the Cookie Store API for the current page.</exception>
     [DynamicDependency(LinkerFlags.JsonSerialized, typeof(CookieListItem))]
-    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<CookieStore, TEvent> type, Func<TEvent, Task> listener)
+    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<CookieStore, TEvent> type, Func<TEvent, Task> listener, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(listener);
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Adding and removing listeners changes unlocked state, so these awaits keep the renderer's synchronization context.
         var cookieStore = await GetReferenceAsync();
 
-        return await type.AddListenerAsync(_listeners, cookieStore, this, listener);
+        return await type.AddListenerAsync(_listeners, cookieStore, this, listener, cancellationToken);
     }
 
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()

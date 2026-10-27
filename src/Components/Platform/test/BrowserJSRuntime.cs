@@ -32,14 +32,14 @@ internal sealed class BrowserJSRuntime : JSRuntime
     // Keeps the calls to the identifier pending until ReleaseHeldCalls.
     public void HoldCallsTo(string identifier) => _identifiersToHold.Add(identifier);
 
-    public void ReleaseHeldCalls(string identifier)
+    public void ReleaseHeldCalls(string identifier, bool succeeded = true)
     {
         _identifiersToHold.Remove(identifier);
 
         foreach (var held in _heldCalls.Where(held => held.Identifier == identifier).ToArray())
         {
             _heldCalls.Remove(held);
-            Complete(held.AsyncHandle, succeeded: true, held.Result);
+            Complete(held.AsyncHandle, succeeded, succeeded ? held.Result : $"\"{identifier} failed.\"");
         }
     }
 

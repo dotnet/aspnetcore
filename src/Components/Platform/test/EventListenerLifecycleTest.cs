@@ -130,6 +130,125 @@ public class EventListenerLifecycleTest
         Assert.Equal(["[1]", "[2]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
     }
 
+    [Fact]
+    public async Task AddEventListenerAsync_WithACanceledToken_ThrowsWithoutCallingTheBrowser()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var window = provider.GetRequiredService<IBrowserPlatform>().Window;
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => window.AddEventListenerAsync(Window.StorageEvent, _ => Task.CompletedTask, cts.Token).AsTask());
+
+        Assert.Equal(cts.Token, exception.CancellationToken);
+        Assert.Empty(jsRuntime.Calls);
+    }
+
+    [Fact]
+    public async Task CancelingTheToken_StopsTheListenerAndRemovesItOnTheRendererSynchronizationContext()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        var dispatcher = Dispatcher.CreateDefault();
+        var context = await dispatcher.InvokeAsync(() => SynchronizationContext.Current);
+        using var cts = new CancellationTokenSource();
+        var calls = 0;
+        await dispatcher.InvokeAsync(async () => await cookieStore.AddEventListenerAsync(
+            CookieStore.ChangeEvent,
+            _ => { calls++; return Task.CompletedTask; },
+            cts.Token));
+
+        // A component cancels on the renderer's context, which the removal is posted back to.
+        await dispatcher.InvokeAsync(() => cts.Cancel()).WaitAsync(TimeSpan.FromSeconds(10));
+        await jsRuntime.InvokeLastCallbackAsync(EmptyChange);
+        await WaitForAsync(dispatcher, () => jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Any());
+
+        // The function is object 3.
+        Assert.Equal(0, calls);
+        Assert.Same(context, Assert.Single(jsRuntime.CallsTo("removeEventListener")).Context);
+        Assert.Equal(["[3]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+    }
+
+    [Fact]
+    public async Task CancelingTheTokenDuringTheModuleImport_ReleasesTheFunctionAndThrows()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        using var cts = new CancellationTokenSource();
+        jsRuntime.HoldCallsTo("import");
+
+        var adding = cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => Task.CompletedTask, cts.Token).AsTask();
+        cts.Cancel();
+        jsRuntime.ReleaseHeldCalls("import");
+
+        // The function is object 3.
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => adding);
+        Assert.Equal(cts.Token, exception.CancellationToken);
+        Assert.Empty(jsRuntime.CallsTo("addEventListener"));
+        Assert.Equal(["[3]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+        Assert.False((await jsRuntime.InvokeLastCallbackAsync(EmptyChange)).Success);
+    }
+
+    [Fact]
+    public async Task CancelingTheTokenDuringAddEventListener_RemovesTheListenerAndThrows()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        using var cts = new CancellationTokenSource();
+        var calls = 0;
+        jsRuntime.HoldCallsTo("addEventListener");
+
+        var adding = cookieStore.AddEventListenerAsync(
+            CookieStore.ChangeEvent,
+            _ => { calls++; return Task.CompletedTask; },
+            cts.Token).AsTask();
+        cts.Cancel();
+        // An event that the browser sends before the removal reaches it.
+        await jsRuntime.InvokeLastCallbackAsync(EmptyChange);
+        jsRuntime.ReleaseHeldCalls("addEventListener");
+
+        // The function is object 3.
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => adding);
+        Assert.Equal(cts.Token, exception.CancellationToken);
+        Assert.Equal(0, calls);
+        Assert.Single(jsRuntime.CallsTo("removeEventListener"));
+        Assert.Equal(["[3]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+        Assert.False((await jsRuntime.InvokeLastCallbackAsync(EmptyChange)).Success);
+    }
+
+    [Fact]
+    public async Task AddEventListenerAsync_ReportsTheCancellationWhenTheAdditionFailsAfterIt()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        using var cts = new CancellationTokenSource();
+        jsRuntime.HoldCallsTo("addEventListener");
+
+        var adding = cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => Task.CompletedTask, cts.Token).AsTask();
+        cts.Cancel();
+        jsRuntime.ReleaseHeldCalls("addEventListener", succeeded: false);
+
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => adding);
+        Assert.Equal(cts.Token, exception.CancellationToken);
+        Assert.Contains("addEventListener", Assert.IsType<JSException>(exception.InnerException).Message);
+    }
+
+    private static async Task WaitForAsync(Dispatcher dispatcher, Func<bool> condition)
+    {
+        var timeout = Task.Delay(TimeSpan.FromSeconds(10));
+        while (!await dispatcher.InvokeAsync(condition))
+        {
+            Assert.False(timeout.IsCompleted, "The condition was not met in time.");
+            await Task.Delay(10);
+        }
+    }
+
     private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime, ILoggerFactory? loggerFactory = null)
     {
         var services = new ServiceCollection();
