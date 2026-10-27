@@ -1828,4 +1828,82 @@ namespace ConsoleApplication1
             new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 42, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
         );
     }
+
+    [Theory]
+    [InlineData(@"var result = await JS.InvokeAsync<double>(""getValue"");", 32)]
+    [InlineData(@"_result = await JS.InvokeAsync<double>(""getValue"");", 29)]
+    [InlineData(@"Result = await JS.InvokeAsync<double>(""getValue"");", 28)]
+    [InlineData(@"_result += await JS.InvokeAsync<double>(""getValue"");", 30)]
+    public void JSInvokeAssignedToVariableOrMemberShouldThrowWarning(string statement, int column)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+        private double _result;
+        private double Result { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            " + statement + @"
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, column) }, Id = id, Message = messageInvokeAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData(@"var result = await JS.InvokeAsync<double>(""getValue"");", true)]
+    [InlineData(@"_result = await JS.InvokeAsync<double>(""getValue"");", true)]
+    [InlineData(@"Result = await JS.InvokeAsync<double>(""getValue"");", true)]
+    [InlineData(@"_result += await JS.InvokeAsync<double>(""getValue"");", true)]
+    [InlineData(@"var result = await JS.InvokeAsync<double>(""getValue"");", false)]
+    [InlineData(@"_result = await JS.InvokeAsync<double>(""getValue"");", false)]
+    public void JSInvokeAssignedToVariableOrMemberAfterIsInteractiveCheckShouldNotThrowWarning(string statement, bool returnEarly)
+    {
+        var body = returnEarly
+            ? @"
+            if (!RendererInfo.IsInteractive)
+            {
+                return;
+            }
+            " + statement
+            : @"
+            if (RendererInfo.IsInteractive)
+            {
+                " + statement + @"
+            }";
+
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+        private double _result;
+        private double Result { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {" + body + @"
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
 }

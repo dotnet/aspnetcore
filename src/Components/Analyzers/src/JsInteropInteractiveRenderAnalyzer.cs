@@ -163,26 +163,40 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         {
             state.SymbolChecks.Add(declarator.Symbol);
         }
-        else if (declarator.Initializer?.Value is IConditionalOperation conditionalOperation)
+        else if (declarator.Initializer?.Value is IOperation value)
         {
-            // Check for JSInterop usage in ternary operator assignment to a local variable.
-            AnalyzeCondition(conditionalOperation, state.Clone());
+            AnalyzeAssignedValue(value, state);
         }
     }
 
     private static void AnalyzeAssignment(IAssignmentOperation assignment, JSInteropAnalyzerState state)
     {
-        if (assignment.Value is IOperation operation
-            && assignment.Target is ILocalReferenceOperation localReference)
+        if (assignment.Target is ILocalReferenceOperation localReference
+            && OperationChecksIsInteractive(assignment.Value, state, false))
         {
-            if (OperationChecksIsInteractive(operation, state, false))
-            {
-                state.SymbolChecks.Add(localReference.Local);
-            }
-            else if (state.SymbolChecks.Contains(localReference.Local))
-            {
-                state.SymbolChecks.Remove(localReference.Local);
-            }
+            state.SymbolChecks.Add(localReference.Local);
+            return;
+        }
+
+        if (assignment.Target is ILocalReferenceOperation reassignedLocal)
+        {
+            state.SymbolChecks.Remove(reassignedLocal.Local);
+        }
+
+        AnalyzeAssignedValue(assignment.Value, state);
+    }
+
+    private static void AnalyzeAssignedValue(IOperation value, JSInteropAnalyzerState state)
+    {
+        if (value is IConditionalOperation conditionalOperation)
+        {
+            // Check for JSInterop usage in ternary operator assignment.
+            AnalyzeCondition(conditionalOperation, state.Clone());
+        }
+        else if (value is not IDelegateCreationOperation)
+        {
+            // Stored delegates are not analyzed where they are created, since they may be invoked after an IsInteractive check.
+            AnalyzeOperationsTree(value, state);
         }
     }
 
