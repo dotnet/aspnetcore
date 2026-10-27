@@ -432,7 +432,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
         public int CompareTo(EdgeKey other)
         {
-            var result = Comparer<string>.Default.Compare(Host, other.Host);
+            var result = string.Compare(Host, other.Host, StringComparison.OrdinalIgnoreCase);
             if (result != 0)
             {
                 return result;
@@ -448,7 +448,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
         public bool Equals(EdgeKey other)
         {
-            return string.Equals(Host, other.Host, StringComparison.Ordinal) && Port == other.Port;
+            return string.Equals(Host, other.Host, StringComparison.OrdinalIgnoreCase) && Port == other.Port;
         }
 
         public bool MatchHost(string host)
@@ -479,7 +479,11 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
         public override int GetHashCode()
         {
-            return (Host?.GetHashCode() ?? 0) ^ (Port?.GetHashCode() ?? 0);
+            var hash = new HashCode();
+            hash.Add(Host, StringComparer.OrdinalIgnoreCase);
+            hash.Add(Port);
+
+            return hash.ToHashCode();
         }
 
         public override bool Equals(object? obj)

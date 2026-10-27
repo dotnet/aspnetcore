@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 
-public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>>>
+public class AutoPauseTests : AutoPauseTestBase<Root>
 {
     public AutoPauseTests(
         BrowserFixture browserFixture,
@@ -104,16 +104,6 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
         Assert.Empty(GetAutoPauseEvents());
     }
 
-    private void SetVisibility(string state)
-    {
-        var js = (IJavaScriptExecutor)Browser;
-        js.ExecuteScript($@"
-            Object.defineProperty(document, 'visibilityState', {{ configurable: true, get: () => '{state}' }});
-            Object.defineProperty(document, 'hidden', {{ configurable: true, get: () => {(state == "hidden" ? "true" : "false")} }});
-            document.dispatchEvent(new Event('visibilitychange'));
-        ");
-    }
-
     private IReadOnlyList<string> GetAutoPauseEvents()
     {
         var js = (IJavaScriptExecutor)Browser;
@@ -132,15 +122,4 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
             "return !!(window.Blazor && window.myApp && typeof window.myApp.deferPause === 'function')"));
     }
 
-    private void WaitForPausedUI()
-    {
-        Browser.Equal("block", () =>
-            Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
-    }
-
-    private void WaitForResumedUI()
-    {
-        Browser.Equal("none", () =>
-            Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
-    }
 }

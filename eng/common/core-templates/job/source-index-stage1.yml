@@ -12,6 +12,7 @@ jobs:
 - job: SourceIndexStage1
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
+  continueOnError: true
   variables:
   - name: BinlogPath
     value: ${{ parameters.binlogPath }}
@@ -38,9 +39,11 @@ jobs:
 
   - ${{ each preStep in parameters.preSteps }}:
     - ${{ preStep }}
-  - script: ${{ parameters.sourceIndexBuildCommand }}
-    displayName: Build Repository
+  - ${{ if ne(parameters.sourceIndexBuildCommand, '') }}:
+    - script: ${{ parameters.sourceIndexBuildCommand }}
+      displayName: Build Repository
 
   - template: /eng/common/core-templates/steps/source-index-stage1-publish.yml
     parameters:
       binLogPath: ${{ parameters.binLogPath }}
+      runAsPublic: ${{ parameters.runAsPublic }}

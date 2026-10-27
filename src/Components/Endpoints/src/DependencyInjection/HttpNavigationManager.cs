@@ -10,8 +10,10 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 {
     private const string _disableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException";
 
-    private static readonly bool s_throwNavigationException =
+#pragma warning disable IDE0044 // Add readonly modifier - mutated via reflection by E2E tests; keeping it non-readonly avoids JIT const-folding making those writes invisible.
+    private static bool s_throwNavigationException =
         !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
+#pragma warning restore IDE0044
 
     [FeatureSwitchDefinition(_disableThrowNavigationException)]
     private static bool _throwNavigationException => s_throwNavigationException;

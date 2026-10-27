@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Razor Component",
-  "description": "A reusable UI component implemented with Razor",
-  "symbols/namespace/description": "namespace for the generated code",
-  "symbols/use-code-behind/description": "create component with a code-behind file",
-  "symbols/use-code-behind/displayName": "Use Code Behind",
-  "postActions/openInEditor/description": "Opens Component1.razor in the editor"
+  "name": "Komponenta Razor",
+  "description": "Opětovně použitelná komponenta uživatelského rozhraní implementovaná pomocí Razoru",
+  "symbols/namespace/description": "obor názvů pro vygenerovaný kód",
+  "symbols/use-code-behind/description": "vytvoření komponenty se souborem kódu na pozadí",
+  "symbols/use-code-behind/displayName": "Použití kódu na pozadí",
+  "postActions/openInEditor/description": "Otevře soubor Component1.razor v editoru."
 }

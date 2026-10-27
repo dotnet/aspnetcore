@@ -27,11 +27,19 @@ public class AuthenticationStartupBase
 
         services.AddServerSideBlazor();
 
+        // Interactive host registers the gate so the authorization interleaving E2E test controls
+        // settling deterministically.
+        var authorizationGate = new BasicTestApp.AuthTest.AsyncAuthorizationGate();
+        services.AddSingleton(authorizationGate);
+
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
         services.AddAuthorization(options =>
         {
             options.AddPolicy("NameMustStartWithB", policy =>
                 policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith('B') ?? false));
+
+            options.AddPolicy("SlowPolicyRequiringGate", policy =>
+                policy.RequireAssertion(_ => authorizationGate.WaitAsync()));
         });
     }
 
@@ -61,7 +69,11 @@ public class AuthenticationStartupBase
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-                endpoints.MapBlazorHub(options => options.EnableAuthenticationRefresh = true)
+                endpoints.MapBlazorHub(options =>
+                {
+                    options.MaximumAuthenticationExpiration = TimeSpan.FromMinutes(40);
+                    options.CloseOnAuthenticationExpiration = true;
+                })
                     .AddEndpointFilter(async (context, next) =>
                     {
                         if (context.HttpContext.WebSockets.IsWebSocketRequest)

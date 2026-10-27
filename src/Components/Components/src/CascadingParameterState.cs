@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -17,9 +18,19 @@ internal readonly struct CascadingParameterState
 {
     private static readonly ConcurrentDictionary<Type, CascadingParameterInfo[]> _cachedInfos = new();
 
+    static CascadingParameterState()
+    {
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
+
     public CascadingParameterInfo ParameterInfo { get; } = parameterInfo;
     public ICascadingValueSupplier ValueSupplier { get; } = valueSupplier;
     public object? Key { get; } = key;
+
+    internal static void ClearCache() => _cachedInfos.Clear();
 
     public CascadingParameterState(in CascadingParameterInfo parameterInfo, ICascadingValueSupplier valueSupplier)
         : this(parameterInfo, valueSupplier, key: null) { }

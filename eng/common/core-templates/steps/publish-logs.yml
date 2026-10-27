@@ -5,6 +5,7 @@ parameters:
   # A default - in case value from eng/common/core-templates/post-build/common-variables.yml is not passed
   BinlogToolVersion: '1.0.11'
   is1ESPipeline: false
+  enableInternalRuntimes: true
 
 steps:
 - task: Powershell@2
@@ -25,13 +26,20 @@ steps:
     # Sensitive data can as well be added to $(System.DefaultWorkingDirectory)/eng/BinlogSecretsRedactionFile.txt'
     #  If the file exists - sensitive data for redaction will be sourced from it
     #  (single entry per line, lines starting with '# ' are considered comments and skipped)
-    arguments: -InputPath '$(System.DefaultWorkingDirectory)/PostBuildLogs' 
-      -BinlogToolVersion '${{parameters.BinlogToolVersion}}'
-      -TokensFilePath '$(System.DefaultWorkingDirectory)/eng/BinlogSecretsRedactionFile.txt'
-      -runtimeSourceFeed https://ci.dot.net/internal 
-      -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
-      '$(System.AccessToken)'
-      ${{parameters.CustomSensitiveDataList}}
+    ${{ if and(eq(parameters.enableInternalRuntimes, true), ne(variables['System.TeamProject'], 'public')) }}:
+      arguments: -InputPath '$(System.DefaultWorkingDirectory)/PostBuildLogs'
+        -BinlogToolVersion '${{parameters.BinlogToolVersion}}'
+        -TokensFilePath '$(System.DefaultWorkingDirectory)/eng/BinlogSecretsRedactionFile.txt'
+        -runtimeSourceFeed https://ci.dot.net/internal
+        -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
+        '$(System.AccessToken)'
+        ${{parameters.CustomSensitiveDataList}}
+    ${{ else }}:
+      arguments: -InputPath '$(System.DefaultWorkingDirectory)/PostBuildLogs'
+        -BinlogToolVersion '${{parameters.BinlogToolVersion}}'
+        -TokensFilePath '$(System.DefaultWorkingDirectory)/eng/BinlogSecretsRedactionFile.txt'
+        '$(System.AccessToken)'
+        ${{parameters.CustomSensitiveDataList}}
   continueOnError: true
   condition: always()
 

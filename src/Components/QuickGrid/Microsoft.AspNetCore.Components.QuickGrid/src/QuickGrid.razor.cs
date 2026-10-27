@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -112,13 +111,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// the grid can detect whether items were prepended or appended.
     /// </summary>
     [Parameter]
-    [Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
 
     /// <summary>
     /// Gets or sets a comparer used during virtualization to detect whether items were prepended or appended
-    /// between data loads. The comparer determines whether the first loaded item changed between loads, which
-    /// indicates items were inserted above the current viewport, so the grid can keep the viewport anchored.
+    /// between data loads. When provider windows overlap, the comparer determines whether a previously rendered
+    /// item changed at the same global index, which indicates items were inserted above the current viewport,
+    /// so the grid can keep the viewport anchored.
     ///
     /// Provide a comparer that compares items by a stable unique identifier (for example, a primary key).
     /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
@@ -129,7 +128,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// This only has an effect when <see cref="Virtualize"/> is <see langword="true"/>.
     /// </summary>
     [Parameter]
-    [Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public IEqualityComparer<TGridItem>? ItemComparer
     {
         get => _itemComparer;
@@ -297,8 +295,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         return (_columns.Count > 0 && mustRefreshData) ? RefreshDataCoreAsync() : Task.CompletedTask;
     }
 
-    // Splats the experimental members onto Virtualize from one place, keeping the pragma out of the .razor markup.
-#pragma warning disable ASP0030
     private void BuildVirtualizeAttributes()
     {
         var attributes = new Dictionary<string, object>
@@ -309,7 +305,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
         _virtualizeAttributes = attributes;
     }
-#pragma warning restore ASP0030
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -255,6 +255,62 @@ public class HostMatcherPolicyTest
             });
     }
 
+    [Theory]
+    [InlineData("contoso.com", "CONTOSO.COM")]
+    [InlineData("contoso.com", "CONTOSO.COM:*")]
+    [InlineData("contoso.com:5000", "CONTOSO.COM:5000")]
+    [InlineData("æon.contoso.com", "ÆON.CONTOSO.COM")]
+    [InlineData("*.contoso.com", "*.CONTOSO.COM")]
+    [InlineData("*.contoso.com", "*.CONTOSO.COM:*")]
+    [InlineData("*.contoso.com:5000", "*.CONTOSO.COM:5000")]
+    public void GetEdges_GroupsHostsCaseInsensitively(string firstHost, string secondHost)
+    {
+        var endpoints = new[]
+        {
+            CreateEndpoint("/", new HostAttribute(firstHost)),
+            CreateEndpoint("/", new HostAttribute(secondHost)),
+        };
+
+        var policy = CreatePolicy();
+
+        var edge = Assert.Single(policy.GetEdges(endpoints));
+
+        Assert.Equal(endpoints, edge.Endpoints);
+    }
+
+    [Fact]
+    public void GetEdges_DoesNotDuplicateEndpointWithEquivalentHosts()
+    {
+        var endpoint = CreateEndpoint(
+            "/",
+            new HostAttribute("contoso.com", "CONTOSO.COM:*"));
+
+        var policy = CreatePolicy();
+
+        var edge = Assert.Single(policy.GetEdges(new[] { endpoint }));
+
+        Assert.Equal(endpoint, Assert.Single(edge.Endpoints));
+    }
+
+    [Fact]
+    public void GetEdges_DoesNotGroupHostsWithDifferentPorts()
+    {
+        var endpoints = new[]
+        {
+            CreateEndpoint("/", new HostAttribute("contoso.com:5000")),
+            CreateEndpoint("/", new HostAttribute("CONTOSO.COM:5001")),
+        };
+
+        var policy = CreatePolicy();
+
+        var edges = policy.GetEdges(endpoints);
+
+        Assert.Collection(
+            edges.OrderBy(e => e.State),
+            e => Assert.Equal(endpoints[0], Assert.Single(e.Endpoints)),
+            e => Assert.Equal(endpoints[1], Assert.Single(e.Endpoints)));
+    }
+
     private static RouteEndpoint CreateEndpoint(string template, IHostMetadata hostMetadata, params object[] more)
     {
         var metadata = new List<object>();

@@ -4,7 +4,9 @@ parameters:
   HelixType: 'tests/default/'            # required -- Helix telemetry which identifies what type of data this is; should include "test" for clarity and must end in '/'
   HelixBuild: $(Build.BuildNumber)       # required -- the build number Helix will use to identify this -- automatically set to the AzDO build number
   HelixTargetQueues: ''                  # required -- semicolon-delimited list of Helix queues to test on; see https://helix.dot.net/ for a list of queues
-  HelixAccessToken: ''                   # required -- access token to make Helix API requests; should be provided by the appropriate variable group
+  HelixAccessToken: ''                   # optional -- legacy access token; not forwarded when HelixUseEntraAuthentication is true
+  HelixUseEntraAuthentication: false     # optional -- use refreshable Entra authentication instead of a PAT or anonymous access
+  HelixAzureSubscription: ''             # required when HelixUseEntraAuthentication is true -- workload identity federation service connection name authorized for Helix
   HelixProjectPath: 'eng/common/helixpublish.proj'  # optional -- path to the project file to build relative to BUILD_SOURCESDIRECTORY
   HelixProjectArguments: ''              # optional -- arguments passed to the build command
   HelixConfiguration: ''                 # optional -- additional property attached to a job
@@ -32,80 +34,183 @@ parameters:
   continueOnError: false                 # optional -- determines whether to continue the build if the step errors; defaults to false
 
 steps:
-  - powershell: >
-      $(Build.SourcesDirectory)\eng\common\msbuild.ps1
-      $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }}
-      /restore
-      /p:TreatWarningsAsErrors=false
-      /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }}
-      ${{ parameters.HelixProjectArguments }}
-      /t:Test
-      /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
-    displayName: ${{ parameters.DisplayNamePrefix }} (Windows)
-    env:
-      BuildConfig: $(_BuildConfig)
-      HelixSource: ${{ parameters.HelixSource }}
-      HelixType: ${{ parameters.HelixType }}
-      HelixBuild: ${{ parameters.HelixBuild }}
-      HelixConfiguration:  ${{ parameters.HelixConfiguration }}
-      HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
-      HelixAccessToken: ${{ parameters.HelixAccessToken }}
-      HelixPreCommands: ${{ parameters.HelixPreCommands }}
-      HelixPostCommands: ${{ parameters.HelixPostCommands }}
-      WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
-      WorkItemCommand: ${{ parameters.WorkItemCommand }}
-      WorkItemTimeout: ${{ parameters.WorkItemTimeout }}
-      CorrelationPayloadDirectory: ${{ parameters.CorrelationPayloadDirectory }}
-      XUnitProjects: ${{ parameters.XUnitProjects }}
-      XUnitWorkItemTimeout: ${{ parameters.XUnitWorkItemTimeout }}
-      XUnitPublishTargetFramework: ${{ parameters.XUnitPublishTargetFramework }}
-      XUnitRuntimeTargetFramework: ${{ parameters.XUnitRuntimeTargetFramework }}
-      XUnitRunnerVersion: ${{ parameters.XUnitRunnerVersion }}
-      IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
-      DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
-      DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
-      WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
-      HelixBaseUri: ${{ parameters.HelixBaseUri }}
-      Creator: ${{ parameters.Creator }}
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    condition: and(${{ parameters.condition }}, eq(variables['Agent.Os'], 'Windows_NT'))
-    continueOnError: ${{ parameters.continueOnError }}
-  - script: >
-      $(Build.SourcesDirectory)/eng/common/msbuild.sh
-      $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }}
-      /restore
-      /p:TreatWarningsAsErrors=false
-      /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }}
-      ${{ parameters.HelixProjectArguments }}
-      /t:Test
-      /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
-    displayName: ${{ parameters.DisplayNamePrefix }} (Unix)
-    env:
-      BuildConfig: $(_BuildConfig)
-      HelixSource: ${{ parameters.HelixSource }}
-      HelixType: ${{ parameters.HelixType }}
-      HelixBuild: ${{ parameters.HelixBuild }}
-      HelixConfiguration:  ${{ parameters.HelixConfiguration }}
-      HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
-      HelixAccessToken: ${{ parameters.HelixAccessToken }}
-      HelixPreCommands: ${{ parameters.HelixPreCommands }}
-      HelixPostCommands: ${{ parameters.HelixPostCommands }}
-      WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
-      WorkItemCommand: ${{ parameters.WorkItemCommand }}
-      WorkItemTimeout: ${{ parameters.WorkItemTimeout }}
-      CorrelationPayloadDirectory: ${{ parameters.CorrelationPayloadDirectory }}
-      XUnitProjects: ${{ parameters.XUnitProjects }}
-      XUnitWorkItemTimeout: ${{ parameters.XUnitWorkItemTimeout }}
-      XUnitPublishTargetFramework: ${{ parameters.XUnitPublishTargetFramework }}
-      XUnitRuntimeTargetFramework: ${{ parameters.XUnitRuntimeTargetFramework }}
-      XUnitRunnerVersion: ${{ parameters.XUnitRunnerVersion }}
-      IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
-      DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
-      DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
-      WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
-      HelixBaseUri: ${{ parameters.HelixBaseUri }}
-      Creator: ${{ parameters.Creator }}
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    condition: and(${{ parameters.condition }}, ne(variables['Agent.Os'], 'Windows_NT'))
-    continueOnError: ${{ parameters.continueOnError }}
+  - ${{ if and(eq(parameters.HelixUseEntraAuthentication, true), eq(parameters.HelixAzureSubscription, '')) }}:
+    - pwsh: throw "HelixAzureSubscription must be set when HelixUseEntraAuthentication is true."
+      displayName: Validate Helix Entra authentication
+      condition: ${{ parameters.condition }}
 
+  - ${{ if eq(parameters.HelixUseEntraAuthentication, true) }}:
+    - task: AzureCLI@2
+      displayName: ${{ parameters.DisplayNamePrefix }} (Windows)
+      inputs:
+        azureSubscription: ${{ parameters.HelixAzureSubscription }}
+        keepAzSessionActive: true
+        scriptType: pscore
+        scriptLocation: inlineScript
+        inlineScript: |
+          # AzureCLI@2 replaces SYSTEM_ACCESSTOKEN with the service connection token.
+          $env:SYSTEM_ACCESSTOKEN = $env:HELIX_AZDO_ACCESSTOKEN
+
+          $(Build.SourcesDirectory)\eng\common\msbuild.ps1 `
+            $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }} `
+            /restore `
+            /p:TreatWarningsAsErrors=false `
+            /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }} `
+            /p:HelixUseEntraAuthentication=${{ parameters.HelixUseEntraAuthentication }} `
+            ${{ parameters.HelixProjectArguments }} `
+            /t:Test `
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
+      env:
+        BuildConfig: $(_BuildConfig)
+        HelixSource: ${{ parameters.HelixSource }}
+        HelixType: ${{ parameters.HelixType }}
+        HelixBuild: ${{ parameters.HelixBuild }}
+        HelixConfiguration:  ${{ parameters.HelixConfiguration }}
+        HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
+        HelixPreCommands: ${{ parameters.HelixPreCommands }}
+        HelixPostCommands: ${{ parameters.HelixPostCommands }}
+        WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
+        WorkItemCommand: ${{ parameters.WorkItemCommand }}
+        WorkItemTimeout: ${{ parameters.WorkItemTimeout }}
+        CorrelationPayloadDirectory: ${{ parameters.CorrelationPayloadDirectory }}
+        XUnitProjects: ${{ parameters.XUnitProjects }}
+        XUnitWorkItemTimeout: ${{ parameters.XUnitWorkItemTimeout }}
+        XUnitPublishTargetFramework: ${{ parameters.XUnitPublishTargetFramework }}
+        XUnitRuntimeTargetFramework: ${{ parameters.XUnitRuntimeTargetFramework }}
+        XUnitRunnerVersion: ${{ parameters.XUnitRunnerVersion }}
+        IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
+        DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
+        DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
+        WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
+        HelixBaseUri: ${{ parameters.HelixBaseUri }}
+        Creator: ${{ parameters.Creator }}
+        HELIX_AZDO_ACCESSTOKEN: $(System.AccessToken)
+      condition: and(${{ parameters.condition }}, eq(variables['Agent.Os'], 'Windows_NT'))
+      continueOnError: ${{ parameters.continueOnError }}
+    - task: AzureCLI@2
+      displayName: ${{ parameters.DisplayNamePrefix }} (Unix)
+      inputs:
+        azureSubscription: ${{ parameters.HelixAzureSubscription }}
+        keepAzSessionActive: true
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          # AzureCLI@2 replaces SYSTEM_ACCESSTOKEN with the service connection token.
+          export SYSTEM_ACCESSTOKEN="$HELIX_AZDO_ACCESSTOKEN"
+
+          $(Build.SourcesDirectory)/eng/common/msbuild.sh \
+            $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }} \
+            /restore \
+            /p:TreatWarningsAsErrors=false \
+            /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }} \
+            /p:HelixUseEntraAuthentication=${{ parameters.HelixUseEntraAuthentication }} \
+            ${{ parameters.HelixProjectArguments }} \
+            /t:Test \
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
+      env:
+        BuildConfig: $(_BuildConfig)
+        HelixSource: ${{ parameters.HelixSource }}
+        HelixType: ${{ parameters.HelixType }}
+        HelixBuild: ${{ parameters.HelixBuild }}
+        HelixConfiguration:  ${{ parameters.HelixConfiguration }}
+        HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
+        HelixPreCommands: ${{ parameters.HelixPreCommands }}
+        HelixPostCommands: ${{ parameters.HelixPostCommands }}
+        WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
+        WorkItemCommand: ${{ parameters.WorkItemCommand }}
+        WorkItemTimeout: ${{ parameters.WorkItemTimeout }}
+        CorrelationPayloadDirectory: ${{ parameters.CorrelationPayloadDirectory }}
+        XUnitProjects: ${{ parameters.XUnitProjects }}
+        XUnitWorkItemTimeout: ${{ parameters.XUnitWorkItemTimeout }}
+        XUnitPublishTargetFramework: ${{ parameters.XUnitPublishTargetFramework }}
+        XUnitRuntimeTargetFramework: ${{ parameters.XUnitRuntimeTargetFramework }}
+        XUnitRunnerVersion: ${{ parameters.XUnitRunnerVersion }}
+        IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
+        DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
+        DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
+        WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
+        HelixBaseUri: ${{ parameters.HelixBaseUri }}
+        Creator: ${{ parameters.Creator }}
+        HELIX_AZDO_ACCESSTOKEN: $(System.AccessToken)
+      condition: and(${{ parameters.condition }}, ne(variables['Agent.Os'], 'Windows_NT'))
+      continueOnError: ${{ parameters.continueOnError }}
+
+  - ${{ if eq(parameters.HelixUseEntraAuthentication, false) }}:
+    - powershell: >
+        $(Build.SourcesDirectory)\eng\common\msbuild.ps1
+        $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }}
+        /restore
+        /p:TreatWarningsAsErrors=false
+        /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }}
+        /p:HelixUseEntraAuthentication=${{ parameters.HelixUseEntraAuthentication }}
+        ${{ parameters.HelixProjectArguments }}
+        /t:Test
+        /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
+      displayName: ${{ parameters.DisplayNamePrefix }} (Windows)
+      env:
+        BuildConfig: $(_BuildConfig)
+        HelixSource: ${{ parameters.HelixSource }}
+        HelixType: ${{ parameters.HelixType }}
+        HelixBuild: ${{ parameters.HelixBuild }}
+        HelixConfiguration:  ${{ parameters.HelixConfiguration }}
+        HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
+        HelixAccessToken: ${{ parameters.HelixAccessToken }}
+        HelixPreCommands: ${{ parameters.HelixPreCommands }}
+        HelixPostCommands: ${{ parameters.HelixPostCommands }}
+        WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
+        WorkItemCommand: ${{ parameters.WorkItemCommand }}
+        WorkItemTimeout: ${{ parameters.WorkItemTimeout }}
+        CorrelationPayloadDirectory: ${{ parameters.CorrelationPayloadDirectory }}
+        XUnitProjects: ${{ parameters.XUnitProjects }}
+        XUnitWorkItemTimeout: ${{ parameters.XUnitWorkItemTimeout }}
+        XUnitPublishTargetFramework: ${{ parameters.XUnitPublishTargetFramework }}
+        XUnitRuntimeTargetFramework: ${{ parameters.XUnitRuntimeTargetFramework }}
+        XUnitRunnerVersion: ${{ parameters.XUnitRunnerVersion }}
+        IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
+        DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
+        DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
+        WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
+        HelixBaseUri: ${{ parameters.HelixBaseUri }}
+        Creator: ${{ parameters.Creator }}
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      condition: and(${{ parameters.condition }}, eq(variables['Agent.Os'], 'Windows_NT'))
+      continueOnError: ${{ parameters.continueOnError }}
+    - script: >
+        $(Build.SourcesDirectory)/eng/common/msbuild.sh
+        $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }}
+        /restore
+        /p:TreatWarningsAsErrors=false
+        /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }}
+        /p:HelixUseEntraAuthentication=${{ parameters.HelixUseEntraAuthentication }}
+        ${{ parameters.HelixProjectArguments }}
+        /t:Test
+        /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
+      displayName: ${{ parameters.DisplayNamePrefix }} (Unix)
+      env:
+        BuildConfig: $(_BuildConfig)
+        HelixSource: ${{ parameters.HelixSource }}
+        HelixType: ${{ parameters.HelixType }}
+        HelixBuild: ${{ parameters.HelixBuild }}
+        HelixConfiguration:  ${{ parameters.HelixConfiguration }}
+        HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
+        HelixAccessToken: ${{ parameters.HelixAccessToken }}
+        HelixPreCommands: ${{ parameters.HelixPreCommands }}
+        HelixPostCommands: ${{ parameters.HelixPostCommands }}
+        WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
+        WorkItemCommand: ${{ parameters.WorkItemCommand }}
+        WorkItemTimeout: ${{ parameters.WorkItemTimeout }}
+        CorrelationPayloadDirectory: ${{ parameters.CorrelationPayloadDirectory }}
+        XUnitProjects: ${{ parameters.XUnitProjects }}
+        XUnitWorkItemTimeout: ${{ parameters.XUnitWorkItemTimeout }}
+        XUnitPublishTargetFramework: ${{ parameters.XUnitPublishTargetFramework }}
+        XUnitRuntimeTargetFramework: ${{ parameters.XUnitRuntimeTargetFramework }}
+        XUnitRunnerVersion: ${{ parameters.XUnitRunnerVersion }}
+        IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
+        DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
+        DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
+        WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
+        HelixBaseUri: ${{ parameters.HelixBaseUri }}
+        Creator: ${{ parameters.Creator }}
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      condition: and(${{ parameters.condition }}, ne(variables['Agent.Os'], 'Windows_NT'))
+      continueOnError: ${{ parameters.continueOnError }}

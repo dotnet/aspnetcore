@@ -63,6 +63,8 @@ internal static class HttpCharacters
 
     public static int IndexOfInvalidTokenChar(ReadOnlySpan<byte> span) => span.IndexOfAnyExcept(_allowedTokenBytes);
 
+    public static bool IsValidTokenByte(byte b) => _allowedTokenBytes.Contains(b);
+
     // Follows field-value rules in https://tools.ietf.org/html/rfc7230#section-3.2
     // Disallows characters > 0x7E.
     public static int IndexOfInvalidFieldValueChar(ReadOnlySpan<char> span) => span.IndexOfAnyExcept(_allowedFieldChars);

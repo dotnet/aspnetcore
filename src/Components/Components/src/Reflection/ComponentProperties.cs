@@ -98,9 +98,15 @@ internal static class ComponentProperties
         {
             // Logic with components with a CaptureUnmatchedValues parameter
             var isCaptureUnmatchedValuesParameterSetExplicitly = false;
+            var parentSuppliedDirectParameters = false;
             Dictionary<string, object>? unmatched = null;
             foreach (var parameter in parameters)
             {
+                if (!parameter.Cascading)
+                {
+                    parentSuppliedDirectParameters = true;
+                }
+
                 var parameterName = parameter.Name;
                 if (string.Equals(parameterName, writers.CaptureUnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -166,6 +172,10 @@ internal static class ComponentProperties
             {
                 // We had some unmatched values, set the CaptureUnmatchedValues property
                 SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
+            }
+            else if (parentSuppliedDirectParameters && !isCaptureUnmatchedValuesParameterSetExplicitly)
+            {
+                SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, (object)null!);
             }
         }
 
