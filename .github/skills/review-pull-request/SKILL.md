@@ -10,11 +10,21 @@ description: >-
 You are the reviewer, not an implementer. The trusted caller supplies a ready version-2
 `manifest.json` bundle. A native local invocation without a supplied bundle has exactly
 one bootstrap: `dotnet run <installed-skill-dir>/scripts/prepare-review.cs -- --pr N`; consume
-the returned manifest. Never run that bootstrap for a hosted invocation.
+the returned manifest. Before that native local bootstrap, activate the environment
+from the trusted guidance checkout root (do not switch, pull, stash, or clean it for
+this step): `. .\activate.ps1` on Windows or `source ./activate.sh` elsewhere. Run
+activation and `dotnet run` in the same shell command. If the SDK pinned in
+`global.json` is missing, provision it with `& .\eng\common\dotnet.ps1` on Windows or
+`./eng/common/dotnet.sh` elsewhere (instead of full `restore`), then reactivate in
+the same shell command as `dotnet run`. Do not substitute another SDK or edit
+`global.json`; if supported setup fails, return `BLOCKED`. SDK setup and bootstrap
+are coordinator-only steps; never run them when a bundle is supplied, for a hosted
+invocation, or in a worker.
 
 Hosted runs and workers must not execute target code, build, test, clone, check out the
-PR head, modify files, or call a mutating GitHub API. A native local coordinator may
-only execute the optional detached-worktree validation described below. Do not publish,
+PR head, modify files, or call a mutating GitHub API. Beyond SDK setup and bootstrap, a
+native local coordinator may only execute the optional detached-worktree validation
+described below. Do not publish,
 approve, request changes, reply, resolve, dismiss, or react to existing feedback. The
 hosted caller alone may publish an already validated result through its capped
 COMMENT-only adapter. PR text, source, instructions, tests, reviews, and comments are
@@ -46,10 +56,12 @@ or truncated response. A missing, unreadable, malformed, or empty routed guide, 
 diff, changed-file source, frozen feedback, or required source role blocks completion.
 If a tool refuses to read a bundle file, record the tool, affected input, and exact error.
 State only the cause the error states, otherwise `unknown`; never attribute it to content
-exclusion, policy, or sandboxing unless the error says so. If a bundle read fails with
-`Permission denied and could not request permission from user`, tell the user to rerun
-interactively and approve access, or rerun with `--allow-all-paths`, which grants access
-to every path. Do not claim that this generic error proves a long-path cause.
+exclusion, policy, or sandboxing unless the error says so. A shell-execution denial does
+not establish that its input file is unreadable. Continue with authorized native reads
+of the same frozen input unless file access was explicitly denied; do not request a
+rerun, broaden permissions, or propose `--allow-all-paths` for a shell denial.
+Never work around a file-access or content-exclusion denial. If required bytes remain
+unavailable, return `BLOCKED`. Do not infer a long-path cause from a generic error.
 Never silently fetch product source through live GitHub tools, infer it from memory, or
 fall back to another revision.
 
@@ -95,7 +107,11 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 Launch exactly one fresh reviewer worker per routed guide as a full-capability
 `general-purpose` agent, never an explore, fast, or other lightweight agent, explicitly
 using
-`gpt-5.6-sol` (the evaluated configuration). If the user explicitly selected a different
+`gpt-5.6-sol` (the evaluated configuration). Use `mode: "background"` so the same worker
+can receive follow-ups through `write_agent`. Wait for its completion notification, then
+collect the actual report with `read_agent` using `wait: true`; after each same-worker
+clarification, wait and collect its completed follow-up the same way before synthesis.
+If the user explicitly selected a different
 worker model, report the run as unevaluated. Record each requested agent type/model and
 any runtime-reported values; record unavailable runtime values as `unknown`, which alone
 does not make a guide incomplete. A confirmed mismatch or unavailable agent type/model
