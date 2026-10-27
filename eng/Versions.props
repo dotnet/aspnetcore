@@ -115,13 +115,19 @@
     <!-- Pin the version of the M.CA dependencies that we utilize with a custom version property $(MicrosoftCodeAnalysisVersion_LatestVS) to avoid automatically
     consuming the newest version of the packages when using the $(MicrosoftCodeAnalysisCSharpVersion) properties in source-build. -->
     <MicrosoftCodeAnalysisVersion_LatestVS>5.11.0-1.26420.103</MicrosoftCodeAnalysisVersion_LatestVS>
+    <!-- Newer analyzers and code fixes use the latest VS-compatible Roslyn packages rather than the older analyzer defaults. -->
+    <Analyzer_MicrosoftCodeAnalysisCSharpVersion_LatestVS>$(MicrosoftCodeAnalysisVersion_LatestVS)</Analyzer_MicrosoftCodeAnalysisCSharpVersion_LatestVS>
+    <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion_LatestVS>$(MicrosoftCodeAnalysisVersion_LatestVS)</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion_LatestVS>
+    <Analyzer_MicrosoftCodeAnalysisFeaturesExternalAccessVersion_LatestVS>$(MicrosoftCodeAnalysisVersion_LatestVS)</Analyzer_MicrosoftCodeAnalysisFeaturesExternalAccessVersion_LatestVS>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>
     <MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>
     <MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>
-    <!-- Specifies the version of Roslyn that should be referenced by source generators.
-         This gets overriden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
-    <MicrosoftCodeAnalysisSourceGeneratorVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisSourceGeneratorVersion>
+    <!-- Specifies the versions of Roslyn packages that should be referenced by source generators.
+         These get overridden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
+    <SourceGenerator_MicrosoftCodeAnalysisCommonVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</SourceGenerator_MicrosoftCodeAnalysisCommonVersion>
+    <SourceGenerator_MicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</SourceGenerator_MicrosoftCodeAnalysisCSharpVersion>
+    <SourceGenerator_MicrosoftCodeAnalysisCSharpWorkspacesVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</SourceGenerator_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftIdentityModelJsonWebTokensVersion>$(IdentityModelVersion)</MicrosoftIdentityModelJsonWebTokensVersion>
     <MicrosoftIdentityModelLoggingVersion>$(IdentityModelVersion)</MicrosoftIdentityModelLoggingVersion>
