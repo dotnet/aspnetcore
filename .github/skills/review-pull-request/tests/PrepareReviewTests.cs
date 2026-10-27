@@ -233,9 +233,9 @@ public class PrepareReviewTests
 
         var manifest = await fixture.PrepareAsync();
 
-        AssertJsonEqual(RequiredTextReference("required/policies/0000.source",
+        AssertJsonEqual(RequiredTextReference("required/guides/0000/policies/0000.source",
             "## Required clause\n- First line.\n- Second line."), manifest["policies"]![0]!["body"]!);
-        AssertJsonEqual(RequiredTextReference("required/exclusions/0000-scope.source",
+        AssertJsonEqual(RequiredTextReference("required/coordinator/exclusions/0000-scope.source",
             "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree"),
             manifest["exclusions"]![0]!["scope"]!);
         Assert.Equal("## Required clause\n- First line.\n- Second line.",
@@ -368,7 +368,7 @@ public class PrepareReviewTests
         if (mutation == "reused")
         {
             Assert.Equal(
-                "Prepared required text path is reused: required/exclusions/0000-reason.source",
+                "Prepared required text path is reused: required/coordinator/exclusions/0000-reason.source",
                 exception.Message);
         }
         else if (mutation == "orphan")
@@ -654,7 +654,15 @@ public class PrepareReviewTests
         changed[0]!.AsObject().Remove("previousFilename");
         var bytes = Utf8NoBom.GetBytes(JsonSerializer.Serialize(changed, JsonOptions) + "\n");
         await File.WriteAllBytesAsync(filename, bytes);
-        manifest["artifacts"]!["files.json"] = Convert.ToHexStringLower(SHA256.HashData(bytes));
+        var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
+        manifest["artifacts"]!["files.json"] = hash;
+        foreach (var guide in manifest["guides"]!.AsArray())
+        {
+            var input = guide!["assignment"]!["files"]!.AsArray()
+                .Single(file => file!["kind"]!.GetValue<string>() == "changedFiles")!;
+            input["utf8Bytes"] = bytes.Length;
+            input["sha256"] = hash;
+        }
         await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
         if (components)
         {
@@ -772,6 +780,167 @@ public class PrepareReviewTests
         Assert.Equal(["docs/CrossCuttingGuidance.md", "docs/BlazorComponentsGuidance.md"],
             manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>()));
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Fact]
+    public async Task ProjectsDisjointPerGuideWorkerInputsWithTrustedMetadata()
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        await ConfigureWorkerIsolationGuidanceAsync(fixture);
+        var manifest = await fixture.PrepareAsync();
+        var guides = manifest["guides"]!.AsArray();
+
+        Assert.Equal(2, manifest["version"]!.GetValue<int>());
+        Assert.Equal(2, guides.Count);
+        var requiredPaths = new HashSet<string>(StringComparer.Ordinal);
+        for (var guideIndex = 0; guideIndex < guides.Count; guideIndex++)
+        {
+            var guide = guides[guideIndex]!.AsObject();
+            Assert.Equal(["path", "topics", "assignment"], guide.Select(property => property.Key));
+            var guidePath = guide["path"]!.GetValue<string>();
+            var assignment = guide["assignment"]!.AsObject();
+            Assert.Equal(["head", "mergeBase", "baseTip"],
+                assignment["sourceRoles"]!.AsArray().Select(role => role!.GetValue<string>()));
+
+            var files = assignment["files"]!.AsArray().Select(file => file!.AsObject()).ToArray();
+            var expectedPolicyPath = $"required/guides/{guideIndex:D4}/policies/0000.source";
+            var expectedExclusionPaths = new[]
+            {
+                $"required/guides/{guideIndex:D4}/exclusions/0000-scope.source",
+                $"required/guides/{guideIndex:D4}/exclusions/0000-reason.source",
+                $"required/guides/{guideIndex:D4}/exclusions/0001-body.source",
+            };
+            Assert.Equal(new[]
+            {
+                ("guide", $"guidance/{guidePath}.source"),
+                ("diff", "diff.patch"),
+                ("changedFiles", "files.json"),
+                ("policy", expectedPolicyPath),
+                ("exclusion", expectedExclusionPaths[0]),
+                ("exclusion", expectedExclusionPaths[1]),
+                ("exclusion", expectedExclusionPaths[2]),
+            }, files.Select(file => (
+                file["kind"]!.GetValue<string>(),
+                file["path"]!.GetValue<string>())));
+
+            foreach (var file in files)
+            {
+                var path = file["path"]!.GetValue<string>();
+                var bytes = await File.ReadAllBytesAsync(Path.Combine(
+                    fixture.Output, path.Replace('/', Path.DirectorySeparatorChar)));
+                Assert.Equal(bytes.Length, file["utf8Bytes"]!.GetValue<int>());
+                Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(bytes)), file["sha256"]!.GetValue<string>());
+            }
+
+            var policyPaths = files
+                .Where(file => file["kind"]!.GetValue<string>() == "policy")
+                .Select(file => file["path"]!.GetValue<string>())
+                .ToArray();
+            Assert.Equal([expectedPolicyPath], policyPaths);
+            Assert.Equal([expectedPolicyPath],
+                manifest["policies"]!.AsArray()
+                    .Where(policy => policy!["guide"]!.GetValue<string>() == guidePath)
+                    .Select(policy => policy!["body"]!["path"]!.GetValue<string>()));
+            Assert.True(requiredPaths.Add(expectedPolicyPath));
+
+            var exclusionPaths = files
+                .Where(file => file["kind"]!.GetValue<string>() == "exclusion")
+                .Select(file => file["path"]!.GetValue<string>())
+                .ToArray();
+            Assert.Equal(expectedExclusionPaths, exclusionPaths);
+            Assert.All(exclusionPaths, path => Assert.True(requiredPaths.Add(path)));
+        }
+
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("path")]
+    [InlineData("length")]
+    [InlineData("hash")]
+    [InlineData("policy")]
+    [InlineData("exclusion")]
+    [InlineData("extra")]
+    [InlineData("missing")]
+    [InlineData("source roles")]
+    [InlineData("tampered")]
+    public async Task CheckRejectsChangedWorkerAssignment(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        await ConfigureWorkerIsolationGuidanceAsync(fixture);
+        var manifest = await fixture.PrepareAsync();
+        var firstGuide = manifest["guides"]![0]!.AsObject();
+        var secondGuide = manifest["guides"]![1]!.AsObject();
+        var files = firstGuide["assignment"]!["files"]!.AsArray();
+        var guideInput = files.Single(file => file!["kind"]!.GetValue<string>() == "guide")!.AsObject();
+
+        switch (mutation)
+        {
+            case "path":
+                guideInput["path"] = secondGuide["assignment"]!["files"]!.AsArray()
+                    .Single(file => file!["kind"]!.GetValue<string>() == "guide")!["path"]!.GetValue<string>();
+                break;
+            case "length":
+                guideInput["utf8Bytes"] = guideInput["utf8Bytes"]!.GetValue<int>() + 1;
+                break;
+            case "hash":
+                guideInput["sha256"] = new string('0', 64);
+                break;
+            case "policy":
+                var policyIndex = files
+                    .Select((file, index) => (File: file!, Index: index))
+                    .Single(item => item.File["kind"]!.GetValue<string>() == "policy")
+                    .Index;
+                files[policyIndex] = secondGuide["assignment"]!["files"]!.AsArray()
+                    .Single(file => file!["kind"]!.GetValue<string>() == "policy")!.DeepClone();
+                break;
+            case "exclusion":
+                var exclusionIndex = files
+                    .Select((file, index) => (File: file!, Index: index))
+                    .First(item => item.File["kind"]!.GetValue<string>() == "exclusion")
+                    .Index;
+                files[exclusionIndex] = secondGuide["assignment"]!["files"]!.AsArray()
+                    .First(file => file!["kind"]!.GetValue<string>() == "exclusion")!.DeepClone();
+                break;
+            case "extra":
+                files.Add(guideInput.DeepClone());
+                break;
+            case "missing":
+                files.Remove(files.Single(file => file!["kind"]!.GetValue<string>() == "changedFiles"));
+                break;
+            case "source roles":
+                firstGuide["assignment"]!["sourceRoles"] = new JsonArray("head", "baseTip", "mergeBase");
+                break;
+            case "tampered":
+                var projected = files.First(file => file!["kind"]!.GetValue<string>() == "exclusion")!;
+                await File.AppendAllTextAsync(Path.Combine(fixture.Output,
+                    projected["path"]!.GetValue<string>().Replace('/', Path.DirectorySeparatorChar)), "tampered", Utf8NoBom);
+                break;
+        }
+
+        await fixture.WriteManifestAsync(manifest);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Contains(mutation == "tampered" ? "required text" : "worker assignment",
+            exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task ConfigureWorkerIsolationGuidanceAsync(Fixture fixture)
+    {
+        await fixture.WriteGuidanceAsync(".github/skills/review-pull-request/routing.md",
+            "| Changed path prefix | Guide |\n| --- | --- |\n" +
+            "| * | docs/CrossCuttingGuidance.md |\n" +
+            "| src/Components/ | docs/BlazorComponentsGuidance.md |\n");
+        await fixture.WriteGuidanceAsync("docs/CrossCuttingGuidance.md",
+            "# Cross-cutting\n## Overarching principles\n- Apply [the cross policy](CrossPolicy.md#cross-policy).\n" +
+            "## Topics\n### Correctness\n- Review correctness.\n");
+        await fixture.WriteGuidanceAsync("docs/BlazorComponentsGuidance.md",
+            "# Components\n## Overarching principles\n- Apply [the Components policy](ComponentsPolicy.md#components-policy).\n" +
+            "## Topics\n### Components\n- Review Components behavior.\n");
+        await fixture.WriteGuidanceAsync("docs/CrossPolicy.md",
+            "# Cross requirements\n## Cross Policy\n- Cross-cutting requirement.\n");
+        await fixture.WriteGuidanceAsync("docs/ComponentsPolicy.md",
+            "# Components requirements\n## Components Policy\n- Components requirement.\n");
     }
 
     [Fact]

@@ -339,6 +339,32 @@ internal static partial class PrepareReviewProgram
     private static Task WriteAsync(string directory, string name, string text) =>
         WriteAsync(directory, name, Utf8NoBom.GetBytes(text));
 
+    private static JsonObject FileReference(string path, byte[] bytes) => new()
+    {
+        ["path"] = path,
+        ["utf8Bytes"] = bytes.Length,
+        ["sha256"] = Hash(bytes),
+    };
+
+    private static async Task<JsonObject> FileReferenceAsync(string output, string path) =>
+        FileReference(path, await File.ReadAllBytesAsync(
+            Path.Combine(output, path.Replace('/', Path.DirectorySeparatorChar))));
+
+    private static JsonObject AssignedFile(string kind, JsonObject reference) => new()
+    {
+        ["kind"] = kind,
+        ["path"] = reference["path"]!.GetValue<string>(),
+        ["utf8Bytes"] = reference["utf8Bytes"]!.GetValue<int>(),
+        ["sha256"] = reference["sha256"]!.GetValue<string>(),
+    };
+
+    private static JsonObject AssignedFileReference(JsonObject assigned) => new()
+    {
+        ["path"] = assigned["path"]!.GetValue<string>(),
+        ["utf8Bytes"] = assigned["utf8Bytes"]!.GetValue<int>(),
+        ["sha256"] = assigned["sha256"]!.GetValue<string>(),
+    };
+
     private static async Task<JsonObject> WriteRequiredTextAsync(string output, string path, string text)
     {
         Require(path.StartsWith($"{RequiredTextRoot}/", StringComparison.Ordinal) && path.EndsWith(Suffix, StringComparison.Ordinal),
@@ -347,12 +373,7 @@ internal static partial class PrepareReviewProgram
         var bytes = Utf8NoBom.GetBytes(text);
         RequireMaximumLineLength(bytes, path, "Required text");
         await WriteAsync(output, path, bytes);
-        return new JsonObject
-        {
-            ["path"] = path,
-            ["utf8Bytes"] = bytes.Length,
-            ["sha256"] = Hash(bytes),
-        };
+        return FileReference(path, bytes);
     }
 
     private static void RequireMaximumLineLength(byte[] bytes, string name, string kind)
@@ -1543,44 +1564,75 @@ internal static partial class PrepareReviewProgram
         var policies = new JsonArray();
         var context = new JsonArray();
         var routing = await RouteGuidesAsync(Path.Combine(output, "guidance"), files);
+        var workerArtifacts = new Dictionary<string, JsonObject>(StringComparer.Ordinal)
+        {
+            ["diff"] = await FileReferenceAsync(output, "diff.patch"),
+            ["changedFiles"] = await FileReferenceAsync(output, "files.json"),
+        };
+        var securityExclusion = ResolvePolicy(
+            await File.ReadAllTextAsync(Path.Combine(output, "guidance",
+                (".github/copilot-instructions.md" + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
+            "security-concerns-are-out-of-scope", ".github/copilot-instructions.md");
         var exclusions = new JsonArray(new JsonObject
         {
             ["scope"] = await WriteRequiredTextAsync(
-                output, $"{RequiredTextRoot}/exclusions/0000-scope{Suffix}", ExecutionExclusionScope),
+                output, $"{RequiredTextRoot}/coordinator/exclusions/0000-scope{Suffix}", ExecutionExclusionScope),
             ["reason"] = await WriteRequiredTextAsync(
-                output, $"{RequiredTextRoot}/exclusions/0000-reason{Suffix}", ExecutionExclusionReason),
+                output, $"{RequiredTextRoot}/coordinator/exclusions/0000-reason{Suffix}", ExecutionExclusionReason),
         });
         const string instructionPath = ".github/copilot-instructions.md";
-        var instruction = await File.ReadAllTextAsync(Path.Combine(output, "guidance",
-            (instructionPath + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
         exclusions.Add(new JsonObject
         {
             ["source"] = $"{instructionPath}#security-concerns-are-out-of-scope",
             ["body"] = await WriteRequiredTextAsync(
-                output, $"{RequiredTextRoot}/exclusions/0001-body{Suffix}",
-                ResolvePolicy(instruction, "security-concerns-are-out-of-scope", instructionPath)),
+                output, $"{RequiredTextRoot}/coordinator/exclusions/0001-body{Suffix}", securityExclusion),
         });
         var skippedLinks = new JsonArray();
-        foreach (var name in routing.Guides)
+        for (var guideIndex = 0; guideIndex < routing.Guides.Count; guideIndex++)
         {
-            var body = await File.ReadAllTextAsync(Path.Combine(output, "guidance",
-                (name + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
+            var name = routing.Guides[guideIndex];
+            var guideInputPath = $"guidance/{name}{Suffix}";
+            var body = await File.ReadAllTextAsync(Path.Combine(
+                output, guideInputPath.Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
             var parsed = ValidateGuide(body, name);
-            guides.Add(new JsonObject { ["path"] = name, ["topics"] = new JsonArray(parsed.Topics.Select(topic => JsonValue.Create(topic)).ToArray()) });
+            var assignedFiles = new JsonArray(
+                AssignedFile("guide", await FileReferenceAsync(output, guideInputPath)),
+                AssignedFile("diff", workerArtifacts["diff"]),
+                AssignedFile("changedFiles", workerArtifacts["changedFiles"]));
             var links = GuideLinks(body, name);
             foreach (var link in links.Skipped) skippedLinks.Add(LinkJson(link));
             var classified = await ContextLinksAsync(links.Context, Path.Combine(output, "guidance"), guidance["pointers"]?.AsArray());
             foreach (var item in classified) context.Add(item!.DeepClone());
+            var guidePolicyIndex = 0;
             foreach (var link in links.Included)
             {
                 var target = await File.ReadAllTextAsync(Path.Combine(output, "guidance",
                     (link.Path + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
                 var item = LinkJson(link);
-                item["body"] = await WriteRequiredTextAsync(
-                    output, $"{RequiredTextRoot}/policies/{policies.Count:D4}{Suffix}",
+                var policyBody = await WriteRequiredTextAsync(
+                    output, $"{RequiredTextRoot}/guides/{guideIndex:D4}/policies/{guidePolicyIndex:D4}{Suffix}",
                     ResolvePolicy(target, link.Anchor!, link.Path));
+                item["body"] = policyBody;
                 policies.Add(item);
+                assignedFiles.Add(AssignedFile("policy", policyBody));
+                guidePolicyIndex++;
             }
+            assignedFiles.Add(AssignedFile("exclusion", await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0000-scope{Suffix}", ExecutionExclusionScope)));
+            assignedFiles.Add(AssignedFile("exclusion", await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0000-reason{Suffix}", ExecutionExclusionReason)));
+            assignedFiles.Add(AssignedFile("exclusion", await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0001-body{Suffix}", securityExclusion)));
+            guides.Add(new JsonObject
+            {
+                ["path"] = name,
+                ["topics"] = new JsonArray(parsed.Topics.Select(topic => JsonValue.Create(topic)).ToArray()),
+                ["assignment"] = new JsonObject
+                {
+                    ["files"] = assignedFiles,
+                    ["sourceRoles"] = new JsonArray("head", "mergeBase", "baseTip"),
+                },
+            });
         }
         Require(JsonEqual((await Freeze()).Identity, frozen.Identity), TargetMovedDuringPreparationMessage);
         var manifestStopwatch = Stopwatch.StartNew();
@@ -1690,6 +1742,11 @@ internal static partial class PrepareReviewProgram
         var feedback = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "feedback.json")))!.AsObject();
         ValidateProjectedPull(pull);
         ValidateProjectedFeedback(feedback);
+        const string instructions = ".github/copilot-instructions.md";
+        var preparedSecurityExclusion = ResolvePolicy(
+            await File.ReadAllTextAsync(Path.Combine(output, "guidance",
+                (instructions + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
+            "security-concerns-are-out-of-scope", instructions);
         var requiredReferences = new List<JsonObject>();
         if (pull["body"] is JsonObject pullBody)
         {
@@ -1725,6 +1782,94 @@ internal static partial class PrepareReviewProgram
             var path = await ValidateRequiredTextReferenceAsync(output, reference);
             Require(!requiredNames.Contains(path, StringComparer.Ordinal), $"Prepared required text path is reused: {path}");
             requiredNames.Add(path);
+        }
+        var guideIndex = 0;
+        foreach (var guideNode in manifest["guides"]!.AsArray())
+        {
+            var guide = guideNode!.AsObject();
+            RequireProperties(guide, "guide", ["path", "topics", "assignment"]);
+            var guidePath = guide["path"]!.GetValue<string>();
+            var assignment = guide["assignment"]!.AsObject();
+            RequireProperties(assignment, "worker assignment", ["files", "sourceRoles"]);
+            Require(assignment["sourceRoles"]!.AsArray().Select(role => role!.GetValue<string>())
+                .SequenceEqual(["head", "mergeBase", "baseTip"], StringComparer.Ordinal),
+                $"Prepared worker assignment has invalid source roles: {guidePath}");
+            var assignedFiles = assignment["files"]!.AsArray().Select(file => file!.AsObject()).ToArray();
+            Require(assignedFiles.Select(file => file["path"]!.GetValue<string>()).Distinct(StringComparer.Ordinal).Count()
+                == assignedFiles.Length, $"Prepared worker assignment reuses an input path: {guidePath}");
+            foreach (var assigned in assignedFiles)
+            {
+                RequireProperties(assigned, "worker assignment file", ["kind", "path", "utf8Bytes", "sha256"]);
+                Require(assigned["kind"]!.GetValue<string>()
+                    is "guide" or "policy" or "exclusion" or "diff" or "changedFiles",
+                    $"Prepared worker assignment has an invalid input kind: {guidePath}");
+            }
+
+            var guideInput = assignedFiles.SingleOrDefault(file => file["kind"]!.GetValue<string>() == "guide");
+            Require(guideInput is not null
+                && guideInput["path"]!.GetValue<string>() == $"guidance/{guidePath}{Suffix}",
+                $"Prepared worker assignment has the wrong guide input: {guidePath}");
+            await ValidateFileReferenceAsync(output, AssignedFileReference(guideInput!), "worker assignment guide");
+
+            foreach (var (kind, path, artifactName) in new[]
+            {
+                ("diff", "diff.patch", "diff.patch"),
+                ("changedFiles", "files.json", "files.json"),
+            })
+            {
+                var input = assignedFiles.SingleOrDefault(file => file["kind"]!.GetValue<string>() == kind);
+                Require(input is not null && input["path"]!.GetValue<string>() == path
+                    && input["sha256"]!.GetValue<string>() == artifacts![artifactName]!.GetValue<string>(),
+                    $"Prepared worker assignment has the wrong {kind} input: {guidePath}");
+                await ValidateFileReferenceAsync(output, AssignedFileReference(input!), $"worker assignment {kind}");
+            }
+
+            var expectedAssignedPolicies = manifest["policies"]!.AsArray()
+                .Where(policy => policy!["guide"]!.GetValue<string>() == guidePath)
+                .Select(policy => policy!["body"]!.AsObject())
+                .ToArray();
+            var assignedPolicies = assignedFiles
+                .Where(file => file["kind"]!.GetValue<string>() == "policy")
+                .Select(AssignedFileReference)
+                .ToArray();
+            Require(expectedAssignedPolicies.Length == assignedPolicies.Length,
+                "Prepared required policy inputs are incomplete.");
+            Require(expectedAssignedPolicies.Zip(assignedPolicies).All(pair => JsonEqual(pair.First, pair.Second)),
+                $"Prepared worker assignment has incorrect policy inputs: {guidePath}");
+            for (var policyIndex = 0; policyIndex < assignedPolicies.Length; policyIndex++)
+            {
+                var policy = assignedPolicies[policyIndex];
+                var path = await ValidateRequiredTextReferenceAsync(output, policy);
+                Require(path == $"{RequiredTextRoot}/guides/{guideIndex:D4}/policies/{policyIndex:D4}{Suffix}",
+                    $"Prepared worker assignment policy has an invalid projected path: {guidePath}");
+            }
+
+            var assignedExclusions = assignedFiles
+                .Where(file => file["kind"]!.GetValue<string>() == "exclusion")
+                .Select(AssignedFileReference)
+                .ToArray();
+            Require(assignedExclusions.Length == 3,
+                $"Prepared worker assignment has incorrect exclusion inputs: {guidePath}");
+            var expectedExclusionText = new[] { ExecutionExclusionScope, ExecutionExclusionReason, preparedSecurityExclusion };
+            var expectedExclusionPaths = new[]
+            {
+                $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0000-scope{Suffix}",
+                $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0000-reason{Suffix}",
+                $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0001-body{Suffix}",
+            };
+            for (var exclusionIndex = 0; exclusionIndex < assignedExclusions.Length; exclusionIndex++)
+            {
+                var reference = assignedExclusions[exclusionIndex];
+                var path = await ValidateRequiredTextReferenceAsync(output, reference);
+                Require(path == expectedExclusionPaths[exclusionIndex],
+                    $"Prepared worker assignment exclusion has an invalid projected path: {guidePath}");
+                Require(!requiredNames.Contains(path, StringComparer.Ordinal),
+                    $"Prepared required text path is reused: {path}");
+                requiredNames.Add(path);
+                Require(await ReadRequiredTextAsync(output, reference) == expectedExclusionText[exclusionIndex],
+                    $"Prepared worker assignment exclusion changed: {guidePath}");
+            }
+            guideIndex++;
         }
         var actualRequiredNames = Walk(Path.Combine(output, RequiredTextRoot))
             .Select(name => $"{RequiredTextRoot}/{name}").ToArray();
@@ -1777,14 +1922,10 @@ internal static partial class PrepareReviewProgram
             Require(actual == await ReadRequiredTextAsync(output, policy["body"]!.AsObject()),
                 $"Prepared policy clauses changed: {path}#{policy["anchor"]!.GetValue<string>()}");
         }
-        const string instructions = ".github/copilot-instructions.md";
         Require(manifest["exclusions"]!.AsArray().Count == 2
             && await ReadRequiredTextAsync(output, manifest["exclusions"]![0]!["scope"]!.AsObject()) == ExecutionExclusionScope
             && await ReadRequiredTextAsync(output, manifest["exclusions"]![0]!["reason"]!.AsObject()) == ExecutionExclusionReason
-            && await ReadRequiredTextAsync(output, manifest["exclusions"]![1]!["body"]!.AsObject()) == ResolvePolicy(
-                await File.ReadAllTextAsync(Path.Combine(output, "guidance",
-                    (instructions + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
-                "security-concerns-are-out-of-scope", instructions),
+            && await ReadRequiredTextAsync(output, manifest["exclusions"]![1]!["body"]!.AsObject()) == preparedSecurityExclusion,
             "Prepared exclusions do not match the trusted instruction snapshot.");
         Require(JsonEqual((await freeze()).Identity, manifest["target"]),
             "The target or base branch moved during validation.");
@@ -1798,6 +1939,41 @@ internal static partial class PrepareReviewProgram
         await WriteAsync(directory, name, bytes);
     }
 
+    private static async Task<(string Path, byte[] Bytes)> ValidateFileReferenceAsync(
+        string output, JsonObject reference, string description)
+    {
+        RequireProperties(reference, description, ["path", "utf8Bytes", "sha256"]);
+        var path = reference["path"]!.GetValue<string>();
+        Require(path.Length > 0
+            && !Path.IsPathFullyQualified(path)
+            && !path.Contains('\\', StringComparison.Ordinal)
+            && !path.Split('/').Contains("..", StringComparer.Ordinal),
+            $"Prepared {description} path is invalid: {path}");
+        var fullOutput = Path.GetFullPath(output);
+        var fullPath = Path.GetFullPath(Path.Combine(output, path.Replace('/', Path.DirectorySeparatorChar)));
+        Require(fullPath.StartsWith(fullOutput + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase),
+            $"Prepared {description} path escapes the bundle: {path}");
+        byte[] bytes;
+        try
+        {
+            var info = new FileInfo(fullPath);
+            Require(info.Exists && info.LinkTarget is null
+                && (info.Attributes & (FileAttributes.Directory | FileAttributes.Device | FileAttributes.ReparsePoint)) == 0,
+                $"Prepared {description} is missing or not an ordinary file: {path}");
+            bytes = await File.ReadAllBytesAsync(fullPath);
+        }
+        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException
+            or UnauthorizedAccessException or IOException)
+        {
+            throw new InvalidOperationException($"Prepared {description} is unreadable: {path}", error);
+        }
+        Require(bytes.Length == reference["utf8Bytes"]!.GetValue<int>(),
+            $"Prepared {description} has the wrong UTF-8 byte length: {path}");
+        Require(Hash(bytes) == reference["sha256"]!.GetValue<string>(),
+            $"Prepared {description} has the wrong SHA-256: {path}");
+        return (path, bytes);
+    }
+
     private static async Task<string> ValidateRequiredTextReferenceAsync(string output, JsonObject reference)
     {
         Require(reference.Select(pair => pair.Key).SequenceEqual(["path", "utf8Bytes", "sha256"]),
@@ -1808,28 +1984,7 @@ internal static partial class PrepareReviewProgram
             && !path.Split('/').Contains("..", StringComparer.Ordinal),
             $"Prepared required text path is invalid: {path}");
         CheckPaths([path[..^Suffix.Length]]);
-        var fullOutput = Path.GetFullPath(output);
-        var fullPath = Path.GetFullPath(Path.Combine(output, path.Replace('/', Path.DirectorySeparatorChar)));
-        Require(fullPath.StartsWith(fullOutput + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase),
-            $"Prepared required text path escapes the bundle: {path}");
-        byte[] bytes;
-        try
-        {
-            var info = new FileInfo(fullPath);
-            Require(info.Exists && info.LinkTarget is null
-                && (info.Attributes & (FileAttributes.Directory | FileAttributes.Device | FileAttributes.ReparsePoint)) == 0,
-                $"Prepared required text is missing or not an ordinary file: {path}");
-            bytes = await File.ReadAllBytesAsync(fullPath);
-        }
-        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException
-            or UnauthorizedAccessException or IOException)
-        {
-            throw new InvalidOperationException($"Prepared required text is unreadable: {path}", error);
-        }
-        Require(bytes.Length == reference["utf8Bytes"]!.GetValue<int>(),
-            $"Prepared required text has the wrong UTF-8 byte length: {path}");
-        Require(Hash(bytes) == reference["sha256"]!.GetValue<string>(),
-            $"Prepared required text has the wrong SHA-256: {path}");
+        var (_, bytes) = await ValidateFileReferenceAsync(output, reference, "required text");
         RequireMaximumLineLength(bytes, path, "Prepared required text");
         return path;
     }

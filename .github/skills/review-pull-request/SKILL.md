@@ -61,12 +61,22 @@ limit for a valid multiline required-text file.
 The coordinator uses `diff.patch` and `files.json` for changed-line anchors,
 `feedback.json` for deduplication, and `pull.json` for context. It owns the complete
 manifest, pull, feedback, deduplication, and optional context reads. A guide worker
-requires only its assigned full guide, the policy sources applicable to that guide,
-the projected changed-file metadata, the complete diff, frozen identities and source
-roots supplied by the coordinator, and relevant frozen source bodies. Do not require
-or ask a guide worker to read `manifest.json`, `pull.json`, `feedback.json`, another
-guide, unrelated policies, or optional context. The coordinator remains responsible
-for independently adjudicating every returned candidate. Read full
+requires only the exact files and source roles in its trusted `guides[].assignment`.
+That assignment contains its full guide, guide-specific policy and exclusion
+projections, projected changed-file metadata, complete diff, and frozen source roles.
+Its non-source files form a closed exact-file allowlist: read each directly by the
+assigned path and verify the assigned UTF-8 byte length and SHA-256. Do not list,
+enumerate, glob, search, or bulk-read their parent or shared bundle directories, use a
+file, directory, `rg`, glob, or shell scope that can return an unassigned bundle
+artifact, infer sibling paths from naming patterns, or consume intermediate output
+derived from such a scope. Assigned frozen `source/<sha>` roots are the only
+directory-scoped exception and may be searched only for source relevant to the
+assigned guide, changed files, candidates, and required producer, consumer, overload,
+type, or target-contract paths. Do not require or ask a guide worker to read
+`manifest.json`, `pull.json`, `feedback.json`, another guide, unrelated policies, or
+optional context. A missing or unreadable assigned file is a required-input failure,
+not permission to discover alternatives. The coordinator remains responsible for
+independently adjudicating every returned candidate. Read full
 relevant source bodies in bounded ranges rather than relying on a search hit, summary,
 or truncated response. A missing, unreadable, malformed, or empty routed guide, policy,
 diff, changed-file source, frozen feedback, or required source role blocks completion.
@@ -131,11 +141,17 @@ If the user explicitly selected a different
 worker model, report the run as unevaluated. Record each requested agent type/model and
 any runtime-reported values; record unavailable runtime values as `unknown`, which alone
 does not make a guide incomplete. A confirmed mismatch or unavailable agent type/model
-makes that guide `incomplete`. Give each worker the **entire guide text**, all applicable
-policy clauses, frozen identities, changed-file list, diff, and source-root paths. A
-worker applies every guide topic, performs source-only review, returns *candidates rather
-than publishing*, and reports `complete`, `incomplete` only for a required-input/read
-failure or worker-configuration mismatch, or `excluded`
+makes that guide `incomplete`. Give each worker the trusted absolute bundle root (the
+directory containing `manifest.json`), its routed guide's verbatim
+`guides[].assignment` object, the frozen `target` identities, and a role-to-root mapping
+containing only `sources[role].root` for the roles named by
+`assignment.sourceRoles`. Resolve those bundle-relative file and source-root paths
+beneath the supplied bundle root. Keep guide, policy, exclusion, diff, and changed-file
+inputs as the exact references in `assignment.files`; do not duplicate or inline their
+contents.
+A worker applies every guide topic, performs source-only review, returns *candidates
+rather than publishing*, and reports `complete`, `incomplete` only for a
+required-input/read failure or worker-configuration mismatch, or `excluded`
 with the excluded scope/reason. A guide with both excluded and in-scope checks must
 report the completed in-scope work and the exclusions separately. A routed per-guide
 worker must make exactly one platform-required initial native call:
@@ -148,8 +164,9 @@ bootstrap, or `prepare-review`; read `manifest.json`, `pull.json`,
 `feedback.json`, deduplication, optional context, or other coordinator-only inputs; use
 live GitHub or fetch; call `rename_session`, `task`, or any subagent/session-spawn tool;
 aggregate guides or emit combined coordinator output; copy, re-export, or modify the
-bundle; mutate or publish; or execute target code. It reads the supplied bundle in place
-through only its assigned input paths. A worker labels its own report
+bundle; mutate or publish; or execute target code. It reads the supplied bundle in
+place through only the exact assigned file paths and allowed frozen source roots. A
+worker labels its own report
 `PATH: per-guide-worker` and names only its assigned guide; only the coordinator labels
 the combined result `PATH: per-guide`. Do not label a per-guide worker
 `single-reviewer` or claim that its own guide result completes the entire PR. If a
