@@ -80,6 +80,7 @@ public class PrepareReviewTests
             fixture.Output, "guidance/.github/skills/review-pull-request/routing.md.source")))),
             manifest["routing"]!["sha256"]!.GetValue<string>());
         Assert.Equal(2, manifest["exclusions"]!.AsArray().Count);
+        AssertExecutionExclusion(manifest);
         Assert.Contains("Do not review the excluded scope", manifest["exclusions"]![1]!["body"]!.GetValue<string>());
         foreach (var name in new[] { "apiFreeze", "fetch", "changedFiles", "diff", "feedback", "manifest" })
         {
@@ -740,7 +741,32 @@ public class PrepareReviewTests
         Assert.Equal("remote", manifest["guidance"]!["mode"]!.GetValue<string>());
         Assert.Contains("REMOTE_GUIDANCE", await File.ReadAllTextAsync(Path.Combine(fixture.Output,
             "guidance/docs/CrossCuttingGuidance.md.source"), Utf8NoBom));
+        AssertExecutionExclusion(manifest);
         Assert.True((await fixture.CheckAsync(options))["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("scope")]
+    [InlineData("reason")]
+    [InlineData("legacy")]
+    public async Task RejectsReuseWithChangedExecutionExclusion(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var manifest = await fixture.PrepareAsync();
+        var exclusion = manifest["exclusions"]![0]!;
+        if (mutation == "legacy")
+        {
+            exclusion["scope"] = "Running PR code, tests, CI, browser workflows, or implementation samples";
+            exclusion["reason"] = "This is a source-only review; assess changed tests and contracts from source.";
+        }
+        else
+        {
+            exclusion[mutation] = "CHANGED";
+        }
+        await fixture.WriteManifestAsync(manifest);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Equal("Prepared exclusions do not match the trusted instruction snapshot.", exception.Message);
     }
 
     public static TheoryData<string> ReuseMutations => new()
@@ -902,6 +928,17 @@ public class PrepareReviewTests
             Assert.Throws<InvalidOperationException>(() => PrepareReviewProgram.CheckPaths(names));
         }
         PrepareReviewProgram.CheckPaths(["src/File.cs", "src/AGENTS.md", ".github/copilot-instructions.md"]);
+    }
+
+    private static void AssertExecutionExclusion(JsonObject manifest)
+    {
+        Assert.Equal("Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree",
+            manifest["exclusions"]![0]!["scope"]!.GetValue<string>());
+        Assert.Equal("Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
+            "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
+            "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
+            "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.",
+            manifest["exclusions"]![0]!["reason"]!.GetValue<string>());
     }
 
     private static string SourcePath([CallerFilePath] string path = "") => path;

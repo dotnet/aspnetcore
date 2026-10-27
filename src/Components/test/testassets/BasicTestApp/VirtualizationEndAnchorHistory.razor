@@ -1,0 +1,60 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<p id="item-count">@items.Count</p>
+<p id="initial-history-count">@initialHistoryCount</p>
+
+<div id="scroll-container" style="height: 440px; overflow-y: auto;">
+    <Virtualize @ref="virtualize"
+                ItemsProvider="GetItemsAsync"
+                ItemSize="20"
+                AnchorMode="VirtualizeAnchorMode.End">
+        <div class="item" data-index="@context" style="height: 20px;">Item #@context</div>
+        @if (context == 0 && !historyStarted)
+        {
+            @LoadHistoryAfterRender
+        }
+    </Virtualize>
+</div>
+
+@code {
+    private readonly List<int> items = [0];
+    private Virtualize<int> virtualize;
+    private bool historyStarted;
+    private int initialHistoryCount;
+
+    private RenderFragment LoadHistoryAfterRender => builder =>
+    {
+        builder.OpenComponent<HistoryLoader>(0);
+        builder.AddAttribute(1, nameof(HistoryLoader.OnRendered), EventCallback.Factory.Create(this, LoadHistoryAsync));
+        builder.CloseComponent();
+    };
+
+    private ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
+        => ValueTask.FromResult(new ItemsProviderResult<int>(
+            items.Skip(request.StartIndex).Take(request.Count).ToArray(),
+            items.Count));
+
+    private async Task LoadHistoryAsync()
+    {
+        if (historyStarted)
+        {
+            return;
+        }
+
+        historyStarted = true;
+        initialHistoryCount = items.Count;
+
+        items.InsertRange(0, Enumerable.Range(1, 2695));
+        await virtualize.RefreshDataAsync();
+    }
+
+    // Start history loading when the first item renders, without waiting for observers to settle.
+    private sealed class HistoryLoader : ComponentBase
+    {
+        [Parameter]
+        public EventCallback OnRendered { get; set; }
+
+        protected override Task OnAfterRenderAsync(bool firstRender)
+            => firstRender ? OnRendered.InvokeAsync() : Task.CompletedTask;
+    }
+}
