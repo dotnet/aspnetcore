@@ -41,6 +41,25 @@ internal class ComponentsActivityLinkStore
         _store[category] = new CategoryLink(activityLink, tag);
     }
 
+    public bool TryGetActivityContext(string category, out ActivityContext activityLink, out KeyValuePair<string, object?>? tag)
+    {
+        if (_store.TryGetValue(category, out var link))
+        {
+            activityLink = link.Item1;
+            tag = link.Item2;
+            return true;
+        }
+
+        activityLink = default;
+        tag = default;
+        return false;
+    }
+
+    public void RemoveActivityContext(string category)
+    {
+        _store.Remove(category);
+    }
+
     public void AddActivityContexts(string exceptCategory, Activity targetActivity)
     {
         foreach (var kvp in _store)

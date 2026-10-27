@@ -1,0 +1,15 @@
+<span id="activity-links-instance">@_instanceId</span>
+<span id="activity-links-interactive">@RendererInfo.IsInteractive</span>
+<span id="activity-links-runtime">@(OperatingSystem.IsBrowser() ? "webassembly" : "server")</span>
+<button id="activity-links-trigger" @onclick="Trigger">Trigger activity</button>
+<span id="activity-links-trigger-count">@_count</span>
+
+@code {
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+    private int _count;
+
+    private void Trigger()
+    {
+        _count++;
+    }
+}
