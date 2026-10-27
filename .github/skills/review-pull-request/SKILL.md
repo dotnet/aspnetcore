@@ -137,9 +137,19 @@ worker applies every guide topic, performs source-only review, returns *candidat
 than publishing*, and reports `complete`, `incomplete` only for a required-input/read
 failure or worker-configuration mismatch, or `excluded`
 with the excluded scope/reason. A guide with both excluded and in-scope checks must
-report the completed in-scope work and the exclusions separately. Workers must not call
-`rename_session`, re-invoke this skill, copy or re-export the bundle, or modify it; they
-read the supplied bundle in place. A worker labels its own report
+report the completed in-scope work and the exclusions separately. A routed per-guide
+worker must make exactly one platform-required initial native call:
+`skill(skill="review-pull-request")`. That call must be first; it is instruction
+acquisition, not behavioral recursion. When this skill is loaded for an assigned
+frozen-bundle per-guide task, the worker immediately remains in the
+`PATH: per-guide-worker` role and must not execute or reproduce coordinator behavior.
+No second or later skill invocation is allowed. The worker must not run SDK setup,
+bootstrap, or `prepare-review`; read `manifest.json`, `pull.json`,
+`feedback.json`, deduplication, optional context, or other coordinator-only inputs; use
+live GitHub or fetch; call `rename_session`, `task`, or any subagent/session-spawn tool;
+aggregate guides or emit combined coordinator output; copy, re-export, or modify the
+bundle; mutate or publish; or execute target code. It reads the supplied bundle in place
+through only its assigned input paths. A worker labels its own report
 `PATH: per-guide-worker` and names only its assigned guide; only the coordinator labels
 the combined result `PATH: per-guide`. Do not label a per-guide worker
 `single-reviewer` or claim that its own guide result completes the entire PR. If a
