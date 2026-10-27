@@ -110,16 +110,22 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal(10, () => Browser.FindElements(By.CssSelector("#grid .quickgrid tbody tr")).Count);
     }
 
-    [Theory]
-    [InlineData(".first-paginator", "Pagination")]
-    [InlineData(".top-paginator", "Pagination")]
-    [InlineData(".bottom-paginator", "People pages")]
-    [InlineData(".labelled-paginator", "More people pages")]
-    public void PaginatorNavigationHasAccessibleName(string selector, string expectedName)
+    [Fact]
+    public void PaginatorNavigationHasAccessibleName()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
 
-        Browser.Equal(expectedName, () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector($"{selector} .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("Pagination", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".first-paginator .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("Pagination", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".top-paginator .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("People pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+
+        Browser.Click(By.Id("toggle-paginator-labelledby"));
+
+        Browser.Equal("More people pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+
+        Browser.Click(By.Id("toggle-paginator-labelledby"));
+
+        Browser.Equal("People pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
     }
 
     [Fact]
