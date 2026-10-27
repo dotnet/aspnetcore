@@ -675,6 +675,12 @@ try {
     } $true 'Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: per-guide-worker. Clarification complete; the candidate remains unresolved.'
     Invoke-Control transport-worker-follow-up-without-guide ready-v2-transport $workerFollowUpWithoutGuide $true 'valid role separation' '.eval-grader/inventory.json'
 
+    $workerFollowUpCoordinatorOutput = Clone-Object $workerFollowUpWithoutGuide
+    $followUpReport = Get-ControlEventIndexes -ControlInput $workerFollowUpCoordinatorOutput -ToolCallId 'worker-cross-follow-up-report'
+    $workerFollowUpCoordinatorOutput.trajectory.events[$followUpReport[1]].data.result =
+        'Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: single-reviewer. Clarification complete.'
+    Invoke-Control transport-worker-follow-up-coordinator-output ready-v2-transport $workerFollowUpCoordinatorOutput $false 'coordinator aggregation output' '.eval-grader/inventory.json'
+
     $workerProseGuide = Clone-Object $transport
     foreach ($toolCallId in @('worker-blazor-report', 'worker-cross-report')) {
         $workerReport = Get-ControlEventIndexes -ControlInput $workerProseGuide -ToolCallId $toolCallId

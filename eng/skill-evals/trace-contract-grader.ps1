@@ -179,7 +179,7 @@ function Assert-WorkerToolBoundary {
 function Test-CoordinatorOutputText {
     param([string]$Text)
 
-    $reportPrefix = '(?:^|\bTurn\s+\d+\s*:\s*)\s*(?:[-+*]\s+)?(?:\*\*|__)?'
+    $reportPrefix = '(?:^|\bTurn\s+\d+\b[^:\r\n]*:\s*)\s*(?:[-+*]\s+)?(?:\*\*|__)?'
     $fieldSuffix = '(?:\*\*|__)?\s*:(?:\*\*|__)?\s*'
     return $Text -match "(?im)$reportPrefix" + "PATH$fieldSuffix" + '(?:per-guide(?!-worker)|single-reviewer)\b' -or
         $Text -match "(?im)$reportPrefix" + "(?:GUIDES|EXISTING_FEEDBACK_COVERAGE)$fieldSuffix"
