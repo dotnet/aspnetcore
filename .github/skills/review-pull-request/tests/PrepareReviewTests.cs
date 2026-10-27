@@ -108,17 +108,34 @@ public class PrepareReviewTests
         await fixture.PrepareAsync();
 
         var files = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "files.json")))!.AsArray();
-        var file = files[0]!.AsObject();
-        Assert.Equal([
-            "filename",
-            "status",
-            "sha",
-            "additions",
-            "deletions",
-            "changes",
-        ], file.Select(pair => pair.Key));
+        AssertJsonEqual(new JsonArray(
+            ProjectedFile(fixture.Files[0]!, 11, 3, 14),
+            ProjectedFile(fixture.Files[1]!, 0, 17, 17),
+            ProjectedFile(fixture.Files[2]!, 23, 0, 23, "src/OldName.cs"),
+            ProjectedFile(fixture.Files[3]!, 0, 29, 29),
+            ProjectedFile(fixture.Files[4]!, 31, 37, 68)), files);
         Assert.DoesNotContain(files, item => item!.AsObject().ContainsKey("patch"));
         Assert.DoesNotContain(files, item => item!.AsObject().Any(pair => pair.Key.EndsWith("_url", StringComparison.Ordinal)));
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        static JsonObject ProjectedFile(
+            JsonNode source, int additions, int deletions, int changes, string? previousFilename = null)
+        {
+            var result = new JsonObject
+            {
+                ["filename"] = source["filename"]!.GetValue<string>(),
+                ["status"] = source["status"]!.GetValue<string>(),
+                ["sha"] = source["sha"]!.GetValue<string>(),
+                ["additions"] = additions,
+                ["deletions"] = deletions,
+                ["changes"] = changes,
+            };
+            if (previousFilename is not null)
+            {
+                result["previousFilename"] = previousFilename;
+            }
+            return result;
+        }
     }
 
     [Fact]
@@ -137,18 +154,30 @@ public class PrepareReviewTests
 
         Assert.Equal(2, manifest["version"]!.GetValue<int>());
         var pull = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "pull.json")))!.AsObject();
-        Assert.Equal([
-            "number",
-            "state",
-            "title",
-            "body",
-            "draft",
-            "author",
-            "labels",
-            "milestone",
-            "createdAt",
-            "updatedAt",
-        ], pull.Select(pair => pair.Key));
+        AssertJsonEqual(new JsonObject
+        {
+            ["number"] = 42,
+            ["state"] = "open",
+            ["title"] = "Fixture pull request",
+            ["body"] = RequiredTextReference("required/pull/body.source", body),
+            ["draft"] = false,
+            ["author"] = new JsonObject
+            {
+                ["login"] = "contributor",
+                ["id"] = 5_000_000_002L,
+                ["type"] = "User",
+            },
+            ["labels"] = new JsonArray(
+                new JsonObject { ["name"] = "area-test" },
+                new JsonObject { ["name"] = "needs-attention" }),
+            ["milestone"] = new JsonObject
+            {
+                ["number"] = 73,
+                ["title"] = "Test milestone",
+            },
+            ["createdAt"] = "2026-10-25T10:02:03Z",
+            ["updatedAt"] = "2026-10-26T11:12:13Z",
+        }, pull);
         Assert.Equal(body, await fixture.RequiredTextAsync(pull["body"]!));
         Assert.DoesNotContain(pull, pair => pair.Key.EndsWith("url", StringComparison.OrdinalIgnoreCase));
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
@@ -165,16 +194,50 @@ public class PrepareReviewTests
             "## Topics\n### Topic\n- Review changed code.\n");
         fixture.Comments.Add(new JsonObject
         {
-            ["id"] = 101,
-            ["user"] = new JsonObject { ["login"] = "commenter", ["id"] = 201, ["type"] = "User" },
+            ["id"] = 5_000_000_101L,
+            ["user"] = new JsonObject { ["login"] = "commenter", ["id"] = 5_000_000_201L, ["type"] = "User" },
             ["body"] = "Comment line 1\nComment line 2\n",
-            ["created_at"] = "2026-10-25T10:00:00Z",
-            ["updated_at"] = "2026-10-25T10:01:00Z",
+            ["created_at"] = "2026-10-25T10:03:04Z",
+            ["updated_at"] = "2026-10-25T10:05:06Z",
             ["html_url"] = "https://example.invalid/comment",
+        });
+        fixture.Reviews.Add(new JsonObject
+        {
+            ["id"] = 5_000_000_202L,
+            ["user"] = new JsonObject { ["login"] = "reviewer", ["id"] = 5_000_000_302L, ["type"] = "User" },
+            ["body"] = "Review line 1\nReview line 2\n",
+            ["state"] = "COMMENTED",
+            ["submitted_at"] = "2026-10-25T12:13:14Z",
+            ["commit_id"] = new string('a', 40),
+            ["html_url"] = "https://example.invalid/review",
+        });
+        fixture.InlineComments.Add(new JsonObject
+        {
+            ["id"] = 5_000_000_303L,
+            ["user"] = new JsonObject { ["login"] = "inline-bot", ["id"] = 5_000_000_403L, ["type"] = "Bot" },
+            ["body"] = "Inline line 1\nInline line 2\n",
+            ["path"] = "src/Value.cs",
+            ["line"] = 41,
+            ["side"] = "RIGHT",
+            ["start_line"] = 37,
+            ["start_side"] = "RIGHT",
+            ["original_line"] = 39,
+            ["original_start_line"] = 35,
+            ["commit_id"] = new string('b', 40),
+            ["original_commit_id"] = new string('c', 40),
+            ["in_reply_to_id"] = 5_000_000_404L,
+            ["created_at"] = "2026-10-25T14:15:16Z",
+            ["updated_at"] = "2026-10-25T17:18:19Z",
+            ["html_url"] = "https://example.invalid/inline",
         });
 
         var manifest = await fixture.PrepareAsync();
 
+        AssertJsonEqual(RequiredTextReference("required/policies/0000.source",
+            "## Required clause\n- First line.\n- Second line."), manifest["policies"]![0]!["body"]!);
+        AssertJsonEqual(RequiredTextReference("required/exclusions/0000-scope.source",
+            "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree"),
+            manifest["exclusions"]![0]!["scope"]!);
         Assert.Equal("## Required clause\n- First line.\n- Second line.",
             await fixture.RequiredTextAsync(manifest["policies"]![0]!["body"]!));
         Assert.Contains("Running PR code",
@@ -184,10 +247,70 @@ public class PrepareReviewTests
         Assert.Contains("Do not review the excluded scope",
             await fixture.RequiredTextAsync(manifest["exclusions"]![1]!["body"]!));
         var feedback = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "feedback.json")))!.AsObject();
+        AssertJsonEqual(new JsonObject
+        {
+            ["comments"] = new JsonArray(new JsonObject
+            {
+                ["id"] = 5_000_000_101L,
+                ["author"] = new JsonObject
+                {
+                    ["login"] = "commenter",
+                    ["id"] = 5_000_000_201L,
+                    ["type"] = "User",
+                },
+                ["body"] = RequiredTextReference(
+                    "required/feedback/comments/5000000101.source", "Comment line 1\nComment line 2\n"),
+                ["createdAt"] = "2026-10-25T10:03:04Z",
+                ["updatedAt"] = "2026-10-25T10:05:06Z",
+            }),
+            ["reviews"] = new JsonArray(new JsonObject
+            {
+                ["id"] = 5_000_000_202L,
+                ["author"] = new JsonObject
+                {
+                    ["login"] = "reviewer",
+                    ["id"] = 5_000_000_302L,
+                    ["type"] = "User",
+                },
+                ["body"] = RequiredTextReference(
+                    "required/feedback/reviews/5000000202.source", "Review line 1\nReview line 2\n"),
+                ["state"] = "COMMENTED",
+                ["submittedAt"] = "2026-10-25T12:13:14Z",
+                ["commitId"] = new string('a', 40),
+            }),
+            ["inline"] = new JsonArray(new JsonObject
+            {
+                ["id"] = 5_000_000_303L,
+                ["author"] = new JsonObject
+                {
+                    ["login"] = "inline-bot",
+                    ["id"] = 5_000_000_403L,
+                    ["type"] = "Bot",
+                },
+                ["body"] = RequiredTextReference(
+                    "required/feedback/inline/5000000303.source", "Inline line 1\nInline line 2\n"),
+                ["path"] = "src/Value.cs",
+                ["line"] = 41,
+                ["side"] = "RIGHT",
+                ["startLine"] = 37,
+                ["startSide"] = "RIGHT",
+                ["originalLine"] = 39,
+                ["originalStartLine"] = 35,
+                ["commitId"] = new string('b', 40),
+                ["originalCommitId"] = new string('c', 40),
+                ["inReplyToId"] = 5_000_000_404L,
+                ["createdAt"] = "2026-10-25T14:15:16Z",
+                ["updatedAt"] = "2026-10-25T17:18:19Z",
+            }),
+        }, feedback);
         Assert.Equal("Comment line 1\nComment line 2\n",
             await fixture.RequiredTextAsync(feedback["comments"]![0]!["body"]!));
-        Assert.DoesNotContain(feedback["comments"]![0]!.AsObject(),
-            pair => pair.Key.EndsWith("url", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal("Review line 1\nReview line 2\n",
+            await fixture.RequiredTextAsync(feedback["reviews"]![0]!["body"]!));
+        Assert.Equal("Inline line 1\nInline line 2\n",
+            await fixture.RequiredTextAsync(feedback["inline"]![0]!["body"]!));
+        Assert.All(feedback.SelectMany(group => group.Value!.AsArray()).Select(item => item!.AsObject()),
+            item => Assert.DoesNotContain(item, pair => pair.Key.EndsWith("url", StringComparison.OrdinalIgnoreCase)));
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
     }
 
@@ -198,6 +321,8 @@ public class PrepareReviewTests
         "wrong length",
         "wrong hash",
         "path escape",
+        "reused",
+        "orphan",
     };
 
     [Theory]
@@ -229,22 +354,55 @@ public class PrepareReviewTests
                 reference["path"] = "required/../escape.source";
                 await fixture.WriteManifestAsync(manifest);
                 break;
+            case "reused":
+                manifest["exclusions"]![0]!["scope"] = reference.DeepClone();
+                await fixture.WriteManifestAsync(manifest);
+                break;
+            case "orphan":
+                await fixture.AddRequiredTextAsync(manifest, "required/orphan.source", "orphan\n");
+                await fixture.WriteManifestAsync(manifest);
+                break;
         }
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
-        Assert.Contains("required text", exception.Message, StringComparison.OrdinalIgnoreCase);
+        if (mutation == "reused")
+        {
+            Assert.Equal(
+                "Prepared required text path is reused: required/exclusions/0000-reason.source",
+                exception.Message);
+        }
+        else if (mutation == "orphan")
+        {
+            Assert.Equal("Prepared required text references are incomplete.", exception.Message);
+        }
+        else
+        {
+            Assert.Contains("required text", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
-    [Fact]
-    public async Task RejectsRequiredTextWithASingleLineBeyondTheNativeReadBound()
+    [Theory]
+    [InlineData(MaximumNativeReadLineBytes, true)]
+    [InlineData(MaximumNativeReadLineBytes + 1, false)]
+    public async Task EnforcesRequiredTextSingleLineNativeReadBound(int lineBytes, bool accepted)
     {
         await using var fixture = await Fixture.CreateAsync();
-        fixture.Pull["body"] = new string('x', MaximumNativeReadLineBytes + 1);
+        fixture.Pull["body"] = new string('x', lineBytes) + "\n";
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.PrepareAsync);
-
-        Assert.Contains("line exceeds 2048 UTF-8 bytes", exception.Message);
-        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+        if (accepted)
+        {
+            var manifest = await fixture.PrepareAsync();
+            var pull = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "pull.json")))!.AsObject();
+            Assert.Equal(new string('x', lineBytes) + "\n", await fixture.RequiredTextAsync(pull["body"]!));
+            Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+            Assert.True(manifest["ready"]!.GetValue<bool>());
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.PrepareAsync);
+            Assert.Equal("Required text line exceeds 2048 UTF-8 bytes: required/pull/body.source:1", exception.Message);
+            Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+        }
     }
 
     public static TheoryData<string> InlineRequiredTextMutations => new()
@@ -1183,6 +1341,22 @@ public class PrepareReviewTests
         + string.Concat(Enumerable.Repeat(new string('b', 134) + "\n", 167))
         + string.Concat(Enumerable.Repeat(new string('b', 133) + "\n", 10));
 
+    private static JsonObject RequiredTextReference(string path, string text)
+    {
+        var bytes = Utf8NoBom.GetBytes(text);
+        return new JsonObject
+        {
+            ["path"] = path,
+            ["utf8Bytes"] = bytes.Length,
+            ["sha256"] = Convert.ToHexStringLower(SHA256.HashData(bytes)),
+        };
+    }
+
+    private static void AssertJsonEqual(JsonNode expected, JsonNode actual) =>
+        Assert.True(JsonNode.DeepEquals(expected, actual),
+            $"Expected:{Environment.NewLine}{expected.ToJsonString(JsonOptions)}{Environment.NewLine}" +
+            $"Actual:{Environment.NewLine}{actual.ToJsonString(JsonOptions)}");
+
     private static string SourcePath([CallerFilePath] string path = "") => path;
 
     private sealed record FileEntry(string Mode, string Body);
@@ -1240,11 +1414,11 @@ public class PrepareReviewTests
             File.WriteAllText(Path.Combine(GuidanceRoot, "docs/CrossCuttingGuidance.md"),
                 "# Guidance\n## Overarching principles\n- DIRTY_GUIDANCE\n## Topics\n### Topic\n- Required clause.\n", Utf8NoBom);
             Files = new JsonArray(
-                FileJson(valuePath, "modified"),
-                FileJson("src/OldName.cs", "removed"),
-                FileJson("src/Renamed.cs", "added"),
-                FileJson("src/Deleted.cs", "removed"),
-                FileJson("src/Mode.cs", "modified"));
+                FileJson(valuePath, "modified", 11, 3, 14),
+                FileJson("src/OldName.cs", "removed", 0, 17, 17),
+                FileJson("src/Renamed.cs", "added", 23, 0, 23, "src/OldName.cs"),
+                FileJson("src/Deleted.cs", "removed", 0, 29, 29),
+                FileJson("src/Mode.cs", "modified", 31, 37, 68));
             Pull = new JsonObject
             {
                 ["number"] = 42,
@@ -1252,11 +1426,13 @@ public class PrepareReviewTests
                 ["title"] = "Fixture pull request",
                 ["body"] = "Fixture body.\n",
                 ["draft"] = false,
-                ["user"] = new JsonObject { ["login"] = "contributor", ["id"] = 2, ["type"] = "User" },
-                ["labels"] = new JsonArray(new JsonObject { ["name"] = "area-test", ["color"] = "ffffff" }),
-                ["milestone"] = new JsonObject { ["number"] = 7, ["title"] = "Test milestone" },
-                ["created_at"] = "2026-10-25T10:00:00Z",
-                ["updated_at"] = "2026-10-25T10:01:00Z",
+                ["user"] = new JsonObject { ["login"] = "contributor", ["id"] = 5_000_000_002L, ["type"] = "User" },
+                ["labels"] = new JsonArray(
+                    new JsonObject { ["name"] = "area-test", ["color"] = "ffffff" },
+                    new JsonObject { ["name"] = "needs-attention", ["color"] = "123456" }),
+                ["milestone"] = new JsonObject { ["number"] = 73, ["title"] = "Test milestone" },
+                ["created_at"] = "2026-10-25T10:02:03Z",
+                ["updated_at"] = "2026-10-26T11:12:13Z",
                 ["changed_files"] = Files.Count,
                 ["head"] = new JsonObject { ["sha"] = Head, ["repo"] = new JsonObject { ["id"] = 2, ["full_name"] = "contributor/product" } },
                 ["base"] = new JsonObject { ["ref"] = "release/test", ["repo"] = new JsonObject { ["id"] = 1, ["full_name"] = "owner/product" } },
@@ -1264,18 +1440,24 @@ public class PrepareReviewTests
             Diff = GitBytes(Repository, "diff", "--binary", "--no-ext-diff", MergeBase, Head);
             Options = new("owner/product", "42", Output, GuidanceRoot: GuidanceRoot);
 
-            JsonObject FileJson(string name, string status)
+            JsonObject FileJson(
+                string name, string status, int additions, int deletions, int changes, string? previousFilename = null)
             {
                 var side = status == "removed" ? MergeBase : Head;
-                return new JsonObject
+                var result = new JsonObject
                 {
                     ["filename"] = name,
                     ["status"] = status,
                     ["sha"] = Git(Repository, "rev-parse", $"{side}:{name}"),
-                    ["additions"] = 1,
-                    ["deletions"] = 1,
-                    ["changes"] = 2,
+                    ["additions"] = additions,
+                    ["deletions"] = deletions,
+                    ["changes"] = changes,
                 };
+                if (previousFilename is not null)
+                {
+                    result["previous_filename"] = previousFilename;
+                }
+                return result;
             }
         }
 
@@ -1372,6 +1554,14 @@ public class PrepareReviewTests
         {
             File.Delete(Path.Combine(Output,
                 reference["path"]!.GetValue<string>().Replace('/', Path.DirectorySeparatorChar)));
+            await RefreshRequiredTextDigestAsync(manifest);
+        }
+
+        public async Task AddRequiredTextAsync(JsonObject manifest, string name, string text)
+        {
+            var path = Path.Combine(Output, name.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            await File.WriteAllTextAsync(path, text, Utf8NoBom);
             await RefreshRequiredTextDigestAsync(manifest);
         }
 
