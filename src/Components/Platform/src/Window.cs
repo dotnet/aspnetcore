@@ -32,6 +32,19 @@ public sealed class Window : IInternalAsyncDisposal
     /// Adds a listener that is called each time the specified event fires on the window.
     /// Other listeners, including those added by JavaScript code of the page, are not affected.
     /// An exception thrown by the listener is logged and does not remove the listener.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for, such as <c>Window.StorageEvent</c>.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <returns>An object that removes the listener when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    public ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<Window, TEvent> type, Func<TEvent, Task> listener)
+        => AddEventListenerAsync(type, listener, CancellationToken.None);
+
+    /// <summary>
+    /// Adds a listener that is called each time the specified event fires on the window.
+    /// Other listeners, including those added by JavaScript code of the page, are not affected.
+    /// An exception thrown by the listener is logged and does not remove the listener.
     /// Canceling <paramref name="cancellationToken"/> removes the listener, as disposing the returned object does.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event object.</typeparam>
@@ -41,7 +54,7 @@ public sealed class Window : IInternalAsyncDisposal
     /// <returns>An object that removes the listener when disposed.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled before the listener was added.</exception>
-    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<Window, TEvent> type, Func<TEvent, Task> listener, CancellationToken cancellationToken = default)
+    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<Window, TEvent> type, Func<TEvent, Task> listener, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(listener);
