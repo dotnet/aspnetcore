@@ -504,6 +504,45 @@ try {
     } $true 'manifest bytes' '44444444-4444-4444-4444-444444444444'
     Invoke-Control transport-worker-read-file-coordinator-only ready-v2-transport $wrongRoleReadFile $false 'worker read coordinator-only' '.eval-grader/inventory.json'
 
+    $workerRgManifest = Clone-Object $transport
+    $workerRgManifest.trajectory.events += New-Call rg worker-rg-manifest @{
+        pattern = 'ready'
+        paths = '.review-bundle/manifest.json'
+        output_mode = 'content'
+    } $true '3:  "ready": true' '44444444-4444-4444-4444-444444444444'
+    Invoke-Control transport-worker-rg-coordinator-only ready-v2-transport $workerRgManifest $false 'worker rg scope' '.eval-grader/inventory.json'
+
+    $workerRgBundle = Clone-Object $transport
+    $workerRgBundle.trajectory.events += New-Call rg worker-rg-bundle @{
+        pattern = 'ready'
+        paths = '.review-bundle'
+        output_mode = 'content'
+    } $true 'manifest.json:3:  "ready": true' '44444444-4444-4444-4444-444444444444'
+    Invoke-Control transport-worker-rg-broad-scope ready-v2-transport $workerRgBundle $false 'worker rg scope' '.eval-grader/inventory.json'
+
+    $workerRgDefault = Clone-Object $transport
+    $workerRgDefault.trajectory.events += New-Call rg worker-rg-default @{
+        pattern = 'ready'
+        output_mode = 'content'
+    } $true '.review-bundle/manifest.json:3:  "ready": true' '44444444-4444-4444-4444-444444444444'
+    Invoke-Control transport-worker-rg-default-scope ready-v2-transport $workerRgDefault $false 'worker rg scope' '.eval-grader/inventory.json'
+
+    $workerRgEmpty = Clone-Object $transport
+    $workerRgEmpty.trajectory.events += New-Call rg worker-rg-empty @{
+        pattern = 'ready'
+        paths = @()
+        output_mode = 'content'
+    } $true '.review-bundle/manifest.json:3:  "ready": true' '44444444-4444-4444-4444-444444444444'
+    Invoke-Control transport-worker-rg-empty-scope ready-v2-transport $workerRgEmpty $false 'worker rg scope' '.eval-grader/inventory.json'
+
+    $workerRgShared = Clone-Object $transport
+    $workerRgShared.trajectory.events += New-Call rg worker-rg-shared @{
+        pattern = 'Value'
+        paths = '.review-bundle/diff.patch'
+        output_mode = 'content'
+    } $true 'diff --git a/src/Value.cs b/src/Value.cs' '44444444-4444-4444-4444-444444444444'
+    Invoke-Control transport-worker-rg-shared-scope ready-v2-transport $workerRgShared $true 'valid role separation' '.eval-grader/inventory.json'
+
     $workerDoesNotCredit = Clone-Object $transport
     $diffRead = Get-ControlEventIndexes -ControlInput $workerDoesNotCredit -ToolCallId 'read-diff-patch'
     foreach ($index in $diffRead) {

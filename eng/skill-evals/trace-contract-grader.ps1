@@ -714,22 +714,68 @@ function Test-ReadyV2Transport {
         $Calls |
             Where-Object { -not [string]::IsNullOrEmpty($_.AgentId) }
     )
-    foreach ($call in $workerCalls | Where-Object {
-        $_.Name -in @('view', 'read_file')
-    }) {
-        $path = Get-CanonicalCallPath $call $workDir
-        if ([string]::IsNullOrEmpty($path)) {
-            continue
-        }
-        foreach ($entry in $inventory.files) {
-            $fixturePath = [IO.Path]::GetFullPath(
-                (Join-Path $bundleRoot ([string]$entry.path).Replace(
-                    '/',
-                    [IO.Path]::DirectorySeparatorChar
-                ))
-            )
-            if ($path -ieq $fixturePath -and 'worker' -notin @($entry.readRoles)) {
-                Fail "A worker read coordinator-only fixture input '$($entry.path)'."
+    $coordinatorOnlyEntries = @(
+        $inventory.files |
+            Where-Object { 'worker' -notin @($_.readRoles) }
+    )
+    foreach ($call in $workerCalls) {
+        if ($call.Name -in @('view', 'read_file')) {
+            $path = Get-CanonicalCallPath $call $workDir
+            if ([string]::IsNullOrEmpty($path)) {
+                continue
+            }
+            foreach ($entry in $coordinatorOnlyEntries) {
+                $fixturePath = [IO.Path]::GetFullPath(
+                    (Join-Path $bundleRoot ([string]$entry.path).Replace(
+                        '/',
+                        [IO.Path]::DirectorySeparatorChar
+                    ))
+                )
+                if ($path -ieq $fixturePath) {
+                    Fail "A worker read coordinator-only fixture input '$($entry.path)'."
+                }
+            }
+        } elseif ($call.Name -eq 'rg') {
+            $rawPaths = Get-Argument $call 'paths'
+            $searchPaths = if ($null -eq $rawPaths) {
+                @($workDir)
+            } elseif ($rawPaths -is [string]) {
+                @([string]$rawPaths)
+            } else {
+                $resolvedPaths = @($rawPaths | ForEach-Object { [string]$_ })
+                if ($resolvedPaths.Count -eq 0) {
+                    @($workDir)
+                } else {
+                    $resolvedPaths
+                }
+            }
+            foreach ($searchPath in $searchPaths) {
+                try {
+                    $separator = [IO.Path]::DirectorySeparatorChar
+                    $portable = $searchPath.Replace('\', $separator).Replace('/', $separator)
+                    $canonicalSearchPath = [IO.Path]::GetFullPath($portable, $workDir)
+                } catch {
+                    Fail "A worker rg call used an invalid search path '$searchPath'."
+                }
+                $searchPrefix = $canonicalSearchPath.TrimEnd(
+                    [IO.Path]::DirectorySeparatorChar,
+                    [IO.Path]::AltDirectorySeparatorChar
+                ) + [IO.Path]::DirectorySeparatorChar
+                foreach ($entry in $coordinatorOnlyEntries) {
+                    $fixturePath = [IO.Path]::GetFullPath(
+                        (Join-Path $bundleRoot ([string]$entry.path).Replace(
+                            '/',
+                            [IO.Path]::DirectorySeparatorChar
+                        ))
+                    )
+                    if ($canonicalSearchPath -ieq $fixturePath -or
+                        $fixturePath.StartsWith(
+                            $searchPrefix,
+                            [StringComparison]::OrdinalIgnoreCase
+                        )) {
+                        Fail "A worker rg scope could read coordinator-only fixture input '$($entry.path)'."
+                    }
+                }
             }
         }
     }
