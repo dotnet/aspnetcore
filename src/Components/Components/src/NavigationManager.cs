@@ -436,7 +436,6 @@ public abstract class NavigationManager
             CancellationToken = cancellationToken,
         };
 
-        var navigationCanceled = false;
         try
         {
             if (handlerCount == 1)
@@ -515,7 +514,7 @@ public abstract class NavigationManager
         }
         catch (TaskCanceledException ex)
         {
-            navigationCanceled = true;
+            cts.Cancel();
 
             if (ex.CancellationToken == cancellationToken)
             {
@@ -528,14 +527,12 @@ public abstract class NavigationManager
         }
         catch
         {
-            navigationCanceled = true;
+            cts.Cancel();
             throw;
         }
         finally
         {
-            // Only signal cancellation of the LocationChangingContext.CancellationToken when the
-            // navigation was prevented, superseded by another navigation, or failed.
-            if (context.DidPreventNavigation || navigationCanceled)
+            if (context.DidPreventNavigation)
             {
                 cts.Cancel();
             }
