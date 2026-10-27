@@ -179,9 +179,10 @@ function Assert-WorkerToolBoundary {
 function Test-CoordinatorOutputText {
     param([string]$Text)
 
-    $reportPrefix = '(?:^|\bTurn\s+\d+\s*:\s*)\s*'
-    return $Text -match "(?im)$reportPrefix" + 'PATH:\s*(?:per-guide(?!-worker)|single-reviewer)\b' -or
-        $Text -match "(?im)$reportPrefix" + '(?:GUIDES|EXISTING_FEEDBACK_COVERAGE)\s*:'
+    $reportPrefix = '(?:^|\bTurn\s+\d+\s*:\s*)\s*(?:[-+*]\s+)?(?:\*\*|__)?'
+    $fieldSuffix = '(?:\*\*|__)?\s*:(?:\*\*|__)?\s*'
+    return $Text -match "(?im)$reportPrefix" + "PATH$fieldSuffix" + '(?:per-guide(?!-worker)|single-reviewer)\b' -or
+        $Text -match "(?im)$reportPrefix" + "(?:GUIDES|EXISTING_FEEDBACK_COVERAGE)$fieldSuffix"
 }
 
 function Assert-CompletedWorkerReportBoundary {
@@ -198,12 +199,16 @@ function Assert-CompletedWorkerReportBoundary {
     $reportedGuides = @($AllGuides | Where-Object {
         $Text.IndexOf($_, [StringComparison]::Ordinal) -ge 0
     })
+    if ($reportedGuides.Count -eq 0) {
+        return $false
+    }
     if ($reportedGuides.Count -ne 1) {
         Fail "Guide worker '$WorkerId' named $($reportedGuides.Count) distinct guides instead of exactly one."
     }
     if ($reportedGuides[0] -cne $ExpectedGuide) {
         Fail "Guide worker '$WorkerId' named guide '$($reportedGuides[0])' instead of assigned guide '$ExpectedGuide'."
     }
+    return $true
 }
 
 function Test-UsableResult {
@@ -984,11 +989,19 @@ function Test-ReadyV2Transport {
                         [IO.Path]::DirectorySeparatorChar
                     ))
                 )
-                if ($path -ieq $fixturePath) {
+                $pathPrefix = $path.TrimEnd(
+                    [IO.Path]::DirectorySeparatorChar,
+                    [IO.Path]::AltDirectorySeparatorChar
+                ) + [IO.Path]::DirectorySeparatorChar
+                if ($path -ieq $fixturePath -or
+                    $fixturePath.StartsWith(
+                        $pathPrefix,
+                        [StringComparison]::OrdinalIgnoreCase
+                    )) {
                     Fail "A worker read coordinator-only fixture input '$($entry.path)'."
                 }
             }
-        } elseif ($call.Name -eq 'rg') {
+        } elseif ($call.Name -in @('rg', 'glob')) {
             $rawPaths = Get-Argument $call 'paths'
             $searchPaths = if ($null -eq $rawPaths) {
                 @($workDir)
@@ -1026,7 +1039,7 @@ function Test-ReadyV2Transport {
                             $searchPrefix,
                             [StringComparison]::OrdinalIgnoreCase
                         )) {
-                        Fail "A worker rg scope could read coordinator-only fixture input '$($entry.path)'."
+                        Fail "A worker $($call.Name) scope could read coordinator-only fixture input '$($entry.path)'."
                     }
                 }
             }
@@ -1187,29 +1200,35 @@ function Test-ReadyV2Transport {
             }
         }
     }
+    foreach ($call in $rootCalls | Where-Object { $_.Name -in @('read_agent', 'write_agent') }) {
+        $workerId = [string](Get-Argument $call 'agent_id')
+        if (-not $workerGuideById.ContainsKey($workerId)) {
+            Fail "Coordinator agent lifecycle call targeted unassigned worker '$workerId'."
+        }
+    }
     $completedWorkerReports = @{}
     foreach ($call in $rootCalls | Where-Object { $_.Name -eq 'read_agent' }) {
         $workerId = [string](Get-Argument $call 'agent_id')
-        if ($workerGuideById.ContainsKey($workerId)) {
-            if ((Get-Argument $call 'wait') -ne $true) {
-                Fail "Guide worker '$workerId' report collection did not use read_agent with wait:true."
-            }
-            if ($call.ResultSuccess -ne $true) {
-                Fail "Guide worker '$workerId' report collection did not complete successfully."
-            }
-            if (Test-CoordinatorOutputText $call.ResultText) {
-                Fail "Guide worker '$workerId' emitted coordinator aggregation output."
-            }
-            $readStatus = Get-ReadStatus $call.ResultText
-            if ($readStatus -eq 'failed' -or $readStatus -eq 'unknown') {
-                Fail "Guide worker '$workerId' report collection returned status '$readStatus'."
-            }
-            if ($readStatus -eq 'completed') {
-                Assert-CompletedWorkerReportBoundary `
-                    -Text $call.ResultText `
-                    -WorkerId $workerId `
-                    -ExpectedGuide ([string]$workerGuideById[$workerId]) `
-                    -AllGuides @($manifest.guides | ForEach-Object { [string]$_.path })
+        if ((Get-Argument $call 'wait') -ne $true) {
+            Fail "Guide worker '$workerId' report collection did not use read_agent with wait:true."
+        }
+        if ($call.ResultSuccess -ne $true) {
+            Fail "Guide worker '$workerId' report collection did not complete successfully."
+        }
+        if (Test-CoordinatorOutputText $call.ResultText) {
+            Fail "Guide worker '$workerId' emitted coordinator aggregation output."
+        }
+        $readStatus = Get-ReadStatus $call.ResultText
+        if ($readStatus -eq 'failed' -or $readStatus -eq 'unknown') {
+            Fail "Guide worker '$workerId' report collection returned status '$readStatus'."
+        }
+        if ($readStatus -eq 'completed') {
+            $namedAssignedGuide = Assert-CompletedWorkerReportBoundary `
+                -Text $call.ResultText `
+                -WorkerId $workerId `
+                -ExpectedGuide ([string]$workerGuideById[$workerId]) `
+                -AllGuides @($manifest.guides | ForEach-Object { [string]$_.path })
+            if ($namedAssignedGuide) {
                 $completedWorkerReports[$workerId] = $true
             }
         }
@@ -1237,13 +1256,21 @@ function Test-ReadyV2Transport {
                     [IO.Path]::DirectorySeparatorChar
                 )
             )
-            if ($path -ieq $otherGuidePath) {
+            $pathPrefix = $path.TrimEnd(
+                [IO.Path]::DirectorySeparatorChar,
+                [IO.Path]::AltDirectorySeparatorChar
+            ) + [IO.Path]::DirectorySeparatorChar
+            if ($path -ieq $otherGuidePath -or
+                $otherGuidePath.StartsWith(
+                    $pathPrefix,
+                    [StringComparison]::OrdinalIgnoreCase
+                )) {
                 Fail "Guide worker '$($call.AgentId)' read unassigned guide '$([string]$guide.path)'."
             }
         }
     }
     foreach ($call in $workerCalls | Where-Object {
-        $_.Name -eq 'rg' -and
+        $_.Name -in @('rg', 'glob') -and
         $workerGuideById.ContainsKey($_.AgentId)
     }) {
         $rawPaths = Get-Argument $call 'paths'
@@ -1286,7 +1313,7 @@ function Test-ReadyV2Transport {
                         $searchPrefix,
                         [StringComparison]::OrdinalIgnoreCase
                     )) {
-                    Fail "Guide worker '$($call.AgentId)' rg scope included unassigned guide '$([string]$guide.path)'."
+                    Fail "Guide worker '$($call.AgentId)' $($call.Name) scope included unassigned guide '$([string]$guide.path)'."
                 }
             }
         }

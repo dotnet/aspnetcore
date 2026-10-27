@@ -663,6 +663,18 @@ try {
     } $true 'Agent is still running, status: running, total_turns: 0.'
     Invoke-Control transport-worker-running-report ready-v2-transport $workerRunningReport $true 'valid role separation' '.eval-grader/inventory.json'
 
+    $workerFollowUpWithoutGuide = Clone-Object $transport
+    $workerFollowUpWithoutGuide.trajectory.events += New-Call write_agent worker-cross-follow-up @{
+        agent_id = '22222222-2222-2222-2222-222222222222'
+        message = 'Clarify the candidate against the frozen base contract.'
+    } $true 'Message delivered.'
+    $workerFollowUpWithoutGuide.trajectory.events += New-Call read_agent worker-cross-follow-up-report @{
+        agent_id = '22222222-2222-2222-2222-222222222222'
+        wait = $true
+        since_turn = 1
+    } $true 'Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: per-guide-worker. Clarification complete; the candidate remains unresolved.'
+    Invoke-Control transport-worker-follow-up-without-guide ready-v2-transport $workerFollowUpWithoutGuide $true 'valid role separation' '.eval-grader/inventory.json'
+
     $workerProseGuide = Clone-Object $transport
     foreach ($toolCallId in @('worker-blazor-report', 'worker-cross-report')) {
         $workerReport = Get-ControlEventIndexes -ControlInput $workerProseGuide -ToolCallId $toolCallId
@@ -679,6 +691,12 @@ try {
     $workerReadAgentCombinedOutput.trajectory.events[$workerReport[1]].data.result =
         'Agent is idle, status: idle, total_turns: 1. Turn 0: PATH: per-guide. GUIDES: docs/CrossCuttingGuidance.md, docs/BlazorComponentsGuidance.md'
     Invoke-Control transport-worker-read-agent-combined-output ready-v2-transport $workerReadAgentCombinedOutput $false 'coordinator aggregation output' '.eval-grader/inventory.json'
+
+    $workerMarkdownCombinedOutput = Clone-Object $transport
+    $workerReport = Get-ControlEventIndexes -ControlInput $workerMarkdownCombinedOutput -ToolCallId 'worker-cross-report'
+    $workerMarkdownCombinedOutput.trajectory.events[$workerReport[1]].data.result =
+        "Agent is idle, status: idle, total_turns: 1. Turn 0: **PATH:** single-reviewer`n**GUIDES:** docs/CrossCuttingGuidance.md`n**Guide:** docs/CrossCuttingGuidance.md"
+    Invoke-Control transport-worker-markdown-combined-output ready-v2-transport $workerMarkdownCombinedOutput $false 'coordinator aggregation output' '.eval-grader/inventory.json'
 
     $workerMultipleGuides = Clone-Object $transport
     $workerReport = Get-ControlEventIndexes -ControlInput $workerMultipleGuides -ToolCallId 'worker-cross-report'
@@ -699,6 +717,12 @@ try {
     } $true 'L1:# Blazor components guidance' '22222222-2222-2222-2222-222222222222'
     Invoke-Control transport-worker-cross-guide-read ready-v2-transport $workerCrossGuideRead $false 'read unassigned guide' '.eval-grader/inventory.json'
 
+    $workerCrossGuideDirectoryRead = Clone-Object $transport
+    $workerCrossGuideDirectoryRead.trajectory.events += New-Call view worker-cross-guide-directory @{
+        path = '.review-bundle/guidance/docs'
+    } $true 'docs/CrossCuttingGuidance.md.source docs/BlazorComponentsGuidance.md.source' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-cross-guide-directory ready-v2-transport $workerCrossGuideDirectoryRead $false 'read unassigned guide' '.eval-grader/inventory.json'
+
     $workerCrossGuideSearch = Clone-Object $transport
     $workerCrossGuideSearch.trajectory.events += New-Call rg worker-cross-guide-search @{
         pattern = 'guidance'
@@ -706,6 +730,13 @@ try {
         output_mode = 'content'
     } $true 'match' '22222222-2222-2222-2222-222222222222'
     Invoke-Control transport-worker-cross-guide-search ready-v2-transport $workerCrossGuideSearch $false 'rg scope included unassigned guide' '.eval-grader/inventory.json'
+
+    $workerCrossGuideGlob = Clone-Object $transport
+    $workerCrossGuideGlob.trajectory.events += New-Call glob worker-cross-guide-glob @{
+        pattern = '*.source'
+        paths = '.review-bundle/guidance/docs'
+    } $true 'docs/CrossCuttingGuidance.md.source docs/BlazorComponentsGuidance.md.source' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-cross-guide-glob ready-v2-transport $workerCrossGuideGlob $false 'glob scope included unassigned guide' '.eval-grader/inventory.json'
 
     $missingCompletedWorkerReport = Clone-Object $transport
     $missingReportIndexes = Get-ControlEventIndexes -ControlInput $missingCompletedWorkerReport -ToolCallId 'worker-cross-report'
@@ -724,6 +755,20 @@ try {
         view_range = @(1, -1)
     } $true 'L1:# Blazor components guidance' '33333333-3333-3333-3333-333333333333'
     Invoke-Control transport-worker-unbound-id ready-v2-transport $unboundWorker $false 'unassigned worker' '.eval-grader/inventory.json'
+
+    $unboundReadAgent = Clone-Object $transport
+    $unboundReadAgent.trajectory.events += New-Call read_agent unbound-read-agent @{
+        agent_id = '33333333-3333-3333-3333-333333333333'
+        wait = $true
+    } $true 'Agent is idle, status: idle, total_turns: 1.'
+    Invoke-Control transport-root-unbound-read-agent ready-v2-transport $unboundReadAgent $false 'targeted unassigned worker' '.eval-grader/inventory.json'
+
+    $unboundWriteAgent = Clone-Object $transport
+    $unboundWriteAgent.trajectory.events += New-Call write_agent unbound-write-agent @{
+        agent_id = '33333333-3333-3333-3333-333333333333'
+        message = 'Continue.'
+    } $true 'Message delivered.'
+    Invoke-Control transport-root-unbound-write-agent ready-v2-transport $unboundWriteAgent $false 'targeted unassigned worker' '.eval-grader/inventory.json'
 
     $missingWorkerPrompt = Clone-Object $transport
     $workerCall = Get-ControlEventIndexes -ControlInput $missingWorkerPrompt -ToolCallId 'worker'
@@ -941,6 +986,13 @@ try {
         output_mode = 'content'
     } $true 'manifest.json:3:  "ready": true' '44444444-4444-4444-4444-444444444444'
     Invoke-Control transport-worker-rg-broad-scope ready-v2-transport $workerRgBundle $false 'worker rg scope' '.eval-grader/inventory.json'
+
+    $workerGlobBundle = Clone-Object $transport
+    $workerGlobBundle.trajectory.events += New-Call glob worker-glob-bundle @{
+        pattern = '*.json'
+        paths = '.review-bundle'
+    } $true 'manifest.json pull.json feedback.json' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-glob-broad-scope ready-v2-transport $workerGlobBundle $false 'worker glob scope' '.eval-grader/inventory.json'
 
     $workerRgDefault = Clone-Object $transport
     $workerRgDefault.trajectory.events += New-Call rg worker-rg-default @{
