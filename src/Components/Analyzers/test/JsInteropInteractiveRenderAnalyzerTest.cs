@@ -1986,4 +1986,48 @@ namespace ConsoleApplication1
     {
         VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
     }
+
+    [Theory]
+    [InlineData("await InvokeJSAsync();", true)]
+    [InlineData("if (!RendererInfo.IsInteractive)|{|    return;|}|await InvokeJSAsync();", false)]
+    public void JSInvokeInMethodDeclaredInOtherPartialFileShouldBeAnalyzedFromCaller(string statements, bool expectWarning)
+    {
+        var body = string.Join(Environment.NewLine, statements.Split('|').Select(statement => "            " + statement));
+        var component = @"
+namespace ConsoleApplication1
+{
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+
+    partial class TestComponent : ComponentBase
+    {
+        protected override async Task OnInitializedAsync()
+        {
+" + body + @"
+        }
+    }
+}";
+        var codeBehind = @"
+namespace ConsoleApplication1
+{
+    using System.Threading.Tasks;
+    using Microsoft.JSInterop;
+
+    partial class TestComponent
+    {
+        private IJSRuntime JS = default!;
+
+        private async Task InvokeJSAsync()
+        {
+            await JS.InvokeVoidAsync(""getValue"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        var expected = expectWarning
+            ? new[] { new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test1.cs", 13, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, } }
+            : Array.Empty<DiagnosticResult>();
+
+        VerifyCSharpDiagnostic(new[] { component, codeBehind }, expected);
+    }
 }

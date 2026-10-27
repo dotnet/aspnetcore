@@ -237,12 +237,12 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             if (isInteractiveWhenTrue && condition.WhenFalse is not null)
             {
                 // If the condition check resolved to just `RendererInfo.IsInteractive`,  `WhenFalse` case should return to avoid JSInterop usage.
-                return ConditionBlockReturnsOnIsInteractive(condition.WhenFalse, state);
+                return ConditionBlockReturnsOnIsInteractive(condition.WhenFalse);
             }
             else if (isInteractiveWhenFalse && condition.WhenTrue is not null)
             {
                 // If the condition check resolved to just `!RendererInfo.IsInteractive`, `WhenTrue` case should return to avoid JSInterop usage.
-                return ConditionBlockReturnsOnIsInteractive(condition.WhenTrue, state);
+                return ConditionBlockReturnsOnIsInteractive(condition.WhenTrue);
             }
 
             if (!isInteractiveWhenTrue && !isInteractiveWhenFalse)
@@ -337,11 +337,11 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
     /// <summary>
     /// Check if the block of code returns when `RendererInfo.IsInteractive` is checked. If it does, then we mark that the required check has been made for all subsequent code paths.
     /// </summary>
-    private static bool ConditionBlockReturnsOnIsInteractive(IOperation operation, JSInteropAnalyzerState state)
+    private static bool ConditionBlockReturnsOnIsInteractive(IOperation operation)
     {
-        if (operation.Syntax is StatementSyntax statementSyntax)
+        if (operation.Syntax is StatementSyntax statementSyntax
+            && operation.SemanticModel is SemanticModel semanticModel)
         {
-            var semanticModel = state.BlockContext.Compilation.GetSemanticModel(statementSyntax.SyntaxTree);
             var controlFlow = semanticModel.AnalyzeControlFlow(statementSyntax);
             if (controlFlow.Succeeded)
             {
@@ -501,12 +501,25 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    private static SemanticModel GetSemanticModel(SyntaxTree syntaxTree, JSInteropAnalyzerState state)
+    {
+        foreach (var operationBlock in state.BlockContext.OperationBlocks)
+        {
+            if (operationBlock.SemanticModel is SemanticModel semanticModel && semanticModel.SyntaxTree == syntaxTree)
+            {
+                return semanticModel;
+            }
+        }
+
+        return state.BlockContext.Compilation.GetSemanticModel(syntaxTree);
+    }
+
     private static void AnalyzeMethodReference(IMethodSymbol methodSymbol, JSInteropAnalyzerState state)
     {
         foreach (var syntaxRef in methodSymbol.DeclaringSyntaxReferences)
         {
             var syntaxNode = syntaxRef.GetSyntax();
-            var semanticModel = state.BlockContext.Compilation.GetSemanticModel(syntaxNode.SyntaxTree);
+            var semanticModel = GetSemanticModel(syntaxNode.SyntaxTree, state);
             var methodOperation = syntaxNode switch
             {
                 MethodDeclarationSyntax methodDeclaration => semanticModel.GetOperation(methodDeclaration),
