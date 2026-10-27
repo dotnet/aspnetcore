@@ -100,8 +100,7 @@ Build the repository in product mode (short: -pb).
 Set when building from within the VMR.
 
 .PARAMETER MSBuildMultiThreaded
-Sets MSBuild's multi-threaded mode, i.e. the -mt switch (short: -mt). Defaults to on for local builds and is not
-run on CI unless explicitly requested.
+Sets MSBuild's multi-threaded mode, i.e. the -mt switch (short: -mt). Defaults to on for both local and CI builds.
 
 .PARAMETER NodeReuse
 Sets the nodereuse msbuild parameter. Node reuse is disabled by default in this repository as a workaround for
@@ -358,11 +357,6 @@ $performDotnetBuild = $msBuildEngine -ne 'vs' -and ($BuildJava -or $BuildManaged
 
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
-
-# MSBuild's multi-threaded mode isn't run on CI unless it was explicitly requested via -msbuildMultiThreaded.
-if ($CI -and -not $PSBoundParameters.ContainsKey('msbuildMultiThreaded')) {
-    $msbuildMultiThreaded = $false
-}
 
 # Ensure passing neither -bl nor -nobl on CI avoids errors in tools.ps1. This is needed because both parameters are
 # $false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
