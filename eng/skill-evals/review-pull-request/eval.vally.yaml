@@ -1,8 +1,8 @@
 name: review-pull-request
 description: >-
   Verifies review-pull-request setup recovery, same-worker clarification, hosted native
-  pagination, and fail-closed handling of unavailable required bundle bytes through actual
-  tool trajectories rather than response phrasing.
+  ready-v2 transport reads and role separation, and fail-closed handling of unavailable
+  required bundle bytes through actual tool trajectories rather than response phrasing.
 version: "1"
 type: capability
 
@@ -26,7 +26,7 @@ stimuli:
       git:
         type: clone
         url: https://github.com/dotnet/aspnetcore.git
-        ref: a3c072de420dea79caa317c2f661d91299ff9038
+        ref: 44edf700f5b4b0a8076b95c397af35ec25ca269c
         shallow: true
       files:
         - src: ../trace-contract-grader.ps1
@@ -64,6 +64,10 @@ stimuli:
       files:
         - src: ../trace-contract-grader.ps1
           dest: .eval-grader/trace-contract-grader.ps1
+        - src: fixture-contract.ps1
+          dest: .eval-grader/fixture-contract.ps1
+        - src: fixtures/contracts/inventory.json
+          dest: .eval-grader/inventory.json
         - src: fixtures/bundle
           dest: .review-bundle
     tags:
@@ -83,8 +87,9 @@ stimuli:
             - -File
             - .eval-grader/trace-contract-grader.ps1
             - same-worker-lifecycle
+            - .eval-grader/inventory.json
 
-  - name: hosted-oversized-native-pagination
+  - name: hosted-ready-v2-transport
     prompt: >-
       In a hosted-style environment, use review-pull-request to privately review the
       supplied ready version-2 bundle at .review-bundle/manifest.json. Use only authorized
@@ -94,8 +99,10 @@ stimuli:
       files:
         - src: ../trace-contract-grader.ps1
           dest: .eval-grader/trace-contract-grader.ps1
-        - src: fixtures/contracts/pagination.json
-          dest: .eval-grader/pagination.json
+        - src: fixture-contract.ps1
+          dest: .eval-grader/fixture-contract.ps1
+        - src: fixtures/contracts/inventory.json
+          dest: .eval-grader/inventory.json
         - src: fixtures/bundle
           dest: .review-bundle
     tags:
@@ -114,8 +121,8 @@ stimuli:
             - -NoProfile
             - -File
             - .eval-grader/trace-contract-grader.ps1
-            - hosted-pagination
-            - .eval-grader/pagination.json
+            - ready-v2-transport
+            - .eval-grader/inventory.json
 
   - name: unavailable-required-bytes-block
     prompt: >-
@@ -127,6 +134,10 @@ stimuli:
       files:
         - src: ../trace-contract-grader.ps1
           dest: .eval-grader/trace-contract-grader.ps1
+        - src: fixture-contract.ps1
+          dest: .eval-grader/fixture-contract.ps1
+        - src: fixtures/contracts/inventory.json
+          dest: .eval-grader/inventory.json
         - src: fixtures/bundle-missing-feedback
           dest: .review-bundle
     tags:
@@ -146,6 +157,7 @@ stimuli:
             - -File
             - .eval-grader/trace-contract-grader.ps1
             - required-bytes-blocked
+            - .eval-grader/inventory.json
 
 scoring:
   weights:

@@ -1,7 +1,7 @@
 #requires -Version 7.0
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('sdk-recovery', 'same-worker-lifecycle', 'hosted-pagination', 'required-bytes-blocked')]
+    [ValidateSet('sdk-recovery', 'same-worker-lifecycle', 'ready-v2-transport', 'required-bytes-blocked')]
     [string]$Contract,
 
     [string]$ContractPath,
@@ -13,6 +13,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
+
+$fixtureContractLibrary = @(
+    (Join-Path $PSScriptRoot 'fixture-contract.ps1'),
+    (Join-Path $PSScriptRoot 'review-pull-request/fixture-contract.ps1')
+) | Where-Object { Test-Path $_ -PathType Leaf } | Select-Object -First 1
+if ($null -ne $fixtureContractLibrary) {
+    . $fixtureContractLibrary
+}
 
 function Convert-ToText {
     param($Value)
@@ -345,7 +353,27 @@ function Test-SdkRecovery {
 }
 
 function Test-SameWorkerLifecycle {
-    param([object[]]$Calls)
+    param(
+        [object]$GraderInput,
+        [object[]]$Calls,
+        [object[]]$Events
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ContractPath)) {
+        Fail 'The same-worker lifecycle grader requires an inventory path.'
+    }
+    if ($null -eq (Get-Command Assert-ReviewFixture -ErrorAction SilentlyContinue)) {
+        Fail 'The trusted fixture-contract library is unavailable.'
+    }
+    $workDir = [IO.Path]::GetFullPath([string]$GraderInput.trajectory.workDir)
+    try {
+        $null = Assert-ReviewFixture `
+            -BundleRoot (Join-Path $workDir '.review-bundle') `
+            -ContractPath ([IO.Path]::GetFullPath($ContractPath, $workDir)) `
+            -BundleName valid
+    } catch {
+        Fail "Trusted same-worker fixture validation failed: $($_.Exception.Message)"
+    }
 
     $rootCalls = @($Calls | Where-Object { [string]::IsNullOrEmpty($_.AgentId) })
     $shellCalls = @($rootCalls | Where-Object { Test-ShellTool $_.Name })
@@ -372,6 +400,12 @@ function Test-SameWorkerLifecycle {
     $writes = @($rootCalls | Where-Object { $_.Name -eq 'write_agent' })
     if ($writes.Count -ne 1) {
         Fail "Expected exactly one same-worker clarification; observed $($writes.Count)."
+    }
+    $clarificationMessage = [string](Get-Argument $writes[0] 'message')
+    if ($clarificationMessage -notmatch '(?i)\b(candidate|finding|issue)\b' -or
+        $clarificationMessage -notmatch '(?i)\b(base|target|old|previous)\b' -or
+        $clarificationMessage -notmatch '(?i)\b(contract|behavior|implementation|code)\b') {
+        Fail 'The same-worker message did not ask for the requested candidate clarification against the frozen base contract.'
     }
     $allReads = @($rootCalls | Where-Object { $_.Name -eq 'read_agent' })
     foreach ($call in @($allReads) + @($writes)) {
@@ -429,6 +463,18 @@ function Test-SameWorkerLifecycle {
     if ($initialSubstantiveTurns.Count -eq 0) {
         Fail 'The initial read_agent result did not contain an actual completed worker report.'
     }
+    $initialReportText = ($initialSubstantiveTurns.Payload -join "`n")
+    $multipleCandidateReport =
+        $initialReportText -match '(?i)\b(?:another|second|third|two|multiple|several)\s+(?:candidate|finding|issue)s?\b' -or
+        $initialReportText -match '(?i)\bmore\s+than\s+one\s+(?:candidate|finding|issue)\b'
+    $singleCandidateReport =
+        -not $multipleCandidateReport -and
+        $initialReportText -match '(?i)\b(?:one|single|only one)\s+(?:strongest\s+)?(?:candidate|finding|issue)\b'
+    $selectedStrongestCandidate =
+        $clarificationMessage -match '(?i)\b(strongest|top|highest|most[- ]serious)\s+(candidate|finding|issue)\b'
+    if (-not $singleCandidateReport -and -not $selectedStrongestCandidate) {
+        Fail 'The same-worker clarification did not unambiguously select the strongest candidate.'
+    }
     $initialMaxTurn = (
         $initialSubstantiveTurns |
             Measure-Object Index -Maximum
@@ -452,37 +498,119 @@ function Test-SameWorkerLifecycle {
     if ($followUpSubstantiveTurns.Count -eq 0) {
         Fail 'The follow-up read_agent result did not contain an actual completed worker follow-up.'
     }
+    $synthesisObserved = $false
+    for ($index = $followUpRead.ResultIndex + 1; $index -lt $Events.Count; $index++) {
+        $event = $Events[$index]
+        $agentId = [string](
+            $event.PSObject.Properties['agentId']?.Value ??
+            $event.data.PSObject.Properties['agentId']?.Value
+        )
+        if ($event.type -eq 'assistant_message' -and
+            [string]::IsNullOrEmpty($agentId)) {
+            $synthesisObserved = $true
+            break
+        }
+    }
+    if (-not $synthesisObserved) {
+        Fail 'Root synthesis occurred before the completed same-worker follow-up.'
+    }
 
     Complete-Grading -Passed $true -Evidence 'Observed one background worker, an actual initial report, one clarification to the returned worker ID, and an actual follow-up report from that same ID.'
 }
 
-function Get-ViewCoverage {
+function Get-CanonicalCallPath {
     param(
-        [object[]]$Calls,
-        [object]$FileContract
+        [object]$Call,
+        [string]$WorkDir
     )
 
+    $path = [string](
+        (Get-Argument $Call 'path') ??
+        (Get-Argument $Call 'filePath')
+    )
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        return ''
+    }
+    try {
+        $separator = [IO.Path]::DirectorySeparatorChar
+        $portable = $path.Replace('\', $separator).Replace('/', $separator)
+        return [IO.Path]::GetFullPath($portable, $WorkDir)
+    } catch {
+        return ''
+    }
+}
+
+function Test-ExplicitToolTruncation {
+    param([string]$Text)
+
+    return $Text -match '(?im)^\s*(?:\[\s*)?(?:output|result|content)\s+(?:was\s+)?truncated\b'
+}
+
+function Test-PromptContainsFixtureInput {
+    param(
+        [string]$Prompt,
+        [string]$BundleRoot,
+        [string[]]$RelativePaths
+    )
+
+    foreach ($relativePath in $RelativePaths) {
+        $normalizedPath = $relativePath.Replace('\', '/')
+        if ($Prompt.IndexOf($normalizedPath, [StringComparison]::Ordinal) -ge 0) {
+            return $true
+        }
+
+        $fullPath = Join-Path $BundleRoot (
+            $normalizedPath.Replace('/', [IO.Path]::DirectorySeparatorChar)
+        )
+        if (Test-Path $fullPath -PathType Leaf) {
+            $content = (Get-Content $fullPath -Raw -Encoding utf8).TrimEnd("`r", "`n")
+            if (-not [string]::IsNullOrEmpty($content) -and
+                $Prompt.IndexOf($content, [StringComparison]::Ordinal) -ge 0) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
+function Get-ExactViewCoverage {
+    param(
+        [object[]]$Calls,
+        [object]$FileContract,
+        [string]$BundleRoot,
+        [string]$WorkDir
+    )
+
+    $fixturePath = [IO.Path]::GetFullPath(
+        (Join-Path $BundleRoot ([string]$FileContract.path).Replace(
+            '/',
+            [IO.Path]::DirectorySeparatorChar
+        ))
+    )
     $matching = @(
         $Calls |
             Where-Object {
                 $_.Name -eq 'view' -and
-                [string](Get-Argument $_ 'path') -match ('(?i)(^|[\\/])' + [regex]::Escape([string]$FileContract.path) + '$')
+                (Get-CanonicalCallPath $_ $WorkDir) -ieq $fixturePath
             }
     )
     if ($matching.Count -eq 0) {
-        return [pscustomobject]@{ Passed = $false; Evidence = "No native view call read $($FileContract.path)."; LastResultIndex = -1 }
+        return [pscustomobject]@{
+            Passed = $false
+            Evidence = "No coordinator native view call read $($FileContract.path)."
+            LastResultIndex = -1
+        }
     }
 
-    $observedLines = @{}
+    $expectedLines = @(
+        Get-Content $fixturePath -Encoding utf8
+    )
+    $observed = @{}
     $lastResultIndex = -1
-    $creditedCalls = 0
     foreach ($call in $matching) {
-        if ((Get-Argument $call 'forceReadLargeFiles') -eq $true) {
-            return [pscustomobject]@{ Passed = $false; Evidence = "A forced whole-file read bypassed pagination for $($FileContract.path)."; LastResultIndex = $lastResultIndex }
-        }
         if ($call.ResultSuccess -ne $true -or
-            [string]::IsNullOrWhiteSpace($call.ResultText) -or
-            $call.ResultText -match '(?i)file too large|output too large|size warning') {
+            [string]::IsNullOrWhiteSpace($call.ResultText)) {
             continue
         }
         $lineMatches = @(
@@ -494,8 +622,8 @@ function Get-ViewCoverage {
         if ($lineMatches.Count -eq 0) {
             continue
         }
-        if ($call.ResultText -match '(?i)\[Output truncated\.|output truncated|truncation') {
-            $lastReturnedLine = (
+        if (Test-ExplicitToolTruncation $call.ResultText) {
+            $lastLine = (
                 $lineMatches |
                     ForEach-Object { [int]$_.Groups['line'].Value } |
                     Measure-Object -Maximum
@@ -503,129 +631,213 @@ function Get-ViewCoverage {
             $lineMatches = @(
                 $lineMatches |
                     Where-Object {
-                        [int]$_.Groups['line'].Value -ne $lastReturnedLine
+                        [int]$_.Groups['line'].Value -ne $lastLine
                     }
             )
-        }
-        if ($lineMatches.Count -eq 0) {
-            continue
         }
         foreach ($lineMatch in $lineMatches) {
             $line = [int]$lineMatch.Groups['line'].Value
             $content = $lineMatch.Groups['content'].Value
-            if ($line -lt 1 -or $line -gt [int]$FileContract.lineCount) {
-                return [pscustomobject]@{ Passed = $false; Evidence = "A native read returned out-of-range line $line for $($FileContract.path)."; LastResultIndex = $lastResultIndex }
+            if ($line -lt 1 -or $line -gt $expectedLines.Count) {
+                return [pscustomobject]@{
+                    Passed = $false
+                    Evidence = "A native read returned out-of-range line $line for $($FileContract.path)."
+                    LastResultIndex = $lastResultIndex
+                }
             }
-            if ($observedLines.ContainsKey($line) -and
-                $observedLines[$line] -ne $content) {
-                return [pscustomobject]@{ Passed = $false; Evidence = "Native reads returned conflicting content for line $line of $($FileContract.path)."; LastResultIndex = $lastResultIndex }
+            $expected = [string]$expectedLines[$line - 1]
+            if ($content -cne $expected) {
+                return [pscustomobject]@{
+                    Passed = $false
+                    Evidence = "A native read returned content different from trusted fixture line $line of $($FileContract.path)."
+                    LastResultIndex = $lastResultIndex
+                }
             }
-            $observedLines[$line] = $content
+            $observed[$line] = $content
         }
-        $creditedCalls++
         $lastResultIndex = [Math]::Max($lastResultIndex, $call.ResultIndex)
     }
-    if ($creditedCalls -lt 2) {
-        return [pscustomobject]@{ Passed = $false; Evidence = "Fewer than two content-bearing paged reads covered $($FileContract.path)."; LastResultIndex = $lastResultIndex }
-    }
 
-    for ($line = 1; $line -le [int]$FileContract.lineCount; $line++) {
-        if (-not $observedLines.ContainsKey($line)) {
-            return [pscustomobject]@{ Passed = $false; Evidence = "Native reads left an actual returned-line gap in $($FileContract.path) at line $line."; LastResultIndex = $lastResultIndex }
+    for ($line = 1; $line -le $expectedLines.Count; $line++) {
+        if (-not $observed.ContainsKey($line)) {
+            return [pscustomobject]@{
+                Passed = $false
+                Evidence = "Native reads left an actual returned-line gap in $($FileContract.path) at line $line."
+                LastResultIndex = $lastResultIndex
+            }
         }
     }
-    $content = ($observedLines.GetEnumerator() |
-        Sort-Object Name |
-        ForEach-Object { [string]$_.Value }) -join "`n"
-    foreach ($sentinel in $FileContract.sentinels) {
-        if ($content -notmatch [regex]::Escape([string]$sentinel)) {
-            return [pscustomobject]@{ Passed = $false; Evidence = "The native read results omitted sentinel $sentinel from $($FileContract.path)."; LastResultIndex = $lastResultIndex }
-        }
+    return [pscustomobject]@{
+        Passed = $true
+        Evidence = ''
+        LastResultIndex = $lastResultIndex
     }
-    return [pscustomobject]@{ Passed = $true; Evidence = ''; LastResultIndex = $lastResultIndex }
 }
 
-function Test-HostedPagination {
+function Test-ReadyV2Transport {
     param(
         [object]$GraderInput,
-        [object[]]$Calls
+        [object[]]$Calls,
+        [object[]]$Events
     )
 
     if ([string]::IsNullOrWhiteSpace($ContractPath)) {
-        Fail 'The hosted pagination grader requires a contract path.'
+        Fail 'The ready-v2 transport grader requires an inventory path.'
+    }
+    if ($null -eq (Get-Command Assert-ReviewFixture -ErrorAction SilentlyContinue)) {
+        Fail 'The trusted fixture-contract library is unavailable.'
     }
     if (@($Calls | Where-Object { Test-ShellTool $_.Name }).Count -ne 0) {
-        Fail 'A hosted supplied-bundle run used a shell tool.'
-    }
-    $rootCalls = @($Calls | Where-Object { [string]::IsNullOrEmpty($_.AgentId) })
-    $tasks = @($rootCalls | Where-Object { $_.Name -eq 'task' })
-    if ($tasks.Count -eq 0) {
-        Fail 'No prescribed guide worker was dispatched after the bundle reads.'
-    }
-    $firstTaskIndex = ($tasks | Measure-Object CallIndex -Minimum).Minimum
-    $preDispatchCalls = @(
-        $rootCalls |
-            Where-Object {
-                $_.CallIndex -lt $firstTaskIndex -and
-                $_.ResultIndex -ge 0 -and
-                $_.ResultIndex -lt $firstTaskIndex
-            }
-    )
-    $contractFile = Join-Path ([string]$GraderInput.trajectory.workDir) $ContractPath
-    $pagination = Get-Content $contractFile -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
-    if (@($pagination.files).Count -ne 3) {
-        Fail 'The pagination contract must describe exactly files.json, pull.json, and feedback.json.'
+        Fail 'A supplied-bundle transport run used a shell tool.'
     }
 
-    $lastEvidenceIndex = -1
-    foreach ($file in $pagination.files) {
-        if ($file.path -notin @('files.json', 'pull.json', 'feedback.json') -or
-            [int]$file.lineCount -lt 200 -or
-            [int]$file.minimumBytes -le 20480 -or
-            [string]::IsNullOrWhiteSpace([string]$file.sha256) -or
-            @($file.sentinels).Count -lt 5) {
-            Fail "The pagination contract for $($file.path) is not discriminating."
+    $workDir = [IO.Path]::GetFullPath([string]$GraderInput.trajectory.workDir)
+    $contractFile = [IO.Path]::GetFullPath($ContractPath, $workDir)
+    $bundleRoot = [IO.Path]::GetFullPath(
+        (Join-Path $workDir '.review-bundle')
+    )
+    try {
+        $null = Assert-ReviewFixture `
+            -BundleRoot $bundleRoot `
+            -ContractPath $contractFile `
+            -BundleName valid
+    } catch {
+        Fail "Trusted ready-v2 fixture validation failed: $($_.Exception.Message)"
+    }
+    $inventory = Get-Content $contractFile -Raw -Encoding utf8 |
+        ConvertFrom-Json -Depth 100
+    $rootCalls = @(
+        $Calls |
+            Where-Object { [string]::IsNullOrEmpty($_.AgentId) }
+    )
+    $workerCalls = @(
+        $Calls |
+            Where-Object { -not [string]::IsNullOrEmpty($_.AgentId) }
+    )
+    foreach ($call in $workerCalls | Where-Object {
+        $_.Name -in @('view', 'read_file')
+    }) {
+        $path = Get-CanonicalCallPath $call $workDir
+        if ([string]::IsNullOrEmpty($path)) {
+            continue
         }
-        $fixturePath = Join-Path ([string]$GraderInput.trajectory.workDir) ".review-bundle/$($file.path)"
-        if (-not (Test-Path $fixturePath -PathType Leaf) -or
-            (Get-Item $fixturePath).Length -lt [int]$file.minimumBytes -or
-            @(Get-Content $fixturePath -Encoding utf8).Count -ne [int]$file.lineCount -or
-            (Get-FileHash $fixturePath -Algorithm SHA256).Hash -ne [string]$file.sha256) {
-            Fail "The staged oversized fixture for $($file.path) does not match its contract."
+        foreach ($entry in $inventory.files) {
+            $fixturePath = [IO.Path]::GetFullPath(
+                (Join-Path $bundleRoot ([string]$entry.path).Replace(
+                    '/',
+                    [IO.Path]::DirectorySeparatorChar
+                ))
+            )
+            if ($path -ieq $fixturePath -and 'worker' -notin @($entry.readRoles)) {
+                Fail "A worker read coordinator-only fixture input '$($entry.path)'."
+            }
         }
-        $coverage = Get-ViewCoverage -Calls $preDispatchCalls -FileContract $file
+    }
+
+    $tasks = @($rootCalls | Where-Object { $_.Name -eq 'task' })
+    $manifest = Get-Content (Join-Path $bundleRoot 'manifest.json') -Raw -Encoding utf8 |
+        ConvertFrom-Json -Depth 100
+    $files = @(Get-Content (Join-Path $bundleRoot 'files.json') -Raw -Encoding utf8 |
+        ConvertFrom-Json -Depth 100)
+    $expectedWorkerCount = @($manifest.guides).Count
+    if ($tasks.Count -ne $expectedWorkerCount) {
+        Fail "Expected exactly $expectedWorkerCount prescribed guide worker dispatch, but observed $($tasks.Count)."
+    }
+    $task = $tasks[0]
+    if ([string](Get-Argument $task 'agent_type') -cne 'general-purpose' -or
+        [string](Get-Argument $task 'model') -cne 'gpt-5.6-sol' -or
+        [string](Get-Argument $task 'mode') -cne 'background') {
+        Fail 'The prescribed guide worker was not configured as background general-purpose gpt-5.6-sol.'
+    }
+    $workerPrompt = ([string](Get-Argument $task 'prompt')).Replace('\', '/')
+    if ([string]::IsNullOrWhiteSpace($workerPrompt)) {
+        Fail 'The prescribed guide worker was dispatched without its required inputs.'
+    }
+    foreach ($guide in @($manifest.guides)) {
+        $guidePath = [string]$guide.path
+        if (-not (Test-PromptContainsFixtureInput `
+            -Prompt $workerPrompt `
+            -BundleRoot $bundleRoot `
+            -RelativePaths @($guidePath, "guidance/$guidePath.source"))) {
+            Fail "The worker prompt omitted assigned guide '$guidePath'."
+        }
+    }
+    foreach ($policy in @($manifest.policies)) {
+        $policyPath = [string]$policy.path
+        $policyBodyPath = [string]$policy.body.path
+        if (-not (Test-PromptContainsFixtureInput `
+            -Prompt $workerPrompt `
+            -BundleRoot $bundleRoot `
+            -RelativePaths @($policyPath, "guidance/$policyPath.source", $policyBodyPath))) {
+            Fail "The worker prompt omitted applicable policy '$policyPath'."
+        }
+    }
+    foreach ($inputPath in @('files.json', 'diff.patch')) {
+        if (-not (Test-PromptContainsFixtureInput `
+            -Prompt $workerPrompt `
+            -BundleRoot $bundleRoot `
+            -RelativePaths @($inputPath))) {
+            Fail "The worker prompt omitted required worker input '$inputPath'."
+        }
+    }
+    foreach ($source in @(
+        $manifest.sources.head,
+        $manifest.sources.mergeBase,
+        $manifest.sources.baseTip
+    )) {
+        $sourceRoot = [string]$source.root
+        if ($workerPrompt.IndexOf($sourceRoot, [StringComparison]::Ordinal) -lt 0) {
+            Fail "The worker prompt omitted frozen source root '$sourceRoot'."
+        }
+    }
+    foreach ($file in $files) {
+        $filename = [string]$file.filename
+        if ($workerPrompt.IndexOf($filename, [StringComparison]::Ordinal) -lt 0) {
+            Fail "The worker prompt omitted relevant changed source '$filename'."
+        }
+    }
+    $firstTaskIndex = ($tasks | Measure-Object CallIndex -Minimum).Minimum
+    $synthesisIndex = $Events.Count
+    for ($index = 0; $index -lt $Events.Count; $index++) {
+        $event = $Events[$index]
+        $agentId = [string](
+            $event.PSObject.Properties['agentId']?.Value ??
+            $event.data.PSObject.Properties['agentId']?.Value
+        )
+        if ($event.type -eq 'assistant_message' -and
+            [string]::IsNullOrEmpty($agentId)) {
+            $synthesisIndex = $index
+        }
+    }
+    $coverageByPath = @{}
+    foreach ($entry in $inventory.files | Where-Object coordinatorRequired) {
+        $coverage = Get-ExactViewCoverage `
+            -Calls $rootCalls `
+            -FileContract $entry `
+            -BundleRoot $bundleRoot `
+            -WorkDir $workDir
         if (-not $coverage.Passed) {
             Fail $coverage.Evidence
         }
-        $lastEvidenceIndex = [Math]::Max($lastEvidenceIndex, $coverage.LastResultIndex)
+        if ($coverage.LastResultIndex -ge $synthesisIndex) {
+            Fail "The coordinator read $($entry.path) after root synthesis."
+        }
+        $coverageByPath[[string]$entry.path] = $coverage
     }
 
-    $manifest = $preDispatchCalls |
-        Where-Object {
-            $_.Name -eq 'view' -and
-            [string](Get-Argument $_ 'path') -match '(?i)manifest\.json$' -and
-            (Test-UsableResult $_) -and
-            $_.ResultText -match '"version"\s*:\s*2' -and
-            $_.ResultText -match '"ready"\s*:\s*true'
-        } |
-        Select-Object -First 1
-    $routing = $preDispatchCalls |
-        Where-Object {
-            $_.Name -eq 'view' -and
-            [string](Get-Argument $_ 'path') -match '(?i)routing\.md\.source$' -and
-            (Test-UsableResult $_)
-        } |
-        Select-Object -First 1
-    if ($null -eq $manifest -or $null -eq $routing) {
-        Fail 'The hosted run did not read the ready manifest and routed guidance table before dispatch.'
-    }
-    $lastEvidenceIndex = [Math]::Max($lastEvidenceIndex, [Math]::Max($manifest.ResultIndex, $routing.ResultIndex))
-
-    if ($firstTaskIndex -le $lastEvidenceIndex) {
-        Fail 'A guide worker was dispatched before all required hosted bundle bytes were read.'
+    foreach ($preDispatchPath in @(
+        'manifest.json',
+        'guidance/.github/skills/review-pull-request/routing.md.source'
+    )) {
+        if ($coverageByPath[$preDispatchPath].LastResultIndex -ge $firstTaskIndex) {
+            Fail "The coordinator did not verify $preDispatchPath before routing the guide worker."
+        }
     }
 
-    Complete-Grading -Passed $true -Evidence 'Observed native, content-bearing, gap-free oversized bundle reads with sentinels before worker dispatch and no shell fallback.'
+    Complete-Grading -Passed $true -Evidence (
+        'Observed a trusted ready-v2 fixture, exact coordinator reads through EOF, ' +
+        'valid role separation, routed dispatch, and no shell fallback.'
+    )
 }
 
 function Test-RequiredBytesBlocked {
@@ -635,6 +847,12 @@ function Test-RequiredBytesBlocked {
         [object[]]$Events
     )
 
+    if ([string]::IsNullOrWhiteSpace($ContractPath)) {
+        Fail 'The unavailable-byte grader requires an inventory path.'
+    }
+    if ($null -eq (Get-Command Assert-ReviewFixture -ErrorAction SilentlyContinue)) {
+        Fail 'The trusted fixture-contract library is unavailable.'
+    }
     $rootCalls = @($Calls | Where-Object { [string]::IsNullOrEmpty($_.AgentId) })
     if (@($rootCalls | Where-Object { Test-ShellTool $_.Name }).Count -ne 0) {
         Fail 'The unavailable-byte path attempted a shell fallback.'
@@ -651,6 +869,15 @@ function Test-RequiredBytesBlocked {
     }
 
     $workDir = [IO.Path]::GetFullPath([string]$GraderInput.trajectory.workDir)
+    $contractFile = [IO.Path]::GetFullPath($ContractPath, $workDir)
+    try {
+        $null = Assert-ReviewFixture `
+            -BundleRoot (Join-Path $workDir '.review-bundle') `
+            -ContractPath $contractFile `
+            -BundleName missingFeedback
+    } catch {
+        Fail "Trusted missing-feedback fixture validation failed: $($_.Exception.Message)"
+    }
     $manifestPath = [IO.Path]::GetFullPath(
         (Join-Path $workDir '.review-bundle/manifest.json')
     )
@@ -673,6 +900,16 @@ function Test-RequiredBytesBlocked {
     if ($null -eq $manifestRead) {
         Fail 'The unavailable-byte path did not first read the exact ready version-2 manifest.'
     }
+    $inventory = Get-Content $contractFile -Raw -Encoding utf8 |
+        ConvertFrom-Json -Depth 100
+    $manifestCoverage = Get-ExactViewCoverage `
+        -Calls $rootCalls `
+        -FileContract ($inventory.files | Where-Object path -CEQ 'manifest.json') `
+        -BundleRoot (Join-Path $workDir '.review-bundle') `
+        -WorkDir $workDir
+    if (-not $manifestCoverage.Passed) {
+        Fail "The unavailable-byte path did not completely read the trusted manifest: $($manifestCoverage.Evidence)"
+    }
 
     $feedbackReads = @(
         $rootCalls |
@@ -690,13 +927,13 @@ function Test-RequiredBytesBlocked {
     }
     if (@(
         $feedbackReads |
-            Where-Object { $_.CallIndex -le $manifestRead.ResultIndex }
+            Where-Object { $_.CallIndex -le $manifestCoverage.LastResultIndex }
     ).Count -ne 0) {
         Fail 'The exact required feedback input was attempted before the ready manifest read completed.'
     }
     $failedRead = $feedbackReads |
         Where-Object {
-            $_.CallIndex -gt $manifestRead.ResultIndex -and
+            $_.CallIndex -gt $manifestCoverage.LastResultIndex -and
             $_.ResultSuccess -eq $false
         } |
         Select-Object -First 1
@@ -743,8 +980,8 @@ try {
     $calls = @(Get-Calls $events)
     switch ($Contract) {
         'sdk-recovery' { Test-SdkRecovery $calls }
-        'same-worker-lifecycle' { Test-SameWorkerLifecycle $calls }
-        'hosted-pagination' { Test-HostedPagination $graderInput $calls }
+        'same-worker-lifecycle' { Test-SameWorkerLifecycle $graderInput $calls $events }
+        'ready-v2-transport' { Test-ReadyV2Transport $graderInput $calls $events }
         'required-bytes-blocked' { Test-RequiredBytesBlocked $graderInput $calls $events }
     }
 } catch {

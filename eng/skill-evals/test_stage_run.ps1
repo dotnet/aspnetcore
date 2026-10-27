@@ -129,12 +129,18 @@ try {
     ) -Force | Out-Null
     Set-Content (Join-Path $trustedEvalRoot 'eval.vally.yaml') $trustedMarker
     Set-Content (
-        Join-Path $trustedEvalRoot 'fixtures/contracts/pagination.json'
+        Join-Path $trustedEvalRoot 'fixture-contract.ps1'
+    ) $trustedMarker
+    Set-Content (
+        Join-Path $trustedEvalRoot 'fixtures/contracts/inventory.json'
     ) $trustedMarker
     Set-Content (Join-Path $candidateTrustedSkill 'SKILL.md') $candidateDataMarker
     Set-Content (Join-Path $candidateTrustedEval 'eval.vally.yaml') $candidateControlMarker
     Set-Content (
-        Join-Path $candidateTrustedEval 'fixtures/contracts/pagination.json'
+        Join-Path $candidateTrustedEval 'fixture-contract.ps1'
+    ) $candidateControlMarker
+    Set-Content (
+        Join-Path $candidateTrustedEval 'fixtures/contracts/inventory.json'
     ) $candidateControlMarker
     Set-Content (
         Join-Path $candidateTrustedEval 'fixtures/input.txt'
@@ -152,8 +158,8 @@ try {
         @($trustedStagedContent | Select-String $candidateControlMarker).Count -eq 0
     ) 'Candidate executable eval configuration reached the staged tree.'
     Assert-True (
-        @($trustedStagedContent | Select-String $trustedMarker).Count -eq 7
-    ) 'The trusted eval and pagination contract were not staged.'
+        @($trustedStagedContent | Select-String $trustedMarker).Count -eq 8
+    ) 'The trusted eval, fixture checker, and inventory contract were not staged.'
     Assert-True (
         @($trustedStagedContent | Select-String $candidateDataMarker).Count -eq 2
     ) 'The selected candidate skill and non-control fixture were not staged.'

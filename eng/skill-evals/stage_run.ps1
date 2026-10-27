@@ -127,7 +127,8 @@ $trustedFiles = @(
 $trustedEvalFiles = @(if ($EvalName -eq 'review-pull-request') {
     @(
         'eng/skill-evals/review-pull-request/eval.vally.yaml'
-        'eng/skill-evals/review-pull-request/fixtures/contracts/pagination.json'
+        'eng/skill-evals/review-pull-request/fixture-contract.ps1'
+        'eng/skill-evals/review-pull-request/fixtures/contracts/inventory.json'
     )
 } else {
     @()

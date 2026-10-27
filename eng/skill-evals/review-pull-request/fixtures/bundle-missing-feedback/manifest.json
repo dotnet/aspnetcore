@@ -1,7 +1,7 @@
 {
   "version": 2,
   "ready": true,
-  "producer": "9c2a51a237f8db89f8acf71e2025bf972048606f103af23c26ef51dfcc1b08c3",
+  "producer": "60e7a85f99036a02cc33f0b756505b3d8514bce57895d0f725b1f11ed1c2dc8e",
   "target": {
     "hostname": "github.com",
     "repository": "owner/product",
@@ -51,9 +51,9 @@
     "originalRoot": "<synthetic-helper-fixture>",
     "checkoutCommit": "1adbcf818c473ae3ce1aa102efbea93fde618c10",
     "workingTreeChanges": true,
-    "sha256": "6b19040423b94c3c54f7bf25f85d235bd9b41b06c16acfa5e57be8d60fb30dd4",
+    "sha256": "ab3324585d5ac767f3ff8991b40a68f3050b3f8cfbc29f99d11e96482d92812f",
     "root": "guidance",
-    "files": 4
+    "files": 5
   },
   "routing": {
     "path": ".github/skills/review-pull-request/routing.md",
@@ -67,35 +67,62 @@
       ]
     }
   ],
-  "policies": [],
+  "policies": [
+    {
+      "path": "docs/Policy.md",
+      "anchor": "required-clause",
+      "body": {
+        "path": "required/policies/0000.source",
+        "utf8Bytes": 55,
+        "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f"
+      }
+    }
+  ],
   "context": [],
   "skippedLinks": [],
   "exclusions": [
     {
-      "scope": "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree",
-      "reason": "Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE."
+      "scope": {
+        "path": "required/exclusions/0000-scope.source",
+        "utf8Bytes": 203,
+        "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+      },
+      "reason": {
+        "path": "required/exclusions/0000-reason.source",
+        "utf8Bytes": 601,
+        "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+      }
     },
     {
       "source": ".github/copilot-instructions.md#security-concerns-are-out-of-scope",
-      "body": "## Security Concerns Are Out of Scope\nDo not review the excluded scope."
+      "body": {
+        "path": "required/exclusions/0001-body.source",
+        "utf8Bytes": 71,
+        "sha256": "24ca206fffc4f61ad893866fafb0c7974c9063394ad58a503f8244615e2f4ed1"
+      }
     }
   ],
   "artifacts": {
     "diff.patch": "f7e86a60abfb026b28ce9a12f4b172c160018e8d951019c78053c3648c4b0c5f",
-    "files.json": "6199d21ca691f508cfc45f16d431d5e917e5b13ee77d868880704b0f74d76b3d",
-    "pull.json": "065659de0dbc2796760d0116bae2468ccad8578b1f21727bb5078acfaf2aad0a",
-    "feedback.json": "f921bc496d175dff70954075816f4028d5fa9130d366e9c64541e9b97e256b3c"
+    "files.json": "aa6b3894afa4260ea2091721992ab4bb390bbc4c74598208c5e535d7f44e47a4",
+    "pull.json": "c6be2d8bc834e5e86233e4d650f71faa76e8bd45985d17b9a62b25d39aacaf61",
+    "feedback.json": "1b3ffaa8fcb0c3e7a4f2abc09869797c25146b4756f0c17e4a4d70d0d2cc3e61"
+  },
+  "requiredText": {
+    "root": "required",
+    "files": 8,
+    "sha256": "12bc870dfb9780677de04c367f75ecb0bd55eb4f8527a7c26fd117fee82c1c87"
   },
   "timingsMs": {
-    "apiFreeze": 12.984,
-    "fetch": 1739.106,
-    "changedFiles": 0.905,
-    "diff": 434.38,
-    "feedback": 5.564,
-    "exportTree:5789cbca8244dcff42ca0722f977b8a0e981b8b0": 248.727,
-    "exportTree:91606389c26d33ef670791412eefad940ca0d37f": 172.675,
-    "exportTree:f63f93410a164d5c7dacdaba915873154f5e75db": 183.711,
-    "manifest": 1.392
+    "apiFreeze": 0,
+    "fetch": 0,
+    "changedFiles": 0,
+    "diff": 0,
+    "feedback": 0,
+    "exportTree:5789cbca8244dcff42ca0722f977b8a0e981b8b0": 0,
+    "exportTree:91606389c26d33ef670791412eefad940ca0d37f": 0,
+    "exportTree:f63f93410a164d5c7dacdaba915873154f5e75db": 0,
+    "manifest": 0
   },
   "limitations": "Tracked Git bytes only. Symlinks, submodules and LFS pointers are inert data and cannot establish their target behavior."
 }
