@@ -1,5 +1,8 @@
-export function beforeWebAssemblyStart(options) {
-    options.loadBootResource ??= (type, name) => `WasmMinimal/_framework/${name}`;
+export function beforeWebStart(options) {
+    options.webAssembly.loadBootResource ??= (type, name) => `WasmMinimal/_framework/${name}`;
+}
+
+export function beforeWebAssemblyStart() {
     appendElement('server--classic-and-modern-before-web-assembly-start', 'Server project Classic and modern "beforeWebAssemblyStart"');
 }
 
