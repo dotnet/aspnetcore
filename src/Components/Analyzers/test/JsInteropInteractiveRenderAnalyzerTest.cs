@@ -1906,4 +1906,59 @@ namespace ConsoleApplication1
 
         VerifyCSharpDiagnostic(test);
     }
+
+    private static string CreateStoredDelegateTest(string statements)
+    {
+        var body = string.Join(Environment.NewLine, statements.Split('|').Select(statement => "            " + statement));
+        return @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private const string Identifier = ""getValue"";
+        private IJSRuntime JS = default!;
+
+        private async Task InvokeJSAsync()
+        {
+            await JS.InvokeVoidAsync(Identifier);
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+" + body + @"
+        }
+    }
+}" + BaseComponentDeclarations;
+    }
+
+    [Theory]
+    [InlineData("Func<Task> invokeJS = async () => await JS.InvokeVoidAsync(Identifier);|await invokeJS();", 21, 53)]
+    [InlineData("Func<Task> invokeJS = async () => await JS.InvokeVoidAsync(Identifier);|await invokeJS.Invoke();", 21, 53)]
+    [InlineData("Func<Task> invokeJS = async () => await JS.InvokeVoidAsync(Identifier);|await (invokeJS?.Invoke() ?? Task.CompletedTask);", 21, 53)]
+    [InlineData("Func<Task> invokeJS;|invokeJS = async () => await JS.InvokeVoidAsync(Identifier);|await invokeJS();", 22, 42)]
+    [InlineData("Func<Task> invokeJS = async () =>|{|    await JS.InvokeVoidAsync(Identifier);|};|await invokeJS();", 23, 23)]
+    [InlineData("Func<Task> invokeJS = InvokeJSAsync;|await invokeJS();", 16, 19)]
+    public void JSInvokeInStoredDelegateInvokedWithoutIsInteractiveCheckShouldThrowWarning(string statements, int line, int column)
+    {
+        VerifyCSharpDiagnostic(CreateStoredDelegateTest(statements),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", line, column) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData("Func<Task> invokeJS = async () => await JS.InvokeVoidAsync(Identifier);|if (RendererInfo.IsInteractive)|{|    await invokeJS();|}")]
+    [InlineData("Func<Task> invokeJS = async () => await JS.InvokeVoidAsync(Identifier);|if (!RendererInfo.IsInteractive)|{|    return;|}|await invokeJS();")]
+    [InlineData("Func<Task> invokeJS = async () => await JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("Func<Task> invokeJS = async () =>|{|    if (!RendererInfo.IsInteractive)|    {|        return;|    }|    await JS.InvokeVoidAsync(Identifier);|};|await invokeJS();")]
+    [InlineData("Func<Task> invokeJS = async () => await JS.InvokeVoidAsync(Identifier);|invokeJS = () => Task.CompletedTask;|await invokeJS();")]
+    [InlineData("Func<Task> invokeJS = InvokeJSAsync;|if (RendererInfo.IsInteractive)|{|    await invokeJS();|}")]
+    public void JSInvokeInStoredDelegateNotInvokedWithoutIsInteractiveCheckShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateStoredDelegateTest(statements));
+    }
 }

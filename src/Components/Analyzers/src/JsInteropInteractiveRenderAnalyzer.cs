@@ -165,7 +165,7 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         }
         else if (declarator.Initializer?.Value is IOperation value)
         {
-            AnalyzeAssignedValue(value, state);
+            AnalyzeAssignedValue(declarator.Symbol, value, state);
         }
     }
 
@@ -178,24 +178,38 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (assignment.Target is ILocalReferenceOperation reassignedLocal)
+        var reassignedLocal = (assignment.Target as ILocalReferenceOperation)?.Local;
+        if (reassignedLocal is not null)
         {
-            state.SymbolChecks.Remove(reassignedLocal.Local);
+            state.SymbolChecks.Remove(reassignedLocal);
         }
 
-        AnalyzeAssignedValue(assignment.Value, state);
+        AnalyzeAssignedValue(reassignedLocal, assignment.Value, state);
     }
 
-    private static void AnalyzeAssignedValue(IOperation value, JSInteropAnalyzerState state)
+    private static void AnalyzeAssignedValue(ILocalSymbol? assignedLocal, IOperation value, JSInteropAnalyzerState state)
     {
+        if (assignedLocal is not null)
+        {
+            state.StoredDelegates.Remove(assignedLocal);
+        }
+
         if (value is IConditionalOperation conditionalOperation)
         {
             // Check for JSInterop usage in ternary operator assignment.
             AnalyzeCondition(conditionalOperation, state.Clone());
         }
-        else if (value is not IDelegateCreationOperation)
+        else if (value is IDelegateCreationOperation delegateCreation)
         {
-            // Stored delegates are not analyzed where they are created, since they may be invoked after an IsInteractive check.
+            // Stored delegates are analyzed where they are invoked, since that is where an IsInteractive check applies.
+            if (assignedLocal is not null
+                && (delegateCreation.Target is IAnonymousFunctionOperation || delegateCreation.Target is IMethodReferenceOperation))
+            {
+                state.StoredDelegates[assignedLocal] = delegateCreation.Target;
+            }
+        }
+        else
+        {
             AnalyzeOperationsTree(value, state);
         }
     }
@@ -384,10 +398,60 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         }
 
         if (state.CurrentDepth < MaxNestedMethodDepth
+            && FindInvokedStoredDelegate(invocation, state) is IOperation storedDelegate)
+        {
+            AnalyzeStoredDelegate(storedDelegate, state);
+        }
+
+        if (state.CurrentDepth < MaxNestedMethodDepth
             && state.BlockContext.OwningSymbol is IMethodSymbol methodSymbol
             && ComponentFacts.IsComponentBase(methodSymbol.ContainingType, state.AvailableTypes[ComponentsApi.ComponentBase.MetadataName]))
         {
             AnalyzeMethodReference(invocation.TargetMethod, state);
+        }
+    }
+
+    private static IOperation? FindInvokedStoredDelegate(IInvocationOperation invocation, JSInteropAnalyzerState state)
+    {
+        if (invocation.TargetMethod.MethodKind == MethodKind.DelegateInvoke
+            && GetInvokedDelegate(invocation) is ILocalReferenceOperation localReference
+            && state.StoredDelegates.TryGetValue(localReference.Local, out var storedDelegate))
+        {
+            return storedDelegate;
+        }
+
+        return null;
+    }
+
+    private static IOperation? GetInvokedDelegate(IInvocationOperation invocation)
+    {
+        if (invocation.Instance is not IConditionalAccessInstanceOperation)
+        {
+            return invocation.Instance;
+        }
+
+        for (var parent = invocation.Parent; parent is not null; parent = parent.Parent)
+        {
+            if (parent is IConditionalAccessOperation conditionalAccess)
+            {
+                return conditionalAccess.Operation;
+            }
+        }
+
+        return null;
+    }
+
+    private static void AnalyzeStoredDelegate(IOperation storedDelegate, JSInteropAnalyzerState state)
+    {
+        if (storedDelegate is IAnonymousFunctionOperation anonymousFunction)
+        {
+            var clonedState = state.Clone();
+            clonedState.CurrentDepth++;
+            AnalyzeOperationsTree(anonymousFunction.Body, clonedState);
+        }
+        else if (storedDelegate is IMethodReferenceOperation methodReference)
+        {
+            AnalyzeMethodReference(methodReference.Method, state);
         }
     }
 
@@ -564,6 +628,8 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 
         public HashSet<ILocalSymbol> SymbolChecks { get; private set; } = new HashSet<ILocalSymbol>();
 
+        public Dictionary<ILocalSymbol, IOperation> StoredDelegates { get; private set; } = new Dictionary<ILocalSymbol, IOperation>();
+
         public JSInteropAnalyzerState(OperationBlockAnalysisContext blockContext, Dictionary<string, INamedTypeSymbol?> availableTypes)
         {
             BlockContext = blockContext;
@@ -576,7 +642,8 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             {
                 CurrentDepth = this.CurrentDepth,
                 IsInteractiveChecked = this.IsInteractiveChecked,
-                SymbolChecks = new (this.SymbolChecks)
+                SymbolChecks = new (this.SymbolChecks),
+                StoredDelegates = new (this.StoredDelegates)
             };
         }
 
