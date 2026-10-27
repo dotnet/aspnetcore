@@ -81,6 +81,141 @@ function Test-ShellTool {
     return $Name -match '^(bash|shell|powershell)$'
 }
 
+function Get-WorkerCoordinatorBehavior {
+    param([object]$Call)
+
+    $name = ([string]$Call.Name).ToLowerInvariant()
+    if ($name -in @(
+        'task',
+        'read_agent',
+        'write_agent',
+        'list_agents',
+        'ask_user',
+        'create_session',
+        'open_pr_session',
+        'open_issue_session',
+        'fork_session',
+        'send_session_message',
+        'get_session',
+        'get_sessions_status',
+        'list_sessions_and_chats',
+        'answer_session_input',
+        'relay_session_input',
+        'respond_to_session_plan_v2',
+        'run_dynamic_workflow',
+        'dynamic_workflows_manage',
+        'run_workflow',
+        'get_session_automation',
+        'list_workflows',
+        'navigate_to',
+        'navigate_to_my_work',
+        'list_repositories',
+        'add_repository'
+    )) {
+        return 'agent or session orchestration'
+    }
+    if ($name -in @(
+        'web_fetch',
+        'web_search',
+        'semantic_code_search',
+        'read_github_image',
+        'navigate_to_github_item',
+        'fetch',
+        'fetch_blob'
+    ) -or $name -match '(?i)(^|[._-])github([._-]|$)') {
+        return 'live GitHub or fetch access'
+    }
+    if ($name -in @(
+        'apply_patch',
+        'sql',
+        'image_generation',
+        'create',
+        'edit',
+        'write',
+        'edit_file',
+        'write_file',
+        'replace_string_in_file',
+        'multi_replace_string_in_file',
+        'insert_edit_into_file',
+        'annotate_diff_line',
+        'complete_workspace_file_draft_resolution',
+        'task_complete'
+    ) -or
+        $name -match '^(?:create|edit|write|update|delete|reply|publish|manage|save|archive|install|share|add|remove|rename|annotate|complete|replace|insert)(?:$|[._-])') {
+        return 'mutation or publication'
+    }
+    return ''
+}
+
+function Assert-WorkerToolBoundary {
+    param([object[]]$WorkerCalls)
+
+    foreach ($group in @($WorkerCalls | Group-Object AgentId)) {
+        $ordered = @($group.Group | Sort-Object CallIndex)
+        $skillCalls = @($ordered | Where-Object { $_.Name -ieq 'skill' })
+        if (@($skillCalls | Where-Object {
+            $_.Name -cne 'skill' -or
+            [string](Get-Argument $_ 'skill') -cne 'review-pull-request'
+        }).Count -ne 0) {
+            Fail "Guide worker '$($group.Name)' invoked an unsupported skill."
+        }
+        if ($skillCalls.Count -gt 1) {
+            Fail "Guide worker '$($group.Name)' invoked review-pull-request more than once."
+        }
+        if ($skillCalls.Count -eq 1 -and
+            $skillCalls[0].CallIndex -ne $ordered[0].CallIndex) {
+            Fail "Guide worker '$($group.Name)' did not use its optional review-pull-request load as its first tool call."
+        }
+        foreach ($call in $ordered | Where-Object { $_.Name -ine 'skill' }) {
+            $behavior = Get-WorkerCoordinatorBehavior $call
+            if (-not [string]::IsNullOrEmpty($behavior)) {
+                Fail "Guide worker '$($group.Name)' used coordinator-only $behavior through '$($call.Name)'."
+            }
+        }
+    }
+}
+
+function Test-CoordinatorOutputText {
+    param([string]$Text)
+
+    $reportPrefix = '(?:^|\bTurn\s+\d+\s*:\s*)\s*'
+    return $Text -match "(?im)$reportPrefix" + 'PATH:\s*(?:per-guide(?!-worker)|single-reviewer)\b' -or
+        $Text -match "(?im)$reportPrefix" + '(?:GUIDES|EXISTING_FEEDBACK_COVERAGE)\s*:'
+}
+
+function Get-ReportedGuidePaths {
+    param([string]$Text)
+
+    $reportPrefix = '(?:^|\bTurn\s+\d+\s*:\s*)\s*'
+    return @(
+        [regex]::Matches(
+            $Text,
+            "(?im)$reportPrefix" + 'GUIDE:\s*(?<guide>[^\r\n]+?)\s*$'
+        ) |
+            ForEach-Object { $_.Groups['guide'].Value.Trim() } |
+            Select-Object -Unique
+    )
+}
+
+function Assert-WorkerReportBoundary {
+    param(
+        [string]$Text,
+        [string]$WorkerId,
+        [string]$ExpectedGuide
+    )
+
+    if (Test-CoordinatorOutputText $Text) {
+        Fail "Guide worker '$WorkerId' emitted coordinator aggregation output."
+    }
+    $reportedGuides = @(Get-ReportedGuidePaths $Text)
+    if ($reportedGuides.Count -ne 1) {
+        Fail "Guide worker '$WorkerId' reported $($reportedGuides.Count) distinct guides instead of exactly one."
+    }
+    if ($reportedGuides[0] -cne $ExpectedGuide) {
+        Fail "Guide worker '$WorkerId' reported guide '$($reportedGuides[0])' instead of assigned guide '$ExpectedGuide'."
+    }
+}
+
 function Test-UsableResult {
     param([object]$Call)
 
@@ -841,6 +976,7 @@ function Test-ReadyV2Transport {
         $Calls |
             Where-Object { -not [string]::IsNullOrEmpty($_.AgentId) }
     )
+    Assert-WorkerToolBoundary $workerCalls
     $coordinatorOnlyEntries = @(
         $inventory.files |
             Where-Object { 'worker' -notin @($_.readRoles) }
@@ -917,6 +1053,7 @@ function Test-ReadyV2Transport {
         Fail "Expected exactly $expectedWorkerCount prescribed guide worker dispatch, but observed $($tasks.Count)."
     }
     $assignedGuides = @{}
+    $workerGuideById = @{}
     foreach ($task in $tasks) {
         if ([string](Get-Argument $task 'agent_type') -cne 'general-purpose' -or
             [string](Get-Argument $task 'model') -cne 'gpt-5.6-sol' -or
@@ -957,6 +1094,15 @@ function Test-ReadyV2Transport {
             Fail "Guide '$guidePath' was assigned to more than one worker task."
         }
         $assignedGuides[$guidePath] = $task
+        if ($task.ResultSuccess -ne $true -or
+            $task.ResultText -notmatch '(?i)agent[_ -]?id\s*[:=]\s*(?<id>[0-9a-f]{8}-[0-9a-f-]{27,})') {
+            Fail "The '$guidePath' background dispatch did not return a concrete worker ID."
+        }
+        $workerId = $Matches.id
+        if ($workerGuideById.ContainsKey($workerId)) {
+            Fail "Worker '$workerId' was assigned more than one guide."
+        }
+        $workerGuideById[$workerId] = $guidePath
 
         $applicablePolicies = @(
             Get-ApplicablePoliciesForGuide `
@@ -1029,6 +1175,100 @@ function Test-ReadyV2Transport {
     foreach ($guide in @($manifest.guides)) {
         if (-not $assignedGuides.ContainsKey([string]$guide.path)) {
             Fail "Guide '$([string]$guide.path)' was not assigned to a worker task."
+        }
+    }
+    foreach ($event in $Events) {
+        $agentId = [string](
+            $event.PSObject.Properties['agentId']?.Value ??
+            $event.data.PSObject.Properties['agentId']?.Value
+        )
+        if ($event.type -eq 'assistant_message' -and
+            $workerGuideById.ContainsKey($agentId)) {
+            Assert-WorkerReportBoundary `
+                -Text ([string]$event.data.content) `
+                -WorkerId $agentId `
+                -ExpectedGuide ([string]$workerGuideById[$agentId])
+        }
+    }
+    foreach ($call in $rootCalls | Where-Object { $_.Name -eq 'read_agent' }) {
+        $workerId = [string](Get-Argument $call 'agent_id')
+        if ($workerGuideById.ContainsKey($workerId)) {
+            Assert-WorkerReportBoundary `
+                -Text $call.ResultText `
+                -WorkerId $workerId `
+                -ExpectedGuide ([string]$workerGuideById[$workerId])
+        }
+    }
+    foreach ($call in $workerCalls | Where-Object {
+        $_.Name -in @('view', 'read_file') -and
+        $workerGuideById.ContainsKey($_.AgentId)
+    }) {
+        $path = Get-CanonicalCallPath $call $workDir
+        if ([string]::IsNullOrEmpty($path)) {
+            continue
+        }
+        $assignedGuide = [string]$workerGuideById[$call.AgentId]
+        foreach ($guide in @($manifest.guides | Where-Object {
+            [string]$_.path -cne $assignedGuide
+        })) {
+            $otherGuidePath = [IO.Path]::GetFullPath(
+                (Join-Path $bundleRoot "guidance/$([string]$guide.path).source").Replace(
+                    '/',
+                    [IO.Path]::DirectorySeparatorChar
+                )
+            )
+            if ($path -ieq $otherGuidePath) {
+                Fail "Guide worker '$($call.AgentId)' read unassigned guide '$([string]$guide.path)'."
+            }
+        }
+    }
+    foreach ($call in $workerCalls | Where-Object {
+        $_.Name -eq 'rg' -and
+        $workerGuideById.ContainsKey($_.AgentId)
+    }) {
+        $rawPaths = Get-Argument $call 'paths'
+        $searchPaths = if ($null -eq $rawPaths) {
+            @($workDir)
+        } elseif ($rawPaths -is [string]) {
+            @([string]$rawPaths)
+        } else {
+            $resolvedPaths = @($rawPaths | ForEach-Object { [string]$_ })
+            if ($resolvedPaths.Count -eq 0) {
+                @($workDir)
+            } else {
+                $resolvedPaths
+            }
+        }
+        $assignedGuide = [string]$workerGuideById[$call.AgentId]
+        foreach ($searchPath in $searchPaths) {
+            try {
+                $separator = [IO.Path]::DirectorySeparatorChar
+                $portable = $searchPath.Replace('\', $separator).Replace('/', $separator)
+                $canonicalSearchPath = [IO.Path]::GetFullPath($portable, $workDir)
+            } catch {
+                Fail "A worker rg call used an invalid search path '$searchPath'."
+            }
+            $searchPrefix = $canonicalSearchPath.TrimEnd(
+                [IO.Path]::DirectorySeparatorChar,
+                [IO.Path]::AltDirectorySeparatorChar
+            ) + [IO.Path]::DirectorySeparatorChar
+            foreach ($guide in @($manifest.guides | Where-Object {
+                [string]$_.path -cne $assignedGuide
+            })) {
+                $otherGuidePath = [IO.Path]::GetFullPath(
+                    (Join-Path $bundleRoot "guidance/$([string]$guide.path).source").Replace(
+                        '/',
+                        [IO.Path]::DirectorySeparatorChar
+                    )
+                )
+                if ($canonicalSearchPath -ieq $otherGuidePath -or
+                    $otherGuidePath.StartsWith(
+                        $searchPrefix,
+                        [StringComparison]::OrdinalIgnoreCase
+                    )) {
+                    Fail "Guide worker '$($call.AgentId)' rg scope included unassigned guide '$([string]$guide.path)'."
+                }
+            }
         }
     }
     $firstTaskIndex = ($tasks | Measure-Object CallIndex -Minimum).Minimum

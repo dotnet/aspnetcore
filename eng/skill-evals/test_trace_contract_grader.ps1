@@ -11,6 +11,7 @@ $testRoot = Join-Path ([IO.Path]::GetTempPath()) (
     'aspnetcore-review-trace-grader-test-' + [guid]::NewGuid().ToString('N')
 )
 $utf8 = [Text.UTF8Encoding]::new($false)
+$workerRoleBoundary = 'Worker role boundary: you are not the coordinator. The platform-required skill(skill="review-pull-request") load may occur at most once and only as your first tool call; it is instruction acquisition, not behavioral recursion. Do not invoke skill again, bootstrap or prepare review, spawn tasks/subagents/sessions, read coordinator-only manifest/pull/feedback, access live GitHub or fetch, mutate or publish, execute target code, aggregate guides, or emit PATH: per-guide. Return PATH: per-guide-worker and name only the assigned guide.'
 
 function Clone-Object {
     param($Value)
@@ -112,7 +113,10 @@ function Get-ControlEventIndexes {
 
     return @(
         for ($index = 0; $index -lt $ControlInput.trajectory.events.Count; $index++) {
-            if ([string]$ControlInput.trajectory.events[$index].data.toolCallId -ceq $ToolCallId) {
+            $toolCallIdProperty =
+                $ControlInput.trajectory.events[$index].data.PSObject.Properties['toolCallId']
+            if ($null -ne $toolCallIdProperty -and
+                [string]$toolCallIdProperty.Value -ceq $ToolCallId) {
                 $index
             }
         }
@@ -157,6 +161,7 @@ function New-WorkerPrompt {
 
     $prompt = @(
         'Review the assigned projected transport inputs.'
+        $workerRoleBoundary
         "Assigned guide: guidance/$($Guide.path).source"
         "Applicable policy: $($Policy.body.path)"
         'Projected changed-file metadata: files.json'
@@ -202,6 +207,17 @@ function New-TransportInput {
     } $true 'Agent started in background with agent_id: 11111111-1111-1111-1111-111111111111.') {
         $events.Add($event)
     }
+    foreach ($event in New-Call skill worker-blazor-skill @{
+        skill = 'review-pull-request'
+    } $true 'Skill loaded.' '11111111-1111-1111-1111-111111111111') {
+        $events.Add($event)
+    }
+    foreach ($event in New-Call view worker-blazor-guide @{
+        path = '.review-bundle/guidance/docs/BlazorComponentsGuidance.md.source'
+        view_range = @(1, -1)
+    } $true 'L1:# Blazor components guidance' '11111111-1111-1111-1111-111111111111') {
+        $events.Add($event)
+    }
     foreach ($event in New-Call task worker @{
         agent_type = 'general-purpose'
         model = 'gpt-5.6-sol'
@@ -212,6 +228,44 @@ function New-TransportInput {
             -Guide $manifest.guides[0] `
             -Policy $manifest.policies[0]
     } $true 'Agent started in background with agent_id: 22222222-2222-2222-2222-222222222222.') {
+        $events.Add($event)
+    }
+    foreach ($event in New-Call skill worker-cross-skill @{
+        skill = 'review-pull-request'
+    } $true 'Skill loaded.' '22222222-2222-2222-2222-222222222222') {
+        $events.Add($event)
+    }
+    foreach ($event in New-Call rg worker-cross-diff @{
+        pattern = 'Value'
+        paths = '.review-bundle/diff.patch'
+        output_mode = 'content'
+    } $true 'diff --git a/src/Value.cs b/src/Value.cs' '22222222-2222-2222-2222-222222222222') {
+        $events.Add($event)
+    }
+    $events.Add([pscustomobject]@{
+        type = 'assistant_message'
+        agentId = '11111111-1111-1111-1111-111111111111'
+        data = [pscustomobject]@{
+            content = "PATH: per-guide-worker`nGUIDE: docs/BlazorComponentsGuidance.md`nSTATUS: complete"
+        }
+    })
+    $events.Add([pscustomobject]@{
+        type = 'assistant_message'
+        agentId = '22222222-2222-2222-2222-222222222222'
+        data = [pscustomobject]@{
+            content = "PATH: per-guide-worker`nGUIDE: docs/CrossCuttingGuidance.md`nSTATUS: complete"
+        }
+    })
+    foreach ($event in New-Call read_agent worker-blazor-report @{
+        agent_id = '11111111-1111-1111-1111-111111111111'
+        wait = $true
+    } $true "Agent is idle, status: idle, total_turns: 1. Turn 0: PATH: per-guide-worker`nGUIDE: docs/BlazorComponentsGuidance.md`nSTATUS: complete") {
+        $events.Add($event)
+    }
+    foreach ($event in New-Call read_agent worker-cross-report @{
+        agent_id = '22222222-2222-2222-2222-222222222222'
+        wait = $true
+    } $true "Agent is idle, status: idle, total_turns: 1. Turn 0: PATH: per-guide-worker`nGUIDE: docs/CrossCuttingGuidance.md`nSTATUS: complete") {
         $events.Add($event)
     }
     foreach ($file in $required | Where-Object {
@@ -438,6 +492,187 @@ try {
 
     $transport = New-TransportInput
     Invoke-Control transport-positive ready-v2-transport $transport $true 'exact coordinator reads' '.eval-grader/inventory.json'
+
+    $rootSkill = Clone-Object $transport
+    $rootSkill.trajectory.events = @(
+        New-Call skill root-skill @{
+            skill = 'review-pull-request'
+        } $true 'Skill loaded.'
+    ) + @($rootSkill.trajectory.events)
+    Invoke-Control transport-root-skill ready-v2-transport $rootSkill $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $skillTextOnly = Clone-Object $transport
+    $initialSkillIndexes = @(
+        Get-ControlEventIndexes -ControlInput $skillTextOnly -ToolCallId 'worker-blazor-skill'
+        Get-ControlEventIndexes -ControlInput $skillTextOnly -ToolCallId 'worker-cross-skill'
+    )
+    $skillTextOnly.trajectory.events = @(
+        for ($index = 0; $index -lt $skillTextOnly.trajectory.events.Count; $index++) {
+            if ($index -notin $initialSkillIndexes) {
+                $skillTextOnly.trajectory.events[$index]
+            }
+        }
+    )
+    foreach ($toolCallId in @('worker', 'worker-blazor')) {
+        $workerCall = Get-ControlEventIndexes -ControlInput $skillTextOnly -ToolCallId $toolCallId
+        $skillTextOnly.trajectory.events[$workerCall[0]].data.arguments.prompt =
+            $skillTextOnly.trajectory.events[$workerCall[0]].data.arguments.prompt.Replace(
+                $workerRoleBoundary,
+                'Do not re-invoke review-pull-request. Return PATH: per-guide-worker.'
+            )
+    }
+    Invoke-Control transport-worker-skill-text-only ready-v2-transport $skillTextOnly $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $repeatedSkill = Clone-Object $transport
+    $repeatedSkill.trajectory.events += New-Call skill worker-cross-skill-repeat @{
+        skill = 'review-pull-request'
+    } $true 'Skill loaded again.' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-repeated-skill ready-v2-transport $repeatedSkill $false 'more than once' '.eval-grader/inventory.json'
+
+    $lateSkill = Clone-Object $transport
+    $lateSkillIndexes = Get-ControlEventIndexes -ControlInput $lateSkill -ToolCallId 'worker-cross-skill'
+    $lateSkillEvents = @($lateSkill.trajectory.events[$lateSkillIndexes])
+    $lateSkill.trajectory.events = @(
+        for ($index = 0; $index -lt $lateSkill.trajectory.events.Count; $index++) {
+            if ($index -notin $lateSkillIndexes) {
+                $lateSkill.trajectory.events[$index]
+            }
+        }
+    ) + $lateSkillEvents
+    Invoke-Control transport-worker-late-skill ready-v2-transport $lateSkill $false 'first tool call' '.eval-grader/inventory.json'
+
+    $wrongSkill = Clone-Object $transport
+    $wrongSkillIndexes = Get-ControlEventIndexes -ControlInput $wrongSkill -ToolCallId 'worker-cross-skill'
+    $wrongSkill.trajectory.events[$wrongSkillIndexes[0]].data.arguments.skill = 'other-skill'
+    Invoke-Control transport-worker-wrong-skill ready-v2-transport $wrongSkill $false 'unsupported skill' '.eval-grader/inventory.json'
+
+    $wrongSkillCase = Clone-Object $transport
+    $wrongSkillCaseIndexes = Get-ControlEventIndexes -ControlInput $wrongSkillCase -ToolCallId 'worker-cross-skill'
+    $wrongSkillCase.trajectory.events[$wrongSkillCaseIndexes[0]].data.toolName = 'Skill'
+    Invoke-Control transport-worker-wrong-skill-case ready-v2-transport $wrongSkillCase $false 'unsupported skill' '.eval-grader/inventory.json'
+
+    foreach ($coordinatorBehavior in @(
+        @{
+            Name = 'transport-worker-task-spawn'
+            Tool = 'task'
+            Arguments = @{ agent_type = 'general-purpose'; prompt = 'Nested review.' }
+        },
+        @{
+            Name = 'transport-worker-session-spawn'
+            Tool = 'create_session'
+            Arguments = @{ name = 'nested'; kickoff = @{ prompt = 'Nested review.' } }
+        },
+        @{
+            Name = 'transport-worker-agent-orchestration'
+            Tool = 'read_agent'
+            Arguments = @{ agent_id = '55555555-5555-5555-5555-555555555555'; wait = $true }
+        },
+        @{
+            Name = 'transport-worker-live-fetch'
+            Tool = 'web_fetch'
+            Arguments = @{ url = 'https://example.invalid/' }
+        },
+        @{
+            Name = 'transport-worker-live-github'
+            Tool = 'semantic_code_search'
+            Arguments = @{ repo = 'dotnet/aspnetcore'; query = 'live source' }
+        },
+        @{
+            Name = 'transport-worker-mutation'
+            Tool = 'apply_patch'
+            Arguments = @{ patch = 'mutation' }
+        },
+        @{
+            Name = 'transport-worker-publication'
+            Tool = 'create_pull_request'
+            Arguments = @{ title = 'publication' }
+        },
+        @{
+            Name = 'transport-worker-create'
+            Tool = 'create'
+            Arguments = @{ path = 'new.txt'; content = 'mutation' }
+        },
+        @{
+            Name = 'transport-worker-edit'
+            Tool = 'edit'
+            Arguments = @{ path = 'existing.txt'; content = 'mutation' }
+        },
+        @{
+            Name = 'transport-worker-run-workflow'
+            Tool = 'run_workflow'
+            Arguments = @{ workflow_id = 'workflow' }
+        },
+        @{
+            Name = 'transport-worker-complete-draft-resolution'
+            Tool = 'complete_workspace_file_draft_resolution'
+            Arguments = @{ request_id = 'request'; files = @() }
+        }
+    )) {
+        $workerCoordinatorBehavior = Clone-Object $transport
+        $workerCoordinatorBehavior.trajectory.events += New-Call `
+            $coordinatorBehavior.Tool `
+            $coordinatorBehavior.Name `
+            $coordinatorBehavior.Arguments `
+            $true `
+            'completed' `
+            '22222222-2222-2222-2222-222222222222'
+        Invoke-Control $coordinatorBehavior.Name ready-v2-transport $workerCoordinatorBehavior $false 'used coordinator-only' '.eval-grader/inventory.json'
+    }
+
+    $workerBootstrap = Clone-Object $transport
+    $workerBootstrap.trajectory.events += New-Call powershell worker-bootstrap @{
+        command = '. .\activate.ps1; dotnet run .\.github\skills\review-pull-request\scripts\prepare-review.cs -- --pr 1'
+    } $true 'prepared' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-bootstrap ready-v2-transport $workerBootstrap $false 'shell tool' '.eval-grader/inventory.json'
+
+    $workerTargetExecution = Clone-Object $transport
+    $workerTargetExecution.trajectory.events += New-Call powershell worker-target-execution @{
+        command = 'dotnet test'
+    } $true 'passed' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-target-execution ready-v2-transport $workerTargetExecution $false 'shell tool' '.eval-grader/inventory.json'
+
+    $workerCombinedOutput = Clone-Object $transport
+    $workerCombinedOutput.trajectory.events += [pscustomobject]@{
+        type = 'assistant_message'
+        agentId = '22222222-2222-2222-2222-222222222222'
+        data = [pscustomobject]@{
+            content = "PATH: per-guide`nGUIDES: docs/CrossCuttingGuidance.md, docs/BlazorComponentsGuidance.md"
+        }
+    }
+    Invoke-Control transport-worker-combined-output ready-v2-transport $workerCombinedOutput $false 'coordinator aggregation output' '.eval-grader/inventory.json'
+
+    $workerReadAgentCombinedOutput = Clone-Object $transport
+    $workerReport = Get-ControlEventIndexes -ControlInput $workerReadAgentCombinedOutput -ToolCallId 'worker-cross-report'
+    $workerReadAgentCombinedOutput.trajectory.events[$workerReport[1]].data.result =
+        'Agent is idle, status: idle, total_turns: 1. Turn 0: PATH: per-guide. GUIDES: docs/CrossCuttingGuidance.md, docs/BlazorComponentsGuidance.md'
+    Invoke-Control transport-worker-read-agent-combined-output ready-v2-transport $workerReadAgentCombinedOutput $false 'coordinator aggregation output' '.eval-grader/inventory.json'
+
+    $workerMultipleGuides = Clone-Object $transport
+    $workerReport = Get-ControlEventIndexes -ControlInput $workerMultipleGuides -ToolCallId 'worker-cross-report'
+    $workerMultipleGuides.trajectory.events[$workerReport[1]].data.result =
+        "Agent is idle, status: idle, total_turns: 1. Turn 0: PATH: per-guide-worker`nGUIDE: docs/CrossCuttingGuidance.md`nGUIDE: docs/BlazorComponentsGuidance.md"
+    Invoke-Control transport-worker-multiple-guides ready-v2-transport $workerMultipleGuides $false 'reported 2 distinct guides' '.eval-grader/inventory.json'
+
+    $workerWrongGuide = Clone-Object $transport
+    $workerReport = Get-ControlEventIndexes -ControlInput $workerWrongGuide -ToolCallId 'worker-cross-report'
+    $workerWrongGuide.trajectory.events[$workerReport[1]].data.result =
+        "Agent is idle, status: idle, total_turns: 1. Turn 0: PATH: per-guide-worker`nGUIDE: docs/BlazorComponentsGuidance.md"
+    Invoke-Control transport-worker-wrong-guide ready-v2-transport $workerWrongGuide $false 'instead of assigned guide' '.eval-grader/inventory.json'
+
+    $workerCrossGuideRead = Clone-Object $transport
+    $workerCrossGuideRead.trajectory.events += New-Call view worker-cross-guide-read @{
+        path = '.review-bundle/guidance/docs/BlazorComponentsGuidance.md.source'
+        view_range = @(1, -1)
+    } $true 'L1:# Blazor components guidance' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-cross-guide-read ready-v2-transport $workerCrossGuideRead $false 'read unassigned guide' '.eval-grader/inventory.json'
+
+    $workerCrossGuideSearch = Clone-Object $transport
+    $workerCrossGuideSearch.trajectory.events += New-Call rg worker-cross-guide-search @{
+        pattern = 'guidance'
+        paths = '.review-bundle/guidance'
+        output_mode = 'content'
+    } $true 'match' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-cross-guide-search ready-v2-transport $workerCrossGuideSearch $false 'rg scope included unassigned guide' '.eval-grader/inventory.json'
 
     $missingWorkerPrompt = Clone-Object $transport
     $workerCall = Get-ControlEventIndexes -ControlInput $missingWorkerPrompt -ToolCallId 'worker'
