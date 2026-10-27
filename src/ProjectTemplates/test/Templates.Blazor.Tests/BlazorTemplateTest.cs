@@ -754,7 +754,10 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         {
             var navMenu = page.Locator(".nav-scrollable");
 
-            await page.ClickAsync(".navbar-toggler");
+            if (!await navMenu.IsVisibleAsync())
+            {
+                await page.ClickAsync(".navbar-toggler");
+            }
             await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
 
             await page.ClickAsync("nav a[href='']");
