@@ -161,7 +161,7 @@ public class SharedFxTests
         }
     }
 
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/69595")]
+    [Fact]
     [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
     {

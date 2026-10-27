@@ -595,6 +595,14 @@ def validate_outputs(
         return []
     history_targets = history_target_map(history)
 
+    if any(
+        item.get("repo") is not None and item["repo"] != repository
+        for item in pull_requests
+    ):
+        raise ValidationError(
+            "Every create_pull_request item must target the workflow repository"
+        )
+
     branches = [item.get("branch") for item in pull_requests]
     if any(not isinstance(branch, str) or not branch for branch in branches):
         raise ValidationError("Every create_pull_request item must name its branch")
