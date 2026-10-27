@@ -1053,6 +1053,45 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void ValidationSummaryPreservesListSemanticsAndAttributesInsideAnnouncementRegion()
+    {
+        var appElement = Browser.MountTestComponent<ModelLevelValidationComponent>();
+        var ageInput = appElement.FindElement(By.ClassName("age")).FindElement(By.TagName("input"));
+        var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+
+        ageInput.Clear();
+        ageInput.SendKeys("10");
+        submitButton.Click();
+
+        var summary = Browser.Exists(By.CssSelector("ul.model-summary-custom-class"));
+        Browser.Equal("Sorry, you're not old enough as a non-cat", () => summary.Text);
+        Assert.Equal("ul", summary.TagName);
+        EnsureAttributeNotRendered(summary, "role");
+        EnsureAttributeValue(summary, "class", "model-summary-custom-class");
+        var item = Assert.Single(summary.FindElements(By.TagName("li")));
+        Assert.Equal("validation-message", item.GetDomAttribute("class"));
+        Assert.Equal(summary, item.FindElement(By.XPath("..")));
+
+        var announcementRegion = summary.FindElement(By.XPath(".."));
+        Assert.Equal("div", announcementRegion.TagName);
+        EnsureAttributeValue(announcementRegion, "aria-live", "polite");
+        EnsureAttributeValue(announcementRegion, "aria-atomic", "true");
+        EnsureAttributeNotRendered(announcementRegion, "class");
+        var allErrorsSummary = appElement.FindElement(By.CssSelector(".all-errors > div > ul"));
+        EnsureAttributeNotRendered(allErrorsSummary, "role");
+        EnsureAttributeNotRendered(allErrorsSummary, "aria-live");
+        EnsureAttributeValue(allErrorsSummary, "class", "validation-errors");
+
+        ageInput.Clear();
+        ageInput.SendKeys("20");
+        submitButton.Click();
+        Browser.Empty(() => announcementRegion.FindElements(By.TagName("li")));
+        Browser.Empty(() => announcementRegion.FindElements(By.TagName("ul")));
+        Browser.Empty(() => appElement.FindElements(By.CssSelector(".all-errors ul")));
+        EnsureAttributeValue(announcementRegion, "aria-live", "polite");
+    }
+
+    [Fact]
     public async Task CannotSubmitEditFormSynchronouslyAfterItWasRemoved()
     {
         var appElement = MountSimpleValidationComponent();
