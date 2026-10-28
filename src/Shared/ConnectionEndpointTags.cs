@@ -14,9 +14,10 @@ namespace Microsoft.AspNetCore.Shared;
 
 internal static class ConnectionEndpointTags
 {
-    // The local port is almost always one of the few ports the server listens on, so reuse the most recently boxed
-    // value. Reference reads and writes are atomic, and a race only results in an extra allocation.
-    private static object? s_lastBoxedPort;
+    // The local port is almost always one of the few ports the server listens on, so reuse the first boxed value.
+    // It is never replaced, so the field is only read after startup and isn't contended between cores. A race at
+    // startup only results in an extra allocation.
+    private static object? s_boxedPort;
 
     /// <summary>
     /// Adds connection endpoint tags to a TagList using <see cref="IConnectionEndPointFeature"/>.
@@ -94,14 +95,14 @@ internal static class ConnectionEndpointTags
 
     private static object GetBoxedPort(int port)
     {
-        var last = s_lastBoxedPort;
-        if (last is not null && (int)last == port)
+        var cached = s_boxedPort;
+        if (cached is not null)
         {
-            return last;
+            return (int)cached == port ? cached : port;
         }
 
         object boxed = port;
-        s_lastBoxedPort = boxed;
+        s_boxedPort = boxed;
 
         return boxed;
     }
