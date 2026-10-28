@@ -180,6 +180,8 @@ public partial class IISExpressDeployer : IISDeployerBase
                     FileName = iisExpressPath,
                     Arguments = parameters,
                     InheritedHandles = [],
+                    // Prevent orphaned IIS Express processes even if the test process exits during startup.
+                    KillOnParentExit = true,
                     CreateNoWindow = true,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
@@ -261,10 +263,6 @@ public partial class IISExpressDeployer : IISDeployerBase
                 else
                 {
                     _hostProcess = process;
-
-                    // Ensure iisexpress.exe is killed if test process termination is non-graceful.
-                    // Prevents locked files when stop debugging unit test.
-                    ProcessTracker.Add(_hostProcess);
 
                     // cache the process start time for verifying log file name.
                     var _ = _hostProcess.StartTime;

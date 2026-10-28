@@ -111,21 +111,7 @@ public class NginxDeployer : SelfHostDeployer
 
         if (!OperatingSystem.IsWindows())
         {
-            using (var process = new Process
-            {
-                StartInfo =
-                    {
-                        FileName = "whoami",
-                        RedirectStandardOutput = true,
-                        InheritedHandles = [],
-                    }
-            })
-            {
-                process.Start();
-                string output = process.StandardOutput.ReadToEnd();
-                process.WaitForExitStatus();
-                return output;
-            }
+            return Environment.UserName;
         }
 
         return null;
