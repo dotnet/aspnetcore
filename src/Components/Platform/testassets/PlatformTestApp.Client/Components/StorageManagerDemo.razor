@@ -1,0 +1,46 @@
+@using System.Globalization
+@inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
+
+<h2>Storage Manager</h2>
+
+<div>
+    <button id="get-persisted" @onclick="PersistedAsync">Persisted</button>
+    <button id="persist" @onclick="PersistAsync">Persist</button>
+    <button id="estimate" @onclick="EstimateAsync">Estimate</button>
+</div>
+<p id="storage-manager-result" role="status" data-run="@runCount">@result</p>
+
+@code {
+    private string result = "No operation has run.";
+    private int runCount;
+
+    private Task PersistedAsync() => RunAsync("Persisted", async () =>
+    {
+        try
+        {
+            return (await Browser.Window.Navigator.Storage.PersistedAsync()).ToString();
+        }
+        catch (NotSupportedException ex)
+        {
+            return $"Not supported: {ex.InnerException?.GetType().Name}";
+        }
+    });
+
+    private Task PersistAsync() => RunAsync("Persist", async () =>
+        (await Browser.Window.Navigator.Storage.PersistAsync()).ToString());
+
+    private Task EstimateAsync() => RunAsync("Estimate", async () =>
+    {
+        var estimate = await Browser.Window.Navigator.Storage.EstimateAsync();
+        return $"usage={Format(estimate.Usage)}, quota={Format(estimate.Quota)}";
+    });
+
+    private async Task RunAsync(string operation, Func<Task<string>> run)
+    {
+        result = $"{operation}: {await run()}";
+        // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
+        runCount++;
+    }
+
+    private static string Format(ulong? value) => value?.ToString(CultureInfo.InvariantCulture) ?? "null";
+}
