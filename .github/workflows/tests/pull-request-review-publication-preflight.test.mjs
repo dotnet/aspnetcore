@@ -7,9 +7,27 @@ const repositoryRoot = path.resolve(import.meta.dirname, '../../..');
 const workflowSource = path.join(repositoryRoot, '.github/workflows/pull-request-review.md');
 const workflowLock = path.join(repositoryRoot, '.github/workflows/pull-request-review.lock.yml');
 const stepName = 'Reject incomplete or partial publication sets';
+const runUrl = 'https://github.com/PureWeen/aspnetcore/actions/runs/123';
+const execution = {
+  schemaVersion: 1,
+  supportingEvidenceOnly: true,
+  headSha: 'a'.repeat(40),
+  mergeBaseSha: 'b'.repeat(40),
+  baseTipSha: 'c'.repeat(40),
+  available: false,
+  classification: 'unavailable',
+  reason: 'No supported execution evidence.',
+};
+execution.publicSummary = [
+  'Execution: unavailable',
+  `Frozen trees: head ${execution.headSha}; merge base ${execution.mergeBaseSha}; base tip ${execution.baseTipSha}.`,
+  `Unavailable reason (JSON string): ${JSON.stringify(execution.reason)}`,
+  `Execution report/logs, if recorded: review-execution artifact at ${runUrl}`,
+  'Supporting evidence only; source findings are not execution-verified.',
+].join('\n');
 
 function extractScript(filename) {
-  const lines = fs.readFileSync(filename, 'utf8').split('\n');
+  const lines = fs.readFileSync(filename, 'utf8').split(/\r?\n/);
   const step = lines.findIndex(line => line.trim() === `- name: ${stepName}`);
   assert.notEqual(step, -1, `${filename} does not contain the publication preflight step.`);
   const marker = lines.findIndex((line, index) => index > step && line.trim() === 'script: |');
@@ -37,13 +55,14 @@ function execute(script, input) {
     fs.mkdirSync(artifact);
     fs.writeFileSync(path.join(artifact, 'agent_output.json'),
       input?.rawJson ?? JSON.stringify(input));
+    fs.writeFileSync(path.join(artifact, 'execution.json'), JSON.stringify(execution));
     const failures = [];
     const core = { setFailed: message => failures.push(message) };
     let error;
     try {
       Function('require', 'process', 'core', script)(
         moduleName => moduleName === 'fs' ? fs : moduleName === 'path' ? path : undefined,
-        { env: { RUNNER_TEMP: temporaryRoot } },
+        { env: { RUNNER_TEMP: temporaryRoot, REVIEW_HEAD: execution.headSha, REVIEW_EXECUTION_RUN_URL: runUrl } },
         core);
     } catch (caught) {
       error = caught;
@@ -55,7 +74,7 @@ function execute(script, input) {
 }
 
 const comment = () => ({ type: 'create_pull_request_review_comment' });
-const review = () => ({ type: 'submit_pull_request_review' });
+const review = () => ({ type: 'submit_pull_request_review', body: 'Source findings.\n\n' + execution.publicSummary });
 const rawJson = value => ({ rawJson: value });
 const stopped = (type, reason = 'The review could not complete.', status = 'INCOMPLETE') => ({
   items: [
@@ -75,6 +94,9 @@ const findings = count => ({
 const cases = [
   ['one finding', findings(1), true],
   ['five findings', findings(5), true],
+  ['findings without execution disclosure', {
+    items: [comment(), { type: 'submit_pull_request_review', body: 'Source findings.' }],
+  }, false],
   ['clean noop without errors property', { items: [{ type: 'noop' }] }, true],
   ['clean noop with empty errors', { items: [{ type: 'noop' }], errors: [] }, true],
   ['report incomplete', stopped('report_incomplete', 'The review could not complete.', 'BLOCKED'), true],
