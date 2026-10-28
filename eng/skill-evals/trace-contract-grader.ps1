@@ -1314,7 +1314,7 @@ function Test-ProhibitionClause {
     if ($Clause -match '(?i)\b(?:do not|don''t|never|must not)\s+(?:skip|ignore|avoid)\b') {
         return $false
     }
-    return $Clause -match '(?i)\b(?:do not|don''t|must not|never|not assigned|coordinator[- ]only|coordinator owns|coordinator[- ]owned|exclude|prohibit|forbid|forbidden|skip|ignore|unavailable)\b'
+    return $Clause -match '(?i)\b(?:do not|don''t|must not|never|not assigned|exclude|prohibit|forbid|forbidden|skip|ignore|unavailable)\b'
 }
 
 function Test-PromptRequestsFixtureInput {

@@ -1735,6 +1735,15 @@ try {
         )
     Invoke-Control transport-coordinator-path-request ready-v2-transport $coordinatorPathRequest $false 'embedded or requested coordinator-only' '.eval-grader/inventory.json'
 
+    $coordinatorOnlyLabelRequest = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $coordinatorOnlyLabelRequest -ToolCallId 'worker-blazor'
+    $coordinatorOnlyLabelRequest.trajectory.events[$secondWorker[0]].data.arguments.prompt =
+        $coordinatorOnlyLabelRequest.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
+            'Do not read pull.json; the coordinator owns that input.',
+            'Coordinator-only input pull.json must still be read by the worker.'
+        )
+    Invoke-Control transport-coordinator-only-label-request ready-v2-transport $coordinatorOnlyLabelRequest $false 'embedded or requested coordinator-only' '.eval-grader/inventory.json'
+
     $doubleNegativeCoordinatorRequest = Clone-Object $transport
     $secondWorker = Get-ControlEventIndexes -ControlInput $doubleNegativeCoordinatorRequest -ToolCallId 'worker-blazor'
     $doubleNegativeCoordinatorRequest.trajectory.events[$secondWorker[0]].data.arguments.prompt =
