@@ -1699,7 +1699,9 @@ internal static partial class PrepareReviewProgram
     private static async Task<JsonObject> CheckPreparedAsync(string output, string producer, JsonObject identity,
         JsonObject guidance, Func<Task<(JsonObject Identity, JsonObject Pull)>> freeze)
     {
-        var manifest = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "manifest.json")))!.AsObject();
+        var manifestBytes = await File.ReadAllBytesAsync(Path.Combine(output, "manifest.json"));
+        RequireMaximumLineLength(manifestBytes, "manifest.json", "Prepared serialized JSON");
+        var manifest = JsonNode.Parse(manifestBytes)!.AsObject();
         Require(manifest["version"]!.GetValue<int>() == 2 && manifest["ready"]!.GetValue<bool>()
             && manifest["producer"]!.GetValue<string>() == producer && manifest["suffix"]!.GetValue<string>() == Suffix
             && JsonEqual(manifest["target"], identity), "Prepared input is stale, mismatched, or from a different preparation version.");
@@ -1970,7 +1972,8 @@ internal static partial class PrepareReviewProgram
             $"Prepared {description} path is invalid: {path}");
         var fullOutput = Path.GetFullPath(output);
         var fullPath = Path.GetFullPath(Path.Combine(output, path.Replace('/', Path.DirectorySeparatorChar)));
-        Require(fullPath.StartsWith(fullOutput + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase),
+        var outputPrefix = Path.EndsInDirectorySeparator(fullOutput) ? fullOutput : fullOutput + Path.DirectorySeparatorChar;
+        Require(fullPath.StartsWith(outputPrefix, StringComparison.OrdinalIgnoreCase),
             $"Prepared {description} path escapes the bundle: {path}");
         byte[] bytes;
         try

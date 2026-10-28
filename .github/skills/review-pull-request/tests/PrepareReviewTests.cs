@@ -405,6 +405,43 @@ public class PrepareReviewTests
         }
     }
 
+    [Fact]
+    public async Task RejectsAnOversizedValidManifestOnReuse()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var manifest = await fixture.PrepareAsync();
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+        var compact = JsonSerializer.Serialize(manifest);
+        Assert.True(Utf8NoBom.GetByteCount(compact) > MaximumNativeReadLineBytes);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), compact, Utf8NoBom);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Equal("Prepared serialized JSON line exceeds 2048 UTF-8 bytes: manifest.json:1", exception.Message);
+    }
+
+    [Fact]
+    public async Task RejectsAnOversizedMalformedManifestLineBeforeParsing()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.PrepareAsync();
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"),
+            new string('x', MaximumNativeReadLineBytes + 1), Utf8NoBom);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Equal("Prepared serialized JSON line exceeds 2048 UTF-8 bytes: manifest.json:1", exception.Message);
+    }
+
+    [Fact]
+    public async Task ReusesTheSameBundleWithAndWithoutATrailingOutputSeparator()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.PrepareAsync();
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        var options = fixture.Options with { Output = fixture.Output + Path.DirectorySeparatorChar };
+        Assert.True((await fixture.CheckAsync(options))["ready"]!.GetValue<bool>());
+    }
+
     public static TheoryData<string> InlineRequiredTextMutations => new()
     {
         "pull body",
@@ -609,7 +646,7 @@ public class PrepareReviewTests
         Assert.Equal("## Required clause\n- Only this requirement.",
             await fixture.RequiredTextAsync(policy["body"]!));
         manifest["policies"] = new JsonArray();
-        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest, JsonOptions) + "\n", Utf8NoBom);
         await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
     }
 
@@ -763,7 +800,7 @@ public class PrepareReviewTests
             input["utf8Bytes"] = bytes.Length;
             input["sha256"] = hash;
         }
-        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest, JsonOptions) + "\n", Utf8NoBom);
         if (components)
         {
             await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
@@ -1395,7 +1432,7 @@ public class PrepareReviewTests
         Assert.Equal("ENOENT", context["reason"]!.GetValue<string>());
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
         manifest["context"] = new JsonArray();
-        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest, JsonOptions) + "\n", Utf8NoBom);
         await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
     }
 
@@ -1843,7 +1880,7 @@ public class PrepareReviewTests
         }
 
         public Task WriteManifestAsync(JsonObject manifest) =>
-            File.WriteAllTextAsync(Path.Combine(Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
+            File.WriteAllTextAsync(Path.Combine(Output, "manifest.json"), JsonSerializer.Serialize(manifest, JsonOptions) + "\n", Utf8NoBom);
 
         public async Task WriteJsonArtifactAsync(JsonObject manifest, string name, JsonNode value)
         {
