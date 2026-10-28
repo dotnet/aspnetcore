@@ -204,6 +204,7 @@ def collect(
     pr_files_provider=lambda _: set(),
     commit_contains_provider=lambda _ancestor, _descendant: True,
     module=None,
+    issue_exists_provider=lambda _: True,
 ):
     module = module or MODULE
     serialized = json.dumps(data, separators=(",", ":")).encode()
@@ -217,6 +218,7 @@ def collect(
         subprocess.check_output(["git", "-C", root, "rev-parse", "HEAD"], text=True).strip(),
         pr_files_provider=pr_files_provider,
         commit_contains_provider=commit_contains_provider,
+        issue_exists_provider=issue_exists_provider,
     )
 
 
@@ -772,6 +774,7 @@ def test_theory_data_quarantine_support():
             "method": "ReturnsExpectedResponse",
             "data": "HttpProtocols.Http3",
             "issue": 1,
+            "introduced_utc": "2026-08-04T00:00:00Z",
             "status": "re-quarantined",
         }], history
 
@@ -1148,6 +1151,7 @@ def test_requarantine_history():
             "type": "Microsoft.AspNetCore.Tests.SampleTests",
             "method": "ReturnsExpectedResponse",
             "issue": 1,
+            "introduced_utc": "2026-08-02T00:00:00Z",
             "status": "first-quarantine",
         }], first
 

@@ -579,6 +579,13 @@ def build_source_index(root):
                 "type": type_name,
                 "method": method,
                 "method_line": method_line + 1,
+                "is_test": any(
+                    re.search(
+                        r"\[\s*(?:global::)?(?:\w+\.)*\w*(?:Fact|Theory)(?:Attribute)?\b",
+                        sanitize_csharp(attribute),
+                    ) is not None
+                    for attribute in logical_attributes(attributes)
+                ),
                 "project_root": project_root,
                 "method_quarantined": bool(parsed_attributes["method"]),
                 "method_operating_systems": (
@@ -2545,6 +2552,10 @@ def collect_requarantine_history(
                         "type": declaration["type"],
                         "method": declaration["method"],
                         "issue": issue,
+                        "introduced_utc": next((
+                            event.get("utc") for event in events
+                            if event["status"] == "added"
+                        ), None),
                         "status": (
                             classify_current_quarantine_history(events)
                             if issue is not None else "ambiguous"
@@ -2615,6 +2626,10 @@ def collect_requarantine_history(
                     "method": declaration["method"],
                     "data": data_attribute["data"],
                     "issue": issue,
+                    "introduced_utc": next((
+                        event.get("utc") for event in events
+                        if event["status"] == "added"
+                    ), None),
                     "status": (
                         classify_current_quarantine_history(events)
                         if issue is not None else "ambiguous"
@@ -2672,6 +2687,10 @@ def collect_requarantine_history(
                 "type": declaration["type"],
                 "method": None,
                 "issue": issue,
+                "introduced_utc": next((
+                    event.get("utc") for event in events
+                    if event["status"] == "added"
+                ), None),
                 "status": (
                     classify_current_quarantine_history(events)
                     if issue is not None else "ambiguous"
@@ -2716,6 +2735,10 @@ def collect_requarantine_history(
             "scope": "assembly",
             "path": assembly["path"],
             "issue": assembly["issue"],
+            "introduced_utc": next((
+                event.get("utc") for event in events
+                if event["status"] == "added"
+            ), None),
             "type": None,
             "method": None,
             "status": (
@@ -2982,6 +3005,38 @@ def github_commit_contains(repository, ancestor, descendant, token):
     raise ValueError(f"Unexpected GitHub comparison status: {status!r}")
 
 
+def github_issue_exists(repository, issue, token):
+    if not token:
+        raise ValueError("A GitHub token is required to verify tracking issues")
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{repository}/issues/{issue}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "aspnetcore-test-quarantine",
+        },
+    )
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                data = json.load(response)
+            return (
+                data.get("number") == issue
+                and data.get("url") == f"https://api.github.com/repos/{repository}/issues/{issue}"
+                and "pull_request" not in data
+                and data.get("state") in ("open", "closed")
+            )
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                return False
+            if attempt == 2 or error.code not in (403, 429) and error.code < 500:
+                raise
+        except OSError:
+            if attempt == 2:
+                raise
+        time.sleep(2 * (attempt + 1))
+
+
 def commit_contains(root, repository, ancestor, descendant, token):
     if not ancestor or not descendant:
         raise ValueError("Both ancestor and descendant commits are required")
@@ -3054,6 +3109,7 @@ def collect(
     pr_files_provider=None,
     commit_contains_provider=None,
     history_ref="HEAD",
+    issue_exists_provider=None,
 ):
     root = pathlib.Path(root)
     token = os.environ.get("GH_TOKEN", "")
@@ -3069,6 +3125,9 @@ def collect(
             token,
         )
     )
+    issue_exists_provider = issue_exists_provider or (
+        lambda issue: github_issue_exists(repository, issue, token)
+    )
     source_index = build_source_index(root)
     history_commit = git(root, "rev-parse", "--verify", history_ref)
     history_order = first_parent_order(root, history_ref)
@@ -3080,6 +3139,7 @@ def collect(
     receipts = {}
     pr_files_cache = {}
     ancestry_cache = {}
+    issue_cache = {}
     project_history_cache = {}
     assembly_history_cache = {}
     method_history_cache = {}
@@ -3112,6 +3172,7 @@ def collect(
             "eligible_failure_builds": [],
             "case_b_eligible": False,
             "case_b_issue": None,
+            "case_b_issue_verified": False,
             "quarantine_operating_systems": None,
             "evidence": None,
             "reasons": reasons,
@@ -3386,7 +3447,14 @@ def collect(
         if case_b:
             receipt["status"] = "ineligible"
             if included:
-                receipt["case_b_eligible"] = True
+                issue = receipt["case_b_issue"]
+                if issue not in issue_cache:
+                    issue_cache[issue] = issue_exists_provider(issue) is True
+                receipt["case_b_issue_verified"] = issue_cache[issue]
+                if receipt["case_b_issue_verified"]:
+                    receipt["case_b_eligible"] = True
+                else:
+                    reasons.append("original-quarantine-issue-unverified")
             else:
                 reasons.append("no-post-cutoff-failures")
             continue
