@@ -295,8 +295,45 @@ public class CircuitHostTest
         Assert.False(reportedErrors.Single().IsTerminating);
 
         var log = Assert.Single(sink.Writes, write => write.EventId.Name == "InitializationFailed");
-        Assert.Equal(LogLevel.Error, log.LogLevel);
+        Assert.Equal(LogLevel.Debug, log.LogLevel);
         Assert.Same(aex, log.Exception);
+
+        var error = Assert.Single(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        Assert.Equal("CircuitHandlerFailed", error.EventId.Name);
+        Assert.Same(ex, error.Exception);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_LogsInitialComponentActivationFailureAsError()
+    {
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            descriptors:
+            [
+                new ComponentDescriptor
+                {
+                    ComponentType = typeof(MissingServiceInjectedComponent),
+                    Parameters = ParameterView.Empty,
+                    Sequence = 0,
+                },
+            ],
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
+            handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
+            () => circuitHost.InitializeAsync(
+                new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
+                default,
+                CancellationToken.None));
+
+        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        Assert.Contains($"There is no registered service of type '{typeof(MissingService).FullName}'.", exception.Message);
+
+        var error = Assert.Single(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        Assert.Equal("RootComponentInitializationFailed", error.EventId.Name);
+        Assert.Same(exception, error.Exception);
     }
 
     [Fact]
@@ -1120,9 +1157,63 @@ public class CircuitHostTest
         var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
         Assert.Contains($"There is no registered service of type '{typeof(MissingService).FullName}'.", exception.Message);
 
-        var log = Assert.Single(sink.Writes, write => write.EventId.Name == "UpdateRootComponentsFailed");
-        Assert.Equal(LogLevel.Error, log.LogLevel);
-        Assert.Same(exception, log.Exception);
+        var error = Assert.Single(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        Assert.Equal("RootComponentInitializationFailed", error.EventId.Name);
+        Assert.Same(exception, error.Exception);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_CircuitHandlerFailureLogsSingleError()
+    {
+        var handler = new Mock<CircuitHandler>(MockBehavior.Strict);
+        SetupMockInboundActivityHandler(handler);
+        handler
+            .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidTimeZoneException());
+
+        var services = new ServiceCollection()
+            .AddSingleton(handler.Object)
+            .BuildServiceProvider();
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: services.CreateAsyncScope(),
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            callback => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(callback),
+            callback => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(callback),
+            () => AddComponentAsync<TestComponent>(circuitHost, 1));
+
+        var error = Assert.Single(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        Assert.Equal("CircuitHandlerFailed", error.EventId.Name);
+
+        var wrapper = Assert.Single(sink.Writes, write => write.EventId.Name == "UpdateRootComponentsFailed");
+        Assert.Equal(LogLevel.Debug, wrapper.LogLevel);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_InvalidStateTransitionDoesNotLogError()
+    {
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            descriptors: [new ComponentDescriptor()],
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            callback => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(callback),
+            callback => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(callback),
+            () => circuitHost.UpdateRootComponents(
+                new RootComponentOperationBatch { BatchId = 1, Operations = [] },
+                null,
+                isRestore: false,
+                CancellationToken.None));
+
+        Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        var wrapper = Assert.Single(sink.Writes, write => write.EventId.Name == "UpdateRootComponentsFailed");
+        Assert.Equal(LogLevel.Debug, wrapper.LogLevel);
     }
 
     [Fact]
