@@ -29,7 +29,8 @@ public class FormPipeReaderInternalsBenchmark
         var buffer = new ReadOnlySequence<byte>(_singleUtf8);
         KeyValueAccumulator accum = default;
 
-        _formPipeReader.ParseFormValues(ref buffer, ref accum, isFinalBlock: true);
+        long scannedLength = 0;
+        _formPipeReader.ParseFormValues(ref buffer, ref accum, ref scannedLength, isFinalBlock: true);
     }
 
     [Benchmark]
@@ -38,6 +39,7 @@ public class FormPipeReaderInternalsBenchmark
         var buffer = ReadOnlySequenceFactory.CreateSegments(_firstUtf8, _secondUtf8);
         KeyValueAccumulator accum = default;
 
-        _formPipeReader.ParseFormValues(ref buffer, ref accum, isFinalBlock: true);
+        long scannedLength = 0;
+        _formPipeReader.ParseFormValues(ref buffer, ref accum, ref scannedLength, isFinalBlock: true);
     }
 }
