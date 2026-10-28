@@ -419,10 +419,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 $"Ensure the route matches a component with a [Route] attribute.");
         }
 
-        builder.OpenComponent<RouteView>(0);
-        builder.AddAttribute(1, nameof(RouteView.RouteData),
-            new RouteData(componentType, new Dictionary<string, object>()));
-        builder.CloseComponent();
+        Found(new RouteData(componentType, new Dictionary<string, object>()))(builder);
     }
 
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]

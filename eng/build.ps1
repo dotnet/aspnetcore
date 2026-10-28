@@ -90,6 +90,12 @@ Don't output binary log by default in CI builds (short: -nobl).
 .PARAMETER Verbosity
 MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 
+.PARAMETER warnAsError
+Treat warnings as errors. Defaults to true.
+
+.PARAMETER warnNotAsError
+A semicolon-delimited list of warning codes that should not be treated as errors.
+
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
@@ -189,6 +195,8 @@ param(
     [switch]$ExcludeCIBinarylog,
     [Alias('v')]
     [string]$Verbosity = 'minimal',
+    [bool]$warnAsError = $true,
+    [string]$warnNotAsError = '',
     [switch]$DumpProcesses, # Capture all running processes and dump them to a file.
     [string]$msbuildEngine = 'dotnet',
 
