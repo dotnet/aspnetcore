@@ -197,6 +197,13 @@ Independently check every returned candidate before acceptance. Require:
 4. No equivalent earlier issue, review, resolved inline comment, or current
    feedback; no speculative, stylistic, or otherwise unsupported clause.
 
+When `baseTip` differs from `mergeBase`, check relevant base-tip-only callers and
+declarations of symbols changed by head. Assess the effective merged result, not just
+each tree in isolation: a failure requires the incompatible changes to survive
+together. Source reasoning is sufficient when that result is clear; do not assume a
+merge-conflict resolution or treat a reference already removed or updated by the
+other side as a merged failure.
+
 For an incomplete-fix or new-feature omission, require a binding issue, API, or
 repository contract; a missing test or unclear intent alone is not a material
 behavioral finding. Do not create a candidate that merely requests a test or a
@@ -235,8 +242,9 @@ The first line is always `STATUS: FINDINGS`, `STATUS: NO_FINDINGS`,
 `GUIDES` (each routed guide and its status, completed in-scope checks, exclusions,
 and unresolved candidates), `UNCOVERED`, `PATH` (`per-guide` or `single-reviewer`),
 `NEW_FINDINGS` (zero to five, ordered by severity and confidence),
-`EXISTING_FEEDBACK_COVERAGE` (deduplicated true positives with the existing comment or
-review reference), `UNRESOLVED` (candidate and exact missing evidence), `DISCARDED`
+`EXISTING_FEEDBACK_COVERAGE` (deduplicated existing feedback with its reference and
+source-supported current-head disposition), `UNRESOLVED` (candidate and exact missing
+evidence), `DISCARDED`
 (claim and precise source reason), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
 `NEW_FINDINGS` entry contains only a one-line claim; `file:line`; severity (`P1` for
 broken/incorrect common usage or data loss, `P2` for incorrect behavior in a realistic
@@ -244,13 +252,19 @@ narrower scenario, or `P3` for minor/edge or test/doc-only impact); a minimal re
 app/user code, CLI commands, or workflow inputs that reaches the affected behavior;
 what goes wrong in at most two lines; and a fix snippet when possible.
 
+For existing feedback, preserve each reference and its substantive claim. Distinguish
+what the frozen current head establishes from whether the original claim was valid.
+Do not infer original validity or fix verification solely from a comment, resolution
+state, or author reply. Report historical validity only when independently established
+and relevant; this field does not require reconstructing prior revisions.
+
 Return `BLOCKED` when a required bundle input is invalid, missing, unreadable,
 mismatched, malformed, empty, or truncated. Return `INCOMPLETE` when a routed worker
 fails or does not return, reports such a required-input failure, or ran with a confirmed
 worker-configuration mismatch. External-contract and non-code metadata gaps stay
 `UNRESOLVED`; they do not cause either status.
 `NO_FINDINGS` is allowed only after every routed guide completes and no new candidate
-survives independent validation, but it must still disclose deduplicated true positives
+survives independent validation, but it must still disclose deduplicated existing feedback
 and unresolved candidates. Use `FINDINGS` when at least one new finding survives.
 An excluded scope must remain visible, never be reported as completed. Neither
 `INCOMPLETE` nor `BLOCKED` licenses partial publication; source-only confidence is not
