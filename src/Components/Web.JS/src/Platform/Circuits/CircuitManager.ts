@@ -482,14 +482,20 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       const persistedCircuitState = this._persistedCircuitState;
       this._persistedCircuitState = undefined;
 
-      const newCircuitId = await this._connection!.invoke<string>(
-        'ResumeCircuit',
-        this._circuitId,
-        navigationManagerFunctions.getBaseURI(),
-        navigationManagerFunctions.getLocationHref(),
-        persistedCircuitState?.components ?? '[]',
-        persistedCircuitState?.applicationState ?? '',
-      );
+      let newCircuitId: string;
+      try {
+        newCircuitId = await this._connection!.invoke<string>(
+          'ResumeCircuit',
+          this._circuitId,
+          navigationManagerFunctions.getBaseURI(),
+          navigationManagerFunctions.getLocationHref(),
+          persistedCircuitState?.components ?? '[]',
+          persistedCircuitState?.applicationState ?? '',
+        );
+      } catch (error) {
+        await this.stopConnectionAfterFailedCircuitInvocation();
+        throw error;
+      }
       if (!newCircuitId) {
         this._resumingState.complete(false);
         return resumingPromise;
@@ -511,7 +517,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return resumingPromise;
     } catch (error) {
       this._logger.log(LogLevel.Error, `Failed to resume the circuit: ${error}`);
-      await this.stopConnectionAfterFailedCircuitInvocation();
       this._resumingState.fail(error);
       return resumingPromise;
     }
