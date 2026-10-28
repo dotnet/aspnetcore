@@ -18,6 +18,13 @@ public readonly struct EventCallback<TValue> : IEventCallback
     internal readonly MulticastDelegate? Delegate;
     internal readonly IHandleEvent? Receiver;
 
+    // Store binding provenance without adding another field to each callback.
+    private readonly object? _receiver;
+
+    internal IHandleEvent? Receiver => _receiver is EventCallbackBindingReceiver bindingReceiver ? bindingReceiver.Receiver : (IHandleEvent?)_receiver;
+
+    internal bool IsBinding => _receiver is EventCallbackBindingReceiver;
+
     /// <summary>
     /// Creates the new <see cref="EventCallback{TValue}"/>.
     /// </summary>
@@ -25,7 +32,7 @@ public readonly struct EventCallback<TValue> : IEventCallback
     /// <param name="delegate">The delegate to bind.</param>
     public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate)
     {
-        Receiver = receiver;
+        _receiver = receiver;
         Delegate = @delegate;
     }
 
@@ -64,8 +71,11 @@ public readonly struct EventCallback<TValue> : IEventCallback
 
     internal EventCallback AsUntyped()
     {
-        return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate);
+        return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate, isBinding: IsBinding);
     }
+
+    internal EventCallback<TValue> AsBinding()
+        => IsBinding ? this : new EventCallback<TValue>(Receiver, Delegate, isBinding: true);
 
     object? IEventCallback.UnpackForRenderTree()
     {

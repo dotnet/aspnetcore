@@ -126,6 +126,12 @@ internal static class ComponentProperties
                     }
                     else if (writer.AcceptsCascadingParameters && !parameter.Cascading)
                     {
+                        if (!writer.AcceptsDirectParameters && parameter.Value is IEventCallback { IsBinding: true })
+                        {
+                            ThrowForSettingCascadingParameterWithNonCascadingValue(targetType, parameterName);
+                            throw null; // Unreachable
+                        }
+
                         // Allow unmatched parameters to collide with the names of cascading parameters. This is
                         // valid because cascading parameter names are not part of the public API. There's no
                         // way for the user of a component to know what the names of cascading parameters
@@ -151,6 +157,15 @@ internal static class ComponentProperties
                     }
                     else
                     {
+                        if (parameter.Value is IEventCallback { IsBinding: true })
+                        {
+                            // Suppressed with "pragma warning disable" so ILLink Roslyn Analyzer doesn't report the warning.
+#pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.ThrowForUnknownIncomingParameterName(Type, String)'.
+                            ThrowForUnknownIncomingParameterName(targetType, parameterName);
+#pragma warning restore IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.ThrowForUnknownIncomingParameterName(Type, String)'.
+                            throw null; // Unreachable
+                        }
+
                         unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                         unmatched[parameterName] = parameter.Value;
                     }
@@ -183,6 +198,12 @@ internal static class ComponentProperties
         {
             try
             {
+                // Once a parameter accepts the binding, its callback can be forwarded without binding again.
+                if (value is IEventCallback { IsBinding: true } callback)
+                {
+                    value = callback.WithoutBinding();
+                }
+
                 writer.SetValue(target, value);
             }
             catch (Exception ex)
