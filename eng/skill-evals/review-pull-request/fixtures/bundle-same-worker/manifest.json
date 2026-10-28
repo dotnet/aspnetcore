@@ -1,7 +1,7 @@
 {
   "version": 2,
   "ready": true,
-  "producer": "60e7a85f99036a02cc33f0b756505b3d8514bce57895d0f725b1f11ed1c2dc8e",
+  "producer": "53ec4e793086acac8787e13fbc16c61db68ff365a0e67294c387178f46f46d32",
   "target": {
     "hostname": "github.com",
     "repository": "owner/product",
@@ -64,7 +64,58 @@
       "path": "docs/CrossCuttingGuidance.md",
       "topics": [
         "Topic"
-      ]
+      ],
+      "assignment": {
+        "files": [
+          {
+            "kind": "guide",
+            "path": "guidance/docs/CrossCuttingGuidance.md.source",
+            "utf8Bytes": 152,
+            "sha256": "e1289372816dfda62fac0f657d4ee0312b777a890efb86053b9efe849b95c4c7"
+          },
+          {
+            "kind": "diff",
+            "path": "diff.patch",
+            "utf8Bytes": 737,
+            "sha256": "f7e86a60abfb026b28ce9a12f4b172c160018e8d951019c78053c3648c4b0c5f"
+          },
+          {
+            "kind": "changedFiles",
+            "path": "files.json",
+            "utf8Bytes": 898,
+            "sha256": "aa6b3894afa4260ea2091721992ab4bb390bbc4c74598208c5e535d7f44e47a4"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0000/policies/0000.source",
+            "utf8Bytes": 55,
+            "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0000-scope.source",
+            "utf8Bytes": 203,
+            "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0000-reason.source",
+            "utf8Bytes": 601,
+            "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0001-body.source",
+            "utf8Bytes": 71,
+            "sha256": "24ca206fffc4f61ad893866fafb0c7974c9063394ad58a503f8244615e2f4ed1"
+          }
+        ],
+        "sourceRoles": [
+          "head",
+          "mergeBase",
+          "baseTip"
+        ]
+      }
     }
   ],
   "policies": [
@@ -72,10 +123,11 @@
       "path": "docs/Policy.md",
       "anchor": "required-clause",
       "body": {
-        "path": "required/policies/0000.source",
+        "path": "required/guides/0000/policies/0000.source",
         "utf8Bytes": 55,
         "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f"
-      }
+      },
+      "guide": "docs/CrossCuttingGuidance.md"
     }
   ],
   "context": [],
@@ -83,12 +135,12 @@
   "exclusions": [
     {
       "scope": {
-        "path": "required/exclusions/0000-scope.source",
+        "path": "required/coordinator/exclusions/0000-scope.source",
         "utf8Bytes": 203,
         "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
       },
       "reason": {
-        "path": "required/exclusions/0000-reason.source",
+        "path": "required/coordinator/exclusions/0000-reason.source",
         "utf8Bytes": 601,
         "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
       }
@@ -96,7 +148,7 @@
     {
       "source": ".github/copilot-instructions.md#security-concerns-are-out-of-scope",
       "body": {
-        "path": "required/exclusions/0001-body.source",
+        "path": "required/coordinator/exclusions/0001-body.source",
         "utf8Bytes": 71,
         "sha256": "24ca206fffc4f61ad893866fafb0c7974c9063394ad58a503f8244615e2f4ed1"
       }
@@ -110,8 +162,8 @@
   },
   "requiredText": {
     "root": "required",
-    "files": 8,
-    "sha256": "12bc870dfb9780677de04c367f75ecb0bd55eb4f8527a7c26fd117fee82c1c87"
+    "files": 11,
+    "sha256": "e837b58b9fffe9fbfa969e974191226b797b2c00f86cd943bdb9a93197f5196c"
   },
   "timingsMs": {
     "apiFreeze": 0,

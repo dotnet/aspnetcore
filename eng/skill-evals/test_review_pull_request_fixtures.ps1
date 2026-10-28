@@ -179,7 +179,7 @@ try {
         -BundleRoot $validRoot `
         -ContractPath $contractPath `
         -BundleName valid
-    if ($valid.Files -lt 42 -or $valid.RequiredReferences -ne 9) {
+    if ($valid.Files -lt 48 -or $valid.RequiredReferences -ne 15) {
         throw "The valid fixture did not exercise the complete inventory and reference set."
     }
     $trustedInventory = Read-Json $contractPath
@@ -188,20 +188,14 @@ try {
         'feedback.json'
         'files.json'
         'guidance/.github/skills/review-pull-request/routing.md.source'
-        'guidance/docs/BlazorComponentsGuidance.md.source'
-        'guidance/docs/ComponentsPolicy.md.source'
-        'guidance/docs/CrossCuttingGuidance.md.source'
-        'guidance/docs/Policy.md.source'
         'manifest.json'
         'pull.json'
-        'required/exclusions/0000-reason.source'
-        'required/exclusions/0000-scope.source'
-        'required/exclusions/0001-body.source'
+        'required/coordinator/exclusions/0000-reason.source'
+        'required/coordinator/exclusions/0000-scope.source'
+        'required/coordinator/exclusions/0001-body.source'
         'required/feedback/comments/101.source'
         'required/feedback/inline/103.source'
         'required/feedback/reviews/102.source'
-        'required/policies/0000.source'
-        'required/policies/0001.source'
         'required/pull/body.source'
     ) | Sort-Object -CaseSensitive
     $actualCoordinatorRequired = @(
@@ -217,11 +211,15 @@ try {
     }
     $expectedCoordinatorOnly = @(
         'feedback.json'
+        'guidance/.github/copilot-instructions.md.source'
+        'guidance/.github/skills/review-pull-request/routing.md.source'
+        'guidance/docs/ComponentsPolicy.md.source'
+        'guidance/docs/Policy.md.source'
         'manifest.json'
         'pull.json'
-        'required/exclusions/0000-reason.source'
-        'required/exclusions/0000-scope.source'
-        'required/exclusions/0001-body.source'
+        'required/coordinator/exclusions/0000-reason.source'
+        'required/coordinator/exclusions/0000-scope.source'
+        'required/coordinator/exclusions/0001-body.source'
         'required/feedback/comments/101.source'
         'required/feedback/inline/103.source'
         'required/feedback/reviews/102.source'
@@ -247,7 +245,7 @@ try {
         -BundleRoot $sameWorkerRoot `
         -ContractPath $sameWorkerContractPath `
         -BundleName valid
-    if ($sameWorker.Files -lt 40 -or $sameWorker.RequiredReferences -ne 8) {
+    if ($sameWorker.Files -lt 43 -or $sameWorker.RequiredReferences -ne 11) {
         throw 'The single-guide lifecycle fixture changed unexpectedly.'
     }
     Write-Host '  [OK] same-worker-single-guide-bundle'
@@ -354,10 +352,86 @@ try {
         param($control)
         $manifest = Read-Json (Join-Path $control.Root 'manifest.json')
         $pull = Read-Json (Join-Path $control.Root 'pull.json')
-        $manifest.policies[0].body = $pull.body
+        $manifest.exclusions[0].reason = $pull.body
         Write-JsonLf (Join-Path $control.Root 'manifest.json') $manifest
-        Remove-Item (Join-Path $control.Root 'required/policies/0000.source') -Force
+        Remove-Item (
+            Join-Path $control.Root 'required/coordinator/exclusions/0000-reason.source'
+        ) -Force
     } 'reference is reused'
+
+    Invoke-MutationControl worker-assignment-source-role-order {
+        param($control)
+        $manifest = Read-Json (Join-Path $control.Root 'manifest.json')
+        $manifest.guides[0].assignment.sourceRoles = @('head', 'baseTip', 'mergeBase')
+        Write-JsonLf (Join-Path $control.Root 'manifest.json') $manifest
+    } 'source roles changed'
+
+    Invoke-MutationControl worker-assignment-sibling-policy {
+        param($control)
+        $manifest = Read-Json (Join-Path $control.Root 'manifest.json')
+        $policyIndex = 0
+        while ($manifest.guides[0].assignment.files[$policyIndex].kind -cne 'policy') {
+            $policyIndex++
+        }
+        $manifest.guides[0].assignment.files[$policyIndex] =
+            $manifest.guides[1].assignment.files |
+                Where-Object kind -CEQ 'policy' |
+                Select-Object -First 1
+        Write-JsonLf (Join-Path $control.Root 'manifest.json') $manifest
+    } 'incorrect policy inputs'
+
+    Invoke-MutationControl worker-policy-guide-index-swap {
+        param($control)
+        $manifest = Read-Json (Join-Path $control.Root 'manifest.json')
+        $firstGuide = [string]$manifest.policies[0].guide
+        $manifest.policies[0].guide = [string]$manifest.policies[1].guide
+        $manifest.policies[1].guide = $firstGuide
+        $firstPolicy = $manifest.guides[0].assignment.files |
+            Where-Object kind -CEQ 'policy' |
+            Select-Object -First 1
+        $secondPolicy = $manifest.guides[1].assignment.files |
+            Where-Object kind -CEQ 'policy' |
+            Select-Object -First 1
+        for ($guideIndex = 0; $guideIndex -lt 2; $guideIndex++) {
+            $replacement = if ($guideIndex -eq 0) {
+                $secondPolicy
+            } else {
+                $firstPolicy
+            }
+            $policyIndex = 0
+            while ($manifest.guides[$guideIndex].assignment.files[$policyIndex].kind -cne 'policy') {
+                $policyIndex++
+            }
+            $manifest.guides[$guideIndex].assignment.files[$policyIndex] =
+                $replacement
+        }
+        Write-JsonLf (Join-Path $control.Root 'manifest.json') $manifest
+    } 'Policy path does not match guide'
+
+    Invoke-MutationControl worker-policy-guide-case-mismatch {
+        param($control)
+        $manifest = Read-Json (Join-Path $control.Root 'manifest.json')
+        $manifest.policies[0].guide =
+            ([string]$manifest.policies[0].guide).ToUpperInvariant()
+        $manifest.guides[0].assignment.files = @(
+            $manifest.guides[0].assignment.files |
+                Where-Object kind -CNE 'policy'
+        )
+        Write-JsonLf (Join-Path $control.Root 'manifest.json') $manifest
+    } 'Policy guide does not match a routed guide'
+
+    Invoke-MutationControl worker-assignment-missing-exclusion {
+        param($control)
+        $manifest = Read-Json (Join-Path $control.Root 'manifest.json')
+        $manifest.guides[0].assignment.files = @(
+            $manifest.guides[0].assignment.files |
+                Where-Object {
+                    [string]$_.path -cne
+                    'required/guides/0000/exclusions/0001-body.source'
+                }
+        )
+        Write-JsonLf (Join-Path $control.Root 'manifest.json') $manifest
+    } 'incorrect exclusion inputs'
 
     Invoke-MutationControl orphan-required-text {
         param($control)

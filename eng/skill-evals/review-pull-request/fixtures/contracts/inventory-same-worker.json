@@ -5,7 +5,7 @@
     "missingFeedback": "bundle-missing-feedback"
   },
   "invariants": {
-    "producer": "60e7a85f99036a02cc33f0b756505b3d8514bce57895d0f725b1f11ed1c2dc8e",
+    "producer": "53ec4e793086acac8787e13fbc16c61db68ff365a0e67294c387178f46f46d32",
     "target": {
       "hostname": "github.com",
       "repository": "owner/product",
@@ -79,10 +79,7 @@
       "readRoles": [
         "coordinator"
       ],
-      "coordinatorRequired": true,
-      "expectedAbsentIn": [
-        "bundle-missing-feedback"
-      ]
+      "coordinatorRequired": true
     },
     {
       "path": "files.json",
@@ -103,8 +100,7 @@
       "maxUtf8LineBytes": 37,
       "sha256": "4cd40ace1c5408276460754716378dd78bfb9dbb7340f161abd1ecf064c27760",
       "readRoles": [
-        "coordinator",
-        "worker"
+        "coordinator"
       ],
       "coordinatorRequired": false
     },
@@ -115,8 +111,7 @@
       "maxUtf8LineBytes": 54,
       "sha256": "c77dfefdb5d2e05a3650242e18adf8dfebbe49bd10d4b26c91b59b654cd1caf2",
       "readRoles": [
-        "coordinator",
-        "worker"
+        "coordinator"
       ],
       "coordinatorRequired": true
     },
@@ -127,7 +122,6 @@
       "maxUtf8LineBytes": 25,
       "sha256": "1f813f91873ca2634c15c2cfd0990cb9cc1839c9db5c47dada0996169f5c3432",
       "readRoles": [
-        "coordinator",
         "worker"
       ],
       "coordinatorRequired": false
@@ -139,10 +133,9 @@
       "maxUtf8LineBytes": 58,
       "sha256": "e1289372816dfda62fac0f657d4ee0312b777a890efb86053b9efe849b95c4c7",
       "readRoles": [
-        "coordinator",
         "worker"
       ],
-      "coordinatorRequired": true
+      "coordinatorRequired": false
     },
     {
       "path": "guidance/docs/Policy.md.source",
@@ -151,17 +144,16 @@
       "maxUtf8LineBytes": 36,
       "sha256": "415cc1bda61d406a4ba9ccbb94daf3562ac4677f45483a4ac7a857ef04e5ef08",
       "readRoles": [
-        "coordinator",
-        "worker"
+        "coordinator"
       ],
-      "coordinatorRequired": true
+      "coordinatorRequired": false
     },
     {
       "path": "manifest.json",
-      "utf8Bytes": 4253,
-      "lineCount": 128,
+      "utf8Bytes": 6153,
+      "lineCount": 180,
       "maxUtf8LineBytes": 139,
-      "sha256": "c3e6a3c1cfd6786657157a2a00fea7d42af040946e82f59a4bb1922ff4d1b7e7",
+      "sha256": "6ab28c08530e885f66436da393e69034982ca44199248b78867cce0ef2dc8042",
       "readRoles": [
         "coordinator"
       ],
@@ -179,7 +171,7 @@
       "coordinatorRequired": true
     },
     {
-      "path": "required/exclusions/0000-reason.source",
+      "path": "required/coordinator/exclusions/0000-reason.source",
       "utf8Bytes": 601,
       "lineCount": 1,
       "maxUtf8LineBytes": 601,
@@ -190,7 +182,7 @@
       "coordinatorRequired": true
     },
     {
-      "path": "required/exclusions/0000-scope.source",
+      "path": "required/coordinator/exclusions/0000-scope.source",
       "utf8Bytes": 203,
       "lineCount": 1,
       "maxUtf8LineBytes": 203,
@@ -201,7 +193,7 @@
       "coordinatorRequired": true
     },
     {
-      "path": "required/exclusions/0001-body.source",
+      "path": "required/coordinator/exclusions/0001-body.source",
       "utf8Bytes": 71,
       "lineCount": 2,
       "maxUtf8LineBytes": 37,
@@ -245,16 +237,48 @@
       "coordinatorRequired": true
     },
     {
-      "path": "required/policies/0000.source",
+      "path": "required/guides/0000/exclusions/0000-reason.source",
+      "utf8Bytes": 601,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "required/guides/0000/exclusions/0000-scope.source",
+      "utf8Bytes": 203,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "required/guides/0000/exclusions/0001-body.source",
+      "utf8Bytes": 71,
+      "lineCount": 2,
+      "maxUtf8LineBytes": 37,
+      "sha256": "24ca206fffc4f61ad893866fafb0c7974c9063394ad58a503f8244615e2f4ed1",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "required/guides/0000/policies/0000.source",
       "utf8Bytes": 55,
       "lineCount": 2,
       "maxUtf8LineBytes": 36,
       "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f",
       "readRoles": [
-        "coordinator",
         "worker"
       ],
-      "coordinatorRequired": true
+      "coordinatorRequired": false
     },
     {
       "path": "required/pull/body.source",

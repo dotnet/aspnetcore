@@ -1,7 +1,13 @@
 #requires -Version 7.0
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('sdk-recovery', 'same-worker-lifecycle', 'ready-v2-transport', 'required-bytes-blocked')]
+    [ValidateSet(
+        'sdk-recovery',
+        'same-worker-lifecycle',
+        'ready-v2-transport',
+        'required-bytes-blocked',
+        'native-worker-scope'
+    )]
     [string]$Contract,
 
     [string]$ContractPath,
@@ -149,7 +155,21 @@ function Get-WorkerCoordinatorBehavior {
 }
 
 function Assert-WorkerToolBoundary {
-    param([object[]]$WorkerCalls)
+    param(
+        [object[]]$WorkerCalls,
+        [string[]]$ExpectedWorkerIds = @(),
+        [switch]$RequireSkill
+    )
+
+    if ($RequireSkill) {
+        foreach ($workerId in $ExpectedWorkerIds) {
+            if (@($WorkerCalls | Where-Object {
+                [string]$_.AgentId -ceq $workerId
+            }).Count -eq 0) {
+                Fail "Guide worker '$workerId' did not invoke review-pull-request exactly once."
+            }
+        }
+    }
 
     foreach ($group in @($WorkerCalls | Group-Object AgentId)) {
         $ordered = @($group.Group | Sort-Object CallIndex)
@@ -163,14 +183,23 @@ function Assert-WorkerToolBoundary {
         if ($skillCalls.Count -gt 1) {
             Fail "Guide worker '$($group.Name)' invoked review-pull-request more than once."
         }
+        if ($RequireSkill -and $skillCalls.Count -eq 0) {
+            Fail "Guide worker '$($group.Name)' did not invoke review-pull-request exactly once."
+        }
+        if ($skillCalls.Count -eq 1 -and $skillCalls[0].ResultSuccess -ne $true) {
+            Fail "Guide worker '$($group.Name)' did not successfully invoke review-pull-request."
+        }
         if ($skillCalls.Count -eq 1 -and
             $skillCalls[0].CallIndex -ne $ordered[0].CallIndex) {
-            Fail "Guide worker '$($group.Name)' did not use its optional review-pull-request load as its first tool call."
+            Fail "Guide worker '$($group.Name)' did not use its review-pull-request load as its first tool call."
         }
         foreach ($call in $ordered | Where-Object { $_.Name -ine 'skill' }) {
             $behavior = Get-WorkerCoordinatorBehavior $call
             if (-not [string]::IsNullOrEmpty($behavior)) {
                 Fail "Guide worker '$($group.Name)' used coordinator-only $behavior through '$($call.Name)'."
+            }
+            if ($call.Name -inotmatch '^(view|read_file|rg|grep|glob|bash|shell|powershell)$') {
+                Fail "Guide worker '$($group.Name)' used unsupported worker tool '$($call.Name)'."
             }
         }
     }
@@ -195,6 +224,9 @@ function Assert-CompletedWorkerReportBoundary {
 
     if (Test-CoordinatorOutputText $Text) {
         Fail "Guide worker '$WorkerId' emitted coordinator aggregation output."
+    }
+    if ($Text -notmatch '(?im)(?:^|\bTurn\s+\d+\b[^:\r\n]*:\s*)\s*(?:[-+*]\s+)?(?:\*\*|__)?PATH(?:\*\*|__)?\s*:(?:\*\*|__)?\s*per-guide-worker\b') {
+        Fail "Guide worker '$WorkerId' did not report PATH: per-guide-worker."
     }
     $reportedGuides = @($AllGuides | Where-Object {
         $Text.IndexOf($_, [StringComparison]::Ordinal) -ge 0
@@ -225,12 +257,12 @@ function Get-ReportedTurns {
     $turns = [Collections.Generic.List[object]]::new()
     foreach ($match in [regex]::Matches(
         $Text,
-        '(?is)\bTurn\s+(?<index>\d+)\b(?:(?!\bTurn\s+\d+\b).)*?(?<content>PATH:\s*per-guide-worker\b.*?)(?=\bTurn\s+\d+\b|\z)'
+        '(?is)\bTurn\s+(?<index>\d+)\b(?:(?!\bTurn\s+\d+\b).)*?(?<content>(?:\*\*|__)?PATH(?:\*\*|__)?\s*:(?:\*\*|__)?\s*per-guide-worker\b.*?)(?=\bTurn\s+\d+\b|\z)'
     )) {
         $content = $match.Groups['content'].Value.Trim()
         $payload = [regex]::Replace(
             $content,
-            '(?is)^PATH:\s*per-guide-worker\b[\s.:-]*',
+            '(?is)^(?:\*\*|__)?PATH(?:\*\*|__)?\s*:(?:\*\*|__)?\s*per-guide-worker\b[\s.:-]*',
             ''
         ).Trim()
         $turns.Add([pscustomobject]@{
@@ -331,6 +363,160 @@ function Test-PrepareCommand {
         [int]$prMatches[0].Groups['value'].Value -eq $Pr -and
         $headMatches.Count -eq 1 -and
         $headMatches[0].Groups['value'].Value -eq $Head
+}
+
+function Convert-NativeEvents {
+    param([object[]]$Events)
+
+    return @(
+        foreach ($event in $Events) {
+            switch ([string]$event.type) {
+                'tool.execution_start' {
+                    [pscustomobject]@{
+                        type = 'tool_call'
+                        agentId = [string](Get-PropertyValue $event 'agentId')
+                        data = [pscustomobject]@{
+                            toolName = [string](Get-PropertyValue $event.data 'toolName')
+                            toolCallId = [string](Get-PropertyValue $event.data 'toolCallId')
+                            arguments = Get-PropertyValue $event.data 'arguments'
+                        }
+                    }
+                    continue
+                }
+                'tool.execution_complete' {
+                    [pscustomobject]@{
+                        type = 'tool_result'
+                        agentId = [string](Get-PropertyValue $event 'agentId')
+                        data = [pscustomobject]@{
+                            toolName = [string](Get-PropertyValue $event.data 'toolName')
+                            toolCallId = [string](Get-PropertyValue $event.data 'toolCallId')
+                            success = Get-PropertyValue $event.data 'success'
+                            result = Get-PropertyValue $event.data 'result'
+                        }
+                    }
+                    continue
+                }
+                'assistant.message' {
+                    [pscustomobject]@{
+                        type = 'assistant_message'
+                        agentId = [string](Get-PropertyValue $event 'agentId')
+                        data = [pscustomobject]@{
+                            content = [string](Get-PropertyValue $event.data 'content')
+                        }
+                    }
+                    continue
+                }
+                default {
+                    $event
+                }
+            }
+        }
+    )
+}
+
+function Get-PropertyValue {
+    param(
+        [object]$Object,
+        [string]$Name
+    )
+
+    if ($null -eq $Object) {
+        return $null
+    }
+    foreach ($property in $Object.PSObject.Properties) {
+        if ($property.Name -ceq $Name) {
+            return $property.Value
+        }
+    }
+    return $null
+}
+
+function Test-Property {
+    param(
+        [object]$Object,
+        [string]$Name
+    )
+
+    if ($null -eq $Object) {
+        return $false
+    }
+    return @($Object.PSObject.Properties |
+        Where-Object Name -CEQ $Name).Count -eq 1
+}
+
+function Assert-NativeEventContract {
+    param([object[]]$Events)
+
+    $starts = @{}
+    $completions = @{}
+    foreach ($event in $Events) {
+        $type = [string]$event.type
+        $agentId = [string](Get-PropertyValue $event 'agentId')
+        switch ($type) {
+            'tool.execution_start' {
+                $toolCallId = [string](Get-PropertyValue $event.data 'toolCallId')
+                $toolName = [string](Get-PropertyValue $event.data 'toolName')
+                if ([string]::IsNullOrWhiteSpace($toolCallId) -or
+                    [string]::IsNullOrWhiteSpace($toolName) -or
+                    -not (Test-Property $event.data 'arguments')) {
+                    Fail 'A native tool start event is missing its tool call ID or tool name.'
+                }
+                if ([string]::IsNullOrWhiteSpace($agentId) -and (
+                    $toolName -cne 'skill' -or
+                    [string](Get-PropertyValue (
+                        Get-PropertyValue $event.data 'arguments'
+                    ) 'skill') -cne 'review-pull-request' -or
+                    -not [string]::IsNullOrWhiteSpace(
+                        [string](Get-PropertyValue $event.data 'parentToolCallId')
+                    )
+                )) {
+                    Fail "Native tool call '$toolCallId' is missing worker attribution."
+                }
+                $key = "$agentId`:$toolCallId"
+                if ($starts.ContainsKey($key)) {
+                    Fail "Native tool call '$toolCallId' has duplicate start events."
+                }
+                $starts[$key] = $event
+                continue
+            }
+            'tool.execution_complete' {
+                $toolCallId = [string](Get-PropertyValue $event.data 'toolCallId')
+                $success = Get-PropertyValue $event.data 'success'
+                if ([string]::IsNullOrWhiteSpace($toolCallId) -or
+                    $success -isnot [bool]) {
+                    Fail 'A native tool completion event is missing its tool call ID or Boolean success state.'
+                }
+                $key = "$agentId`:$toolCallId"
+                if (-not $starts.ContainsKey($key)) {
+                    Fail "Native tool completion '$key' occurred before its start event."
+                }
+                if ($completions.ContainsKey($key)) {
+                    Fail "Native tool call '$toolCallId' has duplicate completion events."
+                }
+                $completions[$key] = $event
+                continue
+            }
+            'assistant.message' {
+                if ($null -eq $event.data.PSObject.Properties['content']) {
+                    Fail 'A native assistant message is missing its content.'
+                }
+                continue
+            }
+            default {
+                Fail "The native worker-scope control contains unsupported native event type '$type'."
+            }
+        }
+    }
+    foreach ($key in $starts.Keys) {
+        if (-not $completions.ContainsKey($key)) {
+            Fail "Native tool call '$key' has no completion event."
+        }
+    }
+    foreach ($key in $completions.Keys) {
+        if (-not $starts.ContainsKey($key)) {
+            Fail "Native tool completion '$key' has no start event."
+        }
+    }
 }
 
 function Get-Calls {
@@ -628,21 +814,39 @@ function Test-SameWorkerLifecycle {
     if ($followUpSubstantiveTurns.Count -eq 0) {
         Fail 'The follow-up read_agent result did not contain an actual completed worker follow-up.'
     }
-    $synthesisObserved = $false
-    for ($index = $followUpRead.ResultIndex + 1; $index -lt $Events.Count; $index++) {
-        $event = $Events[$index]
-        $agentId = [string](
-            $event.PSObject.Properties['agentId']?.Value ??
-            $event.data.PSObject.Properties['agentId']?.Value
-        )
-        if ($event.type -eq 'assistant_message' -and
-            [string]::IsNullOrEmpty($agentId)) {
-            $synthesisObserved = $true
-            break
+    $trajectoryOutput = [string]$GraderInput.trajectory.output
+    $expectedStatus = [regex]::Match(
+        $trajectoryOutput,
+        '(?im)^\s*STATUS:\s*[A-Z_]+\s*$'
+    ).Value.Trim()
+    $rootSynthesisIndexes = @(
+        for ($index = 0; $index -lt $Events.Count; $index++) {
+            $event = $Events[$index]
+            $agentId = [string](
+                $event.PSObject.Properties['agentId']?.Value ??
+                $event.data.PSObject.Properties['agentId']?.Value
+            )
+            if ($event.type -eq 'assistant_message' -and
+                [string]::IsNullOrEmpty($agentId)) {
+                $content = ([string]$event.data.content).Trim()
+                if ($content -ceq $trajectoryOutput.Trim() -or
+                    $content -ceq $expectedStatus) {
+                    $index
+                }
+            }
         }
-    }
-    if (-not $synthesisObserved) {
+    )
+    if ([string]::IsNullOrWhiteSpace($expectedStatus) -or
+        $rootSynthesisIndexes.Count -ne 1 -or
+        $rootSynthesisIndexes[0] -le $followUpRead.ResultIndex) {
         Fail 'Root synthesis occurred before the completed same-worker follow-up.'
+    }
+    $synthesisIndex = $rootSynthesisIndexes[0]
+    if (@($rootCalls | Where-Object {
+        $_.Name -in @('read_agent', 'write_agent') -and
+        $_.CallIndex -ge $synthesisIndex
+    }).Count -ne 0) {
+        Fail 'A same-worker lifecycle call occurred after root synthesis.'
     }
 
     Complete-Grading -Passed $true -Evidence 'Observed one background worker, an actual initial report, one clarification to the returned worker ID, and an actual follow-up report from that same ID.'
@@ -667,6 +871,337 @@ function Get-CanonicalCallPath {
         return [IO.Path]::GetFullPath($portable, $WorkDir)
     } catch {
         return ''
+    }
+}
+
+function Get-CanonicalPath {
+    param(
+        [string]$Path,
+        [string]$BasePath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return ''
+    }
+    try {
+        $separator = [IO.Path]::DirectorySeparatorChar
+        $portable = $Path.Replace('\', $separator).Replace('/', $separator)
+        return [IO.Path]::GetFullPath($portable, $BasePath)
+    } catch {
+        return ''
+    }
+}
+
+function Test-PathAtOrWithin {
+    param(
+        [string]$Path,
+        [string]$Root
+    )
+
+    if ([string]::IsNullOrEmpty($Path) -or [string]::IsNullOrEmpty($Root)) {
+        return $false
+    }
+    $prefix = $Root.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar
+    ) + [IO.Path]::DirectorySeparatorChar
+    return $Path -ieq $Root -or
+        $Path.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)
+}
+
+function Get-ShellExpandedCommand {
+    param([string]$Command)
+
+    $expanded = $Command
+    $variables = @(
+        foreach ($match in [regex]::Matches(
+        $Command,
+        '(?im)\$(?:\{(?<braced>[A-Za-z_][A-Za-z0-9_]*)\}|(?<plain>[A-Za-z_][A-Za-z0-9_]*))\s*=\s*(?:''(?<single>[^'']*)''|"(?<double>[^"]*)"|(?<bare>[^\s;|]+))'
+    )) {
+            $name = if ($match.Groups['braced'].Success) {
+                $match.Groups['braced'].Value
+            } else {
+                $match.Groups['plain'].Value
+            }
+            $value = @('single', 'double', 'bare') |
+                Where-Object { $match.Groups[$_].Success } |
+                ForEach-Object { $match.Groups[$_].Value } |
+                Select-Object -First 1
+            [pscustomobject]@{
+                Name = $name
+                Value = [string]$value
+            }
+        }
+    ) | Sort-Object { $_.Name.Length } -Descending
+    for ($pass = 0; $pass -lt 2; $pass++) {
+        foreach ($variable in $variables) {
+            foreach ($pattern in @(
+                ('\$\{' + [regex]::Escape($variable.Name) + '\}')
+                ('\$' + [regex]::Escape($variable.Name) + '(?![A-Za-z0-9_])')
+            )) {
+                $replacement = [string]$variable.Value
+                $expanded = [regex]::Replace(
+                    $expanded,
+                    $pattern,
+                    { param($match) $replacement },
+                    [Text.RegularExpressions.RegexOptions]::IgnoreCase
+                )
+            }
+        }
+    }
+    return $expanded
+}
+
+function Get-ShellPathCandidates {
+    param(
+        [string]$Command,
+        [string]$WorkDir
+    )
+
+    $expanded = Get-ShellExpandedCommand $Command
+    $candidates = [Collections.Generic.List[string]]::new()
+    foreach ($match in [regex]::Matches(
+        $expanded,
+        '(?i)(?<path>(?:[A-Za-z]:[\\/]|\.{1,2}[\\/])[^''"\s;,|)<>]+|\.review-bundle(?:[\\/][^''"\s;,|)<>]+)?)'
+    )) {
+        $candidate = $match.Groups['path'].Value.Trim()
+        $candidate = $candidate.TrimEnd('*', '?')
+        $canonical = Get-CanonicalPath $candidate $WorkDir
+        if (-not [string]::IsNullOrEmpty($canonical)) {
+            $candidates.Add($canonical)
+        }
+    }
+    foreach ($match in [regex]::Matches($expanded, '[''"](?<path>[^''"]+)[''"]')) {
+        $candidate = $match.Groups['path'].Value.Trim().TrimEnd('*', '?')
+        if ($candidate -notmatch '[\\/]' -and
+            -not [IO.Path]::IsPathFullyQualified($candidate)) {
+            continue
+        }
+        $canonical = Get-CanonicalPath $candidate $WorkDir
+        if (-not [string]::IsNullOrEmpty($canonical)) {
+            $candidates.Add($canonical)
+        }
+    }
+    return @($candidates | Sort-Object -Unique)
+}
+
+function Get-ShellRedirectedOutputPaths {
+    param(
+        [string]$Command,
+        [string]$WorkDir
+    )
+
+    $expanded = Get-ShellExpandedCommand $Command
+    $paths = [Collections.Generic.List[string]]::new()
+    foreach ($match in [regex]::Matches(
+        $expanded,
+        '(?i)(?:^|[\s;|])>{1,2}\s*(?:[''"](?<quoted>[^''"]+)[''"]|(?<bare>[^\s;|<>]+))'
+    )) {
+        $candidate = if ($match.Groups['quoted'].Success) {
+            $match.Groups['quoted'].Value
+        } else {
+            $match.Groups['bare'].Value
+        }
+        $canonical = Get-CanonicalPath $candidate $WorkDir
+        if (-not [string]::IsNullOrEmpty($canonical)) {
+            $paths.Add($canonical)
+        }
+    }
+    foreach ($match in [regex]::Matches(
+        $expanded,
+        '(?i)\b(?:Out-File|Set-Content|Tee-Object)\b[^\r\n;|]*?-(?:File)?Path\s+(?:[''"](?<quoted>[^''"]+)[''"]|(?<bare>[^\s;|<>]+))'
+    )) {
+        $candidate = if ($match.Groups['quoted'].Success) {
+            $match.Groups['quoted'].Value
+        } else {
+            $match.Groups['bare'].Value
+        }
+        $canonical = Get-CanonicalPath $candidate $WorkDir
+        if (-not [string]::IsNullOrEmpty($canonical)) {
+            $paths.Add($canonical)
+        }
+    }
+    return @($paths | Sort-Object -Unique)
+}
+
+function Get-SavedOutputPaths {
+    param(
+        [object]$Call,
+        [string]$WorkDir
+    )
+
+    return @(
+        foreach ($match in [regex]::Matches(
+            $Call.ResultText,
+            '(?im)^\s*(?:Output too large to read at once.*?Saved to:|Saved to:)\s*(?<path>[^\r\n]+)\s*$'
+        )) {
+            $path = Get-CanonicalPath $match.Groups['path'].Value.Trim() $WorkDir
+            if (-not [string]::IsNullOrEmpty($path)) {
+                $path
+            }
+        }
+    )
+}
+
+function Get-WorkerCallPathInfo {
+    param(
+        [object]$Call,
+        [string]$WorkDir
+    )
+
+    $paths = [Collections.Generic.List[string]]::new()
+    if ($Call.Name -in @('view', 'read_file')) {
+        $path = Get-CanonicalCallPath $Call $WorkDir
+        if ([string]::IsNullOrEmpty($path)) {
+            return [pscustomobject]@{
+                Paths = @()
+                Error = "used an invalid $($Call.Name) path"
+            }
+        }
+        $paths.Add($path)
+    } elseif ($Call.Name -in @('rg', 'grep', 'glob')) {
+        $rawPaths = Get-Argument $Call 'paths'
+        if ($null -eq $rawPaths) {
+            $rawPaths = Get-Argument $Call 'path'
+        }
+        $searchPaths = if ($null -eq $rawPaths -or
+            ($rawPaths -is [string] -and
+                [string]::IsNullOrWhiteSpace([string]$rawPaths))) {
+            @($WorkDir)
+        } elseif ($rawPaths -is [string]) {
+            @([string]$rawPaths)
+        } else {
+            $resolved = @(
+                $rawPaths |
+                    ForEach-Object { [string]$_ } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+            )
+            if ($resolved.Count -eq 0) { @($WorkDir) } else { $resolved }
+        }
+        foreach ($searchPath in $searchPaths) {
+            $canonical = Get-CanonicalPath $searchPath $WorkDir
+            if ([string]::IsNullOrEmpty($canonical)) {
+                return [pscustomobject]@{
+                    Paths = @()
+                    Error = "used an invalid $($Call.Name) scope '$searchPath'"
+                }
+            }
+            $paths.Add($canonical)
+            if ($Call.Name -eq 'glob') {
+                $pattern = [string](Get-Argument $Call 'pattern')
+                if (-not [string]::IsNullOrWhiteSpace($pattern) -and
+                    $pattern -match '[\\/]') {
+                    $prefixParts = [Collections.Generic.List[string]]::new()
+                    foreach ($part in $pattern.Replace('\', '/').Split('/')) {
+                        if ($part -match '[*?\[]') {
+                            break
+                        }
+                        if (-not [string]::IsNullOrWhiteSpace($part)) {
+                            $prefixParts.Add($part)
+                        }
+                    }
+                    if ($prefixParts.Count -gt 0) {
+                        $combined = Get-CanonicalPath (
+                            Join-Path $canonical ($prefixParts -join '/')
+                        ) $WorkDir
+                        if (-not [string]::IsNullOrEmpty($combined)) {
+                            $paths.Add($combined)
+                        }
+                    }
+                }
+            }
+        }
+    } elseif (Test-ShellTool $Call.Name) {
+        foreach ($path in Get-ShellPathCandidates (
+            [string](Get-Argument $Call 'command')
+        ) $WorkDir) {
+            $paths.Add($path)
+        }
+    }
+    return [pscustomobject]@{
+        Paths = @($paths | Sort-Object -Unique)
+        Error = ''
+    }
+}
+
+function Get-WorkerScopeViolation {
+    param(
+        [object]$Call,
+        [object]$Scope,
+        [string]$WorkDir
+    )
+
+    $bundleRoot = [string]$Scope.BundleRoot
+    $assignedFiles = @($Scope.AssignedFiles)
+    $sourceRoots = @($Scope.SourceRoots)
+    $pathInfo = Get-WorkerCallPathInfo $Call $WorkDir
+    if (-not [string]::IsNullOrEmpty($pathInfo.Error)) {
+        return $pathInfo.Error
+    }
+
+    foreach ($path in $pathInfo.Paths) {
+        if ((Test-ShellTool $Call.Name) -and
+            -not (Test-PathAtOrWithin $path $bundleRoot) -and
+            -not (Test-PathAtOrWithin $bundleRoot $path)) {
+            continue
+        }
+        if ($path -iin $assignedFiles) {
+            continue
+        }
+        if (@($sourceRoots | Where-Object {
+            Test-PathAtOrWithin $path ([string]$_)
+        }).Count -gt 0) {
+            continue
+        }
+        return "scope included an unassigned bundle path '$path'"
+    }
+    return ''
+}
+
+function Assert-WorkerInputScopes {
+    param(
+        [object[]]$WorkerCalls,
+        [hashtable]$ScopesByWorker,
+        [string]$WorkDir
+    )
+
+    $contaminatedOutputs = @{}
+    $firstViolation = ''
+    foreach ($call in $WorkerCalls | Sort-Object CallIndex) {
+        if (-not $ScopesByWorker.ContainsKey([string]$call.AgentId)) {
+            Fail "Observed worker tool activity for unassigned worker '$($call.AgentId)'."
+        }
+        $scope = $ScopesByWorker[[string]$call.AgentId]
+        $pathInfo = Get-WorkerCallPathInfo $call $WorkDir
+        foreach ($path in $pathInfo.Paths) {
+            foreach ($contaminatedPath in $contaminatedOutputs.Keys) {
+                if ($path -ieq $contaminatedPath -or
+                    (Test-PathAtOrWithin $contaminatedPath $path)) {
+                    Fail "Guide worker '$($call.AgentId)' consumed intermediate output derived from $($contaminatedOutputs[$contaminatedPath])."
+                }
+            }
+        }
+        $violation = Get-WorkerScopeViolation $call $scope $WorkDir
+        if (-not [string]::IsNullOrEmpty($violation)) {
+            $evidence = "Guide worker '$($call.AgentId)' $violation."
+            $outputPaths = @(
+                Get-SavedOutputPaths $call $WorkDir
+                if (Test-ShellTool $call.Name) {
+                    Get-ShellRedirectedOutputPaths (
+                        [string](Get-Argument $call 'command')
+                    ) $WorkDir
+                }
+            )
+            foreach ($path in $outputPaths | Sort-Object -Unique) {
+                $contaminatedOutputs[$path] = $evidence
+            }
+            if ([string]::IsNullOrEmpty($firstViolation)) {
+                $firstViolation = $evidence
+            }
+        }
+    }
+    if (-not [string]::IsNullOrEmpty($firstViolation)) {
+        Fail $firstViolation
     }
 }
 
@@ -776,6 +1311,9 @@ function Get-PromptClauses {
 function Test-ProhibitionClause {
     param([string]$Clause)
 
+    if ($Clause -match '(?i)\b(?:do not|don''t|never|must not)\s+(?:skip|ignore|avoid)\b') {
+        return $false
+    }
     return $Clause -match '(?i)\b(?:do not|don''t|must not|never|not assigned|coordinator[- ]only|coordinator owns|coordinator[- ]owned|exclude|prohibit|forbid|forbidden|skip|ignore|unavailable)\b'
 }
 
@@ -810,25 +1348,198 @@ function Test-PromptRequestsFixtureInput {
     return $false
 }
 
-function Get-ApplicablePoliciesForGuide {
+function Get-JsonAssignmentValues {
     param(
-        [object]$Guide,
-        [object[]]$Policies,
-        [string]$BundleRoot
+        [object]$Value
     )
 
-    $guidePath = [string]$Guide.path
-    $guideFile = Join-Path $BundleRoot (
-        "guidance/$guidePath.source".Replace(
-            '/',
-            [IO.Path]::DirectorySeparatorChar
-        )
+    if ($null -eq $Value) {
+        return
+    }
+    if ($Value -is [string] -or $Value.GetType().IsPrimitive) {
+        return
+    }
+    if ($Value -is [Management.Automation.PSCustomObject] -and
+        $null -ne $Value.PSObject.Properties['files'] -and
+        $null -ne $Value.PSObject.Properties['sourceRoles']) {
+        $Value
+        return
+    }
+    if ($Value -is [Collections.IEnumerable] -and
+        $Value -isnot [Management.Automation.PSCustomObject]) {
+        foreach ($item in $Value) {
+            Get-JsonAssignmentValues $item
+        }
+        return
+    }
+    foreach ($property in $Value.PSObject.Properties) {
+        Get-JsonAssignmentValues $property.Value
+    }
+}
+
+function Test-PromptContainsAssignment {
+    param(
+        [string]$Prompt,
+        [object]$Assignment
     )
-    $guideContent = Get-Content $guideFile -Raw -Encoding utf8
-    return @($Policies | Where-Object {
-        $link = "$([IO.Path]::GetFileName([string]$_.path))#$([string]$_.anchor)"
-        $guideContent.IndexOf($link, [StringComparison]::Ordinal) -ge 0
-    })
+
+    $expected = $Assignment | ConvertTo-Json -Compress -Depth 20
+    $start = -1
+    $depth = 0
+    $inString = $false
+    $escaped = $false
+    $assignments = [Collections.Generic.List[object]]::new()
+    for ($index = 0; $index -lt $Prompt.Length; $index++) {
+        $character = $Prompt[$index]
+        if ($inString) {
+            if ($escaped) {
+                $escaped = $false
+            } elseif ($character -eq '\') {
+                $escaped = $true
+            } elseif ($character -eq '"') {
+                $inString = $false
+            }
+            continue
+        }
+        if ($character -eq '"') {
+            $inString = $true
+            continue
+        }
+        if ($character -eq '{') {
+            if ($depth -eq 0) {
+                $start = $index
+            }
+            $depth++
+            continue
+        }
+        if ($character -ne '}' -or $depth -eq 0) {
+            continue
+        }
+        $depth--
+        if ($depth -ne 0) {
+            continue
+        }
+        $candidate = $Prompt.Substring($start, $index - $start + 1)
+        try {
+            $parsed = $candidate | ConvertFrom-Json -Depth 20
+            foreach ($assignmentValue in @(Get-JsonAssignmentValues $parsed)) {
+                $assignments.Add($assignmentValue)
+            }
+        } catch {
+        }
+    }
+    return $assignments.Count -eq 1 -and
+        ($assignments[0] | ConvertTo-Json -Compress -Depth 20) -ceq $expected
+}
+
+function Test-PromptBinding {
+    param(
+        [string]$Prompt,
+        [string]$LabelPattern,
+        [string]$Value,
+        [switch]$AllowHashSeparator
+    )
+
+    $normalizedValue = $Value.Replace('\', '/')
+    $separators = if ($AllowHashSeparator) {
+        '(?::|=|#|\bis\b)'
+    } else {
+        '(?::|=|\bis\b)'
+    }
+    $valuePrefix = if ($AllowHashSeparator) {
+        '(?:#[ \t]*)?'
+    } else {
+        ''
+    }
+    $labelFormatting = '[ \t*_`"'']*'
+    $valueFormatting = '[ \t*_`"''\[]*'
+    $bindingPattern = (
+        "(?:$LabelPattern)$labelFormatting$separators" +
+        "$valueFormatting$valuePrefix" +
+        '(?<value>[A-Za-z0-9][A-Za-z0-9_./\\-]*)'
+    )
+    $foundExpected = $false
+    $normalizedPrompt = $Prompt.Replace('\', '/')
+    foreach ($binding in [regex]::Matches($normalizedPrompt, $bindingPattern)) {
+        $prefixStart = 0
+        foreach ($delimiter in @("`n", '.', ';', ',')) {
+            $position = $normalizedPrompt.LastIndexOf(
+                $delimiter,
+                [Math]::Max(0, $binding.Index - 1)
+            )
+            if ($position -ge $prefixStart) {
+                $prefixStart = $position + 1
+            }
+        }
+        $bindingPrefix = $normalizedPrompt.Substring(
+            $prefixStart,
+            $binding.Index - $prefixStart
+        )
+        if ($bindingPrefix -match (
+            "(?i)(?:do not|don't|must not|never)\s+" +
+            "(?:use|review|treat|select|trust|rely on)\s+(?:the\s+)?$"
+        )) {
+            continue
+        }
+        $rawValue = $binding.Groups['value'].Value
+        $actualValue = $rawValue -replace '[.)\]}*_`]+$', ''
+        $sameValueShape = if ($normalizedValue -match '^\d+$') {
+            $actualValue -match '^\d+$'
+        } elseif ($normalizedValue -match '^[0-9a-f]{40}$') {
+            $actualValue -match '^[0-9a-f]{40}$'
+        } else {
+            $actualValue -match '[/\\]'
+        }
+        if (-not $sameValueShape) {
+            continue
+        }
+        $tailStart = $binding.Index + $binding.Length -
+            ($rawValue.Length - $actualValue.Length)
+        $tailEnd = $normalizedPrompt.Length
+        $tailDelimiter = ''
+        foreach ($delimiter in @("`n", '.', ';', ',')) {
+            $position = $normalizedPrompt.IndexOf($delimiter, $tailStart)
+            if ($position -ge 0 -and $position -lt $tailEnd) {
+                $tailEnd = $position
+                $tailDelimiter = $delimiter
+            }
+        }
+        $tail = $normalizedPrompt.Substring($tailStart, $tailEnd - $tailStart)
+        $tail = $tail -replace '^[\s`*_"''\])}]+', ''
+        $negatedBinding = $tail -match (
+            "(?i)^\s*(?:(?:but|however)\s+)?" +
+            "(?:(?:which|it|this|that)\s+)?" +
+            "(?:(?:is|was|should|must|do)\s+not|" +
+            "(?:isn't|wasn't|shouldn't|mustn't|don't))\b"
+        )
+        if (-not $negatedBinding -and $tailDelimiter -eq ',') {
+            $continuationStart = $tailEnd + 1
+            $continuationEnd = $normalizedPrompt.Length
+            foreach ($delimiter in @("`n", '.', ';', ',')) {
+                $position = $normalizedPrompt.IndexOf($delimiter, $continuationStart)
+                if ($position -ge 0 -and $position -lt $continuationEnd) {
+                    $continuationEnd = $position
+                }
+            }
+            $continuation = $normalizedPrompt.Substring(
+                $continuationStart,
+                $continuationEnd - $continuationStart
+            )
+            $continuation = $continuation -replace '^[\s`*_"''\])}]+', ''
+            $negatedBinding = $continuation -match (
+                "(?i)^\s*(?:(?:but|however)\s+)?" +
+                "(?:which|it|this|that)\s+" +
+                "(?:(?:is|was|should|must|do)\s+not|" +
+                "(?:isn't|wasn't|shouldn't|mustn't|don't))\b"
+            )
+        }
+        if ($actualValue -cne $normalizedValue -or
+            $negatedBinding) {
+            return $false
+        }
+        $foundExpected = $true
+    }
+    return $foundExpected
 }
 
 function Get-ExactViewCoverage {
@@ -931,6 +1642,61 @@ function Get-ExactViewCoverage {
     }
 }
 
+function Test-NativeWorkerScope {
+    param(
+        [object]$GraderInput,
+        [object[]]$Calls
+    )
+
+    $scopeContract = $GraderInput.PSObject.Properties['nativeScope']?.Value
+    if ($null -eq $scopeContract -or
+        [string]$scopeContract.candidateRevision -notmatch '^[0-9a-f]{40}$' -or
+        [string]::IsNullOrWhiteSpace([string]$scopeContract.bundleRoot)) {
+        Fail 'The native worker-scope control is missing frozen candidate or bundle metadata.'
+    }
+    $workDir = [IO.Path]::GetFullPath([string]$GraderInput.trajectory.workDir)
+    $bundleRoot = Get-CanonicalPath ([string]$scopeContract.bundleRoot) $workDir
+    $scopes = @{}
+    $declaredWorkers = @($scopeContract.workers)
+    if ($declaredWorkers.Count -eq 0) {
+        Fail 'The native worker-scope control has no declared workers.'
+    }
+    foreach ($worker in $declaredWorkers) {
+        $workerId = [string]$worker.agentId
+        if ([string]::IsNullOrWhiteSpace($workerId) -or $scopes.ContainsKey($workerId)) {
+            Fail 'The native worker-scope control has missing or duplicate worker identity.'
+        }
+        $scopes[$workerId] = [pscustomobject]@{
+            BundleRoot = $bundleRoot
+            AssignedFiles = @($worker.assignedFiles | ForEach-Object {
+                Get-CanonicalPath ([string]$_) $bundleRoot
+            })
+            SourceRoots = @($worker.sourceRoots | ForEach-Object {
+                Get-CanonicalPath ([string]$_) $bundleRoot
+            })
+        }
+    }
+    $workerCalls = @($Calls | Where-Object {
+        -not [string]::IsNullOrEmpty($_.AgentId)
+    })
+    foreach ($workerId in $scopes.Keys) {
+        if (@($workerCalls | Where-Object {
+            [string]$_.AgentId -ceq [string]$workerId
+        }).Count -eq 0) {
+            Fail "Declared native worker '$workerId' did not appear in the retained tool events."
+        }
+    }
+    Assert-WorkerToolBoundary $workerCalls
+    Assert-WorkerInputScopes $workerCalls $scopes $workDir
+    if (@($workerCalls | Where-Object { Test-ShellTool $_.Name }).Count -ne 0) {
+        Fail 'A supplied-bundle worker used a shell tool.'
+    }
+    Complete-Grading -Passed $true -Evidence (
+        "Observed native worker tool events within frozen candidate " +
+        "$($scopeContract.candidateRevision) assignment scopes."
+    )
+}
+
 function Test-ReadyV2Transport {
     param(
         [object]$GraderInput,
@@ -944,10 +1710,6 @@ function Test-ReadyV2Transport {
     if ($null -eq (Get-Command Assert-ReviewFixture -ErrorAction SilentlyContinue)) {
         Fail 'The trusted fixture-contract library is unavailable.'
     }
-    if (@($Calls | Where-Object { Test-ShellTool $_.Name }).Count -ne 0) {
-        Fail 'A supplied-bundle transport run used a shell tool.'
-    }
-
     $workDir = [IO.Path]::GetFullPath([string]$GraderInput.trajectory.workDir)
     $contractFile = [IO.Path]::GetFullPath($ContractPath, $workDir)
     $bundleRoot = [IO.Path]::GetFullPath(
@@ -976,87 +1738,17 @@ function Test-ReadyV2Transport {
         $inventory.files |
             Where-Object { 'worker' -notin @($_.readRoles) }
     )
-    foreach ($call in $workerCalls) {
-        if ($call.Name -in @('view', 'read_file')) {
-            $path = Get-CanonicalCallPath $call $workDir
-            if ([string]::IsNullOrEmpty($path)) {
-                continue
-            }
-            foreach ($entry in $coordinatorOnlyEntries) {
-                $fixturePath = [IO.Path]::GetFullPath(
-                    (Join-Path $bundleRoot ([string]$entry.path).Replace(
-                        '/',
-                        [IO.Path]::DirectorySeparatorChar
-                    ))
-                )
-                $pathPrefix = $path.TrimEnd(
-                    [IO.Path]::DirectorySeparatorChar,
-                    [IO.Path]::AltDirectorySeparatorChar
-                ) + [IO.Path]::DirectorySeparatorChar
-                if ($path -ieq $fixturePath -or
-                    $fixturePath.StartsWith(
-                        $pathPrefix,
-                        [StringComparison]::OrdinalIgnoreCase
-                    )) {
-                    Fail "A worker read coordinator-only fixture input '$($entry.path)'."
-                }
-            }
-        } elseif ($call.Name -in @('rg', 'glob')) {
-            $rawPaths = Get-Argument $call 'paths'
-            $searchPaths = if ($null -eq $rawPaths) {
-                @($workDir)
-            } elseif ($rawPaths -is [string]) {
-                @([string]$rawPaths)
-            } else {
-                $resolvedPaths = @($rawPaths | ForEach-Object { [string]$_ })
-                if ($resolvedPaths.Count -eq 0) {
-                    @($workDir)
-                } else {
-                    $resolvedPaths
-                }
-            }
-            foreach ($searchPath in $searchPaths) {
-                try {
-                    $separator = [IO.Path]::DirectorySeparatorChar
-                    $portable = $searchPath.Replace('\', $separator).Replace('/', $separator)
-                    $canonicalSearchPath = [IO.Path]::GetFullPath($portable, $workDir)
-                } catch {
-                    Fail "A worker rg call used an invalid search path '$searchPath'."
-                }
-                $searchPrefix = $canonicalSearchPath.TrimEnd(
-                    [IO.Path]::DirectorySeparatorChar,
-                    [IO.Path]::AltDirectorySeparatorChar
-                ) + [IO.Path]::DirectorySeparatorChar
-                foreach ($entry in $coordinatorOnlyEntries) {
-                    $fixturePath = [IO.Path]::GetFullPath(
-                        (Join-Path $bundleRoot ([string]$entry.path).Replace(
-                            '/',
-                            [IO.Path]::DirectorySeparatorChar
-                        ))
-                    )
-                    if ($canonicalSearchPath -ieq $fixturePath -or
-                        $fixturePath.StartsWith(
-                            $searchPrefix,
-                            [StringComparison]::OrdinalIgnoreCase
-                        )) {
-                        Fail "A worker $($call.Name) scope could read coordinator-only fixture input '$($entry.path)'."
-                    }
-                }
-            }
-        }
-    }
 
     $tasks = @($rootCalls | Where-Object { $_.Name -eq 'task' })
     $manifest = Get-Content (Join-Path $bundleRoot 'manifest.json') -Raw -Encoding utf8 |
         ConvertFrom-Json -Depth 100
-    $files = @(Get-Content (Join-Path $bundleRoot 'files.json') -Raw -Encoding utf8 |
-        ConvertFrom-Json -Depth 100)
     $expectedWorkerCount = @($manifest.guides).Count
     if ($tasks.Count -ne $expectedWorkerCount) {
         Fail "Expected exactly $expectedWorkerCount prescribed guide worker dispatch, but observed $($tasks.Count)."
     }
     $assignedGuides = @{}
     $workerGuideById = @{}
+    $workerScopes = @{}
     foreach ($task in $tasks) {
         if ([string](Get-Argument $task 'agent_type') -cne 'general-purpose' -or
             [string](Get-Argument $task 'model') -cne 'gpt-5.6-sol' -or
@@ -1106,73 +1798,94 @@ function Test-ReadyV2Transport {
             Fail "Worker '$workerId' was assigned more than one guide."
         }
         $workerGuideById[$workerId] = $guidePath
-
-        $applicablePolicies = @(
-            Get-ApplicablePoliciesForGuide `
-                -Guide $guide `
-                -Policies @($manifest.policies) `
-                -BundleRoot $bundleRoot
-        )
-        foreach ($policy in $applicablePolicies) {
-            $policyPath = [string]$policy.path
-            $policyBodyPath = [string]$policy.body.path
-            if (-not (Test-PromptContainsFixtureInput `
-                -Prompt $workerPrompt `
-                -BundleRoot $bundleRoot `
-                -RelativePaths @(
-                    $policyPath,
-                    "guidance/$policyPath.source",
-                    $policyBodyPath
-                ))) {
-                Fail "The '$guidePath' worker prompt omitted applicable policy '$policyPath'."
-            }
+        $assignment = $guide.assignment
+        $assignedPaths = @($assignment.files | ForEach-Object { [string]$_.path })
+        $bundleRootPrompt = $bundleRoot.Replace('\', '/')
+        if ($workerPrompt.IndexOf(
+            $bundleRootPrompt,
+            [StringComparison]::OrdinalIgnoreCase
+        ) -lt 0) {
+            Fail "The '$guidePath' worker prompt omitted the trusted absolute bundle root."
         }
-        foreach ($policy in @($manifest.policies | Where-Object {
-            [string]$_.path -notin @($applicablePolicies | ForEach-Object {
-                [string]$_.path
-            })
-        })) {
-            $policyPath = [string]$policy.path
+        if (-not (Test-PromptContainsAssignment $workerPrompt $assignment)) {
+            Fail "The '$guidePath' worker prompt did not preserve the verbatim assignment."
+        }
+        foreach ($other in @(
+            $manifest.guides.assignment.files |
+                Where-Object { [string]$_.path -cnotin $assignedPaths }
+        )) {
             if (Test-PromptContainsFixtureInput `
                 -Prompt $workerPrompt `
                 -BundleRoot $bundleRoot `
-                -RelativePaths @(
-                    $policyPath,
-                    "guidance/$policyPath.source",
-                    [string]$policy.body.path
-                )) {
-                Fail "The '$guidePath' worker prompt included non-applicable policy '$policyPath'."
+                -RelativePaths @([string]$other.path)) {
+                Fail "The '$guidePath' worker prompt included unassigned input '$($other.path)'."
             }
         }
-        foreach ($inputPath in @('files.json', 'diff.patch')) {
-            if (-not (Test-PromptContainsFixtureInput `
-                -Prompt $workerPrompt `
-                -BundleRoot $bundleRoot `
-                -RelativePaths @($inputPath))) {
-                Fail "The '$guidePath' worker prompt omitted required worker input '$inputPath'."
+        $sourceRoots = @(
+            foreach ($role in @($assignment.sourceRoles)) {
+                $sourceRoot = [string]$manifest.sources.$role.root
+                if (-not (Test-PromptBinding `
+                    -Prompt $workerPrompt `
+                    -LabelPattern (
+                        "(?i)(?:\bsource\s+role\s+)?\b" +
+                        "$([regex]::Escape([string]$role))\b(?:\s+root\b)?"
+                    ) `
+                    -Value $sourceRoot)) {
+                    Fail "The '$guidePath' worker prompt omitted the exact frozen source role binding for '$role'."
+                }
+                [IO.Path]::GetFullPath(
+                    (Join-Path $bundleRoot $sourceRoot.Replace(
+                        '/',
+                        [IO.Path]::DirectorySeparatorChar
+                    ))
+                )
             }
-        }
-        foreach ($source in @(
-            $manifest.sources.head,
-            $manifest.sources.mergeBase,
-            $manifest.sources.baseTip
+        )
+        foreach ($identity in @(
+            [pscustomobject]@{
+                Label = 'PR'
+                Pattern = '(?i)(?:\bfrozen\s+)?\bPR\b'
+                Value = $manifest.target.pr
+                AllowHashSeparator = $true
+            },
+            [pscustomobject]@{
+                Label = 'head'
+                Pattern = '(?i)(?:\bfrozen\s+)?\bhead\b(?!\s+root\b)'
+                Value = $manifest.target.head
+                AllowHashSeparator = $false
+            },
+            [pscustomobject]@{
+                Label = 'merge base'
+                Pattern = '(?i)(?:\bfrozen\s+)?\bmerge(?:\s+|[-_]?)(?:base)\b(?!\s+root\b)'
+                Value = $manifest.target.mergeBase
+                AllowHashSeparator = $false
+            },
+            [pscustomobject]@{
+                Label = 'base tip'
+                Pattern = '(?i)(?:\bfrozen\s+)?\bbase(?:\s+|[-_]?)(?:tip)\b(?!\s+root\b)'
+                Value = $manifest.target.baseTip
+                AllowHashSeparator = $false
+            }
         )) {
-            $sourceRoot = [string]$source.root
-            if (-not (Test-PromptContainsFixtureInput `
+            if (-not (Test-PromptBinding `
                 -Prompt $workerPrompt `
-                -BundleRoot $bundleRoot `
-                -RelativePaths @($sourceRoot))) {
-                Fail "The '$guidePath' worker prompt omitted frozen source root '$sourceRoot'."
+                -LabelPattern $identity.Pattern `
+                -Value ([string]$identity.Value) `
+                -AllowHashSeparator:$identity.AllowHashSeparator)) {
+                Fail "The '$guidePath' worker prompt omitted the exact frozen $($identity.Label) binding."
             }
         }
-        foreach ($file in $files) {
-            $filename = [string]$file.filename
-            if (-not (Test-PromptContainsFixtureInput `
-                -Prompt $workerPrompt `
-                -BundleRoot $bundleRoot `
-                -RelativePaths @($filename))) {
-                Fail "The '$guidePath' worker prompt omitted relevant changed source '$filename'."
-            }
+        $workerScopes[$workerId] = [pscustomobject]@{
+            BundleRoot = $bundleRoot
+            AssignedFiles = @($assignedPaths | ForEach-Object {
+                [IO.Path]::GetFullPath(
+                    (Join-Path $bundleRoot $_.Replace(
+                        '/',
+                        [IO.Path]::DirectorySeparatorChar
+                    ))
+                )
+            })
+            SourceRoots = $sourceRoots
         }
     }
     foreach ($guide in @($manifest.guides)) {
@@ -1180,9 +1893,57 @@ function Test-ReadyV2Transport {
             Fail "Guide '$([string]$guide.path)' was not assigned to a worker task."
         }
     }
-    foreach ($call in $workerCalls) {
-        if (-not $workerGuideById.ContainsKey($call.AgentId)) {
-            Fail "Observed worker tool activity for unassigned worker '$($call.AgentId)'."
+    Assert-WorkerInputScopes $workerCalls $workerScopes $workDir
+    Assert-WorkerToolBoundary @(
+        $workerCalls |
+            Where-Object { $workerGuideById.ContainsKey([string]$_.AgentId) }
+    ) -ExpectedWorkerIds @($workerGuideById.Keys) -RequireSkill
+    if (@($Calls | Where-Object { Test-ShellTool $_.Name }).Count -ne 0) {
+        Fail 'A supplied-bundle transport run used a shell tool.'
+    }
+    $unsupportedRootCalls = @(
+        $rootCalls |
+            Where-Object {
+                $_.Name -inotmatch '^(skill|view|read_file|rg|grep|glob|task|read_agent|write_agent)$'
+            }
+    )
+    if ($unsupportedRootCalls.Count -ne 0) {
+        Fail "The coordinator used unsupported root tool '$($unsupportedRootCalls[0].Name)'."
+    }
+    $rootSkillCalls = @($rootCalls | Where-Object { $_.Name -ieq 'skill' })
+    if ($rootSkillCalls.Count -gt 1 -or
+        @($rootSkillCalls | Where-Object {
+            $_.Name -cne 'skill' -or
+            [string](Get-Argument $_ 'skill') -cne 'review-pull-request' -or
+            $_.ResultSuccess -ne $true
+        }).Count -ne 0 -or
+        ($rootSkillCalls.Count -eq 1 -and
+        $rootSkillCalls[0].CallIndex -ne (
+            $rootCalls | Measure-Object CallIndex -Minimum
+        ).Minimum)) {
+        Fail 'The coordinator root skill load was not one optional successful first review-pull-request invocation.'
+    }
+    if (@($rootCalls | Where-Object { $_.Name -in @('rg', 'grep', 'glob') }).Count -ne 0) {
+        Fail 'The coordinator used a broad root search instead of exact trusted bundle reads.'
+    }
+    $coordinatorPaths = @(
+        $inventory.files |
+            Where-Object { 'coordinator' -in @($_.readRoles) } |
+            ForEach-Object {
+                [IO.Path]::GetFullPath(
+                    (Join-Path $bundleRoot ([string]$_.path).Replace(
+                        '/',
+                        [IO.Path]::DirectorySeparatorChar
+                    ))
+                )
+            }
+    )
+    foreach ($call in $rootCalls | Where-Object {
+        $_.Name -in @('view', 'read_file')
+    }) {
+        $path = Get-CanonicalCallPath $call $workDir
+        if ($null -eq $path -or $path -cnotin $coordinatorPaths) {
+            Fail "The coordinator read untrusted path '$path' outside its exact bundle inputs."
         }
     }
     foreach ($event in $Events) {
@@ -1207,6 +1968,7 @@ function Test-ReadyV2Transport {
         }
     }
     $completedWorkerReports = @{}
+    $completedWorkerReportIndexes = @{}
     foreach ($call in $rootCalls | Where-Object { $_.Name -eq 'read_agent' }) {
         $workerId = [string](Get-Argument $call 'agent_id')
         if ((Get-Argument $call 'wait') -ne $true) {
@@ -1228,6 +1990,10 @@ function Test-ReadyV2Transport {
                 -WorkerId $workerId `
                 -ExpectedGuide ([string]$workerGuideById[$workerId]) `
                 -AllGuides @($manifest.guides | ForEach-Object { [string]$_.path })
+            $completedWorkerReportIndexes[$workerId] = [Math]::Max(
+                [int]($completedWorkerReportIndexes[$workerId] ?? -1),
+                $call.ResultIndex
+            )
             if ($namedAssignedGuide) {
                 $completedWorkerReports[$workerId] = $true
             }
@@ -1238,99 +2004,111 @@ function Test-ReadyV2Transport {
             Fail "Guide worker '$workerId' had no completed collected report."
         }
     }
-    foreach ($call in $workerCalls | Where-Object {
-        $_.Name -in @('view', 'read_file') -and
-        $workerGuideById.ContainsKey($_.AgentId)
-    }) {
-        $path = Get-CanonicalCallPath $call $workDir
-        if ([string]::IsNullOrEmpty($path)) {
+    $trajectoryOutput = [string]$GraderInput.trajectory.output
+    $rootSynthesisIndexes = @(
+        for ($index = 0; $index -lt $Events.Count; $index++) {
+            $event = $Events[$index]
+            $agentId = [string](
+                $event.PSObject.Properties['agentId']?.Value ??
+                $event.data.PSObject.Properties['agentId']?.Value
+            )
+            if ($event.type -eq 'assistant_message' -and
+                [string]::IsNullOrEmpty($agentId) -and
+                ([string]$event.data.content).Trim() -ceq $trajectoryOutput.Trim()) {
+                $index
+            }
+        }
+    )
+    if ([string]::IsNullOrWhiteSpace($trajectoryOutput) -or
+        $rootSynthesisIndexes.Count -ne 1) {
+        Fail 'The coordinator did not emit exactly one root synthesis matching trajectory output.'
+    }
+    $synthesisIndex = $rootSynthesisIndexes[0]
+    $lifecycleCalls = @(
+        $rootCalls |
+            Where-Object { $_.Name -in @('read_agent', 'write_agent') }
+    )
+    $writes = @(
+        $lifecycleCalls |
+            Where-Object { $_.Name -eq 'write_agent' } |
+            Sort-Object CallIndex
+    )
+    for ($writeIndex = 0; $writeIndex -lt $writes.Count; $writeIndex++) {
+        $write = $writes[$writeIndex]
+        if ($write.CallIndex -ge $synthesisIndex) {
             continue
         }
-        $assignedGuide = [string]$workerGuideById[$call.AgentId]
-        foreach ($guide in @($manifest.guides | Where-Object {
-            [string]$_.path -cne $assignedGuide
-        })) {
-            $otherGuidePath = [IO.Path]::GetFullPath(
-                (Join-Path $bundleRoot "guidance/$([string]$guide.path).source").Replace(
-                    '/',
-                    [IO.Path]::DirectorySeparatorChar
-                )
-            )
-            $pathPrefix = $path.TrimEnd(
-                [IO.Path]::DirectorySeparatorChar,
-                [IO.Path]::AltDirectorySeparatorChar
-            ) + [IO.Path]::DirectorySeparatorChar
-            if ($path -ieq $otherGuidePath -or
-                $otherGuidePath.StartsWith(
-                    $pathPrefix,
-                    [StringComparison]::OrdinalIgnoreCase
-                )) {
-                Fail "Guide worker '$($call.AgentId)' read unassigned guide '$([string]$guide.path)'."
-            }
+        $nextSameWorkerWrite = @(
+            $writes |
+                Select-Object -Skip ($writeIndex + 1) |
+                Where-Object {
+                    [string](Get-Argument $_ 'agent_id') -ceq
+                        [string](Get-Argument $write 'agent_id')
+                } |
+                Select-Object -First 1
+        )
+        $followUpBoundary = if ($nextSameWorkerWrite.Count -eq 1) {
+            $nextSameWorkerWrite[0].CallIndex
+        } else {
+            $synthesisIndex
+        }
+        $workerId = [string](Get-Argument $write 'agent_id')
+        if ($write.ResultSuccess -ne $true) {
+            Fail "Guide worker '$workerId' clarification did not complete successfully."
+        }
+        $priorReads = @(
+            $lifecycleCalls |
+                Where-Object {
+                    $_.Name -eq 'read_agent' -and
+                    [string](Get-Argument $_ 'agent_id') -ceq $workerId -and
+                    (Get-Argument $_ 'wait') -eq $true -and
+                    $_.ResultSuccess -eq $true -and
+                    $_.ResultIndex -lt $write.CallIndex -and
+                    (Get-ReadStatus $_.ResultText) -eq 'completed'
+                }
+        )
+        if ($priorReads.Count -eq 0) {
+            Fail "Guide worker '$workerId' clarification occurred before an initial completed report."
+        }
+        $priorMaxTurn = @(
+            $priorReads |
+                ForEach-Object { Get-ReportedTurns $_.ResultText } |
+                Measure-Object Index -Maximum
+        )[0].Maximum
+        $followUpReads = @(
+            $lifecycleCalls |
+                Where-Object {
+                    $_.Name -eq 'read_agent' -and
+                    [string](Get-Argument $_ 'agent_id') -ceq $workerId -and
+                    (Get-Argument $_ 'wait') -eq $true -and
+                    $_.ResultSuccess -eq $true -and
+                    $_.CallIndex -gt $write.ResultIndex -and
+                    $_.ResultIndex -lt $followUpBoundary -and
+                    (Get-ReadStatus $_.ResultText) -eq 'completed' -and
+                    @(
+                        Get-ReportedTurns $_.ResultText |
+                            Where-Object {
+                                $_.Payload.Length -ge 20 -and
+                                $_.Index -gt $priorMaxTurn
+                            }
+                    ).Count -ne 0
+                }
+        )
+        if ($followUpReads.Count -eq 0) {
+            Fail "Guide worker '$workerId' clarification had no new completed follow-up turn before root synthesis."
         }
     }
-    foreach ($call in $workerCalls | Where-Object {
-        $_.Name -in @('rg', 'glob') -and
-        $workerGuideById.ContainsKey($_.AgentId)
-    }) {
-        $rawPaths = Get-Argument $call 'paths'
-        $searchPaths = if ($null -eq $rawPaths) {
-            @($workDir)
-        } elseif ($rawPaths -is [string]) {
-            @([string]$rawPaths)
-        } else {
-            $resolvedPaths = @($rawPaths | ForEach-Object { [string]$_ })
-            if ($resolvedPaths.Count -eq 0) {
-                @($workDir)
-            } else {
-                $resolvedPaths
-            }
+    foreach ($workerId in $completedWorkerReportIndexes.Keys) {
+        if ($completedWorkerReportIndexes[$workerId] -ge $synthesisIndex) {
+            Fail "Guide worker '$workerId' report collection completed after root synthesis."
         }
-        $assignedGuide = [string]$workerGuideById[$call.AgentId]
-        foreach ($searchPath in $searchPaths) {
-            try {
-                $separator = [IO.Path]::DirectorySeparatorChar
-                $portable = $searchPath.Replace('\', $separator).Replace('/', $separator)
-                $canonicalSearchPath = [IO.Path]::GetFullPath($portable, $workDir)
-            } catch {
-                Fail "A worker rg call used an invalid search path '$searchPath'."
-            }
-            $searchPrefix = $canonicalSearchPath.TrimEnd(
-                [IO.Path]::DirectorySeparatorChar,
-                [IO.Path]::AltDirectorySeparatorChar
-            ) + [IO.Path]::DirectorySeparatorChar
-            foreach ($guide in @($manifest.guides | Where-Object {
-                [string]$_.path -cne $assignedGuide
-            })) {
-                $otherGuidePath = [IO.Path]::GetFullPath(
-                    (Join-Path $bundleRoot "guidance/$([string]$guide.path).source").Replace(
-                        '/',
-                        [IO.Path]::DirectorySeparatorChar
-                    )
-                )
-                if ($canonicalSearchPath -ieq $otherGuidePath -or
-                    $otherGuidePath.StartsWith(
-                        $searchPrefix,
-                        [StringComparison]::OrdinalIgnoreCase
-                    )) {
-                    Fail "Guide worker '$($call.AgentId)' $($call.Name) scope included unassigned guide '$([string]$guide.path)'."
-                }
-            }
-        }
+    }
+    if (@($lifecycleCalls | Where-Object {
+        $_.CallIndex -ge $synthesisIndex
+    }).Count -ne 0) {
+        Fail 'A coordinator agent lifecycle call occurred after root synthesis.'
     }
     $firstTaskIndex = ($tasks | Measure-Object CallIndex -Minimum).Minimum
-    $synthesisIndex = $Events.Count
-    for ($index = 0; $index -lt $Events.Count; $index++) {
-        $event = $Events[$index]
-        $agentId = [string](
-            $event.PSObject.Properties['agentId']?.Value ??
-            $event.data.PSObject.Properties['agentId']?.Value
-        )
-        if ($event.type -eq 'assistant_message' -and
-            [string]::IsNullOrEmpty($agentId)) {
-            $synthesisIndex = $index
-        }
-    }
     $coverageByPath = @{}
     foreach ($entry in $inventory.files | Where-Object coordinatorRequired) {
         $coverage = Get-ExactViewCoverage `
@@ -1382,9 +2160,24 @@ function Test-RequiredBytesBlocked {
     if (@($rootCalls | Where-Object { $_.Name -eq 'task' }).Count -ne 0) {
         Fail 'A worker was dispatched despite unavailable required bundle bytes.'
     }
+    $workerCalls = @($Calls | Where-Object {
+        -not [string]::IsNullOrEmpty($_.AgentId)
+    })
+    if ($workerCalls.Count -ne 0) {
+        Fail 'The unavailable-byte path performed a worker-attributed tool call.'
+    }
+    $rootSkillCalls = @($rootCalls | Where-Object { $_.Name -eq 'skill' })
+    if ($rootSkillCalls.Count -ne 1 -or
+        [string](Get-Argument $rootSkillCalls[0] 'skill') -cne 'review-pull-request' -or
+        $rootSkillCalls[0].ResultSuccess -ne $true -or
+        $rootSkillCalls[0].CallIndex -ne (
+            $rootCalls | Measure-Object CallIndex -Minimum
+        ).Minimum) {
+        Fail 'The unavailable-byte path did not begin with one successful review-pull-request skill load.'
+    }
     $unsupportedCalls = @(
         $rootCalls |
-            Where-Object { $_.Name -notin @('view', 'rg', 'glob') }
+            Where-Object { $_.Name -notin @('skill', 'view') }
     )
     if ($unsupportedCalls.Count -ne 0) {
         Fail "The unavailable-byte path used unsupported fallback tool '$($unsupportedCalls[0].Name)'."
@@ -1447,6 +2240,15 @@ function Test-RequiredBytesBlocked {
     if ($feedbackReads.Count -eq 0) {
         Fail 'The unavailable required feedback input was never read.'
     }
+    if (@($rootCalls | Where-Object {
+        if ($_.Name -ne 'view') {
+            return $false
+        }
+        $path = Get-CanonicalCallPath $_ $workDir
+        return $path -ne $manifestPath -and $path -ne $feedbackPath
+    }).Count -ne 0) {
+        Fail 'The unavailable-byte path attempted substitute evidence outside the manifest and exact required feedback input.'
+    }
     if (@(
         $feedbackReads |
             Where-Object { $_.CallIndex -le $manifestCoverage.LastResultIndex }
@@ -1465,28 +2267,40 @@ function Test-RequiredBytesBlocked {
     if (@($feedbackReads | Where-Object { $_.ResultSuccess -eq $true }).Count -ne 0) {
         Fail 'The exact required feedback input was successfully read after an earlier failure.'
     }
+    if (@($rootCalls | Where-Object {
+        $_.Name -eq 'view' -and
+        $_.CallIndex -gt $failedRead.ResultIndex
+    }).Count -ne 0) {
+        Fail 'The unavailable-byte path attempted substitute evidence after the required read failed.'
+    }
     if (Test-Path $feedbackPath) {
         Fail 'The blocked fixture unexpectedly contains the required feedback input.'
     }
     if ([string]$GraderInput.trajectory.output -notmatch '(?im)^\s*STATUS:\s*BLOCKED\b') {
         Fail 'Unavailable required bytes did not produce STATUS: BLOCKED.'
     }
-    $blockedMessageObserved = $false
-    for ($index = $failedRead.ResultIndex + 1; $index -lt $Events.Count; $index++) {
-        $event = $Events[$index]
-        $agentId = [string](
-            $event.PSObject.Properties['agentId']?.Value ??
-            $event.data.PSObject.Properties['agentId']?.Value
-        )
-        if ($event.type -eq 'assistant_message' -and
-            [string]::IsNullOrEmpty($agentId) -and
-            [string]$event.data.content -match '(?im)^\s*STATUS:\s*BLOCKED\b') {
-            $blockedMessageObserved = $true
-            break
+    $trajectoryOutput = [string]$GraderInput.trajectory.output
+    $rootSynthesisIndexes = @(
+        for ($index = 0; $index -lt $Events.Count; $index++) {
+            $event = $Events[$index]
+            $agentId = [string](
+                $event.PSObject.Properties['agentId']?.Value ??
+                $event.data.PSObject.Properties['agentId']?.Value
+            )
+            if ($event.type -eq 'assistant_message' -and
+                [string]::IsNullOrEmpty($agentId) -and
+                ([string]$event.data.content).Trim() -ceq $trajectoryOutput.Trim()) {
+                $index
+            }
         }
-    }
-    if (-not $blockedMessageObserved) {
+    )
+    if ($rootSynthesisIndexes.Count -ne 1 -or
+        $rootSynthesisIndexes[0] -le $failedRead.ResultIndex) {
         Fail 'No root assistant message reported STATUS: BLOCKED after the failed required read.'
+    }
+    $synthesisIndex = $rootSynthesisIndexes[0]
+    if (@($rootCalls | Where-Object { $_.CallIndex -ge $synthesisIndex }).Count -ne 0) {
+        Fail 'The unavailable-byte path performed a tool call after root synthesis.'
     }
 
     Complete-Grading -Passed $true -Evidence 'Observed a failed native required-input read, no fallback or worker dispatch, and an explicit BLOCKED result.'
@@ -1498,13 +2312,17 @@ try {
     }
     $graderInput = Get-Content $env:EVALUATE_GRADER_INPUT -Raw -Encoding utf8 |
         ConvertFrom-Json -Depth 100
-    $events = @($graderInput.trajectory.events)
+    if ($Contract -eq 'native-worker-scope') {
+        Assert-NativeEventContract @($graderInput.trajectory.events)
+    }
+    $events = @(Convert-NativeEvents @($graderInput.trajectory.events))
     $calls = @(Get-Calls $events)
     switch ($Contract) {
         'sdk-recovery' { Test-SdkRecovery $calls }
         'same-worker-lifecycle' { Test-SameWorkerLifecycle $graderInput $calls $events }
         'ready-v2-transport' { Test-ReadyV2Transport $graderInput $calls $events }
         'required-bytes-blocked' { Test-RequiredBytesBlocked $graderInput $calls $events }
+        'native-worker-scope' { Test-NativeWorkerScope $graderInput $calls }
     }
 } catch {
     Complete-Grading -Passed $false -Evidence "Trace grader error: $($_.Exception.Message)" -Status 'error'

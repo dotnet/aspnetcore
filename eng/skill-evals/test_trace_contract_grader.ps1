@@ -5,6 +5,7 @@ Set-StrictMode -Version 3
 
 $grader = Join-Path $PSScriptRoot 'trace-contract-grader.ps1'
 $controlPath = Join-Path $PSScriptRoot 'review-pull-request/fixtures/controls/retained-sdk-lifecycle.json'
+$nativeControlRoot = Join-Path $PSScriptRoot 'review-pull-request/fixtures/controls'
 $bundleRoot = Join-Path $PSScriptRoot 'review-pull-request/fixtures/bundle'
 $contractSource = Join-Path $PSScriptRoot 'review-pull-request/fixtures/contracts/inventory.json'
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) (
@@ -154,27 +155,25 @@ function Add-NumberedRead {
 function New-WorkerPrompt {
     param(
         [object]$Manifest,
-        [object[]]$Files,
         [object]$Guide,
-        [object]$Policy
+        [string]$BundleRoot
     )
 
     $prompt = @(
         'Review the assigned projected transport inputs.'
         $workerRoleBoundary
-        "Assigned guide: guidance/$($Guide.path).source"
-        "Applicable policy: $($Policy.body.path)"
-        'Projected changed-file metadata: files.json'
-        'Full diff: diff.patch'
-        "Head source root: $($Manifest.sources.head.root)"
-        "Merge-base source root: $($Manifest.sources.mergeBase.root)"
-        "Base-tip source root: $($Manifest.sources.baseTip.root)"
-        @($Files | ForEach-Object { "Relevant source: $($_.filename)" })
+        "Trusted bundle root: $BundleRoot"
+        "Frozen PR: $($Manifest.target.pr)"
+        "Frozen head: $($Manifest.target.head)"
+        "Frozen merge base: $($Manifest.target.mergeBase)"
+        "Frozen base tip: $($Manifest.target.baseTip)"
+        'Verbatim assignment:'
+        ($Guide.assignment | ConvertTo-Json -Compress -Depth 20)
+        @($Guide.assignment.sourceRoles | ForEach-Object {
+            "Source role $_ root: $($Manifest.sources.$_.root)"
+        })
         'Do not read pull.json; the coordinator owns that input.'
     )
-    if ([string]$Guide.path -ceq 'docs/BlazorComponentsGuidance.md') {
-        $prompt += 'Do not read guidance/docs/CrossCuttingGuidance.md.source or required/policies/0000.source; those inputs are not assigned.'
-    }
     return $prompt -join "`n"
 }
 
@@ -201,9 +200,8 @@ function New-TransportInput {
         mode = 'background'
         prompt = New-WorkerPrompt `
             -Manifest $manifest `
-            -Files $files `
             -Guide $manifest.guides[1] `
-            -Policy $manifest.policies[1]
+            -BundleRoot (Join-Path $testRoot '.review-bundle')
     } $true 'Agent started in background with agent_id: 11111111-1111-1111-1111-111111111111.') {
         $events.Add($event)
     }
@@ -224,9 +222,8 @@ function New-TransportInput {
         mode = 'background'
         prompt = New-WorkerPrompt `
             -Manifest $manifest `
-            -Files $files `
             -Guide $manifest.guides[0] `
-            -Policy $manifest.policies[0]
+            -BundleRoot (Join-Path $testRoot '.review-bundle')
     } $true 'Agent started in background with agent_id: 22222222-2222-2222-2222-222222222222.') {
         $events.Add($event)
     }
@@ -282,6 +279,10 @@ function New-TransportInput {
             Add-NumberedRead $events $file.path 1 -1 $id
         }
     }
+    $events.Add([pscustomobject]@{
+        type = 'assistant_message'
+        data = [pscustomobject]@{ content = 'STATUS: NO_FINDINGS' }
+    })
     return [pscustomobject]@{
         trajectory = [pscustomobject]@{
             workDir = $testRoot
@@ -296,6 +297,136 @@ try {
     Copy-Item $bundleRoot (Join-Path $testRoot '.review-bundle') -Recurse
     New-Item -ItemType Directory -Path (Join-Path $testRoot '.eval-grader') | Out-Null
     Copy-Item $contractSource (Join-Path $testRoot '.eval-grader/inventory.json')
+
+    foreach ($nativeControl in @(
+        [pscustomobject]@{
+            Arm = 'g'
+            EventsSha256 = 'f9360ba3885704439ff3061f5f29938b59f4617865f4fc5cd3a83b888b4423a6'
+            EventsBytes = 7175367
+            ControlSha256 = '5e8e7eb7ddd97fd2a1d676b1ac35090173fd5d9b9e785bc4fc1590c81d09f943'
+            ExpectedPassed = $true
+            ExpectedEvidence = 'frozen candidate'
+        },
+        [pscustomobject]@{
+            Arm = 's'
+            EventsSha256 = 'e3e188372ab4e28beda75cfe269ad0e0ede70a07499e1c78bcd738670105b955'
+            EventsBytes = 9380832
+            ControlSha256 = '00dbbb486f4f54df351451a3c7c34f74b8115853c3c7075ef0bd0718a36a3491'
+            ExpectedPassed = $true
+            ExpectedEvidence = 'frozen candidate'
+        },
+        [pscustomobject]@{
+            Arm = 'o'
+            EventsSha256 = '18a392fa1ab285632453cf5b4061fc5111a7cd546caa02c4e2f090f9f6deea1a'
+            EventsBytes = 2961856
+            ControlSha256 = '721f06df41e891b4af75dfc1227a4d3c8b186ec8122bdcb6d1e81592c5b1ea0b'
+            ExpectedPassed = $false
+            ExpectedEvidence = 'intermediate output derived from'
+        }
+    )) {
+        $path = Join-Path $nativeControlRoot (
+            "retained-native-$($nativeControl.Arm)-scope.json"
+        )
+        $control = Get-Content $path -Raw -Encoding utf8 |
+            ConvertFrom-Json -Depth 100
+        if ([string]$control.sourceEvidence.retainedEventsSha256 -cne
+            $nativeControl.EventsSha256 -or
+            [int64]$control.sourceEvidence.retainedEventsBytes -ne
+            $nativeControl.EventsBytes -or
+            [string]$control.sourceEvidence.arm -cne
+            $nativeControl.Arm.ToUpperInvariant() -or
+            [string]$control.sourceEvidence.candidateRevision -cne
+            '374fde1927b759db52996bb1074aa7473a543b12' -or
+            [string]$control.sourceEvidence.trustedRevision -cne
+            'a888f052c880760ddd6df5de8d98d4051622d546' -or
+            (Get-FileHash $path -Algorithm SHA256).Hash.ToLowerInvariant() -cne
+            $nativeControl.ControlSha256 -or
+            (@($control.sourceEvidence.eventIds) -join "`n") -cne
+            (@($control.trajectory.events.id) -join "`n") -or
+            @($control.sourceEvidence.eventIds | Sort-Object -Unique).Count -ne
+            @($control.sourceEvidence.eventIds).Count) {
+            throw "Retained native $($nativeControl.Arm.ToUpperInvariant()) evidence binding changed."
+        }
+        Invoke-Control `
+            "native-retained-$($nativeControl.Arm)" `
+            native-worker-scope `
+            $control `
+            $nativeControl.ExpectedPassed `
+            $nativeControl.ExpectedEvidence `
+            ''
+    }
+
+    $nativeG = Get-Content (
+        Join-Path $nativeControlRoot 'retained-native-g-scope.json'
+    ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
+    $nativeUnknownEvent = Clone-Object $nativeG
+    $nativeUnknownEvent.trajectory.events[0].type = 'tool.execution_changed'
+    Invoke-Control native-unknown-event native-worker-scope $nativeUnknownEvent $false 'unsupported native event type' ''
+
+    $nativeMalformedTool = Clone-Object $nativeG
+    $nativeMalformedTool.trajectory.events[0].data.PSObject.Properties.Remove(
+        'toolName'
+    )
+    Invoke-Control native-malformed-tool native-worker-scope $nativeMalformedTool $false 'missing its tool call ID or tool name' ''
+
+    $nativeMissingWorker = Clone-Object $nativeG
+    $nativeWorkerId = [string]$nativeMissingWorker.nativeScope.workers[0].agentId
+    $nativeMissingWorker.trajectory.events = @(
+        $nativeMissingWorker.trajectory.events |
+            Where-Object { [string]$_.agentId -cne $nativeWorkerId }
+    )
+    Invoke-Control native-missing-worker native-worker-scope $nativeMissingWorker $false 'did not appear in the retained tool events' ''
+
+    $nativeMissingAgentId = Clone-Object $nativeG
+    foreach ($event in $nativeMissingAgentId.trajectory.events) {
+        if ([string]$event.agentId -ceq $nativeWorkerId) {
+            $event.agentId = $null
+        }
+    }
+    Invoke-Control native-missing-agent-id native-worker-scope $nativeMissingAgentId $false 'missing worker attribution' ''
+
+    $nativeWorkerSkillMissingAgentId = Get-Content (
+        Join-Path $nativeControlRoot 'retained-native-s-scope.json'
+    ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
+    foreach ($event in $nativeWorkerSkillMissingAgentId.trajectory.events |
+        Where-Object { [string]$_.data.toolCallId -ceq 'call_o8gPTcoTOUqIvlHS5tjy2YVy' }) {
+        $event.agentId = $null
+    }
+    Invoke-Control native-worker-skill-missing-agent-id native-worker-scope $nativeWorkerSkillMissingAgentId $false 'missing worker attribution' ''
+
+    $nativePartialAttribution = Get-Content (
+        Join-Path $nativeControlRoot 'retained-native-o-scope.json'
+    ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
+    foreach ($event in $nativePartialAttribution.trajectory.events) {
+        if ([string]$event.data.toolCallId -cne 'toolu_012UXeE4Un8Fe7UdbrFwsgbX') {
+            $event.agentId = $null
+        }
+    }
+    Invoke-Control native-partial-attribution native-worker-scope $nativePartialAttribution $false 'missing worker attribution' ''
+
+    $nativeCompletionBeforeStart = Get-Content (
+        Join-Path $nativeControlRoot 'retained-native-o-scope.json'
+    ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
+    $outOfOrder = $nativeCompletionBeforeStart.trajectory.events[2]
+    $nativeCompletionBeforeStart.trajectory.events[2] =
+        $nativeCompletionBeforeStart.trajectory.events[3]
+    $nativeCompletionBeforeStart.trajectory.events[3] = $outOfOrder
+    Invoke-Control native-completion-before-start native-worker-scope $nativeCompletionBeforeStart $false 'occurred before its start event' ''
+
+    $nativeFailedCompletion = Clone-Object $nativeG
+    $failedCompletion = $nativeFailedCompletion.trajectory.events |
+        Where-Object {
+            $_.type -ceq 'tool.execution_complete' -and
+            -not [string]::IsNullOrWhiteSpace([string]$_.agentId)
+        } |
+        Select-Object -First 1
+    $failedCompletion.data.success = $false
+    $failedCompletion.data.PSObject.Properties.Remove('result')
+    Invoke-Control native-failed-completion-without-result native-worker-scope $nativeFailedCompletion $true 'frozen candidate' ''
+
+    $nativeEmptyWorkers = Clone-Object $nativeG
+    $nativeEmptyWorkers.nativeScope.workers = @()
+    Invoke-Control native-empty-workers native-worker-scope $nativeEmptyWorkers $false 'no declared workers' ''
 
     $retained = Get-Content $controlPath -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
     $retainedLifecycle = Clone-Object $retained.input
@@ -490,8 +621,148 @@ try {
     )
     Invoke-Control lifecycle-premature-synthesis same-worker-lifecycle $prematureSynthesis $false 'before the completed same-worker follow-up' '.eval-grader/inventory.json'
 
+    $mismatchedLifecycleSynthesis = Clone-Object $retainedLifecycle
+    $mismatchedLifecycleSynthesis.trajectory.events[-1].data.content =
+        'Clarification complete.'
+    Invoke-Control lifecycle-mismatched-synthesis same-worker-lifecycle $mismatchedLifecycleSynthesis $false 'before the completed same-worker follow-up' '.eval-grader/inventory.json'
+
+    $fullLifecycleSynthesis = Clone-Object $retainedLifecycle
+    $fullLifecycleSynthesis.trajectory.events[-1].data.content =
+        $fullLifecycleSynthesis.trajectory.output
+    Invoke-Control lifecycle-full-output-synthesis same-worker-lifecycle $fullLifecycleSynthesis $true 'same ID' '.eval-grader/inventory.json'
+
     $transport = New-TransportInput
     Invoke-Control transport-positive ready-v2-transport $transport $true 'exact coordinator reads' '.eval-grader/inventory.json'
+
+    $semanticPrompt = Clone-Object $transport
+    $semanticManifest = Get-Content (
+        Join-Path $testRoot '.review-bundle/manifest.json'
+    ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
+    foreach ($worker in @(
+        [pscustomobject]@{ CallId = 'worker'; GuideIndex = 0 },
+        [pscustomobject]@{ CallId = 'worker-blazor'; GuideIndex = 1 }
+    )) {
+        $indexes = Get-ControlEventIndexes `
+            -ControlInput $semanticPrompt `
+            -ToolCallId $worker.CallId
+        $guide = $semanticManifest.guides[$worker.GuideIndex]
+        $compactAssignment = $guide.assignment |
+            ConvertTo-Json -Compress -Depth 20
+        $prettyAssignment = $guide.assignment |
+            ConvertTo-Json -Depth 20
+        $prompt = $semanticPrompt.trajectory.events[$indexes[0]].data.arguments.prompt.
+            Replace($compactAssignment, $prettyAssignment).
+            Replace('Frozen PR:', 'PR #').
+            Replace('Frozen head:', 'head =').
+            Replace('Frozen merge base:', 'mergeBase =').
+            Replace('Frozen base tip:', 'baseTip =').
+            Replace('Source role head root:', 'head root =').
+            Replace('Source role mergeBase root:', 'mergeBase root =').
+            Replace('Source role baseTip root:', 'baseTip root =')
+        $semanticPrompt.trajectory.events[$indexes[0]].data.arguments.prompt = $prompt
+    }
+    Invoke-Control transport-semantic-prompt-format ready-v2-transport $semanticPrompt $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $structuredPrompt = Clone-Object $transport
+    foreach ($worker in @(
+        [pscustomobject]@{ CallId = 'worker'; Format = 'json' },
+        [pscustomobject]@{ CallId = 'worker-blazor'; Format = 'markdown' }
+    )) {
+        $indexes = Get-ControlEventIndexes `
+            -ControlInput $structuredPrompt `
+            -ToolCallId $worker.CallId
+        $prompt = $structuredPrompt.trajectory.events[$indexes[0]].data.arguments.prompt
+        $identityLines = @(
+            "Frozen PR: $($semanticManifest.target.pr)"
+            "Frozen head: $($semanticManifest.target.head)"
+            "Frozen merge base: $($semanticManifest.target.mergeBase)"
+            "Frozen base tip: $($semanticManifest.target.baseTip)"
+        ) -join "`n"
+        $sourceLines = @($semanticManifest.guides[0].assignment.sourceRoles | ForEach-Object {
+            "Source role $_ root: $($semanticManifest.sources.$_.root)"
+        }) -join "`n"
+        if ($worker.Format -eq 'json') {
+            $identityReplacement = (
+                [ordered]@{
+                    pr = $semanticManifest.target.pr
+                    head = $semanticManifest.target.head
+                    mergeBase = $semanticManifest.target.mergeBase
+                    baseTip = $semanticManifest.target.baseTip
+                } | ConvertTo-Json -Compress
+            )
+            $sourceReplacement = (
+                [ordered]@{
+                    head = $semanticManifest.sources.head.root
+                    mergeBase = $semanticManifest.sources.mergeBase.root
+                    baseTip = $semanticManifest.sources.baseTip.root
+                } | ConvertTo-Json -Compress
+            )
+        } else {
+            $identityReplacement = @(
+                "- **PR:** $($semanticManifest.target.pr)"
+                "- **Head:** ``$($semanticManifest.target.head)``"
+                "- **Merge base:** ``$($semanticManifest.target.mergeBase)``"
+                "- **Base tip:** ``$($semanticManifest.target.baseTip)``"
+            ) -join "`n"
+            $sourceReplacement = @(
+                "- head: $($semanticManifest.sources.head.root)"
+                "- mergeBase: $($semanticManifest.sources.mergeBase.root)"
+                "- baseTip: $($semanticManifest.sources.baseTip.root)"
+            ) -join "`n"
+        }
+        $structuredPrompt.trajectory.events[$indexes[0]].data.arguments.prompt =
+            $prompt.Replace($identityLines, $identityReplacement).
+                Replace($sourceLines, $sourceReplacement)
+    }
+    Invoke-Control transport-structured-prompt-format ready-v2-transport $structuredPrompt $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $unrelatedProhibitionPrompt = Clone-Object $transport
+    foreach ($worker in @('worker', 'worker-blazor')) {
+        $indexes = Get-ControlEventIndexes `
+            -ControlInput $unrelatedProhibitionPrompt `
+            -ToolCallId $worker
+        $unrelatedProhibitionPrompt.trajectory.events[$indexes[0]].data.arguments.prompt =
+            $unrelatedProhibitionPrompt.trajectory.events[$indexes[0]].data.arguments.prompt.
+                Replace(
+                    "Frozen PR: $($semanticManifest.target.pr)",
+                    "PR: #$($semanticManifest.target.pr); do not publish feedback."
+                ).
+                Replace(
+                    "Frozen head: $($semanticManifest.target.head)",
+                    "Frozen head: $($semanticManifest.target.head). Do not execute target code."
+                )
+    }
+    Invoke-Control transport-unrelated-prohibition-format ready-v2-transport $unrelatedProhibitionPrompt $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $nestedAssignmentPrompt = Clone-Object $transport
+    foreach ($worker in @(
+        [pscustomobject]@{ CallId = 'worker'; GuideIndex = 0 },
+        [pscustomobject]@{ CallId = 'worker-blazor'; GuideIndex = 1 }
+    )) {
+        $indexes = Get-ControlEventIndexes `
+            -ControlInput $nestedAssignmentPrompt `
+            -ToolCallId $worker.CallId
+        $assignment = $semanticManifest.guides[$worker.GuideIndex].assignment |
+            ConvertTo-Json -Compress -Depth 20
+        $nestedAssignmentPrompt.trajectory.events[$indexes[0]].data.arguments.prompt =
+            $nestedAssignmentPrompt.trajectory.events[$indexes[0]].data.arguments.prompt.Replace(
+                $assignment,
+                "{`"assignment`":$assignment}"
+            )
+    }
+    Invoke-Control transport-nested-assignment-format ready-v2-transport $nestedAssignmentPrompt $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $missingRootSynthesis = Clone-Object $transport
+    $missingRootSynthesis.trajectory.events = @(
+        $missingRootSynthesis.trajectory.events[0..(
+            $missingRootSynthesis.trajectory.events.Count - 2
+        )]
+    )
+    Invoke-Control transport-missing-root-synthesis ready-v2-transport $missingRootSynthesis $false 'root synthesis matching trajectory output' '.eval-grader/inventory.json'
+
+    $mismatchedRootSynthesis = Clone-Object $transport
+    $mismatchedRootSynthesis.trajectory.events[-1].data.content = 'STATUS: FINDINGS'
+    Invoke-Control transport-mismatched-root-synthesis ready-v2-transport $mismatchedRootSynthesis $false 'root synthesis matching trajectory output' '.eval-grader/inventory.json'
 
     $rootSkill = Clone-Object $transport
     $rootSkill.trajectory.events = @(
@@ -500,6 +771,105 @@ try {
         } $true 'Skill loaded.'
     ) + @($rootSkill.trajectory.events)
     Invoke-Control transport-root-skill ready-v2-transport $rootSkill $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $wrongRootSkill = Clone-Object $rootSkill
+    $wrongRootSkillIndexes = Get-ControlEventIndexes `
+        -ControlInput $wrongRootSkill `
+        -ToolCallId 'root-skill'
+    $wrongRootSkill.trajectory.events[$wrongRootSkillIndexes[0]].data.arguments.skill =
+        'other-skill'
+    Invoke-Control transport-root-wrong-skill ready-v2-transport $wrongRootSkill $false 'root skill load' '.eval-grader/inventory.json'
+
+    $repeatedRootSkill = Clone-Object $rootSkill
+    $rootSynthesis = $repeatedRootSkill.trajectory.events[-1]
+    $repeatedRootSkill.trajectory.events = @(
+        $repeatedRootSkill.trajectory.events[0..(
+            $repeatedRootSkill.trajectory.events.Count - 2
+        )]
+        New-Call skill repeated-root-skill @{
+            skill = 'review-pull-request'
+        } $true 'Skill loaded again.'
+        $rootSynthesis
+    )
+    Invoke-Control transport-root-repeated-skill ready-v2-transport $repeatedRootSkill $false 'root skill load' '.eval-grader/inventory.json'
+
+    $rootLiveFetch = Clone-Object $transport
+    $rootSynthesis = $rootLiveFetch.trajectory.events[-1]
+    $rootLiveFetch.trajectory.events = @(
+        $rootLiveFetch.trajectory.events[0..(
+            $rootLiveFetch.trajectory.events.Count - 2
+        )]
+        New-Call web_fetch root-live-fetch @{
+            url = 'https://example.invalid'
+        } $true 'Fetched.'
+        $rootSynthesis
+    )
+    Invoke-Control transport-root-live-fetch ready-v2-transport $rootLiveFetch $false "unsupported root tool 'web_fetch'" '.eval-grader/inventory.json'
+
+    $rootMutation = Clone-Object $transport
+    $rootSynthesis = $rootMutation.trajectory.events[-1]
+    $rootMutation.trajectory.events = @(
+        $rootMutation.trajectory.events[0..(
+            $rootMutation.trajectory.events.Count - 2
+        )]
+        New-Call apply_patch root-mutation @{
+            patch = 'synthetic'
+        } $true 'Applied.'
+        $rootSynthesis
+    )
+    Invoke-Control transport-root-mutation ready-v2-transport $rootMutation $false "unsupported root tool 'apply_patch'" '.eval-grader/inventory.json'
+
+    $rootOutsideRead = Clone-Object $transport
+    $rootSynthesis = $rootOutsideRead.trajectory.events[-1]
+    $rootOutsideRead.trajectory.events = @(
+        $rootOutsideRead.trajectory.events[0..(
+            $rootOutsideRead.trajectory.events.Count - 2
+        )]
+        New-Call view root-outside-read @{
+            path = 'src/Untrusted.cs'
+            view_range = @(1, -1)
+        } $true 'L1:untrusted'
+        $rootSynthesis
+    )
+    Invoke-Control transport-root-outside-read ready-v2-transport $rootOutsideRead $false 'outside its exact bundle inputs' '.eval-grader/inventory.json'
+
+    $rootOptionalRead = Clone-Object $transport
+    $transportInventory = Get-Content (
+        Join-Path $testRoot '.eval-grader/inventory.json'
+    ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100
+    $optionalCoordinatorInput = $transportInventory.files |
+        Where-Object {
+            -not $_.coordinatorRequired -and
+            'coordinator' -in @($_.readRoles)
+        } |
+        Select-Object -First 1
+    $rootSynthesis = $rootOptionalRead.trajectory.events[-1]
+    $rootOptionalRead.trajectory.events = @(
+        $rootOptionalRead.trajectory.events[0..(
+            $rootOptionalRead.trajectory.events.Count - 2
+        )]
+        New-Call view root-optional-read @{
+            path = ".review-bundle/$([string]$optionalCoordinatorInput.path)"
+            view_range = @(1, 1)
+        } $true 'L1:optional frozen input'
+        $rootSynthesis
+    )
+    Invoke-Control transport-root-optional-read ready-v2-transport $rootOptionalRead $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $rootBroadSearch = Clone-Object $transport
+    $rootSynthesis = $rootBroadSearch.trajectory.events[-1]
+    $rootBroadSearch.trajectory.events = @(
+        $rootBroadSearch.trajectory.events[0..(
+            $rootBroadSearch.trajectory.events.Count - 2
+        )]
+        New-Call rg root-broad-search @{
+            pattern = 'Value'
+            paths = '.review-bundle'
+            output_mode = 'content'
+        } $true '.review-bundle/diff.patch'
+        $rootSynthesis
+    )
+    Invoke-Control transport-root-broad-search ready-v2-transport $rootBroadSearch $false 'broad root search' '.eval-grader/inventory.json'
 
     $skillTextOnly = Clone-Object $transport
     $initialSkillIndexes = @(
@@ -521,7 +891,28 @@ try {
                 'Do not re-invoke review-pull-request. Return PATH: per-guide-worker.'
             )
     }
-    Invoke-Control transport-worker-skill-text-only ready-v2-transport $skillTextOnly $true 'valid role separation' '.eval-grader/inventory.json'
+    Invoke-Control transport-worker-skill-text-only ready-v2-transport $skillTextOnly $false 'did not invoke review-pull-request exactly once' '.eval-grader/inventory.json'
+
+    $workerWithoutCalls = Clone-Object $transport
+    $workerWithoutCallIndexes = @(
+        Get-ControlEventIndexes -ControlInput $workerWithoutCalls -ToolCallId 'worker-blazor-skill'
+        Get-ControlEventIndexes -ControlInput $workerWithoutCalls -ToolCallId 'worker-blazor-guide'
+    )
+    $workerWithoutCalls.trajectory.events = @(
+        for ($index = 0; $index -lt $workerWithoutCalls.trajectory.events.Count; $index++) {
+            if ($index -notin $workerWithoutCallIndexes) {
+                $workerWithoutCalls.trajectory.events[$index]
+            }
+        }
+    )
+    Invoke-Control transport-worker-without-tool-calls ready-v2-transport $workerWithoutCalls $false 'did not invoke review-pull-request exactly once' '.eval-grader/inventory.json'
+
+    $failedWorkerSkill = Clone-Object $transport
+    $failedWorkerSkillIndexes = Get-ControlEventIndexes `
+        -ControlInput $failedWorkerSkill `
+        -ToolCallId 'worker-blazor-skill'
+    $failedWorkerSkill.trajectory.events[$failedWorkerSkillIndexes[1]].data.success = $false
+    Invoke-Control transport-worker-failed-skill ready-v2-transport $failedWorkerSkill $false 'did not successfully invoke review-pull-request' '.eval-grader/inventory.json'
 
     $repeatedSkill = Clone-Object $transport
     $repeatedSkill.trajectory.events += New-Call skill worker-cross-skill-repeat @{
@@ -550,6 +941,20 @@ try {
     $wrongSkillCaseIndexes = Get-ControlEventIndexes -ControlInput $wrongSkillCase -ToolCallId 'worker-cross-skill'
     $wrongSkillCase.trajectory.events[$wrongSkillCaseIndexes[0]].data.toolName = 'Skill'
     Invoke-Control transport-worker-wrong-skill-case ready-v2-transport $wrongSkillCase $false 'unsupported skill' '.eval-grader/inventory.json'
+
+    $workerUnsupportedTool = Clone-Object $transport
+    $rootSynthesis = $workerUnsupportedTool.trajectory.events[-1]
+    $workerUnsupportedTool.trajectory.events = @(
+        $workerUnsupportedTool.trajectory.events[0..(
+            $workerUnsupportedTool.trajectory.events.Count - 2
+        )]
+        New-Call lsp worker-lsp @{
+            operation = 'workspaceSymbol'
+            query = 'Value'
+        } $true 'symbol result' '22222222-2222-2222-2222-222222222222'
+        $rootSynthesis
+    )
+    Invoke-Control transport-worker-unsupported-tool ready-v2-transport $workerUnsupportedTool $false 'unsupported worker tool' '.eval-grader/inventory.json'
 
     foreach ($coordinatorBehavior in @(
         @{
@@ -657,23 +1062,138 @@ try {
     Invoke-Control transport-worker-intermediate-message ready-v2-transport $workerIntermediateMessage $true 'valid role separation' '.eval-grader/inventory.json'
 
     $workerRunningReport = Clone-Object $transport
-    $workerRunningReport.trajectory.events += New-Call read_agent worker-cross-running-report @{
-        agent_id = '22222222-2222-2222-2222-222222222222'
-        wait = $true
-    } $true 'Agent is still running, status: running, total_turns: 0.'
+    $rootSynthesis = $workerRunningReport.trajectory.events[-1]
+    $workerRunningReport.trajectory.events = @(
+        $workerRunningReport.trajectory.events[0..(
+            $workerRunningReport.trajectory.events.Count - 2
+        )]
+        New-Call read_agent worker-cross-running-report @{
+            agent_id = '22222222-2222-2222-2222-222222222222'
+            wait = $true
+        } $true 'Agent is still running, status: running, total_turns: 0.'
+        $rootSynthesis
+    )
     Invoke-Control transport-worker-running-report ready-v2-transport $workerRunningReport $true 'valid role separation' '.eval-grader/inventory.json'
 
     $workerFollowUpWithoutGuide = Clone-Object $transport
-    $workerFollowUpWithoutGuide.trajectory.events += New-Call write_agent worker-cross-follow-up @{
+    $followUpEvents = @(
+        New-Call write_agent worker-cross-follow-up @{
         agent_id = '22222222-2222-2222-2222-222222222222'
         message = 'Clarify the candidate against the frozen base contract.'
-    } $true 'Message delivered.'
-    $workerFollowUpWithoutGuide.trajectory.events += New-Call read_agent worker-cross-follow-up-report @{
+        } $true 'Message delivered.'
+        New-Call read_agent worker-cross-follow-up-report @{
         agent_id = '22222222-2222-2222-2222-222222222222'
         wait = $true
         since_turn = 1
-    } $true 'Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: per-guide-worker. Clarification complete; the candidate remains unresolved.'
+        } $true 'Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: per-guide-worker. Clarification complete; the candidate remains unresolved.'
+    )
+    $rootSynthesis = $workerFollowUpWithoutGuide.trajectory.events[-1]
+    $workerFollowUpWithoutGuide.trajectory.events = @(
+        $workerFollowUpWithoutGuide.trajectory.events[0..(
+            $workerFollowUpWithoutGuide.trajectory.events.Count - 2
+        )]
+        $followUpEvents
+        $rootSynthesis
+    )
     Invoke-Control transport-worker-follow-up-without-guide ready-v2-transport $workerFollowUpWithoutGuide $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $workerMarkdownFollowUp = Clone-Object $workerFollowUpWithoutGuide
+    $markdownFollowUpReport = Get-ControlEventIndexes `
+        -ControlInput $workerMarkdownFollowUp `
+        -ToolCallId 'worker-cross-follow-up-report'
+    $workerMarkdownFollowUp.trajectory.events[$markdownFollowUpReport[1]].data.result =
+        $workerMarkdownFollowUp.trajectory.events[$markdownFollowUpReport[1]].data.result.Replace(
+            'PATH: per-guide-worker',
+            '**PATH:** per-guide-worker'
+        )
+    Invoke-Control transport-worker-markdown-follow-up ready-v2-transport $workerMarkdownFollowUp $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $workerUnchangedFollowUp = Clone-Object $workerFollowUpWithoutGuide
+    $initialReport = Get-ControlEventIndexes `
+        -ControlInput $workerUnchangedFollowUp `
+        -ToolCallId 'worker-cross-report'
+    $followUpReport = Get-ControlEventIndexes `
+        -ControlInput $workerUnchangedFollowUp `
+        -ToolCallId 'worker-cross-follow-up-report'
+    $workerUnchangedFollowUp.trajectory.events[$followUpReport[1]].data.result =
+        $workerUnchangedFollowUp.trajectory.events[$initialReport[1]].data.result
+    Invoke-Control transport-worker-unchanged-follow-up ready-v2-transport $workerUnchangedFollowUp $false 'no new completed follow-up turn' '.eval-grader/inventory.json'
+
+    $workerSharedFollowUp = Clone-Object $transport
+    $rootSynthesis = $workerSharedFollowUp.trajectory.events[-1]
+    $workerSharedFollowUp.trajectory.events = @(
+        $workerSharedFollowUp.trajectory.events[0..(
+            $workerSharedFollowUp.trajectory.events.Count - 2
+        )]
+        New-Call write_agent worker-cross-first-clarification @{
+            agent_id = '22222222-2222-2222-2222-222222222222'
+            message = 'Clarify the candidate against the frozen base contract.'
+        } $true 'Message delivered.'
+        New-Call write_agent worker-cross-second-clarification @{
+            agent_id = '22222222-2222-2222-2222-222222222222'
+            message = 'Clarify the issue against the frozen base contract.'
+        } $true 'Message delivered.'
+        New-Call read_agent worker-cross-shared-follow-up @{
+            agent_id = '22222222-2222-2222-2222-222222222222'
+            wait = $true
+            since_turn = 1
+        } $true 'Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: per-guide-worker. Clarification complete; the candidate remains unresolved.'
+        $rootSynthesis
+    )
+    Invoke-Control transport-worker-shared-follow-up ready-v2-transport $workerSharedFollowUp $false 'no new completed follow-up turn' '.eval-grader/inventory.json'
+
+    $crossWorkerClarifications = Clone-Object $transport
+    $rootSynthesis = $crossWorkerClarifications.trajectory.events[-1]
+    $crossWorkerClarifications.trajectory.events = @(
+        $crossWorkerClarifications.trajectory.events[0..(
+            $crossWorkerClarifications.trajectory.events.Count - 2
+        )]
+        New-Call write_agent worker-cross-clarification @{
+            agent_id = '22222222-2222-2222-2222-222222222222'
+            message = 'Clarify the candidate against the frozen base contract.'
+        } $true 'Message delivered.'
+        New-Call write_agent worker-blazor-clarification @{
+            agent_id = '11111111-1111-1111-1111-111111111111'
+            message = 'Clarify the issue against the frozen base contract.'
+        } $true 'Message delivered.'
+        New-Call read_agent worker-cross-clarification-report @{
+            agent_id = '22222222-2222-2222-2222-222222222222'
+            wait = $true
+            since_turn = 1
+        } $true 'Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: per-guide-worker. Clarification complete for the assigned cross-cutting guide.'
+        New-Call read_agent worker-blazor-clarification-report @{
+            agent_id = '11111111-1111-1111-1111-111111111111'
+            wait = $true
+            since_turn = 1
+        } $true 'Agent is idle, status: idle, total_turns: 2. Turn 1 follow-up: PATH: per-guide-worker. Clarification complete for the assigned Blazor guide.'
+        $rootSynthesis
+    )
+    Invoke-Control transport-cross-worker-clarifications ready-v2-transport $crossWorkerClarifications $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $workerClarificationWithoutFollowUp = Clone-Object $transport
+    $rootSynthesis = $workerClarificationWithoutFollowUp.trajectory.events[-1]
+    $workerClarificationWithoutFollowUp.trajectory.events = @(
+        $workerClarificationWithoutFollowUp.trajectory.events[0..(
+            $workerClarificationWithoutFollowUp.trajectory.events.Count - 2
+        )]
+        New-Call write_agent worker-cross-uncollected-follow-up @{
+            agent_id = '22222222-2222-2222-2222-222222222222'
+            message = 'Clarify the candidate against the frozen base contract.'
+        } $true 'Message delivered.'
+        $rootSynthesis
+    )
+    Invoke-Control transport-worker-clarification-without-follow-up ready-v2-transport $workerClarificationWithoutFollowUp $false 'no new completed follow-up turn' '.eval-grader/inventory.json'
+
+    $workerLateFollowUpWithoutGuide = Clone-Object $transport
+    $workerLateFollowUpWithoutGuide.trajectory.events += $followUpEvents
+    Invoke-Control transport-worker-late-follow-up-without-guide ready-v2-transport $workerLateFollowUpWithoutGuide $false 'report collection completed after root synthesis' '.eval-grader/inventory.json'
+
+    $workerWriteAfterSynthesis = Clone-Object $transport
+    $workerWriteAfterSynthesis.trajectory.events += New-Call write_agent worker-cross-write-after-synthesis @{
+        agent_id = '22222222-2222-2222-2222-222222222222'
+        message = 'Clarify the candidate against the frozen base contract.'
+    } $true 'Message delivered.'
+    Invoke-Control transport-worker-write-after-synthesis ready-v2-transport $workerWriteAfterSynthesis $false 'lifecycle call occurred after root synthesis' '.eval-grader/inventory.json'
 
     $workerFollowUpCoordinatorOutput = Clone-Object $workerFollowUpWithoutGuide
     $followUpReport = Get-ControlEventIndexes -ControlInput $workerFollowUpCoordinatorOutput -ToolCallId 'worker-cross-follow-up-report'
@@ -691,6 +1211,15 @@ try {
             )
     }
     Invoke-Control transport-worker-prose-guide ready-v2-transport $workerProseGuide $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $workerMissingPath = Clone-Object $transport
+    $workerReport = Get-ControlEventIndexes -ControlInput $workerMissingPath -ToolCallId 'worker-cross-report'
+    $workerMissingPath.trajectory.events[$workerReport[1]].data.result =
+        $workerMissingPath.trajectory.events[$workerReport[1]].data.result.Replace(
+            'PATH: per-guide-worker',
+            'Worker analysis complete'
+        )
+    Invoke-Control transport-worker-missing-path ready-v2-transport $workerMissingPath $false 'did not report PATH: per-guide-worker' '.eval-grader/inventory.json'
 
     $workerReadAgentCombinedOutput = Clone-Object $transport
     $workerReport = Get-ControlEventIndexes -ControlInput $workerReadAgentCombinedOutput -ToolCallId 'worker-cross-report'
@@ -721,13 +1250,13 @@ try {
         path = '.review-bundle/guidance/docs/BlazorComponentsGuidance.md.source'
         view_range = @(1, -1)
     } $true 'L1:# Blazor components guidance' '22222222-2222-2222-2222-222222222222'
-    Invoke-Control transport-worker-cross-guide-read ready-v2-transport $workerCrossGuideRead $false 'read unassigned guide' '.eval-grader/inventory.json'
+    Invoke-Control transport-worker-cross-guide-read ready-v2-transport $workerCrossGuideRead $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerCrossGuideDirectoryRead = Clone-Object $transport
     $workerCrossGuideDirectoryRead.trajectory.events += New-Call view worker-cross-guide-directory @{
         path = '.review-bundle/guidance/docs'
     } $true 'docs/CrossCuttingGuidance.md.source docs/BlazorComponentsGuidance.md.source' '22222222-2222-2222-2222-222222222222'
-    Invoke-Control transport-worker-cross-guide-directory ready-v2-transport $workerCrossGuideDirectoryRead $false 'read unassigned guide' '.eval-grader/inventory.json'
+    Invoke-Control transport-worker-cross-guide-directory ready-v2-transport $workerCrossGuideDirectoryRead $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerCrossGuideSearch = Clone-Object $transport
     $workerCrossGuideSearch.trajectory.events += New-Call rg worker-cross-guide-search @{
@@ -735,14 +1264,192 @@ try {
         paths = '.review-bundle/guidance'
         output_mode = 'content'
     } $true 'match' '22222222-2222-2222-2222-222222222222'
-    Invoke-Control transport-worker-cross-guide-search ready-v2-transport $workerCrossGuideSearch $false 'rg scope included unassigned guide' '.eval-grader/inventory.json'
+    Invoke-Control transport-worker-cross-guide-search ready-v2-transport $workerCrossGuideSearch $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerCrossGuideGlob = Clone-Object $transport
     $workerCrossGuideGlob.trajectory.events += New-Call glob worker-cross-guide-glob @{
         pattern = '*.source'
         paths = '.review-bundle/guidance/docs'
     } $true 'docs/CrossCuttingGuidance.md.source docs/BlazorComponentsGuidance.md.source' '22222222-2222-2222-2222-222222222222'
-    Invoke-Control transport-worker-cross-guide-glob ready-v2-transport $workerCrossGuideGlob $false 'glob scope included unassigned guide' '.eval-grader/inventory.json'
+    Invoke-Control transport-worker-cross-guide-glob ready-v2-transport $workerCrossGuideGlob $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerDefaultWildcardGlob = Clone-Object $transport
+    $workerDefaultWildcardGlob.trajectory.events += New-Call glob worker-default-wildcard-glob @{
+        pattern = '**/required/**/*.source'
+    } $true 'required/coordinator/exclusions/0000-scope.source' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-default-wildcard-glob ready-v2-transport $workerDefaultWildcardGlob $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerSiblingPatternGlob = Clone-Object $transport
+    $workerSiblingPatternGlob.trajectory.events += New-Call glob worker-sibling-pattern-glob @{
+        pattern = '0000/policies/0000.source*'
+        paths = '.review-bundle/required/guides'
+    } $true '0000/policies/0000.source' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-sibling-pattern-glob ready-v2-transport $workerSiblingPatternGlob $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerSingularSearchPath = Clone-Object $transport
+    $workerSingularSearchPath.trajectory.events += New-Call rg worker-singular-search-path @{
+        pattern = 'Components'
+        path = '.review-bundle/required/guides/0001/policies/0000.source'
+        output_mode = 'content'
+    } $true 'Components policy' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-singular-search-path ready-v2-transport $workerSingularSearchPath $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerOutsideBundle = Clone-Object $transport
+    $workerOutsideBundle.trajectory.events += New-Call view worker-outside-bundle @{
+        path = '.eval-grader/inventory.json'
+        view_range = @(1, -1)
+    } $true 'trusted inventory' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-outside-bundle ready-v2-transport $workerOutsideBundle $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerAssignedPolicy = Clone-Object $transport
+    $workerAssignedPolicy.trajectory.events += New-Call view worker-assigned-policy @{
+        path = '.review-bundle/required/guides/0000/policies/0000.source'
+        view_range = @(1, -1)
+    } $true 'L1:### Required clause' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-assigned-policy ready-v2-transport $workerAssignedPolicy $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $workerAssignedExclusion = Clone-Object $transport
+    $workerAssignedExclusion.trajectory.events += New-Call view worker-assigned-exclusion @{
+        path = '.review-bundle/required/guides/0000/exclusions/0000-scope.source'
+        view_range = @(1, -1)
+    } $true 'L1:Running target code is excluded.' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-assigned-exclusion ready-v2-transport $workerAssignedExclusion $true 'valid role separation' '.eval-grader/inventory.json'
+
+    $workerAssignedSourceSearch = Clone-Object $transport
+    $workerAssignedSourceSearch.trajectory.events += New-Call rg worker-assigned-source-search @{
+        pattern = 'Value'
+        paths = '.review-bundle/source/5789cbca8244dcff42ca0722f977b8a0e981b8b0'
+        output_mode = 'content'
+    } $true 'src/Value.cs.source:1:class Value' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-assigned-source-search ready-v2-transport $workerAssignedSourceSearch $true 'valid role separation' '.eval-grader/inventory.json'
+
+    foreach ($enumeration in @(
+        [pscustomobject]@{
+            Name = 'assigned-guide'
+            Path = '.review-bundle/required/guides/0000'
+        },
+        [pscustomobject]@{
+            Name = 'assigned-policy-parent'
+            Path = '.review-bundle/required/guides/0000/policies'
+        },
+        [pscustomobject]@{
+            Name = 'all-guides'
+            Path = '.review-bundle/required/guides'
+        }
+    )) {
+        $workerParentEnumeration = Clone-Object $transport
+        $workerParentEnumeration.trajectory.events += New-Call view worker-parent-enumeration @{
+            path = $enumeration.Path
+        } $true 'directory entries' '22222222-2222-2222-2222-222222222222'
+        Invoke-Control `
+            "transport-worker-parent-enumeration-$($enumeration.Name)" `
+            ready-v2-transport `
+            $workerParentEnumeration `
+            $false `
+            'unassigned bundle path' `
+            '.eval-grader/inventory.json'
+    }
+
+    $workerSiblingPolicy = Clone-Object $transport
+    $workerSiblingPolicy.trajectory.events += New-Call view worker-sibling-policy @{
+        path = '.review-bundle/required/guides/0001/policies/0000.source'
+        view_range = @(1, -1)
+    } $true 'L1:### Components clause' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-sibling-policy ready-v2-transport $workerSiblingPolicy $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerCoordinatorExclusion = Clone-Object $transport
+    $workerCoordinatorExclusion.trajectory.events += New-Call view worker-coordinator-exclusion @{
+        path = '.review-bundle/required/coordinator/exclusions/0000-scope.source'
+        view_range = @(1, -1)
+    } $true 'L1:Running target code is excluded.' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-coordinator-exclusion ready-v2-transport $workerCoordinatorExclusion $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerTraversal = Clone-Object $transport
+    $workerTraversal.trajectory.events += New-Call view worker-traversal @{
+        path = '.review-bundle/required/guides/0000/policies/../../../coordinator/exclusions/0000-scope.source'
+        view_range = @(1, -1)
+    } $true 'L1:Running target code is excluded.' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-traversal ready-v2-transport $workerTraversal $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerVariableShell = Clone-Object $transport
+    $bundlePath = Join-Path $testRoot '.review-bundle'
+    $workerVariableShell.trajectory.events += New-Call powershell worker-variable-shell @{
+        command = "`$b='$bundlePath'; Get-ChildItem `"`$b\\required\\guides`""
+    } $true ([pscustomobject]@{ content = 'directory entries'; exitCode = 0 }) '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-variable-shell ready-v2-transport $workerVariableShell $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerBracedVariableShell = Clone-Object $transport
+    $workerBracedVariableShell.trajectory.events += New-Call powershell worker-braced-variable-shell @{
+        command = '$sub="../../required/guides/0001/policies/0000.source"; Get-Content ".review-bundle/source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/${sub}"'
+    } $true ([pscustomobject]@{ content = 'sibling policy'; exitCode = 0 }) '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-braced-variable-shell ready-v2-transport $workerBracedVariableShell $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerPrefixVariableShell = Clone-Object $transport
+    $workerPrefixVariableShell.trajectory.events += New-Call powershell worker-prefix-variable-shell @{
+        command = '$s="src"; $sub="../../required/guides/0001/policies/0000.source"; Get-Content ".review-bundle/source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/$sub"'
+    } $true ([pscustomobject]@{ content = 'sibling policy'; exitCode = 0 }) '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-prefix-variable-shell ready-v2-transport $workerPrefixVariableShell $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerMultiPathShell = Clone-Object $transport
+    $workerMultiPathShell.trajectory.events += New-Call powershell worker-multi-path-shell @{
+        command = 'Get-Content .\.review-bundle\source\5789cbca8244dcff42ca0722f977b8a0e981b8b0\src\Value.cs.source .\.review-bundle\required\guides\0001\policies\0000.source'
+    } $true ([pscustomobject]@{ content = 'combined content'; exitCode = 0 }) '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-multi-path-shell ready-v2-transport $workerMultiPathShell $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerRelativeShell = Clone-Object $transport
+    $workerRelativeShell.trajectory.events += New-Call powershell worker-relative-shell @{
+        command = 'Get-Content .\.review-bundle\required\guides\0001\policies\0000.source'
+    } $true ([pscustomobject]@{ content = 'sibling policy'; exitCode = 0 }) '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-relative-shell ready-v2-transport $workerRelativeShell $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerRedirectedOutput = Clone-Object $transport
+    $redirectedPath = Join-Path $testRoot 'worker-broad-output.txt'
+    $workerRedirectedOutput.trajectory.events += New-Call powershell worker-redirected-shell @{
+        command = "`$b='$bundlePath'; Get-ChildItem `"`$b\\required\\guides`" | Get-Content > '$redirectedPath'"
+    } $true ([pscustomobject]@{
+        content = "Output too large to read at once. Saved to: $redirectedPath"
+        exitCode = 0
+    }) '22222222-2222-2222-2222-222222222222'
+    $workerRedirectedOutput.trajectory.events += New-Call view worker-redirected-read @{
+        path = $redirectedPath
+        forceReadLargeFiles = $true
+    } $true 'contaminated output' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-redirected-output ready-v2-transport $workerRedirectedOutput $false 'intermediate output derived from' '.eval-grader/inventory.json'
+
+    $workerDirectRedirect = Clone-Object $transport
+    $directRedirectPath = Join-Path $testRoot 'worker-direct-output.txt'
+    $workerDirectRedirect.trajectory.events += New-Call powershell worker-direct-redirect-shell @{
+        command = "Get-ChildItem '$bundlePath\\required\\guides' | Get-Content > '$directRedirectPath'"
+    } $true ([pscustomobject]@{
+        content = 'Command completed.'
+        exitCode = 0
+    }) '22222222-2222-2222-2222-222222222222'
+    $workerDirectRedirect.trajectory.events += New-Call view worker-direct-redirect-read @{
+        path = $directRedirectPath
+        forceReadLargeFiles = $true
+    } $true 'contaminated output' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-direct-redirect ready-v2-transport $workerDirectRedirect $false 'intermediate output derived from' '.eval-grader/inventory.json'
+
+    $workerSearchContaminatedOutput = Clone-Object $transport
+    $searchOutputPath = Join-Path $testRoot 'worker-search-output.txt'
+    $workerSearchContaminatedOutput.trajectory.events += New-Call powershell worker-search-output-shell @{
+        command = "Get-ChildItem '$bundlePath\\required\\guides'"
+    } $true ([pscustomobject]@{
+        content = "Output too large to read at once. Saved to: $searchOutputPath"
+        exitCode = 0
+    }) '22222222-2222-2222-2222-222222222222'
+    $workerSearchContaminatedOutput.trajectory.events += New-Call rg worker-search-output-read @{
+        pattern = 'policy'
+        paths = $searchOutputPath
+        output_mode = 'content'
+    } $true 'policy' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-search-contaminated-output ready-v2-transport $workerSearchContaminatedOutput $false 'intermediate output derived from' '.eval-grader/inventory.json'
+
+    $workerExactShell = Clone-Object $transport
+    $workerExactShell.trajectory.events += New-Call powershell worker-exact-shell @{
+        command = 'Get-Content .\.review-bundle\required\guides\0000\policies\0000.source'
+    } $true ([pscustomobject]@{ content = 'assigned policy'; exitCode = 0 }) '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-exact-shell ready-v2-transport $workerExactShell $false 'used a shell tool' '.eval-grader/inventory.json'
 
     $missingCompletedWorkerReport = Clone-Object $transport
     $missingReportIndexes = Get-ControlEventIndexes -ControlInput $missingCompletedWorkerReport -ToolCallId 'worker-cross-report'
@@ -785,10 +1492,10 @@ try {
     $workerCall = Get-ControlEventIndexes -ControlInput $missingWorkerInput -ToolCallId 'worker'
     $missingWorkerInput.trajectory.events[$workerCall[0]].data.arguments.prompt =
         $missingWorkerInput.trajectory.events[$workerCall[0]].data.arguments.prompt.Replace(
-            'required/policies/0000.source',
-            'required/policies/missing.source'
+            'required/guides/0000/policies/0000.source',
+            'required/guides/0000/policies/missing.source'
         )
-    Invoke-Control transport-missing-worker-input ready-v2-transport $missingWorkerInput $false 'omitted applicable policy' '.eval-grader/inventory.json'
+    Invoke-Control transport-missing-worker-input ready-v2-transport $missingWorkerInput $false 'did not preserve the verbatim assignment' '.eval-grader/inventory.json'
 
     foreach ($argument in @('agent_type', 'model', 'mode')) {
         $wrongWorkerConfig = Clone-Object $transport
@@ -825,10 +1532,10 @@ try {
     $secondWorker = Get-ControlEventIndexes -ControlInput $missingSecondPolicy -ToolCallId 'worker-blazor'
     $missingSecondPolicy.trajectory.events[$secondWorker[0]].data.arguments.prompt =
         $missingSecondPolicy.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
-            'required/policies/0001.source',
-            'required/policies/missing.source'
+            'required/guides/0001/policies/0000.source',
+            'required/guides/0001/policies/missing.source'
         )
-    Invoke-Control transport-missing-second-worker-policy ready-v2-transport $missingSecondPolicy $false 'omitted applicable policy' '.eval-grader/inventory.json'
+    Invoke-Control transport-missing-second-worker-policy ready-v2-transport $missingSecondPolicy $false 'did not preserve the verbatim assignment' '.eval-grader/inventory.json'
 
     foreach ($argument in @('agent_type', 'model', 'mode')) {
         $wrongSecondWorker = Clone-Object $transport
@@ -841,10 +1548,10 @@ try {
     $secondWorker = Get-ControlEventIndexes -ControlInput $missingSecondSharedInput -ToolCallId 'worker-blazor'
     $missingSecondSharedInput.trajectory.events[$secondWorker[0]].data.arguments.prompt =
         $missingSecondSharedInput.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
-            'Full diff: diff.patch',
-            'Full diff omitted.'
+        'diff.patch',
+        'missing.patch'
         )
-    Invoke-Control transport-missing-second-shared-input ready-v2-transport $missingSecondSharedInput $false 'omitted required worker input' '.eval-grader/inventory.json'
+    Invoke-Control transport-missing-second-shared-input ready-v2-transport $missingSecondSharedInput $false 'did not preserve the verbatim assignment' '.eval-grader/inventory.json'
 
         $transportManifest = Get-Content (
             Join-Path $testRoot '.review-bundle/manifest.json'
@@ -854,29 +1561,161 @@ try {
         $headSourceRoot = [string]$transportManifest.sources.head.root
         $prohibitedSourceRoot.trajectory.events[$firstWorker[0]].data.arguments.prompt =
             $prohibitedSourceRoot.trajectory.events[$firstWorker[0]].data.arguments.prompt.Replace(
-                "Head source root: $headSourceRoot",
+                "Source role head root: $headSourceRoot",
                 "Do not use source root: $headSourceRoot"
             )
-        Invoke-Control transport-prohibited-source-root ready-v2-transport $prohibitedSourceRoot $false 'omitted frozen source root' '.eval-grader/inventory.json'
+            Invoke-Control transport-prohibited-source-root ready-v2-transport $prohibitedSourceRoot $false 'omitted the exact frozen source role binding' '.eval-grader/inventory.json'
 
-        $transportFiles = @(Get-Content (
-            Join-Path $testRoot '.review-bundle/files.json'
-        ) -Raw -Encoding utf8 | ConvertFrom-Json -Depth 100)
-        $prohibitedChangedSource = Clone-Object $transport
-        $secondWorker = Get-ControlEventIndexes -ControlInput $prohibitedChangedSource -ToolCallId 'worker-blazor'
-        $changedFilename = [string]$transportFiles[0].filename
-        $prohibitedChangedSource.trajectory.events[$secondWorker[0]].data.arguments.prompt =
-            $prohibitedChangedSource.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
-                "Relevant source: $changedFilename",
-                "Ignore relevant source: $changedFilename"
+        $missingTargetIdentity = Clone-Object $transport
+        $secondWorker = Get-ControlEventIndexes -ControlInput $missingTargetIdentity -ToolCallId 'worker-blazor'
+        $missingTargetIdentity.trajectory.events[$secondWorker[0]].data.arguments.prompt =
+            $missingTargetIdentity.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
+                    "Frozen head: $($transportManifest.target.head)",
+                    'Frozen head: missing-head'
             )
-        Invoke-Control transport-prohibited-changed-source ready-v2-transport $prohibitedChangedSource $false 'omitted relevant changed source' '.eval-grader/inventory.json'
+            Invoke-Control transport-missing-target-identity ready-v2-transport $missingTargetIdentity $false 'omitted the exact frozen head binding' '.eval-grader/inventory.json'
+
+            $negatedTargetIdentity = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $negatedTargetIdentity -ToolCallId 'worker'
+            $negatedTargetIdentity.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $negatedTargetIdentity.trajectory.events[$firstWorker[0]].data.arguments.prompt.Replace(
+                    "Frozen head: $($transportManifest.target.head)",
+                    "Frozen head: do not use $($transportManifest.target.head)"
+                )
+            Invoke-Control transport-negated-target-identity ready-v2-transport $negatedTargetIdentity $false 'omitted the exact frozen head binding' '.eval-grader/inventory.json'
+
+            $simpleNegatedTargetIdentity = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $simpleNegatedTargetIdentity -ToolCallId 'worker'
+            $simpleNegatedTargetIdentity.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $simpleNegatedTargetIdentity.trajectory.events[$firstWorker[0]].data.arguments.prompt.Replace(
+                    "Frozen head: $($transportManifest.target.head)",
+                    "Frozen head is not $($transportManifest.target.head)"
+                )
+            Invoke-Control transport-simple-negated-target-identity ready-v2-transport $simpleNegatedTargetIdentity $false 'omitted the exact frozen head binding' '.eval-grader/inventory.json'
+
+            $sourceRootOnlyTargetIdentity = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $sourceRootOnlyTargetIdentity -ToolCallId 'worker'
+            $headSourceRoot = [string]$transportManifest.sources.head.root
+            $sourceRootOnlyTargetIdentity.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $sourceRootOnlyTargetIdentity.trajectory.events[$firstWorker[0]].data.arguments.prompt.
+                    Replace(
+                        "Frozen head: $($transportManifest.target.head)",
+                        'Frozen head identity omitted.'
+                    )
+            $sourceRootOnlyTargetIdentity.trajectory.events[$firstWorker[0]].data.arguments.prompt +=
+                "`nhead: $headSourceRoot"
+            Invoke-Control transport-source-root-not-target-identity ready-v2-transport $sourceRootOnlyTargetIdentity $false 'omitted the exact frozen head binding' '.eval-grader/inventory.json'
+
+            $swappedAssignmentMetadata = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $swappedAssignmentMetadata -ToolCallId 'worker'
+            $firstAssignment = $transportManifest.guides[0].assignment
+            $firstHash = [string]$firstAssignment.files[0].sha256
+            $secondHash = [string]$firstAssignment.files[1].sha256
+            $swapMarker = '__assignment_hash_swap__'
+            $swappedAssignmentMetadata.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $swappedAssignmentMetadata.trajectory.events[$firstWorker[0]].data.arguments.prompt.
+                    Replace($firstHash, $swapMarker).
+                    Replace($secondHash, $firstHash).
+                    Replace($swapMarker, $secondHash)
+            Invoke-Control transport-swapped-assignment-metadata ready-v2-transport $swappedAssignmentMetadata $false 'did not preserve the verbatim assignment' '.eval-grader/inventory.json'
+
+            $conflictingAssignmentMetadata = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $conflictingAssignmentMetadata -ToolCallId 'worker'
+            $conflictingAssignment = Clone-Object $transportManifest.guides[0].assignment
+            $conflictingAssignment.files[0].sha256 = '0' * 64
+            $conflictingAssignmentMetadata.trajectory.events[$firstWorker[0]].data.arguments.prompt +=
+                "`nConflicting assignment: " +
+                ($conflictingAssignment | ConvertTo-Json -Compress -Depth 20)
+            Invoke-Control transport-conflicting-assignment-metadata ready-v2-transport $conflictingAssignmentMetadata $false 'did not preserve the verbatim assignment' '.eval-grader/inventory.json'
+
+            $swappedSourceBindings = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $swappedSourceBindings -ToolCallId 'worker'
+            $headSourceRoot = [string]$transportManifest.sources.head.root
+            $mergeBaseSourceRoot = [string]$transportManifest.sources.mergeBase.root
+            $swapMarker = '__source_binding_swap__'
+            $swappedSourceBindings.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $swappedSourceBindings.trajectory.events[$firstWorker[0]].data.arguments.prompt.
+                    Replace("Source role head root: $headSourceRoot", $swapMarker).
+                    Replace(
+                        "Source role mergeBase root: $mergeBaseSourceRoot",
+                        "Source role head root: $mergeBaseSourceRoot"
+                    ).
+                    Replace(
+                        $swapMarker,
+                        "Source role mergeBase root: $headSourceRoot"
+                    )
+            Invoke-Control transport-swapped-source-bindings ready-v2-transport $swappedSourceBindings $false 'exact frozen source role binding for' '.eval-grader/inventory.json'
+
+            $swappedTargetBindings = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $swappedTargetBindings -ToolCallId 'worker'
+            $head = [string]$transportManifest.target.head
+            $mergeBase = [string]$transportManifest.target.mergeBase
+            $swapMarker = '__target_binding_swap__'
+            $swappedTargetBindings.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $swappedTargetBindings.trajectory.events[$firstWorker[0]].data.arguments.prompt.
+                    Replace("Frozen head: $head", $swapMarker).
+                    Replace(
+                        "Frozen merge base: $mergeBase",
+                        "Frozen head: $mergeBase"
+                    ).
+                    Replace($swapMarker, "Frozen merge base: $head")
+            Invoke-Control transport-swapped-target-bindings ready-v2-transport $swappedTargetBindings $false 'exact frozen head binding' '.eval-grader/inventory.json'
+
+            $sameLineSwappedBindings = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $sameLineSwappedBindings -ToolCallId 'worker'
+            $headSourceRoot = [string]$transportManifest.sources.head.root
+            $mergeBaseSourceRoot = [string]$transportManifest.sources.mergeBase.root
+            $baseTipSourceRoot = [string]$transportManifest.sources.baseTip.root
+            $head = [string]$transportManifest.target.head
+            $mergeBase = [string]$transportManifest.target.mergeBase
+            $baseTip = [string]$transportManifest.target.baseTip
+            $sameLineSwappedBindings.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $sameLineSwappedBindings.trajectory.events[$firstWorker[0]].data.arguments.prompt.
+                    Replace(
+                        "Frozen head: $head`nFrozen merge base: $mergeBase`nFrozen base tip: $baseTip",
+                        "Frozen head: $mergeBase, merge base: $baseTip, base tip: $head"
+                    ).
+                    Replace(
+                        "Source role head root: $headSourceRoot`nSource role mergeBase root: $mergeBaseSourceRoot`nSource role baseTip root: $baseTipSourceRoot",
+                        "Source roots: head root=$mergeBaseSourceRoot, mergeBase root=$baseTipSourceRoot, baseTip root=$headSourceRoot"
+                    )
+            Invoke-Control transport-same-line-swapped-bindings ready-v2-transport $sameLineSwappedBindings $false 'exact frozen source role binding for' '.eval-grader/inventory.json'
+
+            $prNumberSubstring = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $prNumberSubstring -ToolCallId 'worker'
+            $prNumberSubstring.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $prNumberSubstring.trajectory.events[$firstWorker[0]].data.arguments.prompt.Replace(
+                    "Frozen PR: $($transportManifest.target.pr)",
+                    "PR #$($transportManifest.target.pr)13"
+                )
+            Invoke-Control transport-pr-number-substring ready-v2-transport $prNumberSubstring $false 'omitted the exact frozen PR binding' '.eval-grader/inventory.json'
+
+            $conflictingTargetBinding = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $conflictingTargetBinding -ToolCallId 'worker'
+            $conflictingTargetBinding.trajectory.events[$firstWorker[0]].data.arguments.prompt +=
+                "`nReview the code at head: $head or head: $mergeBase"
+            Invoke-Control transport-conflicting-target-binding ready-v2-transport $conflictingTargetBinding $false 'omitted the exact frozen head binding' '.eval-grader/inventory.json'
+
+            $conflictingSourceBinding = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $conflictingSourceBinding -ToolCallId 'worker'
+            $conflictingSourceBinding.trajectory.events[$firstWorker[0]].data.arguments.prompt +=
+                "`nSource role head root: $mergeBaseSourceRoot"
+            Invoke-Control transport-conflicting-source-binding ready-v2-transport $conflictingSourceBinding $false 'omitted the exact frozen source role binding for' '.eval-grader/inventory.json'
+
+            $trailingNegatedTargetBinding = Clone-Object $transport
+            $firstWorker = Get-ControlEventIndexes -ControlInput $trailingNegatedTargetBinding -ToolCallId 'worker'
+            $trailingNegatedTargetBinding.trajectory.events[$firstWorker[0]].data.arguments.prompt =
+                $trailingNegatedTargetBinding.trajectory.events[$firstWorker[0]].data.arguments.prompt.Replace(
+                    "Frozen head: $head",
+                    "Frozen head: ``$head``, which isn't the revision to review"
+                )
+            Invoke-Control transport-trailing-negated-target-binding ready-v2-transport $trailingNegatedTargetBinding $false 'omitted the exact frozen head binding' '.eval-grader/inventory.json'
 
         $nonApplicableSecondPolicy = Clone-Object $transport
         $secondWorker = Get-ControlEventIndexes -ControlInput $nonApplicableSecondPolicy -ToolCallId 'worker-blazor'
         $nonApplicableSecondPolicy.trajectory.events[$secondWorker[0]].data.arguments.prompt +=
-            "`nAdditional policy: required/policies/0000.source"
-    Invoke-Control transport-non-applicable-second-policy ready-v2-transport $nonApplicableSecondPolicy $false 'included non-applicable policy' '.eval-grader/inventory.json'
+            "`nAdditional policy: required/guides/0000/policies/0000.source"
+    Invoke-Control transport-non-applicable-second-policy ready-v2-transport $nonApplicableSecondPolicy $false 'included unassigned input' '.eval-grader/inventory.json'
 
     $partialCoordinatorContentLeak = Clone-Object $transport
     $secondWorker = Get-ControlEventIndexes -ControlInput $partialCoordinatorContentLeak -ToolCallId 'worker-blazor'
@@ -895,6 +1734,15 @@ try {
             'Pull metadata input: pull.json'
         )
     Invoke-Control transport-coordinator-path-request ready-v2-transport $coordinatorPathRequest $false 'embedded or requested coordinator-only' '.eval-grader/inventory.json'
+
+    $doubleNegativeCoordinatorRequest = Clone-Object $transport
+    $secondWorker = Get-ControlEventIndexes -ControlInput $doubleNegativeCoordinatorRequest -ToolCallId 'worker-blazor'
+    $doubleNegativeCoordinatorRequest.trajectory.events[$secondWorker[0]].data.arguments.prompt =
+        $doubleNegativeCoordinatorRequest.trajectory.events[$secondWorker[0]].data.arguments.prompt.Replace(
+            'Do not read pull.json; the coordinator owns that input.',
+            'Do not skip reading pull.json.'
+        )
+    Invoke-Control transport-double-negative-coordinator-request ready-v2-transport $doubleNegativeCoordinatorRequest $false 'embedded or requested coordinator-only' '.eval-grader/inventory.json'
 
     $mixedCoordinatorPathRequest = Clone-Object $transport
     $secondWorker = Get-ControlEventIndexes -ControlInput $mixedCoordinatorPathRequest -ToolCallId 'worker-blazor'
@@ -965,55 +1813,71 @@ try {
     $pullRead = Get-ControlEventIndexes -ControlInput $wrongRole -ToolCallId 'read-pull-json'
     foreach ($index in $pullRead) {
         $wrongRole.trajectory.events[$index].agentId =
-            '44444444-4444-4444-4444-444444444444'
+            '22222222-2222-2222-2222-222222222222'
     }
-    Invoke-Control transport-worker-coordinator-only ready-v2-transport $wrongRole $false 'worker read coordinator-only' '.eval-grader/inventory.json'
+    Invoke-Control transport-worker-coordinator-only ready-v2-transport $wrongRole $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $wrongRoleReadFile = Clone-Object $transport
     $wrongRoleReadFile.trajectory.events += New-Call read_file worker-read-manifest @{
         filePath = '.review-bundle/manifest.json'
         startLine = 1
         endLine = 20
-    } $true 'manifest bytes' '44444444-4444-4444-4444-444444444444'
-    Invoke-Control transport-worker-read-file-coordinator-only ready-v2-transport $wrongRoleReadFile $false 'worker read coordinator-only' '.eval-grader/inventory.json'
+    } $true 'manifest bytes' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-read-file-coordinator-only ready-v2-transport $wrongRoleReadFile $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerRgManifest = Clone-Object $transport
     $workerRgManifest.trajectory.events += New-Call rg worker-rg-manifest @{
         pattern = 'ready'
         paths = '.review-bundle/manifest.json'
         output_mode = 'content'
-    } $true '3:  "ready": true' '44444444-4444-4444-4444-444444444444'
-    Invoke-Control transport-worker-rg-coordinator-only ready-v2-transport $workerRgManifest $false 'worker rg scope' '.eval-grader/inventory.json'
+    } $true '3:  "ready": true' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-rg-coordinator-only ready-v2-transport $workerRgManifest $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerRgBundle = Clone-Object $transport
     $workerRgBundle.trajectory.events += New-Call rg worker-rg-bundle @{
         pattern = 'ready'
         paths = '.review-bundle'
         output_mode = 'content'
-    } $true 'manifest.json:3:  "ready": true' '44444444-4444-4444-4444-444444444444'
-    Invoke-Control transport-worker-rg-broad-scope ready-v2-transport $workerRgBundle $false 'worker rg scope' '.eval-grader/inventory.json'
+    } $true 'manifest.json:3:  "ready": true' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-rg-broad-scope ready-v2-transport $workerRgBundle $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerGlobBundle = Clone-Object $transport
     $workerGlobBundle.trajectory.events += New-Call glob worker-glob-bundle @{
         pattern = '*.json'
         paths = '.review-bundle'
     } $true 'manifest.json pull.json feedback.json' '22222222-2222-2222-2222-222222222222'
-    Invoke-Control transport-worker-glob-broad-scope ready-v2-transport $workerGlobBundle $false 'worker glob scope' '.eval-grader/inventory.json'
+    Invoke-Control transport-worker-glob-broad-scope ready-v2-transport $workerGlobBundle $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerRgDefault = Clone-Object $transport
     $workerRgDefault.trajectory.events += New-Call rg worker-rg-default @{
         pattern = 'ready'
         output_mode = 'content'
-    } $true '.review-bundle/manifest.json:3:  "ready": true' '44444444-4444-4444-4444-444444444444'
-    Invoke-Control transport-worker-rg-default-scope ready-v2-transport $workerRgDefault $false 'worker rg scope' '.eval-grader/inventory.json'
+    } $true '.review-bundle/manifest.json:3:  "ready": true' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-rg-default-scope ready-v2-transport $workerRgDefault $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerRgEmpty = Clone-Object $transport
     $workerRgEmpty.trajectory.events += New-Call rg worker-rg-empty @{
         pattern = 'ready'
         paths = @()
         output_mode = 'content'
-    } $true '.review-bundle/manifest.json:3:  "ready": true' '44444444-4444-4444-4444-444444444444'
-    Invoke-Control transport-worker-rg-empty-scope ready-v2-transport $workerRgEmpty $false 'worker rg scope' '.eval-grader/inventory.json'
+    } $true '.review-bundle/manifest.json:3:  "ready": true' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-rg-empty-scope ready-v2-transport $workerRgEmpty $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerRgParent = Clone-Object $transport
+    $workerRgParent.trajectory.events += New-Call rg worker-rg-parent @{
+        pattern = 'ready'
+        paths = $testRoot
+        output_mode = 'content'
+    } $true '.review-bundle/manifest.json:3:  "ready": true' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-rg-parent-scope ready-v2-transport $workerRgParent $false 'unassigned bundle path' '.eval-grader/inventory.json'
+
+    $workerGrepSibling = Clone-Object $transport
+    $workerGrepSibling.trajectory.events += New-Call grep worker-grep-sibling @{
+        pattern = 'Components'
+        paths = '.review-bundle/required/guides/0001/policies/0000.source'
+        output_mode = 'content'
+    } $true '1:Components policy' '22222222-2222-2222-2222-222222222222'
+    Invoke-Control transport-worker-grep-sibling ready-v2-transport $workerGrepSibling $false 'unassigned bundle path' '.eval-grader/inventory.json'
 
     $workerRgShared = Clone-Object $transport
     $workerRgShared.trajectory.events += New-Call rg worker-rg-shared @{
@@ -1046,29 +1910,41 @@ try {
     $lateManifest = Clone-Object $transport
     $manifestRead = Get-ControlEventIndexes -ControlInput $lateManifest -ToolCallId 'read-manifest-json'
     $manifestEvents = @($lateManifest.trajectory.events[$manifestRead])
+    $rootSynthesis = $lateManifest.trajectory.events[-1]
     $lateManifest.trajectory.events = @(
-        for ($index = 0; $index -lt $lateManifest.trajectory.events.Count; $index++) {
+        for ($index = 0; $index -lt $lateManifest.trajectory.events.Count - 1; $index++) {
             if ($index -notin $manifestRead) {
                 $lateManifest.trajectory.events[$index]
             }
         }
-    ) + $manifestEvents
+    ) + $manifestEvents + $rootSynthesis
     Invoke-Control transport-late-manifest ready-v2-transport $lateManifest $false 'before routing the guide worker' '.eval-grader/inventory.json'
 
     $readAfterSynthesis = Clone-Object $transport
     $latePullRead = Get-ControlEventIndexes -ControlInput $readAfterSynthesis -ToolCallId 'read-pull-json'
     $latePullEvents = @($readAfterSynthesis.trajectory.events[$latePullRead])
+    $rootSynthesis = $readAfterSynthesis.trajectory.events[-1]
     $readAfterSynthesis.trajectory.events = @(
-        for ($index = 0; $index -lt $readAfterSynthesis.trajectory.events.Count; $index++) {
+        for ($index = 0; $index -lt $readAfterSynthesis.trajectory.events.Count - 1; $index++) {
             if ($index -notin $latePullRead) {
                 $readAfterSynthesis.trajectory.events[$index]
             }
         }
-    ) + [pscustomobject]@{
-        type = 'assistant_message'
-        data = [pscustomobject]@{ content = 'STATUS: NO_FINDINGS' }
-    } + $latePullEvents
+    ) + $rootSynthesis + $latePullEvents
     Invoke-Control transport-read-after-synthesis ready-v2-transport $readAfterSynthesis $false 'after root synthesis' '.eval-grader/inventory.json'
+
+    $workerReportAfterSynthesis = Clone-Object $transport
+    $lateWorkerReport = Get-ControlEventIndexes -ControlInput $workerReportAfterSynthesis -ToolCallId 'worker-cross-report'
+    $lateWorkerReportEvents = @($workerReportAfterSynthesis.trajectory.events[$lateWorkerReport])
+    $rootSynthesis = $workerReportAfterSynthesis.trajectory.events[-1]
+    $workerReportAfterSynthesis.trajectory.events = @(
+        for ($index = 0; $index -lt $workerReportAfterSynthesis.trajectory.events.Count - 1; $index++) {
+            if ($index -notin $lateWorkerReport) {
+                $workerReportAfterSynthesis.trajectory.events[$index]
+            }
+        }
+    ) + $rootSynthesis + $lateWorkerReportEvents
+    Invoke-Control transport-worker-report-after-synthesis ready-v2-transport $workerReportAfterSynthesis $false 'report collection completed after root synthesis' '.eval-grader/inventory.json'
 
     $shellFallback = Clone-Object $transport
     $shellFallback.trajectory.events = @(
@@ -1099,6 +1975,9 @@ try {
             workDir = $testRoot
             output = 'STATUS: BLOCKED'
             events = @(
+                New-Call skill blocked-root-skill @{
+                    skill = 'review-pull-request'
+                } $true 'Skill loaded.'
                 New-Call view blocked-manifest @{
                     path = '.review-bundle/manifest.json'
                     view_range = @(1, -1)
@@ -1118,9 +1997,27 @@ try {
     Invoke-Control missing-bytes-blocked required-bytes-blocked $blocked $true 'BLOCKED result' '.eval-grader/inventory.json'
 
     $errorBlocked = Clone-Object $blocked
-    $errorBlocked.trajectory.events[3].data.result =
+    $errorBlocked.trajectory.events[5].data.result =
         'Native view error: access to the required feedback input was denied.'
     Invoke-Control missing-bytes-error-blocked required-bytes-blocked $errorBlocked $true 'BLOCKED result' '.eval-grader/inventory.json'
+
+    $wrongSkillBlocked = Clone-Object $blocked
+    $wrongSkillBlocked.trajectory.events[0].data.arguments.skill = 'other-skill'
+    Invoke-Control missing-bytes-wrong-skill required-bytes-blocked $wrongSkillBlocked $false 'one successful review-pull-request skill load' '.eval-grader/inventory.json'
+
+    $lateSkillBlocked = Clone-Object $blocked
+    $lateSkillBlocked.trajectory.events = @(
+        $lateSkillBlocked.trajectory.events[2..3]
+        $lateSkillBlocked.trajectory.events[0..1]
+        $lateSkillBlocked.trajectory.events[4..6]
+    )
+    Invoke-Control missing-bytes-late-skill required-bytes-blocked $lateSkillBlocked $false 'begin with one successful review-pull-request skill load' '.eval-grader/inventory.json'
+
+    $workerSkillBlocked = Clone-Object $blocked
+    $workerSkillBlocked.trajectory.events += New-Call skill blocked-worker-skill @{
+        skill = 'other-skill'
+    } $true 'Skill loaded.' '33333333-3333-3333-3333-333333333333'
+    Invoke-Control missing-bytes-worker-skill required-bytes-blocked $workerSkillBlocked $false 'worker-attributed tool call' '.eval-grader/inventory.json'
 
     $partialManifest = Clone-Object $blocked
     $firstManifestResult = @(
@@ -1134,30 +2031,84 @@ try {
         }
     ) -join "`n"
     $partialManifest.trajectory.events = @(
+        $partialManifest.trajectory.events[0..1]
         New-Call view blocked-manifest-first @{
             path = '.review-bundle/manifest.json'
             view_range = @(1, 20)
         } $true $firstManifestResult
-        $partialManifest.trajectory.events[2..3]
+        $partialManifest.trajectory.events[4..5]
         New-Call view blocked-manifest-rest @{
             path = '.review-bundle/manifest.json'
             view_range = @(21, -1)
         } $true $remainingManifestResult
-        $partialManifest.trajectory.events[4]
+        $partialManifest.trajectory.events[6]
     )
     Invoke-Control missing-bytes-partial-manifest required-bytes-blocked $partialManifest $false 'before the ready manifest' '.eval-grader/inventory.json'
 
     $feedbackBeforeManifest = Clone-Object $blocked
     $feedbackBeforeManifest.trajectory.events = @(
-        $feedbackBeforeManifest.trajectory.events[2..3] +
         $feedbackBeforeManifest.trajectory.events[0..1] +
-        $feedbackBeforeManifest.trajectory.events[4]
+        $feedbackBeforeManifest.trajectory.events[4..5] +
+        $feedbackBeforeManifest.trajectory.events[2..3] +
+        $feedbackBeforeManifest.trajectory.events[6]
     )
     Invoke-Control missing-bytes-before-manifest required-bytes-blocked $feedbackBeforeManifest $false 'before the ready manifest' '.eval-grader/inventory.json'
+
+    $retainedFeedbackBeforeFailure = Clone-Object $blocked
+    $retainedFeedbackPath = $transportInventory.files |
+        Where-Object {
+            [string]$_.path -match 'feedback' -and
+            [string]$_.path -cne 'feedback.json' -and
+            'coordinator' -in @($_.readRoles)
+        } |
+        Select-Object -First 1 -ExpandProperty path
+    $retainedFeedbackBeforeFailure.trajectory.events = @(
+        $retainedFeedbackBeforeFailure.trajectory.events[0..3]
+        New-Call view blocked-retained-feedback @{
+            path = ".review-bundle/$retainedFeedbackPath"
+            view_range = @(1, -1)
+        } $true 'L1:retained feedback'
+        $retainedFeedbackBeforeFailure.trajectory.events[4..6]
+    )
+    Invoke-Control missing-bytes-retained-feedback-fallback required-bytes-blocked $retainedFeedbackBeforeFailure $false 'substitute evidence outside the manifest' '.eval-grader/inventory.json'
 
     $successFallback = Clone-Object $blocked
     $successFallback.trajectory.output = 'STATUS: NO_FINDINGS'
     Invoke-Control missing-bytes-success required-bytes-blocked $successFallback $false 'STATUS: BLOCKED' '.eval-grader/inventory.json'
+
+    $mismatchedBlockedSynthesis = Clone-Object $blocked
+    $mismatchedBlockedSynthesis.trajectory.events[-1].data.content =
+        'Required feedback remained unavailable.'
+    Invoke-Control missing-bytes-mismatched-synthesis required-bytes-blocked $mismatchedBlockedSynthesis $false 'No root assistant message reported STATUS: BLOCKED' '.eval-grader/inventory.json'
+
+    $searchFallback = Clone-Object $blocked
+    $rootSynthesis = $searchFallback.trajectory.events[-1]
+    $searchFallback.trajectory.events = @(
+        $searchFallback.trajectory.events[0..(
+            $searchFallback.trajectory.events.Count - 2
+        )]
+        New-Call rg blocked-search-fallback @{
+            pattern = 'feedback'
+            paths = '.review-bundle'
+            output_mode = 'files_with_matches'
+        } $true '.review-bundle/manifest.json'
+        $rootSynthesis
+    )
+    Invoke-Control missing-bytes-search-fallback required-bytes-blocked $searchFallback $false "unsupported fallback tool 'rg'" '.eval-grader/inventory.json'
+
+    $substituteView = Clone-Object $blocked
+    $rootSynthesis = $substituteView.trajectory.events[-1]
+    $substituteView.trajectory.events = @(
+        $substituteView.trajectory.events[0..(
+            $substituteView.trajectory.events.Count - 2
+        )]
+        New-Call view blocked-substitute-view @{
+            path = '.review-bundle/pull.json'
+            view_range = @(1, -1)
+        } $true 'L1:{"number":69782}'
+        $rootSynthesis
+    )
+    Invoke-Control missing-bytes-substitute-view required-bytes-blocked $substituteView $false 'attempted substitute evidence' '.eval-grader/inventory.json'
 
     $blockedWorker = Clone-Object $blocked
     $blockedWorker.trajectory.events += New-Call task worker @{

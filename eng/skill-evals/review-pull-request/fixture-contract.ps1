@@ -453,13 +453,17 @@ function Assert-ReviewFixture {
             })
         }
     }
+    $guidePaths = @($manifest.guides | ForEach-Object { [string]$_.path })
     foreach ($policy in @($manifest.policies)) {
         Assert-ReviewFixtureProperties $policy @(
-            'path', 'anchor', 'body'
+            'path', 'anchor', 'guide', 'body'
         ) @() 'manifest policy'
         Assert-ReviewFixtureCondition (
             Test-ReviewFixtureReferenceObject $policy.body
         ) 'Policy body reference must be a non-null object.'
+        Assert-ReviewFixtureCondition (
+            $guidePaths -ccontains [string]$policy.guide
+        ) 'Policy guide does not match a routed guide.'
         $references.Add([pscustomobject]@{ Description = 'policy body'; Value = $policy.body })
     }
     foreach ($exclusion in @($manifest.exclusions)) {
@@ -478,6 +482,113 @@ function Assert-ReviewFixture {
             }
         }
         Assert-ReviewFixtureCondition ($found -gt 0) 'Exclusion has no required text.'
+    }
+
+    for ($guideIndex = 0; $guideIndex -lt @($manifest.guides).Count; $guideIndex++) {
+        $guide = $manifest.guides[$guideIndex]
+        Assert-ReviewFixtureProperties $guide @(
+            'path', 'topics', 'assignment'
+        ) @() 'manifest guide'
+        Assert-ReviewFixtureProperties $guide.assignment @(
+            'files', 'sourceRoles'
+        ) @() 'manifest worker assignment'
+        Assert-ReviewFixtureCondition (
+            (@($guide.assignment.sourceRoles) -join "`n") -ceq
+            (@('head', 'mergeBase', 'baseTip') -join "`n")
+        ) "Worker assignment source roles changed for '$($guide.path)'."
+
+        $assignedFiles = @($guide.assignment.files)
+        Assert-ReviewFixtureCondition (
+            @($assignedFiles | ForEach-Object { [string]$_.path } |
+                Sort-Object -Unique -CaseSensitive).Count -eq $assignedFiles.Count
+        ) "Worker assignment reuses an input path for '$($guide.path)'."
+        foreach ($assigned in $assignedFiles) {
+            Assert-ReviewFixtureProperties $assigned @(
+                'kind', 'path', 'utf8Bytes', 'sha256'
+            ) @() 'manifest worker assignment file'
+            Assert-ReviewFixtureCondition (
+                [string]$assigned.kind -cin @(
+                    'guide', 'diff', 'changedFiles', 'policy', 'exclusion'
+                )
+            ) "Worker assignment has an invalid input kind for '$($guide.path)'."
+            $inventoryEntry = $contract.files |
+                Where-Object path -CEQ ([string]$assigned.path)
+            Assert-ReviewFixtureCondition (
+                @($inventoryEntry).Count -eq 1 -and
+                [int]$assigned.utf8Bytes -eq [int]$inventoryEntry.utf8Bytes -and
+                [string]$assigned.sha256 -ceq [string]$inventoryEntry.sha256
+            ) "Worker assignment file metadata changed for '$($guide.path)'."
+        }
+
+        $guideInput = @($assignedFiles | Where-Object kind -CEQ 'guide')
+        Assert-ReviewFixtureCondition (
+            $guideInput.Count -eq 1 -and
+            [string]$guideInput[0].path -ceq "guidance/$($guide.path).source"
+        ) "Worker assignment has the wrong guide input for '$($guide.path)'."
+        foreach ($expectedArtifact in @(
+            [pscustomobject]@{ Kind = 'diff'; Path = 'diff.patch' },
+            [pscustomobject]@{ Kind = 'changedFiles'; Path = 'files.json' }
+        )) {
+            $input = @($assignedFiles | Where-Object kind -CEQ $expectedArtifact.Kind)
+            Assert-ReviewFixtureCondition (
+                $input.Count -eq 1 -and
+                [string]$input[0].path -ceq $expectedArtifact.Path
+            ) "Worker assignment has the wrong $($expectedArtifact.Kind) input for '$($guide.path)'."
+        }
+
+        $guidePolicies = @(
+            $manifest.policies |
+                Where-Object guide -CEQ ([string]$guide.path)
+        )
+        for ($policyIndex = 0; $policyIndex -lt $guidePolicies.Count; $policyIndex++) {
+            $expectedPolicyPath = (
+                "required/guides/$($guideIndex.ToString('D4'))/" +
+                "policies/$($policyIndex.ToString('D4')).source"
+            )
+            Assert-ReviewFixtureCondition (
+                [string]$guidePolicies[$policyIndex].body.path -ceq
+                $expectedPolicyPath
+            ) "Policy path does not match guide '$($guide.path)' and its index."
+        }
+        $expectedPolicies = @($guidePolicies | ForEach-Object { $_.body })
+        $assignedPolicies = @(
+            $assignedFiles |
+                Where-Object kind -CEQ 'policy' |
+                ForEach-Object {
+                    [pscustomobject]@{
+                        path = $_.path
+                        utf8Bytes = $_.utf8Bytes
+                        sha256 = $_.sha256
+                    }
+                }
+        )
+        Assert-ReviewFixtureCondition (
+            ($expectedPolicies | ConvertTo-Json -Compress -Depth 20) -ceq
+            ($assignedPolicies | ConvertTo-Json -Compress -Depth 20)
+        ) "Worker assignment has incorrect policy inputs for '$($guide.path)'."
+
+        $assignedExclusions = @(
+            $assignedFiles | Where-Object kind -CEQ 'exclusion'
+        )
+        $expectedExclusionPaths = @(
+            "required/guides/$($guideIndex.ToString('D4'))/exclusions/0000-scope.source"
+            "required/guides/$($guideIndex.ToString('D4'))/exclusions/0000-reason.source"
+            "required/guides/$($guideIndex.ToString('D4'))/exclusions/0001-body.source"
+        )
+        Assert-ReviewFixtureCondition (
+            (@($assignedExclusions | ForEach-Object { [string]$_.path }) -join "`n") -ceq
+            ($expectedExclusionPaths -join "`n")
+        ) "Worker assignment has incorrect exclusion inputs for '$($guide.path)'."
+        foreach ($exclusion in $assignedExclusions) {
+            $references.Add([pscustomobject]@{
+                Description = "worker assignment exclusion for $($guide.path)"
+                Value = [pscustomobject]@{
+                    path = $exclusion.path
+                    utf8Bytes = $exclusion.utf8Bytes
+                    sha256 = $exclusion.sha256
+                }
+            })
+        }
     }
 
     $names = [Collections.Generic.List[string]]::new()
