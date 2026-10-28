@@ -15,8 +15,9 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Metadata" />
-    <Reference Include="Microsoft.Extensions.Diagnostics" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics" />
+
+    <ProjectReference Include="$(RepoRoot)src\Http\Metadata\src\Microsoft.AspNetCore.Metadata.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,7 +37,7 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>

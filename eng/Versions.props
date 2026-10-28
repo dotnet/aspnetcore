@@ -68,9 +68,8 @@
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <!-- Disable XLIFF tasks -->
     <UsingToolXliff>false</UsingToolXliff>
-    <!-- Use the current SDK's nearest pruning data when targeting a newer .NET version. -->
-    <LoadPrunePackageDataFromNearestFramework Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</LoadPrunePackageDataFromNearestFramework>
-    <AllowMissingPrunePackageData Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</AllowMissingPrunePackageData>
+    <!-- Targetingpack support -->
+    <TargetingPackCurrentTargetFramework>$(DefaultNetCoreTargetFramework)</TargetingPackCurrentTargetFramework>
   </PropertyGroup>
 
   <!--
@@ -93,7 +92,6 @@
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
-    <SystemCodeDomVersion>4.4.0</SystemCodeDomVersion>
     <SystemCommandlineExperimentalVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalVersion>
     <SystemComponentModelVersion>4.3.0</SystemComponentModelVersion>
     <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
@@ -117,13 +115,19 @@
     <!-- Pin the version of the M.CA dependencies that we utilize with a custom version property $(MicrosoftCodeAnalysisVersion_LatestVS) to avoid automatically
     consuming the newest version of the packages when using the $(MicrosoftCodeAnalysisCSharpVersion) properties in source-build. -->
     <MicrosoftCodeAnalysisVersion_LatestVS>5.11.0-1.26420.103</MicrosoftCodeAnalysisVersion_LatestVS>
+    <!-- Newer analyzers and code fixes use the latest VS-compatible Roslyn packages rather than the older analyzer defaults. -->
+    <Analyzer_MicrosoftCodeAnalysisCSharpVersion_LatestVS>$(MicrosoftCodeAnalysisVersion_LatestVS)</Analyzer_MicrosoftCodeAnalysisCSharpVersion_LatestVS>
+    <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion_LatestVS>$(MicrosoftCodeAnalysisVersion_LatestVS)</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion_LatestVS>
+    <Analyzer_MicrosoftCodeAnalysisFeaturesExternalAccessVersion_LatestVS>$(MicrosoftCodeAnalysisVersion_LatestVS)</Analyzer_MicrosoftCodeAnalysisFeaturesExternalAccessVersion_LatestVS>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>
     <MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>
     <MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>
-    <!-- Specifies the version of Roslyn that should be referenced by source generators.
-         This gets overriden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
-    <MicrosoftCodeAnalysisSourceGeneratorVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisSourceGeneratorVersion>
+    <!-- Specifies the versions of Roslyn packages that should be referenced by source generators.
+         These get overridden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
+    <SourceGenerator_MicrosoftCodeAnalysisCommonVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</SourceGenerator_MicrosoftCodeAnalysisCommonVersion>
+    <SourceGenerator_MicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</SourceGenerator_MicrosoftCodeAnalysisCSharpVersion>
+    <SourceGenerator_MicrosoftCodeAnalysisCSharpWorkspacesVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</SourceGenerator_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftIdentityModelJsonWebTokensVersion>$(IdentityModelVersion)</MicrosoftIdentityModelJsonWebTokensVersion>
     <MicrosoftIdentityModelLoggingVersion>$(IdentityModelVersion)</MicrosoftIdentityModelLoggingVersion>
@@ -148,11 +152,11 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>
     <!-- 3rd party dependencies -->
-    <AzureIdentityVersion>1.11.4</AzureIdentityVersion>
+    <AzureIdentityVersion>1.21.0</AzureIdentityVersion>
     <AngleSharpVersion>1.5.2</AngleSharpVersion>
     <BenchmarkDotNetVersion>0.13.0</BenchmarkDotNetVersion>
     <CastleCoreVersion>5.2.1</CastleCoreVersion>
-    <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
+    <CommandLineParserVersion>2.4.3</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.15.0</GoogleApiCommonProtosVersion>
     <GoogleProtobufVersion>3.33.6</GoogleProtobufVersion>
@@ -200,7 +204,7 @@
     <VerifySourceGeneratorsVersion>2.2.0</VerifySourceGeneratorsVersion>
     <VerifyXunitVersion>19.14.0</VerifyXunitVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
-    <XunitAnalyzersVersion>1.15.0</XunitAnalyzersVersion>
+    <XunitAnalyzersVersion>1.27.0</XunitAnalyzersVersion>
     <XunitVersion>2.9.2</XunitVersion>
     <XunitAssertVersion>$(XunitVersion)</XunitAssertVersion>
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
@@ -215,10 +219,10 @@
     <MicrosoftTestingExtensionsTrxReportVersion>2.2.3</MicrosoftTestingExtensionsTrxReportVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
-    <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
+    <MicrosoftDataSqlClientVersion>7.1.1</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
-    <MicrosoftOpenApiVersion>[3.10.2,4.0.0)</MicrosoftOpenApiVersion>
-    <MicrosoftOpenApiYamlReaderVersion>[3.10.2,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
+    <MicrosoftOpenApiVersion>[3.11.0,4.0.0)</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>[3.11.0,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
     <!-- Components.AI dependencies (Microsoft.Extensions.AI) -->
     <MicrosoftExtensionsAIVersion>10.6.0</MicrosoftExtensionsAIVersion>
     <MicrosoftExtensionsAIAbstractionsVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIAbstractionsVersion>
