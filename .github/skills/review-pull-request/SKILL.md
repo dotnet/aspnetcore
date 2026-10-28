@@ -65,14 +65,17 @@ requires only the exact files and source roles in its trusted `guides[].assignme
 That assignment contains its full guide, guide-specific policy and exclusion
 projections, projected changed-file metadata, complete diff, and frozen source roles.
 Its non-source files form a closed exact-file allowlist: read each directly by the
-assigned path and verify the assigned UTF-8 byte length and SHA-256. Do not list,
-enumerate, glob, search, or bulk-read their parent or shared bundle directories, use a
-file, directory, `rg`, glob, or shell scope that can return an unassigned bundle
-artifact, infer sibling paths from naming patterns, or consume intermediate output
-derived from such a scope. Assigned frozen `source/<sha>` roots are the only
-directory-scoped exception and may be searched only for source relevant to the
-assigned guide, changed files, candidates, and required producer, consumer, overload,
-type, or target-contract paths. Do not require or ask a guide worker to read
+assigned path. Workers treat this metadata as producer/checker-validated trust data and
+must not recompute either value. Read each directly to EOF with native `view` or
+`read_file`. Page with `view_range` or the equivalent `read_file` offset and limit until
+the final line; a truncated read is a required-input failure, not completion. Workers
+must not invoke `bash`, `shell`, or `powershell`. Do not list, enumerate, search, or
+bulk-read parent or shared bundle directories, infer sibling paths from naming patterns,
+or consume intermediate output derived from such a scope. Native `rg`, `grep`, or
+`glob` is allowed only beneath an assigned frozen `source/<sha>` root and only for source
+relevant to the assigned guide, changed files, candidates, and required producer,
+consumer, overload, type, or target-contract paths. Do not require or ask a guide worker
+to read
 `manifest.json`, `pull.json`, `feedback.json`, another guide, unrelated policies, or
 optional context. A missing or unreadable assigned file is a required-input failure,
 not permission to discover alternatives. The coordinator remains responsible for
@@ -82,10 +85,10 @@ or truncated response. A missing, unreadable, malformed, or empty routed guide, 
 diff, changed-file source, frozen feedback, or required source role blocks completion.
 If a tool refuses to read a bundle file, record the tool, affected input, and exact error.
 State only the cause the error states, otherwise `unknown`; never attribute it to content
-exclusion, policy, or sandboxing unless the error says so. A shell-execution denial does
-not establish that its input file is unreadable. Continue with authorized native reads
-of the same frozen input unless file access was explicitly denied; do not request a
-rerun, broaden permissions, or propose `--allow-all-paths` for a shell denial.
+exclusion, policy, or sandboxing unless the error says so. Continue with authorized
+native reads of the same frozen input unless file access was explicitly denied; do not
+request a rerun or broaden permissions. For a native local coordinator shell denial, do
+not propose `--allow-all-paths`.
 Never work around a file-access or content-exclusion denial. If required bytes remain
 unavailable, return `BLOCKED`. Do not infer a long-path cause from a generic error.
 Never silently fetch product source through live GitHub tools, infer it from memory, or
@@ -165,8 +168,11 @@ bootstrap, or `prepare-review`; read `manifest.json`, `pull.json`,
 live GitHub or fetch; call `rename_session`, `task`, or any subagent/session-spawn tool;
 aggregate guides or emit combined coordinator output; copy, re-export, or modify the
 bundle; mutate or publish; or execute target code. It reads the supplied bundle in
-place through only the exact assigned file paths and allowed frozen source roots. A
-worker labels its own report
+place through only the exact assigned file paths and allowed frozen source roots. It
+must read every assigned non-source file to EOF through native `view` or `read_file`,
+using `view_range` or the equivalent `read_file` offset and limit until the final line.
+It must not invoke `bash`, `shell`, or `powershell`, and may use native `rg`, `grep`, or
+`glob` only beneath its assigned frozen source roots. A worker labels its own report
 `PATH: per-guide-worker` and names only its assigned guide; only the coordinator labels
 the combined result `PATH: per-guide`. Do not label a per-guide worker
 `single-reviewer` or claim that its own guide result completes the entire PR. If a

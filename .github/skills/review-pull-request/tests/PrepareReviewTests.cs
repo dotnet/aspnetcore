@@ -852,6 +852,49 @@ public class PrepareReviewTests
         }
 
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        var skill = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
+            RepositoryRoot, ".github/skills/review-pull-request/SKILL.md"), Utf8NoBom), @"\s+", " ");
+        Assert.Contains(
+            "Workers treat this metadata as producer/checker-validated trust data and must not recompute either value.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains("Read each directly to EOF with native `view` or `read_file`", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Page with `view_range` or the equivalent `read_file` offset and limit until the final line; a truncated read is a required-input failure, not completion.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains("Workers must not invoke `bash`, `shell`, or `powershell`.", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Native `rg`, `grep`, or `glob` is allowed only beneath an assigned frozen `source/<sha>` root",
+            skill, StringComparison.Ordinal);
+        Assert.DoesNotContain("verify the assigned UTF-8 byte length and SHA-256", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "For a native local coordinator shell denial, do not propose `--allow-all-paths`.",
+            skill, StringComparison.Ordinal);
+        var workerContractStart = skill.IndexOf("PATH: per-guide-worker", StringComparison.Ordinal);
+        Assert.True(workerContractStart >= 0);
+        var workerContract = skill[workerContractStart..];
+        Assert.Contains(
+            "must read every assigned non-source file to EOF through native `view` or `read_file`, using `view_range` or the equivalent `read_file` offset and limit until the final line.",
+            workerContract, StringComparison.Ordinal);
+        Assert.Contains(
+            "It must not invoke `bash`, `shell`, or `powershell`, and may use native `rg`, `grep`, or `glob` only beneath its assigned frozen source roots.",
+            workerContract, StringComparison.Ordinal);
+
+        var workflow = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
+            RepositoryRoot, ".github/workflows/pull-request-review.md"), Utf8NoBom), @"\s+", " ");
+        Assert.Contains(
+            "Treat the assignment metadata as producer/checker-validated trust data; do not ask workers to recompute UTF-8 lengths or SHA-256 hashes.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "Workers must read each assigned non-source file to EOF through native `view` or `read_file` calls",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "They must page with `view_range` or the equivalent `read_file` offset and limit until the final line; a truncated read is a required-input failure, not completion.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains("must not invoke `bash`, `shell`, or `powershell`", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "may use native `rg`, `grep`, or `glob` only beneath their assigned frozen source roots",
+            workflow, StringComparison.Ordinal);
     }
 
     [Theory]
