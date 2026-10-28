@@ -21,8 +21,8 @@ public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
     private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
-    private static readonly object _routePageWithBodyKey = new();
-    private static readonly object _routePageWithoutBodyKey = new();
+    private const string RoutePageWithBodyKey = "route-page-with-body";
+    private const string RoutePageWithoutBodyKey = "route-page-without-body";
     static RouteView()
     {
         if (HotReloadManager.IsSupported)
@@ -107,7 +107,7 @@ public class RouteView : IComponent
         }
 
         // Only a layout-compatible Body parameter needs a different identity when supplied or omitted.
-        builder.SetKey(bodyParameterSupplied ? _routePageWithBodyKey : _routePageWithoutBodyKey);
+        builder.SetKey(bodyParameterSupplied ? RoutePageWithBodyKey : RoutePageWithoutBodyKey);
 
         builder.CloseComponent();
         builder.CloseRegion();

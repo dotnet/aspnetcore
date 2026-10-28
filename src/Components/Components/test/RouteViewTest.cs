@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -394,6 +396,39 @@ public class RouteViewTest
                 frame => AssertFrame.Region(frame, subtreeLength: 2),
                 frame => AssertFrame.Text(frame, supplyBody ? "Explicit body" : "Default body", sequence: 0));
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UsesStablePageKeyAcrossSerializedBodyReplay(bool supplyBody)
+    {
+        var routeValues = new Dictionary<string, object>();
+        if (supplyBody)
+        {
+            routeValues[nameof(LayoutComponentBase.Body)] = (RenderFragment)(_ => { });
+        }
+
+        await SetRouteAsync(new RouteData(typeof(InitializedBodyPage), routeValues));
+
+        var childContent = (RenderFragment)_renderer.GetCurrentRenderTreeFrames(_routeViewComponentId)
+            .AsEnumerable()
+            .Single(frame => frame.AttributeName == nameof(LayoutView.ChildContent))
+            .AttributeValue;
+        using var builder = new RenderTreeBuilder();
+        childContent(builder);
+        var frames = builder.GetFrames();
+        var pageKey = Assert.IsType<string>(frames.Array
+            .Take(frames.Count)
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+            .ComponentKey);
+
+        var json = JsonSerializer.Serialize(pageKey);
+        var firstReplayKey = JsonSerializer.Deserialize(json, typeof(string));
+        var secondReplayKey = JsonSerializer.Deserialize(json, typeof(string));
+
+        Assert.Equal(pageKey, firstReplayKey);
+        Assert.Equal(firstReplayKey, secondReplayKey);
     }
 
     [Theory]
