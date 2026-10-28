@@ -160,43 +160,86 @@ def matches(target, source):
 def expected_methods(root, target, index):
     if target["scope"] in ("method", "data"):
         return {(target["type"], target["method"])}
-    owners = set()
     if target["scope"] == "type":
-        current_type = target["type"]
+        runners = {target["type"]}
+    else:
+        runners = {
+            name for name, declarations in index["types"].items()
+            if any(item["project_root"] == target["project_root"] for item in declarations)
+            and not any(
+                item["project_root"] == target["project_root"] and item["is_abstract"]
+                for item in declarations
+            )
+        }
+    methods = set()
+    for runner in runners:
+        owners = set()
+        current_type = runner
+        proven = True
         while current_type not in owners:
             owners.add(current_type)
             logical = SOURCE.logical_type(index, current_type, target["project_root"])
             if logical["status"] != "exact":
-                return set()
+                proven = False
+                break
             if not logical["base"]:
                 break
             base = SOURCE.resolve_base_type(
                 index, current_type, logical["base"], target["project_root"],
             )
             if base["status"] != "exact":
-                return set()
+                proven = False
+                break
             current_type = base["type"]
         else:
+            proven = False
+        names = {
+            name for name, declarations in index["methods"].items()
+            if any(
+                item["project_root"] == target["project_root"]
+                and item["is_test"] and item["type"] in owners
+                for item in declarations
+            )
+        }
+        if not names:
+            continue
+        if not proven:
             return set()
-    methods = set()
-    for name, declarations in index["methods"].items():
-        methods.update(
-            (item["type"], name) for item in declarations
-            if item["project_root"] == target["project_root"] and item["is_test"]
-            and (target["scope"] == "assembly" or item["type"] in owners)
-        )
+        for name in names:
+            source = SOURCE.resolve_source(root, f"{runner}.{name}", index)
+            if source["status"] == "unmatched-data-row" and len(source["matches"]) == 1:
+                # Enumerating a theory's method does not select a parameter row.
+                source = source["matches"][0]
+            elif source["status"] != "exact":
+                return set()
+            methods.add((source.get("declaring_type") or source["type"], source["method"]))
     return methods
 
 
 def suppressed(target, names, closed_prs, now):
     identifiers = set(names)
-    if target["scope"] == "method":
-        identifiers.update(SOURCE.split_test_name(name)[0] for name in names)
+    method_patterns = []
+    if target["scope"] in ("method", "data"):
+        declaring_method = f"{target['type']}.{target['method']}"
+        methods = {SOURCE.split_test_name(name)[0] for name in names} | {declaring_method}
+        if target["scope"] == "data":
+            identifiers.update(
+                declaring_method + name[len(SOURCE.split_test_name(name)[0]):]
+                for name in names
+            )
+        for method in methods:
+            pattern = rf"(?<![\w.]){re.escape(method)}(?![\w.])"
+            if target["scope"] == "data":
+                pattern += r"(?:\s*\(\s*\))?(?!\s*\()"
+            method_patterns.append(pattern)
     if target["scope"] == "type":
         identifiers.add(target["type"])
     for pr in closed_prs:
         text = f"{pr.get('title', '')}\n{pr.get('body', '')}"
-        if not any(identifier in text for identifier in identifiers):
+        if (
+            not any(identifier in text for identifier in identifiers)
+            and not any(re.search(pattern, text) for pattern in method_patterns)
+        ):
             continue
         if pr.get("trusted_closed") is True and pr.get("closed_at"):
             return True

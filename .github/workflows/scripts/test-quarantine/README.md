@@ -63,6 +63,10 @@ issue. These correspond to Case A and Case B in
    re-quarantine blocklist match. Unresolved rows fail closed. Ambiguous
    re-quarantine PR ownership conservatively excludes targets sharing the issue
    in that file; a truncated diff excludes the whole file.
+   Class/assembly coverage uses effective resolved overrides, including inherited
+   test attributes; abstract types are not independent assembly runners.
+   Suppressions recognize runtime and declaring method identities, and method-wide
+   references block data rows without matching a different argument row.
    The compact receipt records complete collection, pipeline counts, eligible
    source targets, and the history receipt's SHA-256. Missing pages or malformed
    responses abort pre-activation; they never become an empty candidate list.

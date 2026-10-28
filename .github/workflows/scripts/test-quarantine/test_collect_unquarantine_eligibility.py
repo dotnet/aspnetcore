@@ -209,6 +209,141 @@ class UnquarantineTests(unittest.TestCase):
                 }))
                 self.assertEqual(len(receipt["targets"]), 1, receipt)
 
+    def test_inherited_test_overrides_use_effective_class_and_assembly_methods(self):
+        for scope in ("type", "assembly"):
+            for kind in ("Fact", "Theory"):
+                with self.subTest(scope=scope, kind=kind):
+                    attribute = "[Fact]" if kind == "Fact" else "[ConditionalTheory]\n    [InlineData(true)]"
+                    parameters = "" if kind == "Fact" else "bool value"
+                    baseline = f"""namespace Microsoft.AspNetCore.Tests;
+
+public abstract class BaseTests
+{{
+    {attribute}
+    public virtual void Check({parameters})
+    {{
+    }}
+}}
+
+public class SampleTests : BaseTests
+{{
+    public override void Check({parameters})
+    {{
+    }}
+
+    [Fact]
+    public void Other()
+    {{
+    }}
+}}
+"""
+                    quarantined = (
+                        baseline.replace("public class SampleTests", FIXTURES.QUARANTINE_ATTRIBUTE + "\npublic class SampleTests")
+                        if scope == "type"
+                        else FIXTURES.QUARANTINE_ATTRIBUTE.replace("[QuarantinedTest", "[assembly: QuarantinedTest")
+                        + "\n" + baseline
+                    )
+                    self.fresh_source(baseline, quarantined)
+                    check = NAME.rsplit(".", 1)[0] + ".Check"
+                    if kind == "Theory":
+                        check += "(value: True)"
+                    other = NAME.rsplit(".", 1)[0] + ".Other"
+                    receipt = self.collect(Provider({
+                        1: [(check, "Passed"), (other, "Passed")],
+                        2: [(check, "Passed"), (other, "Passed")],
+                    }))
+                    self.assertEqual(len(receipt["targets"]), 1, receipt)
+                    for results in (
+                        {1: [(other, "Passed")], 2: [(other, "Passed")]},
+                        {1: [(check, "Failed"), (other, "Passed")],
+                         2: [(check, "Passed"), (other, "Passed")]},
+                    ):
+                        self.assertEqual(self.collect(Provider(results))["targets"], [])
+
+    def test_data_row_suppression_distinguishes_method_wide_and_other_rows(self):
+        baseline = FIXTURES.theory_source(
+            "[InlineData(HttpProtocols.Http3)]", "[InlineData(HttpProtocols.Http2)]",
+        )
+        quarantined = baseline.replace(
+            "[InlineData(HttpProtocols.Http3)]",
+            '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+            'OperatingSystems.Linux, HttpProtocols.Http3)]',
+        )
+        self.fresh_source(baseline, quarantined)
+        row = FIXTURES.THEORY_TEST_NAME
+        provider = Provider({1: [(row, "Passed")], 2: [(row, "Passed")]})
+        self.assertEqual(len(self.collect(provider)["targets"]), 1)
+        for signals in (
+            {"trusted_closed": True, "closed_at": "2026-10-01T00:00:00Z"},
+            {"unquarantine_label_added_at": "2026-10-15T00:00:00Z"},
+        ):
+            for title, expected in (
+                (NAME, 0), (NAME + "()", 0), (row, 0), (row.replace("Http3", "Http2"), 1),
+                (NAME.replace("SampleTests", "UnrelatedTests"), 1),
+            ):
+                with self.subTest(signals=signals, title=title):
+                    receipt = self.collect(provider, closed=[{"title": title, **signals}])
+                    self.assertEqual(len(receipt["targets"]), expected, receipt)
+
+    def test_inherited_method_suppression_matches_declaring_identity(self):
+        baseline = """namespace Microsoft.AspNetCore.Tests;
+
+public class BaseTests
+{
+    [Fact]
+    public void ReturnsExpectedResponse()
+    {
+    }
+}
+
+public class SampleTests : BaseTests
+{
+}
+"""
+        quarantined = baseline.replace(
+            "[Fact]", FIXTURES.QUARANTINE_ATTRIBUTE + "\n    [Fact]",
+        )
+        self.fresh_source(baseline, quarantined)
+        self.assertEqual(len(self.collect()["targets"]), 1)
+        for signals in (
+            {"trusted_closed": True, "closed_at": "2026-10-01T00:00:00Z"},
+            {"unquarantine_label_added_at": "2026-10-15T00:00:00Z"},
+        ):
+            for title, expected in (
+                (NAME.replace("SampleTests", "BaseTests"), 0),
+                (NAME.replace("SampleTests", "UnrelatedTests"), 1),
+            ):
+                with self.subTest(signals=signals, title=title):
+                    receipt = self.collect(closed=[{"title": title, **signals}])
+                    self.assertEqual(len(receipt["targets"]), expected, receipt)
+
+    def test_inherited_data_row_suppression_keeps_declaring_rows_distinct(self):
+        baseline = FIXTURES.theory_source(
+            "[InlineData(HttpProtocols.Http3)]", "[InlineData(HttpProtocols.Http2)]",
+        ).replace("SampleTests", "BaseTests")
+        baseline += "\npublic class SampleTests : BaseTests\n{\n}\n"
+        quarantined = baseline.replace(
+            "[InlineData(HttpProtocols.Http3)]",
+            '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+            'OperatingSystems.Linux, HttpProtocols.Http3)]',
+        )
+        self.fresh_source(baseline, quarantined)
+        row = FIXTURES.THEORY_TEST_NAME
+        provider = Provider({1: [(row, "Passed")], 2: [(row, "Passed")]})
+        self.assertEqual(len(self.collect(provider)["targets"]), 1)
+        for signals in (
+            {"trusted_closed": True, "closed_at": "2026-10-01T00:00:00Z"},
+            {"unquarantine_label_added_at": "2026-10-15T00:00:00Z"},
+        ):
+            for title, expected in (
+                (NAME.replace("SampleTests", "BaseTests"), 0),
+                (row.replace("SampleTests", "BaseTests"), 0),
+                (row.replace("SampleTests", "BaseTests").replace("Http3", "Http2"), 1),
+            ):
+                with self.subTest(signals=signals, title=title):
+                    receipt = self.collect(provider, closed=[{"title": title, **signals}])
+                    self.assertEqual(len(receipt["targets"]), expected, receipt)
+
     def test_iis_variants_cannot_hide_a_failure_or_merge_unrelated_classes(self):
         namespace = "Microsoft.AspNetCore.Server.IIS.FunctionalTests"
         baseline = FIXTURES.source().replace("Microsoft.AspNetCore.Tests", namespace)

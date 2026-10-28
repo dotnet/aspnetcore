@@ -536,12 +536,16 @@ def build_source_index(root):
             )
             declaration_line = clean.count("\n", 0, position)
             attributes = attribute_block(lines, declaration_line)
+            prefix_start = max(
+                clean.rfind(delimiter, 0, position) for delimiter in (";", "{", "}", "]")
+            ) + 1
             quarantined = has_quarantine_attribute(attributes)
             if quarantined:
                 type_quarantines[(str(project_root), type_name)] = True
             type_index.setdefault(type_name, []).append({
                 "type": type_name,
                 "base": entry[5],
+                "is_abstract": re.search(r"\babstract\b", clean[prefix_start:position]) is not None,
                 "path": relative_path,
                 "project_root": str(project_root),
                 "quarantined": quarantined,
