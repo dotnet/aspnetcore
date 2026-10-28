@@ -118,6 +118,17 @@ internal sealed record ComponentsActivityRouteState(
     string TraceParent,
     string? TraceState,
     bool IsRemote,
-    string Route);
+    string Route)
+{
+    // JSON restoration must not depend on constructor parameter names retained by the trimmer.
+    public ComponentsActivityRouteState() : this(string.Empty, null, false, string.Empty)
+    {
+    }
+}
 
-internal sealed record ComponentsActivityStateUpdate(ComponentsActivityRouteState? Route);
+internal sealed record ComponentsActivityStateUpdate(ComponentsActivityRouteState? Route)
+{
+    public ComponentsActivityStateUpdate() : this(Route: null)
+    {
+    }
+}

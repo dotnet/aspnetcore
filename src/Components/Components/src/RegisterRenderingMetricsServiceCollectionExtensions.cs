@@ -74,6 +74,8 @@ public static class ComponentsMetricsServiceCollectionExtensions
         public IComponentRenderMode? GetRenderModeOrDefault() => _registration.GetRenderModeOrDefault();
 
         [DynamicDependency(JsonSerialized, typeof(ServerComponentsActivityState))]
+        [DynamicDependency(JsonSerialized, typeof(ComponentsActivityStateUpdate))]
+        [DynamicDependency(JsonSerialized, typeof(ComponentsActivityRouteState))]
         public Type? GetResolvedTypeOrNull() => _registration.GetResolvedTypeOrNull();
     }
 
@@ -87,6 +89,8 @@ public static class ComponentsMetricsServiceCollectionExtensions
         public IComponentRenderMode? GetRenderModeOrDefault() => _registration.GetRenderModeOrDefault();
 
         [DynamicDependency(JsonSerialized, typeof(WebAssemblyComponentsActivityState))]
+        [DynamicDependency(JsonSerialized, typeof(ComponentsActivityStateUpdate))]
+        [DynamicDependency(JsonSerialized, typeof(ComponentsActivityRouteState))]
         public Type? GetResolvedTypeOrNull() => _registration.GetResolvedTypeOrNull();
     }
 

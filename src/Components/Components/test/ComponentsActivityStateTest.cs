@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.DotNet.RemoteExecutor;
@@ -12,6 +13,41 @@ namespace Microsoft.AspNetCore.Components;
 
 public class ComponentsActivityStateTest
 {
+    [Theory]
+    [InlineData(typeof(ComponentsActivityStateUpdate))]
+    [InlineData(typeof(ComponentsActivityRouteState))]
+    public void Serialization_DoesNotRequireConstructorParameterMetadata(Type type)
+    {
+        var typeInfo = JsonSerializerOptions.Web.GetTypeInfo(type);
+
+        Assert.NotNull(typeInfo.CreateObject);
+    }
+
+    [Theory]
+    [InlineData("""{"route":null}""")]
+    [InlineData("""{"route":{"traceParent":"00-0123456789abcdef0123456789abcdef-0123456789abcdef-01","traceState":"vendor=value","isRemote":true,"route":"/counter"}}""")]
+    public void Serialization_PreservesPayload(string json)
+    {
+        var state = JsonSerializer.Deserialize<ComponentsActivityStateUpdate>(json, JsonSerializerOptions.Web);
+
+        Assert.NotNull(state);
+        Assert.Equal(json, JsonSerializer.Serialize(state, JsonSerializerOptions.Web));
+    }
+
+    [Fact]
+    public void NavigationUpdate_MissingTraceParentClearsStaleRoute()
+    {
+        var store = new ComponentsActivityLinkStore(null);
+        var state = CreateInitializedState(store);
+        state.Apply(CreateState(CreateContext(), "/initial"));
+        var update = JsonSerializer.Deserialize<ComponentsActivityStateUpdate>(
+            """{"route":{"route":"/updated"}}""", JsonSerializerOptions.Web);
+
+        state.Apply(update);
+
+        Assert.False(store.TryGetActivityContext(ComponentsActivityLinkStore.Route, out _, out _));
+    }
+
     [Fact]
     public void Initialization_AppliesStateRestoredBeforeRendererInitialization()
     {
