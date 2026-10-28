@@ -41,6 +41,13 @@ public static class ComponentsMetricsServiceCollectionExtensions
         IServiceCollection services)
     {
         services.TryAddScoped<ComponentsActivitySource>();
+        AddComponentsActivityStatePersistence(services);
+
+        return services;
+    }
+
+    internal static void AddComponentsActivityStatePersistence(IServiceCollection services)
+    {
         // The persistence manager owns the state and can resolve these wrappers from the WASM root provider.
         services.TryAddTransient<ServerComponentsActivityState>();
         services.TryAddTransient<WebAssemblyComponentsActivityState>();
@@ -53,8 +60,6 @@ public static class ComponentsMetricsServiceCollectionExtensions
             ServiceDescriptor.Singleton<IPersistentServiceRegistration, ServerComponentsActivityStateRegistration>());
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPersistentServiceRegistration, WebAssemblyComponentsActivityStateRegistration>());
-
-        return services;
     }
 
     private sealed class UnsupportedComponentsActivityStateRenderMode : IComponentRenderMode;

@@ -141,6 +141,36 @@ public class ComponentsActivityStateTest
     }
 
     [Fact]
+    public async Task ActivityState_ConcurrentAccessReturnsSameInstance()
+    {
+        const int callerCount = 16;
+        const int iterationCount = 256;
+        var managers = Enumerable.Range(0, iterationCount)
+            .Select(_ => new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance))
+            .ToArray();
+        var states = new ComponentsActivityState[iterationCount, callerCount];
+        using var barrier = new Barrier(callerCount);
+        var callers = Enumerable.Range(0, callerCount).Select(caller => Task.Factory.StartNew(() =>
+        {
+            for (var iteration = 0; iteration < iterationCount; iteration++)
+            {
+                barrier.SignalAndWait();
+                states[iteration, caller] = managers[iteration].ActivityState;
+            }
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default)).ToArray();
+
+        await Task.WhenAll(callers);
+
+        for (var iteration = 0; iteration < iterationCount; iteration++)
+        {
+            for (var caller = 0; caller < callerCount; caller++)
+            {
+                Assert.Same(states[iteration, 0], states[iteration, caller]);
+            }
+        }
+    }
+
+    [Fact]
     public async Task SingletonPersistenceManager_RestoresStateAcrossHostAndRendererScopes()
     {
         var services = new ServiceCollection().AddLogging().AddSingleton<ComponentStatePersistenceManager>();
@@ -154,6 +184,43 @@ public class ComponentsActivityStateTest
         var renderer = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>().ActivityState;
 
         Assert.Same(host, renderer);
+    }
+
+    [Fact]
+    public async Task Persistence_RestoresServerRegistrationsWithoutTracing()
+    {
+        var serverServices = new ServiceCollection().AddLogging().AddScoped<ComponentStatePersistenceManager>();
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(serverServices);
+        using var serverProvider = serverServices.BuildServiceProvider(validateScopes: true);
+        using var serverScope = serverProvider.CreateScope();
+        using var renderer = new TestRenderer(serverScope.ServiceProvider);
+        var serverManager = serverScope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+        var renderMode = new TestRenderMode();
+        serverManager.SetPlatformRenderMode(renderMode);
+        var store = new TestStore();
+        await serverManager.RestoreStateAsync(store);
+        using var subscription = serverManager.State.RegisterOnPersisting(() =>
+        {
+            serverManager.State.PersistAsJson("application-state", 42);
+            return Task.CompletedTask;
+        }, renderMode);
+        await serverManager.PersistStateAsync(store, renderer);
+        Assert.Contains(typeof(PersistentServicesRegistry).FullName!, store.State.Keys);
+
+        var clientServices = new ServiceCollection().AddLogging().AddSingleton<ComponentStatePersistenceManager>();
+        clientServices.AddSupplyValueFromPersistentComponentStateProvider();
+        using var clientProvider = clientServices.BuildServiceProvider(validateScopes: true);
+        var clientManager = clientProvider.GetRequiredService<ComponentStatePersistenceManager>();
+
+        await clientManager.RestoreStateAsync(store);
+
+        Assert.Null(clientProvider.GetService<ComponentsActivitySource>());
+        Assert.True(clientManager.State.TryTakeFromJson<int>("application-state", out var applicationState));
+        Assert.Equal(42, applicationState);
+        Assert.Single(clientManager.ServicesRegistry!.Registrations,
+            registration => registration.GetResolvedTypeOrNull() == typeof(ServerComponentsActivityState));
+        Assert.Single(clientManager.ServicesRegistry.Registrations,
+            registration => registration.GetResolvedTypeOrNull() == typeof(WebAssemblyComponentsActivityState));
     }
 
     [Fact]
@@ -209,6 +276,8 @@ public class ComponentsActivityStateTest
         ActivitySource.AddActivityListener(listener);
         return listener;
     }
+
+    private sealed class TestRenderMode : IComponentRenderMode;
 
     private sealed class TestStore : IPersistentComponentStateStore
     {

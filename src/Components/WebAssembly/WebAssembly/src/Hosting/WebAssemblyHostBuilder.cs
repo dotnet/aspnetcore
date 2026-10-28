@@ -341,6 +341,9 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton(_ => _rootComponentCache ?? new());
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        Services.AddKeyedSingleton<IComponentRenderMode>(
+            "Microsoft.AspNetCore.Components.ActivityState.WebAssembly",
+            RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromPersistentComponentStateProvider();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddSingleton<ResourceCollectionProvider>();
@@ -358,9 +361,6 @@ public sealed class WebAssemblyHostBuilder
         // Register metrics and tracing when supported and not disabled by the feature switch.
         if (IsMeterSupported && IsMeterEnabled)
         {
-            Services.AddKeyedSingleton<IComponentRenderMode>(
-                "Microsoft.AspNetCore.Components.ActivityState.WebAssembly",
-                RenderMode.InteractiveWebAssembly);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);
         }

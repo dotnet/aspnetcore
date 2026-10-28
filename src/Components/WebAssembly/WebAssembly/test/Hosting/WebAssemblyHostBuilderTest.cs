@@ -5,6 +5,7 @@ using System.Diagnostics.Metrics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -354,6 +355,8 @@ public class WebAssemblyHostBuilderTest
 
             var meterFactory = host.Services.GetService<IMeterFactory>();
             Assert.Null(meterFactory);
+            Assert.Same(RenderMode.InteractiveWebAssembly,
+                host.Services.GetRequiredKeyedService<IComponentRenderMode>("Microsoft.AspNetCore.Components.ActivityState.WebAssembly"));
         }
         finally
         {

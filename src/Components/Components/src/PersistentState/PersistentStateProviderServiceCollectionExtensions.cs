@@ -18,6 +18,8 @@ public static class PersistentStateProviderServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddSupplyValueFromPersistentComponentStateProvider(this IServiceCollection services)
     {
+        // SSR can persist these service registrations even when tracing is disabled in the interactive host.
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsActivityStatePersistence(services);
         services.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, PersistentStateValueProvider>());
         return services;
     }

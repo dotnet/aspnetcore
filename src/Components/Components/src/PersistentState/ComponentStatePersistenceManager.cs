@@ -22,7 +22,7 @@ public class ComponentStatePersistenceManager
     private ComponentsActivityState? _activityState;
 
     // The manager is scoped on the server and shared by the host and renderer scopes in WebAssembly.
-    internal ComponentsActivityState ActivityState => _activityState ??= new(_logger);
+    internal ComponentsActivityState ActivityState => LazyInitializer.EnsureInitialized(ref _activityState, () => new ComponentsActivityState(_logger));
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
