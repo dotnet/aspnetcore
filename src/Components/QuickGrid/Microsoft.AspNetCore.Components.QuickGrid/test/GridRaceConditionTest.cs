@@ -93,6 +93,42 @@ public class GridRaceConditionTest
             $"_disposeBool is false: {failingGrid.IsWasDisposedFalse()}");
         Assert.False(testJsRuntime.JsModuleDisposed);
     }
+
+    [Fact]
+    public async Task StopsEventListenersWhenDisposedDuringInit()
+    {
+        var moduleLoadCompletion = new TaskCompletionSource();
+        var moduleImportStarted = new TaskCompletionSource();
+        var testJsRuntime = new TestJsRuntime(moduleLoadCompletion, moduleImportStarted)
+        {
+            InitCompletion = new TaskCompletionSource()
+        };
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(testJsRuntime)
+            .AddSingleton<NavigationManager, TestNavigationManager>()
+            .BuildServiceProvider();
+        var renderer = new TestRenderer(serviceProvider);
+
+        var testComponent = new SimpleTestComponent();
+
+        moduleLoadCompletion.SetResult();
+        var componentId = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(componentId);
+
+        // Wait until init has started but not completed
+        await testJsRuntime.InitStarted.Task;
+
+        // Dispose component while init is pending
+        await renderer.DisposeAsync();
+
+        // Complete init, which has added the event listeners by now
+        testJsRuntime.InitCompletion.SetResult();
+
+        await testComponent.NotFailingGrid.OnAfterRenderCompleted;
+
+        Assert.True(testJsRuntime.EventDisposable.StopWasCalled);
+        Assert.True(testJsRuntime.EventDisposable.Disposed);
+    }
 }
 
 internal class Person
@@ -149,6 +185,13 @@ internal class TestJsRuntime(TaskCompletionSource moduleCompletion, TaskCompleti
 
     public bool InitWasCalledAfterDisposal { get; private set; }
 
+    // When set, init waits for it and returns an EventDisposable
+    public TaskCompletionSource InitCompletion { get; init; }
+
+    public TaskCompletionSource InitStarted { get; } = new();
+
+    public TestJSEventDisposable EventDisposable { get; private set; }
+
     public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args = null)
     {
         if (identifier == "import" && args?.Length > 0 && args[0] is string modulePath &&
@@ -176,6 +219,14 @@ internal class TestJsRuntime(TaskCompletionSource moduleCompletion, TaskCompleti
         }
     }
 
+    public async ValueTask<TValue> InitAsync<TValue>()
+    {
+        InitStarted.TrySetResult();
+        await InitCompletion.Task;
+        EventDisposable = new TestJSEventDisposable();
+        return (TValue)(object)EventDisposable;
+    }
+
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) =>
         InvokeAsync<TValue>(identifier, args);
 }
@@ -198,6 +249,10 @@ internal class TestJSObjectReference(TestJsRuntime jsRuntime) : IJSObjectReferen
         if (identifier == "init")
         {
             _jsRuntime.RecordInitCall();
+            if (_jsRuntime.InitCompletion is not null)
+            {
+                return _jsRuntime.InitAsync<TValue>();
+            }
         }
         return default!;
     }
@@ -208,5 +263,30 @@ internal class TestJSObjectReference(TestJsRuntime jsRuntime) : IJSObjectReferen
     public ValueTask DisposeAsync() {
         _jsRuntime.MarkJsModuleDisposed();
         return default!;
+    }
+}
+
+internal class TestJSEventDisposable : IJSObjectReference
+{
+    public bool StopWasCalled { get; private set; }
+
+    public bool Disposed { get; private set; }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+    {
+        if (identifier == "stop")
+        {
+            StopWasCalled = true;
+        }
+        return default!;
+    }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) =>
+        InvokeAsync<TValue>(identifier, args);
+
+    public ValueTask DisposeAsync()
+    {
+        Disposed = true;
+        return default;
     }
 }
