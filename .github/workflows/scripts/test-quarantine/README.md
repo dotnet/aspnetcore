@@ -24,7 +24,12 @@ issue. These correspond to Case A and Case B in
    history cutoff commit, exact evidence identity, and the `origin/main`
    history commit used for the decision. The receipt also identifies Case B
    tests with at least one post-cutoff failure whose source snapshot contains
-   the unquarantine commit. Assembly history is
+   the unquarantine commit. An authenticated, cached lookup verifies that the
+   original Case B tracking number is an issue (open or closed), not a PR.
+   `case_b_issue_verified` is required at the safe-output boundary; the agent
+   need not repeat the lookup through integrity-filtered tools. Lookup errors
+   abort collection, while a definitive missing issue is ineligible.
+   Assembly history is
    reconstructed across the resolved test project, including deleted
    quarantine files. Same-project partial declarations are also evaluated as a
    logical type for type-level quarantine history, so sibling declaration
@@ -48,8 +53,24 @@ issue. These correspond to Case A and Case B in
    method and partial
    type moves between files preserve their logical history, and issue-URL-only
    replacements are not remove/add transitions. Automated unquarantine requires an exact
-   `first-quarantine` match and fails closed otherwise.
-4. The pre-activation job uploads all three files as the one-day
+   `first-quarantine` match and fails closed otherwise. `introduced_utc` records
+   the exact target's introduction, rather than a later issue-URL replacement.
+4. `collect_unquarantine_eligibility.py` fully paginates 30 days of main builds
+   and results for pipelines 84 and 87 before activation. It preserves exact
+   result names and per-pipeline denominators, maps rows through the shared
+   source resolver, and requires zero failures, real passes, 66% build
+   appearance, 60-day age, first-quarantine history, and no human suppression or
+   re-quarantine blocklist match. Unresolved rows fail closed. Ambiguous
+   re-quarantine PR ownership conservatively excludes targets sharing the issue
+   in that file; a truncated diff excludes the whole file.
+   Class/assembly coverage uses effective resolved overrides, including inherited
+   test attributes; abstract types are not independent assembly runners.
+   Suppressions recognize runtime and declaring method identities, and method-wide
+   references block data rows without matching a different argument row.
+   The compact receipt records complete collection, pipeline counts, eligible
+   source targets, and the history receipt's SHA-256. Missing pages or malformed
+   responses abort pre-activation; they never become an empty candidate list.
+   The pre-activation job uploads all four files as the one-day
    `test-quarantine-evidence-<run-id>` artifact.
 5. The agent may choose a new-quarantine or re-quarantine candidate only from
    the corresponding deterministic eligible-test list injected into its
@@ -72,7 +93,7 @@ issue. These correspond to Case A and Case B in
    target changes. It rejects unrelated edits, mixed additions/removals,
    duplicate targets, stale project source, additions that do not match an
    eligible Case A or Case B receipt, and removals whose exact current history
-   is not `first-quarantine`.
+   is not `first-quarantine` or lacks bound deterministic Part 2 eligibility.
 
 Agent-provided log excerpts and URLs are for human display only. They are not
 accepted as validation evidence.
@@ -210,6 +231,7 @@ Run the deterministic collector fixtures:
 
 ```bash
 python3 -B .github/workflows/scripts/test-quarantine/test_collect_case_a_eligibility.py
+python3 -B .github/workflows/scripts/test-quarantine/test_collect_unquarantine_eligibility.py
 ```
 
 Run the pull-request action-boundary fixtures:

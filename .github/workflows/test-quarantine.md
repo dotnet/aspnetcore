@@ -1342,6 +1342,18 @@ on:
             )
         SCRIPT
 
+    - name: Collect deterministic unquarantine eligibility
+      id: unquarantine_eligibility
+      env:
+        REQUARANTINE_ISSUES: ${{ steps.requarantine_issues.outputs.requarantine_issue_numbers }}
+        REQUARANTINE_PRS: ${{ steps.requarantine_prs.outputs.requarantine_data }}
+      run: |
+        python3 .github/workflows/scripts/test-quarantine/collect_unquarantine_eligibility.py \
+          --history "${RUNNER_TEMP}/test-quarantine-requarantine-history.json" \
+          --closed-prs "${RUNNER_TEMP}/test-quarantine-closed-prs.json" \
+          --output "${RUNNER_TEMP}/test-quarantine-unquarantine-eligibility.json" \
+          --repo-root "${GITHUB_WORKSPACE}"
+
     - name: Upload deterministic evidence for safe output validation
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -1350,6 +1362,7 @@ on:
           ${{ runner.temp }}/test-quarantine-part1.json
           ${{ runner.temp }}/test-quarantine-case-a-eligibility.json
           ${{ runner.temp }}/test-quarantine-requarantine-history.json
+          ${{ runner.temp }}/test-quarantine-unquarantine-eligibility.json
         retention-days: 1
         if-no-files-found: error
 
@@ -1364,6 +1377,7 @@ jobs:
       eligible_test_names: ${{ steps.case_a_eligibility.outputs.eligible_test_names }}
       eligible_case_b_test_names: ${{ steps.case_a_eligibility.outputs.eligible_case_b_test_names }}
       eligible_operating_systems: ${{ steps.case_a_eligibility.outputs.eligible_operating_systems }}
+      unquarantine_eligibility: ${{ steps.unquarantine_eligibility.outputs.unquarantine_eligibility }}
       # part1_data is chunked across fixed outputs to stay under the 131072-byte MAX_ARG_STRLEN
       # per-env-var limit (see write_part1_chunks above); the prompt concatenates them back.
       part1_data_0: ${{ steps.part1_aggregate.outputs.part1_data_0 }}
@@ -2141,7 +2155,7 @@ You are an automated workflow that manages flaky test quarantine in the dotnet/a
 
 **Both tasks are mandatory analysis phases on every run.** An empty Case A/Case B
 eligibility list completes only Part 1; it does not make Part 2 optional. You must
-still query pipelines 84 and 87 and complete the Part 2 candidate analysis before
+still inspect the deterministic collection for pipelines 84 and 87 and complete the Part 2 candidate analysis before
 reporting `noop`. Priority and budget rules may defer an identified unquarantine
 write after the analysis is complete, but they never permit skipping Part 2.
 If required data, tools, time, or turn budget prevent either analysis phase from
@@ -2288,7 +2302,7 @@ All of the following are true:
   The `refs/remotes/origin/main --first-parent` walk makes this the actual main-branch landing commit and timestamp, not an earlier topic-branch commit. The fully qualified ref avoids ambiguity with a local branch named `origin/main`. The `-p` flag prints each commit's patch inline using the file's **historical** path at that commit, so it works correctly across renames — do **not** issue a separate `git show <sha> -- <current path>`, which would return an empty diff for any commit from before a rename. Walk the matching commits from **newest to oldest**, inspecting the inline patch of each, and stop at the most recent commit whose patch **adds or removes the exact `[QuarantinedTest]` method/class/assembly target or `[QuarantinedTestData]` row target** (ignore commits that only touch other targets in the same file). If that commit removed the exact target, Case B applies; if it added the target, the test case is currently/most-recently quarantined and Case B does not apply.
 - It has **at least one distinct-build failure incident remaining after the mandatory evidence cutoff above**. The history-derived cutoff includes the unquarantine landing time and any later relevant fix, and the final cutoff also includes any later trusted prior-attempt decision. Failures from before that cutoff do not count — they are stale evidence from before the test was repaired/unquarantined or before a maintainer rejected an earlier attempt. If no incidents remain, do not re-quarantine and do not evaluate the test under Case A.
 - **Respect any prior-attempt cutoff (see the "Check for recently closed (not merged) PRs" rule).** If a trusted contributor already closed a recent re-quarantine attempt for this same test, only failures whose build `startedUtc` is strictly after that PR's `closed_at` count toward re-quarantining. If no failure post-dates that cutoff, do **not** re-quarantine this run — defer until there is fresh flakiness after the maintainer's decision.
-- **Reuse the original tracking issue — do not create a new one.** Determine the issue **directly from the exact `[QuarantinedTest]` or `[QuarantinedTestData]` line removed by the unquarantine commit's patch**. Its numeric issue URL names the original tracking issue to reuse in Step&nbsp;3.1. Do **not** rely only on issue-title searches. Confirm the issue exists (it may be open or closed) before reusing it. If the removed attribute has no valid numeric issue URL, fail closed and skip automated re-quarantine for this test case.
+- **Reuse the original tracking issue — do not create a new one.** Determine the issue **directly from the exact `[QuarantinedTest]` or `[QuarantinedTestData]` line removed by the unquarantine commit's patch**. Its numeric issue URL names the original tracking issue to reuse in Step&nbsp;3.1. Do **not** rely only on issue-title searches. The trusted pre-activation collector confirms that this exact number is an existing issue, not a PR, using the authenticated GitHub API; it sets `case_b_issue_verified` before including the test in the Case B eligible list. This receipt is this run's existence confirmation, including for closed issues. Do not repeat the lookup through integrity-filtered MCP tools or agent HTTP. The safe-output validator requires the verified receipt. If the removed attribute has no valid numeric issue URL or verification fails, the test is not eligible.
 
 **Case A identity boundary**
 
@@ -2307,15 +2321,32 @@ candidates for later — they will be actioned in Part 3 after budget planning.
 
 ### Step 2.1 — Gather passing test data from the quarantined pipeline and components-e2e pipeline
 
+**This collection is already complete before the agent starts.** The trusted
+`collect_unquarantine_eligibility.py` step fully paginates both pipelines and
+their test results, resolves exact current source targets, and applies the
+age, history, run-evidence, and suppression gates below. Read this compact
+receipt instead of making Azure DevOps HTTP calls:
+
+```json
+${{ needs.pre_activation.outputs.unquarantine_eligibility }}
+```
+
+Require `complete: true` and entries for both pipelines `84` and `87`; missing or
+malformed evidence requires `report_incomplete`, never `noop`. An empty `targets`
+array with complete collection is a valid result, not a skipped phase. Summarize
+both pipelines' build/test counts and the candidate count. Only receipt targets
+with `eligible: true` may be removed; agent checks can disqualify but cannot add
+candidates. The safe-output validator enforces the receipt's run identity,
+history hash, and exact target/issue binding for removals.
+
+The following describes the collector's data contract, not additional agent work.
+
 Query two pipelines in the `dnceng-public` Azure DevOps organization, `public` project:
 
 - **aspnetcore-quarantined-tests** (definition ID **84**) — runs only quarantined tests
 - **components-e2e** (definition ID **87**) — runs both quarantined and non-quarantined tests
 
-Follow the **Critical HTTP access rule** above. Use standalone
-`python3`/`urllib.request` tool calls for these requests. If a tool call is
-denied before execution, correct the command and retry; do not treat the
-denial as evidence that Azure DevOps is unavailable.
+These requests run in trusted pre-activation code; do not repeat them in the agent.
 
 For each pipeline, query only builds on the **main branch**:
 
@@ -2343,7 +2374,7 @@ A test is a candidate for unquarantining if ALL of the following are true:
 - It does **not** have a suspiciously low total count — it appeared in at least 66% of the builds **for the pipeline that actually runs it**. Since a quarantined test only runs in one of the two pipelines (84 or 87), compare its build count against the total builds for that specific pipeline, not the combined total across both pipelines.
 - It is **not** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` (this test must always stay quarantined)
 - It is an **individual test case**, not a work item (exclude names ending in `.WorkItemExecution`)
-- The exact `[QuarantinedTest]` or `[QuarantinedTestData]` target has been present for **at least 60 days**. To check this, use `git log -G` with a regex matching the issue URL from the attribute to find the commit that introduced it (pass `--follow` so renames of the file are traversed):
+- The exact `[QuarantinedTest]` or `[QuarantinedTestData]` target has been present for **at least 60 days**. The receipt's `introduced_utc` comes from exact-target first-parent history, including file moves and issue-URL-only changes. Optional source inspection may disqualify a target but cannot replace that proof:
   ```
   git log --follow --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
   ```
@@ -2458,7 +2489,7 @@ Group the unquarantine candidates by their associated GitHub issue number. Extra
 - **`[QuarantinedTest]` and `[QuarantinedTestData]` attributes must reference a GitHub issue URL that *ultimately resolves* to a numeric issue number** (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). For a newly created issue (Case A) you write the `#{temporary_id}` token while editing; the framework resolves it before the PR is opened. Never write placeholder strings, descriptive text, or any other non-numeric identifier — the only permitted non-numeric value is the required `#{temporary_id}` token.
   - **For a newly created quarantine issue (Case A), you MUST write the `#{temporary_id}` reference — never a literal numeric issue number.** Here `#{temporary_id}` means a literal `#` immediately followed by the **exact** `temporary_id` string you passed to the corresponding `create_quarantine_issue` call (do **not** add any extra `aw_` prefix — the `temporary_id` already includes it). The issue's real number is assigned by the framework *after* the agent finishes, so it is impossible for you to know it while editing code. For example, if you called `create_quarantine_issue(temporary_id: "aw_http2ign", ...)`, write `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. The framework resolves `#aw_http2ign` to the real numeric URL before opening the PR, so the final committed code will contain the numeric URL.
   - **The `temporary_id` must be exactly the literal prefix `aw_` followed by a *slug* of 3 to 12 characters from `[A-Za-z0-9_]`** — i.e. it must match `^aw_[A-Za-z0-9_]{3,12}$` (the framework's exact rule is "'aw_' followed by 3 to 12 alphanumeric or underscore characters"). The **3–12 count applies only to the slug portion after `aw_`**, so the full token is 6–15 characters long (e.g. `aw_http2ign` = slug `http2ign`, 8 chars). This limit is enforced by the framework. If you pass a `temporary_id` whose slug is too long or otherwise malformed, the framework **silently discards it, auto-generates a *different* id, and registers your new issue under that auto-generated id** — so the `#{temporary_id}` token you wrote into the code no longer matches any registered id, is treated as a malformed reference, and is **committed verbatim as a broken placeholder**. Keep the slug short and abbreviate. The identical `temporary_id` must be used for the `create_quarantine_issue` call, the `add_comment` `item_number`, the `#{temporary_id}` in the attribute, and the `Associated issue: #{temporary_id}` in the PR body.
-  - **A literal numeric issue URL is allowed ONLY when reusing an already-existing tracking issue (Case B re-quarantine), and only after you have confirmed in this run that the issue exists and is the original tracking issue for this test.** The authoritative way to identify it is the issue number in the `[QuarantinedTest("…/issues/N")]` line removed by the unquarantine commit (see Case B in Step&nbsp;1.2); that issue is correct to reuse whether it is labeled `test-failure`, `Known Build Error`, or otherwise. The reused issue may be **closed** — a prior unquarantine PR (Step 3.2) can auto-close the tracking issue on merge, and re-quarantine still reuses that original issue. Never write a literal number for an issue you created (or will create) in this run.
+  - **A literal numeric issue URL is allowed ONLY when reusing an already-existing tracking issue (Case B re-quarantine), and only after the trusted pre-activation receipt confirms in this run that the issue exists and is the original tracking issue for this test.** The authoritative way to identify it is the issue number in the `[QuarantinedTest("…/issues/N")]` line removed by the unquarantine commit (see Case B in Step&nbsp;1.2); that issue is correct to reuse whether it is labeled `test-failure`, `Known Build Error`, or otherwise. The reused issue may be **closed** — a prior unquarantine PR (Step 3.2) can auto-close the tracking issue on merge, and re-quarantine still reuses that original issue. Never write a literal number for an issue you created (or will create) in this run.
   - **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
 - **Never guess, predict, probe for, or reverse-engineer a GitHub issue number.** Do not try to discover "what number my new issue will get" by listing issues, incrementing the latest issue/PR number, or probing candidate issue numbers via the issue/PR APIs to find an "unused" one. New-issue numbers are assigned asynchronously by the framework and are unknowable while you are editing code — the only correct way to reference a newly created issue is the `#{temporary_id}` token (see above). (Looking up a **known, specific** issue number to confirm the original tracking issue for Case B reuse — identified from the unquarantine commit's removed `[QuarantinedTest]` attribute, whether labeled `test-failure` or `Known Build Error` — is fine — what is forbidden is probing for, or guessing, the number of an issue you are creating in this run.)
   - **Treat any "not found", "filtered", "lower integrity", "not accessible", "integrity policy", or permission-denied response from an issue or PR lookup as access-denied — NOT as evidence that an issue number is free, unused, or available.** Such responses tell you nothing about whether a number is allocated. Never conclude that a probed number is "available", and never write a probed or inferred number into code.
@@ -2600,7 +2631,7 @@ For each quarantine/re-quarantine candidate, in priority order (Case B re-quaran
 Before you call `create_pull_request` for any quarantine or re-quarantine, re-read the exact diff you are about to submit and verify **every** added `[QuarantinedTest(...)]` and `[QuarantinedTestData(...)]` line:
 
 1. If `<ref>` is for an issue you created in this run, it **must** be `#{temporary_id}` — a literal `#` followed by the *exact* `temporary_id` you passed to a `create_quarantine_issue` call in this same run (e.g., `#aw_http2ign`; do not add an extra `aw_` prefix). A bare number here is a bug — fix it before submitting.
-2. If `<ref>` is a literal number, it **must** be the original tracking issue for this test, confirmed in this run (Case B reuse only; identified from the issue URL removed by the unquarantine commit, and it may be labeled `test-failure` or `Known Build Error`; the issue may be closed). If you cannot confirm that, do not submit the PR.
+2. If `<ref>` is a literal number, it **must** be the original tracking issue for this test, confirmed in this run by the trusted `case_b_issue_verified` receipt (Case B reuse only; identified from the issue URL removed by the unquarantine commit, and it may be labeled `test-failure` or `Known Build Error`; the issue may be closed). The deterministic eligible Case B list includes only verified issues; use that confirmation without another MCP or agent HTTP lookup. If the receipt does not confirm it, do not submit the PR.
 3. `<ref>` must never be a guessed, probed, or inferred number — for example a number guessed by incrementing the latest issue/PR, probed for to find an "unused" one, or inferred from a "not found"/"filtered"/access-denied lookup response — nor a `TODO`/`TBD`/placeholder. Factual lookups *are* allowed: confirming that a **known, specific** issue exists (Case B reuse — e.g. the issue named in the removed `[QuarantinedTest]` attribute), or discovering the original tracking issue from the unquarantine commit's diff, is fine. What is forbidden is treating any lookup result as license to invent, pick, or guess a number.
 
 If any added attribute fails these checks, **do not create the PR** — correct the reference first, or skip the candidate entirely. It is far better to skip a quarantine than to commit a wrong issue link.
