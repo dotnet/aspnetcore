@@ -127,8 +127,9 @@ target remains ambiguous.
 Unresolved historical inheritance is unproven, not evidence that a test was
 never inherited.
 
-Shared sources with conditional namespaces are resolved separately for each
-consuming project using literal `DefineConstants` and `Compile` item paths,
+Shared sources with conditional namespaces or assembly quarantine attributes
+are resolved separately for each consuming project using literal
+`DefineConstants` and `Compile` item paths,
 including exclusions and removals. Inactive branches are masked without moving
 source lines. Historical scans use the same project context at each commit and
 include project-only symbol/item changes when identifying quarantine transitions.
@@ -166,6 +167,9 @@ into a KBE.
 ## Safety properties
 
 - One exact fully qualified test per new-quarantine issue and PR.
+  Additions affecting multiple shared-source identities are rejected rather than
+  silently broadening that policy. Shared-attribute removals are counted once
+  per physical edit, but still require eligibility for every affected identity.
 - Row-level quarantine changes preserve the original inline data arguments and
   are accepted only when the deterministic receipt resolves that exact row.
 - An exact `InlineData` candidate on a `ConditionalTheory` is always row-scoped;

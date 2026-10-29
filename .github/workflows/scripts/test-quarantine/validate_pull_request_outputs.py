@@ -845,7 +845,18 @@ def validate_outputs(
                     })
                 else:
                     expected_attributes = collections.Counter()
+                    physical_targets = set()
                     for target in removed.values():
+                        physical_target = (
+                            target["scope"],
+                            target["path"],
+                            tuple(target["attribute_lines"]),
+                            target.get("data"),
+                            target["reference"],
+                        )
+                        if physical_target in physical_targets:
+                            continue
+                        physical_targets.add(physical_target)
                         expected_attributes.update([(
                             "-",
                             target["reference"],

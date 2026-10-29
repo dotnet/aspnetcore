@@ -129,6 +129,7 @@ def project_context(root, project_root, commit=None):
     include_items = []
     excludes = []
     uncertain_excludes = []
+    uncertain_includes = []
     supported = True
     for group in document:
         for item in group:
@@ -145,6 +146,7 @@ def project_context(root, project_root, commit=None):
                     or any("$(" in value or "@(" in value for value in values)
                 ):
                     uncertain_excludes.extend(values[2].replace("\\", "/").split(";"))
+                    uncertain_includes.extend(values[0].replace("\\", "/").split(";"))
                     # Dynamic items are not evidence of shared-source ownership.
                     continue
                 includes.extend(values[0].replace("\\", "/").split(";"))
@@ -160,6 +162,7 @@ def project_context(root, project_root, commit=None):
         "include_items": include_items,
         "excludes": [value for value in excludes if value],
         "uncertain_excludes": [pattern for pattern in uncertain_excludes if pattern],
+        "uncertain_includes": [pattern for pattern in uncertain_includes if pattern],
     }
     if commit is not None:
         PROJECT_CONTEXT_CACHE[key] = result
@@ -174,15 +177,20 @@ def compile_glob_matches(root, project_root, pattern, relative_path):
     return re.fullmatch(expression, path) is not None
 
 
-def project_includes(root, project_root, context, relative_path):
+def project_membership(root, project_root, context, relative_path):
     if context is None:
+        return None
+    if any(
+        compile_glob_matches(root, project_root, pattern, relative_path)
+        for pattern in context["excludes"]
+    ):
         return False
     if any(
         "$(" in pattern or "@(" in pattern
         or compile_glob_matches(root, project_root, pattern, relative_path)
         for pattern in context["uncertain_excludes"]
     ):
-        return False
+        return None
     included = any(
         compile_glob_matches(root, project_root, pattern, relative_path)
         and not any(
@@ -192,10 +200,19 @@ def project_includes(root, project_root, context, relative_path):
         for pattern, exclusions in context["include_items"]
     )
     local = pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(relative_path).parents
-    return (included or local) and not any(
-        compile_glob_matches(root, project_root, pattern, relative_path)
-        for pattern in context["excludes"]
-    )
+    if included or local:
+        return True
+    if any(
+        "$(" in pattern or "@(" in pattern
+        or compile_glob_matches(root, project_root, pattern, relative_path)
+        for pattern in context["uncertain_includes"]
+    ):
+        return None
+    return False
+
+
+def project_includes(root, project_root, context, relative_path):
+    return project_membership(root, project_root, context, relative_path) is True
 
 
 def conditional_source(text, constants):
@@ -297,15 +314,26 @@ def has_conditional_namespace(text):
 
 
 def source_views(root, relative_path, text, projects):
-    if not has_conditional_namespace(text):
+    assembly_source = ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(text)) is not None
+    if not has_conditional_namespace(text) and not assembly_source:
         return [(find_project_root(root, relative_path), text)]
     views = []
     for project_root, context in projects.items():
         if not project_includes(root, project_root, context, relative_path):
+            if assembly_source and project_membership(root, project_root, context, relative_path) is None:
+                if pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(relative_path).parents or (
+                    context and any(
+                        compile_glob_matches(root, project_root, pattern, relative_path)
+                        for pattern in context["includes"]
+                    )
+                ):
+                    views.append((pathlib.Path(root, project_root), None))
             continue
         processed = conditional_source(text, context["constants"]) if context["supported"] else None
         if processed is not None:
             views.append((pathlib.Path(root, project_root), processed))
+        elif assembly_source:
+            views.append((pathlib.Path(root, project_root), None))
     return views
 
 
@@ -315,7 +343,7 @@ def project_paths(root, project_root, commit):
     if context is not None:
         for pattern in context["includes"]:
             prefix = re.split(r"[*?]", pattern, maxsplit=1)[0]
-            if not prefix.endswith("/") and not re.search(r"[*?]", pattern):
+            if not prefix.endswith("/"):
                 prefix = str(pathlib.PurePosixPath(prefix).parent)
             path = os.path.normpath(os.path.join(project_root, prefix))
             if path != ".." and not path.startswith("../") and not os.path.isabs(path):
@@ -371,7 +399,7 @@ def project_quarantine_history(root, project_root, history_ref):
 
 
 def contextual_source(root, relative_path, text, project_root, commit=None):
-    if not has_conditional_namespace(text):
+    if not has_conditional_namespace(text) and not ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(text)):
         return text
     context = project_context(root, project_root, commit)
     if not context or not context["supported"] or not project_includes(
@@ -391,9 +419,16 @@ def identity_project(root, relative_path, type_name):
     text = pathlib.Path(root, relative_path).read_text(encoding="utf-8")
     matches = set()
     for project_root, view in source_views(root, relative_path, text, projects):
+        if view is None:
+            continue
         clean = sanitize_csharp(view)
         namespace = re.search(r"\bnamespace\s+([A-Za-z_][A-Za-z0-9_.]*)\s*;", clean)
-        if namespace and type_name.startswith(namespace.group(1) + "."):
+        file_namespace = namespace.group(1) if namespace else None
+        ranges = declaration_ranges(clean)
+        if any(
+            full_type_name(ranges, entry[4], file_namespace, declared_type=entry[3]) == type_name
+            for entry in ranges if entry[2] == "type"
+        ):
             matches.add(str(project_root.relative_to(root)))
     return next(iter(matches)) if len(matches) == 1 else None
 
@@ -727,8 +762,9 @@ def declaration_ranges(clean):
     return ranges
 
 
-def attribute_block(lines, declaration_line):
+def attribute_block(lines, declaration_line, *, include_locations=False):
     collected = []
+    quarantine_lines = []
     bracket_depth = 0
     index = declaration_line - 1
     while index >= 0:
@@ -741,9 +777,13 @@ def attribute_block(lines, declaration_line):
         bracket_depth += stripped.count("]") - stripped.count("[")
         if stripped.startswith("[") or bracket_depth > 0:
             collected.append(lines[index])
+            if QUARANTINE_ATTRIBUTE_PATTERN.search(stripped):
+                quarantine_lines.append(index + 1)
             index -= 1
             continue
         break
+    if include_locations:
+        return "\n".join(reversed(collected)), sorted(quarantine_lines)
     return "\n".join(reversed(collected))
 
 
@@ -805,6 +845,9 @@ def build_source_index(root):
     type_index = {}
 
     for relative_path, project_root, text in source_files(root):
+        if text is None:
+            assembly_quarantine_ambiguities[str(project_root)] = True
+            continue
         clean = sanitize_csharp(text)
         lines = text.splitlines()
         file_namespace = None
@@ -829,7 +872,7 @@ def build_source_index(root):
                 assembly_quarantines[str(project_root)] = True
             else:
                 assembly_quarantine_ambiguities[str(project_root)] = True
-            for line in lines:
+            for line_number, line in enumerate(lines, 1):
                 if not ASSEMBLY_QUARANTINE_PATTERN.search(
                     sanitize_csharp(line)
                 ):
@@ -841,6 +884,7 @@ def build_source_index(root):
                     "project_root": str(project_root),
                     "issue": int(issue.group("issue")) if issue else None,
                     "quarantine_attribute": line,
+                    "attribute_lines": [line_number],
                 })
 
         for entry in ranges:
@@ -854,7 +898,7 @@ def build_source_index(root):
                 declared_type=entry[3],
             )
             declaration_line = clean.count("\n", 0, position)
-            attributes = attribute_block(lines, declaration_line)
+            attributes, attribute_lines = attribute_block(lines, declaration_line, include_locations=True)
             prefix_start = max(
                 clean.rfind(delimiter, 0, position) for delimiter in (";", "{", "}", "]")
             ) + 1
@@ -866,6 +910,7 @@ def build_source_index(root):
                 "base": entry[5],
                 "is_abstract": re.search(r"\babstract\b", clean[prefix_start:position]) is not None,
                 "path": relative_path,
+                "attribute_lines": attribute_lines,
                 "project_root": str(project_root),
                 "quarantined": quarantined,
                 "quarantine_attribute": attributes if quarantined else "",
@@ -895,13 +940,14 @@ def build_source_index(root):
             type_name = full_type_name(ranges, position, file_namespace)
             method = method_match.group("method")
             method_line = clean.count("\n", 0, position)
-            attributes = attribute_block(lines, method_line)
+            attributes, attribute_lines = attribute_block(lines, method_line, include_locations=True)
             parsed_attributes = quarantine_attributes(attributes)
             method_index.setdefault(method, []).append({
                 "path": relative_path,
                 "type": type_name,
                 "method": method,
                 "method_line": method_line + 1,
+                "attribute_lines": attribute_lines,
                 "is_test": any(
                     re.search(
                         r"\[\s*(?:global::)?(?:\w+\.)*\w*(?:Fact|Theory)(?:Attribute)?\b",
@@ -1248,8 +1294,15 @@ def historical_assembly_state(root, project_root, commit, state_cache):
         relative_path = match.split(":", 1)[-1]
         if not relative_path.endswith(".cs"):
             continue
+        membership = project_membership(root, project_root, context, relative_path)
+        if membership is False:
+            continue
         content = git_result(root, "show", f"{commit}:{relative_path}")
         if content.returncode != 0:
+            return {"status": "ambiguous"}
+        if not ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(content.stdout)):
+            continue
+        if membership is None:
             return {"status": "ambiguous"}
         text = contextual_source(root, relative_path, content.stdout, project_root, commit)
         if text is None:
@@ -1411,6 +1464,13 @@ def historical_project_source_index(
             continue
         if quarantine_paths is not None and relative_path not in quarantine_paths:
             continue
+        membership = project_membership(root, project_root, context, relative_path)
+        if membership is False:
+            continue
+        if membership is None and context is not None:
+            result = {"status": "ambiguous"}
+            source_cache[cache_key] = result
+            return result
         directory = pathlib.PurePosixPath(relative_path).parent
         while str(directory) not in project_directories:
             if str(directory) in ("", "."):
@@ -2702,6 +2762,7 @@ def current_quarantine_targets(source_index):
                         "project_root": declaration["project_root"],
                         "type": declaration["type"],
                         "method": declaration["method"],
+                        "attribute_lines": declaration["attribute_lines"],
                         "reference": quarantine_reference(
                             declaration["quarantine_attribute"]
                         ),
@@ -2726,6 +2787,7 @@ def current_quarantine_targets(source_index):
                     "project_root": declaration["project_root"],
                     "type": declaration["type"],
                     "method": declaration["method"],
+                    "attribute_lines": declaration["attribute_lines"],
                     "data": data_attribute["data"],
                     "operating_systems": list(
                         data_attribute["operating_system_values"] or ()
@@ -2748,6 +2810,7 @@ def current_quarantine_targets(source_index):
                 "project_root": declaration["project_root"],
                 "type": declaration["type"],
                 "method": None,
+                "attribute_lines": declaration["attribute_lines"],
                 "reference": quarantine_reference(
                     declaration["quarantine_attribute"]
                 ),
@@ -2763,6 +2826,7 @@ def current_quarantine_targets(source_index):
             "project_root": assembly["project_root"],
             "type": None,
             "method": None,
+            "attribute_lines": assembly["attribute_lines"],
             "reference": quarantine_reference(
                 assembly["quarantine_attribute"]
             ),

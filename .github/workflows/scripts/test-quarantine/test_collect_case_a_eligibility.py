@@ -4053,7 +4053,78 @@ public class ClientCertificateTests
         assert "source-missing" in ambiguous["reasons"], ambiguous
 
 
+def test_shared_source_review_case(case, module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        shared = root / "src/SharedTests"
+        shared.mkdir(parents=True)
+        block = case == "block"
+        express_namespace = "Sample.IIS.Express" if case == "prefix" else "Sample.IISExpress"
+        source = (
+            "#if IIS_FUNCTIONALS\nnamespace Sample.IIS"
+            + (" {\n" if block else ";\n")
+            + f"#else\nnamespace {express_namespace}"
+            + (" {\n" if block else ";\n")
+            + "#endif\npublic class ClientCertificateTests\n{\n"
+            "    [Fact]\n    public void HttpsNoClientCert_NoClientCert() {}\n}\n"
+            + ("}\n" if block else "")
+        )
+        (shared / "HttpsTests.cs").write_text(source, encoding="utf-8")
+        for project, symbol in (("IIS.Tests", "IIS_FUNCTIONALS"), ("Express.Tests", "IISEXPRESS_FUNCTIONALS")):
+            path = root / "src" / project
+            path.mkdir()
+            include = "../SharedTests/Https*.cs" if case == "wildcard" else "../SharedTests/**/*.cs"
+            exclusion = ' Exclude="../SharedTests/Excluded.cs"' if case.startswith("excluded") else ""
+            remove = '<Compile Remove="$(UnknownFiles)" />' if case == "unknown" else ""
+            (path / f"{project}.csproj").write_text(
+                f"<Project><PropertyGroup><DefineConstants>{symbol}</DefineConstants>"
+                f'</PropertyGroup><ItemGroup><Compile Include="{include}"{exclusion} />'
+                f"{remove}</ItemGroup></Project>", encoding="utf-8",
+            )
+        if case in ("assembly", "excluded", "excluded-namespace", "unknown"):
+            attribute_source = (
+                source.replace("    [Fact]", f"    {QUARANTINE_ATTRIBUTE}\n    [Fact]")
+                if case == "excluded-namespace" else '#if IIS_FUNCTIONALS\n'
+                '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n'
+                '#endif\n'
+            )
+            (shared / ("Excluded.cs" if case.startswith("excluded") else "AssemblyInfo.cs")).write_text(
+                attribute_source, encoding="utf-8",
+            )
+        commit(root, "Shared-source review fixture", "2026-08-01T00:00:00Z")
+        sha = run_output(root, "git", "rev-parse", "HEAD")
+        name = "Sample.IIS.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        if case == "prefix":
+            name = express_namespace + ".ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        if case in ("wildcard", "block", "prefix"):
+            result = collect_result(root, evidence(test_name=name), test_name=name, module=module)
+            assert result["status"] == "eligible", (case, result)
+        else:
+            iis = module.historical_assembly_state(root, "src/IIS.Tests", sha, {})
+            express = module.historical_assembly_state(root, "src/Express.Tests", sha, {})
+            if case == "unknown":
+                assert iis["status"] == express["status"] == "ambiguous", (iis, express)
+            else:
+                assert iis["status"] == express["status"] == "exact", (iis, express)
+                assert iis["quarantined"] == (case == "assembly"), iis
+                assert not express["quarantined"], express
+                index = module.build_source_index(root)
+                assert not module.resolve_source(
+                    root, "Sample.IISExpress.ClientCertificateTests.HttpsNoClientCert_NoClientCert", index,
+                )["assembly_quarantined"]
+                if case == "assembly":
+                    (shared / "AssemblyInfo.cs").write_text("", encoding="utf-8")
+                    commit(root, "Remove IIS assembly quarantine", "2026-08-02T00:00:00Z")
+                    history = module.assembly_quarantine_history(root, "src/Express.Tests", "HEAD")
+                    assert history == {"status": "exact", "events": []}, history
+        print(f"PASS shared-source review: {case}")
+
+
 def main():
+    for case in ("wildcard", "block", "prefix", "assembly", "excluded", "excluded-namespace", "unknown"):
+        test_shared_source_review_case(case)
     test_conditional_shared_source()
     test_kestrel_condition_rows()
     for condition in (

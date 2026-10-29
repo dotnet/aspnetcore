@@ -495,7 +495,90 @@ def test_row_comment_ownership():
     assert actual == [("-", None, "inline", data), ("+", "1", "data", data)], actual
 
 
+def test_shared_attribute_validation(operation):
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        attribute = '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]'
+
+        def shared_source(value):
+            text = source(value)
+            if operation == "separate-attributes":
+                attribute_line = f"    {value}\n" if value else ""
+                text = source().replace(
+                    "    public void",
+                    f"#if IIS_FUNCTIONALS\n{attribute_line}#else\n{attribute_line}"
+                    "#endif\n    public void",
+                )
+            return text.replace(
+                "namespace Microsoft.AspNetCore.Tests;",
+                "#if IIS_FUNCTIONALS\nnamespace Microsoft.AspNetCore.Tests;\n"
+                "#else\nnamespace Microsoft.AspNetCore.Express.Tests;\n#endif",
+            )
+
+        initialize_repository(root, shared_source("" if operation == "addition" else attribute))
+        (root / "src/Sample.Tests/Sample.Tests.csproj").write_text(
+            "<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>"
+            "</PropertyGroup></Project>", encoding="utf-8",
+        )
+        express = root / "src/Express.Tests"
+        express.mkdir()
+        (express / "Express.Tests.csproj").write_text(
+            '<Project><ItemGroup><Compile Include="../Sample.Tests/SampleTests.cs" />'
+            '</ItemGroup></Project>', encoding="utf-8",
+        )
+        run(root, "git", "add", ".")
+        run(root, "git", "commit", "-qm", "Add shared consumers")
+        commit = run(root, "git", "rev-parse", "HEAD")
+        targets = [
+            {**target, "issue": 1, "status": "first-quarantine"}
+            for target in MODULE.target_map(root, MODULE.ELIGIBILITY.build_source_index(root)).values()
+        ]
+        eligibility, history = receipts(commit, case_a_record(), targets)
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/shared"
+        create_patch(root, transport, branch, shared_source(
+            '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_sample")]'
+            if operation == "addition" else "",
+        ))
+        output = {"items": [pull_request(branch)]}
+        if operation == "addition":
+            output["items"].insert(0, case_a_issue())
+            assert_rejected(
+                lambda: validate(root, commit, eligibility, history, output, transport),
+                "must add exactly one target",
+            )
+        else:
+            assert len(targets) == 2, targets
+            if operation == "missing-receipt":
+                history["targets"].pop()
+                assert_rejected(
+                    lambda: validate(root, commit, eligibility, history, output, transport),
+                    "not an exact first quarantine",
+                )
+            elif operation == "ineligible":
+                history_path = root / "history-for-hash.json"
+                write_json(history_path, history)
+                unquarantine = {
+                    **history,
+                    "history_sha256": hashlib.sha256(history_path.read_bytes()).hexdigest(),
+                    "complete": True,
+                    "pipelines": {"84": {"build_count": 1}, "87": {"build_count": 0}},
+                    "targets": [{**target, "eligible": index == 0} for index, target in enumerate(targets)],
+                }
+                assert_rejected(
+                    lambda: validate(root, commit, eligibility, history, output, transport, unquarantine=unquarantine),
+                    "lacks deterministic Part 2 eligibility",
+                )
+            else:
+                result = validate(root, commit, eligibility, history, output, transport)
+                assert result[0]["targets"] == 2, result
+        print(f"PASS shared attribute validation: {operation}")
+
+
 def main():
+    for operation in ("addition", "removal", "separate-attributes", "missing-receipt", "ineligible"):
+        test_shared_attribute_validation(operation)
     test_pull_request_repository()
     test_theory_target_binding(provider="[MsQuicSupported]")
     test_theory_target_binding(
