@@ -226,40 +226,98 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         builder.MapPost("/shipments", (DtoWithOnlyCurrentReferenceProperty dto) => { });
 
         var document = await VerifyOpenApiDocument(builder, _ => { });
-        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
-        var expectedComponents = """
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
             {
-              "DtoWithOnlyCurrentReferenceProperty": {
-                "type": "object",
-                "properties": {
-                  "current": {
-                    "$ref": "#/components/schemas/NonObsoleteChildDto"
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/orders": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DtoWithOnlyObsoleteReferenceProperty"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                },
+                "/shipments": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DtoWithOnlyCurrentReferenceProperty"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
                   }
                 }
               },
-              "DtoWithOnlyObsoleteReferenceProperty": {
-                "type": "object",
-                "properties": {
-                  "old": {
-                    "deprecated": true,
-                    "$ref": "#/components/schemas/NonObsoleteChildDto"
+              "components": {
+                "schemas": {
+                  "DtoWithOnlyCurrentReferenceProperty": {
+                    "type": "object",
+                    "properties": {
+                      "current": {
+                        "$ref": "#/components/schemas/NonObsoleteChildDto"
+                      }
+                    }
+                  },
+                  "DtoWithOnlyObsoleteReferenceProperty": {
+                    "type": "object",
+                    "properties": {
+                      "old": {
+                        "deprecated": true,
+                        "$ref": "#/components/schemas/NonObsoleteChildDto"
+                      }
+                    }
+                  },
+                  "NonObsoleteChildDto": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    }
                   }
                 }
               },
-              "NonObsoleteChildDto": {
-                "type": "object",
-                "properties": {
-                  "value": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  }
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
                 }
-              }
+              ]
             }
             """;
-        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 
     [Fact]
@@ -270,40 +328,77 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         builder.MapPost("/", (DtoWithObsoleteNullableReferenceProperty dto) => { });
 
         var document = await VerifyOpenApiDocument(builder, _ => { });
-        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
         // "deprecated" is inside the oneOf branch instead of on "old" until #69727 is fixed.
-        var expectedComponents = """
+        var expected = """
             {
-              "DtoWithObsoleteNullableReferenceProperty": {
-                "type": "object",
-                "properties": {
-                  "old": {
-                    "oneOf": [
-                      {
-                        "type": "null"
-                      },
-                      {
-                        "deprecated": true,
-                        "$ref": "#/components/schemas/NonObsoleteChildDto"
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DtoWithObsoleteNullableReferenceProperty"
+                          }
+                        }
                       }
-                    ]
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
                   }
                 }
               },
-              "NonObsoleteChildDto": {
-                "type": "object",
-                "properties": {
-                  "value": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+              "components": {
+                "schemas": {
+                  "DtoWithObsoleteNullableReferenceProperty": {
+                    "type": "object",
+                    "properties": {
+                      "old": {
+                        "oneOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "deprecated": true,
+                            "$ref": "#/components/schemas/NonObsoleteChildDto"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "NonObsoleteChildDto": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    }
                   }
                 }
-              }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
             }
             """;
-        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 
     [Fact]
@@ -314,33 +409,70 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         builder.MapPost("/", (DtoWithObsoleteReferencePropertyOfObsoleteType dto) => { });
 
         var document = await VerifyOpenApiDocument(builder, _ => { });
-        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
-        var expectedComponents = """
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
             {
-              "DtoWithObsoleteReferencePropertyOfObsoleteType": {
-                "type": "object",
-                "properties": {
-                  "old": {
-                    "deprecated": true,
-                    "$ref": "#/components/schemas/ObsoleteDto"
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DtoWithObsoleteReferencePropertyOfObsoleteType"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
                   }
                 }
               },
-              "ObsoleteDto": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+              "components": {
+                "schemas": {
+                  "DtoWithObsoleteReferencePropertyOfObsoleteType": {
+                    "type": "object",
+                    "properties": {
+                      "old": {
+                        "deprecated": true,
+                        "$ref": "#/components/schemas/ObsoleteDto"
+                      }
+                    }
+                  },
+                  "ObsoleteDto": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    },
+                    "deprecated": true
                   }
-                },
-                "deprecated": true
-              }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
             }
             """;
-        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 
     [Fact]
