@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           shopt -s globstar nullglob
-          tests=(.github/workflows/**/test_*.py .github/workflows/**/test_*.js .github/workflows/**/test_*.cjs .github/scripts/review-build-sandbox/test_*.py)
+          tests=(.github/workflows/**/test_*.py .github/workflows/**/test_*.js .github/workflows/**/test_*.cjs .github/workflows/**/*.test.mjs .github/scripts/review-build-sandbox/test_*.py)
           if ((${#tests[@]} == 0)); then
             echo "::error::No workflow test scripts found."
             exit 1
@@ -43,7 +43,7 @@ jobs:
             echo "::group::$test"
             case "$test" in
               *.py) python3 -B "$test" ;;
-              *.js|*.cjs) node "$test" ;;
+              *.js|*.cjs|*.mjs) node "$test" ;;
             esac
             echo "::endgroup::"
           done

@@ -7,6 +7,7 @@ import unittest
 REPOSITORY = Path(__file__).resolve().parents[3]
 WORKFLOW = REPOSITORY / ".github" / "workflows" / "workflow-tests.yml"
 SANDBOX = ".github/scripts/review-build-sandbox/"
+PUBLICATION_PREFLIGHT = ".github/workflows/tests/pull-request-review-publication-preflight.test.mjs"
 
 
 class ReviewBuildSandboxCiTests(unittest.TestCase):
@@ -33,10 +34,11 @@ class ReviewBuildSandboxCiTests(unittest.TestCase):
         }
         self.assertTrue(expected)
         self.assertEqual(expected, {path for path in discovered if path.startswith(SANDBOX)})
+        self.assertIn(PUBLICATION_PREFLIGHT, discovered)
+        self.assertRegex(source, r"\*\.js\|\*\.cjs\|\*\.mjs\) node ")
         for module in ("contract.py", "guest.py", "host.py", "receipt.py"):
             with self.subTest(module=module):
                 self.assertNotIn(SANDBOX + module, discovered)
-        self.assertFalse(any(path.endswith(".mjs") for path in discovered))
 
 
 if __name__ == "__main__":

@@ -73,7 +73,7 @@ def normalize(report, target, identity, helper_hashes):
         if (not isinstance(phase, dict) or phase.get("name") != name or phase.get("command") != command
                 or type(phase.get("exit")) is not int or phase["exit"] != 0
                 or type(phase.get("seconds")) not in (int, float)
-                or not math.isfinite(phase["seconds"]) or not 0 <= phase["seconds"] <= 1800):
+                or not 0 <= phase["seconds"] <= 1800 or not math.isfinite(phase["seconds"])):
             return unavailable(target, "Execution evidence has unexpected commands, timings, or process results.")
     uncovered = report.get("uncovered_changed_paths")
     if not isinstance(uncovered, list) or len(uncovered) > 1000 or any(not isinstance(p, str) for p in uncovered):

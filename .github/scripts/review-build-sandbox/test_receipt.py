@@ -94,6 +94,7 @@ class ReceiptTests(unittest.TestCase):
             ("exit", lambda phases: phases[2].update(exit=1)),
             ("negative-time", lambda phases: phases[2].update(seconds=-1)),
             ("nonfinite-time", lambda phases: phases[2].update(seconds=math.nan)),
+            ("oversized-time", lambda phases: phases[2].update(seconds=10**400)),
             ("reordered", lambda phases: phases.reverse()),
         ):
             with self.subTest(case=name):
