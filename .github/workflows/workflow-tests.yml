@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/**'
       - '.github/skills/**'
+      - '.github/scripts/review-build-sandbox/**'
 
 permissions:
   contents: read
@@ -33,7 +34,7 @@ jobs:
         shell: bash
         run: |
           shopt -s globstar nullglob
-          tests=(.github/workflows/**/test_*.py .github/workflows/**/test_*.js .github/workflows/**/test_*.cjs)
+          tests=(.github/workflows/**/test_*.py .github/workflows/**/test_*.js .github/workflows/**/test_*.cjs .github/scripts/review-build-sandbox/test_*.py)
           if ((${#tests[@]} == 0)); then
             echo "::error::No workflow test scripts found."
             exit 1

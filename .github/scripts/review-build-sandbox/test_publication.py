@@ -130,6 +130,39 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(["Incomplete or partial review output cannot be published."], self.gate(items, execution))
         self.assertEqual(["The validated execution status is not valid JSON."], self.gate(items))
 
+    def test_findings_may_quote_execution_marker_before_trusted_footer(self):
+        for classification in ("head-green", "unsupported", "unavailable"):
+            with self.subTest(classification=classification):
+                execution = self.execution(classification)
+                items = self.findings(1, execution)
+                items[-1]["body"] = f"Findings quote `Execution: {classification}`.\n\n" + execution["publicSummary"]
+                self.assertEqual([], self.gate(items, execution))
+
+    def test_findings_reject_missing_malformed_or_duplicated_execution_footer(self):
+        for classification in ("head-green", "unsupported", "unavailable"):
+            execution = self.execution(classification)
+            summary = execution["publicSummary"]
+            bodies = {
+                "missing": "Findings.",
+                "single-newline": "Findings.\n" + summary,
+                "changed-marker": "Findings.\n\n" + summary.replace(
+                    f"Execution: {classification}", "Execution: different", 1,
+                ),
+                "changed-tree": "Findings.\n\n" + summary.replace("b" * 40, "d" * 40, 1),
+                "trailing-content": "Findings.\n\n" + summary + "\nAdditional text.",
+                "duplicate-at-start": summary + "\n\n" + summary,
+                "duplicate-after-single-newline": "Findings.\n" + summary + "\n\n" + summary,
+                "duplicate-after-blank-line": "Findings.\n\n" + summary + "\n\n" + summary,
+            }
+            for case, body in bodies.items():
+                with self.subTest(classification=classification, case=case):
+                    items = self.findings(1, execution)
+                    items[-1]["body"] = body
+                    self.assertEqual(
+                        ["Incomplete or partial review output cannot be published."],
+                        self.gate(items, execution),
+                    )
+
     def test_partial_mixed_and_excess_output_remains_blocked(self):
         execution = self.execution("head-green")
         for items in ([], self.findings(0, execution), self.findings(6, execution),

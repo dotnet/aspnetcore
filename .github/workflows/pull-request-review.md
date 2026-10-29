@@ -396,7 +396,7 @@ jobs:
               .filter(item => item.type === 'submit_pull_request_review')
               .every(item => summaryIsValid && typeof item.body === 'string' &&
                 item.body.endsWith('\n\n' + execution.publicSummary) &&
-                item.body.indexOf('Execution:') === item.body.length - execution.publicSummary.length);
+                item.body.indexOf(execution.publicSummary) === item.body.length - execution.publicSummary.length);
             if (!(findings && executionSection)) {
               core.setFailed('Incomplete or partial review output cannot be published.');
             }

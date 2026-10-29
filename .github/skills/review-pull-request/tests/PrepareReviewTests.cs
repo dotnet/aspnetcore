@@ -1020,17 +1020,17 @@ public class PrepareReviewTests
         var workflow = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
             RepositoryRoot, ".github/workflows/pull-request-review.md"), Utf8NoBom), @"\s+", " ");
         Assert.Contains(
-            "Treat the assignment metadata as producer/checker-validated trust data; do not ask workers to recompute UTF-8 lengths or SHA-256 hashes.",
+            "Apply the skill's review contract unchanged. It owns worker configuration and dispatch, exact assignments and native reads, independent candidate validation, severity, changed-line anchors, feedback disposition, and structured result semantics.",
             workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "Workers must read each assigned non-source file to EOF through native `view` or `read_file` calls",
+            "Do not replace those rules with a second review policy in this adapter.",
             workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "They must page with `view_range` or the equivalent `read_file` offset and limit until the final line; a truncated read is a required-input failure, not completion.",
+            "Workers remain source-only and must not receive coordinator-only inputs or execution evidence.",
             workflow, StringComparison.Ordinal);
-        Assert.Contains("must not invoke `bash`, `shell`, or `powershell`", workflow, StringComparison.Ordinal);
+        Assert.Contains("Use `gpt-5.6-sol` as the explicit hosted worker model, with no automatic substitution.", workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "may use native `rg`, `grep`, or `glob` only beneath their assigned frozen source roots",
+            "Keep it coordinator-owned: never add it to per-guide assignments or worker briefs.",
             workflow, StringComparison.Ordinal);
     }
 
