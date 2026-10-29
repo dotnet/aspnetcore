@@ -49,15 +49,16 @@ function Print-Usage() {
   Write-Host "Command line arguments not listed above are passed thru to msbuild."
 }
 
-function Build([string]$target) {
-  $logSuffix = if ($target -eq 'Execute') { '' } else { ".$target" }
-  $log = Join-Path $LogDir "$task$logSuffix.binlog"
+# Restore is driven by MSBuild's /restore switch, which the shared MSBuild helper adds
+# whenever restore is enabled. No separate restore invocation is necessary.
+function Build() {
+  $log = Join-Path $LogDir "$task.binlog"
   $binaryLogArg = if ($binaryLog) { "/bl:$log" } else { "" }
   $outputPath = Join-Path $ToolsetDir "$task\"
 
   MSBuild $taskProject `
     $binaryLogArg `
-    /t:$target `
+    /t:Execute `
     /p:Configuration=$configuration `
     /p:RepoRoot=$RepoRoot `
     /p:BaseIntermediateOutputPath=$outputPath `
@@ -88,11 +89,7 @@ try {
     ExitWithExitCode 1
   }
 
-  if ($restore) {
-    Build 'Restore'
-  }
-
-  Build 'Execute'
+  Build
 }
 catch {
   Write-Host $_.ScriptStackTrace
