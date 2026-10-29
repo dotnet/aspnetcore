@@ -134,17 +134,21 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 ## Review and independent validation
 
 Launch exactly one fresh reviewer worker per routed guide as a full-capability
-`general-purpose` agent, never an explore, fast, or other lightweight agent, explicitly
-using
-`gpt-5.6-sol` (the evaluated configuration). Use `mode: "background"` so the same worker
-can receive follow-ups through `write_agent`. Wait for its completion notification, then
-collect the actual report with `read_agent` using `wait: true`; after each same-worker
-clarification, wait and collect its completed follow-up the same way before synthesis.
-If the user explicitly selected a different
-worker model, report the run as unevaluated. Record each requested agent type/model and
-any runtime-reported values; record unavailable runtime values as `unknown`, which alone
-does not make a guide incomplete. A confirmed mismatch or unavailable agent type/model
-makes that guide `incomplete`. Give each worker the trusted absolute bundle root (the
+`general-purpose` agent, never an explore, fast, or other lightweight agent. Select the
+caller-supplied worker model, or `gpt-5.6-sol` when the caller omitted it; pass that model
+explicitly and independently to every worker, never inheriting the coordinator or
+session model. Pass the caller-supplied reasoning effort explicitly and independently
+to every worker; when omitted, omit the effort setting and record
+`not supplied (runtime default)`. Use `mode: "background"` so the same worker can receive
+follow-ups through `write_agent`. Wait for its completion notification, then collect the
+actual report with `read_agent` using `wait: true`; after each same-worker clarification,
+wait and collect its completed follow-up the same way before synthesis. Record each
+requested agent type, model, and effort plus any runtime-reported values; record missing
+runtime telemetry as `unknown`, which alone does not make a guide incomplete. A confirmed
+mismatch, runtime rejection, or inability to apply an explicitly requested setting makes
+that guide `incomplete`. Mark a worker-model run other than `gpt-5.6-sol` as
+`UNEVALUATED`; effort alone does not change the evaluation label. Give each worker the
+trusted absolute bundle root (the
 directory containing `manifest.json`), its routed guide's verbatim
 `guides[].assignment` object, the frozen `target` identities, and a role-to-root mapping
 containing only `sources[role].root` for the roles named by
