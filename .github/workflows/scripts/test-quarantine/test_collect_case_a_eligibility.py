@@ -4122,7 +4122,53 @@ def test_shared_source_review_case(case, module=None):
         print(f"PASS shared-source review: {case}")
 
 
+def test_compile_membership_order(case, module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project = root / "src/Consumer"
+        project.mkdir(parents=True)
+        (project / "Tests.cs").write_text(
+            "namespace Sample;\npublic class Tests\n{\n"
+            "    [Fact]\n    public void Test() {}\n}\n", encoding="utf-8",
+        )
+        shared = root / "src/Shared/AssemblyInfo.cs"
+        shared.parent.mkdir()
+        shared.write_text(
+            '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        include = '<Compile Include="../Shared/AssemblyInfo.cs" />'
+        remove = '<Compile Remove="../Shared/AssemblyInfo.cs" />'
+        items = {
+            "remove-include": remove + include,
+            "include-remove": include + remove,
+            "uncertain-include": remove + include.replace(" />", ' Condition="$(Unknown)" />'),
+            "uncertain-remove-include": remove.replace(" />", ' Condition="$(Unknown)" />') + include,
+        }[case]
+        initial_include = "" if case == "uncertain-include" else include
+        (project / "Consumer.csproj").write_text(
+            f"<Project><ItemGroup>{initial_include}{items}</ItemGroup></Project>", encoding="utf-8",
+        )
+        commit(root, "Ordered shared assembly membership", "2026-08-01T00:00:00Z")
+        sha = run_output(root, "git", "rev-parse", "HEAD")
+        historical = module.historical_assembly_state(root, "src/Consumer", sha, {})
+        current = module.resolve_source(root, "Sample.Tests.Test")
+        if case == "uncertain-include":
+            assert historical["status"] == "ambiguous", historical
+            assert current["assembly_quarantine_ambiguous"], current
+        else:
+            assert historical["status"] == "exact", historical
+            expected = case != "include-remove"
+            assert historical["quarantined"] == expected, historical
+            assert current["assembly_quarantined"] == expected, current
+        print(f"PASS ordered Compile membership: {case}")
+
+
 def main():
+    for case in ("remove-include", "include-remove", "uncertain-include", "uncertain-remove-include"):
+        test_compile_membership_order(case)
     for case in ("wildcard", "block", "prefix", "assembly", "excluded", "excluded-namespace", "unknown"):
         test_shared_source_review_case(case)
     test_conditional_shared_source()

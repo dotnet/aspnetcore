@@ -480,23 +480,31 @@ def validate_removals(removed, history_targets, unquarantine_targets):
         )
 
 
-def changed_project_roots(root, base_commit, current_main, project_roots):
+def changed_project_roots(root, base_commit, current_main, project_roots, target_paths=()):
     if current_main == base_commit:
         return set()
     result = run(
         root,
         "git",
         "diff",
+        "--no-renames",
         "--name-only",
         f"{base_commit}..{current_main}",
     )
     changed = set(result.stdout.splitlines())
+    scopes_by_project = {
+        project_root: set(target_paths)
+        | set(ELIGIBILITY.project_paths(root, project_root, base_commit))
+        | set(ELIGIBILITY.project_paths(root, project_root, current_main))
+        for project_root in project_roots
+    }
     return {
         project_root
         for project_root in project_roots
         if any(
-            path == project_root or path.startswith(f"{project_root}/")
+            path == scope or path.startswith(f"{scope}/")
             for path in changed
+            for scope in scopes_by_project[project_root]
         )
     }
 
@@ -776,21 +784,22 @@ def validate_outputs(
                     (removed.get(key) or added[key])["project_root"]
                     for key in targets
                 }
+                target_paths = {
+                    (removed.get(key) or added[key])["path"]
+                    for key in targets
+                }
                 stale_roots = changed_project_roots(
                     repo_root,
                     history_commit,
                     current_main,
                     project_roots,
+                    target_paths,
                 )
                 if stale_roots:
                     raise ValidationError(
                         "origin/main changed a validated test project after "
                         f"evidence collection: {sorted(stale_roots)}"
                     )
-                target_paths = {
-                    (removed.get(key) or added[key])["path"]
-                    for key in targets
-                }
                 if not paths.issubset(target_paths):
                     raise ValidationError(
                         f"Patch changes files outside its quarantine targets: "

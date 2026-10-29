@@ -126,10 +126,7 @@ def project_context(root, project_root, commit=None):
         return None
     constants = set()
     includes = []
-    include_items = []
-    excludes = []
-    uncertain_excludes = []
-    uncertain_includes = []
+    compile_items = []
     supported = True
     for group in document:
         for item in group:
@@ -141,28 +138,19 @@ def project_context(root, project_root, commit=None):
                 constants = set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", value))
             elif tag == "Compile":
                 values = [item.get(name, "") for name in ("Include", "Exclude", "Remove")]
-                if any(values) and (
-                    group.get("Condition") or item.get("Condition")
-                    or any("$(" in value or "@(" in value for value in values)
-                ):
-                    uncertain_excludes.extend(values[2].replace("\\", "/").split(";"))
-                    uncertain_includes.extend(values[0].replace("\\", "/").split(";"))
-                    # Dynamic items are not evidence of shared-source ownership.
-                    continue
-                includes.extend(values[0].replace("\\", "/").split(";"))
-                include_items.extend(
-                    (pattern, values[1].replace("\\", "/").split(";"))
-                    for pattern in values[0].replace("\\", "/").split(";") if pattern
-                )
-                excludes.extend(values[2].replace("\\", "/").split(";"))
+                conditional = bool(group.get("Condition") or item.get("Condition"))
+                compile_items.append({
+                    name: [pattern for pattern in value.replace("\\", "/").split(";") if pattern]
+                    for name, value in zip(("include", "exclude", "remove"), values)
+                } | {"conditional": conditional})
+                # Conditional literal paths still need history scans, not exact ownership.
+                if "$(" not in values[0] and "@(" not in values[0]:
+                    includes.extend(values[0].replace("\\", "/").split(";"))
     result = {
         "constants": constants,
         "supported": supported,
         "includes": [value for value in includes if value],
-        "include_items": include_items,
-        "excludes": [value for value in excludes if value],
-        "uncertain_excludes": [pattern for pattern in uncertain_excludes if pattern],
-        "uncertain_includes": [pattern for pattern in uncertain_includes if pattern],
+        "compile_items": compile_items,
     }
     if commit is not None:
         PROJECT_CONTEXT_CACHE[key] = result
@@ -180,35 +168,31 @@ def compile_glob_matches(root, project_root, pattern, relative_path):
 def project_membership(root, project_root, context, relative_path):
     if context is None:
         return None
-    if any(
-        compile_glob_matches(root, project_root, pattern, relative_path)
-        for pattern in context["excludes"]
-    ):
-        return False
-    if any(
-        "$(" in pattern or "@(" in pattern
-        or compile_glob_matches(root, project_root, pattern, relative_path)
-        for pattern in context["uncertain_excludes"]
-    ):
-        return None
-    included = any(
-        compile_glob_matches(root, project_root, pattern, relative_path)
-        and not any(
-            compile_glob_matches(root, project_root, exclusion, relative_path)
-            for exclusion in exclusions if exclusion
-        )
-        for pattern, exclusions in context["include_items"]
-    )
-    local = pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(relative_path).parents
-    if included or local:
-        return True
-    if any(
-        "$(" in pattern or "@(" in pattern
-        or compile_glob_matches(root, project_root, pattern, relative_path)
-        for pattern in context["uncertain_includes"]
-    ):
-        return None
-    return False
+
+    def matches(patterns):
+        unknown = False
+        for pattern in patterns:
+            if "$(" in pattern or "@(" in pattern:
+                unknown = True
+            elif compile_glob_matches(root, project_root, pattern, relative_path):
+                return True
+        return None if unknown else False
+
+    membership = pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(relative_path).parents
+    for item in context["compile_items"]:
+        included = matches(item["include"])
+        excluded = matches(item["exclude"])
+        if included is not False and excluded is not True:
+            if included is True and excluded is False and not item["conditional"]:
+                membership = True
+            elif membership is False:
+                membership = None
+        removed = matches(item["remove"])
+        if removed is True and not item["conditional"]:
+            membership = False
+        elif removed is not False and membership is not False:
+            membership = None
+    return membership
 
 
 def project_includes(root, project_root, context, relative_path):
@@ -570,7 +554,7 @@ def square_bracket_delta(value):
     return depth
 
 
-def logical_attributes(attributes):
+def logical_attributes(attributes, *, include_locations=False):
     result = []
     start = None
     depth = 0
@@ -584,14 +568,15 @@ def logical_attributes(attributes):
             if depth == 0:
                 inner = " ".join(attributes[start:index].splitlines()).strip()
                 result.extend(
-                    f"[{item}]"
+                    (f"[{item}]", attributes.count("\n", 0, start - 1))
+                    if include_locations else f"[{item}]"
                     for item in split_arguments(inner)
                     if item
                 )
     return result
 
 
-def quarantine_attributes(attributes):
+def quarantine_attributes(attributes, attribute_locations=None):
     result = {
         "method": [],
         "data": [],
@@ -631,6 +616,10 @@ def quarantine_attributes(attributes):
                 "data": raw_data,
                 "values": data_values(raw_data),
             })
+    if attribute_locations is not None:
+        for kind in ("method", "data"):
+            for attribute in result[kind]:
+                attribute["attribute_lines"] = attribute_locations[attribute["attribute"]]
     return result
 
 
@@ -764,7 +753,7 @@ def declaration_ranges(clean):
 
 def attribute_block(lines, declaration_line, *, include_locations=False):
     collected = []
-    quarantine_lines = []
+    collected_lines = []
     bracket_depth = 0
     index = declaration_line - 1
     while index >= 0:
@@ -772,18 +761,23 @@ def attribute_block(lines, declaration_line, *, include_locations=False):
         if not stripped or stripped.startswith("//"):
             if collected:
                 collected.append(lines[index])
+                collected_lines.append(index + 1)
             index -= 1
             continue
         bracket_depth += stripped.count("]") - stripped.count("[")
         if stripped.startswith("[") or bracket_depth > 0:
             collected.append(lines[index])
-            if QUARANTINE_ATTRIBUTE_PATTERN.search(stripped):
-                quarantine_lines.append(index + 1)
+            collected_lines.append(index + 1)
             index -= 1
             continue
         break
     if include_locations:
-        return "\n".join(reversed(collected)), sorted(quarantine_lines)
+        attributes = "\n".join(reversed(collected))
+        physical_lines = list(reversed(collected_lines))
+        locations = {}
+        for attribute, line in logical_attributes(attributes, include_locations=True):
+            locations.setdefault(attribute, []).append(physical_lines[line])
+        return attributes, locations
     return "\n".join(reversed(collected))
 
 
@@ -898,7 +892,7 @@ def build_source_index(root):
                 declared_type=entry[3],
             )
             declaration_line = clean.count("\n", 0, position)
-            attributes, attribute_lines = attribute_block(lines, declaration_line, include_locations=True)
+            attributes, attribute_locations = attribute_block(lines, declaration_line, include_locations=True)
             prefix_start = max(
                 clean.rfind(delimiter, 0, position) for delimiter in (";", "{", "}", "]")
             ) + 1
@@ -910,7 +904,10 @@ def build_source_index(root):
                 "base": entry[5],
                 "is_abstract": re.search(r"\babstract\b", clean[prefix_start:position]) is not None,
                 "path": relative_path,
-                "attribute_lines": attribute_lines,
+                "attribute_lines": sorted({
+                    line for attribute, locations in attribute_locations.items()
+                    if has_quarantine_attribute(attribute) for line in locations
+                }),
                 "project_root": str(project_root),
                 "quarantined": quarantined,
                 "quarantine_attribute": attributes if quarantined else "",
@@ -940,14 +937,17 @@ def build_source_index(root):
             type_name = full_type_name(ranges, position, file_namespace)
             method = method_match.group("method")
             method_line = clean.count("\n", 0, position)
-            attributes, attribute_lines = attribute_block(lines, method_line, include_locations=True)
-            parsed_attributes = quarantine_attributes(attributes)
+            attributes, attribute_locations = attribute_block(lines, method_line, include_locations=True)
+            parsed_attributes = quarantine_attributes(attributes, attribute_locations)
             method_index.setdefault(method, []).append({
                 "path": relative_path,
                 "type": type_name,
                 "method": method,
                 "method_line": method_line + 1,
-                "attribute_lines": attribute_lines,
+                "attribute_lines": sorted({
+                    line for attribute in parsed_attributes["method"]
+                    for line in attribute["attribute_lines"]
+                }),
                 "is_test": any(
                     re.search(
                         r"\[\s*(?:global::)?(?:\w+\.)*\w*(?:Fact|Theory)(?:Attribute)?\b",
@@ -2787,8 +2787,8 @@ def current_quarantine_targets(source_index):
                     "project_root": declaration["project_root"],
                     "type": declaration["type"],
                     "method": declaration["method"],
-                    "attribute_lines": declaration["attribute_lines"],
                     "data": data_attribute["data"],
+                    "attribute_lines": data_attribute["attribute_lines"],
                     "operating_systems": list(
                         data_attribute["operating_system_values"] or ()
                     ),

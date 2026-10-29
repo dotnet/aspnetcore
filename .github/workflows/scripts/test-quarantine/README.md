@@ -94,6 +94,8 @@ issue. These correspond to Case A and Case B in
    duplicate targets, stale project source, additions that do not match an
    eligible Case A or Case B receipt, and removals whose exact current history
    is not `first-quarantine` or lacks bound deterministic Part 2 eligibility.
+   Freshness includes linked targets and literal shared-source scopes from both
+   the receipt snapshot and current main, not just consuming project directories.
 
 Agent-provided log excerpts and URLs are for human display only. They are not
 accepted as validation evidence.
@@ -131,7 +133,9 @@ Shared sources with conditional namespaces or assembly quarantine attributes
 are resolved separately for each consuming project using literal
 `DefineConstants` and `Compile` item paths,
 including exclusions and removals. Inactive branches are masked without moving
-source lines. Historical scans use the same project context at each commit and
+source lines. Literal `Compile` items are evaluated in document order, so a later
+include can restore a removed file; unresolved membership remains unproven.
+Historical scans use the same project context at each commit and
 include project-only symbol/item changes when identifying quarantine transitions.
 Unsupported dynamic or conditional ownership is not treated as exact; this is
 not a full MSBuild evaluator, and existing rename/history safeguards still apply.
