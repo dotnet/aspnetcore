@@ -337,6 +337,15 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
         if (Options.SessionStore != null)
         {
+            // A sign-in that asks for rotation must not keep the session key that came in on the
+            // request, otherwise a pre-existing cookie keeps resolving to the newly stored ticket.
+            // See https://github.com/dotnet/aspnetcore/issues/47503.
+            if (_sessionKey != null && signInContext.Properties.RotateSessionKey == true)
+            {
+                await Options.SessionStore.RemoveAsync(_sessionKey, Context, Context.RequestAborted);
+                _sessionKey = null;
+            }
+
             if (_sessionKey != null)
             {
                 // Renew the ticket in cases of multiple requests see: https://github.com/dotnet/aspnetcore/issues/22135
