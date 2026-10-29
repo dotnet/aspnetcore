@@ -637,6 +637,17 @@ def test_linked_source_freshness(change):
         elif change == "moved":
             (root / "src/Other").mkdir()
             run(root, "git", "mv", shared_path, "src/Other/Moved.cs")
+        elif change in ("new-consumer", "unrelated-project"):
+            project = root / "src/Other.Tests"
+            project.mkdir()
+            include = (
+                '<ItemGroup><Compile Include="../SharedTests/**/*.cs" /></ItemGroup>'
+                if change == "new-consumer" else ""
+            )
+            (project / "Other.Tests.csproj").write_text(
+                f'<Project><PropertyGroup><DefineConstants Condition="$(Unknown)">OTHER'
+                f'</DefineConstants></PropertyGroup>{include}</Project>', encoding="utf-8",
+            )
         else:
             path = root / ("src/SharedTests/Helper.cs" if change == "sibling" else "src/Other/Helper.cs")
             path.parent.mkdir(exist_ok=True)
@@ -651,15 +662,87 @@ def test_linked_source_freshness(change):
                 {"items": [pull_request(branch)]}, transport, current_main=current_main,
             )
 
-        if change == "unrelated":
+        if change in ("unrelated", "unrelated-project"):
             assert validate_patch()[0]["targets"] == 2
         else:
             assert_rejected(validate_patch, "changed a validated test project")
         print(f"PASS linked-source freshness: {change}")
 
 
+def test_unproven_shared_consumers(case):
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        attribute = '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]'
+        initial = source(attribute)
+        if case in ("assembly", "conditional-assembly"):
+            initial = f"[assembly: {attribute[1:-1]}]\n"
+            if case == "conditional-assembly":
+                initial = f"#if IIS_FUNCTIONALS\n{initial}#endif\n"
+        elif case != "same-identity":
+            initial = initial.replace(
+                "namespace Microsoft.AspNetCore.Tests;",
+                "#if IIS_FUNCTIONALS\nnamespace Microsoft.AspNetCore.Tests;\n"
+                "#else\nnamespace Microsoft.AspNetCore.Express.Tests;\n#endif",
+            )
+        initialize_repository(root, initial)
+        (root / "src/Sample.Tests/Sample.Tests.csproj").write_text(
+            "<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>"
+            "</PropertyGroup></Project>", encoding="utf-8",
+        )
+        express = root / "src/Express.Tests"
+        express.mkdir()
+        constants = (
+            '<PropertyGroup><DefineConstants Condition="$(Unknown)">EXPRESS</DefineConstants>'
+            '</PropertyGroup>' if case in ("constants", "excluded") else ""
+        )
+        condition = ' Condition="$(Unknown)"' if case == "membership" else ""
+        remove = '<Compile Remove="../Sample.Tests/SampleTests.cs" />' if case == "excluded" else ""
+        (express / "Express.Tests.csproj").write_text(
+            f'<Project>{constants}<ItemGroup>'
+            f'<Compile Include="../Sample.Tests/SampleTests.cs"{condition} />'
+            f'{remove}</ItemGroup></Project>', encoding="utf-8",
+        )
+        run(root, "git", "add", ".")
+        run(root, "git", "commit", "-qm", "Add shared consumers")
+        snapshot = run(root, "git", "rev-parse", "HEAD")
+        index = MODULE.ELIGIBILITY.build_source_index(root)
+        targets = [
+            {**target, "issue": 1, "status": "first-quarantine"}
+            for target in MODULE.target_map(root, index).values()
+        ]
+        assert len(targets) == 1, targets
+        eligibility, history = receipts(snapshot, case_a_record(), targets)
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/unproven-consumers"
+        create_patch(
+            root, transport, branch,
+            initial.replace(f"[assembly: {attribute[1:-1]}]\n", "")
+            if case in ("assembly", "conditional-assembly")
+            else initial.replace(f"    {attribute}\n", ""),
+        )
+
+        def check():
+            return validate(
+                root, snapshot, eligibility, history,
+                {"items": [pull_request(branch)]}, transport,
+            )
+
+        if case in ("excluded", "conditional-assembly"):
+            assert check()[0]["targets"] == 1
+        else:
+            assert_rejected(check, "unproven consuming projects")
+            collected = MODULE.ELIGIBILITY.collect_requarantine_history(root, "HEAD")
+            assert collected["targets"] and all(
+                target["status"] == "ambiguous" for target in collected["targets"]
+            ), collected
+        print(f"PASS shared consumer protection: {case}")
+
+
 def main():
-    for change in ("target", "sibling", "moved", "unrelated"):
+    for case in ("constants", "membership", "assembly", "same-identity", "excluded", "conditional-assembly"):
+        test_unproven_shared_consumers(case)
+    for change in ("target", "sibling", "moved", "new-consumer", "unrelated", "unrelated-project"):
         test_linked_source_freshness(change)
     for operation in ("addition", "removal", "separate-attributes", "mixed-rows", "mixed-rows-missing", "missing-receipt", "ineligible"):
         test_shared_attribute_validation(operation)

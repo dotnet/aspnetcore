@@ -498,7 +498,7 @@ def changed_project_roots(root, base_commit, current_main, project_roots, target
         | set(ELIGIBILITY.project_paths(root, project_root, current_main))
         for project_root in project_roots
     }
-    return {
+    stale = {
         project_root
         for project_root in project_roots
         if any(
@@ -507,6 +507,23 @@ def changed_project_roots(root, base_commit, current_main, project_roots, target
             for scope in scopes_by_project[project_root]
         )
     }
+    for path in changed:
+        if not path.endswith(".csproj"):
+            continue
+        project_root = str(pathlib.PurePosixPath(path).parent)
+        for commit in (base_commit, current_main):
+            context = ELIGIBILITY.project_context(root, project_root, commit)
+            for target_path in target_paths:
+                membership = ELIGIBILITY.project_membership(root, project_root, context, target_path)
+                if membership is True or (membership is None and (
+                    pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(target_path).parents
+                    or (context and any(
+                        ELIGIBILITY.compile_glob_matches(root, project_root, pattern, target_path)
+                        for pattern in context["includes"]
+                    ))
+                )):
+                    stale.add(project_root)
+    return stale
 
 
 def validate_commit_changes(root, base_commit, head_commit, branch):
@@ -763,6 +780,13 @@ def validate_outputs(
                         != target_operating_systems(target)
                     )
                 }
+                if any(
+                    target.get("source_ambiguous")
+                    for target in [*removed.values(), *added.values()]
+                ):
+                    raise ValidationError(
+                        "Quarantine edit has unproven consuming projects"
+                    )
                 if removed and added:
                     raise ValidationError(
                         f"Branch {item['branch']!r} mixes quarantine additions "

@@ -299,12 +299,13 @@ def has_conditional_namespace(text):
 
 def source_views(root, relative_path, text, projects):
     assembly_source = ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(text)) is not None
-    if not has_conditional_namespace(text) and not assembly_source:
+    needs_context = has_conditional_namespace(text) or assembly_source
+    if not needs_context and not has_quarantine_attribute(text):
         return [(find_project_root(root, relative_path), text)]
     views = []
     for project_root, context in projects.items():
         if not project_includes(root, project_root, context, relative_path):
-            if assembly_source and project_membership(root, project_root, context, relative_path) is None:
+            if project_membership(root, project_root, context, relative_path) is None:
                 if pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(relative_path).parents or (
                     context and any(
                         compile_glob_matches(root, project_root, pattern, relative_path)
@@ -313,10 +314,12 @@ def source_views(root, relative_path, text, projects):
                 ):
                     views.append((pathlib.Path(root, project_root), None))
             continue
-        processed = conditional_source(text, context["constants"]) if context["supported"] else None
+        processed = text
+        if needs_context:
+            processed = conditional_source(text, context["constants"]) if context["supported"] else None
         if processed is not None:
             views.append((pathlib.Path(root, project_root), processed))
-        elif assembly_source:
+        else:
             views.append((pathlib.Path(root, project_root), None))
     return views
 
@@ -837,10 +840,14 @@ def build_source_index(root):
     assembly_targets = []
     method_index = {}
     type_index = {}
+    unresolved_sources = {}
 
     for relative_path, project_root, text in source_files(root):
         if text is None:
-            assembly_quarantine_ambiguities[str(project_root)] = True
+            unresolved_sources.setdefault(relative_path, set()).add(str(project_root))
+            raw = (root / relative_path).read_text(encoding="utf-8", errors="replace")
+            if ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(raw)):
+                assembly_quarantine_ambiguities[str(project_root)] = True
             continue
         clean = sanitize_csharp(text)
         lines = text.splitlines()
@@ -1005,6 +1012,7 @@ def build_source_index(root):
         "methods": method_index,
         "types": type_index,
         "assemblies": assembly_targets,
+        "unresolved_sources": unresolved_sources,
     }
 
 
@@ -2742,6 +2750,33 @@ def quarantine_reference(attribute):
     return next(iter(references)) if len(references) == 1 else None
 
 
+def unproven_quarantine_paths(source_index):
+    consumers = {}
+
+    def record(scope, declaration, data=None):
+        key = (
+            scope, declaration["path"], declaration.get("type"),
+            declaration.get("method"), data,
+        )
+        consumers.setdefault(key, set()).add(declaration["project_root"])
+
+    for assembly in source_index["assemblies"]:
+        record("assembly", assembly)
+    for declarations in source_index["types"].values():
+        for declaration in declarations:
+            if declaration["quarantined"]:
+                record("type", declaration)
+    for declarations in source_index["methods"].values():
+        for declaration in declarations:
+            if declaration["method_quarantined"]:
+                record("method", declaration)
+            for attribute in declaration["data_quarantines"]:
+                record("data", declaration, attribute["values"])
+    return set(source_index.get("unresolved_sources", {})) | {
+        key[1] for key, projects in consumers.items() if len(projects) > 1
+    }
+
+
 def current_quarantine_targets(source_index):
     targets = []
     seen = set()
@@ -2831,6 +2866,10 @@ def current_quarantine_targets(source_index):
                 assembly["quarantine_attribute"]
             ),
         })
+    ambiguous_paths = unproven_quarantine_paths(source_index)
+    for target in targets:
+        if target["path"] in ambiguous_paths:
+            target["source_ambiguous"] = True
     return targets
 
 
@@ -3115,6 +3154,12 @@ def collect_requarantine_history(
                 else "ambiguous"
             ),
         })
+
+    ambiguous_paths = unproven_quarantine_paths(source_index)
+    for target in targets:
+        if target["path"] in ambiguous_paths:
+            target["status"] = "ambiguous"
+            target["introduced_utc"] = None
 
     return {
         "schema_version": 1,
