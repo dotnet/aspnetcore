@@ -217,6 +217,12 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             response.Request.Method == "POST" && new Uri(response.Url).AbsolutePath == "/Account/PasskeyUpgrade");
         await page.GetByRole(AriaRole.Button, new() { Name = "Log in", Exact = true }).ClickAsync();
         var upgradeResponse = await upgradeResponseTask;
+        // Chromium discards the response body once the page navigates away from the response,
+        // so it has to be read before the upgrade flow navigates away. The Playwright driver
+        // does not expose a body for redirect responses either, so skip the read in that case.
+        string upgradeResponseBody = upgradeResponse.Status is >= 300 and <= 399
+            ? null
+            : await upgradeResponse.TextAsync();
         await page.WaitForURLAsync(returnUrl, new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 15000 });
         await page.WaitForSelectorAsync("text=You are authenticated");
         Assert.Equal(returnUrl, page.Url);
@@ -278,7 +284,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         if (shouldSignal)
         {
             Assert.Equal(200, upgradeResponse.Status);
-            var redisplayedPage = await upgradeResponse.TextAsync();
+            var redisplayedPage = upgradeResponseBody;
             Assert.Contains("unknown-credential-signal-options=", redisplayedPage);
             Assert.DoesNotContain("creation-options=", redisplayedPage);
             Assert.Contains("_handler=passkey-upgrade", upgradeRequests[1].PostData);
