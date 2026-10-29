@@ -2,6 +2,7 @@
 
 import argparse
 import collections
+import hashlib
 import importlib.util
 import json
 import os
@@ -414,6 +415,7 @@ def validate_addition(target, eligibility, issue_items):
             isinstance(record, dict)
             and record.get("originating_case") == "case-b"
             and record.get("case_b_eligible") is True
+            and record.get("case_b_issue_verified") is True
             and record.get("case_b_issue") == issue
             and record.get("current_quarantine_state") == "not-quarantined"
             and record.get("latest_quarantine_transition") == "removed"
@@ -443,7 +445,7 @@ def history_target_map(history):
     return result
 
 
-def validate_removals(removed, history_targets):
+def validate_removals(removed, history_targets, unquarantine_targets):
     issues = set()
     for key, target in removed.items():
         reference = target["reference"]
@@ -460,6 +462,16 @@ def validate_removals(removed, history_targets):
         ):
             raise ValidationError(
                 f"Unquarantine target is not an exact first quarantine: {key}"
+            )
+        evidence = unquarantine_targets.get(key)
+        if (
+            not isinstance(evidence, dict)
+            or evidence.get("eligible") is not True
+            or evidence.get("issue") != issue
+            or evidence.get("introduced_utc") != history_target.get("introduced_utc")
+        ):
+            raise ValidationError(
+                f"Unquarantine target lacks deterministic Part 2 eligibility: {key}"
             )
         issues.add(issue)
     if len(issues) != 1:
@@ -572,6 +584,7 @@ def validate_outputs(
     ref,
     commit,
     current_main=None,
+    unquarantine_path=None,
 ):
     repo_root = pathlib.Path(repo_root).resolve()
     payload = load_json(agent_output_path)
@@ -584,6 +597,18 @@ def validate_outputs(
         ref,
         commit,
     )
+    if unquarantine_path is None:
+        raise ValidationError("Required deterministic Part 2 receipt is missing")
+    unquarantine = load_json(unquarantine_path)
+    validate_receipts(unquarantine, history, repository, ref, commit)
+    if (
+        unquarantine.get("complete") is not True
+        or unquarantine.get("history_sha256")
+        != hashlib.sha256(pathlib.Path(history_path).read_bytes()).hexdigest()
+        or set(unquarantine.get("pipelines", {})) != {"84", "87"}
+    ):
+        raise ValidationError("Deterministic Part 2 collection is incomplete or unbound")
+    unquarantine_targets = history_target_map(unquarantine)
     pull_requests = items(payload, "create_pull_request")
     issue_items = items(payload, "create_quarantine_issue")
     if not pull_requests:
@@ -843,7 +868,7 @@ def validate_outputs(
                             "Unquarantine pull request attribute lines do not "
                             "match its derived targets"
                         )
-                    validate_removals(removed, history_targets)
+                    validate_removals(removed, history_targets, unquarantine_targets)
                     summaries.append({
                         "branch": item["branch"],
                         "operation": "unquarantine",
@@ -904,6 +929,7 @@ def main():
             args.repository,
             args.ref,
             args.commit,
+            unquarantine_path=evidence_directory / "test-quarantine-unquarantine-eligibility.json",
         )
     except ValidationError as error:
         raise SystemExit(f"FATAL: {error}") from error
