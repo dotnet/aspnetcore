@@ -12,6 +12,7 @@ using Xunit;
 
 public class PrepareReviewTests
 {
+    private const int MaximumNativeReadLineBytes = 2048;
     private static readonly UTF8Encoding Utf8NoBom = new(false);
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private static readonly string RepositoryRoot = Path.GetFullPath("../../../../", Path.GetDirectoryName(SourcePath())!);
@@ -80,7 +81,9 @@ public class PrepareReviewTests
             fixture.Output, "guidance/.github/skills/review-pull-request/routing.md.source")))),
             manifest["routing"]!["sha256"]!.GetValue<string>());
         Assert.Equal(2, manifest["exclusions"]!.AsArray().Count);
-        Assert.Contains("Do not review the excluded scope", manifest["exclusions"]![1]!["body"]!.GetValue<string>());
+        await AssertExecutionExclusionAsync(manifest, fixture);
+        Assert.Contains("Do not review the excluded scope",
+            await fixture.RequiredTextAsync(manifest["exclusions"]![1]!["body"]!));
         foreach (var name in new[] { "apiFreeze", "fetch", "changedFiles", "diff", "feedback", "manifest" })
         {
             Assert.True(manifest["timingsMs"]![name]!.GetValue<double>() >= 0);
@@ -91,6 +94,427 @@ public class PrepareReviewTests
         Assert.Contains("DIRTY_GUIDANCE", await File.ReadAllTextAsync(Path.Combine(fixture.Output,
             "guidance/docs/CrossCuttingGuidance.md.source"), Utf8NoBom));
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Fact]
+    public async Task ProjectsChangedFileMetadataWithoutDuplicatePatchesOrRestUrls()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.Files[0]!["patch"] = new string('p', 5000);
+        fixture.Files[0]!["blob_url"] = "https://example.invalid/blob";
+        fixture.Files[0]!["raw_url"] = "https://example.invalid/raw";
+        fixture.Files[0]!["contents_url"] = "https://example.invalid/contents";
+
+        await fixture.PrepareAsync();
+
+        var files = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "files.json")))!.AsArray();
+        AssertJsonEqual(new JsonArray(
+            ProjectedFile(fixture.Files[0]!, 11, 3, 14),
+            ProjectedFile(fixture.Files[1]!, 0, 17, 17),
+            ProjectedFile(fixture.Files[2]!, 23, 0, 23, "src/OldName.cs"),
+            ProjectedFile(fixture.Files[3]!, 0, 29, 29),
+            ProjectedFile(fixture.Files[4]!, 31, 37, 68)), files);
+        Assert.DoesNotContain(files, item => item!.AsObject().ContainsKey("patch"));
+        Assert.DoesNotContain(files, item => item!.AsObject().Any(pair => pair.Key.EndsWith("_url", StringComparison.Ordinal)));
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        static JsonObject ProjectedFile(
+            JsonNode source, int additions, int deletions, int changes, string? previousFilename = null)
+        {
+            var result = new JsonObject
+            {
+                ["filename"] = source["filename"]!.GetValue<string>(),
+                ["status"] = source["status"]!.GetValue<string>(),
+                ["sha"] = source["sha"]!.GetValue<string>(),
+                ["additions"] = additions,
+                ["deletions"] = deletions,
+                ["changes"] = changes,
+            };
+            if (previousFilename is not null)
+            {
+                result["previousFilename"] = previousFilename;
+            }
+            return result;
+        }
+    }
+
+    [Fact]
+    public async Task ProjectsPullMetadataAndExternalizesALargeMultilineBody()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var body = CreateLargeMultilineBody();
+        Assert.Equal(24_931, Utf8NoBom.GetByteCount(body));
+        Assert.Equal(178, body.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length);
+        Assert.Equal(1045, body.Split('\n', StringSplitOptions.RemoveEmptyEntries).Max(line => Utf8NoBom.GetByteCount(line)));
+        fixture.Pull["body"] = body;
+        fixture.Pull["url"] = "https://api.example.invalid/pull";
+        fixture.Pull["html_url"] = "https://example.invalid/pull";
+
+        var manifest = await fixture.PrepareAsync();
+
+        Assert.Equal(2, manifest["version"]!.GetValue<int>());
+        var pull = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "pull.json")))!.AsObject();
+        AssertJsonEqual(new JsonObject
+        {
+            ["number"] = 42,
+            ["state"] = "open",
+            ["title"] = "Fixture pull request",
+            ["body"] = RequiredTextReference("required/pull/body.source", body),
+            ["draft"] = false,
+            ["author"] = new JsonObject
+            {
+                ["login"] = "contributor",
+                ["id"] = 5_000_000_002L,
+                ["type"] = "User",
+            },
+            ["labels"] = new JsonArray(
+                new JsonObject { ["name"] = "area-test" },
+                new JsonObject { ["name"] = "needs-attention" }),
+            ["milestone"] = new JsonObject
+            {
+                ["number"] = 73,
+                ["title"] = "Test milestone",
+            },
+            ["createdAt"] = "2026-10-25T10:02:03Z",
+            ["updatedAt"] = "2026-10-26T11:12:13Z",
+        }, pull);
+        Assert.Equal(body, await fixture.RequiredTextAsync(pull["body"]!));
+        Assert.DoesNotContain(pull, pair => pair.Key.EndsWith("url", StringComparison.OrdinalIgnoreCase));
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Fact]
+    public async Task ExternalizesPolicyExclusionAndFeedbackBodies()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.WriteGuidanceAsync("docs/Policy.md",
+            "# Policy\n## Required clause\n- First line.\n- Second line.\n");
+        await fixture.WriteGuidanceAsync("docs/CrossCuttingGuidance.md",
+            "# Guidance\n## Overarching principles\n- Follow [the requirement](Policy.md#required-clause).\n" +
+            "## Topics\n### Topic\n- Review changed code.\n");
+        fixture.Comments.Add(new JsonObject
+        {
+            ["id"] = 5_000_000_101L,
+            ["user"] = new JsonObject { ["login"] = "commenter", ["id"] = 5_000_000_201L, ["type"] = "User" },
+            ["body"] = "Comment line 1\nComment line 2\n",
+            ["created_at"] = "2026-10-25T10:03:04Z",
+            ["updated_at"] = "2026-10-25T10:05:06Z",
+            ["html_url"] = "https://example.invalid/comment",
+        });
+        fixture.Reviews.Add(new JsonObject
+        {
+            ["id"] = 5_000_000_202L,
+            ["user"] = new JsonObject { ["login"] = "reviewer", ["id"] = 5_000_000_302L, ["type"] = "User" },
+            ["body"] = "Review line 1\nReview line 2\n",
+            ["state"] = "COMMENTED",
+            ["submitted_at"] = "2026-10-25T12:13:14Z",
+            ["commit_id"] = new string('a', 40),
+            ["html_url"] = "https://example.invalid/review",
+        });
+        fixture.InlineComments.Add(new JsonObject
+        {
+            ["id"] = 5_000_000_303L,
+            ["user"] = new JsonObject { ["login"] = "inline-bot", ["id"] = 5_000_000_403L, ["type"] = "Bot" },
+            ["body"] = "Inline line 1\nInline line 2\n",
+            ["path"] = "src/Value.cs",
+            ["line"] = 41,
+            ["side"] = "RIGHT",
+            ["start_line"] = 37,
+            ["start_side"] = "RIGHT",
+            ["original_line"] = 39,
+            ["original_start_line"] = 35,
+            ["commit_id"] = new string('b', 40),
+            ["original_commit_id"] = new string('c', 40),
+            ["in_reply_to_id"] = 5_000_000_404L,
+            ["created_at"] = "2026-10-25T14:15:16Z",
+            ["updated_at"] = "2026-10-25T17:18:19Z",
+            ["html_url"] = "https://example.invalid/inline",
+        });
+
+        var manifest = await fixture.PrepareAsync();
+
+        AssertJsonEqual(RequiredTextReference("required/guides/0000/policies/0000.source",
+            "## Required clause\n- First line.\n- Second line."), manifest["policies"]![0]!["body"]!);
+        AssertJsonEqual(RequiredTextReference("required/coordinator/exclusions/0000-scope.source",
+            "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree"),
+            manifest["exclusions"]![0]!["scope"]!);
+        Assert.Equal("## Required clause\n- First line.\n- Second line.",
+            await fixture.RequiredTextAsync(manifest["policies"]![0]!["body"]!));
+        Assert.Contains("Running PR code",
+            await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["scope"]!));
+        Assert.Contains("Workers, hosted runs",
+            await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["reason"]!));
+        Assert.Contains("Do not review the excluded scope",
+            await fixture.RequiredTextAsync(manifest["exclusions"]![1]!["body"]!));
+        var feedback = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "feedback.json")))!.AsObject();
+        AssertJsonEqual(new JsonObject
+        {
+            ["comments"] = new JsonArray(new JsonObject
+            {
+                ["id"] = 5_000_000_101L,
+                ["author"] = new JsonObject
+                {
+                    ["login"] = "commenter",
+                    ["id"] = 5_000_000_201L,
+                    ["type"] = "User",
+                },
+                ["body"] = RequiredTextReference(
+                    "required/feedback/comments/5000000101.source", "Comment line 1\nComment line 2\n"),
+                ["createdAt"] = "2026-10-25T10:03:04Z",
+                ["updatedAt"] = "2026-10-25T10:05:06Z",
+            }),
+            ["reviews"] = new JsonArray(new JsonObject
+            {
+                ["id"] = 5_000_000_202L,
+                ["author"] = new JsonObject
+                {
+                    ["login"] = "reviewer",
+                    ["id"] = 5_000_000_302L,
+                    ["type"] = "User",
+                },
+                ["body"] = RequiredTextReference(
+                    "required/feedback/reviews/5000000202.source", "Review line 1\nReview line 2\n"),
+                ["state"] = "COMMENTED",
+                ["submittedAt"] = "2026-10-25T12:13:14Z",
+                ["commitId"] = new string('a', 40),
+            }),
+            ["inline"] = new JsonArray(new JsonObject
+            {
+                ["id"] = 5_000_000_303L,
+                ["author"] = new JsonObject
+                {
+                    ["login"] = "inline-bot",
+                    ["id"] = 5_000_000_403L,
+                    ["type"] = "Bot",
+                },
+                ["body"] = RequiredTextReference(
+                    "required/feedback/inline/5000000303.source", "Inline line 1\nInline line 2\n"),
+                ["path"] = "src/Value.cs",
+                ["line"] = 41,
+                ["side"] = "RIGHT",
+                ["startLine"] = 37,
+                ["startSide"] = "RIGHT",
+                ["originalLine"] = 39,
+                ["originalStartLine"] = 35,
+                ["commitId"] = new string('b', 40),
+                ["originalCommitId"] = new string('c', 40),
+                ["inReplyToId"] = 5_000_000_404L,
+                ["createdAt"] = "2026-10-25T14:15:16Z",
+                ["updatedAt"] = "2026-10-25T17:18:19Z",
+            }),
+        }, feedback);
+        Assert.Equal("Comment line 1\nComment line 2\n",
+            await fixture.RequiredTextAsync(feedback["comments"]![0]!["body"]!));
+        Assert.Equal("Review line 1\nReview line 2\n",
+            await fixture.RequiredTextAsync(feedback["reviews"]![0]!["body"]!));
+        Assert.Equal("Inline line 1\nInline line 2\n",
+            await fixture.RequiredTextAsync(feedback["inline"]![0]!["body"]!));
+        Assert.All(feedback.SelectMany(group => group.Value!.AsArray()).Select(item => item!.AsObject()),
+            item => Assert.DoesNotContain(item, pair => pair.Key.EndsWith("url", StringComparison.OrdinalIgnoreCase)));
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    public static TheoryData<string> RequiredTextMutations => new()
+    {
+        "missing",
+        "tampered",
+        "wrong length",
+        "wrong hash",
+        "path escape",
+        "reused",
+        "orphan",
+    };
+
+    [Theory]
+    [MemberData(nameof(RequiredTextMutations))]
+    public async Task RejectsInvalidExternalRequiredText(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var manifest = await fixture.PrepareAsync();
+        var reference = manifest["exclusions"]![0]!["reason"]!.AsObject();
+        var path = Path.Combine(fixture.Output,
+            reference["path"]!.GetValue<string>().Replace('/', Path.DirectorySeparatorChar));
+        switch (mutation)
+        {
+            case "missing":
+                File.Delete(path);
+                break;
+            case "tampered":
+                await File.AppendAllTextAsync(path, "tampered", Utf8NoBom);
+                break;
+            case "wrong length":
+                reference["utf8Bytes"] = reference["utf8Bytes"]!.GetValue<int>() + 1;
+                await fixture.WriteManifestAsync(manifest);
+                break;
+            case "wrong hash":
+                reference["sha256"] = new string('0', 64);
+                await fixture.WriteManifestAsync(manifest);
+                break;
+            case "path escape":
+                reference["path"] = "required/../escape.source";
+                await fixture.WriteManifestAsync(manifest);
+                break;
+            case "reused":
+                manifest["exclusions"]![0]!["scope"] = reference.DeepClone();
+                await fixture.WriteManifestAsync(manifest);
+                break;
+            case "orphan":
+                await fixture.AddRequiredTextAsync(manifest, "required/orphan.source", "orphan\n");
+                await fixture.WriteManifestAsync(manifest);
+                break;
+        }
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        if (mutation == "reused")
+        {
+            Assert.Equal(
+                "Prepared required text path is reused: required/coordinator/exclusions/0000-reason.source",
+                exception.Message);
+        }
+        else if (mutation == "orphan")
+        {
+            Assert.Equal("Prepared required text references are incomplete.", exception.Message);
+        }
+        else
+        {
+            Assert.Contains("required text", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Theory]
+    [InlineData(MaximumNativeReadLineBytes, true)]
+    [InlineData(MaximumNativeReadLineBytes + 1, false)]
+    public async Task EnforcesRequiredTextSingleLineNativeReadBound(int lineBytes, bool accepted)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.Pull["body"] = new string('x', lineBytes) + "\n";
+
+        if (accepted)
+        {
+            var manifest = await fixture.PrepareAsync();
+            var pull = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "pull.json")))!.AsObject();
+            Assert.Equal(new string('x', lineBytes) + "\n", await fixture.RequiredTextAsync(pull["body"]!));
+            Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+            Assert.True(manifest["ready"]!.GetValue<bool>());
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.PrepareAsync);
+            Assert.Equal("Required text line exceeds 2048 UTF-8 bytes: required/pull/body.source:1", exception.Message);
+            Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+        }
+    }
+
+    [Fact]
+    public async Task RejectsAnOversizedValidManifestOnReuse()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var manifest = await fixture.PrepareAsync();
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+        var compact = JsonSerializer.Serialize(manifest);
+        Assert.True(Utf8NoBom.GetByteCount(compact) > MaximumNativeReadLineBytes);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), compact, Utf8NoBom);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Equal("Prepared serialized JSON line exceeds 2048 UTF-8 bytes: manifest.json:1", exception.Message);
+    }
+
+    [Fact]
+    public async Task RejectsAnOversizedMalformedManifestLineBeforeParsing()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.PrepareAsync();
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"),
+            new string('x', MaximumNativeReadLineBytes + 1), Utf8NoBom);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Equal("Prepared serialized JSON line exceeds 2048 UTF-8 bytes: manifest.json:1", exception.Message);
+    }
+
+    [Fact]
+    public async Task ReusesTheSameBundleWithAndWithoutATrailingOutputSeparator()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.PrepareAsync();
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        var options = fixture.Options with { Output = fixture.Output + Path.DirectorySeparatorChar };
+        Assert.True((await fixture.CheckAsync(options))["ready"]!.GetValue<bool>());
+    }
+
+    public static TheoryData<string> InlineRequiredTextMutations => new()
+    {
+        "pull body",
+        "feedback body",
+        "milestone",
+    };
+
+    [Theory]
+    [MemberData(nameof(InlineRequiredTextMutations))]
+    public async Task RejectsNonObjectProjectedReferencesOnReuse(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        if (mutation == "feedback body")
+        {
+            fixture.Comments.Add(new JsonObject
+            {
+                ["id"] = 101,
+                ["user"] = new JsonObject { ["login"] = "commenter", ["id"] = 201, ["type"] = "User" },
+                ["body"] = "Comment body.\n",
+                ["created_at"] = "2026-10-25T10:00:00Z",
+                ["updated_at"] = "2026-10-25T10:01:00Z",
+            });
+        }
+        var manifest = await fixture.PrepareAsync();
+        if (mutation is "pull body" or "milestone")
+        {
+            var pull = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "pull.json")))!.AsObject();
+            if (mutation == "pull body")
+            {
+                var reference = pull["body"]!;
+                pull["body"] = "inline";
+                await fixture.RemoveRequiredTextAsync(manifest, reference);
+            }
+            else
+            {
+                pull["milestone"] = "inline";
+            }
+            await fixture.WriteJsonArtifactAsync(manifest, "pull.json", pull);
+        }
+        else
+        {
+            var feedback = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "feedback.json")))!.AsObject();
+            var reference = feedback["comments"]![0]!["body"]!;
+            feedback["comments"]![0]!["body"] = "inline";
+            await fixture.RemoveRequiredTextAsync(manifest, reference);
+            await fixture.WriteJsonArtifactAsync(manifest, "feedback.json", feedback);
+        }
+        await fixture.WriteManifestAsync(manifest);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Contains("malformed", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task KeepsEverySerializedJsonLineWithinTheNativeReadBound()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.Pull["body"] = CreateLargeMultilineBody();
+        fixture.Files[0]!["patch"] = new string('p', 5000);
+        await fixture.WriteGuidanceAsync("docs/Policy.md",
+            "# Policy\n## Required clause\n" + string.Concat(Enumerable.Repeat("- Required policy line.\n", 150)));
+        await fixture.WriteGuidanceAsync("docs/CrossCuttingGuidance.md",
+            "# Guidance\n## Overarching principles\n- Follow [the requirement](Policy.md#required-clause).\n" +
+            "## Topics\n### Topic\n- Review changed code.\n");
+
+        await fixture.PrepareAsync();
+
+        foreach (var name in new[] { "manifest.json", "pull.json", "files.json", "feedback.json" })
+        {
+            var lines = await File.ReadAllLinesAsync(Path.Combine(fixture.Output, name), Utf8NoBom);
+            Assert.All(lines, line => Assert.True(Utf8NoBom.GetByteCount(line) <= MaximumNativeReadLineBytes,
+                $"{name} contains a {Utf8NoBom.GetByteCount(line)}-byte serialized line."));
+        }
     }
 
     [Theory]
@@ -119,9 +543,10 @@ public class PrepareReviewTests
         var policy = Assert.Single(manifest["policies"]!.AsArray())!;
         Assert.Equal("docs/Policy.md", policy["path"]!.GetValue<string>());
         Assert.Equal("required-clause", policy["anchor"]!.GetValue<string>());
-        Assert.Equal("## Required clause\n- Only this requirement.", policy["body"]!.GetValue<string>());
+        Assert.Equal("## Required clause\n- Only this requirement.",
+            await fixture.RequiredTextAsync(policy["body"]!));
         manifest["policies"] = new JsonArray();
-        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest, JsonOptions) + "\n", Utf8NoBom);
         await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
     }
 
@@ -213,10 +638,13 @@ public class PrepareReviewTests
         Assert.Equal("src/Components/AGENTS.md", policy["path"]!.GetValue<string>());
         Assert.Equal(anchor, policy["anchor"]!.GetValue<string>());
         Assert.Equal("docs/SpecializedGuidance.md", policy["guide"]!.GetValue<string>());
-        Assert.Equal($"## {heading}\n- Validate the behavior.", policy["body"]!.GetValue<string>());
+        Assert.Equal($"## {heading}\n- Validate the behavior.",
+            await fixture.RequiredTextAsync(policy["body"]!));
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
 
+        var policyBody = manifest["policies"]![0]!["body"]!;
         manifest["policies"] = new JsonArray();
+        await fixture.RemoveRequiredTextAsync(manifest, policyBody);
         await fixture.WriteManifestAsync(manifest);
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
         Assert.Contains("Prepared required policy inputs are incomplete.", exception.Message);
@@ -244,6 +672,9 @@ public class PrepareReviewTests
             ["previous_filename"] = oldPath,
             ["status"] = "renamed",
             ["sha"] = fixture.Git(fixture.Repository, "rev-parse", $"{head}:{newPath}"),
+            ["additions"] = 0,
+            ["deletions"] = 0,
+            ["changes"] = 0,
         });
         await fixture.WriteGuidanceAsync("docs/BlazorComponentsGuidance.md",
             "# Components\n## Overarching principles\n- A rule.\n" +
@@ -257,11 +688,19 @@ public class PrepareReviewTests
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
         var filename = Path.Combine(fixture.Output, "files.json");
         var changed = JsonNode.Parse(await File.ReadAllBytesAsync(filename))!.AsArray();
-        changed[0]!.AsObject().Remove("previous_filename");
+        changed[0]!.AsObject().Remove("previousFilename");
         var bytes = Utf8NoBom.GetBytes(JsonSerializer.Serialize(changed, JsonOptions) + "\n");
         await File.WriteAllBytesAsync(filename, bytes);
-        manifest["artifacts"]!["files.json"] = Convert.ToHexStringLower(SHA256.HashData(bytes));
-        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
+        var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
+        manifest["artifacts"]!["files.json"] = hash;
+        foreach (var guide in manifest["guides"]!.AsArray())
+        {
+            var input = guide!["assignment"]!["files"]!.AsArray()
+                .Single(file => file!["kind"]!.GetValue<string>() == "changedFiles")!;
+            input["utf8Bytes"] = bytes.Length;
+            input["sha256"] = hash;
+        }
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest, JsonOptions) + "\n", Utf8NoBom);
         if (components)
         {
             await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
@@ -378,6 +817,210 @@ public class PrepareReviewTests
         Assert.Equal(["docs/CrossCuttingGuidance.md", "docs/BlazorComponentsGuidance.md"],
             manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>()));
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Fact]
+    public async Task ProjectsDisjointPerGuideWorkerInputsWithTrustedMetadata()
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        await ConfigureWorkerIsolationGuidanceAsync(fixture);
+        var manifest = await fixture.PrepareAsync();
+        var guides = manifest["guides"]!.AsArray();
+
+        Assert.Equal(2, manifest["version"]!.GetValue<int>());
+        Assert.Equal(2, guides.Count);
+        var requiredPaths = new HashSet<string>(StringComparer.Ordinal);
+        for (var guideIndex = 0; guideIndex < guides.Count; guideIndex++)
+        {
+            var guide = guides[guideIndex]!.AsObject();
+            Assert.Equal(["path", "topics", "assignment"], guide.Select(property => property.Key));
+            var guidePath = guide["path"]!.GetValue<string>();
+            var assignment = guide["assignment"]!.AsObject();
+            Assert.Equal(["head", "mergeBase", "baseTip"],
+                assignment["sourceRoles"]!.AsArray().Select(role => role!.GetValue<string>()));
+
+            var files = assignment["files"]!.AsArray().Select(file => file!.AsObject()).ToArray();
+            var expectedPolicyPath = $"required/guides/{guideIndex:D4}/policies/0000.source";
+            var expectedExclusionPaths = new[]
+            {
+                $"required/guides/{guideIndex:D4}/exclusions/0000-scope.source",
+                $"required/guides/{guideIndex:D4}/exclusions/0000-reason.source",
+                $"required/guides/{guideIndex:D4}/exclusions/0001-body.source",
+            };
+            Assert.Equal(new[]
+            {
+                ("guide", $"guidance/{guidePath}.source"),
+                ("diff", "diff.patch"),
+                ("changedFiles", "files.json"),
+                ("policy", expectedPolicyPath),
+                ("exclusion", expectedExclusionPaths[0]),
+                ("exclusion", expectedExclusionPaths[1]),
+                ("exclusion", expectedExclusionPaths[2]),
+            }, files.Select(file => (
+                file["kind"]!.GetValue<string>(),
+                file["path"]!.GetValue<string>())));
+
+            foreach (var file in files)
+            {
+                var path = file["path"]!.GetValue<string>();
+                var bytes = await File.ReadAllBytesAsync(Path.Combine(
+                    fixture.Output, path.Replace('/', Path.DirectorySeparatorChar)));
+                Assert.Equal(bytes.Length, file["utf8Bytes"]!.GetValue<int>());
+                Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(bytes)), file["sha256"]!.GetValue<string>());
+            }
+
+            var policyPaths = files
+                .Where(file => file["kind"]!.GetValue<string>() == "policy")
+                .Select(file => file["path"]!.GetValue<string>())
+                .ToArray();
+            Assert.Equal([expectedPolicyPath], policyPaths);
+            Assert.Equal([expectedPolicyPath],
+                manifest["policies"]!.AsArray()
+                    .Where(policy => policy!["guide"]!.GetValue<string>() == guidePath)
+                    .Select(policy => policy!["body"]!["path"]!.GetValue<string>()));
+            Assert.True(requiredPaths.Add(expectedPolicyPath));
+
+            var exclusionPaths = files
+                .Where(file => file["kind"]!.GetValue<string>() == "exclusion")
+                .Select(file => file["path"]!.GetValue<string>())
+                .ToArray();
+            Assert.Equal(expectedExclusionPaths, exclusionPaths);
+            Assert.All(exclusionPaths, path => Assert.True(requiredPaths.Add(path)));
+        }
+
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        var skill = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
+            RepositoryRoot, ".github/skills/review-pull-request/SKILL.md"), Utf8NoBom), @"\s+", " ");
+        Assert.Contains(
+            "Workers treat this metadata as producer/checker-validated trust data and must not recompute either value.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains("Read each directly to EOF with native `view` or `read_file`", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Page with `view_range` or the equivalent `read_file` offset and limit until the final line; a truncated read is a required-input failure, not completion.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains("Workers must not invoke `bash`, `shell`, or `powershell`.", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Native `rg`, `grep`, or `glob` is allowed only beneath an assigned frozen `source/<sha>` root",
+            skill, StringComparison.Ordinal);
+        Assert.DoesNotContain("verify the assigned UTF-8 byte length and SHA-256", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "For a native local coordinator shell denial, do not propose `--allow-all-paths`.",
+            skill, StringComparison.Ordinal);
+        var workerContractStart = skill.IndexOf("PATH: per-guide-worker", StringComparison.Ordinal);
+        Assert.True(workerContractStart >= 0);
+        var workerContract = skill[workerContractStart..];
+        Assert.Contains(
+            "must read every assigned non-source file to EOF through native `view` or `read_file`, using `view_range` or the equivalent `read_file` offset and limit until the final line.",
+            workerContract, StringComparison.Ordinal);
+        Assert.Contains(
+            "It must not invoke `bash`, `shell`, or `powershell`, and may use native `rg`, `grep`, or `glob` only beneath its assigned frozen source roots.",
+            workerContract, StringComparison.Ordinal);
+
+        var workflow = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
+            RepositoryRoot, ".github/workflows/pull-request-review.md"), Utf8NoBom), @"\s+", " ");
+        Assert.Contains(
+            "Treat the assignment metadata as producer/checker-validated trust data; do not ask workers to recompute UTF-8 lengths or SHA-256 hashes.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "Workers must read each assigned non-source file to EOF through native `view` or `read_file` calls",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "They must page with `view_range` or the equivalent `read_file` offset and limit until the final line; a truncated read is a required-input failure, not completion.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains("must not invoke `bash`, `shell`, or `powershell`", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "may use native `rg`, `grep`, or `glob` only beneath their assigned frozen source roots",
+            workflow, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("path")]
+    [InlineData("length")]
+    [InlineData("hash")]
+    [InlineData("policy")]
+    [InlineData("exclusion")]
+    [InlineData("extra")]
+    [InlineData("missing")]
+    [InlineData("source roles")]
+    [InlineData("tampered")]
+    public async Task CheckRejectsChangedWorkerAssignment(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        await ConfigureWorkerIsolationGuidanceAsync(fixture);
+        var manifest = await fixture.PrepareAsync();
+        var firstGuide = manifest["guides"]![0]!.AsObject();
+        var secondGuide = manifest["guides"]![1]!.AsObject();
+        var files = firstGuide["assignment"]!["files"]!.AsArray();
+        var guideInput = files.Single(file => file!["kind"]!.GetValue<string>() == "guide")!.AsObject();
+
+        switch (mutation)
+        {
+            case "path":
+                guideInput["path"] = secondGuide["assignment"]!["files"]!.AsArray()
+                    .Single(file => file!["kind"]!.GetValue<string>() == "guide")!["path"]!.GetValue<string>();
+                break;
+            case "length":
+                guideInput["utf8Bytes"] = guideInput["utf8Bytes"]!.GetValue<int>() + 1;
+                break;
+            case "hash":
+                guideInput["sha256"] = new string('0', 64);
+                break;
+            case "policy":
+                var policyIndex = files
+                    .Select((file, index) => (File: file!, Index: index))
+                    .Single(item => item.File["kind"]!.GetValue<string>() == "policy")
+                    .Index;
+                files[policyIndex] = secondGuide["assignment"]!["files"]!.AsArray()
+                    .Single(file => file!["kind"]!.GetValue<string>() == "policy")!.DeepClone();
+                break;
+            case "exclusion":
+                var exclusionIndex = files
+                    .Select((file, index) => (File: file!, Index: index))
+                    .First(item => item.File["kind"]!.GetValue<string>() == "exclusion")
+                    .Index;
+                files[exclusionIndex] = secondGuide["assignment"]!["files"]!.AsArray()
+                    .First(file => file!["kind"]!.GetValue<string>() == "exclusion")!.DeepClone();
+                break;
+            case "extra":
+                files.Add(guideInput.DeepClone());
+                break;
+            case "missing":
+                files.Remove(files.Single(file => file!["kind"]!.GetValue<string>() == "changedFiles"));
+                break;
+            case "source roles":
+                firstGuide["assignment"]!["sourceRoles"] = new JsonArray("head", "baseTip", "mergeBase");
+                break;
+            case "tampered":
+                var projected = files.First(file => file!["kind"]!.GetValue<string>() == "exclusion")!;
+                await File.AppendAllTextAsync(Path.Combine(fixture.Output,
+                    projected["path"]!.GetValue<string>().Replace('/', Path.DirectorySeparatorChar)), "tampered", Utf8NoBom);
+                break;
+        }
+
+        await fixture.WriteManifestAsync(manifest);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Contains(mutation == "tampered" ? "required text" : "worker assignment",
+            exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task ConfigureWorkerIsolationGuidanceAsync(Fixture fixture)
+    {
+        await fixture.WriteGuidanceAsync(".github/skills/review-pull-request/routing.md",
+            "| Changed path prefix | Guide |\n| --- | --- |\n" +
+            "| * | docs/CrossCuttingGuidance.md |\n" +
+            "| src/Components/ | docs/BlazorComponentsGuidance.md |\n");
+        await fixture.WriteGuidanceAsync("docs/CrossCuttingGuidance.md",
+            "# Cross-cutting\n## Overarching principles\n- Apply [the cross policy](CrossPolicy.md#cross-policy).\n" +
+            "## Topics\n### Correctness\n- Review correctness.\n");
+        await fixture.WriteGuidanceAsync("docs/BlazorComponentsGuidance.md",
+            "# Components\n## Overarching principles\n- Apply [the Components policy](ComponentsPolicy.md#components-policy).\n" +
+            "## Topics\n### Components\n- Review Components behavior.\n");
+        await fixture.WriteGuidanceAsync("docs/CrossPolicy.md",
+            "# Cross requirements\n## Cross Policy\n- Cross-cutting requirement.\n");
+        await fixture.WriteGuidanceAsync("docs/ComponentsPolicy.md",
+            "# Components requirements\n## Components Policy\n- Components requirement.\n");
     }
 
     [Fact]
@@ -689,7 +1332,7 @@ public class PrepareReviewTests
         Assert.Equal("ENOENT", context["reason"]!.GetValue<string>());
         Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
         manifest["context"] = new JsonArray();
-        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Output, "manifest.json"), JsonSerializer.Serialize(manifest, JsonOptions) + "\n", Utf8NoBom);
         await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
     }
 
@@ -740,7 +1383,34 @@ public class PrepareReviewTests
         Assert.Equal("remote", manifest["guidance"]!["mode"]!.GetValue<string>());
         Assert.Contains("REMOTE_GUIDANCE", await File.ReadAllTextAsync(Path.Combine(fixture.Output,
             "guidance/docs/CrossCuttingGuidance.md.source"), Utf8NoBom));
+        await AssertExecutionExclusionAsync(manifest, fixture);
         Assert.True((await fixture.CheckAsync(options))["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("scope")]
+    [InlineData("reason")]
+    [InlineData("legacy")]
+    public async Task RejectsReuseWithChangedExecutionExclusion(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var manifest = await fixture.PrepareAsync();
+        var exclusion = manifest["exclusions"]![0]!;
+        if (mutation == "legacy")
+        {
+            await fixture.ReplaceRequiredTextAsync(manifest, exclusion["scope"]!,
+                "Running PR code, tests, CI, browser workflows, or implementation samples");
+            await fixture.ReplaceRequiredTextAsync(manifest, exclusion["reason"]!,
+                "This is a source-only review; assess changed tests and contracts from source.");
+        }
+        else
+        {
+            await fixture.ReplaceRequiredTextAsync(manifest, exclusion[mutation]!, "CHANGED");
+        }
+        await fixture.WriteManifestAsync(manifest);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.CheckAsync);
+        Assert.Equal("Prepared exclusions do not match the trusted instruction snapshot.", exception.Message);
     }
 
     public static TheoryData<string> ReuseMutations => new()
@@ -904,6 +1574,38 @@ public class PrepareReviewTests
         PrepareReviewProgram.CheckPaths(["src/File.cs", "src/AGENTS.md", ".github/copilot-instructions.md"]);
     }
 
+    private static async Task AssertExecutionExclusionAsync(JsonObject manifest, Fixture fixture)
+    {
+        Assert.Equal("Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree",
+            await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["scope"]!));
+        Assert.Equal("Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
+            "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
+            "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
+            "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.",
+            await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["reason"]!));
+    }
+
+    private static string CreateLargeMultilineBody() =>
+        new string('b', 1045) + "\n"
+        + string.Concat(Enumerable.Repeat(new string('b', 134) + "\n", 167))
+        + string.Concat(Enumerable.Repeat(new string('b', 133) + "\n", 10));
+
+    private static JsonObject RequiredTextReference(string path, string text)
+    {
+        var bytes = Utf8NoBom.GetBytes(text);
+        return new JsonObject
+        {
+            ["path"] = path,
+            ["utf8Bytes"] = bytes.Length,
+            ["sha256"] = Convert.ToHexStringLower(SHA256.HashData(bytes)),
+        };
+    }
+
+    private static void AssertJsonEqual(JsonNode expected, JsonNode actual) =>
+        Assert.True(JsonNode.DeepEquals(expected, actual),
+            $"Expected:{Environment.NewLine}{expected.ToJsonString(JsonOptions)}{Environment.NewLine}" +
+            $"Actual:{Environment.NewLine}{actual.ToJsonString(JsonOptions)}");
+
     private static string SourcePath([CallerFilePath] string path = "") => path;
 
     private sealed record FileEntry(string Mode, string Body);
@@ -961,15 +1663,25 @@ public class PrepareReviewTests
             File.WriteAllText(Path.Combine(GuidanceRoot, "docs/CrossCuttingGuidance.md"),
                 "# Guidance\n## Overarching principles\n- DIRTY_GUIDANCE\n## Topics\n### Topic\n- Required clause.\n", Utf8NoBom);
             Files = new JsonArray(
-                FileJson(valuePath, "modified"),
-                FileJson("src/OldName.cs", "removed"),
-                FileJson("src/Renamed.cs", "added"),
-                FileJson("src/Deleted.cs", "removed"),
-                FileJson("src/Mode.cs", "modified"));
+                FileJson(valuePath, "modified", 11, 3, 14),
+                FileJson("src/OldName.cs", "removed", 0, 17, 17),
+                FileJson("src/Renamed.cs", "added", 23, 0, 23, "src/OldName.cs"),
+                FileJson("src/Deleted.cs", "removed", 0, 29, 29),
+                FileJson("src/Mode.cs", "modified", 31, 37, 68));
             Pull = new JsonObject
             {
                 ["number"] = 42,
                 ["state"] = "open",
+                ["title"] = "Fixture pull request",
+                ["body"] = "Fixture body.\n",
+                ["draft"] = false,
+                ["user"] = new JsonObject { ["login"] = "contributor", ["id"] = 5_000_000_002L, ["type"] = "User" },
+                ["labels"] = new JsonArray(
+                    new JsonObject { ["name"] = "area-test", ["color"] = "ffffff" },
+                    new JsonObject { ["name"] = "needs-attention", ["color"] = "123456" }),
+                ["milestone"] = new JsonObject { ["number"] = 73, ["title"] = "Test milestone" },
+                ["created_at"] = "2026-10-25T10:02:03Z",
+                ["updated_at"] = "2026-10-26T11:12:13Z",
                 ["changed_files"] = Files.Count,
                 ["head"] = new JsonObject { ["sha"] = Head, ["repo"] = new JsonObject { ["id"] = 2, ["full_name"] = "contributor/product" } },
                 ["base"] = new JsonObject { ["ref"] = "release/test", ["repo"] = new JsonObject { ["id"] = 1, ["full_name"] = "owner/product" } },
@@ -977,10 +1689,24 @@ public class PrepareReviewTests
             Diff = GitBytes(Repository, "diff", "--binary", "--no-ext-diff", MergeBase, Head);
             Options = new("owner/product", "42", Output, GuidanceRoot: GuidanceRoot);
 
-            JsonObject FileJson(string name, string status)
+            JsonObject FileJson(
+                string name, string status, int additions, int deletions, int changes, string? previousFilename = null)
             {
                 var side = status == "removed" ? MergeBase : Head;
-                return new JsonObject { ["filename"] = name, ["status"] = status, ["sha"] = Git(Repository, "rev-parse", $"{side}:{name}") };
+                var result = new JsonObject
+                {
+                    ["filename"] = name,
+                    ["status"] = status,
+                    ["sha"] = Git(Repository, "rev-parse", $"{side}:{name}"),
+                    ["additions"] = additions,
+                    ["deletions"] = deletions,
+                    ["changes"] = changes,
+                };
+                if (previousFilename is not null)
+                {
+                    result["previous_filename"] = previousFilename;
+                }
+                return result;
             }
         }
 
@@ -993,6 +1719,9 @@ public class PrepareReviewTests
         public string BaseTip { get; set; }
         public JsonObject Pull { get; }
         public JsonArray Files { get; set; }
+        public JsonArray Comments { get; } = [];
+        public JsonArray Reviews { get; } = [];
+        public JsonArray InlineComments { get; } = [];
         public byte[] Diff { get; set; }
         public PrepareReviewProgram.Options Options { get; }
         public bool FailReviews { get; set; }
@@ -1038,6 +1767,10 @@ public class PrepareReviewTests
             await File.ReadAllTextAsync(Path.Combine(Output, manifest["sources"]![role]!["root"]!.GetValue<string>(),
                 name.Replace('/', Path.DirectorySeparatorChar) + ".source"), Utf8NoBom);
 
+        public async Task<string> RequiredTextAsync(JsonNode reference) =>
+            await File.ReadAllTextAsync(Path.Combine(Output,
+                reference["path"]!.GetValue<string>().Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
+
         public async Task WriteGuidanceAsync(string name, string contents)
         {
             var path = Path.Combine(GuidanceRoot, name.Replace('/', Path.DirectorySeparatorChar));
@@ -1046,7 +1779,58 @@ public class PrepareReviewTests
         }
 
         public Task WriteManifestAsync(JsonObject manifest) =>
-            File.WriteAllTextAsync(Path.Combine(Output, "manifest.json"), JsonSerializer.Serialize(manifest), Utf8NoBom);
+            File.WriteAllTextAsync(Path.Combine(Output, "manifest.json"), JsonSerializer.Serialize(manifest, JsonOptions) + "\n", Utf8NoBom);
+
+        public async Task WriteJsonArtifactAsync(JsonObject manifest, string name, JsonNode value)
+        {
+            var bytes = Utf8NoBom.GetBytes(JsonSerializer.Serialize(value, JsonOptions) + "\n");
+            await File.WriteAllBytesAsync(Path.Combine(Output, name), bytes);
+            manifest["artifacts"]![name] = Convert.ToHexStringLower(SHA256.HashData(bytes));
+        }
+
+        public async Task ReplaceRequiredTextAsync(JsonObject manifest, JsonNode reference, string text)
+        {
+            var bytes = Utf8NoBom.GetBytes(text);
+            var path = Path.Combine(Output,
+                reference["path"]!.GetValue<string>().Replace('/', Path.DirectorySeparatorChar));
+            await File.WriteAllBytesAsync(path, bytes);
+            reference["utf8Bytes"] = bytes.Length;
+            reference["sha256"] = Convert.ToHexStringLower(SHA256.HashData(bytes));
+            await RefreshRequiredTextDigestAsync(manifest);
+        }
+
+        public async Task RemoveRequiredTextAsync(JsonObject manifest, JsonNode reference)
+        {
+            File.Delete(Path.Combine(Output,
+                reference["path"]!.GetValue<string>().Replace('/', Path.DirectorySeparatorChar)));
+            await RefreshRequiredTextDigestAsync(manifest);
+        }
+
+        public async Task AddRequiredTextAsync(JsonObject manifest, string name, string text)
+        {
+            var path = Path.Combine(Output, name.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            await File.WriteAllTextAsync(path, text, Utf8NoBom);
+            await RefreshRequiredTextDigestAsync(manifest);
+        }
+
+        private async Task RefreshRequiredTextDigestAsync(JsonObject manifest)
+        {
+            var root = Path.Combine(Output, manifest["requiredText"]!["root"]!.GetValue<string>());
+            var names = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+                .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'))
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+            using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            foreach (var name in names)
+            {
+                var bytes = await File.ReadAllBytesAsync(Path.Combine(root, name.Replace('/', Path.DirectorySeparatorChar)));
+                digest.AppendData(Utf8NoBom.GetBytes(
+                    $"{name}\0{Convert.ToHexStringLower(SHA256.HashData(bytes))}\n"));
+            }
+            manifest["requiredText"]!["files"] = names.Length;
+            manifest["requiredText"]!["sha256"] = Convert.ToHexStringLower(digest.GetHashAndReset());
+        }
 
         public void MoveHeadToEquivalentCommit()
         {
@@ -1075,7 +1859,9 @@ public class PrepareReviewTests
             if (endpoint == "repos/reviewer/guidance") return Node(new JsonObject { ["id"] = 3, ["full_name"] = "reviewer/guidance" });
             if (accept is not null) return Node(JsonValue.Create(Convert.ToBase64String(Diff)));
             if (FailReviews && endpoint.Contains("/reviews?", StringComparison.Ordinal)) throw new InvalidOperationException("Review feedback unavailable");
-            if (endpoint.Contains("/comments?", StringComparison.Ordinal) || endpoint.Contains("/reviews?", StringComparison.Ordinal)) return Node(new JsonArray());
+            if (endpoint.Contains("/issues/42/comments?", StringComparison.Ordinal)) return Node(Comments.DeepClone());
+            if (endpoint.Contains("/pulls/42/reviews?", StringComparison.Ordinal)) return Node(Reviews.DeepClone());
+            if (endpoint.Contains("/pulls/42/comments?", StringComparison.Ordinal)) return Node(InlineComments.DeepClone());
             if (endpoint.Contains("/files?", StringComparison.Ordinal)) return Node(Files.DeepClone());
             if (endpoint.Contains("/git/ref/heads/", StringComparison.Ordinal)) return Node(new JsonObject { ["object"] = new JsonObject { ["sha"] = BaseTip } });
             if (endpoint.Contains("/compare/", StringComparison.Ordinal)) return Node(new JsonObject
