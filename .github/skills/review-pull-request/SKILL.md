@@ -134,18 +134,27 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 ## Review and independent validation
 
 Launch exactly one fresh reviewer worker per routed guide as a full-capability
-`general-purpose` agent, never an explore, fast, or other lightweight agent, explicitly
-using
-`gpt-5.6-sol` (the evaluated configuration). Use `mode: "background"` so the same worker
-can receive follow-ups through `write_agent`. Wait for its completion notification, then
-collect the actual report with `read_agent` using `wait: true`; after each same-worker
-clarification, wait and collect its completed follow-up the same way before synthesis.
-If the user explicitly selected a different
-worker model, report the run as unevaluated. Record each requested agent type/model and
-any runtime-reported values; record unavailable runtime values as `unknown`, which alone
-does not make a guide incomplete. A confirmed mismatch or unavailable agent type/model
-makes that guide `incomplete`. Give each worker the trusted absolute bundle root (the
-directory containing `manifest.json`), its routed guide's verbatim
+`general-purpose` agent, never an explore, fast, or other lightweight agent. Pass the
+caller-supplied worker model when present; otherwise explicitly use `gpt-5.6-sol` (the
+evaluated worker model), never an implicitly inherited coordinator or session model.
+Independently pass any caller-supplied worker effort. When no effort is supplied, omit
+it and record `not supplied (runtime default)`. Mark any run using a worker model other
+than `gpt-5.6-sol` as `UNEVALUATED`; effort selection alone does not change that label.
+Use
+`mode: "background"` so the same worker can receive follow-ups through `write_agent`.
+Wait for its completion notification, then collect the actual report with `read_agent`
+using `wait: true`; after each same-worker clarification, wait and collect its completed
+follow-up the same way before synthesis. Once a complete terminal report has already
+been received, never recollect it merely to add `wait: true`; record the collection
+deviation without changing guide completeness solely for that reason. Record each
+requested agent type, model, and effort and any runtime-reported values. Record a field
+not explicitly supplied to the runtime as `not supplied (runtime default)` and missing
+runtime telemetry for a supplied field as `unknown`; neither alone makes a guide
+incomplete. Configuration alone makes a guide `incomplete` only for a confirmed
+mismatch or when the runtime rejects or cannot apply an explicitly requested agent
+type, model, or effort. Worker failure, no returned report, and required-input failures
+remain separate incomplete triggers below. Give each worker the trusted absolute bundle
+root (the directory containing `manifest.json`), its routed guide's verbatim
 `guides[].assignment` object, the frozen `target` identities, and a role-to-root mapping
 containing only `sources[role].root` for the roles named by
 `assignment.sourceRoles`. Resolve those bundle-relative file and source-root paths
@@ -190,6 +199,11 @@ Independently check every returned candidate before acceptance. Require:
    path in the authoritative changed-file list.
 2. A realistic consumer or application trigger traced through source, material
    consumer-visible effect, and causal connection between the changed line and effect.
+   Exception: a P3 test-provenance candidate under the regression-coverage rule below
+   need not show an application trigger or consumer-visible effect when an added or
+   changed test is presented as regression coverage and source proves it cannot reach
+   or discriminate the changed seam. It still requires items 1, 3, and 4. P1, P2, and
+   non-test P3 candidates remain subject to this item unchanged.
 3. Frozen old-side behavior, frozen head behavior, and the actual called overload,
    producer-to-consumer path, and any required target-base or primary contract. A
    sibling helper is not evidence about the called helper. Read its full body and
@@ -204,10 +218,14 @@ together. Source reasoning is sufficient when that result is clear; do not assum
 merge-conflict resolution or treat a reference already removed or updated by the
 other side as a merged failure.
 
-For an incomplete-fix or new-feature omission, require a binding issue, API, or
-repository contract; a missing test or unclear intent alone is not a material
-behavioral finding. Do not create a candidate that merely requests a test or a
-rationale without a concrete effect.
+For an incomplete-fix or a claim that the PR should also change an unchanged caller,
+file, path, or behavior outside the diff, require an exact binding issue, API, or
+repository contract and a realistic material effect; otherwise record it as
+`UNRESOLVED`. This extra contract requirement does not apply to a source-proven defect
+in added or changed code, or to a regression whose frozen old and head source settle
+the behavior. A missing test or unclear intent alone is not a material behavioral
+finding. Do not create a candidate that merely requests a test or a rationale without
+a concrete effect.
 
 Reject a candidate when source disproves it, with the precise called edge and full
 return path. A discard that argues behavior is unchanged must compare the old and new
@@ -220,18 +238,26 @@ Resolve overloaded calls and value-producing expressions before accepting or
 discarding any claim; a nearby helper or a type annotation is not its runtime behavior.
 
 Assess tests for false-pass risk (would they pass with the fix reverted?), owner-layer
-fit, and changed-behavior coverage from source. A native local run starts from a clean,
-up-to-date `main` checkout, which remains the guidance source. The coordinator may
-optionally fetch `manifest.target.head`, create a temporary detached worktree at that
-commit, and write and run a minimal test or repro there. Never run target code in the
-developer checkout or bundle; remove the temporary worktree and scratch files
-afterwards, and record the exact command and result. A failing test that reproduces the
-claimed effect confirms the candidate. A passing test is evidence against the candidate,
-not an automatic discard; the coordinator still decides from the complete source path.
-If the worktree, build, or test is unavailable, skip execution, record the reason, and
-remain source-only without reporting `INCOMPLETE`. Workers remain source-only. A
-source-only review remains valid; tests and CI claims are supporting evidence, and only
-an eligible recorded local repro is execution proof.
+fit, and changed-behavior coverage from source. For an added or changed test presented
+as regression coverage, trace its fixture, bootstrap, and input into the changed
+production seam and assess whether exact reversion of the covered production change
+would fail. When source proves such a test cannot reach or discriminate that seam,
+report a P3 rather than merely requesting more tests. This applies only to an existing
+added or changed test presented as regression coverage; an absent test is not itself a
+finding. Synthetic stubs and fakes used in review reasoning must match shipping
+declarations, inheritance, overloads, and conversion shapes. A native local run starts
+from a clean, up-to-date `main` checkout,
+which remains the guidance source. The coordinator may optionally fetch
+`manifest.target.head`, create a temporary detached worktree at that commit, and write
+and run a minimal test or repro there. Never run target code in the developer checkout
+or bundle; remove the temporary worktree and scratch files afterwards, and record the
+exact command and result. A failing test that reproduces the claimed effect confirms
+the candidate. A passing test is evidence against the candidate, not an automatic
+discard; the coordinator still decides from the complete source path. If the worktree,
+build, or test is unavailable, skip execution, record the reason, and remain source-only
+without reporting `INCOMPLETE`. Workers remain source-only. A source-only review remains
+valid; tests and CI claims are supporting evidence, and only an eligible recorded local
+repro is execution proof.
 
 ## Return result; never publish
 
