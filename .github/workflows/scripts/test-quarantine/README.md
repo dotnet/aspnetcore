@@ -127,6 +127,14 @@ target remains ambiguous.
 Unresolved historical inheritance is unproven, not evidence that a test was
 never inherited.
 
+Shared sources with conditional namespaces are resolved separately for each
+consuming project using literal `DefineConstants` and `Compile` item paths,
+including exclusions and removals. Inactive branches are masked without moving
+source lines. Historical scans use the same project context at each commit and
+include project-only symbol/item changes when identifying quarantine transitions.
+Unsupported dynamic or conditional ownership is not treated as exact; this is
+not a full MSBuild evaluator, and existing rename/history safeguards still apply.
+
 ## Build Insights behavior
 
 A verified issue ends with exactly one `## Error Message` JSON block containing
