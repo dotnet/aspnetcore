@@ -99,7 +99,7 @@ def capture_log(pipe):
             remaining = max(0, remaining - len(data))
 
 
-def bounded(name, limit=8 * 1024 * 1024):
+def bounded(name, limit=8 * 1024 * 1024, expected_hash=None, export=True):
     path = OUT / name
     fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     with os.fdopen(fd, "rb") as file:
@@ -109,8 +109,72 @@ def bounded(name, limit=8 * 1024 * 1024):
         data = file.read(limit + 1)
         if len(data) > limit:
             raise ValueError(f"Oversized outbox file: {name}")
-        (EVIDENCE / name).write_bytes(data)
+        if expected_hash is not None and hashlib.sha256(data).hexdigest() != expected_hash:
+            raise ValueError(f"Outbox file hash mismatch: {name}")
+        if export:
+            (EVIDENCE / name).write_bytes(data)
         return data
+
+
+def salvage_outputs():
+    if receipt["status"] != "passed":
+        receipt["retention"] = {
+            "state": "absent", "reason": "missing_retention_metadata", "file_sha256": {},
+        }
+    for name in ("failure.txt", "probes.json", "phases.json", "bootstrap.log", "sdk.log",
+                 "restore.log", "build.log", "test.log", "retention.json", "tests.xml"):
+        if (OUT / name).exists() and not (EVIDENCE / name).exists():
+            try:
+                if name == "tests.xml" and receipt["status"] != "passed":
+                    retention = receipt["retention"]
+                    if retention["state"] != "copied":
+                        raise ValueError("Test report was not completely retained")
+                    bounded(name, expected_hash=retention["file_sha256"]["tests.xml"])
+                elif name == "retention.json":
+                    data = bounded(name, limit=4096, export=False)
+                    retained = json.loads(data)
+                    if (not isinstance(retained, dict)
+                            or retained.get("state") not in (
+                                "copied", "absent", "malformed_or_truncated", "rejected", "copy_failed",
+                            )
+                            or not isinstance(retained.get("reason"), str)
+                            or not re.fullmatch(r"[A-Za-z0-9_]{1,64}", retained["reason"])
+                            or not isinstance(retained.get("file_sha256"), dict)):
+                        raise ValueError("Invalid retention metadata")
+                    hashes = retained["file_sha256"]
+                    if retained["state"] == "copied":
+                        if (set(hashes) != {"tests.xml"} or not isinstance(hashes["tests.xml"], str)
+                                or not re.fullmatch(r"[a-f0-9]{64}", hashes["tests.xml"])
+                                or not isinstance(retained.get("source"), str)
+                                or not re.fullmatch(
+                                    re.escape(PROFILE["assembly"]) + r"_net[0-9]+\.[0-9]+_x64\.xml",
+                                    retained["source"],
+                                )):
+                            raise ValueError("Invalid retained report identity")
+                    elif hashes:
+                        raise ValueError("Unexpected retained report hashes")
+                    receipt["retention"] = {
+                        key: retained[key] for key in ("state", "reason", "file_sha256")
+                    }
+                    if retained["state"] == "copied":
+                        receipt["retention"]["source"] = retained["source"]
+                    (EVIDENCE / name).write_bytes(data)
+                else:
+                    bounded(name)
+            except (OSError, ValueError, RecursionError) as error:
+                if name == "retention.json":
+                    receipt["retention"] = {
+                        "state": "rejected", "reason": "invalid_retention_metadata", "file_sha256": {},
+                    }
+                receipt.setdefault("rejected_outputs", []).append(f"{name}: {error}")
+                if name == "tests.xml" and receipt.get("retention", {}).get("state") == "copied":
+                    receipt["retention"] = {
+                        "state": "rejected", "reason": "invalid_retained_report", "file_sha256": {},
+                    }
+    if receipt.get("retention", {}).get("state") == "copied" and not (EVIDENCE / "tests.xml").exists():
+        receipt["retention"] = {
+            "state": "absent", "reason": "missing_retained_report", "file_sha256": {},
+        }
 
 
 def audit_container():
@@ -350,13 +414,7 @@ finally:
     if log_thread is not None:
         log_thread.join(timeout=10)
     if EVIDENCE.exists():
-        for name in ("failure.txt", "probes.json", "phases.json", "bootstrap.log", "sdk.log",
-                     "restore.log", "build.log", "test.log", "tests.xml"):
-            if (OUT / name).exists() and not (EVIDENCE / name).exists():
-                try:
-                    bounded(name)
-                except (OSError, ValueError) as error:
-                    receipt.setdefault("rejected_outputs", []).append(f"{name}: {error}")
+        salvage_outputs()
         receipt["total_seconds"] = round(time.monotonic() - started, 3)
         receipt["file_sha256"] = {
             path.name: hashlib.sha256(path.read_bytes()).hexdigest()

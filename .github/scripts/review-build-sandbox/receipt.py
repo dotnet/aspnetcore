@@ -16,7 +16,7 @@ ACCEPTANCE = (
 )
 FILES = {
     "awf.log", "awf-config.json", "probes.json", "phases.json", "bootstrap.log",
-    "sdk.log", "restore.log", "build.log", "test.log", "tests.xml", "failure.txt",
+    "sdk.log", "restore.log", "build.log", "test.log", "tests.xml", "failure.txt", "retention.json",
 }
 
 
@@ -92,7 +92,7 @@ def verify_files(report, directory):
     hashes = report.get("file_sha256")
     if not isinstance(hashes, dict) or any(name not in FILES for name in hashes):
         raise ValueError("Unexpected evidence file inventory.")
-    if report.get("status") == "passed" and not FILES - {"failure.txt"} <= hashes.keys():
+    if report.get("status") == "passed" and not FILES - {"failure.txt", "retention.json"} <= hashes.keys():
         raise ValueError("Required execution files are missing.")
     for name, expected in hashes.items():
         path = directory / name

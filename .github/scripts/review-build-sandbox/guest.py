@@ -1,13 +1,17 @@
 """Trusted command runner. All target execution stays in the non-AI sandbox."""
 
+import hashlib
+from itertools import islice
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
 import subprocess
 import sys
 import time
+import xml.etree.ElementTree as ET
 from contract import ROOT as ROOT_PATH, commands
 
 ROOT = Path(ROOT_PATH)
@@ -15,6 +19,7 @@ SOURCE = ROOT / "work"
 OUT = ROOT / "out"
 CONTROL = ROOT / "control"
 TOOLS = ROOT / "tools"
+RESULTS = SOURCE / "artifacts" / "TestResults" / "Debug"
 profile = json.loads((CONTROL / "profile.json").read_text())
 phases = []
 
@@ -40,6 +45,74 @@ def phase(name, command, timeout=900):
     record()
     if result["exit"]:
         raise RuntimeError(f"{name} failed: exit {result['exit']}")
+
+
+def results_directory():
+    for path in (SOURCE, RESULTS.parent.parent, RESULTS.parent, RESULTS):
+        info = path.lstat()
+        if not stat.S_ISDIR(info.st_mode) or (
+            os.name == "nt" and info.st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
+        ):
+            raise ValueError("linked_or_non_directory")
+
+
+def retain_test_report():
+    result = {"state": "absent", "reason": "no_report", "file_sha256": {}}
+    try:
+        results_directory()
+        with os.scandir(RESULTS) as entries:
+            inventory = list(islice(entries, 129))
+        if len(inventory) > 128:
+            return {**result, "state": "rejected", "reason": "directory_entry_limit"}
+        reports = [
+            Path(entry.path) for entry in inventory
+            if re.fullmatch(re.escape(profile["assembly"]) + r"_net[0-9]+\.[0-9]+_x64\.xml", entry.name)
+        ]
+        if len(reports) > 1:
+            return {**result, "state": "rejected", "reason": "multiple_reports"}
+        if not reports:
+            return result
+        path = reports[0]
+        info = path.lstat()
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or (
+            os.name == "nt" and info.st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
+        ):
+            return {**result, "state": "rejected", "reason": "linked_or_non_regular"}
+        limit = 8 * 1024 * 1024
+        if info.st_size > limit:
+            return {**result, "state": "rejected", "reason": "size_limit"}
+        flags = os.O_RDONLY
+        if os.name == "posix":
+            flags |= os.O_NOFOLLOW | os.O_NONBLOCK
+        with os.fdopen(os.open(path, flags), "rb") as file:
+            opened = os.fstat(file.fileno())
+            if (not stat.S_ISREG(opened.st_mode) or opened.st_nlink != 1
+                    or (opened.st_dev, opened.st_ino) != (info.st_dev, info.st_ino)):
+                return {**result, "state": "rejected", "reason": "changed_file"}
+            data = file.read(limit + 1)
+        results_directory()
+        if len(data) > limit:
+            return {**result, "state": "rejected", "reason": "size_limit"}
+        if len(data) != info.st_size:
+            return {**result, "state": "malformed_or_truncated", "reason": "changed_size"}
+        if b"<!DOCTYPE" in data or b"<!ENTITY" in data or b"\0" in data:
+            return {**result, "state": "rejected", "reason": "xml_declaration"}
+        try:
+            ET.fromstring(data)
+        except ET.ParseError:
+            return {**result, "state": "malformed_or_truncated", "reason": "xml_parse"}
+        with (OUT / "tests.xml").open("xb") as file:
+            file.write(data)
+        return {
+            "state": "copied", "reason": "single_report", "source": path.name,
+            "file_sha256": {"tests.xml": hashlib.sha256(data).hexdigest()},
+        }
+    except FileNotFoundError:
+        return {**result, "reason": "missing_directory_or_file"}
+    except ValueError:
+        return {**result, "state": "rejected", "reason": "linked_or_non_directory"}
+    except OSError as error:
+        return {**result, "state": "copy_failed", "reason": type(error).__name__}
 
 
 def preflight():
@@ -129,6 +202,17 @@ try:
     })
     planned = commands(profile)
     for name, timeout in (("bootstrap", 600), ("sdk", 30), ("restore", 900), ("build", 900), ("test", 300)):
+        if name == "test":
+            for path in (RESULTS.parent.parent, RESULTS.parent, RESULTS):
+                path.mkdir(exist_ok=True)
+                info = path.lstat()
+                if not stat.S_ISDIR(info.st_mode) or (
+                    os.name == "nt" and info.st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
+                ):
+                    raise RuntimeError("Test result parent is linked or not a directory")
+            with os.scandir(RESULTS) as entries:
+                if next(entries, None) is not None:
+                    raise RuntimeError("Test result directory is not empty before test execution")
         phase(name, planned[name], timeout)
     reports = list((SOURCE / "artifacts/TestResults/Debug").glob(profile["assembly"] + "_net*_x64.xml"))
     if len(reports) != 1:
@@ -136,4 +220,15 @@ try:
     shutil.copyfile(reports[0], OUT / "tests.xml")
 except Exception as error:
     (OUT / "failure.txt").write_text(f"{type(error).__name__}: {error}\n")
+    if phases and phases[-1]["name"] == "test" and phases[-1]["exit"] != 0:
+        try:
+            retention = retain_test_report()
+        except Exception as retention_error:
+            retention = {
+                "state": "copy_failed", "reason": type(retention_error).__name__, "file_sha256": {},
+            }
+        try:
+            (OUT / "retention.json").write_text(json.dumps(retention, indent=2))
+        except OSError as retention_error:
+            print("Test report retention metadata failed: " + type(retention_error).__name__, file=sys.stderr)
     sys.exit(1)
