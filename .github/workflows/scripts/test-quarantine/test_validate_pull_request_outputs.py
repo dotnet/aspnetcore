@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import importlib.util
+import hashlib
 import json
 import os
 import pathlib
@@ -171,6 +172,7 @@ def case_b_record(issue=1, operating_systems=None):
         "originating_case": "case-b",
         "case_b_eligible": True,
         "case_b_issue": issue,
+        "case_b_issue_verified": True,
         "source_resolution": {
             "status": "exact",
             "path": TEST_PATH,
@@ -274,6 +276,7 @@ def validate(
     agent_output,
     transport,
     current_main=None,
+    unquarantine=None,
 ):
     evidence = root / "evidence"
     evidence.mkdir(exist_ok=True)
@@ -282,6 +285,20 @@ def validate(
     output_path = evidence / "agent-output.json"
     write_json(eligibility_path, eligibility)
     write_json(history_path, history)
+    unquarantine_path = evidence / "unquarantine.json"
+    if unquarantine is None:
+        unquarantine = {
+            **history,
+            "history_sha256": hashlib.sha256(history_path.read_bytes()).hexdigest(),
+            "complete": True,
+            "pipelines": {"84": {"build_count": 1}, "87": {"build_count": 0}},
+            "targets": [
+                {**target, "eligible": True}
+                for target in history["targets"]
+                if target.get("status") == "first-quarantine"
+            ],
+        }
+    write_json(unquarantine_path, unquarantine)
     write_json(output_path, agent_output)
     return MODULE.validate_outputs(
         root,
@@ -293,6 +310,7 @@ def validate(
         REF,
         commit,
         current_main=current_main or commit,
+        unquarantine_path=unquarantine_path,
     )
 
 
@@ -734,6 +752,21 @@ def main():
             transport,
         )
         assert result[0]["operation"] == "unquarantine", result
+        evidence = json.loads((root / "evidence" / "unquarantine.json").read_text())
+        for changed, message in (
+            ({**evidence, "targets": []}, "Part 2 eligibility"),
+            ({**evidence, "complete": False}, "incomplete or unbound"),
+            ({**evidence, "history_sha256": "0" * 64}, "incomplete or unbound"),
+            ({**evidence, "pipelines": {"84": {}}}, "incomplete or unbound"),
+        ):
+            assert_rejected(
+                lambda changed=changed: validate(
+                    root, commit, eligibility, history,
+                    {"items": [pull_request(branch)]}, transport,
+                    unquarantine=changed,
+                ),
+                message,
+            )
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
