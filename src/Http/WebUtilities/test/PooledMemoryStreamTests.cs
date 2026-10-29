@@ -279,8 +279,14 @@ namespace Microsoft.AspNetCore.WebUtilities
                 stream.Position = 1;
                 var canceledToken = new CancellationToken(true);
 
-                Assert.Throws<OperationCanceledException>(() => stream.ReadAsync(new byte[1], 0, 1, canceledToken));
-                Assert.Throws<OperationCanceledException>(() => stream.WriteAsync(new byte[] { 9 }, 0, 1, canceledToken));
+                Assert.Throws<OperationCanceledException>(() =>
+                {
+                    stream.ReadAsync(new byte[1], 0, 1, canceledToken);
+                });
+                Assert.Throws<OperationCanceledException>(() =>
+                {
+                    stream.WriteAsync(new byte[] { 9 }, 0, 1, canceledToken);
+                });
 
                 Assert.Equal(1, stream.Position);
                 Assert.Equal(new byte[] { 1, 2, 3 }, GetWrittenBytes(stream));
@@ -354,8 +360,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Throws<ObjectDisposedException>(() => stream.Write(new byte[1], 0, 1));
             Assert.Throws<ObjectDisposedException>(() => stream.Seek(0, SeekOrigin.Begin));
             Assert.Throws<ObjectDisposedException>(() => stream.SetLength(0));
-            Assert.Throws<ObjectDisposedException>(() => stream.ReadAsync(new byte[1], 0, 1, CancellationToken.None));
-            Assert.Throws<ObjectDisposedException>(() => stream.WriteAsync(new byte[1], 0, 1, CancellationToken.None));
+            Assert.Throws<ObjectDisposedException>(() =>
+            {
+                stream.ReadAsync(new byte[1], 0, 1, CancellationToken.None);
+            });
+            Assert.Throws<ObjectDisposedException>(() =>
+            {
+                stream.WriteAsync(new byte[1], 0, 1, CancellationToken.None);
+            });
         }
 
         private static PooledMemoryStream CreateStreamWithData(byte[] data)
