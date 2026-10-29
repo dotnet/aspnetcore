@@ -47,6 +47,7 @@ param(
     [int]$MaxReadyToMerge = 3,
     [ValidateRange(0, 100)]
     [int]$MaxReviewNowPerAuthor = 2,
+    [string]$SourceRevision,
     [string]$InputPath,
     [datetime]$Now = [datetime]::UtcNow
 )
@@ -73,5 +74,6 @@ Invoke-PRAttentionQueue `
     -MaxNeedsRescue $MaxNeedsRescue `
     -MaxReadyToMerge $MaxReadyToMerge `
     -MaxReviewNowPerAuthor $MaxReviewNowPerAuthor `
+    -SourceRevision $SourceRevision `
     -InputPath $InputPath `
     -Now $Now

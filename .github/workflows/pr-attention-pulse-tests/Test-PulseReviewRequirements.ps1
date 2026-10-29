@@ -311,7 +311,7 @@ Invoke-Control "FixedDashboardTarget" {
         Assert-True ($workflow.Contains($requiredText)) "The trusted target checks must enforce '$requiredText'."
     }
     Assert-True ([regex]::Matches($workflow, 'GITHUB_REPOSITORY.*dotnet/aspnetcore').Count -eq 2) "Execution and publication must each enforce the canonical upstream repository."
-    Assert-True ([regex]::Matches($workflow, 'repos/dotnet/aspnetcore/issues/69328').Count -eq 2) "The fixed issue must be checked before inference and immediately before publication."
+    Assert-True ([regex]::Matches($workflow, 'repos/dotnet/aspnetcore/issues/69328').Count -eq 3) "The fixed issue must be checked before inference, read for comparison, and revalidated immediately before publication."
     Assert-True ([regex]::Matches($workflow, 'PSObject\.Properties\["pull_request"\]').Count -eq 2) "Both target checks must reject a pull request."
     Assert-True ([regex]::Matches($workflow, '\[string\]\$issue\.state, "open"').Count -eq 2) "Both target checks must require the issue to remain open."
     Assert-True ([regex]::Matches($workflow, '\(\[string\]\$issue\.title\)\.StartsWith\("\[pr-attention-pulse\]"').Count -eq 2) "Both target checks must require the dashboard title prefix."
@@ -355,11 +355,11 @@ Invoke-Control "BlazorScopeAndPresentation" {
     $repositoryWideArguments = ($productionInvocations[1].Groups["arguments"].Value -replace "\s+", " ").Trim()
     Assert-True ([string]::Equals(
         $blazorArguments,
-        "-Repository dotnet/aspnetcore -Preset blazor -DisablePersonalInbox -OutputFormat Json",
+        "-Repository dotnet/aspnetcore -Preset blazor -DisablePersonalInbox -OutputFormat Json -SourceRevision `$env:PULSE_COLLECTOR_REVISION",
         [StringComparison]::Ordinal)) "The first producer must use the explicit Blazor preset; actual arguments: '$blazorArguments'."
     Assert-True ([string]::Equals(
         $repositoryWideArguments,
-        "-Repository dotnet/aspnetcore -AllRepo -DisablePersonalInbox -OutputFormat Json",
+        "-Repository dotnet/aspnetcore -AllRepo -DisablePersonalInbox -OutputFormat Json -SourceRevision `$env:PULSE_COLLECTOR_REVISION",
         [StringComparison]::Ordinal)) "The second producer must use the repository-wide baseline; actual arguments: '$repositoryWideArguments'."
     Assert-True ($productionInvocations[0].Groups["scope"].Value -ceq "blazor" -and
         $productionInvocations[1].Groups["scope"].Value -ceq "repository-wide") "The two raw producer outputs must remain independently named and ordered."

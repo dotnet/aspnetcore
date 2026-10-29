@@ -146,6 +146,17 @@ per discovery, notification, own-review, and review-thread source. Missing or de
 fixture-driven tests or a deterministic local probe; live runs resolve the authenticated `gh` user.
 The workflow remains read-only and never marks notifications read or writes GitHub state.
 
+The JSON root can also include `collectorRevision`, the exact source commit used by a trusted
+consumer. Every classified item includes its current `headSha`. Public consumers may project these
+fields into sanitized follow-up indexes, but must not expose raw discussion, notification, file, or
+personal-inbox payloads. A changed collector revision identifies a possible rule change; a changed
+PR head identifies changed GitHub facts. Neither grants review or merge authority.
+
+`Invoke-GhJson` retries the exact GitHub CLI transport failure `unexpected end of JSON input` within
+the existing bounded attempt budget. This narrow retry does not apply to `Invoke-GhText`, successful
+commands that emit malformed JSON, permission failures, scope failures, or other contract errors.
+After exhaustion the collection fails explicitly with the final attempt and CLI message.
+
 ## Read-only boundary
 
 Keep the entire workflow read-only:

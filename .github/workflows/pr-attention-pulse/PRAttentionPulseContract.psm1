@@ -210,7 +210,7 @@ function ConvertTo-PulseSnapshotBlock
         ""
         "Snapshot generated: ``$($SnapshotContext.generatedAt)``. [Producing workflow run]($runUrl)."
         "Artifact: ``pulse-publication-evidence``; files: ``pulse-input.json``, ``pulse-body.md``."
-        "Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence."
+        "Capped public digest plus the full sanitized follow-up index. Authenticated ZIP artifact retained for seven days as secondary audit evidence."
         ""
         "<details>"
         "<summary>Snapshot identity</summary>"
@@ -686,6 +686,64 @@ function Assert-PulseAreaScope
         throw "The Pulse area source is invalid."
     }
 
+    $collectorRevision = if ($Area.source.PSObject.Properties["collectorRevision"])
+    {
+        $Area.source.collectorRevision
+    }
+    else
+    {
+        $null
+    }
+    if ($null -ne $collectorRevision -and ([string]$collectorRevision -cnotmatch "^[0-9a-f]{40}$"))
+    {
+        throw "The Pulse collector revision is invalid."
+    }
+    if ($Area.PSObject.Properties["followUpIndex"] -and
+        ($Area.followUpIndex -isnot [array] -or @($Area.followUpIndex).Count -ne [int]$Area.source.census.matched))
+    {
+        throw "The Pulse follow-up index does not cover the complete matched inventory."
+    }
+    $followUpNumbers = [Collections.Generic.HashSet[int]]::new()
+    foreach ($item in @($(if ($Area.PSObject.Properties["followUpIndex"]) { $Area.followUpIndex } else { @() })))
+    {
+        if ([int]$item.number -lt 1 -or -not $followUpNumbers.Add([int]$item.number) -or
+            [string]$item.bucket -notin @("ReviewNow", "NeedsRescue", "ReadyToMerge", "WaitingOnAuthor", "WaitingOnCI", "DesignDecision", "Draft", "Excluded") -or
+            [string]$item.checkState -notin @("Passing", "Pending", "Failed", "Unknown") -or
+            [string]$item.mergeEligibility -notin @("eligible", "verification-needed", "not-assessed", "not-candidate") -or
+            [string]$item.discussionAssessment.state -notin @("clear", "actionable", "verification-needed", "not-assessed", "not-applicable") -or
+            ($null -ne $collectorRevision -and [string]$item.headSha -cnotmatch "^[0-9a-f]{40}$"))
+        {
+            throw "The Pulse follow-up index contains an invalid item."
+        }
+    }
+
+    $changes = if ($Area.PSObject.Properties["changes"]) { $Area.changes } else { $null }
+    if ($null -ne $changes -and
+        ([string]$changes.status -notin @("complete", "unavailable") -or $changes.items -isnot [array]))
+    {
+        throw "The Pulse comparison state is invalid."
+    }
+    if ($null -ne $changes -and $changes.status -ceq "unavailable")
+    {
+        if ([string]::IsNullOrWhiteSpace([string]$changes.reason) -or @($changes.items).Count -ne 0)
+        {
+            throw "Unavailable Pulse comparison state must include a reason and no changes."
+        }
+    }
+    elseif ($null -ne $changes)
+    {
+        $changeNumbers = [Collections.Generic.HashSet[int]]::new()
+        foreach ($change in @($changes.items))
+        {
+            if ([int]$change.number -lt 1 -or -not $changeNumbers.Add([int]$change.number) -or
+                $change.signals -isnot [array] -or @($change.signals).Count -eq 0 -or
+                @($change.signals | Where-Object { $_ -cnotin @("head-updated", "next-actor-changed", "ci-recovered", "merge-became-eligible") }).Count -ne 0)
+            {
+                throw "The Pulse comparison contains an invalid change."
+            }
+        }
+    }
+
     $filter = $Area.source.filter
     if ([string]::Equals([string]$Area.id, "blazor", [StringComparison]::Ordinal))
     {
@@ -724,6 +782,15 @@ function Add-PulseArea
         [Parameter(Mandatory)][object]$Area
     )
 
+    if (-not $Area.PSObject.Properties["changes"])
+    {
+        $Area | Add-Member -NotePropertyName changes -NotePropertyValue ([pscustomobject]@{
+            status = "unavailable"
+            reason = "follow-up-index-unavailable"
+            previousGeneratedAt = $null
+            items = @()
+        })
+    }
     Assert-PulseAreaScope -Area $Area
     $Lines.Add("")
     $Lines.Add($(if ($Area.openByDefault) { "<details open>" } else { "<details>" }))
@@ -769,7 +836,7 @@ function Add-PulseArea
 
     $Lines.Add("")
     $Lines.Add("> Source generated: ``$(Format-PulseTimestamp -Value $source.generatedAt)``; attempted: ``$(Format-PulseTimestamp -Value $Area.attemptedAt)``.")
-    $Lines.Add("> Source: ``$($source.repository)``. $($source.filter.description); coverage ``$($source.filter.coverage)``; selection $($source.filter.selection).")
+    $Lines.Add("> Source: ``$($source.repository)``. Queue schema: ``$($source.schemaVersion)``; collector revision is retained in the snapshot JSON. $($source.filter.description); coverage ``$($source.filter.coverage)``; selection $($source.filter.selection).")
     if ($null -ne $commonScope)
     {
         $Lines.Add("> Scope match for all displayed candidates: $commonScope.")
@@ -795,6 +862,35 @@ function Add-PulseArea
     $Lines.Add("| Ready to merge | $(@($Area.views.readyToMerge).Count) | $($source.mergeDiscussion.eligibleCount) discussion-eligible; $($source.census.byBucket.ReadyToMerge) in the prospective ReadyToMerge inventory bucket |")
     $mergeVerificationTotal = $source.mergeDiscussion.verificationNeededCount + $source.mergeDiscussion.unassessedCandidateCount
     $Lines.Add("| Verify discussion before merge | $(@($Area.views.verifyDiscussionBeforeMerge).Count) | $mergeVerificationTotal need verification or are unassessed |")
+
+    Add-PulseSection -Lines $Lines -Name "Changes since the previous compatible snapshot"
+    if ($Area.changes.status -ceq "unavailable")
+    {
+        $Lines.Add("Comparison unavailable: ``$($Area.changes.reason)``. No completion is inferred from missing, capped, out-of-scope, or unavailable rows.")
+    }
+    elseif (@($Area.changes.items).Count -eq 0)
+    {
+        $Lines.Add("No head, next-actor, CI-recovery, or new merge-eligibility changes were found among PRs present in both complete follow-up indexes.")
+    }
+    else
+    {
+        $maximumChanges = 20
+        $shownChanges = @($Area.changes.items | Select-Object -First $maximumChanges)
+        $Lines.Add("Compared with source generated ``$(Format-PulseTimestamp -Value $Area.changes.previousGeneratedAt)``. Changes are reported only for PRs present in both complete follow-up indexes; absence is never treated as completion.")
+        $Lines.Add("")
+        $Lines.Add("| PR | Title | Signals | Current next actor / bucket |")
+        $Lines.Add("| ---: | --- | --- | --- |")
+        foreach ($change in $shownChanges)
+        {
+            $signals = @($change.signals) -join ", "
+            $Lines.Add("| $($change.number) | $($change.title) | $signals | $($change.current.nextActor) / $($change.current.bucket) |")
+        }
+        if (@($Area.changes.items).Count -gt $shownChanges.Count)
+        {
+            $Lines.Add("")
+            $Lines.Add("$(@($Area.changes.items).Count - $shownChanges.Count) additional change(s) are retained in the snapshot JSON.")
+        }
+    }
 
     Add-PulseSection -Lines $Lines -Name "Review now"
     $Lines.Add("Displaying $(@($Area.views.reviewNow).Count) candidates from a ReviewNow inventory of $($source.census.byBucket.ReviewNow). Legacy overflow: $($source.overflow.reviewNow).")

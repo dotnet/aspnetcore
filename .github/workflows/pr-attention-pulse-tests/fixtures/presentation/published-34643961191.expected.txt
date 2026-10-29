@@ -9,7 +9,7 @@ This report contains the **Repository-wide** Pulse area.
 <summary><strong>Repository-wide</strong> - 366 matched; shown: 5 review now, 5 verify discussion, 3 rescue, 0 ready, 3 verify before merge; generated 2026-09-11T20:25:08.8529515Z</summary>
 
 > Source generated: `2026-09-11T20:25:08.8529515Z`; attempted: `2026-09-11T20:25:07.9519155Z`.
-> Source: `dotnet/aspnetcore`. Ad hoc pull-request scope; coverage `all-repo`; selection (all open pull requests).
+> Source: `dotnet/aspnetcore`. Queue schema: `1.0.0`; collector revision is retained in the snapshot JSON. Ad hoc pull-request scope; coverage `all-repo`; selection (all open pull requests).
 > Scope match for all displayed candidates: all-repo.
 
 > [!WARNING]
@@ -26,6 +26,10 @@ Open: 366. Matched: 366. Returned: 366 of 366; query complete: true.
 | Needs rescue | 3 | 29 in the NeedsRescue inventory bucket |
 | Ready to merge | 0 | 0 discussion-eligible; 5 in the prospective ReadyToMerge inventory bucket |
 | Verify discussion before merge | 3 | 5 need verification or are unassessed |
+
+## Changes since the previous compatible snapshot
+
+Comparison unavailable: `follow-up-index-unavailable`. No completion is inferred from missing, capped, out-of-scope, or unavailable rows.
 
 ## Review now
 
@@ -98,7 +102,7 @@ Inspect the discussion before merging; these prospective candidates do not estab
 
 Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
+Capped public digest plus the full sanitized follow-up index. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>

@@ -9,7 +9,7 @@ This report contains the **Blazor** Pulse area.
 <summary><strong>Blazor</strong> - 0 matched; shown: 0 review now, 0 verify discussion, 0 rescue, 0 ready, 0 verify before merge; generated 2026-09-10T20:00:00.0000000Z</summary>
 
 > Source generated: `2026-09-10T20:00:00.0000000Z`; attempted: `2026-09-10T20:04:56.0000000Z`.
-> Source: `dotnet/aspnetcore`. Blazor and Components pull requests; coverage `labels-and-paths`; selection (labels any of [area-blazor, feature-blazor-*, Blazor ♥ *] OR paths any of [src/Components/**]).
+> Source: `dotnet/aspnetcore`. Queue schema: `1.0.0`; collector revision is retained in the snapshot JSON. Blazor and Components pull requests; coverage `labels-and-paths`; selection (labels any of [area-blazor, feature-blazor-*, Blazor ♥ *] OR paths any of [src/Components/**]).
 
 ## Summary counts
 
@@ -22,6 +22,10 @@ Open: 0. Matched: 0. Returned: 0 of 0; query complete: true.
 | Needs rescue | 0 | 0 in the NeedsRescue inventory bucket |
 | Ready to merge | 0 | 0 discussion-eligible; 0 in the prospective ReadyToMerge inventory bucket |
 | Verify discussion before merge | 0 | 0 need verification or are unassessed |
+
+## Changes since the previous compatible snapshot
+
+Comparison unavailable: `follow-up-index-unavailable`. No completion is inferred from missing, capped, out-of-scope, or unavailable rows.
 
 ## Review now
 
@@ -74,13 +78,13 @@ None in this complete inventory.
 
 Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
+Capped public digest plus the full sanitized follow-up index. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>
 
 Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
-JSON SHA-256: `7cda253b9d472d7dcda2e92553dbdc64c41bab007c31377b9125dbd8d878c647`.
+JSON SHA-256: `03815e605138a3240188b6b5b922e3c4e68454b5bc9691bdff80d5a1186a4c51`.
 
 </details>
 
@@ -98,6 +102,7 @@ JSON SHA-256: `7cda253b9d472d7dcda2e92553dbdc64c41bab007c31377b9125dbd8d878c647`
     "repository": "dotnet/aspnetcore",
     "schemaVersion": "1.0.0",
     "generatedAt": "2026-09-10T20:00:00Z",
+    "collectorRevision": null,
     "query": {
       "openPullRequestCount": 0,
       "returnedPullRequestCount": 0,
@@ -163,7 +168,8 @@ JSON SHA-256: `7cda253b9d472d7dcda2e92553dbdc64c41bab007c31377b9125dbd8d878c647`
     "needsRescue": [],
     "readyToMerge": [],
     "verifyDiscussionBeforeMerge": []
-  }
+  },
+  "followUpIndex": []
 }
 
 ```

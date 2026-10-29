@@ -7,10 +7,12 @@ directly in the issue body, inside a collapsed `<details>` section in the
 `## Snapshot` section, as a fenced ` ```json ` code block that preserves the
 exact sanitized bytes for copy/paste. Consumers can reuse those results without
 collecting or classifying PRs again, and without any GitHub authentication or
-Actions API access, by reading that embedded block directly. The snapshot is
-**capped report results, not a full-queue export**. A filter over its rows can
-find only displayed candidates; no matching row does not establish that no
-matching PR exists.
+Actions API access, by reading that embedded block directly. The snapshot
+contains the capped public digest and a full sanitized follow-up index for each
+complete area. The follow-up index preserves every matched PR's next actor,
+blockers, head SHA, check state, and discussion-assessment state without raw
+discussion text, file paths, notifications, or personal inbox data. Digest caps
+still control only the rendered candidate tables.
 
 The existing `pulse-publication-evidence` Actions artifact still contains
 exactly:
@@ -79,6 +81,7 @@ nonzero inventory out of the display.
 | --- | --- |
 | `repository`, `schemaVersion` | Fixed upstream repository and the underlying queue contract (`1.0.0`), not the combined envelope's version. |
 | `generatedAt` | That area's producer snapshot time, normalized to UTC. It is not the completion time of both queries or publication time. |
+| `collectorRevision` | Exact lowercase source commit used by the collector when available. It distinguishes classification-rule revisions from changed GitHub facts. |
 | `query` | `openPullRequestCount`, `returnedPullRequestCount`, and `complete: true`. The two counts agree for accepted inventory. |
 | `filter` | `name`, `description`, `coverage`, `selection`, `allRepositoryPullRequests`; the resolved scope, not a request to run another query. |
 | `census` | `openPullRequests`, `matched`, `labelOnly`, `pathOnly`, `labelAndPath`, `incidentalPathExcluded`, `unresolvedMergeable`, and `byBucket`. |
@@ -96,9 +99,44 @@ number with established merge eligibility. Merge assessed count equals eligible
 plus verification-needed counts; assessed, unassessed, and excluded counts
 together account for the prospective merge inventory.
 
-The snapshot omits the producer's full `items` universe, raw discussion text,
-community/personal inboxes, and other nonprojected data. Census, overflow, and
-caps do not make the omitted PR records recoverable.
+The snapshot omits the producer's raw `items` universe, raw discussion text,
+community/personal inboxes, and other nonprojected data. Its `followUpIndex`
+retains one allowlisted row per matched PR with sanitized identity/routing
+fields, `headSha`, `mergeEligibility`, and compact discussion coverage.
+
+### Full sanitized follow-up index
+
+Every complete area has `followUpIndex`, ordered by PR number, with exactly
+`source.census.matched` unique rows. Each row contains `number`, sanitized
+`title` and `author`, `bucket`, `nextActor`, stable `reasonCodes`, sanitized
+`blockers`, full lowercase `headSha`, `checkState`, `scopeMatch`,
+`mergeEligibility`, and `discussionAssessment`.
+
+`discussionAssessment.state` can be `clear`, `verification-needed`,
+`not-assessed`, or `not-applicable` (and legacy `actionable` remains accepted).
+`not-applicable` means that bounded review/merge discussion assessment does not
+apply to that bucket; it is not discussion clearance. `not-assessed` means the
+candidate was outside the bounded assessment budget. Inventory completeness
+never implies complete or clear discussion evidence.
+
+### Compatible snapshot changes
+
+Each current complete area has `changes`. When the exact previously published
+snapshot can be recovered and both corresponding areas have complete follow-up
+indexes, `changes.status` is `complete` and `items` contains only PRs present in
+both indexes with one or more of:
+
+- `head-updated`
+- `next-actor-changed`
+- `ci-recovered` (an explicit `Failed` or `Pending` check state became `Passing`)
+- `merge-became-eligible`
+
+New PRs and PRs absent from the current area produce no completion event.
+Falling below a digest cap, leaving a scope, or unavailable collection is never
+reported as completion. The Pulse does not publish closed/merged transitions;
+doing so would require a separate current-state verification. When the previous
+published snapshot or a compatible complete index cannot be established,
+`changes.status` is `unavailable` with an explicit stable reason.
 
 ### Views, ranks, and items
 
@@ -210,7 +248,7 @@ by the embedded content):
 
 Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
+Capped public digest plus the full sanitized follow-up index. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>
@@ -342,7 +380,7 @@ function Get-PublishedPulseSnapshot
         'Snapshot generated: `(?<time>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{7}Z)`\. ' +
         '\[Producing workflow run\]\(https://github\.com/dotnet/aspnetcore/actions/runs/(?<run>[1-9][0-9]*)/attempts/(?<attempt>[1-9][0-9]*)\)\.\n' +
         'Artifact: `pulse-publication-evidence`; files: `pulse-input\.json`, `pulse-body\.md`\.\n' +
-        'Capped report results, not the full queue\. Authenticated ZIP artifact retained for seven days as secondary audit evidence\.\n\n' +
+        'Capped public digest plus the full sanitized follow-up index\. Authenticated ZIP artifact retained for seven days as secondary audit evidence\.\n\n' +
         '<details>\n<summary>Snapshot identity</summary>\n\n' +
         'Repository: `dotnet/aspnetcore`; run ID: `\k<run>`; attempt: `\k<attempt>`\.\n' +
         'JSON SHA-256: `(?<hash>[0-9a-f]{64})`\.\n\n</details>'

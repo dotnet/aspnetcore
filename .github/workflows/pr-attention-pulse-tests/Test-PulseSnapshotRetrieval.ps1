@@ -302,7 +302,7 @@ Captured area B.
 
 Snapshot generated: `{0}`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/{1}/attempts/{2}).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
+Capped public digest plus the full sanitized follow-up index. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>

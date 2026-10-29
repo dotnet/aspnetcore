@@ -9,7 +9,7 @@ This report contains the **Blazor** Pulse area.
 <summary><strong>Blazor</strong> - 5 matched; shown: 2 review now, 1 verify discussion, 1 rescue, 0 ready, 1 verify before merge; generated 2026-09-10T20:00:00.0000000Z</summary>
 
 > Source generated: `2026-09-10T20:00:00.0000000Z`; attempted: `2026-09-10T20:04:56.0000000Z`.
-> Source: `dotnet/aspnetcore`. Blazor and Components pull requests; coverage `labels-and-paths`; selection (labels any of [area-blazor, feature-blazor-*, Blazor ♥ *] OR paths any of [src/Components/**]).
+> Source: `dotnet/aspnetcore`. Queue schema: `1.0.0`; collector revision is retained in the snapshot JSON. Blazor and Components pull requests; coverage `labels-and-paths`; selection (labels any of [area-blazor, feature-blazor-*, Blazor ♥ *] OR paths any of [src/Components/**]).
 
 > [!WARNING]
 > Bounded warning with (at)mention, GH number 88, feedface, and (link removed)
@@ -25,6 +25,10 @@ Open: 5. Matched: 5. Returned: 5 of 5; query complete: true.
 | Needs rescue | 1 | 1 in the NeedsRescue inventory bucket |
 | Ready to merge | 0 | 0 discussion-eligible; 1 in the prospective ReadyToMerge inventory bucket |
 | Verify discussion before merge | 1 | 1 need verification or are unassessed |
+
+## Changes since the previous compatible snapshot
+
+Comparison unavailable: `follow-up-index-unavailable`. No completion is inferred from missing, capped, out-of-scope, or unavailable rows.
 
 ## Review now
 
@@ -86,13 +90,13 @@ Inspect the discussion before merging; these prospective candidates do not estab
 
 Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
+Capped public digest plus the full sanitized follow-up index. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>
 
 Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
-JSON SHA-256: `0f4a702c1d72fab0b8cd12f94d2ce98a9882576fe3d4d065ef27af56e9b06097`.
+JSON SHA-256: `3d02c2bf162943de993f33aae3f04cf63b249a85741a112ccbd919b8ed5ba336`.
 
 </details>
 
@@ -110,6 +114,7 @@ JSON SHA-256: `0f4a702c1d72fab0b8cd12f94d2ce98a9882576fe3d4d065ef27af56e9b06097`
     "repository": "dotnet/aspnetcore",
     "schemaVersion": "1.0.0",
     "generatedAt": "2026-09-10T20:00:00Z",
+    "collectorRevision": null,
     "query": {
       "openPullRequestCount": 5,
       "returnedPullRequestCount": 5,
@@ -293,7 +298,160 @@ JSON SHA-256: `0f4a702c1d72fab0b8cd12f94d2ce98a9882576fe3d4d065ef27af56e9b06097`
         }
       }
     ]
-  }
+  },
+  "followUpIndex": [
+    {
+      "number": 101,
+      "title": "First review candidate",
+      "author": "first-author",
+      "bucket": "ReviewNow",
+      "nextActor": "reviewer",
+      "reasonCodes": [
+        "needs-first-review"
+      ],
+      "blockers": [],
+      "headSha": null,
+      "checkState": "Unknown",
+      "scopeMatch": "label-only",
+      "discussionAssessment": {
+        "state": "clear",
+        "complete": true,
+        "signals": [],
+        "commentTotalCount": 0,
+        "commentEvidenceTruncated": false,
+        "threads": {
+          "totalCount": 0,
+          "returnedCount": 0,
+          "complete": true,
+          "unresolvedCount": 0,
+          "outdatedUnresolvedCount": 0
+        }
+      },
+      "mergeEligibility": "not-candidate"
+    },
+    {
+      "number": 102,
+      "title": "Second 'review' (at)candidate / (b)unsafe(/b) number 88 (link removed) (link removed) GH number 77 (reference removed) with controls",
+      "author": "second-author",
+      "bucket": "ReviewNow",
+      "nextActor": "reviewer (at)unsafe",
+      "reasonCodes": [
+        "author-responded"
+      ],
+      "blockers": [],
+      "headSha": null,
+      "checkState": "Unknown",
+      "scopeMatch": "path-only",
+      "discussionAssessment": {
+        "state": "clear",
+        "complete": true,
+        "signals": [],
+        "commentTotalCount": 4,
+        "commentEvidenceTruncated": false,
+        "threads": {
+          "totalCount": 2,
+          "returnedCount": 2,
+          "complete": true,
+          "unresolvedCount": 0,
+          "outdatedUnresolvedCount": 0
+        }
+      },
+      "mergeEligibility": "not-candidate"
+    },
+    {
+      "number": 103,
+      "title": "Discussion verification candidate",
+      "author": "discussion-author",
+      "bucket": "ReviewNow",
+      "nextActor": "maintainer/triager",
+      "reasonCodes": [
+        "author-responded"
+      ],
+      "blockers": [],
+      "headSha": null,
+      "checkState": "Unknown",
+      "scopeMatch": "label-and-path",
+      "discussionAssessment": {
+        "state": "verification-needed",
+        "complete": false,
+        "signals": [
+          "discussion-incomplete",
+          "non-author-discussion-requires-verification"
+        ],
+        "commentTotalCount": 12,
+        "commentEvidenceTruncated": true,
+        "threads": {
+          "totalCount": 5,
+          "returnedCount": 3,
+          "complete": false,
+          "unresolvedCount": 2,
+          "outdatedUnresolvedCount": 1
+        }
+      },
+      "mergeEligibility": "not-candidate"
+    },
+    {
+      "number": 104,
+      "title": "Rescue candidate",
+      "author": "rescue-author",
+      "bucket": "NeedsRescue",
+      "nextActor": "maintainer/triager",
+      "reasonCodes": [
+        "reviewer-idle-30d",
+        "community-contribution"
+      ],
+      "blockers": [
+        "A blocking label from (link removed) requires an explicit (at)triage decision."
+      ],
+      "headSha": null,
+      "checkState": "Unknown",
+      "scopeMatch": "label-only",
+      "discussionAssessment": {
+        "state": "not-applicable",
+        "complete": false,
+        "signals": null,
+        "commentTotalCount": 0,
+        "commentEvidenceTruncated": false,
+        "threads": {
+          "totalCount": 0,
+          "returnedCount": 0,
+          "complete": false,
+          "unresolvedCount": 0,
+          "outdatedUnresolvedCount": 0
+        }
+      },
+      "mergeEligibility": "not-candidate"
+    },
+    {
+      "number": 105,
+      "title": "Ready candidate",
+      "author": "ready-author",
+      "bucket": "ReadyToMerge",
+      "nextActor": "maintainer",
+      "reasonCodes": [
+        "approved"
+      ],
+      "blockers": [],
+      "headSha": null,
+      "checkState": "Unknown",
+      "scopeMatch": "path-only",
+      "discussionAssessment": {
+        "state": "not-assessed",
+        "complete": false,
+        "signals": "discussion-not-assessed",
+        "commentTotalCount": 0,
+        "commentEvidenceTruncated": false,
+        "threads": {
+          "totalCount": 0,
+          "returnedCount": 0,
+          "complete": false,
+          "unresolvedCount": 0,
+          "outdatedUnresolvedCount": 0
+        }
+      },
+      "mergeEligibility": "not-assessed"
+    }
+  ]
 }
 
 ```

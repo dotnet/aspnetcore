@@ -35,12 +35,13 @@ function Invoke-GhJson {
     param(
         [string[]]$Arguments,
         [ValidateRange(1, 5)]
-        [int]$MaxAttempts = 3
+        [int]$MaxAttempts = 3,
+        [string]$Executable = "gh"
     )
 
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
         $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
-        $startInfo.FileName = "gh"
+        $startInfo.FileName = $Executable
         $startInfo.UseShellExecute = $false
         $startInfo.RedirectStandardOutput = $true
         $startInfo.RedirectStandardError = $true
@@ -69,10 +70,12 @@ function Invoke-GhJson {
         }
 
         $message = if ([string]::IsNullOrWhiteSpace($stderr)) { $stdout } else { $stderr }
-        $isTransient = $message -match "HTTP 50[234]|Bad Gateway|timeout|timed out|stream error|dial tcp|connection abort|connection reset"
+        $trimmedMessage = $message.Trim()
+        $isTransient = $message -match "HTTP 50[234]|Bad Gateway|timeout|timed out|stream error|dial tcp|connection abort|connection reset" -or
+            [string]::Equals($trimmedMessage, "unexpected end of JSON input", [StringComparison]::Ordinal)
 
         if (-not $isTransient -or $attempt -eq $MaxAttempts) {
-            throw "GitHub CLI failed: $($message.Trim())"
+            throw "GitHub CLI failed on attempt $attempt of $MaxAttempts`: $trimmedMessage"
         }
 
         Start-Sleep -Seconds ([Math]::Pow(2, $attempt))
@@ -85,12 +88,13 @@ function Invoke-GhText {
     param(
         [string[]]$Arguments,
         [ValidateRange(1, 5)]
-        [int]$MaxAttempts = 3
+        [int]$MaxAttempts = 3,
+        [string]$Executable = "gh"
     )
 
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
         $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
-        $startInfo.FileName = "gh"
+        $startInfo.FileName = $Executable
         $startInfo.UseShellExecute = $false
         $startInfo.RedirectStandardOutput = $true
         $startInfo.RedirectStandardError = $true
@@ -3642,9 +3646,14 @@ function Invoke-PRAttentionQueue {
         [int]$MaxReadyToMerge = 3,
         [ValidateRange(0, 100)]
         [int]$MaxReviewNowPerAuthor = 2,
+        [string]$SourceRevision,
         [string]$InputPath,
         [datetime]$Now = [datetime]::UtcNow
     )
+
+    if (-not [string]::IsNullOrWhiteSpace($SourceRevision) -and $SourceRevision -notmatch "^[0-9a-fA-F]{40}$") {
+        throw "SourceRevision must be a 40-character hexadecimal commit SHA."
+    }
 
     $presetPath = Join-Path (Split-Path -Parent $PSScriptRoot) "presets.json"
     $configuration = Get-Content -Raw -Path $presetPath | ConvertFrom-Json -Depth 20
@@ -4357,6 +4366,7 @@ function Invoke-PRAttentionQueue {
         schemaVersion = "1.0.0"
         display = Get-DisplayMetadata
         generatedAt = $Now.ToUniversalTime().ToString("o")
+        collectorRevision = if ([string]::IsNullOrWhiteSpace($SourceRevision)) { $null } else { $SourceRevision.ToLowerInvariant() }
         repository = $Repository
         filter = [pscustomobject]@{
             name = $scope.Name

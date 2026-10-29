@@ -1183,4 +1183,5 @@ foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath)
 
 & (Join-Path $PSScriptRoot "Test-MergeEligibility.ps1")
 & (Join-Path $PSScriptRoot "Test-MergeStateRefresh.ps1")
+& (Join-Path $PSScriptRoot "Test-GhJsonRetry.ps1")
 Write-Output "All PR attention queue tests passed."

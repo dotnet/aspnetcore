@@ -12,8 +12,8 @@ param(
     [Parameter(Mandatory)]
     [string]$OutputPath,
 
-    [ValidateRange(8192, 262144)]
-    [int]$MaxOutputBytes = 131072
+    [ValidateRange(8192, 2097152)]
+    [int]$MaxOutputBytes = 1081344
 )
 
 $ErrorActionPreference = "Stop"
@@ -46,7 +46,9 @@ function Read-PulseArea
     {
         if (-not [string]::Equals([string]$area.source.filter.name, $ExpectedFilterName, [StringComparison]::Ordinal) -or
             $area.source.filter.allRepositoryPullRequests -isnot [bool] -or
-            $area.source.filter.allRepositoryPullRequests -ne $ExpectedAllRepositoryPullRequests)
+            $area.source.filter.allRepositoryPullRequests -ne $ExpectedAllRepositoryPullRequests -or
+            $area.followUpIndex -isnot [array] -or
+            @($area.followUpIndex).Count -ne [int]$area.source.census.matched)
         {
             throw "The '$Id' Pulse area has the wrong resolved scope."
         }
@@ -64,6 +66,13 @@ function Read-PulseArea
     if ([string]::Equals([string]$area.status, "complete", [StringComparison]::Ordinal))
     {
         $result["views"] = $area.views
+        $result["followUpIndex"] = $area.followUpIndex
+        $result["changes"] = [ordered]@{
+            status = "unavailable"
+            reason = "previous-snapshot-not-compared"
+            previousGeneratedAt = $null
+            items = @()
+        }
     }
     else
     {

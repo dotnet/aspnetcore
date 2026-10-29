@@ -21,8 +21,10 @@ param(
 
     [string]$ExpectedSchemaVersion = "1.0.0",
 
-    [ValidateRange(4096, 262144)]
-    [int]$MaxOutputBytes = 65536
+    [string]$CollectorRevision,
+
+    [ValidateRange(4096, 524288)]
+    [int]$MaxOutputBytes = 524288
 )
 
 $ErrorActionPreference = "Stop"
@@ -89,9 +91,14 @@ function Test-OrdinalIn
 function Get-RequiredProperty
 {
     param(
-        [Parameter(Mandatory)][object]$Object,
+        [Parameter(Mandatory)][AllowNull()][object]$Object,
         [Parameter(Mandatory)][string]$Name
     )
+
+    if ($null -eq $Object)
+    {
+        Throw-ContractError "invalid-contract"
+    }
 
     $property = $Object.PSObject.Properties[$Name]
     if ($null -eq $property)
@@ -260,7 +267,7 @@ function ConvertTo-SafeAuthor
     param([Parameter(Mandatory)][string]$Value)
 
     $author = $Value.Trim().TrimStart("@")
-    if ($author -notmatch "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$")
+    if ($author -notmatch "^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})|app/[A-Za-z0-9](?:[A-Za-z0-9-]{0,99}))$")
     {
         Throw-ContractError "invalid-contract"
     }
@@ -351,6 +358,32 @@ function ConvertTo-IsoTimestamp
     return $timestamp.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'", [Globalization.CultureInfo]::InvariantCulture)
 }
 
+function ConvertTo-CommitSha
+{
+    param(
+        [AllowNull()][object]$Value,
+        [switch]$Required
+    )
+
+    if ($null -eq $Value -or [string]::IsNullOrWhiteSpace([string]$Value))
+    {
+        if ($Required)
+        {
+            Throw-ContractError "invalid-contract"
+        }
+
+        return $null
+    }
+
+    $sha = ([string]$Value).Trim().ToLowerInvariant()
+    if ($sha -cnotmatch "^[0-9a-f]{40}$")
+    {
+        Throw-ContractError "invalid-contract"
+    }
+
+    return $sha
+}
+
 function New-FailureEnvelope
 {
     param([Parameter(Mandatory)][string]$ErrorCategory)
@@ -362,9 +395,30 @@ function New-FailureEnvelope
         attemptedAt = $AttemptTimestamp.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'", [Globalization.CultureInfo]::InvariantCulture)
         source = [ordered]@{
             repository = $ExpectedRepository
+            collectorRevision = if ([string]::IsNullOrWhiteSpace($CollectorRevision)) { $null } else { $CollectorRevision.ToLowerInvariant() }
         }
         errorCategory = $ErrorCategory
         candidateCountsAvailable = $false
+    }
+}
+
+function New-SanitizedDiscussionState
+{
+    param([Parameter(Mandatory)][string]$State)
+
+    return [ordered]@{
+        state = $State
+        complete = $false
+        signals = if ($State -ceq "not-assessed") { @("discussion-not-assessed") } else { @() }
+        commentTotalCount = 0
+        commentEvidenceTruncated = $false
+        threads = [ordered]@{
+            totalCount = 0
+            returnedCount = 0
+            complete = $false
+            unresolvedCount = 0
+            outdatedUnresolvedCount = 0
+        }
     }
 }
 
@@ -388,6 +442,97 @@ function ConvertTo-SanitizedDiscussion
             complete = Get-RequiredBoolean -Object $threads -Name "complete"
             unresolvedCount = Get-RequiredInteger -Object $threads -Name "unresolvedCount"
             outdatedUnresolvedCount = Get-RequiredInteger -Object $threads -Name "outdatedUnresolvedCount"
+        }
+    }
+}
+
+function ConvertTo-SanitizedFollowUpItem
+{
+    param(
+        [Parameter(Mandatory)][object]$Item,
+        [Parameter(Mandatory)][bool]$RequireHeadSha
+    )
+
+    $bucket = Get-RequiredString -Object $Item -Name "bucket"
+    $assessment = Get-RequiredProperty -Object $Item -Name "discussionAssessment"
+    $discussion = if ($null -ne $assessment)
+    {
+        ConvertTo-SanitizedDiscussion -Assessment $assessment
+    }
+    elseif ($bucket -ceq "ReviewNow" -or $bucket -ceq "ReadyToMerge")
+    {
+        New-SanitizedDiscussionState -State "not-assessed"
+    }
+    else
+    {
+        New-SanitizedDiscussionState -State "not-applicable"
+    }
+    $scopeMatch = Get-RequiredString -Object $Item -Name "scopeMatch"
+    if (-not (Test-OrdinalIn -Value $scopeMatch -AllowedValues $scopeContract.ScopeMatches))
+    {
+        Throw-ContractError "invalid-contract"
+    }
+    $headSha = if ($Item.PSObject.Properties["headSha"]) { $Item.headSha } else { $null }
+    $sanitizedHeadSha = if ($RequireHeadSha)
+    {
+        ConvertTo-CommitSha -Value $headSha -Required
+    }
+    elseif ([string]$headSha -match "^[0-9a-fA-F]{40}$")
+    {
+        ([string]$headSha).ToLowerInvariant()
+    }
+    else
+    {
+        $null
+    }
+    $checkState = if ($Item.PSObject.Properties["checkState"])
+    {
+        Get-RequiredString -Object $Item -Name "checkState"
+    }
+    elseif ($RequireHeadSha)
+    {
+        Throw-ContractError "invalid-contract"
+    }
+    else
+    {
+        "Unknown"
+    }
+    if (-not (Test-OrdinalIn -Value $checkState -AllowedValues @("Passing", "Pending", "Failed", "Unknown")))
+    {
+        Throw-ContractError "invalid-contract"
+    }
+
+    return [ordered]@{
+        number = Get-RequiredInteger -Object $Item -Name "number" -Minimum 1
+        title = ConvertTo-SafeDisplayText `
+            -Value (Get-RequiredString -Object $Item -Name "title") `
+            -MaximumLength 240
+        author = ConvertTo-SafeAuthor -Value (Get-RequiredString -Object $Item -Name "author")
+        bucket = $bucket
+        nextActor = ConvertTo-SafeDisplayText `
+            -Value (Get-RequiredString -Object $Item -Name "nextActor") `
+            -MaximumLength 100
+        reasonCodes = ConvertTo-StableCodes `
+            -Values (Get-RequiredArray -Object $Item -Name "reasonCodes" -MaximumCount 20)
+        blockers = ConvertTo-SafeDisplayArray `
+            -Values (Get-RequiredArray -Object $Item -Name "blockers" -MaximumCount 20) `
+            -MaximumCount 20 `
+            -MaximumLength 300
+        headSha = $sanitizedHeadSha
+        checkState = $checkState
+        scopeMatch = $scopeMatch
+        discussionAssessment = $discussion
+        mergeEligibility = if ($Item.PSObject.Properties["mergeEligibility"])
+        {
+            Get-RequiredString -Object $Item -Name "mergeEligibility"
+        }
+        elseif ($bucket -ceq "ReadyToMerge")
+        {
+            "not-assessed"
+        }
+        else
+        {
+            "not-candidate"
         }
     }
 }
@@ -562,6 +707,24 @@ function ConvertTo-SanitizedResult
         Throw-ContractError "invalid-contract"
     }
 
+    $collectorRevision = if ([string]::IsNullOrWhiteSpace($CollectorRevision))
+    {
+        $null
+    }
+    else
+    {
+        ConvertTo-CommitSha -Value $CollectorRevision -Required
+    }
+    if ($Raw.PSObject.Properties["collectorRevision"] -and
+        -not [string]::IsNullOrWhiteSpace([string]$Raw.collectorRevision))
+    {
+        $rawCollectorRevision = ConvertTo-CommitSha -Value $Raw.collectorRevision -Required
+        if ($null -ne $collectorRevision -and $rawCollectorRevision -cne $collectorRevision)
+        {
+            Throw-ContractError "invalid-contract"
+        }
+        $collectorRevision = $rawCollectorRevision
+    }
     $items = Get-RequiredArray -Object $Raw -Name "items" -MaximumCount 10000
     $knownBuckets = @(
         "ReviewNow",
@@ -714,6 +877,20 @@ function ConvertTo-SanitizedResult
         }
     )
     if (@($itemNumbers | Select-Object -Unique).Count -ne $itemNumbers.Count)
+    {
+        Throw-ContractError "invalid-contract"
+    }
+    $followUpIndex = @(
+        $items |
+            ForEach-Object {
+                ConvertTo-SanitizedFollowUpItem `
+                    -Item $_ `
+                    -RequireHeadSha:($null -ne $collectorRevision)
+            } |
+            Sort-Object { $_["number"] }
+    )
+    if ($followUpIndex.Count -ne $items.Count -or
+        @($followUpIndex.number | Select-Object -Unique).Count -ne $followUpIndex.Count)
     {
         Throw-ContractError "invalid-contract"
     }
@@ -872,6 +1049,7 @@ function ConvertTo-SanitizedResult
             repository = $ExpectedRepository
             schemaVersion = $ExpectedSchemaVersion
             generatedAt = ConvertTo-IsoTimestamp -Value (Get-RequiredProperty -Object $Raw -Name "generatedAt")
+            collectorRevision = $collectorRevision
             query = [ordered]@{
                 openPullRequestCount = $openCount
                 returnedPullRequestCount = $returnedCount
@@ -907,6 +1085,7 @@ function ConvertTo-SanitizedResult
             readyToMerge = @($readyToMerge)
             verifyDiscussionBeforeMerge = @($verifyMerge)
         }
+        followUpIndex = $followUpIndex
     }
 }
 
@@ -946,10 +1125,18 @@ try
             }
             catch [System.IO.InvalidDataException]
             {
+                if ($env:GITHUB_ACTIONS -ceq "true")
+                {
+                    Write-Warning "Pulse sanitization rejected scope '$Scope': $($_.Exception.Message) ($($_.ScriptStackTrace))"
+                }
                 $result = New-FailureEnvelope -ErrorCategory $_.Exception.Message
             }
             catch
             {
+                if ($env:GITHUB_ACTIONS -ceq "true")
+                {
+                    Write-Warning "Pulse sanitization failed for scope '$Scope': $($_.Exception.Message) ($($_.ScriptStackTrace))"
+                }
                 $result = New-FailureEnvelope -ErrorCategory "invalid-contract"
             }
         }

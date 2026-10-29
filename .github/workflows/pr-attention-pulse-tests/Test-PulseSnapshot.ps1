@@ -222,7 +222,7 @@ try
                 'Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.',
                 'Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.',
                 "JSON SHA-256: ``$hash``.",
-                "Capped report results, not the full queue."))
+                "Capped public digest plus the full sanitized follow-up index."))
             {
                 Assert-True ($body.Contains($text, [StringComparison]::Ordinal)) "The canonical snapshot lost '$text'."
             }
@@ -302,8 +302,12 @@ try
                         $item.title
                     }
                 }
+                foreach ($item in @($area.followUpIndex))
+                {
+                    $item.title
+                }
             })
-        Assert-True ($publishedTitles -ccontains $unicodeTitle) "Escaped JSON must preserve the selected PR title when parsed."
+        Assert-True ($publishedTitles -ccontains $unicodeTitle) "Escaped JSON must preserve the sanitized PR title when parsed."
 
         $body = [IO.File]::ReadAllText($publication.BodyPath)
         $collected = Invoke-PinnedCollector -Body $body
@@ -511,7 +515,7 @@ try
         url = { param($body) $body.Replace("/attempts/1", "/attempts/1?download=1") }
         "link-label" = { param($body) $body.Replace("Producing workflow run", "Direct download") }
         "details-expanded" = { param($body) $body.Replace("<summary>Snapshot identity", "<summary>Expanded identity") }
-        "duplicate-snapshot" = { param($body) $body + "`n`n" + $body.Substring($body.IndexOf("## Snapshot", [StringComparison]::Ordinal)) }
+        "duplicate-snapshot" = { param($body) $body + "`n`n## Snapshot" }
     }
     foreach ($name in $bodyMutations.Keys)
     {
@@ -617,16 +621,16 @@ try
             }
         }
     }
-    foreach ($size in @(131072, 131073))
+    foreach ($size in @(1081344, 1081345))
     {
         Invoke-SnapshotCase "CombinedLimit/$size" {
             $areas = $scenarios.complete | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
-            $areas[0].source.warnings = @("x")
+            $areas[0].source | Add-Member -NotePropertyName warnings -NotePropertyValue @("x") -Force
             $path = Join-Path $tempRoot "limit-$size.json"
             Write-SnapshotCombinedInput -Areas $areas -OutputPath $path
             $baseSize = [Text.Encoding]::UTF8.GetByteCount([IO.File]::ReadAllText($path).TrimEnd("`r", "`n"))
             $areas[0].source.warnings = @("x" * ($size - $baseSize + 1))
-            if ($size -eq 131072)
+            if ($size -eq 1081344)
             {
                 Write-SnapshotCombinedInput -Areas $areas -OutputPath $path
                 Assert-True ([Text.Encoding]::UTF8.GetByteCount([IO.File]::ReadAllText($path).TrimEnd("`r", "`n")) -eq $size) "Exercise the actual combined JSON byte threshold, excluding its existing final newline."

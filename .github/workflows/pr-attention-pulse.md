@@ -13,6 +13,7 @@ description: >
   envelope. The sole mutation is a body replacement on the permanent upstream dashboard issue.
 
 permissions:
+  actions: read
   contents: read
   issues: read
 
@@ -152,14 +153,36 @@ steps:
       PULSE_SNAPSHOT_SERVER_URL: ${{ github.server_url }}
       PULSE_SNAPSHOT_RUN_ID: ${{ github.run_id }}
       PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}
+      PULSE_COLLECTOR_REVISION: ${{ github.sha }}
     run: |
       $ErrorActionPreference = "Continue"
       $attemptTimestamp = [datetime]::UtcNow.ToString("o")
       New-Item -ItemType Directory -Force .pr-attention-pulse | Out-Null
 
-      pwsh .github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1 -Repository dotnet/aspnetcore -Preset blazor -DisablePersonalInbox -OutputFormat Json > .pr-attention-pulse/queue-blazor-raw.json
+      try
+      {
+        $queueModule = Import-Module -Scope Local -Force .github/skills/pr-attention-queue/scripts/PRAttentionQueue.psm1 -PassThru
+        $dashboard = & $queueModule {
+          Invoke-GhJson -Arguments @("api", "--method", "GET", "repos/dotnet/aspnetcore/issues/69328")
+        }
+      }
+      catch
+      {
+        Write-Warning "Previous Pulse snapshot issue read is unavailable: $($_.Exception.Message)"
+        $dashboard = [pscustomobject]@{ body = "" }
+      }
+      [IO.File]::WriteAllText(
+        ".pr-attention-pulse/previous-issue-body.md",
+        [string]$dashboard.body,
+        [Text.UTF8Encoding]::new($false))
+      pwsh .github/workflows/pr-attention-pulse/Get-PreviousPRAttentionPulse.ps1 `
+        -IssueBodyPath .pr-attention-pulse/previous-issue-body.md `
+        -OutputPath .pr-attention-pulse/previous-snapshot.json `
+        -Token $env:GH_TOKEN
+
+      pwsh .github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1 -Repository dotnet/aspnetcore -Preset blazor -DisablePersonalInbox -OutputFormat Json -SourceRevision $env:PULSE_COLLECTOR_REVISION > .pr-attention-pulse/queue-blazor-raw.json
       $blazorCollectionExitCode = $LASTEXITCODE
-      pwsh .github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1 -Repository dotnet/aspnetcore -AllRepo -DisablePersonalInbox -OutputFormat Json > .pr-attention-pulse/queue-repository-wide-raw.json
+      pwsh .github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1 -Repository dotnet/aspnetcore -AllRepo -DisablePersonalInbox -OutputFormat Json -SourceRevision $env:PULSE_COLLECTOR_REVISION > .pr-attention-pulse/queue-repository-wide-raw.json
       $repositoryWideCollectionExitCode = $LASTEXITCODE
 
       $ErrorActionPreference = "Stop"
@@ -168,6 +191,7 @@ steps:
         -OutputPath .pr-attention-pulse/pulse-blazor.json `
         -AttemptTimestamp $attemptTimestamp `
         -CollectionExitCode $blazorCollectionExitCode `
+        -CollectorRevision $env:PULSE_COLLECTOR_REVISION `
         -Scope blazor
 
       if ($LASTEXITCODE -ne 0 -or -not (Test-Path .pr-attention-pulse/pulse-blazor.json))
@@ -180,6 +204,7 @@ steps:
         -OutputPath .pr-attention-pulse/pulse-repository-wide.json `
         -AttemptTimestamp $attemptTimestamp `
         -CollectionExitCode $repositoryWideCollectionExitCode `
+        -CollectorRevision $env:PULSE_COLLECTOR_REVISION `
         -Scope repository-wide
 
       if ($LASTEXITCODE -ne 0 -or -not (Test-Path .pr-attention-pulse/pulse-repository-wide.json))
@@ -202,6 +227,17 @@ steps:
       {
         throw "The combined sanitized Pulse envelope could not be produced."
       }
+
+      pwsh .github/workflows/pr-attention-pulse/Compare-PRAttentionPulse.ps1 `
+        -CurrentPath .pr-attention-pulse/pulse-input.json `
+        -PreviousPath .pr-attention-pulse/previous-snapshot.json `
+        -OutputPath .pr-attention-pulse/pulse-input-with-changes.json
+      if ($LASTEXITCODE -ne 0 -or -not (Test-Path .pr-attention-pulse/pulse-input-with-changes.json))
+      {
+        throw "The Pulse snapshot comparison could not be produced."
+      }
+      Move-Item .pr-attention-pulse/pulse-input-with-changes.json .pr-attention-pulse/pulse-input.json -Force
+      Remove-Item .pr-attention-pulse/previous-issue-body.md, .pr-attention-pulse/previous-snapshot.json -Force
 
       if ((Test-Path .pr-attention-pulse/pulse-blazor.json) -or
         (Test-Path .pr-attention-pulse/pulse-repository-wide.json))
@@ -384,6 +420,9 @@ post-steps:
       Remove-Item .pr-attention-pulse/pulse-body.md -Force -ErrorAction SilentlyContinue
       Remove-Item .pr-attention-pulse/pulse-request.json -Force -ErrorAction SilentlyContinue
       Remove-Item .pr-attention-pulse/pulse-snapshot-context.json -Force -ErrorAction SilentlyContinue
+      Remove-Item .pr-attention-pulse/previous-issue-body.md -Force -ErrorAction SilentlyContinue
+      Remove-Item .pr-attention-pulse/previous-snapshot.json -Force -ErrorAction SilentlyContinue
+      Remove-Item .pr-attention-pulse/pulse-input-with-changes.json -Force -ErrorAction SilentlyContinue
       Remove-Item "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator" -Recurse -Force -ErrorAction SilentlyContinue
 
 network:
