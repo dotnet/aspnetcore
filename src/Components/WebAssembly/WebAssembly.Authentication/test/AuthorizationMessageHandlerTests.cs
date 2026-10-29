@@ -3,6 +3,8 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Authorization;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -191,6 +193,58 @@ public class AuthorizationMessageHandlerTests
 
         // Assert
         Assert.Single(tokenProvider.Invocations);
+    }
+
+    [Fact]
+    public async Task DoesNotCacheToken_WhenAuthenticationStateChangesWhileTokenIsBeingRequested()
+    {
+        // Arrange
+        var staleTokenResult = new TaskCompletionSource<AccessTokenResult>();
+        var tokenProvider = new TestAccessTokenProvider(
+            staleTokenResult.Task,
+            Task.FromResult(CreateTokenResult("fresh")));
+
+        var handler = new AuthorizationMessageHandler(tokenProvider, Mock.Of<NavigationManager>());
+        handler.ConfigureHandler(new[] { "https://localhost:5001" });
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        handler.InnerHandler = new TestMessageHandler(response);
+        var client = new HttpClient(handler);
+
+        // Act
+        var firstRequest = client.GetAsync("https://localhost:5001/weather");
+        tokenProvider.RaiseAuthenticationStateChanged();
+        staleTokenResult.SetResult(CreateTokenResult("stale"));
+        _ = await firstRequest;
+        var firstRequestToken = response.RequestMessage.Headers.Authorization.Parameter;
+
+        _ = await client.GetAsync("https://localhost:5001/weather");
+
+        // Assert
+        Assert.Equal("stale", firstRequestToken);
+        Assert.Equal("fresh", response.RequestMessage.Headers.Authorization.Parameter);
+    }
+
+    private static AccessTokenResult CreateTokenResult(string value) => new(
+        AccessTokenResultStatus.Success,
+        new AccessToken { Expires = DateTime.Now.AddHours(1), GrantedScopes = new[] { "All" }, Value = value },
+        null,
+        null);
+
+    private sealed class TestAccessTokenProvider : AuthenticationStateProvider, IAccessTokenProvider
+    {
+        private readonly Queue<Task<AccessTokenResult>> _results;
+
+        public TestAccessTokenProvider(params Task<AccessTokenResult>[] results) => _results = new(results);
+
+        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+            => Task.FromResult(new AuthenticationState(new ClaimsPrincipal()));
+
+        public void RaiseAuthenticationStateChanged() => NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+
+        public ValueTask<AccessTokenResult> RequestAccessToken() => new(_results.Dequeue());
+
+        public ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options) => RequestAccessToken();
     }
 }
 
