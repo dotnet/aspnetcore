@@ -69,14 +69,22 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
                 nameof(validationContext));
         }
 
-        // Perf: Creating a ValidationContext is relatively expensive. For well-known attributes that do not use the
-        // ValidationContext, check whether the value is valid first and only create the context to produce errors.
-        if (_canValidateWithoutContext && Attribute.IsValid(validationContext.Model))
+        var metadata = validationContext.ModelMetadata;
+
+        // Perf: Creating a ValidationContext is relatively expensive. Well-known attributes that do not use the
+        // ValidationContext can be validated without one. On failure, produce the same result that
+        // ValidationAttribute.GetValidationResult would: FormatErrorMessage(DisplayName) for the member being validated.
+        if (_canValidateWithoutContext)
         {
-            return Enumerable.Empty<ModelValidationResult>();
+            if (Attribute.IsValid(validationContext.Model))
+            {
+                return Enumerable.Empty<ModelValidationResult>();
+            }
+
+            var message = ResolveErrorMessage(validationContext, Attribute.FormatErrorMessage(metadata.GetDisplayName()));
+            return new[] { new ModelValidationResult(memberName: null, message) };
         }
 
-        var metadata = validationContext.ModelMetadata;
         var memberName = metadata.Name;
         var container = validationContext.Container;
 
@@ -92,18 +100,7 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         var result = Attribute.GetValidationResult(validationContext.Model, context);
         if (result is not null)
         {
-            string? errorMessage;
-            if (_stringLocalizer != null &&
-                !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
-                string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
-                Attribute.ErrorMessageResourceType == null)
-            {
-                errorMessage = GetErrorMessage(validationContext) ?? result.ErrorMessage;
-            }
-            else
-            {
-                errorMessage = result.ErrorMessage;
-            }
+            var errorMessage = ResolveErrorMessage(validationContext, result.ErrorMessage);
 
             var validationResults = new List<ModelValidationResult>();
             if (result.MemberNames != null)
@@ -154,6 +151,19 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
             type == typeof(PhoneAttribute) ||
             type == typeof(UrlAttribute) ||
             type == typeof(CreditCardAttribute);
+    }
+
+    private string? ResolveErrorMessage(ModelValidationContext validationContext, string? defaultErrorMessage)
+    {
+        if (_stringLocalizer != null &&
+            !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
+            string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
+            Attribute.ErrorMessageResourceType == null)
+        {
+            return GetErrorMessage(validationContext) ?? defaultErrorMessage;
+        }
+
+        return defaultErrorMessage;
     }
 
     private string? GetErrorMessage(ModelValidationContextBase validationContext)

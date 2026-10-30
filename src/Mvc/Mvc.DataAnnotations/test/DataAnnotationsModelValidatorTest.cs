@@ -314,6 +314,7 @@ public class DataAnnotationsModelValidatorTest
         else
         {
             var result = Assert.Single(results);
+            Assert.Empty(result.MemberName);
             Assert.Equal(attribute.FormatErrorMessage(nameof(SampleModel.Name)), result.Message);
         }
     }
