@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -62,7 +61,7 @@ internal sealed class ProjectIdResolver
                 FileName = DotNetMuxer.MuxerPathOrDefault(),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 ArgumentList =
                     {
                         "build",
@@ -81,37 +80,13 @@ internal sealed class ProjectIdResolver
             _reporter.Verbose($"Invoking '{psi.FileName} {string.Join(' ', psi.ArgumentList)}'");
 #endif
 
-            using var process = new Process()
-            {
-                StartInfo = psi,
-            };
+            ProcessTextOutput processOutput = Process.RunAndCaptureText(psi);
 
-            var outputBuilder = new StringBuilder();
-            var errorBuilder = new StringBuilder();
-            process.OutputDataReceived += (_, d) =>
+            if (processOutput.ExitStatus.ExitCode != 0)
             {
-                if (!string.IsNullOrEmpty(d.Data))
-                {
-                    outputBuilder.AppendLine(d.Data);
-                }
-            };
-            process.ErrorDataReceived += (_, d) =>
-            {
-                if (!string.IsNullOrEmpty(d.Data))
-                {
-                    errorBuilder.AppendLine(d.Data);
-                }
-            };
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                _reporter.Verbose(outputBuilder.ToString());
-                _reporter.Verbose(errorBuilder.ToString());
-                _reporter.Error($"Exit code: {process.ExitCode}");
+                _reporter.Verbose(processOutput.StandardOutput);
+                _reporter.Verbose(processOutput.StandardError);
+                _reporter.Error($"Exit code: {processOutput.ExitStatus.ExitCode}");
                 _reporter.Error(SecretsHelpersResources.FormatError_ProjectFailedToLoad(projectFile));
                 return null;
             }
@@ -146,7 +121,7 @@ internal sealed class ProjectIdResolver
                 FileName = DotNetMuxer.MuxerPathOrDefault(),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 ArgumentList =
                     {
                         "build",
@@ -165,45 +140,21 @@ internal sealed class ProjectIdResolver
             _reporter.Verbose($"Invoking '{psi.FileName} {string.Join(' ', psi.ArgumentList)}'");
 #endif
 
-            using var process = new Process()
-            {
-                StartInfo = psi,
-            };
+            ProcessTextOutput processOutput = Process.RunAndCaptureText(psi);
 
-            var outputBuilder = new StringBuilder();
-            var errorBuilder = new StringBuilder();
-            process.OutputDataReceived += (_, d) =>
+            if (processOutput.ExitStatus.ExitCode != 0)
             {
-                if (!string.IsNullOrEmpty(d.Data))
-                {
-                    outputBuilder.AppendLine(d.Data);
-                }
-            };
-            process.ErrorDataReceived += (_, d) =>
-            {
-                if (!string.IsNullOrEmpty(d.Data))
-                {
-                    errorBuilder.AppendLine(d.Data);
-                }
-            };
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                _reporter.Verbose(outputBuilder.ToString());
-                _reporter.Verbose(errorBuilder.ToString());
-                _reporter.Error($"Exit code: {process.ExitCode}");
+                _reporter.Verbose(processOutput.StandardOutput);
+                _reporter.Verbose(processOutput.StandardError);
+                _reporter.Error($"Exit code: {processOutput.ExitStatus.ExitCode}");
                 _reporter.Error(SecretsHelpersResources.FormatError_ProjectFailedToLoad(projectFile));
                 return null;
             }
 
             if (!File.Exists(outputFile))
             {
-                _reporter.Verbose(outputBuilder.ToString());
-                _reporter.Verbose(errorBuilder.ToString());
+                _reporter.Verbose(processOutput.StandardOutput);
+                _reporter.Verbose(processOutput.StandardError);
                 _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
                 return null;
             }
@@ -211,8 +162,8 @@ internal sealed class ProjectIdResolver
             var id = File.ReadAllText(outputFile).Trim();
             if (string.IsNullOrEmpty(id))
             {
-                _reporter.Verbose(outputBuilder.ToString());
-                _reporter.Verbose(errorBuilder.ToString());
+                _reporter.Verbose(processOutput.StandardOutput);
+                _reporter.Verbose(processOutput.StandardError);
                 _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
                 return null;
             }

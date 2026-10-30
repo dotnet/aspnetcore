@@ -30,22 +30,15 @@ internal class ParentProcessWatcher : BackgroundService
 
         try
         {
-            var parent = Process.GetProcessById(_parentPid);
-
-            while (!stoppingToken.IsCancellationRequested)
+            if (Process.TryGetProcessById(_parentPid, out var parent))
             {
-                if (parent.HasExited)
+                using (parent)
                 {
-                    _lifetime.StopApplication();
-                    return;
+                    // Exit-status waits cannot monitor a non-child process on Unix.
+                    await parent.WaitForExitAsync(stoppingToken).ConfigureAwait(false);
                 }
-
-                await Task.Delay(1000, stoppingToken).ConfigureAwait(false);
             }
-        }
-        catch (ArgumentException)
-        {
-            // Parent process already gone
+
             _lifetime.StopApplication();
         }
         catch (OperationCanceledException)

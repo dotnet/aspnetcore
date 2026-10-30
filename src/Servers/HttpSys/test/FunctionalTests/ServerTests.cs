@@ -65,11 +65,12 @@ public class ServerTests : LoggedTest
         {
             var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")
             {
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                InheritedHandles = [],
             };
-            using var process = Process.Start(psi);
-            process.Start();
+            using var process = Process.Start(psi)!;
             var netshOutput = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitStatusAsync();
             Assert.Contains(queueName, netshOutput);
 
             var prefix = UrlPrefix.Create(address);
@@ -102,11 +103,12 @@ public class ServerTests : LoggedTest
         {
             var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")
             {
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                InheritedHandles = [],
             };
-            using var process = Process.Start(psi);
-            process.Start();
+            using var process = Process.Start(psi)!;
             var netshOutput = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitStatusAsync();
             Assert.Contains(queueName, netshOutput);
         }
     }

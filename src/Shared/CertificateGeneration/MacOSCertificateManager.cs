@@ -103,7 +103,10 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 Log.MacOSTrustCommandStart($"{MacOSTrustCertificateCommandLine} {MacOSTrustCertificateCommandLineArguments}{tmpFile}");
             }
 
-            var exitStatus = Process.Run(new ProcessStartInfo(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile));
+            var exitStatus = Process.Run(new ProcessStartInfo(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile)
+            {
+                InheritedHandles = [],
+            });
             if (exitStatus.ExitCode != 0)
             {
                 Log.MacOSTrustCommandError(exitStatus.ExitCode);
@@ -164,7 +167,8 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 // Do this to avoid showing output to the console when the cert is not trusted. It is trivial to export
                 // the cert and replicate the command to see details.
                 StandardOutputHandle = nullHandle,
-                StandardErrorHandle = nullHandle
+                StandardErrorHandle = nullHandle,
+                InheritedHandles = [],
             };
 
             var checkTrustProcessOutput = Process.Run(checkTrustProcessStartInfo);
@@ -211,7 +215,10 @@ internal sealed class MacOSCertificateManager : CertificateManager
                     CultureInfo.InvariantCulture,
                     MacOSUntrustLegacyCertificateCommandLineArguments,
                     certificatePath
-                ));
+                ))
+            {
+                InheritedHandles = [],
+            };
 
             var processExitStatus = Process.Run(processInfo);
             if (processExitStatus.ExitCode != 0)
@@ -246,7 +253,8 @@ internal sealed class MacOSCertificateManager : CertificateManager
             ))
         {
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
+            InheritedHandles = [],
         };
 
         if (Log.IsEnabled())
@@ -285,11 +293,12 @@ internal sealed class MacOSCertificateManager : CertificateManager
             MacOSFindCertificateOnKeychainCommandLine,
             string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateOnKeychainCommandLineArgumentsFormat, subject, keychain))
         {
-            RedirectStandardOutput = true
-        });
+            RedirectStandardOutput = true,
+            InheritedHandles = [],
+        })!;
 
         var output = findCertificateProcess!.StandardOutput.ReadToEnd();
-        findCertificateProcess.WaitForExit();
+        findCertificateProcess.WaitForExitStatus();
 
         var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
         var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
@@ -343,7 +352,8 @@ internal sealed class MacOSCertificateManager : CertificateManager
             string.Format(CultureInfo.InvariantCulture, MacOSAddCertificateToKeyChainCommandLineArgumentsFormat, certificatePath, password))
         {
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
+            InheritedHandles = [],
         };
 
         if (Log.IsEnabled())

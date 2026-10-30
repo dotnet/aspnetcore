@@ -25,7 +25,7 @@ public class WebViewManagerE2ETests
 
         // This test launches this very test assembly as an executable so that the Photino UI window
         // can launch and be automated. See the comment in Program.Main() for more info.
-        var photinoProcess = new Process()
+        using var photinoProcess = new Process()
         {
             StartInfo = new ProcessStartInfo
             {
@@ -33,14 +33,15 @@ public class WebViewManagerE2ETests
                 FileName = "dotnet",
                 Arguments = $"\"{photinoTestProgramExePath}\"",
                 RedirectStandardOutput = true,
+                InheritedHandles = [],
             },
         };
 
         photinoProcess.Start();
 
-        var testProgramOutput = photinoProcess.StandardOutput.ReadToEnd();
+        var testProgramOutput = await photinoProcess.StandardOutput.ReadToEndAsync();
 
-        await photinoProcess.WaitForExitAsync().TimeoutAfter(TimeSpan.FromSeconds(30));
+        await photinoProcess.WaitForExitStatusAsync().TimeoutAfter(TimeSpan.FromSeconds(30));
 
         // The test app reports its own results by calling Console.WriteLine(), so here we only need to verify that
         // the test internally believes it passed (and we trust it!).
