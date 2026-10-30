@@ -143,50 +143,20 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
   return await import(/* webpackIgnore: true */ './dotnet.js');
 }
 
-function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
+async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
+  const module = await importDotnetJs(options);
+  dotnet = module.dotnet;
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
   };
 
-  if (options.environment) {
-    config.applicationEnvironment = options.environment;
-  }
-
-  const onConfigLoaded = async (loadedConfig: MonoConfig) => {
-    if (!loadedConfig.environmentVariables) {
-      loadedConfig.environmentVariables = {};
-    }
-
-    if (loadedConfig.globalizationMode === GlobalizationMode.Sharded) {
-      loadedConfig.environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
-    }
-
-    Blazor._internal.getApplicationEnvironment = () => loadedConfig.applicationEnvironment!;
-    Blazor._internal.getApplicationCulture = () => loadedConfig.applicationCulture!;
-
-    onConfigLoadedCallback?.(loadedConfig);
-
-    jsInitializer = await fetchAndInvokeInitializers(options, loadedConfig);
-  };
-
-  const moduleConfig = (window['Module'] || {}) as any;
-  const dotnetModuleConfig: DotnetModuleConfig = {
-    ...moduleConfig,
-    onConfigLoaded: (onConfigLoaded as (config: MonoConfig) => void | Promise<void>),
-    onDownloadResourceProgress: setProgress,
+  const moduleConfig: DotnetModuleConfig = {
+    ...((window['Module'] || {}) as any),
     config,
     out: print,
     err: printErr,
   };
-
-  return dotnetModuleConfig;
-}
-
-async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
-  const module = await importDotnetJs(options);
-  dotnet = module.dotnet;
-  const moduleConfig = prepareRuntimeConfig(options, onConfigLoaded);
 
   if (options.applicationCulture) {
     dotnet.withApplicationCulture(options.applicationCulture);
@@ -202,6 +172,24 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
 
   const anyDotnet = (dotnet as any);
   anyDotnet.withModuleConfig(moduleConfig);
+
+  dotnet.withConfigLoaded(async (loadedConfig: MonoConfig) => {
+    if (!loadedConfig.environmentVariables) {
+      loadedConfig.environmentVariables = {};
+    }
+
+    if (loadedConfig.globalizationMode === GlobalizationMode.Sharded) {
+      loadedConfig.environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
+    }
+
+    Blazor._internal.getApplicationEnvironment = () => loadedConfig.applicationEnvironment!;
+    Blazor._internal.getApplicationCulture = () => loadedConfig.applicationCulture!;
+
+    onConfigLoaded?.(loadedConfig);
+
+    jsInitializer = await fetchAndInvokeInitializers(options, loadedConfig);
+  });
+  dotnet.withDownloadResourceProgress(setProgress);
 
   if (options.configureRuntime) {
     options.configureRuntime(dotnet);
