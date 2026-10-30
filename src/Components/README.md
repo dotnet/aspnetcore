@@ -30,6 +30,8 @@ The following contains a description of each sub-directory in the `Components` d
 ## Development Setup
 
 **Note**: To build other specific projects from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
+**Note**: You also need to prepare your environment according to the steps in [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md).
+
 
 ### Building ASP.NET Core Components
 
@@ -49,6 +51,7 @@ The following contains a description of each sub-directory in the `Components` d
     ```
 
 1. Use NPM to restore the required JavaScript modules. This doesn't require an Internet connection since the sources are read from a sub-module.
+   **Note**: if you are building from a github version archive, the submodules folders in src/submodules might be empty. you have to get them manually from   https://github.com/dotnet/aspnetcore/tree/vPUTTHEVERSIONHERE/src/submodules if `git submodule update --init --recursive` is not successful.
 
     ```powershell
     npm ci --offline
@@ -77,6 +80,7 @@ The following contains a description of each sub-directory in the `Components` d
      ```powershell
      ./src/Components/build.cmd
      ```
+     **Note**: This will also try to run some End-to-end tests using selenium which might fail. the artifact in `artifacts\bin\Microsoft.AspNetCore.Components\Debug\net10.0\Microsoft.AspNetCore.Components.dll` should have been built nonetheless.
 
 2. Optionally, open the Components in Visual Studio:
 
