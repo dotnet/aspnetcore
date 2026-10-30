@@ -963,6 +963,26 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void BuildRequestDelegateThrowsWithoutEndpointDisplayNameWhenEndpointBuilderIsNotProvided()
+    {
+        void TestInferredBodyAction(Todo value) { }
+        void TestMultipleBodiesAction(Todo value1, Todo value2) { }
+        void TestFormAndJsonAction(IFormFile value1, Todo value2) { }
+
+        var inferredBodyException = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestInferredBodyAction, new() { DisableInferBodyFromParameters = true }));
+        Assert.StartsWith("Body was inferred but the method does not allow inferred body parameters.", inferredBodyException.Message);
+        Assert.DoesNotContain("Endpoint:", inferredBodyException.Message);
+
+        var multipleBodiesException = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestMultipleBodiesAction));
+        Assert.StartsWith("Failure to infer one or more parameters.", multipleBodiesException.Message);
+        Assert.DoesNotContain("Endpoint:", multipleBodiesException.Message);
+
+        var formAndJsonException = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormAndJsonAction));
+        Assert.StartsWith("An action cannot use both form and JSON body parameters.", formAndJsonException.Message);
+        Assert.DoesNotContain("Endpoint:", formAndJsonException.Message);
+    }
+
+    [Fact]
     public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidTryParse()
     {
         void TestTryParseStruct(BadTryParseStruct value1) { }
