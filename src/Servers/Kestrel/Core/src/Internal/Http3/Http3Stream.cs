@@ -53,6 +53,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private IStreamClosedFeature _streamClosedFeature = default!;
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private StreamCompletionFlags _completionState;
+    private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
@@ -680,7 +681,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
-            var incomingFrame = new Http3RawFrame();
+            // Reuse the frame across requests when the stream is pooled. TryReadFrame overwrites its state for each new frame.
+            var incomingFrame = _incomingFrame;
+            incomingFrame.Type = default;
+            incomingFrame.RemainingLength = 0;
             var isContinuedFrame = false;
             while (_isClosed == 0)
             {
