@@ -26,12 +26,11 @@ internal static partial class PrepareReviewProgram
     private const string TargetMovedDuringPreparationMessage =
         "The target or base branch moved during preparation; no ready manifest was written.";
     private const string ExecutionExclusionScope =
-        "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree";
+        "Per-guide workers running PR code or tests, and coordinator validation that requires unavailable external CI, infrastructure, credentials, or services";
     private const string ExecutionExclusionReason =
-        "Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
-        "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
-        "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
-        "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.";
+        "Per-guide workers remain source-only. After collecting every worker result, a hosted or native coordinator may use a caller-supplied worktree at manifest.target.head " +
+        "to run targeted restore, build, test, browser, or temporary-repro validation under SKILL.md's coordinator rules. Never execute target code in the frozen bundle or developer checkout; " +
+        "record exact commands and results, keep temporary edits diagnostic-only, and clean native-local scratch worktrees. If validation is unavailable, record the reason and continue without reporting INCOMPLETE.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 
     internal sealed record Options(
