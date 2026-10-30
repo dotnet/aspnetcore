@@ -526,4 +526,88 @@ public record struct ValidatableRecordStruct(
         });
 
     }
+
+    [Fact]
+    public Task DoesNotEmit_ForRecordWithNoValidatableMembers()
+    {
+        // A record whose primary-constructor parameters carry no validation attributes and
+        // whose types are not themselves validatable should not be emitted as a validatable
+        // type - matching the behavior of an equivalently-shaped class. A record with a
+        // validation attribute on a primary-constructor parameter must still be emitted.
+        var source = """
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+static class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddValidation();
+        var app = builder.Build();
+        app.Run();
+    }
+}
+
+[ValidatableType]
+public class Holder
+{
+    [Required]
+    public string Name { get; set; } = "";
+    public PlainRecord? PlainRec { get; set; }
+    public PlainClass? PlainCls { get; set; }
+    public MixedRecord? Mixed { get; set; }
+    public ValidatedRecord? ValidatedRec { get; set; }
+}
+
+// No validation attributes and no validatable member types -> should not be emitted.
+public record PlainRecord(int Number, string Text);
+
+// Same shape as PlainRecord but a class -> already correctly not emitted; asserted for symmetry.
+public class PlainClass
+{
+    public int Number { get; set; }
+    public string Text { get; set; } = "";
+}
+
+// Neither the primary-constructor parameters nor the body properties are validatable
+// -> the record must not be emitted (documents the case called out in #68805).
+public record MixedRecord(int CtorParam, string CtorText)
+{
+    public int BodyProperty { get; set; }
+    public string BodyText { get; set; } = "";
+}
+
+// [Required] binds to the primary-constructor parameter -> must still be emitted.
+public record ValidatedRecord([Required] string Name, int Age);
+""";
+        RunGenerator(source, out var compilation);
+        return VerifyValidatableType(compilation, "Holder", (validationOptions, type) =>
+        {
+            // The containing type is validatable (it has a [Required] member).
+            Assert.True(validationOptions.TryGetValidatableTypeInfo(type, out var holderInfo));
+
+            // Core repro from #68805: a record with no validatable members must NOT become a
+            // validatable member of its containing type - matching the equivalently-shaped class.
+            // Before the fix, PlainRec (but not PlainCls) was incorrectly a validatable member.
+            Assert.True(holderInfo.TryFindProperty("Name", validationOptions, out _));
+            Assert.False(holderInfo.TryFindProperty("PlainRec", validationOptions, out _));
+            Assert.False(holderInfo.TryFindProperty("PlainCls", validationOptions, out _));
+            Assert.False(holderInfo.TryFindProperty("Mixed", validationOptions, out _));
+            Assert.True(holderInfo.TryFindProperty("ValidatedRec", validationOptions, out _));
+
+            // The unvalidatable records are also not emitted as standalone validatable types.
+            Assert.False(validationOptions.TryGetValidatableTypeInfo(type.Assembly.GetType("PlainRecord")!, out _));
+            Assert.False(validationOptions.TryGetValidatableTypeInfo(type.Assembly.GetType("PlainClass")!, out _));
+            Assert.False(validationOptions.TryGetValidatableTypeInfo(type.Assembly.GetType("MixedRecord")!, out _));
+
+            // Regression guard: a record with a validation attribute on a primary-constructor
+            // parameter is still emitted (the parameter, not the property, carries the attribute).
+            Assert.True(validationOptions.TryGetValidatableTypeInfo(type.Assembly.GetType("ValidatedRecord")!, out _));
+
+            return Task.CompletedTask;
+        });
+    }
 }
