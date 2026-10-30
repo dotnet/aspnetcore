@@ -59,6 +59,67 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task DefaultHubActivatorCreatesAndDisposesHubForEachInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var trackDispose = new TrackDispose();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(trackDispose), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<DisposeTrackingHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // The hub used for OnConnectedAsync has been disposed, and each invocation gets its own hub that is disposed afterwards.
+                for (var i = 1; i <= 3; i++)
+                {
+                    var result = await client.InvokeAsync(nameof(DisposeTrackingHub.GetDisposeCount)).DefaultTimeout();
+                    Assert.Equal(i, Assert.IsType<long>(result.Result));
+                }
+
+                client.Dispose();
+
+                await connectionHandlerTask;
+
+                Assert.Equal(5, trackDispose.DisposeCount);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DefaultHubActivatorDoesNotDisposeHubResolvedFromServiceProvider()
+    {
+        using (StartVerifiableLog())
+        {
+            var trackDispose = new TrackDispose();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s =>
+            {
+                s.AddSingleton(trackDispose);
+                s.AddSingleton<DisposeTrackingHub>();
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<DisposeTrackingHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                for (var i = 0; i < 3; i++)
+                {
+                    var result = await client.InvokeAsync(nameof(DisposeTrackingHub.GetDisposeCount)).DefaultTimeout();
+                    Assert.Equal(0L, Assert.IsType<long>(result.Result));
+                }
+
+                client.Dispose();
+
+                await connectionHandlerTask;
+
+                Assert.Equal(0, trackDispose.DisposeCount);
+            }
+        }
+    }
+
+    [Fact]
     public async Task AsyncDisposablesInHubsAreSupported()
     {
         using (StartVerifiableLog())
