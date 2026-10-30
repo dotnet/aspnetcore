@@ -16,7 +16,7 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(EmptyComponent);
         var serviceProvider = GetServiceProvider();
-        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new DefaultComponentPropertyActivator(), new TestRenderer());
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), DefaultComponentPropertyActivatorFactory.Create(), new TestRenderer());
 
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
@@ -32,7 +32,7 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(List<string>);
         var serviceProvider = GetServiceProvider();
-        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new DefaultComponentPropertyActivator(), new TestRenderer());
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), DefaultComponentPropertyActivatorFactory.Create(), new TestRenderer());
 
         // Assert
         var ex = Assert.Throws<ArgumentException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null, null));
@@ -44,7 +44,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(EmptyComponent);
-        var factory = new ComponentFactory(new CustomComponentActivator<ComponentWithInjectProperties>(), new DefaultComponentPropertyActivator(), new TestRenderer());
+        var factory = new ComponentFactory(new CustomComponentActivator<ComponentWithInjectProperties>(), DefaultComponentPropertyActivatorFactory.Create(), new TestRenderer());
 
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
@@ -65,7 +65,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(EmptyComponent);
-        var factory = new ComponentFactory(new NullResultComponentActivator(), new DefaultComponentPropertyActivator(), new TestRenderer());
+        var factory = new ComponentFactory(new NullResultComponentActivator(), DefaultComponentPropertyActivatorFactory.Create(), new TestRenderer());
 
         // Act
         var ex = Assert.Throws<InvalidOperationException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null, null));
@@ -77,7 +77,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(DerivedComponent);
-        var factory = new ComponentFactory(new CustomComponentActivator<DerivedComponent>(), new DefaultComponentPropertyActivator(), new TestRenderer());
+        var factory = new ComponentFactory(new CustomComponentActivator<DerivedComponent>(), DefaultComponentPropertyActivatorFactory.Create(), new TestRenderer());
 
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
@@ -104,7 +104,7 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(ComponentWithNonInjectableProperties);
         var serviceProvider = GetServiceProvider();
-        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new DefaultComponentPropertyActivator(), new TestRenderer());
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), DefaultComponentPropertyActivatorFactory.Create(), new TestRenderer());
 
         // Act
         var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
@@ -125,7 +125,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(
             /* won't be used */ new ComponentWithRenderMode());
         var serviceProvider = GetServiceProvider();
-        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new DefaultComponentPropertyActivator(), renderer);
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), DefaultComponentPropertyActivatorFactory.Create(), renderer);
 
         // Act
         var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
@@ -144,7 +144,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var serviceProvider = GetServiceProvider();
         var componentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(componentActivator, new DefaultComponentPropertyActivator(), renderer);
+        var factory = new ComponentFactory(componentActivator, DefaultComponentPropertyActivatorFactory.Create(), renderer);
 
         // Act
         var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(serviceProvider, componentType, null, 1234);
@@ -176,7 +176,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var serviceProvider = GetServiceProvider();
         var componentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(componentActivator, new DefaultComponentPropertyActivator(), renderer);
+        var factory = new ComponentFactory(componentActivator, DefaultComponentPropertyActivatorFactory.Create(), renderer);
 
         // Act/Assert
         Assert.Throws<AmbiguousMatchException>(
@@ -195,7 +195,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var serviceProvider = GetServiceProvider();
         var componentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(componentActivator, new DefaultComponentPropertyActivator(), renderer);
+        var factory = new ComponentFactory(componentActivator, DefaultComponentPropertyActivatorFactory.Create(), renderer);
 
         // Act
         var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(serviceProvider, componentType, callSiteRenderMode, 1234);
@@ -218,7 +218,7 @@ public class ComponentFactoryTest
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var serviceProvider = GetServiceProvider();
         var componentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(componentActivator, new DefaultComponentPropertyActivator(), renderer);
+        var factory = new ComponentFactory(componentActivator, DefaultComponentPropertyActivatorFactory.Create(), renderer);
 
         // Even though the two rendermodes are literally the same object, we don't allow specifying any nonnull
         // rendermode at the callsite if there's a nonnull fixed rendermode
@@ -239,7 +239,7 @@ public class ComponentFactoryTest
         var resolvedComponent = new ComponentWithInjectProperties();
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
         var defaultComponentActivator = new DefaultComponentActivator(serviceProvider);
-        var factory = new ComponentFactory(defaultComponentActivator, new DefaultComponentPropertyActivator(), renderer);
+        var factory = new ComponentFactory(defaultComponentActivator, DefaultComponentPropertyActivatorFactory.Create(), renderer);
 
         // Act
         var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
@@ -329,7 +329,7 @@ public class ComponentFactoryTest
         var serviceProvider = GetServiceProvider();
         var factory = new ComponentFactory(
             new CustomComponentActivator<DerivedComponent>(),
-            new DefaultComponentPropertyActivator(),
+            DefaultComponentPropertyActivatorFactory.Create(),
             new TestRenderer());
 
         // Act
@@ -362,7 +362,7 @@ public class ComponentFactoryTest
         var serviceProvider = GetServiceProvider();
         var factory = new ComponentFactory(
             new CustomComponentActivator<DerivedComponent>(),
-            new DefaultComponentPropertyActivator(),
+            DefaultComponentPropertyActivatorFactory.Create(),
             new TestRenderer());
 
         // Act
@@ -391,7 +391,7 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(ComponentWithInjectProperties);
         var serviceProvider = GetServiceProvider();
-        var propertyActivator = new DefaultComponentPropertyActivator();
+        var propertyActivator = DefaultComponentPropertyActivatorFactory.Create();
         var component = new ComponentWithInjectProperties();
 
         // Act
@@ -411,7 +411,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(ComponentWithInjectProperties);
-        var propertyActivator = new DefaultComponentPropertyActivator();
+        var propertyActivator = DefaultComponentPropertyActivatorFactory.Create();
 
         // Act
         var activator1 = propertyActivator.GetActivator(componentType);
@@ -427,7 +427,7 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(EmptyComponent);
         var serviceProvider = GetServiceProvider();
-        var propertyActivator = new DefaultComponentPropertyActivator();
+        var propertyActivator = DefaultComponentPropertyActivatorFactory.Create();
         var component = new EmptyComponent();
 
         // Act
@@ -445,7 +445,7 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(ComponentWithInjectProperties);
         var serviceProvider = new ServiceCollection().BuildServiceProvider(); // Empty provider
-        var propertyActivator = new DefaultComponentPropertyActivator();
+        var propertyActivator = DefaultComponentPropertyActivatorFactory.Create();
         var component = new ComponentWithInjectProperties();
 
         // Act
@@ -462,7 +462,7 @@ public class ComponentFactoryTest
         // Arrange
         var componentType = typeof(ComponentWithOnlyKeyedProperty);
         var serviceProvider = new ServiceCollection().BuildServiceProvider(); // Empty provider
-        var propertyActivator = new DefaultComponentPropertyActivator();
+        var propertyActivator = DefaultComponentPropertyActivatorFactory.Create();
         var component = new ComponentWithOnlyKeyedProperty();
 
         // Act
@@ -627,7 +627,7 @@ public class ComponentFactoryTest
             RequestedType = componentType;
 
             // Return an activator that tracks invocation and delegates to the default
-            var defaultActivator = new DefaultComponentPropertyActivator();
+            var defaultActivator = DefaultComponentPropertyActivatorFactory.Create();
             var defaultAction = defaultActivator.GetActivator(componentType);
 
             return (sp, component) =>
