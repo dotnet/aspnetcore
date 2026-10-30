@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.JSInterop;
 using Moq;
@@ -99,6 +98,28 @@ public class PullFromJSDataStreamTest
         using var mem = new MemoryStream();
         var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await pullFromJSDataStream.CopyToAsync(mem).DefaultTimeout());
         Assert.Equal("Failed to read the requested number of bytes from the stream.", ex.Message);
+    }
+
+    [Fact]
+    public void Dispose_CallsDisposeAsyncOnJSStreamReference()
+    {
+        var jsStreamReferenceMock = new Mock<IJSStreamReference>();
+        var stream = PullFromJSDataStream.CreateJSDataStream(_jsRuntime, jsStreamReferenceMock.Object, totalLength: 10, cancellationToken: CancellationToken.None);
+
+        stream.Dispose();
+
+        jsStreamReferenceMock.Verify(x => x.DisposeAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_CallsDisposeAsyncOnJSStreamReference()
+    {
+        var jsStreamReferenceMock = new Mock<IJSStreamReference>();
+        var stream = PullFromJSDataStream.CreateJSDataStream(_jsRuntime, jsStreamReferenceMock.Object, totalLength: 10, cancellationToken: CancellationToken.None);
+
+        await stream.DisposeAsync();
+
+        jsStreamReferenceMock.Verify(x => x.DisposeAsync(), Times.Once);
     }
 
     private static PullFromJSDataStream CreateJSDataStream(byte[] data, IJSRuntime runtime = null)
