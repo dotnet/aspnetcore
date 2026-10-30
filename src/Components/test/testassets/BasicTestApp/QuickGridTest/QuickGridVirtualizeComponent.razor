@@ -11,6 +11,8 @@
 </div>
 
 @code {
+    [Parameter] public string TestConfiguration { get; set; }
+
     internal class Person
     {
         public int Id { get; set; }
@@ -27,7 +29,10 @@
         {
             await Task.CompletedTask;
             ItemsProviderCallCount++;
-            StateHasChanged();
+            if (TestConfiguration != "no-provider-render")
+            {
+                StateHasChanged();
+            }
             return GridItemsProviderResult.From(
                 items: Enumerable.Range(1, 100).Select(i => new Person { Id = i, Name = $"Person {i}" }).ToList(),
                 totalItemCount: 100);
