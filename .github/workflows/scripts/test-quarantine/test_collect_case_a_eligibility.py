@@ -3901,7 +3901,277 @@ def run_output(root, *args):
     ).strip()
 
 
+def test_conditional_shared_source(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        shared = root / "src/SharedTests/HttpsTests.cs"
+        shared.parent.mkdir(parents=True)
+        text = """#if !IIS_FUNCTIONALS
+#if IISEXPRESS_FUNCTIONALS
+namespace Sample.IISExpress;
+#elif NEWHANDLER_FUNCTIONALS
+namespace Sample.NewHandler;
+#else
+namespace Sample.Other;
+#endif
+#else
+namespace Sample.IIS;
+#endif
+public class ClientCertificateTests
+{
+    [ConditionalTheory]
+    [MemberData(nameof(Variants))]
+    public void HttpsNoClientCert_NoClientCert()
+    {
+    }
+}
+"""
+        shared.write_text(text, encoding="utf-8")
+        for project, symbol in (
+            ("IIS.Tests", "IIS_FUNCTIONALS"),
+            ("IISExpress.Tests", "IISEXPRESS_FUNCTIONALS"),
+            ("NewHandler.Tests", "NEWHANDLER_FUNCTIONALS"),
+        ):
+            directory = root / "src" / project
+            directory.mkdir()
+            (directory / f"{project}.csproj").write_text(
+                f'<Project><PropertyGroup><DefineConstants>\n{symbol}\n</DefineConstants>'
+                '</PropertyGroup><ItemGroup><Compile Include="../SharedTests/**/*.cs" />'
+                '<Compile Include="$(SharedSourceRoot)ServerInfrastructure/**/*.cs" '
+                'Exclude="$(SharedSourceRoot)ServerInfrastructure/DuplexPipe.cs" />'
+                '</ItemGroup></Project>',
+                encoding="utf-8",
+            )
+        excluded = root / "src/Excluded.Tests"
+        excluded.mkdir()
+        (excluded / "Excluded.Tests.csproj").write_text(
+            '<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>'
+            '</PropertyGroup><ItemGroup><Compile Include="../SharedTests/**/*.cs" '
+            'Exclude="../SharedTests/HttpsTests.cs" /></ItemGroup></Project>',
+            encoding="utf-8",
+        )
+        commit(root, "Add shared conditional namespace test", "2026-08-01T00:00:00Z")
+        first_commit = subprocess.check_output(
+            ["git", "-C", root, "rev-parse", "HEAD"], text=True,
+        ).strip()
+        for namespace, project in (
+            ("IIS", "IIS.Tests"),
+            ("IISExpress", "IISExpress.Tests"),
+            ("NewHandler", "NewHandler.Tests"),
+        ):
+            name = f"Sample.{namespace}.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+            receipt = collect_result(
+                root, evidence(test_name=name), test_name=name, module=module,
+            )
+            assert receipt["status"] == "eligible", (namespace, receipt)
+            resolved = receipt["source_resolution"]
+            assert resolved["path"] == "src/SharedTests/HttpsTests.cs", resolved
+            assert resolved["project_root"] == str(root / "src" / project), resolved
+            historical = module.historical_test_source(
+                root, f"src/{project}", name, first_commit, {}, {},
+            )
+            assert historical["status"] == "exact", (namespace, historical)
+            print(f"PASS conditional shared namespace: {namespace}")
+
+        attribute = f"#if IIS_FUNCTIONALS\n    {QUARANTINE_ATTRIBUTE}\n#endif\n"
+        shared.write_text(text.replace("    [ConditionalTheory]", attribute + "    [ConditionalTheory]"), encoding="utf-8")
+        commit(root, "Quarantine only the IIS variant", "2026-08-02T00:00:00Z")
+        iis = "Sample.IIS.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        express = "Sample.IISExpress.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        assert_already_quarantined(collect_result(
+            root, evidence(test_name=iis), test_name=iis, module=module,
+        ))
+        assert collect_result(
+            root, evidence(test_name=express), test_name=express, module=module,
+        )["status"] == "eligible"
+        shared.write_text(text, encoding="utf-8")
+        commit(root, "Unquarantine only the IIS variant", "2026-08-03T00:00:00Z")
+        removal = subprocess.check_output(
+            ["git", "-C", root, "rev-parse", "HEAD"], text=True,
+        ).strip()
+        assert_case_b(collect_result(
+            root, evidence(test_name=iis), test_name=iis, module=module,
+        ), removal)
+        express_result = collect_result(
+            root, evidence(test_name=express), test_name=express, module=module,
+        )
+        assert express_result["originating_case"] == "case-a", express_result
+
+        project_file = root / "src/IIS.Tests/IIS.Tests.csproj"
+        project_text = project_file.read_text()
+        shared.write_text(text.replace(
+            "    [ConditionalTheory]",
+            f"#if IIS_FUNCTIONALS && FLAG\n    {QUARANTINE_ATTRIBUTE}\n#endif\n    [ConditionalTheory]",
+        ), encoding="utf-8")
+        commit(root, "Add symbol-gated quarantine", "2026-08-04T00:00:00Z")
+        project_file.write_text(
+            project_text.replace("IIS_FUNCTIONALS", "IIS_FUNCTIONALS;FLAG"),
+            encoding="utf-8",
+        )
+        commit(root, "Activate quarantine through project symbols", "2026-08-05T00:00:00Z")
+        project_file.write_text(project_text, encoding="utf-8")
+        commit(root, "Deactivate quarantine through project symbols", "2026-08-06T00:00:00Z")
+        removal = subprocess.check_output(
+            ["git", "-C", root, "rev-parse", "HEAD"], text=True,
+        ).strip()
+        assert_case_b(collect_result(
+            root, evidence(test_name=iis), test_name=iis, module=module,
+        ), removal)
+        print("PASS project-symbol-only quarantine transitions")
+
+        for modification in (
+            '<Compile Remove="../SharedTests/HttpsTests.cs" Condition="true" />',
+            '<Compile Remove="$(UnknownSharedFiles)" />',
+        ):
+            project_file.write_text(
+                project_text.replace("</ItemGroup>", modification + "</ItemGroup>"),
+                encoding="utf-8",
+            )
+            unresolved = module.resolve_source(root, iis)
+            assert unresolved["status"] == "missing", (modification, unresolved)
+            print(f"PASS unresolved Compile removal: {modification}")
+        project_file.write_text(project_text.replace(
+            "</PropertyGroup>", "<DefineConstants>REPLACEMENT</DefineConstants></PropertyGroup>",
+        ), encoding="utf-8")
+        assert module.resolve_source(root, iis)["status"] == "missing"
+        project_file.write_text(project_text.replace(
+            "</PropertyGroup>", "<DefineConstants>$(DefineConstants);EXTRA</DefineConstants></PropertyGroup>",
+        ), encoding="utf-8")
+        assert module.resolve_source(root, iis)["status"] == "exact"
+        print("PASS ordered DefineConstants replacement and append")
+
+        project_file.write_text(
+            project_text.replace("IIS_FUNCTIONALS", "$(UnresolvedSymbols)"),
+            encoding="utf-8",
+        )
+        ambiguous = collect_result(
+            root, evidence(test_name=iis), test_name=iis, module=module,
+        )
+        assert ambiguous["status"] == "unproven", ambiguous
+        assert "source-missing" in ambiguous["reasons"], ambiguous
+
+
+def test_shared_source_review_case(case, module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        shared = root / "src/SharedTests"
+        shared.mkdir(parents=True)
+        block = case == "block"
+        express_namespace = "Sample.IIS.Express" if case == "prefix" else "Sample.IISExpress"
+        source = (
+            "#if IIS_FUNCTIONALS\nnamespace Sample.IIS"
+            + (" {\n" if block else ";\n")
+            + f"#else\nnamespace {express_namespace}"
+            + (" {\n" if block else ";\n")
+            + "#endif\npublic class ClientCertificateTests\n{\n"
+            "    [Fact]\n    public void HttpsNoClientCert_NoClientCert() {}\n}\n"
+            + ("}\n" if block else "")
+        )
+        (shared / "HttpsTests.cs").write_text(source, encoding="utf-8")
+        for project, symbol in (("IIS.Tests", "IIS_FUNCTIONALS"), ("Express.Tests", "IISEXPRESS_FUNCTIONALS")):
+            path = root / "src" / project
+            path.mkdir()
+            include = "../SharedTests/Https*.cs" if case == "wildcard" else "../SharedTests/**/*.cs"
+            exclusion = ' Exclude="../SharedTests/Excluded.cs"' if case.startswith("excluded") else ""
+            remove = '<Compile Remove="$(UnknownFiles)" />' if case == "unknown" else ""
+            (path / f"{project}.csproj").write_text(
+                f"<Project><PropertyGroup><DefineConstants>{symbol}</DefineConstants>"
+                f'</PropertyGroup><ItemGroup><Compile Include="{include}"{exclusion} />'
+                f"{remove}</ItemGroup></Project>", encoding="utf-8",
+            )
+        if case in ("assembly", "excluded", "excluded-namespace", "unknown"):
+            attribute_source = (
+                source.replace("    [Fact]", f"    {QUARANTINE_ATTRIBUTE}\n    [Fact]")
+                if case == "excluded-namespace" else '#if IIS_FUNCTIONALS\n'
+                '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n'
+                '#endif\n'
+            )
+            (shared / ("Excluded.cs" if case.startswith("excluded") else "AssemblyInfo.cs")).write_text(
+                attribute_source, encoding="utf-8",
+            )
+        commit(root, "Shared-source review fixture", "2026-08-01T00:00:00Z")
+        sha = run_output(root, "git", "rev-parse", "HEAD")
+        name = "Sample.IIS.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        if case == "prefix":
+            name = express_namespace + ".ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        if case in ("wildcard", "block", "prefix"):
+            result = collect_result(root, evidence(test_name=name), test_name=name, module=module)
+            assert result["status"] == "eligible", (case, result)
+        else:
+            iis = module.historical_assembly_state(root, "src/IIS.Tests", sha, {})
+            express = module.historical_assembly_state(root, "src/Express.Tests", sha, {})
+            if case == "unknown":
+                assert iis["status"] == express["status"] == "ambiguous", (iis, express)
+            else:
+                assert iis["status"] == express["status"] == "exact", (iis, express)
+                assert iis["quarantined"] == (case == "assembly"), iis
+                assert not express["quarantined"], express
+                index = module.build_source_index(root)
+                assert not module.resolve_source(
+                    root, "Sample.IISExpress.ClientCertificateTests.HttpsNoClientCert_NoClientCert", index,
+                )["assembly_quarantined"]
+                if case == "assembly":
+                    (shared / "AssemblyInfo.cs").write_text("", encoding="utf-8")
+                    commit(root, "Remove IIS assembly quarantine", "2026-08-02T00:00:00Z")
+                    history = module.assembly_quarantine_history(root, "src/Express.Tests", "HEAD")
+                    assert history == {"status": "exact", "events": []}, history
+        print(f"PASS shared-source review: {case}")
+
+
+def test_compile_membership_order(case, module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project = root / "src/Consumer"
+        project.mkdir(parents=True)
+        (project / "Tests.cs").write_text(
+            "namespace Sample;\npublic class Tests\n{\n"
+            "    [Fact]\n    public void Test() {}\n}\n", encoding="utf-8",
+        )
+        shared = root / "src/Shared/AssemblyInfo.cs"
+        shared.parent.mkdir()
+        shared.write_text(
+            '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        include = '<Compile Include="../Shared/AssemblyInfo.cs" />'
+        remove = '<Compile Remove="../Shared/AssemblyInfo.cs" />'
+        items = {
+            "remove-include": remove + include,
+            "include-remove": include + remove,
+            "uncertain-include": remove + include.replace(" />", ' Condition="$(Unknown)" />'),
+            "uncertain-remove-include": remove.replace(" />", ' Condition="$(Unknown)" />') + include,
+        }[case]
+        initial_include = "" if case == "uncertain-include" else include
+        (project / "Consumer.csproj").write_text(
+            f"<Project><ItemGroup>{initial_include}{items}</ItemGroup></Project>", encoding="utf-8",
+        )
+        commit(root, "Ordered shared assembly membership", "2026-08-01T00:00:00Z")
+        sha = run_output(root, "git", "rev-parse", "HEAD")
+        historical = module.historical_assembly_state(root, "src/Consumer", sha, {})
+        current = module.resolve_source(root, "Sample.Tests.Test")
+        if case == "uncertain-include":
+            assert historical["status"] == "ambiguous", historical
+            assert current["assembly_quarantine_ambiguous"], current
+        else:
+            assert historical["status"] == "exact", historical
+            expected = case != "include-remove"
+            assert historical["quarantined"] == expected, historical
+            assert current["assembly_quarantined"] == expected, current
+        print(f"PASS ordered Compile membership: {case}")
+
+
 def main():
+    for case in ("remove-include", "include-remove", "uncertain-include", "uncertain-remove-include"):
+        test_compile_membership_order(case)
+    for case in ("wildcard", "block", "prefix", "assembly", "excluded", "excluded-namespace", "unknown"):
+        test_shared_source_review_case(case)
+    test_conditional_shared_source()
     test_kestrel_condition_rows()
     for condition in (
         "[MsQuicSupported]",

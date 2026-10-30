@@ -420,7 +420,7 @@ restore=true
 
 InitializeToolset
 
-restore=$_tmp_restore=
+restore=$_tmp_restore
 
 MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
 ExitWithExitCode 0
