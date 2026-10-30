@@ -24,8 +24,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 /// </summary>
 public abstract class RazorPageBase : IRazorPage
 {
-    private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
-    private readonly IDictionary<string, RenderAsyncDelegate> _sectionWriters = new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
+    // Perf: These are lazily allocated since many pages (e.g. partials) do not use them.
+    private Stack<TextWriter>? _textWriterStack;
+    private Dictionary<string, RenderAsyncDelegate>? _sectionWriters;
+    private Stack<TagHelperScopeInfo>? _tagHelperScopes;
     private StringWriter? _valueBuffer;
     private ITagHelperFactory? _tagHelperFactory;
     private IViewBufferScope? _bufferScope;
@@ -74,7 +76,7 @@ public abstract class RazorPageBase : IRazorPage
 
     /// <inheritdoc />
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public IDictionary<string, RenderAsyncDelegate> SectionWriters => _sectionWriters;
+    public IDictionary<string, RenderAsyncDelegate> SectionWriters => _sectionWriters ??= new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets the dynamic view data dictionary.
@@ -139,7 +141,7 @@ public abstract class RazorPageBase : IRazorPage
     /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
     public ITempDataDictionary TempData => ViewContext?.TempData!;
 
-    private Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
+    private Stack<TagHelperScopeInfo> TagHelperScopes => _tagHelperScopes ??= new Stack<TagHelperScopeInfo>();
 
     private ITagHelperFactory TagHelperFactory
     {
@@ -238,12 +240,12 @@ public abstract class RazorPageBase : IRazorPage
     /// <returns>The buffered <see cref="TagHelperContent"/>.</returns>
     public TagHelperContent EndTagHelperWritingScope()
     {
-        if (TagHelperScopes.Count == 0)
+        if (_tagHelperScopes is null || _tagHelperScopes.Count == 0)
         {
             throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
         }
 
-        var scopeInfo = TagHelperScopes.Pop();
+        var scopeInfo = _tagHelperScopes.Pop();
 
         // Get the content written during the current scope.
         var tagHelperContent = new DefaultTagHelperContent();
@@ -323,7 +325,7 @@ public abstract class RazorPageBase : IRazorPage
         ArgumentNullException.ThrowIfNull(writer);
 
         var viewContext = ViewContext;
-        _textWriterStack.Push(viewContext.Writer);
+        (_textWriterStack ??= new Stack<TextWriter>()).Push(viewContext.Writer);
         viewContext.Writer = writer;
     }
 
@@ -335,7 +337,7 @@ public abstract class RazorPageBase : IRazorPage
     protected internal virtual TextWriter PopWriter()
     {
         var viewContext = ViewContext;
-        var writer = _textWriterStack.Pop();
+        var writer = (_textWriterStack ??= new Stack<TextWriter>()).Pop();
         viewContext.Writer = writer;
         return writer;
     }
@@ -683,7 +685,7 @@ public abstract class RazorPageBase : IRazorPage
     public virtual async Task<HtmlString> FlushAsync()
     {
         // If there are active scopes, then we should throw. Cannot flush content that has the potential to change.
-        if (TagHelperScopes.Count > 0)
+        if (_tagHelperScopes is { Count: > 0 })
         {
             throw new InvalidOperationException(
                 Resources.FormatRazorPage_CannotFlushWhileInAWritingScope(nameof(FlushAsync), Path));
