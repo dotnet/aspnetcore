@@ -581,9 +581,20 @@ public sealed class JsonHubProtocol : IHubProtocol
         if (message.Headers != null && message.Headers.Count > 0)
         {
             writer.WriteStartObject(HeadersPropertyNameBytes);
-            foreach (var value in message.Headers)
+            // Enumerate Dictionary<,> directly to avoid boxing its enumerator.
+            if (message.Headers is Dictionary<string, string> headers)
             {
-                writer.WriteString(value.Key, value.Value);
+                foreach (var value in headers)
+                {
+                    writer.WriteString(value.Key, value.Value);
+                }
+            }
+            else
+            {
+                foreach (var value in message.Headers)
+                {
+                    writer.WriteString(value.Key, value.Value);
+                }
             }
             writer.WriteEndObject();
         }
