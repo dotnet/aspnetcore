@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "responses": {
+    "GET user": [
+      { "value": { "login": "PureWeen" } }
+    ],
+    "GET repos/dotnet/aspnetcore/pulls/70001": [
+      {
+        "value": {
+          "state": "open",
+          "draft": false,
+          "merged_at": null,
+          "changed_files": 1,
+          "base": { "ref": "main" },
+          "head": { "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
+        }
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/commits/main": [
+      { "value": { "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" } }
+    ],
+    "GET repos/dotnet/aspnetcore/pulls/70001/files?per_page=100": [
+      {
+        "value": [
+          {
+            "filename": "src/Fixture.cs",
+            "status": null,
+            "sha": null,
+            "patch": "@@ -11,2 +11,3 @@\n context\n+added\n context"
+          }
+        ]
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/issues/70001/comments?per_page=100": [
+      { "value": [] },
+      { "value": [] },
+      { "value": [] },
+      { "value": [] },
+      {
+        "value": [
+          {
+            "id": 125,
+            "updated_at": "2026-10-29T20:01:00Z",
+            "created_at": "2026-10-29T20:01:00Z",
+            "body": "/review",
+            "html_url": "https://example.test/comment/125",
+            "issue_url": "https://api.example.test/repos/dotnet/aspnetcore/issues/70001",
+            "user": { "login": "PureWeen" }
+          }
+        ]
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/pulls/70001/reviews?per_page=100": [
+      { "value": [] }
+    ],
+    "GET repos/dotnet/aspnetcore/pulls/70001/comments?per_page=100": [
+      { "value": [] }
+    ],
+    "POST repos/dotnet/aspnetcore/issues/70001/comments": [
+      { "value": { "id": 125 } }
+    ],
+    "GET repos/dotnet/aspnetcore/issues/comments/125": [
+      {
+        "value": {
+          "id": 125,
+          "updated_at": "2026-10-29T20:01:00Z",
+          "created_at": "2026-10-29T20:01:00Z",
+          "body": "/review",
+          "html_url": "https://example.test/comment/125",
+          "issue_url": "https://api.example.test/repos/dotnet/aspnetcore/issues/70001",
+          "user": { "login": "PureWeen" }
+        }
+      }
+    ]
+  }
+}

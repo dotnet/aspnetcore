@@ -36,12 +36,16 @@ $fixturePath = Join-Path $PSScriptRoot "fixtures/campaign.json"
 $legacyControlPath = Join-Path $PSScriptRoot "fixtures/legacy-control.json"
 $triggerRequestPath = Join-Path $PSScriptRoot "fixtures/review-trigger-request.json"
 $triggerReconcileRequestPath = Join-Path $PSScriptRoot "fixtures/review-trigger-reconcile-request.json"
+$hostedObservationRequestPath = Join-Path $PSScriptRoot "fixtures/observe-hosted-review-request.json"
 $publishRequestPath = Join-Path $PSScriptRoot "fixtures/publish-review-request.json"
 $cleanRequestPath = Join-Path $PSScriptRoot "fixtures/publish-clean-request.json"
 $githubFixturePath = Join-Path $PSScriptRoot "fixtures/github-api.json"
+$triggerKnownFixturePath = Join-Path $PSScriptRoot "fixtures/github-api-trigger-known.json"
+$cleanFixturePath = Join-Path $PSScriptRoot "fixtures/github-api-clean.json"
 $existingReviewFixturePath = Join-Path $PSScriptRoot "fixtures/github-api-existing-review.json"
 $partialCleanFixturePath = Join-Path $PSScriptRoot "fixtures/github-api-clean-partial.json"
 $triggerReconcileFixturePath = Join-Path $PSScriptRoot "fixtures/github-api-trigger-reconcile.json"
+$triggerPostFixturePath = Join-Path $PSScriptRoot "fixtures/github-api-trigger-post.json"
 Import-Module -Scope Local -Force -DisableNameChecking $modulePath
 
 $shaA = "a" * 40
@@ -50,6 +54,10 @@ $shaC = "c" * 40
 $hashA = "a" * 64
 $hashB = "b" * 64
 $hashC = "c" * 64
+$reviewSkillPath = Join-Path (Split-Path -Parent (Split-Path -Parent $skillRoot)) "skills/review-pull-request/SKILL.md"
+$reviewSkillIdentity = Get-SfroNativeSkillIdentity $reviewSkillPath
+$reviewerCommit = (& git rev-parse HEAD).Trim()
+$reviewSkillBlob = (& git rev-parse "$reviewerCommit`:.github/skills/review-pull-request/SKILL.md").Trim()
 $assertions = 0
 $script:TempRoots = [Collections.Generic.List[string]]::new()
 $script:ProofRoot = Join-Path ([IO.Path]::GetTempPath()) ("sfro-proofs-" + [guid]::NewGuid().ToString("N"))
@@ -68,6 +76,46 @@ function New-TestLedger {
         -ConfigPath $fixturePath `
         -ImportRequired:$ImportRequired | Out-Null
     return $ledger
+}
+
+function New-TestIdentity {
+    param(
+        [Parameter(Mandatory)][Collections.IDictionary]$Action,
+        [Collections.IDictionary]$Exclusions = [ordered]@{
+            issueCommentIds = @()
+            reviewIds = @()
+            reviewCommentIds = @()
+        },
+        [string]$RawFeedbackSha256
+    )
+
+    if (-not $RawFeedbackSha256) {
+        $RawFeedbackSha256 = $Action.payload.feedbackSha256
+    }
+    $collections = [ordered]@{
+        files = @()
+        issueComments = @()
+        reviews = @()
+        reviewComments = @()
+    }
+    return [ordered]@{
+        state = "open"
+        draft = $false
+        merged = $false
+        baseRef = $Action.payload.baseRef
+        head = $Action.payload.head
+        baseTip = $Action.payload.baseTip
+        changedFileCount = 0
+        diffSha256 = $Action.payload.diffSha256
+        rawFeedbackSha256 = $RawFeedbackSha256
+        effectiveFeedbackSha256 = $Action.payload.feedbackSha256
+        feedbackExclusions = $Exclusions
+        files = $collections.files
+        issueComments = $collections.issueComments
+        reviews = $collections.reviews
+        reviewComments = $collections.reviewComments
+        collectionsSha256 = Get-SfroSha256 (ConvertTo-SfroCanonicalJson $collections)
+    }
 }
 
 function New-ValidEvidence {
@@ -115,13 +163,16 @@ function New-ValidEvidence {
         }
         "freeze-epoch" {
             return [ordered]@{
-                reviewerCommit = $shaA
-                skillBlob = $shaB
-                loadedBodySha256 = $hashA
+                reviewerCommit = $reviewerCommit
+                skillBlob = $reviewSkillBlob
+                skillPath = $reviewSkillPath
+                skillIdentityTransform = $reviewSkillIdentity.transform
+                normalizedSkillFileSha256 = $reviewSkillIdentity.normalizedSkillFileSha256
+                loadedBodySha256 = $reviewSkillIdentity.loadedBodySha256
                 head = $shaC
                 mergeBase = $shaA
+                baseRef = "main"
                 baseTip = $shaB
-                readyV2BundleSha256 = $hashB
                 feedbackSha256 = $hashC
                 diffSha256 = $hashA
                 guidanceMode = "target-base"
@@ -133,13 +184,63 @@ function New-ValidEvidence {
             }
         }
         "ensure-review-trigger" {
+            $postExclusions = [ordered]@{
+                issueCommentIds = @(101)
+                reviewIds = @()
+                reviewCommentIds = @()
+            }
             return [ordered]@{
                 head = $entry.epoch.head
+                baseRef = $Action.payload.baseRef
+                baseTip = $Action.payload.baseTip
+                diffSha256 = $Action.payload.diffSha256
                 command = "/review"
                 decision = "posted"
                 commentId = 101
                 readbackVerified = $true
                 triggerCountForHead = 1
+                rawFeedbackSha256 = $hashA
+                effectiveFeedbackSha256 = $Action.payload.feedbackSha256
+                excludedIssueCommentIds = @(101)
+                preIdentity = New-TestIdentity -Action $Action
+                postIdentity = New-TestIdentity -Action $Action -Exclusions $postExclusions -RawFeedbackSha256 $hashA
+            }
+        }
+        "observe-hosted-review" {
+            $hostedIdentity = New-TestIdentity -Action $Action -Exclusions $Action.payload.feedbackExclusions -RawFeedbackSha256 $hashA
+            $hostedIdentity.effectiveFeedbackSha256 = $hashB
+            return [ordered]@{
+                terminal = $true
+                head = $Action.payload.head
+                baseRef = $Action.payload.baseRef
+                baseTip = $Action.payload.baseTip
+                diffSha256 = $Action.payload.diffSha256
+                rawFeedbackSha256 = $hashA
+                effectiveFeedbackSha256 = $hashB
+                feedbackExclusions = $Action.payload.feedbackExclusions
+                hostedIssueCommentIds = @()
+                hostedReviewIds = @()
+                hostedReviewCommentIds = @()
+                hostedRunId = 12345
+                hostedConclusion = "success"
+                hostedWorkflowPath = ".github/workflows/pull-request-review.lock.yml"
+                hostedRunEvent = "issue_comment"
+                hostedNoFeedback = $true
+                hostedCorrelationArtifactSha256 = $hashA
+                preTriggerFeedbackSha256 = $Action.payload.feedbackSha256
+                resultSha256 = $hashC
+                preIdentity = $hostedIdentity
+                postIdentity = $hostedIdentity
+            }
+        }
+        "prepare-review-bundle" {
+            return [ordered]@{
+                head = $Action.payload.head
+                baseTip = $Action.payload.baseTip
+                bundleFeedbackSha256 = $Action.payload.feedbackSha256
+                diffSha256 = $Action.payload.diffSha256
+                readyV2BundleSha256 = $hashB
+                ready = $true
             }
         }
         "create-arm" {
@@ -183,6 +284,7 @@ function New-ValidEvidence {
                 resultSha256 = $hashB
                 firstToolName = "skill"
                 firstToolSkill = "review-pull-request"
+                loadedBodySha256 = $Action.payload.loadedBodySha256
                 eventArtifactSha256 = $hashC
                 guideWorkers = @(
                     [ordered]@{
@@ -234,6 +336,11 @@ function New-ValidEvidence {
             }
         }
         "publish-review" {
+            $recoveryExclusions = [ordered]@{
+                issueCommentIds = @($Action.payload.feedbackExclusions.issueCommentIds)
+                reviewIds = @(202)
+                reviewCommentIds = @(402)
+            }
             return [ordered]@{
                 liveHead = $entry.epoch.head
                 event = "COMMENT"
@@ -247,9 +354,20 @@ function New-ValidEvidence {
                 publishedFindingsSha256 = Get-SfroSha256 (ConvertTo-SfroCanonicalJson $Action.payload.findings)
                 diffSha256 = $Action.payload.diffSha256
                 feedbackSha256 = $Action.payload.feedbackSha256
+                baseRef = $Action.payload.baseRef
+                baseTip = $Action.payload.baseTip
+                feedbackExclusions = $Action.payload.feedbackExclusions
+                recoveryExclusions = $recoveryExclusions
+                preIdentity = New-TestIdentity -Action $Action -Exclusions $Action.payload.feedbackExclusions
+                postIdentity = New-TestIdentity -Action $Action -Exclusions $recoveryExclusions -RawFeedbackSha256 $hashA
             }
         }
         "publish-clean" {
+            $recoveryExclusions = [ordered]@{
+                issueCommentIds = @($Action.payload.feedbackExclusions.issueCommentIds) + @(303)
+                reviewIds = @()
+                reviewCommentIds = @()
+            }
             return [ordered]@{
                 liveHead = $entry.epoch.head
                 panelComplete = $true
@@ -260,6 +378,14 @@ function New-ValidEvidence {
                 labelCountAfter = 1
                 markerCountAfter = 1
                 readbackVerified = $true
+                baseRef = $Action.payload.baseRef
+                baseTip = $Action.payload.baseTip
+                diffSha256 = $Action.payload.diffSha256
+                feedbackSha256 = $Action.payload.feedbackSha256
+                feedbackExclusions = $Action.payload.feedbackExclusions
+                recoveryExclusions = $recoveryExclusions
+                preIdentity = New-TestIdentity -Action $Action -Exclusions $Action.payload.feedbackExclusions
+                postIdentity = New-TestIdentity -Action $Action -Exclusions $recoveryExclusions -RawFeedbackSha256 $hashA
             }
         }
         "cleanup-children" {
@@ -484,6 +610,27 @@ Assert-True ($sameHead.decision -eq "reused") "The same head must reuse its veri
 $assertions++
 Assert-True ($newHead.decision -eq "post") "A new head must permit a new /review trigger."
 $assertions++
+$ledger = New-TestLedger
+$hostedObservation = Complete-Until -Ledger $ledger -Kind "observe-hosted-review"
+Complete-Action $ledger $hostedObservation
+$hostedState = Get-SfroState $ledger
+Assert-True ($hostedState.entries[[string]$hostedObservation.pr].hostedReview.terminalObserved) "The hosted review must become terminal before arm creation."
+$assertions++
+$bundleAction = Invoke-SfroNext $ledger
+Assert-True ($bundleAction.kind -eq "prepare-review-bundle") "The ready-v2 bundle must be rebuilt after hosted feedback."
+$assertions++
+Complete-Action $ledger $bundleAction
+Assert-True ((Invoke-SfroNext $ledger).kind -eq "create-arm") "Arms must wait for the post-trigger bundle."
+$assertions++
+$ledger = New-TestLedger
+$freezeWithLegacyBundle = Complete-Until -Ledger $ledger -Kind "freeze-epoch"
+$freezeState = Get-SfroState $ledger
+$freezeEvidence = New-ValidEvidence -Action $freezeWithLegacyBundle -State $freezeState
+$freezeEvidence.readyV2BundleSha256 = $hashA
+Complete-Action -Ledger $ledger -Action $freezeWithLegacyBundle -OverrideEvidence $freezeEvidence
+$postHostedBundle = Complete-Until -Ledger $ledger -Kind "prepare-review-bundle"
+Assert-True ($postHostedBundle.kind -eq "prepare-review-bundle") "A legacy pre-trigger bundle field must never skip post-hosted bundle preparation."
+$assertions++
 
 # Only the coordinator can create an arm, and the child parent must match.
 $ledger = New-TestLedger
@@ -658,23 +805,109 @@ Assert-True ($triggerPlan.githubCalls -eq 0 -and $triggerPlan.mutationPlan.decis
 $assertions++
 Assert-True ($reviewPlan.githubCalls -eq 0 -and $reviewPlan.mutationPlan.body.event -eq "COMMENT") "Review dry-run must render one COMMENT review without a GitHub call."
 $assertions++
-$triggerExecution = (& $githubAdapter -Operation EnsureReviewTrigger -RequestPath $triggerRequestPath -FixturePath $githubFixturePath -Execute) | ConvertFrom-Json
+$triggerExecution = (& $githubAdapter -Operation EnsureReviewTrigger -RequestPath $triggerRequestPath -FixturePath $triggerKnownFixturePath -Execute) | ConvertFrom-Json
+$hostedExecution = (& $githubAdapter -Operation ObserveHostedReview -RequestPath $hostedObservationRequestPath -FixturePath $triggerKnownFixturePath -Execute) | ConvertFrom-Json
 $reviewExecution = (& $githubAdapter -Operation PublishReview -RequestPath $publishRequestPath -FixturePath $githubFixturePath -Execute) | ConvertFrom-Json
-$cleanExecution = (& $githubAdapter -Operation PublishClean -RequestPath $cleanRequestPath -FixturePath $githubFixturePath -Execute) | ConvertFrom-Json
+$cleanExecution = (& $githubAdapter -Operation PublishClean -RequestPath $cleanRequestPath -FixturePath $cleanFixturePath -Execute) | ConvertFrom-Json
 $reviewRecovery = (& $githubAdapter -Operation PublishReview -RequestPath $publishRequestPath -FixturePath $existingReviewFixturePath -Execute) | ConvertFrom-Json
 $cleanRecovery = (& $githubAdapter -Operation PublishClean -RequestPath $cleanRequestPath -FixturePath $partialCleanFixturePath -Execute) | ConvertFrom-Json
 $triggerRecovery = (& $githubAdapter -Operation EnsureReviewTrigger -RequestPath $triggerReconcileRequestPath -FixturePath $triggerReconcileFixturePath -Execute) | ConvertFrom-Json
+$triggerPost = (& $githubAdapter -Operation EnsureReviewTrigger -RequestPath $triggerReconcileRequestPath -FixturePath $triggerPostFixturePath -Execute) | ConvertFrom-Json
 Assert-True ($triggerExecution.evidence.readbackVerified -and $triggerExecution.evidence.decision -eq "reused") "Fixture execution must live-read the retained /review comment."
+$assertions++
+Assert-True ($triggerExecution.evidence.rawFeedbackSha256 -cne $triggerExecution.evidence.effectiveFeedbackSha256 -and @($triggerExecution.evidence.excludedIssueCommentIds).Count -eq 1) "The controller trigger must be the only persistent feedback exclusion."
+$assertions++
+Assert-True ($hostedExecution.evidence.terminal -and $hostedExecution.evidence.effectiveFeedbackSha256 -eq "7bb962036dc5369d3f260f5b14b7c8e9e52516663591d7a2137b3c77d0dbc914") "Hosted observation must establish the post-trigger feedback baseline."
 $assertions++
 Assert-True ($reviewExecution.evidence.readbackVerified -and $reviewExecution.evidence.reviewId -eq 202) "Fixture execution must validate atomic review readback."
 $assertions++
+Assert-True ($reviewExecution.evidence.preIdentity.baseTip -eq "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" -and $reviewExecution.evidence.postIdentity.effectiveFeedbackSha256 -eq $reviewExecution.evidence.feedbackSha256) "Review publication must preserve all frozen identities after exact-delta recovery."
+$assertions++
 Assert-True ($cleanExecution.evidence.readbackVerified -and $cleanExecution.evidence.labelCountAfter -eq 1 -and $cleanExecution.evidence.markerCountAfter -eq 1) "Fixture execution must recover the clean marker and label exactly once."
 $assertions++
-Assert-True ($reviewRecovery.evidence.reviewId -eq 202 -and $reviewRecovery.githubCalls -eq 6) "Review reconciliation must reuse the existing marked review without another POST."
+Assert-True ($cleanExecution.evidence.preIdentity.diffSha256 -eq $cleanExecution.evidence.diffSha256 -and $cleanExecution.evidence.postIdentity.effectiveFeedbackSha256 -eq $cleanExecution.evidence.feedbackSha256) "Clean publication must apply complete diff/feedback/base gates."
+$assertions++
+Assert-True ($reviewRecovery.evidence.reviewId -eq 202) "Review reconciliation must reuse the existing marked review without another POST."
 $assertions++
 Assert-True (-not $cleanRecovery.evidence.markerWasAbsent -and $cleanRecovery.evidence.labelCountAfter -eq 1) "Clean reconciliation must finish a partial marker-before-label publication."
 $assertions++
 Assert-True ($triggerRecovery.evidence.decision -eq "reused" -and $triggerRecovery.evidence.commentId -eq 124) "Trigger reconciliation must discover a prior post instead of duplicating /review."
+$assertions++
+Assert-True ($triggerPost.evidence.decision -eq "posted" -and $triggerPost.evidence.commentId -eq 125) "Trigger posting must pass an immediate stable precondition and exact readback."
+$assertions++
+Assert-Throws {
+    & $githubAdapter -Operation PublishReview -RequestPath $publishRequestPath -Execute | Out-Null
+} "AllowLiveMutation" "Non-fixture execution without explicit live authorization must fail before GitHub access."
+$assertions++
+$driftFixturePath = Join-Path $migrationRoot "github-api-base-drift.json"
+$driftFixture = (Get-Content -LiteralPath $triggerKnownFixturePath -Raw).Replace(
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "cccccccccccccccccccccccccccccccccccccccc")
+[IO.File]::WriteAllText($driftFixturePath, $driftFixture, [Text.UTF8Encoding]::new($false))
+Assert-Throws {
+    & $githubAdapter -Operation EnsureReviewTrigger -RequestPath $triggerRequestPath -FixturePath $driftFixturePath -Execute | Out-Null
+} "base tip moved" "A base-tip drift must block before mutation."
+$assertions++
+$countFixturePath = Join-Path $migrationRoot "github-api-file-count.json"
+$countFixture = (Get-Content -LiteralPath $triggerKnownFixturePath -Raw).Replace(
+    '"changed_files": 1',
+    '"changed_files": 2')
+[IO.File]::WriteAllText($countFixturePath, $countFixture, [Text.UTF8Encoding]::new($false))
+Assert-Throws {
+    & $githubAdapter -Operation EnsureReviewTrigger -RequestPath $triggerRequestPath -FixturePath $countFixturePath -Execute | Out-Null
+} "changed-file count" "An incomplete file listing must fail closed."
+$assertions++
+$actorFixturePath = Join-Path $migrationRoot "github-api-wrong-trigger-author.json"
+$actorFixture = Get-Content -LiteralPath $githubFixturePath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
+$actorFixture.responses["GET repos/dotnet/aspnetcore/issues/70001/comments?per_page=100"][0].value[0].user.login = "OtherUser"
+[IO.File]::WriteAllText(
+    $actorFixturePath,
+    (($actorFixture | ConvertTo-Json -Depth 100) + "`n"),
+    [Text.UTF8Encoding]::new($false))
+Assert-Throws {
+    & $githubAdapter -Operation PublishReview -RequestPath $publishRequestPath -FixturePath $actorFixturePath -Execute | Out-Null
+} "bound controller trigger" "An identical /review comment from another actor must not be excluded."
+$assertions++
+$unstableFixturePath = Join-Path $migrationRoot "github-api-unstable.json"
+Import-Module -Scope Local -Force -DisableNameChecking $modulePath
+$unstableFixture = Get-Content -LiteralPath $triggerKnownFixturePath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
+$firstPull = $unstableFixture.responses["GET repos/dotnet/aspnetcore/pulls/70001"][0].value
+$secondPull = ConvertFrom-SfroJson (ConvertTo-SfroCanonicalJson $firstPull)
+$secondPull.head.sha = "cccccccccccccccccccccccccccccccccccccccc"
+$unstableFixture.responses["GET repos/dotnet/aspnetcore/pulls/70001"] = @(
+    [ordered]@{ value = $firstPull },
+    [ordered]@{ value = $secondPull }
+)
+[IO.File]::WriteAllText(
+    $unstableFixturePath,
+    (($unstableFixture | ConvertTo-Json -Depth 100) + "`n"),
+    [Text.UTF8Encoding]::new($false))
+Assert-Throws {
+    & $githubAdapter -Operation EnsureReviewTrigger -RequestPath $triggerRequestPath -FixturePath $unstableFixturePath -Execute | Out-Null
+} "identity changed during collection" "A concurrent identity change must fail the stable-snapshot gate."
+$assertions++
+$replyFixturePath = Join-Path $migrationRoot "github-api-review-reply.json"
+$replyFixture = Get-Content -LiteralPath $existingReviewFixturePath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
+$replyComments = @($replyFixture.responses["GET repos/dotnet/aspnetcore/pulls/70001/comments?per_page=100"][0].value)
+$replyComments += ,[ordered]@{
+    id = 403
+    pull_request_review_id = 202
+    updated_at = "2026-10-29T20:04:00Z"
+    commit_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    path = "src/Fixture.cs"
+    line = 12
+    side = "RIGHT"
+    body = "Later reply"
+    user = [ordered]@{ login = "OtherUser" }
+}
+$replyFixture.responses["GET repos/dotnet/aspnetcore/pulls/70001/comments?per_page=100"][0].value = $replyComments
+[IO.File]::WriteAllText(
+    $replyFixturePath,
+    (($replyFixture | ConvertTo-Json -Depth 100) + "`n"),
+    [Text.UTF8Encoding]::new($false))
+Assert-Throws {
+    & $githubAdapter -Operation PublishReview -RequestPath $publishRequestPath -FixturePath $replyFixturePath -Execute | Out-Null
+} "comment set is incomplete" "A later reply on the controller review must not be hidden by recovery."
 $assertions++
 
 # Canonical JSON preserves top-level array identity.
@@ -682,6 +915,32 @@ Import-Module -Scope Local -Force -DisableNameChecking $modulePath
 Assert-True ((ConvertTo-SfroCanonicalJson @()) -ceq "[]") "Canonical JSON must preserve an empty top-level array."
 $assertions++
 Assert-True ((ConvertTo-SfroCanonicalJson @("one")) -ceq '["one"]') "Canonical JSON must preserve a one-element top-level array."
+$assertions++
+
+# Native skill identity matches the runtime-delivered frontmatter-stripped body.
+Assert-True ($reviewSkillIdentity.normalizedSkillFileSha256 -ceq "8d6ed826d74175eb0ed34693f20a41c3828b4383e2deaf921b6a04ad53bb76c7") "The normalized review skill identity changed unexpectedly."
+$assertions++
+Assert-True ($reviewSkillIdentity.loadedBodySha256 -ceq "3a38f1385e455e104ebec8bffe280b6b90f6ef08f43131d4fe559c61d3ce1225") "The native delivered-body identity must match the runtime event hash."
+$assertions++
+Assert-True ($reviewSkillIdentity.normalizedGitBlob -ceq $reviewSkillBlob) "The normalized review skill bytes must match the frozen Git blob."
+$assertions++
+$identityRoot = Join-Path ([IO.Path]::GetTempPath()) ("sfro-identity-" + [guid]::NewGuid().ToString("N"))
+$identityPath = Join-Path $identityRoot ".github/skills/review-pull-request/SKILL.md"
+[IO.Directory]::CreateDirectory((Split-Path -Parent $identityPath)) | Out-Null
+$script:TempRoots.Add($identityRoot)
+[IO.File]::WriteAllText($identityPath, "---`nname: fixture`n---`n`n# Body`n`n---`nkept`n", [Text.UTF8Encoding]::new($false))
+$fixtureIdentity = Get-SfroNativeSkillIdentity $identityPath
+$expectedBody = "# Body`n`n---`nkept`n"
+Assert-True ($fixtureIdentity.loadedBodySha256 -ceq (Get-SfroSha256 $expectedBody)) "A body delimiter or additional blank line was stripped."
+$assertions++
+[IO.File]::WriteAllBytes($identityPath, [byte[]](0xEF, 0xBB, 0xBF) + [Text.UTF8Encoding]::new($false).GetBytes("---`nname: fixture`n---`n`nbody"))
+Assert-Throws { Get-SfroNativeSkillIdentity $identityPath | Out-Null } "BOM" "A UTF-8 BOM must be rejected."
+$assertions++
+[IO.File]::WriteAllText($identityPath, "---`nname: fixture`n---`n`nbody`rbroken", [Text.UTF8Encoding]::new($false))
+Assert-Throws { Get-SfroNativeSkillIdentity $identityPath | Out-Null } "lone CR" "A lone CR must be rejected."
+$assertions++
+[IO.File]::WriteAllText($identityPath, "---`nname: fixture`nbody", [Text.UTF8Encoding]::new($false))
+Assert-Throws { Get-SfroNativeSkillIdentity $identityPath | Out-Null } "closing delimiter" "Missing frontmatter closure must be rejected."
 $assertions++
 
 foreach ($tempRoot in $script:TempRoots) {

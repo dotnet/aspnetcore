@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "source": "workflow-run-event",
+  "runId": 12345,
+  "repository": "dotnet/aspnetcore",
+  "pr": 70001,
+  "commentId": 123,
+  "workflowPath": ".github/workflows/pull-request-review.lock.yml",
+  "event": "issue_comment"
+}

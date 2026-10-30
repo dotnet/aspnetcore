@@ -15,6 +15,8 @@ $script:ConsultationModels = @("gemini-4-argon", "claude-haiku-5.5")
 $script:FalsifierModels = @("gpt-5.6-sol", "gemini-4-argon", "claude-haiku-5.5")
 $script:TerminalArmOutcomes = @("FINDINGS", "NO_FINDINGS", "INCOMPLETE", "BLOCKED")
 $script:ReceiptStatuses = @("accepted", "absent", "failed", "timed-out", "unknown")
+$script:ReviewSkillPath = ".github/skills/review-pull-request/SKILL.md"
+$script:NativeSkillTransform = "yaml-frontmatter-stripped-crlf-to-lf-v1"
 
 function Assert-Sfro {
     param(
@@ -215,6 +217,71 @@ function Get-SfroFileSha256 {
     finally {
         $stream.Dispose()
     }
+}
+
+function Get-SfroNativeSkillIdentity {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [string]$RepositoryRelativePath = $script:ReviewSkillPath
+    )
+
+    Assert-Sfro ($RepositoryRelativePath -ceq $script:ReviewSkillPath) "The native identity path must be '$script:ReviewSkillPath'."
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    $normalizedResolved = $resolved.Replace("\", "/")
+    Assert-Sfro ($normalizedResolved.EndsWith("/$RepositoryRelativePath", [StringComparison]::Ordinal)) "The skill file path does not match '$RepositoryRelativePath'."
+
+    $bytes = [IO.File]::ReadAllBytes($resolved)
+    Assert-Sfro (-not ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)) "The skill file has a UTF-8 BOM."
+    try {
+        $text = [Text.UTF8Encoding]::new($false, $true).GetString($bytes)
+    }
+    catch {
+        throw "The skill file is not strict UTF-8."
+    }
+
+    $normalized = $text.Replace("`r`n", "`n")
+    Assert-Sfro (-not $normalized.Contains("`r")) "The skill file has a lone CR byte."
+    Assert-Sfro ($normalized.StartsWith("---`n", [StringComparison]::Ordinal)) "The skill file must start with YAML frontmatter."
+    $closing = $normalized.IndexOf("`n---`n", 4, [StringComparison]::Ordinal)
+    Assert-Sfro ($closing -ge 4) "The skill file has no exact YAML frontmatter closing delimiter."
+    $bodyStart = $closing + 5
+    Assert-Sfro ($bodyStart -lt $normalized.Length -and $normalized[$bodyStart] -eq "`n") "The skill frontmatter must be followed by one blank separator line."
+    $nativeBody = $normalized.Substring($bodyStart + 1)
+    Assert-Sfro ($nativeBody.Length -gt 0) "The native skill body is empty."
+    $normalizedBytes = [Text.UTF8Encoding]::new($false).GetBytes($normalized)
+    $headerBytes = [Text.Encoding]::ASCII.GetBytes("blob $($normalizedBytes.Length)`0")
+    $gitObjectBytes = [byte[]]::new($headerBytes.Length + $normalizedBytes.Length)
+    [Array]::Copy($headerBytes, 0, $gitObjectBytes, 0, $headerBytes.Length)
+    [Array]::Copy($normalizedBytes, 0, $gitObjectBytes, $headerBytes.Length, $normalizedBytes.Length)
+
+    return [ordered]@{
+        repositoryRelativePath = $RepositoryRelativePath
+        transform = $script:NativeSkillTransform
+        rawFileSha256 = Get-SfroFileSha256 $resolved
+        normalizedSkillFileSha256 = Get-SfroSha256 $normalized
+        loadedBodySha256 = Get-SfroSha256 $nativeBody
+        normalizedGitBlob = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($gitObjectBytes)).ToLowerInvariant()
+        normalizedUtf8Bytes = [Text.UTF8Encoding]::new($false).GetByteCount($normalized)
+        loadedBodyUtf8Bytes = [Text.UTF8Encoding]::new($false).GetByteCount($nativeBody)
+    }
+}
+
+function Get-SfroGitBlobIdentity {
+    param(
+        [Parameter(Mandatory)][string]$SkillPath,
+        [Parameter(Mandatory)][string]$ReviewerCommit,
+        [string]$RepositoryRelativePath = $script:ReviewSkillPath
+    )
+
+    Assert-Sfro (Test-SfroSha $ReviewerCommit) "The reviewer commit is invalid."
+    $resolved = (Resolve-Path -LiteralPath $SkillPath).Path
+    $normalizedResolved = $resolved.Replace("\", "/")
+    Assert-Sfro ($normalizedResolved.EndsWith("/$RepositoryRelativePath", [StringComparison]::Ordinal)) "The skill file is outside the expected repository path."
+    $repositoryRoot = $normalizedResolved.Substring(0, $normalizedResolved.Length - $RepositoryRelativePath.Length - 1)
+    $blob = (& git -C $repositoryRoot rev-parse "$ReviewerCommit`:$RepositoryRelativePath").Trim()
+    Assert-Sfro ($LASTEXITCODE -eq 0 -and (Test-SfroSha $blob)) "The reviewer skill Git blob could not be resolved."
+    return $blob
 }
 
 function Get-SfroStableId {
@@ -648,10 +715,41 @@ function Apply-SfroReceiptToState {
             $entry.coordinatorSessionId = [string]$Receipt.evidence.sessionId
         }
         "freeze-epoch" {
-            $entry.epoch = Copy-SfroValue $Receipt.evidence
+            $entry.epoch = [ordered]@{
+                reviewerCommit = [string]$Receipt.evidence.reviewerCommit
+                skillBlob = [string]$Receipt.evidence.skillBlob
+                skillPath = [string]$Receipt.evidence.skillPath
+                skillIdentityTransform = [string]$Receipt.evidence.skillIdentityTransform
+                normalizedSkillFileSha256 = [string]$Receipt.evidence.normalizedSkillFileSha256
+                loadedBodySha256 = [string]$Receipt.evidence.loadedBodySha256
+                head = [string]$Receipt.evidence.head
+                mergeBase = [string]$Receipt.evidence.mergeBase
+                baseRef = [string]$Receipt.evidence.baseRef
+                baseTip = [string]$Receipt.evidence.baseTip
+                feedbackSha256 = [string]$Receipt.evidence.feedbackSha256
+                diffSha256 = [string]$Receipt.evidence.diffSha256
+                guidanceMode = [string]$Receipt.evidence.guidanceMode
+                readyV2BundleSha256 = $null
+                bundleFeedbackSha256 = $null
+            }
         }
         "ensure-review-trigger" {
             $entry.hostedReview = Copy-SfroValue $Receipt.evidence
+            $entry.hostedReview.terminalObserved = $false
+        }
+        "observe-hosted-review" {
+            $entry.hostedReview.terminalObserved = $true
+            $entry.hostedReview.hostedIssueCommentIds = Copy-SfroValue $Receipt.evidence.hostedIssueCommentIds
+            $entry.hostedReview.hostedReviewIds = Copy-SfroValue $Receipt.evidence.hostedReviewIds
+            $entry.hostedReview.hostedReviewCommentIds = Copy-SfroValue $Receipt.evidence.hostedReviewCommentIds
+            $entry.hostedReview.resultSha256 = [string]$Receipt.evidence.resultSha256
+            $entry.hostedReview.rawFeedbackSha256 = [string]$Receipt.evidence.rawFeedbackSha256
+            $entry.hostedReview.effectiveFeedbackSha256 = [string]$Receipt.evidence.effectiveFeedbackSha256
+            $entry.epoch.feedbackSha256 = [string]$Receipt.evidence.effectiveFeedbackSha256
+        }
+        "prepare-review-bundle" {
+            $entry.epoch.readyV2BundleSha256 = [string]$Receipt.evidence.readyV2BundleSha256
+            $entry.epoch.bundleFeedbackSha256 = [string]$Receipt.evidence.bundleFeedbackSha256
         }
         "create-arm" {
             $arm = [string]$Action.payload.arm
@@ -990,15 +1088,17 @@ function Get-SfroNextAction {
         return New-SfroAction -State $State -Pr $activePr -Actor "pr-coordinator" -Kind "freeze-epoch" -Payload ([ordered]@{
             coordinatorSessionId = $entry.coordinatorSessionId
             guidanceMode = "target-base"
-            normalizeLoadedSkill = "CRLF-to-LF-only"
+            skillIdentityTransform = $script:NativeSkillTransform
             requiredIdentities = @(
                 "reviewerCommit",
                 "skillBlob",
+                "skillPath",
+                "normalizedSkillFileSha256",
                 "loadedBodySha256",
                 "head",
                 "mergeBase",
+                "baseRef",
                 "baseTip",
-                "readyV2BundleSha256",
                 "feedbackSha256",
                 "diffSha256"
             )
@@ -1009,9 +1109,41 @@ function Get-SfroNextAction {
         return New-SfroAction -State $State -Pr $activePr -Actor "pr-coordinator" -Kind "ensure-review-trigger" -Payload ([ordered]@{
             coordinatorSessionId = $entry.coordinatorSessionId
             head = $entry.epoch.head
+            baseRef = $entry.epoch.baseRef
+            baseTip = $entry.epoch.baseTip
+            diffSha256 = $entry.epoch.diffSha256
+            feedbackSha256 = $entry.epoch.feedbackSha256
             command = "/review"
             key = "$($State.campaignId):${activePr}:$($entry.epoch.head):review-trigger"
             maximum = 1
+        })
+    }
+    if (-not [bool]$entry.hostedReview.terminalObserved) {
+        return New-SfroAction -State $State -Pr $activePr -Actor "pr-coordinator" -Kind "observe-hosted-review" -Payload ([ordered]@{
+            head = $entry.epoch.head
+            baseRef = $entry.epoch.baseRef
+            baseTip = $entry.epoch.baseTip
+            diffSha256 = $entry.epoch.diffSha256
+            feedbackSha256 = $entry.epoch.feedbackSha256
+            triggerCommentId = [int64]$entry.hostedReview.commentId
+            feedbackExclusions = [ordered]@{
+                issueCommentIds = @([int64]$entry.hostedReview.commentId)
+                reviewIds = @()
+                reviewCommentIds = @()
+            }
+            rule = "Wait for the hosted run to reach a terminal state, then establish the post-trigger feedback baseline including any hosted output."
+        })
+    }
+    if (-not $entry.epoch.Contains("readyV2BundleSha256") -or $null -eq $entry.epoch.readyV2BundleSha256) {
+        return New-SfroAction -State $State -Pr $activePr -Actor "pr-coordinator" -Kind "prepare-review-bundle" -Payload ([ordered]@{
+            head = $entry.epoch.head
+            mergeBase = $entry.epoch.mergeBase
+            baseRef = $entry.epoch.baseRef
+            baseTip = $entry.epoch.baseTip
+            feedbackSha256 = $entry.epoch.feedbackSha256
+            diffSha256 = $entry.epoch.diffSha256
+            guidanceMode = "target-base"
+            rule = "Prepare one ready-v2 bundle after hosted feedback is terminal and bind its feedback projection to this exact baseline."
         })
     }
 
@@ -1057,6 +1189,7 @@ function Get-SfroNextAction {
                 head = $entry.epoch.head
                 reviewerCommit = $entry.epoch.reviewerCommit
                 skillBlob = $entry.epoch.skillBlob
+                loadedBodySha256 = $entry.epoch.loadedBodySha256
                 bundleSha256 = $entry.epoch.readyV2BundleSha256
                 firstTool = [ordered]@{
                     name = "skill"
@@ -1076,6 +1209,7 @@ function Get-SfroNextAction {
                 arm = $arm
                 model = $model
                 sessionId = $armState.sessionId
+                loadedBodySha256 = $entry.epoch.loadedBodySha256
                 timeoutMinutes = 60
                 requireTerminal = $true
                 requireIdle = $true
@@ -1155,6 +1289,13 @@ function Get-SfroNextAction {
             marker = "<!-- sf-review:$($State.campaignId):${activePr}:$($entry.epoch.head):$findingsSha256 -->"
             diffSha256 = $entry.epoch.diffSha256
             feedbackSha256 = $entry.epoch.feedbackSha256
+            baseRef = $entry.epoch.baseRef
+            baseTip = $entry.epoch.baseTip
+            feedbackExclusions = [ordered]@{
+                issueCommentIds = @([int64]$entry.hostedReview.commentId)
+                reviewIds = @()
+                reviewCommentIds = @()
+            }
             requireCompleteFeedback = $true
             requireChangedRightLines = $true
             requireAgentAttribution = $true
@@ -1168,6 +1309,15 @@ function Get-SfroNextAction {
             label = "agent-reviewed"
             visibleComment = "Copilot's local review panel found no issues to raise at this commit."
             marker = "<!-- agent-reviewed-local-panel:$($entry.epoch.head) -->"
+            baseRef = $entry.epoch.baseRef
+            baseTip = $entry.epoch.baseTip
+            diffSha256 = $entry.epoch.diffSha256
+            feedbackSha256 = $entry.epoch.feedbackSha256
+            feedbackExclusions = [ordered]@{
+                issueCommentIds = @([int64]$entry.hostedReview.commentId)
+                reviewIds = @()
+                reviewCommentIds = @()
+            }
             requireLabelAbsent = $true
             requireMarkerAbsent = $true
         })
@@ -1249,6 +1399,62 @@ function Assert-SfroReceiptBase {
     Assert-Sfro ($Receipt.evidence -is [Collections.IDictionary]) "Receipt evidence must be an object."
 }
 
+function Assert-SfroIdentitySnapshot {
+    param(
+        [Parameter(Mandatory)][Collections.IDictionary]$Identity,
+        [Parameter(Mandatory)][Collections.IDictionary]$Expected,
+        [Parameter(Mandatory)][string]$Label
+    )
+
+    Assert-Sfro ($Identity.state -ceq "open" -and -not [bool]$Identity.draft -and -not [bool]$Identity.merged) "$Label PR state is invalid."
+    Assert-Sfro ($Identity.head -ceq $Expected.head) "$Label head mismatch."
+    Assert-Sfro ($Identity.baseRef -ceq $Expected.baseRef) "$Label base ref mismatch."
+    Assert-Sfro ($Identity.baseTip -ceq $Expected.baseTip) "$Label base tip mismatch."
+    Assert-Sfro ([int]$Identity.changedFileCount -ge 0) "$Label changed-file count is invalid."
+    Assert-Sfro ($Identity.diffSha256 -ceq $Expected.diffSha256) "$Label diff mismatch."
+    Assert-Sfro (Test-SfroSha256 $Identity.rawFeedbackSha256) "$Label raw feedback hash is invalid."
+    Assert-Sfro ($Identity.effectiveFeedbackSha256 -ceq $Expected.feedbackSha256) "$Label effective feedback mismatch."
+    Assert-Sfro ($Identity.feedbackExclusions -is [Collections.IDictionary]) "$Label exclusions are missing."
+    foreach ($field in @("files", "issueComments", "reviews", "reviewComments")) {
+        Assert-Sfro ($Identity[$field] -is [array]) "$Label $field collection is missing."
+    }
+    Assert-Sfro ([int]$Identity.changedFileCount -eq @($Identity.files).Count) "$Label changed-file count mismatch."
+    Assert-Sfro ([int]$Identity.changedFileCount -eq @($Identity.files).Count) "$Label changed-file count mismatch."
+    $collections = [ordered]@{
+        files = $Identity.files
+        issueComments = $Identity.issueComments
+        reviews = $Identity.reviews
+        reviewComments = $Identity.reviewComments
+    }
+    Assert-Sfro ($Identity.collectionsSha256 -ceq (Get-SfroSha256 (ConvertTo-SfroCanonicalJson $collections))) "$Label collection hash mismatch."
+}
+
+function Assert-SfroIdentityStructuralSnapshot {
+    param(
+        [Parameter(Mandatory)][Collections.IDictionary]$Identity,
+        [Parameter(Mandatory)][Collections.IDictionary]$Expected,
+        [Parameter(Mandatory)][string]$Label
+    )
+
+    Assert-Sfro ($Identity.state -ceq "open" -and -not [bool]$Identity.draft -and -not [bool]$Identity.merged) "$Label PR state is invalid."
+    Assert-Sfro ($Identity.head -ceq $Expected.head) "$Label head mismatch."
+    Assert-Sfro ($Identity.baseRef -ceq $Expected.baseRef) "$Label base ref mismatch."
+    Assert-Sfro ($Identity.baseTip -ceq $Expected.baseTip) "$Label base tip mismatch."
+    Assert-Sfro ([int]$Identity.changedFileCount -ge 0) "$Label changed-file count is invalid."
+    Assert-Sfro ($Identity.diffSha256 -ceq $Expected.diffSha256) "$Label diff mismatch."
+    Assert-Sfro ((Test-SfroSha256 $Identity.rawFeedbackSha256) -and (Test-SfroSha256 $Identity.effectiveFeedbackSha256)) "$Label feedback hashes are invalid."
+    foreach ($field in @("files", "issueComments", "reviews", "reviewComments")) {
+        Assert-Sfro ($Identity[$field] -is [array]) "$Label $field collection is missing."
+    }
+    $collections = [ordered]@{
+        files = $Identity.files
+        issueComments = $Identity.issueComments
+        reviews = $Identity.reviews
+        reviewComments = $Identity.reviewComments
+    }
+    Assert-Sfro ($Identity.collectionsSha256 -ceq (Get-SfroSha256 (ConvertTo-SfroCanonicalJson $collections))) "$Label collection hash mismatch."
+}
+
 function Assert-SfroAcceptedReceipt {
     param(
         [Parameter(Mandatory)][Collections.IDictionary]$State,
@@ -1303,9 +1509,18 @@ function Assert-SfroAcceptedReceipt {
             foreach ($field in @("reviewerCommit", "skillBlob", "head", "mergeBase", "baseTip")) {
                 Assert-Sfro (Test-SfroSha $evidence[$field]) "freeze-epoch requires a valid $field."
             }
-            foreach ($field in @("loadedBodySha256", "readyV2BundleSha256", "feedbackSha256", "diffSha256")) {
+            Assert-Sfro ($evidence.baseRef -is [string] -and $evidence.baseRef.Length -gt 0) "freeze-epoch requires baseRef."
+            foreach ($field in @("normalizedSkillFileSha256", "loadedBodySha256", "feedbackSha256", "diffSha256")) {
                 Assert-Sfro (Test-SfroSha256 $evidence[$field]) "freeze-epoch requires a valid $field."
             }
+            Assert-Sfro ($evidence.skillPath -is [string]) "freeze-epoch requires skillPath."
+            Assert-Sfro ($evidence.skillIdentityTransform -ceq $script:NativeSkillTransform) "The native skill identity transform is unsupported."
+            $skillIdentity = Get-SfroNativeSkillIdentity -Path $evidence.skillPath
+            $skillBlob = Get-SfroGitBlobIdentity -SkillPath $evidence.skillPath -ReviewerCommit $evidence.reviewerCommit
+            Assert-Sfro ($skillBlob -ceq $evidence.skillBlob) "The reviewer commit/path Git blob does not match the frozen skill blob."
+            Assert-Sfro ($skillIdentity.normalizedGitBlob -ceq $skillBlob) "The normalized working-tree skill bytes do not match the frozen Git blob."
+            Assert-Sfro ($skillIdentity.normalizedSkillFileSha256 -ceq $evidence.normalizedSkillFileSha256) "The normalized skill file identity does not match."
+            Assert-Sfro ($skillIdentity.loadedBodySha256 -ceq $evidence.loadedBodySha256) "The native delivered-body identity does not match."
             Assert-Sfro ($evidence.guidanceMode -ceq "target-base") "The guidance mode must be target-base."
             Assert-Sfro ([bool]$evidence.cleanWorktree) "The frozen review worktree must be clean."
             Assert-Sfro ([bool]$evidence.crlfNormalizedIdentity) "The loaded skill identity must match after CRLF-to-LF normalization only."
@@ -1319,6 +1534,42 @@ function Assert-SfroAcceptedReceipt {
             Assert-Sfro ($evidence.decision -in @("reused", "posted")) "Hosted review decision must be reused or posted."
             Assert-Sfro ([bool]$evidence.readbackVerified) "Hosted review trigger readback is required."
             Assert-Sfro ([int]$evidence.triggerCountForHead -eq 1) "There must be exactly one trigger for the exact head."
+            Assert-Sfro ($evidence.baseRef -ceq $Action.payload.baseRef -and $evidence.baseTip -ceq $Action.payload.baseTip) "Hosted trigger base identity mismatch."
+            Assert-Sfro ($evidence.diffSha256 -ceq $Action.payload.diffSha256) "Hosted trigger diff identity mismatch."
+            Assert-Sfro ($evidence.rawFeedbackSha256 -ne $evidence.effectiveFeedbackSha256) "Hosted trigger must record its exact feedback delta."
+            Assert-Sfro (@($evidence.excludedIssueCommentIds).Count -eq 1 -and [int64]$evidence.excludedIssueCommentIds[0] -eq [int64]$evidence.commentId) "Hosted trigger must exclude exactly its own comment ID."
+            Assert-Sfro ([int64]$evidence.commentId -gt 0) "Hosted trigger comment ID is invalid."
+            Assert-SfroIdentityStructuralSnapshot -Identity $evidence.preIdentity -Expected $Action.payload -Label "Hosted trigger pre"
+            Assert-SfroIdentityStructuralSnapshot -Identity $evidence.postIdentity -Expected $Action.payload -Label "Hosted trigger post"
+        }
+        "observe-hosted-review" {
+            Assert-Sfro ($Receipt.actorSessionId -ceq $entry.coordinatorSessionId) "Only the coordinator may observe hosted review."
+            Assert-Sfro ([bool]$evidence.terminal) "Hosted review observation must be terminal."
+            Assert-Sfro ($evidence.head -ceq $Action.payload.head -and $evidence.baseRef -ceq $Action.payload.baseRef -and $evidence.baseTip -ceq $Action.payload.baseTip) "Hosted review identity mismatch."
+            Assert-Sfro ($evidence.diffSha256 -ceq $Action.payload.diffSha256) "Hosted review diff mismatch."
+            Assert-Sfro (Test-SfroSha256 $evidence.rawFeedbackSha256) "Hosted review raw feedback hash is invalid."
+            Assert-Sfro (Test-SfroSha256 $evidence.effectiveFeedbackSha256) "Hosted review feedback baseline is invalid."
+            Assert-Sfro ($evidence.preTriggerFeedbackSha256 -ceq $Action.payload.feedbackSha256) "Hosted review delta does not preserve the pre-trigger feedback."
+            Assert-Sfro ((ConvertTo-SfroCanonicalJson $evidence.feedbackExclusions) -ceq (ConvertTo-SfroCanonicalJson $Action.payload.feedbackExclusions)) "Hosted review exclusions mismatch."
+            Assert-Sfro ($evidence.hostedIssueCommentIds -is [array] -and $evidence.hostedReviewIds -is [array] -and $evidence.hostedReviewCommentIds -is [array]) "Hosted review output IDs must be explicit arrays."
+            Assert-Sfro ([int64]$evidence.hostedRunId -gt 0) "Hosted review run ID is required."
+            Assert-Sfro ($evidence.hostedWorkflowPath -ceq ".github/workflows/pull-request-review.lock.yml" -and $evidence.hostedRunEvent -ceq "issue_comment") "Hosted review run identity is invalid."
+            Assert-Sfro (Test-SfroSha256 $evidence.hostedCorrelationArtifactSha256) "Hosted run correlation artifact hash is required."
+            $hostedOutputCount = @($evidence.hostedIssueCommentIds).Count + @($evidence.hostedReviewIds).Count + @($evidence.hostedReviewCommentIds).Count
+            Assert-Sfro ($hostedOutputCount -gt 0 -or [bool]$evidence.hostedNoFeedback) "Empty hosted output requires a no-feedback result."
+            Assert-Sfro (Test-SfroSha256 $evidence.resultSha256) "Hosted review observation result hash is required."
+            $hostedExpected = Copy-SfroValue $Action.payload
+            $hostedExpected.feedbackSha256 = $evidence.effectiveFeedbackSha256
+            Assert-SfroIdentitySnapshot -Identity $evidence.preIdentity -Expected $hostedExpected -Label "Hosted review pre"
+            Assert-SfroIdentitySnapshot -Identity $evidence.postIdentity -Expected $hostedExpected -Label "Hosted review post"
+        }
+        "prepare-review-bundle" {
+            Assert-Sfro ($Receipt.actorSessionId -ceq $entry.coordinatorSessionId) "Only the coordinator may prepare the review bundle."
+            Assert-Sfro ($evidence.head -ceq $Action.payload.head -and $evidence.baseTip -ceq $Action.payload.baseTip) "Review bundle identity mismatch."
+            Assert-Sfro ($evidence.bundleFeedbackSha256 -ceq $Action.payload.feedbackSha256) "Review bundle feedback does not match the post-trigger baseline."
+            Assert-Sfro ($evidence.diffSha256 -ceq $Action.payload.diffSha256) "Review bundle diff mismatch."
+            Assert-Sfro (Test-SfroSha256 $evidence.readyV2BundleSha256) "Ready-v2 bundle hash is required."
+            Assert-Sfro ([bool]$evidence.ready) "The review bundle is not ready."
         }
         "create-arm" {
             Assert-Sfro ($Receipt.actorSessionId -ceq $entry.coordinatorSessionId) "Only the coordinator may create an arm."
@@ -1358,6 +1609,7 @@ function Assert-SfroAcceptedReceipt {
             Assert-Sfro ([bool]$evidence.terminal -and [bool]$evidence.idle) "Arm and guide workers must be terminal and idle."
             Assert-Sfro (Test-SfroSha256 $evidence.resultSha256) "Arm result hash is required."
             Assert-Sfro ($evidence.firstToolName -ceq "skill" -and $evidence.firstToolSkill -ceq "review-pull-request") "The first review-turn tool must be review-pull-request."
+            Assert-Sfro ($evidence.loadedBodySha256 -ceq $Action.payload.loadedBodySha256) "The runtime-delivered skill body identity mismatch."
             Assert-Sfro (Test-SfroSha256 $evidence.eventArtifactSha256) "Arm terminal observation requires a session-event artifact hash."
             Assert-Sfro ($evidence.guideWorkers -is [array]) "Guide workers must be an array."
             foreach ($worker in @($evidence.guideWorkers)) {
@@ -1409,6 +1661,11 @@ function Assert-SfroAcceptedReceipt {
             Assert-Sfro ([int64]$evidence.reviewId -gt 0) "Published reviewId is required."
             Assert-Sfro ($evidence.publishedFindingsSha256 -ceq (Get-SfroSha256 (ConvertTo-SfroCanonicalJson $Action.payload.findings))) "Published findings do not match the finalized set."
             Assert-Sfro ($evidence.diffSha256 -ceq $Action.payload.diffSha256 -and $evidence.feedbackSha256 -ceq $Action.payload.feedbackSha256) "Publication evidence is not bound to the frozen diff and feedback."
+            Assert-Sfro ($evidence.baseRef -ceq $Action.payload.baseRef -and $evidence.baseTip -ceq $Action.payload.baseTip) "Publication base identity mismatch."
+            Assert-Sfro ((ConvertTo-SfroCanonicalJson $evidence.feedbackExclusions) -ceq (ConvertTo-SfroCanonicalJson $Action.payload.feedbackExclusions)) "Publication feedback exclusions mismatch."
+            Assert-SfroIdentitySnapshot -Identity $evidence.preIdentity -Expected $Action.payload -Label "Review publication pre"
+            Assert-SfroIdentitySnapshot -Identity $evidence.postIdentity -Expected $Action.payload -Label "Review publication post"
+            Assert-Sfro ($evidence.recoveryExclusions -is [Collections.IDictionary]) "Review publication recovery exclusions are missing."
         }
         "publish-clean" {
             Assert-Sfro ($Receipt.actorSessionId -ceq $entry.coordinatorSessionId) "Only the coordinator may publish clean-panel evidence."
@@ -1418,6 +1675,12 @@ function Assert-SfroAcceptedReceipt {
             Assert-Sfro ([int]$evidence.assessmentSurvivorCount -eq 0) "The clean panel assessment must have zero survivors."
             Assert-Sfro ([bool]$evidence.readbackVerified) "Clean publication readback is required."
             Assert-Sfro ([int]$evidence.labelCountAfter -eq 1 -and [int]$evidence.markerCountAfter -eq 1) "Clean publication postconditions must exist exactly once."
+            Assert-Sfro ($evidence.baseRef -ceq $Action.payload.baseRef -and $evidence.baseTip -ceq $Action.payload.baseTip) "Clean publication base identity mismatch."
+            Assert-Sfro ($evidence.diffSha256 -ceq $Action.payload.diffSha256 -and $evidence.feedbackSha256 -ceq $Action.payload.feedbackSha256) "Clean publication identities mismatch."
+            Assert-Sfro ((ConvertTo-SfroCanonicalJson $evidence.feedbackExclusions) -ceq (ConvertTo-SfroCanonicalJson $Action.payload.feedbackExclusions)) "Clean publication feedback exclusions mismatch."
+            Assert-SfroIdentitySnapshot -Identity $evidence.preIdentity -Expected $Action.payload -Label "Clean publication pre"
+            Assert-SfroIdentitySnapshot -Identity $evidence.postIdentity -Expected $Action.payload -Label "Clean publication post"
+            Assert-Sfro ($evidence.recoveryExclusions -is [Collections.IDictionary]) "Clean publication recovery exclusions are missing."
         }
         "cleanup-children" {
             Assert-Sfro ($Receipt.actorSessionId -ceq $entry.coordinatorSessionId) "Only the coordinator may clean up children."
@@ -1574,6 +1837,7 @@ Export-ModuleMember -Function @(
     "ConvertFrom-SfroJson",
     "ConvertTo-SfroCanonicalJson",
     "Get-SfroFileSha256",
+    "Get-SfroNativeSkillIdentity",
     "Get-SfroNextAction",
     "Get-SfroSha256",
     "Get-SfroState",

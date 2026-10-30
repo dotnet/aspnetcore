@@ -34,3 +34,7 @@ controller rehashes them before acceptance. At least one proof is a JSON envelop
 binding `intentId`, `actionId`, `kind`, observation source, observed object IDs, and
 the SHA-256 of the receipt claim set. Model, tool-order, hierarchy, GitHub mutation,
 and readback claims must come from app/GitHub observations rather than agent summaries.
+
+GitHub effect receipts retain complete stable pre/post identity snapshots, raw and
+effective feedback hashes, and every exact excluded object ID. A dry-run response is a
+plan, not a receipt, and never authorizes `-Execute`.

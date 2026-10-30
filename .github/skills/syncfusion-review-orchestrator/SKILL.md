@@ -77,6 +77,10 @@ a new numbered attempt. `unknown` remains blocked on reconciliation.
   `skill("review-pull-request")`; every routed guide worker must be a fresh
   `general-purpose` background task using the arm model explicitly.
 - `observe-arm`: require terminal review output and terminal/idle guide workers.
+- `observe-hosted-review`: bind one unique terminal hosted run to the exact trigger,
+  prove its complete output-ID delta, and establish the post-trigger feedback baseline.
+- `prepare-review-bundle`: prepare the ready-v2 bundle only after hosted observation
+  and bind `feedback.json` to that post-trigger baseline before any arm is created.
 - `run-assessment`, `run-falsifier`, and `handoff`: retain exact result bodies and
   hashes.
 - `cleanup-children`: archive only recorded terminal child sessions after evidence is
@@ -96,14 +100,18 @@ record `unknown`; do not claim verification.
 
 GitHub actions are rendered and validated by
 `Invoke-SyncfusionGitHubAdapter.ps1`. Its default is dry-run. Live execution requires
-`-Execute` and an accepted controller intent. The adapter:
+an accepted controller intent plus both `-Execute` and `-AllowLiveMutation`. The
+adapter:
 
 - checks the authenticated login;
-- re-reads the live PR head immediately before and after every mutation;
+- obtains two consecutive complete GitHub identity snapshots and requires equality;
+- re-reads the PR head, base ref, base tip, complete diff, and effective feedback
+  immediately before and after every mutation;
 - deduplicates `/review` per campaign/PR/head using retained receipts and readback;
 - submits findings through one `COMMENT` review pinned to the frozen commit;
-- recomputes the complete live diff and feedback hashes, then prevalidates every
-  RIGHT-side changed-line anchor and finding fingerprint;
+- recomputes the complete live diff and feedback hashes, excluding only exact
+  ledger-bound controller effect IDs, then prevalidates every RIGHT-side changed-line
+  anchor and finding fingerprint;
 - verifies the review, inline comments, marker, commit, and URL by readback; and
 - applies the clean label/comment only for a complete all-`NO_FINDINGS` panel with
   zero assessment survivors.
@@ -128,5 +136,8 @@ cleanup:
 pwsh .github/skills/syncfusion-review-orchestrator/scripts/Invoke-SyncfusionReviewOrchestrator.ps1 `
   -Command Canary
 ```
+
+The current repair mode is dry-run only. Do not pass `-AllowLiveMutation` and do not
+execute a live canary without fresh user approval.
 
 See `references/architecture.md` for the architecture and migration boundary.

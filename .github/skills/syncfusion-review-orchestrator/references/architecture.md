@@ -28,6 +28,9 @@ the required local app sessions. Neither is used as campaign authority.
 - A pending side effect is reconciled before any retry.
 - A head change terminates the frozen epoch; it never silently advances the cohort.
 - `/review` is keyed by campaign, PR, and exact head.
+- Arms cannot start until the exact hosted run is terminal, its output delta is
+  attributed to the trigger, and a new ready-v2 bundle is prepared from the resulting
+  feedback baseline.
 - A clean publication requires four valid `NO_FINDINGS` originals and zero assessment
   survivors. A discarded `FINDINGS` result is not clean-panel evidence.
 - Finding publication requires complete feedback, exact live head, valid changed-line
@@ -50,10 +53,21 @@ sequence gap, prior-hash mismatch, event-hash mismatch, stale expected revision,
 unrecognized event type halts replay.
 
 The frozen `diffSha256` and `feedbackSha256` use the GitHub adapter's canonical
-projections. Immediately before publication the adapter re-fetches all PR files,
-top-level issue comments, submitted reviews, and inline review comments; recomputed
-hashes must match the frozen values. The adapter rechecks the live head immediately
-before and after every GitHub mutation.
+projections. Feedback is frozen before the hosted trigger. Later gates exclude only
+the exact ledger-bound `/review` comment ID; identical text from another actor remains
+feedback. Recovery subtracts only exact immutable IDs created by the controller effect
+being reconciled. Before and after every effect the adapter obtains two consecutive
+complete snapshots of PR state, base ref/tip, files, top-level issue comments,
+submitted reviews, and inline review comments. The snapshots must match, the unique
+file count must equal GitHub's `changed_files`, IDs and paths must be unique, and the
+effective hashes must equal the frozen values.
+
+Native skill identity is not the whole `SKILL.md`. The runtime removes the first exact
+YAML frontmatter block and exactly one separator blank line after strict UTF-8 and
+CRLF-to-LF normalization. The controller records the normalized whole-file SHA-256 and
+the runtime-delivered body SHA-256 under transform
+`yaml-frontmatter-stripped-crlf-to-lf-v1`, while separately verifying the reviewer
+commit/path Git blob.
 
 ## Migration
 

@@ -2,11 +2,7 @@
   "schemaVersion": 1,
   "responses": {
     "GET user": [
-      {
-        "value": {
-          "login": "PureWeen"
-        }
-      }
+      { "value": { "login": "PureWeen" } }
     ],
     "GET repos/dotnet/aspnetcore/pulls/70001": [
       {
@@ -14,20 +10,38 @@
           "state": "open",
           "draft": false,
           "merged_at": null,
-          "head": {
-            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-          }
+          "changed_files": 1,
+          "base": { "ref": "main" },
+          "head": { "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
         }
-      },
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/commits/main": [
+      { "value": { "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" } }
+    ],
+    "GET repos/dotnet/aspnetcore/pulls/70001/files?per_page=100": [
       {
-        "value": {
-          "state": "open",
-          "draft": false,
-          "merged_at": null,
-          "head": {
-            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "value": [
+          {
+            "filename": "src/Fixture.cs",
+            "status": null,
+            "sha": null,
+            "patch": "@@ -11,2 +11,3 @@\n context\n+added\n context"
           }
-        }
+        ]
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/issues/70001/comments?per_page=100": [
+      {
+        "value": [
+          {
+            "id": 123,
+            "updated_at": "2026-10-29T20:01:00Z",
+            "body": "/review",
+            "issue_url": "https://api.example.test/repos/dotnet/aspnetcore/issues/70001",
+            "user": { "login": "PureWeen" }
+          }
+        ]
       }
     ],
     "GET repos/dotnet/aspnetcore/pulls/70001/reviews?per_page=100": [
@@ -35,8 +49,28 @@
         "value": [
           {
             "id": 202,
+            "submitted_at": "2026-10-29T20:02:00Z",
             "commit_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "body": "Human-directed and GitHub Copilot-generated.\n\n<!-- sf-review:fixture -->"
+            "state": "COMMENTED",
+            "body": "Human-directed and GitHub Copilot-generated.\n\n<!-- sf-review:fixture -->",
+            "user": { "login": "PureWeen" }
+          }
+        ]
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/pulls/70001/comments?per_page=100": [
+      {
+        "value": [
+          {
+            "id": 402,
+            "pull_request_review_id": 202,
+            "updated_at": "2026-10-29T20:02:00Z",
+            "commit_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "path": "src/Fixture.cs",
+            "line": 12,
+            "side": "RIGHT",
+            "body": "Agent-written: this fixture finding exercises atomic publication.\n\n<!-- finding:fixture-f1 -->",
+            "user": { "login": "PureWeen" }
           }
         ]
       }
@@ -45,10 +79,12 @@
       {
         "value": {
           "id": 202,
+          "submitted_at": "2026-10-29T20:02:00Z",
           "commit_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "state": "COMMENTED",
           "body": "Human-directed and GitHub Copilot-generated.\n\n<!-- sf-review:fixture -->",
-          "html_url": "https://example.test/review/202"
+          "html_url": "https://example.test/review/202",
+          "user": { "login": "PureWeen" }
         }
       }
     ],
@@ -56,10 +92,14 @@
       {
         "value": [
           {
+            "id": 402,
+            "pull_request_review_id": 202,
+            "commit_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "path": "src/Fixture.cs",
             "line": 12,
             "side": "RIGHT",
-            "body": "Agent-written: this fixture finding exercises atomic publication.\n\n<!-- finding:fixture-f1 -->"
+            "body": "Agent-written: this fixture finding exercises atomic publication.\n\n<!-- finding:fixture-f1 -->",
+            "user": { "login": "PureWeen" }
           }
         ]
       }

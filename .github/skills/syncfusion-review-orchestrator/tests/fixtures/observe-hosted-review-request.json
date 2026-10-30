@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "syncfusion-review-2026-10",
+  "repository": "dotnet/aspnetcore",
+  "pr": 70001,
+  "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "baseRef": "main",
+  "baseTip": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "diffSha256": "91d1e4f0e4052e56c3f612ddbdb2a272be371cc6d32325b3d31f5712cb08b260",
+  "feedbackSha256": "7bb962036dc5369d3f260f5b14b7c8e9e52516663591d7a2137b3c77d0dbc914",
+  "intentId": "fixture-hosted-observation",
+  "triggerCommentId": 123,
+  "hostedTerminal": true,
+  "hostedRunId": 12345,
+  "hostedActorLogins": ["copilot-pull-request-reviewer[bot]"],
+  "hostedNoFeedback": true,
+  "hostedCorrelationArtifactPath": ".github/skills/syncfusion-review-orchestrator/tests/fixtures/hosted-run-correlation.json",
+  "hostedCorrelationArtifactSha256": "2b26c5514132786cb3bb375d2ddf27849afcc8829f49a4538ecf4894ef798e47",
+  "hostedIssueCommentIds": [],
+  "hostedReviewIds": [],
+  "hostedReviewCommentIds": [],
+  "feedbackExclusions": {
+    "issueCommentIds": [123],
+    "reviewIds": [],
+    "reviewCommentIds": []
+  }
+}
