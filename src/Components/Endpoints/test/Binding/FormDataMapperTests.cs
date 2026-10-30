@@ -1218,6 +1218,90 @@ public class FormDataMapperTests
             });
     }
 
+    [Theory]
+    [InlineData("x]y")]
+    [InlineData("x]")]
+    [InlineData("x]]y")]
+    public void Deserialize_Dictionary_KeyContainingClosingBracket(string dictionaryKey)
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["[a]"] = "1",
+            [$"[{dictionaryKey}]"] = "2",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        var options = new FormDataMapperOptions();
+
+        var result = FormDataMapper.Map<Dictionary<string, int>>(reader, options);
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal(1, result["a"]);
+        Assert.Equal(2, result[dictionaryKey]);
+        Assert.Empty(errors);
+    }
+
+    [Theory]
+    [InlineData("x")]
+    [InlineData("x]y")]
+    public void Deserialize_Dictionary_KeyContainingClosingBracket_WithNestedDictionary(string dictionaryKey)
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            [$"[{dictionaryKey}][a]"] = "2",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+
+        var result = FormDataMapper.Map<Dictionary<string, Dictionary<string, int>>>(reader, new FormDataMapperOptions());
+
+        Assert.Single(result);
+        Assert.Equal(2, result[dictionaryKey]["a"]);
+    }
+
+    [Theory]
+    [InlineData("x")]
+    [InlineData("x]y")]
+    public void Deserialize_Dictionary_KeyContainingClosingBracket_WithComplexValue(string dictionaryKey)
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            [$"[{dictionaryKey}].Id"] = "2",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+
+        var result = FormDataMapper.Map<Dictionary<string, DictionaryBracketValue>>(reader, new FormDataMapperOptions());
+
+        Assert.Single(result);
+        Assert.Equal(2, result[dictionaryKey].Id);
+    }
+
+    [Theory]
+    [InlineData("x")]
+    [InlineData("x]y")]
+    public void Deserialize_Dictionary_KeyContainingClosingBracket_WithCollectionValue(string dictionaryKey)
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            [$"[{dictionaryKey}][0]"] = "2",
+            [$"[{dictionaryKey}][1]"] = "3",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+
+        var result = FormDataMapper.Map<Dictionary<string, List<int>>>(reader, new FormDataMapperOptions());
+
+        Assert.Single(result);
+        Assert.Equal(new[] { 2, 3 }, result[dictionaryKey]);
+    }
+
+    public class DictionaryBracketValue
+    {
+        public int Id { get; set; }
+    }
+
     [Fact]
     public void GetKeys_IgnoresMalformedKeysWithUnterminatedBracket()
     {
@@ -1273,13 +1357,13 @@ public class FormDataMapperTests
     [InlineData("prefix[[value]", "prefix", "[[value]")]              // double [[ in middle
     [InlineData("a[b.c]", "a", "[b.c]")]                              // dots inside brackets
     [InlineData("a[ ]", "a", "[ ]")]                                  // whitespace inside brackets
-    [InlineData("prefix[val]]", "prefix", "[val]")]                   // double ]] at end
+    [InlineData("prefix[val]]", "prefix", "[val]]")]                  // closing bracket inside key
     [InlineData("prefix[value][", "prefix", "[value]")]               // valid then unterminated [
-    [InlineData("a[b[c]d]", "a", "[b[c]")]                            // nested brackets
+    [InlineData("a[b[c]d]", "a", "[b[c]d]")]                          // brackets inside key
     [InlineData("]]prefix[ok]", "]]prefix", "[ok]")]                  // double ]] at start of key
-    [InlineData("prefix[val]]rest[ok]", "prefix", "[val]")]           // double ]] in middle
+    [InlineData("prefix[val]]rest[ok]", "prefix", "[val]]rest[ok]")]  // brackets inside key
     [InlineData("prefix[[a][b]", "prefix", "[[a]")]                   // double [[ with valid segment after
-    [InlineData("prefix[a]][b]", "prefix", "[a]")]                    // double ]] between segments
+    [InlineData("prefix[a]][b]", "prefix", "[a]]")]                   // closing bracket before nested key
     [InlineData("prefix[a][b", "prefix", "[a]")]                      // valid then unterminated (partial)
     [InlineData("prefix[a]suffix[b", "prefix", "[a]")]                // valid then unterminated in suffix
     [InlineData("][value][", "]", "[value]")]                          // reversed ] at start
@@ -1287,7 +1371,7 @@ public class FormDataMapperTests
     [InlineData("prefix][a][b][", "prefix]", "[a]")]                  // reversed ] with multiple segments
     [InlineData("a[x][y]", "a", "[x]")]                               // adjacent brackets — first
     [InlineData("a[x][y]", "a[x]", "[y]")]                            // adjacent brackets — second (nested)
-    [InlineData("prefix[]]", "prefix", "[]")]                         // extra ] after empty pair
+    [InlineData("prefix[]]", "prefix", "[]]")]                        // closing bracket as key
     public void GetKeys_ExtractsExpectedKey(string formKey, string prefix, string expectedKey)
     {
         var collection = new Dictionary<string, StringValues>()
@@ -2422,6 +2506,25 @@ public class FormDataMapperTests
             element => Assert.Equal("file-2.txt", element.FileName),
             element => Assert.Equal("file-3.txt", element.FileName)
         );
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_IReadOnlyListFormFileWithNoMatches_IsNotFound()
+    {
+        var formFileCollection = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "otherFile", "file.txt"),
+        };
+        var data = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture, formFileCollection);
+        reader.PushPrefix("file");
+        var converter = new FileConverter<IReadOnlyList<IFormFile>>();
+
+        var succeeded = converter.TryRead(ref reader, typeof(IReadOnlyList<IFormFile>), default!, out var result, out var found);
+
+        Assert.True(succeeded);
+        Assert.False(found);
+        Assert.Empty(result);
     }
 
     [Fact]

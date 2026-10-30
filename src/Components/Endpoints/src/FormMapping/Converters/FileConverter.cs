@@ -44,22 +44,25 @@ internal sealed class FileConverter<T> : FormDataConverter<T>
                 buffer = ReadOnlyCollectionBufferAdapter<IBrowserFile>.Add(ref buffer, new BrowserFileFromFormFile(targetFiles[i]));
             }
             result = (T)(IReadOnlyList<IBrowserFile>)ReadOnlyCollectionBufferAdapter<IBrowserFile>.ToResult(buffer);
-            found = true;
+            found = targetFiles.Count > 0;
             return true;
         }
 #endif
 
         if (typeof(T) == typeof(IReadOnlyList<IFormFile>))
         {
-            result = (T)reader.FormFileCollection.GetFiles(reader.CurrentPrefix.ToString());
-            found = true;
+            var targetFiles = reader.FormFileCollection.GetFiles(reader.CurrentPrefix.ToString());
+            result = (T)targetFiles;
+            found = targetFiles.Count > 0;
             return true;
         }
 
         if (typeof(T) == typeof(IFormFileCollection))
         {
             result = (T)reader.FormFileCollection;
-            found = true;
+            found = reader.CurrentPrefix.Span.IndexOf('[') < 0
+                ? reader.FormFileCollection.Count > 0
+                : reader.FormFileCollection.GetFiles(reader.CurrentPrefix.ToString()).Count > 0;
             return true;
         }
 
