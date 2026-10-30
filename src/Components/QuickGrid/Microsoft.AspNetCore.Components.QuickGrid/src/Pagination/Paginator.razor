@@ -14,7 +14,7 @@
                 <text><strong>@State.TotalItemCount</strong> items</text>
             }
         </div>
-        <nav role="navigation">
+        <nav role="navigation" aria-label="Pagination" @attributes="AdditionalAttributes">
             @if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
             {
                 <a class="go-first" href="@GetPageUrl(0)" title="Go to first page" aria-label="Go to first page" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">«</a>

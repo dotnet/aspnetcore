@@ -127,6 +127,29 @@ namespace System.Net.Http.Unit.Tests.HPack
         }
 
         [Fact]
+        public void DecodesIndexedHeaderField_ZeroIndex_Error()
+        {
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() =>
+                _decoder.Decode(new byte[] { 0x80 }, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 0), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+            Assert.Empty(_handler.DecodedStaticHeaders);
+        }
+
+        [Theory]
+        [InlineData(0x81, 1, ":authority")]
+        [InlineData(0xbd, 61, "www-authenticate")]
+        public void DecodesIndexedHeaderField_StaticTableBoundaries(byte encoded, int index, string expectedHeaderName)
+        {
+            _decoder.Decode(new byte[] { encoded }, endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.Equal("", _handler.DecodedHeaders[expectedHeaderName]);
+            Assert.Single(_handler.DecodedStaticHeaders);
+            Assert.Equal(new KeyValuePair<string, string>(expectedHeaderName, ""), _handler.DecodedStaticHeaders[index]);
+        }
+
+        [Fact]
         public void DecodesIndexedHeaderField_StaticTableWithoutValue()
         {
             byte[] encoded = _literalHeaderFieldWithIndexingIndexedName
