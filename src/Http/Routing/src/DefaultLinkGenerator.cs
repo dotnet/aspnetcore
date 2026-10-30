@@ -182,7 +182,7 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
     private List<RouteEndpoint> GetEndpoints<TAddress>(TAddress address)
     {
         var addressingScheme = _serviceProvider.GetRequiredService<IEndpointAddressScheme<TAddress>>();
-        var endpoints = addressingScheme.FindEndpoints(address).OfType<RouteEndpoint>().ToList();
+        var endpoints = ToRouteEndpointList(addressingScheme.FindEndpoints(address));
 
         if (endpoints.Count == 0)
         {
@@ -194,6 +194,28 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
         }
 
         return endpoints;
+    }
+
+    // Also called from DefaultLinkParser
+    internal static List<RouteEndpoint> ToRouteEndpointList(IEnumerable<Endpoint> endpoints)
+    {
+        // Avoid LINQ (OfType + ToList) and enumerator allocations for the common case where
+        // the address scheme returns an array.
+        if (endpoints is Endpoint[] array)
+        {
+            var result = new List<RouteEndpoint>(array.Length);
+            for (var i = 0; i < array.Length; i++)
+            {
+                if (array[i] is RouteEndpoint routeEndpoint)
+                {
+                    result.Add(routeEndpoint);
+                }
+            }
+
+            return result;
+        }
+
+        return endpoints.OfType<RouteEndpoint>().ToList();
     }
 
     private string? GetPathByEndpoints(
@@ -287,8 +309,8 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
     {
         var templateBinder = GetTemplateBinder(endpoint);
 
-        var templateValuesResult = templateBinder.GetValues(ambientValues, values);
-        if (templateValuesResult == null)
+        var acceptedValues = templateBinder.GetAcceptedValues(ambientValues, values);
+        if (acceptedValues == null)
         {
             // We're missing one of the required values for this route.
             result = default;
@@ -296,16 +318,21 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
             return false;
         }
 
-        if (!templateBinder.TryProcessConstraints(httpContext, templateValuesResult.CombinedValues, out var parameterName, out var constraint))
+        // The combined values are only consumed by constraints, so skip creating them when there are none.
+        if (templateBinder.HasConstraints)
         {
-            result = default;
-            Log.TemplateFailedConstraint(_logger, endpoint, parameterName, constraint, templateValuesResult.CombinedValues);
-            return false;
+            var combinedValues = templateBinder.GetCombinedValues(ambientValues, acceptedValues);
+            if (!templateBinder.TryProcessConstraints(httpContext, combinedValues, out var parameterName, out var constraint))
+            {
+                result = default;
+                Log.TemplateFailedConstraint(_logger, endpoint, parameterName, constraint, combinedValues);
+                return false;
+            }
         }
 
-        if (!templateBinder.TryBindValues(templateValuesResult.AcceptedValues, options, _globalLinkOptions, out result))
+        if (!templateBinder.TryBindValues(acceptedValues, options, _globalLinkOptions, out result))
         {
-            Log.TemplateFailedExpansion(_logger, endpoint, templateValuesResult.AcceptedValues);
+            Log.TemplateFailedExpansion(_logger, endpoint, acceptedValues);
             return false;
         }
 
