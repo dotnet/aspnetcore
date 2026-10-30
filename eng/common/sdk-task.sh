@@ -28,18 +28,17 @@ while [[ -h "$source" ]]; do
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
+# Restore is driven by MSBuild's /restore switch, which the shared MSBuild helper adds
+# whenever restore is enabled. No separate restore invocation is necessary.
 Build() {
-    local target=$1
-    local log_suffix=""
-    [[ "$target" != "Execute" ]] && log_suffix=".$target"
-    local log="$log_dir/$task$log_suffix.binlog"
+    local log="$log_dir/$task.binlog"
     local binaryLogArg=""
     [[ $binary_log == true ]] && binaryLogArg="/bl:$log"
     local output_path="$toolset_dir/$task/"
 
     MSBuild "$taskProject" \
         $binaryLogArg \
-        /t:"$target" \
+        /t:Execute \
         /p:Configuration="$configuration" \
         /p:RepoRoot="$repo_root" \
         /p:BaseIntermediateOutputPath="$output_path" \
@@ -121,11 +120,7 @@ if [[ ! -e "$taskProject" ]]; then
     ExitWithExitCode 1
 fi
 
-if $restore; then
-    Build "Restore"
-fi
-
-Build "Execute"
+Build
 
 
 ExitWithExitCode 0
