@@ -449,6 +449,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         await InvokeAsync(StateHasChanged);
     }
 
+    internal bool IsColumnOptionsVisible(ColumnBase<TGridItem> column) => _displayOptionsForColumn == column;
+
     /// <summary>
     /// Displays the <see cref="ColumnBase{TGridItem}.ColumnOptions"/> UI for the specified column, closing any other column
     /// options UI that was previously displayed.
