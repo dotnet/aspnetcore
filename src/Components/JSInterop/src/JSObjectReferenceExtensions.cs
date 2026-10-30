@@ -19,6 +19,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -38,6 +39,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -57,6 +59,7 @@ public static class JSObjectReferenceExtensions
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -75,6 +78,7 @@ public static class JSObjectReferenceExtensions
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -90,6 +94,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -108,6 +113,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -125,6 +131,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="identifier">An identifier for the constructor function to invoke. For example, the value <c>"someScope.SomeClass"</c> will invoke the constructor <c>someScope.SomeClass</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -143,6 +150,7 @@ public static class JSObjectReferenceExtensions
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -158,6 +166,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -176,6 +185,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="identifier">An identifier for the property to read. For example, the value <c>"someScope.someProp"</c> will read the value of the property <c>someScope.someProp</c>.</param>
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
@@ -195,6 +205,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="value">JSON-serializable value.</param>
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TValue value, TimeSpan timeout)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);

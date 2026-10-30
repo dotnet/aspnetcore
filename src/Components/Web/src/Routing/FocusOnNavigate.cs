@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
@@ -72,6 +73,7 @@ public class FocusOnNavigate : ComponentBase
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The call serializes only a CSS selector string.")]
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_focusAfterRender)
