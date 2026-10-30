@@ -1,4 +1,8 @@
 <Project>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="BlazorDisableThrowNavigationException" />
+  </ItemGroup>
+
   <!--
   The Web.SDK unconditionally adds the components analyzer to all qualifying Web projects. A project qualifiies if it targets netcoreapp3.0 or later and does not have a flag that
   prevents the implicit analyzer from being added. We want to ensure that when a Web project also references this package, typically as the result of referencing a component class library,
