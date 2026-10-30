@@ -163,10 +163,18 @@ public class QueryFeature : IQueryFeature
                     _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(capacity: 5, StringComparer.OrdinalIgnoreCase);
                 }
 
-                // Already 2 (1 existing + the new one) entries so use List's expansion mechanism for more
+                // Copy the existing value(s) by index rather than calling AddRange(values):
+                // AddRange takes IEnumerable<string>, which boxes the StringValues struct.
+                // Indexed Add avoids that boxing allocation. List growth and capacity behavior
+                // are unchanged from AddRange, so this is a strict allocation reduction that
+                // preserves ordering and contents exactly.
                 var list = new List<string>();
 
-                list.AddRange(values);
+                for (var i = 0; i < values.Count; i++)
+                {
+                    list.Add(values[i]!);
+                }
+
                 list.Add(value);
 
                 _expandingAccumulator[key] = list;
