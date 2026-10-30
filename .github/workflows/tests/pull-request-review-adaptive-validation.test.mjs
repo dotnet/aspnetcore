@@ -9,6 +9,8 @@ const workflowLock = fs.readFileSync(
   path.join(repositoryRoot, '.github/workflows/pull-request-review.lock.yml'), 'utf8');
 const skill = fs.readFileSync(
   path.join(repositoryRoot, '.github/skills/review-pull-request/SKILL.md'), 'utf8');
+const retargetDiagnostic =
+  'The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.';
 
 assert.match(workflowSource, /bash:\s*\[":\*"\]/);
 assert.match(workflowSource, /^\s+edit:\s*$/m);
@@ -25,6 +27,8 @@ assert.match(workflowSource, /chmod -R a\+rX,a-w \/tmp\/gh-aw\/review-bundle/);
 assert.match(workflowSource, /Only after collecting every required guide worker's actual result/);
 assert.match(workflowSource, /write temporary\s+tests or repros/);
 assert.doesNotMatch(workflowSource, /review_execution|review-execution|execution\.json/);
+assert.equal(workflowSource.split(retargetDiagnostic).length - 1, 2);
+assert.doesNotMatch(workflowSource, /The PR head moved or closed after review; safe outputs are blocked\./);
 
 assert.match(workflowLock, /--allow-tool shell/);
 assert.match(workflowLock, /--allow-tool write/);
@@ -34,6 +38,8 @@ assert.match(workflowLock, /worktree=\/tmp\/gh-aw\/review-worktree/);
 assert.match(workflowLock, /refs\/review\/head:refs\/remotes\/review\/head/);
 assert.match(workflowLock, /status --porcelain\)\\"; then\\n\s+:\\nelse/);
 assert.doesNotMatch(workflowLock, /review_execution|review-execution|review-build-sandbox/);
+assert.equal(workflowLock.split(retargetDiagnostic).length - 1, 2);
+assert.doesNotMatch(workflowLock, /The PR head moved or closed after review; safe outputs are blocked\./);
 
 assert.match(skill, /write temporary\s+tests or repros/);
 assert.match(skill, /Temporary validation edits are diagnostic only/);

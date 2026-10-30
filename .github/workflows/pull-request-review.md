@@ -214,7 +214,7 @@ jobs:
             if (data.number !== pullNumber || data.state !== 'open' ||
                 data.base.repo.full_name.toLowerCase() !== `${context.repo.owner}/${context.repo.repo}`.toLowerCase() ||
                 data.head.sha !== expected || data.base.ref !== process.env.REVIEW_BASE_REF) {
-              core.setFailed('The PR head moved or closed after review; safe outputs are blocked.');
+              core.setFailed('The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.');
             }
   verify_live_head:
     needs: [agent, freeze_pr_head]
@@ -326,7 +326,7 @@ jobs:
             if (data.number !== pullNumber || data.state !== 'open' ||
                 data.base.repo.full_name.toLowerCase() !== `${context.repo.owner}/${context.repo.repo}`.toLowerCase() ||
                 data.head.sha !== expected || data.base.ref !== process.env.REVIEW_BASE_REF) {
-              core.setFailed('The PR head moved or closed after review; safe outputs are blocked.');
+              core.setFailed('The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.');
             }
 
 pre-agent-steps:
