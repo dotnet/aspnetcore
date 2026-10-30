@@ -3329,6 +3329,43 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task CustomHubActivatorIsUsedForEveryInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var hubActivator = serviceProvider.GetService<IHubActivator<MethodHub>>() as CustomHubActivator<MethodHub>;
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                for (var i = 0; i < 3; i++)
+                {
+                    var completion = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                    Assert.Null(completion.Error);
+                }
+
+                // OnConnectedAsync and the three invocations
+                Assert.Equal(4, hubActivator.ReleaseCount);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+
+            // OnDisconnectedAsync
+            Assert.Equal(5, hubActivator.ReleaseCount);
+        }
+    }
+
+    [Fact]
     public async Task StreamMethodThatReturnsNullWillCleanup()
     {
         using (StartVerifiableLog())
