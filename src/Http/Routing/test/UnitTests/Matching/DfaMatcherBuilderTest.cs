@@ -3467,6 +3467,141 @@ public class DfaMatcherBuilderTest
     }
 
     [Fact]
+    public void Build_EndpointInMultipleStates_SharesCandidateData()
+    {
+        // Arrange
+        var literal = CreateEndpoint("/a/x");
+        var parameter = CreateEndpoint("/{p:minlength(1)}/x");
+
+        var builder = CreateDfaMatcherBuilder();
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(parameter);
+
+        // Act
+        var matcher = Assert.IsType<DfaMatcher>(builder.Build());
+
+        // Assert
+        var fromLiteralState = Assert.Single(FindCandidates(matcher, "/a/x"), c => ReferenceEquals(c.Endpoint, parameter));
+        var fromParameterState = Assert.Single(FindCandidates(matcher, "/b/x"), c => ReferenceEquals(c.Endpoint, parameter));
+
+        Assert.Equal(Candidate.CandidateFlags.HasCaptures | Candidate.CandidateFlags.HasConstraints, fromParameterState.Flags);
+        Assert.Equal(fromParameterState.Flags, fromLiteralState.Flags);
+        Assert.Same(fromParameterState.Slots, fromLiteralState.Slots);
+        Assert.Same(fromParameterState.Captures, fromLiteralState.Captures);
+        Assert.Same(fromParameterState.Constraints, fromLiteralState.Constraints);
+    }
+
+    [Fact]
+    public void Build_EndpointInMultipleStates_NonCacheableConstraint_DoesNotShareConstraints()
+    {
+        // Arrange
+        var literal = CreateEndpoint("/a/x");
+        var parameter = CreateEndpoint("/{p:stateful}/x");
+
+        var builder = CreateDfaMatcherBuilder();
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(parameter);
+
+        // Act
+        var matcher = Assert.IsType<DfaMatcher>(builder.Build());
+
+        // Assert
+        var fromLiteralState = Assert.Single(FindCandidates(matcher, "/a/x"), c => ReferenceEquals(c.Endpoint, parameter));
+        var fromParameterState = Assert.Single(FindCandidates(matcher, "/b/x"), c => ReferenceEquals(c.Endpoint, parameter));
+
+        var constraint1 = Assert.Single(fromLiteralState.Constraints);
+        var constraint2 = Assert.Single(fromParameterState.Constraints);
+        Assert.IsType<StatefulRouteConstraint>(constraint1.Value);
+        Assert.NotSame(constraint1.Value, constraint2.Value);
+    }
+
+    [Fact]
+    public void Build_EndpointInMultipleStates_SuppliedConstraintInstance_SharesConstraints()
+    {
+        // Arrange
+        var constraint = new StatefulRouteConstraint();
+        var literal = CreateEndpoint("/a/x");
+        var parameter = CreateEndpoint("/{p}/x", constraints: new { p = constraint });
+
+        var builder = CreateDfaMatcherBuilder();
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(parameter);
+
+        // Act
+        var matcher = Assert.IsType<DfaMatcher>(builder.Build());
+
+        // Assert
+        var fromLiteralState = Assert.Single(FindCandidates(matcher, "/a/x"), c => ReferenceEquals(c.Endpoint, parameter));
+        var fromParameterState = Assert.Single(FindCandidates(matcher, "/b/x"), c => ReferenceEquals(c.Endpoint, parameter));
+
+        Assert.Same(fromParameterState.Constraints, fromLiteralState.Constraints);
+        Assert.Same(constraint, Assert.Single(fromParameterState.Constraints).Value);
+    }
+
+    [Fact]
+    public void Build_EndpointInMultipleStates_FactoryReturnsNewInstanceForSuppliedConstraint_DoesNotShareConstraints()
+    {
+        // Arrange
+        var literal = CreateEndpoint("/a/x");
+        var parameter = CreateEndpoint("/{p}/x", constraints: new { p = new StatefulRouteConstraint() });
+
+        var builder = new DfaMatcherBuilder(
+            NullLoggerFactory.Instance,
+            new NewInstanceParameterPolicyFactory(CreateParameterPolicyFactory()),
+            Mock.Of<EndpointSelector>(),
+            Array.Empty<MatcherPolicy>());
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(parameter);
+
+        // Act
+        var matcher = Assert.IsType<DfaMatcher>(builder.Build());
+
+        // Assert
+        var fromLiteralState = Assert.Single(FindCandidates(matcher, "/a/x"), c => ReferenceEquals(c.Endpoint, parameter));
+        var fromParameterState = Assert.Single(FindCandidates(matcher, "/b/x"), c => ReferenceEquals(c.Endpoint, parameter));
+
+        var constraint1 = Assert.Single(fromLiteralState.Constraints);
+        var constraint2 = Assert.Single(fromParameterState.Constraints);
+        Assert.IsType<StatefulRouteConstraint>(constraint1.Value);
+        Assert.NotSame(constraint1.Value, constraint2.Value);
+    }
+
+    private class NewInstanceParameterPolicyFactory : ParameterPolicyFactory
+    {
+        private readonly ParameterPolicyFactory _inner;
+
+        public NewInstanceParameterPolicyFactory(ParameterPolicyFactory inner)
+        {
+            _inner = inner;
+        }
+
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText) => _inner.Create(parameter, inlineText);
+
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, IParameterPolicy parameterPolicy)
+            => parameterPolicy is StatefulRouteConstraint ? new StatefulRouteConstraint() : _inner.Create(parameter, parameterPolicy);
+    }
+
+    private static Candidate[] FindCandidates(DfaMatcher matcher, string path)
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Path = path;
+        var buffer = new PathSegment[10];
+        var count = FastPathTokenizer.Tokenize(path, buffer);
+        return matcher.FindCandidateSet(httpContext, path, buffer.AsSpan(0, count)).candidates;
+    }
+
+    private class StatefulRouteConstraint : IRouteConstraint
+    {
+        public int Count { get; private set; }
+
+        public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+        {
+            Count++;
+            return true;
+        }
+    }
+
+    [Fact]
     public void CreateCandidates_CreatesScoresCorrectly()
     {
         // Arrange
@@ -3547,7 +3682,8 @@ public class DfaMatcherBuilderTest
                 {
                         ["slugify"] = typeof(SlugifyParameterTransformer),
                         ["upper-case"] = typeof(UpperCaseParameterTransform),
-                        ["regex"] = typeof(RegexInlineRouteConstraint) // Regex not included by default since introduction of CreateSlimBuilder
+                        ["regex"] = typeof(RegexInlineRouteConstraint), // Regex not included by default since introduction of CreateSlimBuilder
+                        ["stateful"] = typeof(StatefulRouteConstraint),
                 }
             }),
             serviceCollection.BuildServiceProvider());

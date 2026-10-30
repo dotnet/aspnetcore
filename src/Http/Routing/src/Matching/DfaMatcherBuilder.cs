@@ -33,6 +33,10 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
 
     private int _stateIndex;
 
+    // Caches the per-endpoint candidate data while building the matcher. The same endpoint usually
+    // appears in many DFA states, and the slots/captures/constraints only depend on the endpoint.
+    private Dictionary<Endpoint, Candidate> _candidateCache;
+
     public DfaMatcherBuilder(
         ILoggerFactory loggerFactory,
         ParameterPolicyFactory parameterPolicyFactory,
@@ -567,7 +571,16 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
 
         var states = new DfaState[stateCount];
         var exitDestination = stateCount - 1;
-        AddNode(root, states, exitDestination);
+
+        _candidateCache = new Dictionary<Endpoint, Candidate>(_endpoints.Count, ReferenceEqualityComparer.Instance);
+        try
+        {
+            AddNode(root, states, exitDestination);
+        }
+        finally
+        {
+            _candidateCache = null;
+        }
 
         // The root state only has a jump table.
         states[exitDestination] = new DfaState(
@@ -734,6 +747,11 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
     // internal for tests
     internal Candidate CreateCandidate(Endpoint endpoint, int score)
     {
+        if (_candidateCache is not null && _candidateCache.TryGetValue(endpoint, out var cached))
+        {
+            return new Candidate(cached, score);
+        }
+
         (string parameterName, int segmentIndex, int slotIndex) catchAll = default;
 
         if (endpoint is RouteEndpoint routeEndpoint)
@@ -808,6 +826,9 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 _complexSegments.Add((segment, i));
             }
 
+            // Parameter policies that aren't known to be cacheable might be stateful, so don't share them
+            // between DFA states.
+            var isCacheable = true;
             foreach (var kvp in routeEndpoint.RoutePattern.ParameterPolicies)
             {
                 var parameter = routeEndpoint.RoutePattern.GetParameter(kvp.Key); // may be null, that's ok
@@ -816,6 +837,11 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 {
                     var reference = parameterPolicyReferences[i];
                     var parameterPolicy = _parameterPolicyFactory.Create(parameter, reference);
+                    if (!IsCacheable(reference, parameterPolicy))
+                    {
+                        isCacheable = false;
+                    }
+
                     if (parameterPolicy is IRouteConstraint routeConstraint)
                     {
                         _constraints.Add(new KeyValuePair<string, IRouteConstraint>(kvp.Key, routeConstraint));
@@ -823,7 +849,7 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 }
             }
 
-            return new Candidate(
+            var candidate = new Candidate(
                 endpoint,
                 score,
                 _slots.ToArray(),
@@ -831,6 +857,13 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 catchAll,
                 _complexSegments.ToArray(),
                 _constraints.ToArray());
+
+            if (isCacheable)
+            {
+                _candidateCache?.Add(endpoint, candidate);
+            }
+
+            return candidate;
         }
         else
         {
@@ -843,6 +876,18 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 Array.Empty<(RoutePatternPathSegment pathSegment, int segmentIndex)>(),
                 Array.Empty<KeyValuePair<string, IRouteConstraint>>());
         }
+    }
+
+    private static bool IsCacheable(RoutePatternParameterPolicyReference reference, IParameterPolicy parameterPolicy)
+    {
+        if (parameterPolicy is OptionalRouteConstraint optionalRouteConstraint)
+        {
+            parameterPolicy = optionalRouteConstraint.InnerConstraint;
+        }
+
+        // A policy instance supplied on the route pattern is already shared by every DFA state. A custom
+        // ParameterPolicyFactory could return a different instance, so only trust the supplied instance itself.
+        return ReferenceEquals(parameterPolicy, reference.ParameterPolicy) || parameterPolicy is ICachableParameterPolicy;
     }
 
     private static bool HasAdditionalRequiredSegments(RouteEndpoint endpoint, int depth)
