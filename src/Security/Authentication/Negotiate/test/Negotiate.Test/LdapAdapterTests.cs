@@ -2,10 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers.Binary;
+using System.DirectoryServices.Protocols;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.Versioning;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Text;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -336,5 +339,183 @@ public class LdapAdapterTests
     public void ShouldEmitRoleClaim_HonoursGroupTypeAndOptOutSwitch(string groupTypeValue, bool allowNonSecurityEnabledGroupClaims, bool expected)
     {
         Assert.Equal(expected, LdapAdapter.ShouldEmitRoleClaim(groupTypeValue, allowNonSecurityEnabledGroupClaims));
+    }
+
+    [Fact]
+    public void GetGroups_DistributionGroup_IsNotEmittedAndItsParentsAreNotTraversed()
+    {
+        var claims = ResolveGroups(
+            "CN=Distro,DC=x",
+            new Dictionary<string, (string, string)>
+            {
+                ["CN=Distro,DC=x"] = (DistributionGroupType, "CN=Secure,DC=x"),
+                ["CN=Secure,DC=x"] = (SecurityGroupType, null),
+            });
+
+        Assert.Empty(claims);
+    }
+
+    [Fact]
+    public void GetGroups_SecurityGroup_IsEmittedAndItsParentsAreTraversed()
+    {
+        var claims = ResolveGroups(
+            "CN=Lower,DC=x",
+            new Dictionary<string, (string, string)>
+            {
+                ["CN=Lower,DC=x"] = (SecurityGroupType, "CN=Upper,DC=x"),
+                ["CN=Upper,DC=x"] = (SecurityGroupType, null),
+            });
+
+        Assert.Equal(new[] { "Lower", "Upper" }, claims);
+    }
+
+    // A distribution list built from a security group, itself nested into another security group.
+    // Active Directory does not expand through the distribution group, so neither may we.
+    [Fact]
+    public void GetGroups_SecurityGroupBehindADistributionGroup_IsNotReached()
+    {
+        var claims = ResolveGroups(
+            "CN=SalesTeam,DC=x",
+            new Dictionary<string, (string, string)>
+            {
+                ["CN=SalesTeam,DC=x"] = (SecurityGroupType, "CN=SalesNews,DC=x"),
+                ["CN=SalesNews,DC=x"] = (DistributionGroupType, "CN=FinanceAdmins,DC=x"),
+                ["CN=FinanceAdmins,DC=x"] = (SecurityGroupType, null),
+            });
+
+        Assert.Equal(new[] { "SalesTeam" }, claims);
+    }
+
+    [Fact]
+    public void GetGroups_OptOutSwitch_RestoresEmittingAndTraversingDistributionGroups()
+    {
+        var claims = ResolveGroups(
+            "CN=Distro,DC=x",
+            new Dictionary<string, (string, string)>
+            {
+                ["CN=Distro,DC=x"] = (DistributionGroupType, "CN=Secure,DC=x"),
+                ["CN=Secure,DC=x"] = (SecurityGroupType, null),
+            },
+            allowNonSecurityEnabledGroupClaims: true);
+
+        Assert.Equal(new[] { "Distro", "Secure" }, claims);
+    }
+
+    [Fact]
+    public void GetGroups_MissingGroupType_FailsOpenAndKeepsTraversing()
+    {
+        var claims = ResolveGroups(
+            "CN=Unknown,DC=x",
+            new Dictionary<string, (string, string)>
+            {
+                ["CN=Unknown,DC=x"] = (null, "CN=Secure,DC=x"),
+                ["CN=Secure,DC=x"] = (SecurityGroupType, null),
+            });
+
+        Assert.Equal(new[] { "Unknown", "Secure" }, claims);
+    }
+
+    [Theory]
+    [InlineData(SecurityGroupType, new[] { "Direct" })]
+    [InlineData(DistributionGroupType, new string[0])]
+    public void GetGroups_NestingDisabled_StillAppliesTheSecurityEnabledCheck(string groupType, string[] expected)
+    {
+        var claims = ResolveGroups(
+            "CN=Direct,DC=x",
+            new Dictionary<string, (string, string)>
+            {
+                ["CN=Direct,DC=x"] = (groupType, "CN=Parent,DC=x"),
+                ["CN=Parent,DC=x"] = (SecurityGroupType, null),
+            },
+            resolveNestedGroups: false);
+
+        Assert.Equal(expected, claims);
+    }
+
+    private const string SecurityGroupType = "-2147483646";   // GROUP_TYPE_SECURITY_ENABLED | ACCOUNT_GROUP
+    private const string DistributionGroupType = "2";         // ACCOUNT_GROUP only
+
+    private static List<string> ResolveGroups(
+        string startDN,
+        Dictionary<string, (string GroupType, string MemberOf)> directory,
+        bool allowNonSecurityEnabledGroupClaims = false,
+        bool resolveNestedGroups = true)
+    {
+        var claims = new List<string>();
+        using var connection = new FakeLdapConnection(dn =>
+        {
+            Assert.True(directory.ContainsKey(dn), $"Unexpected LDAP read for '{dn}'.");
+            var entry = directory[dn];
+            return CreateGroupResponse(dn, entry.GroupType, entry.MemberOf);
+        });
+
+        LdapAdapter.GetGroups(
+            connection,
+            new ClaimsIdentity(),
+            "DC=x",
+            startDN,
+            startDN.Split(',')[0].Substring("CN=".Length),
+            NullLogger.Instance,
+            claims,
+            new HashSet<string>(),
+            allowNonSecurityEnabledGroupClaims,
+            resolveNestedGroups);
+
+        return claims;
+    }
+
+    private sealed class FakeLdapConnection : LdapConnection
+    {
+        private readonly Func<string, SearchResponse> _read;
+
+        public FakeLdapConnection(Func<string, SearchResponse> read)
+            : base(new LdapDirectoryIdentifier("unused.invalid"))
+        {
+            _read = read;
+        }
+
+        public override DirectoryResponse SendRequest(DirectoryRequest request)
+            => _read(((SearchRequest)request).DistinguishedName);
+    }
+
+    // The LDAP response types only have internal constructors, so responses are built reflectively.
+    // This helper is the single place that depends on those internals.
+    private static SearchResponse CreateGroupResponse(string distinguishedName, string groupType, string memberOf)
+    {
+        const BindingFlags NonPublicInstance = BindingFlags.NonPublic | BindingFlags.Instance;
+
+        var attributes = (SearchResultAttributeCollection)Activator.CreateInstance(
+            typeof(SearchResultAttributeCollection), NonPublicInstance, null, null, null);
+        var addAttribute = typeof(SearchResultAttributeCollection).GetMethod("Add", NonPublicInstance);
+
+        if (groupType != null)
+        {
+            addAttribute.Invoke(attributes, new object[] { "groupType", new DirectoryAttribute("groupType", groupType) });
+        }
+
+        if (memberOf != null)
+        {
+            addAttribute.Invoke(attributes, new object[] { "memberof", new DirectoryAttribute("memberof", Encoding.UTF8.GetBytes(memberOf)) });
+        }
+
+        var entry = (SearchResultEntry)Activator.CreateInstance(
+            typeof(SearchResultEntry), NonPublicInstance, null, new object[] { distinguishedName, attributes }, null);
+
+        var entries = (SearchResultEntryCollection)Activator.CreateInstance(
+            typeof(SearchResultEntryCollection), NonPublicInstance, null, null, null);
+        typeof(SearchResultEntryCollection).GetMethod("Add", NonPublicInstance).Invoke(entries, new object[] { entry });
+
+        var constructor = typeof(SearchResponse).GetConstructors(NonPublicInstance)[0];
+        var arguments = constructor.GetParameters()
+            .Select(p => p.ParameterType == typeof(ResultCode) ? (object)ResultCode.Success : null)
+            .ToArray();
+        var response = (SearchResponse)constructor.Invoke(arguments);
+
+        typeof(SearchResponse)
+            .GetProperty("Entries", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetSetMethod(nonPublic: true)
+            .Invoke(response, new object[] { entries });
+
+        return response;
     }
 }

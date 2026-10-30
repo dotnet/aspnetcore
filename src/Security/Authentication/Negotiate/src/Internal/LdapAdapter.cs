@@ -144,7 +144,8 @@ internal static partial class LdapAdapter
         }
     }
 
-    private static void GetGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupDN, string groupCN, ILogger logger, IList<string> retrievedClaims, HashSet<string> processedGroups, bool allowNonSecurityEnabledGroupClaims, bool resolveNestedGroups)
+    // Internal for testing purposes only
+    internal static void GetGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupDN, string groupCN, ILogger logger, IList<string> retrievedClaims, HashSet<string> processedGroups, bool allowNonSecurityEnabledGroupClaims, bool resolveNestedGroups)
     {
         // Look up the group entry by its distinguished name using base scope:
         // a base-scope read against the DN is the only LDAP operation that
@@ -175,7 +176,10 @@ internal static partial class LdapAdapter
             }
             else
             {
-                logger.LogDebug("LdapAdapter omitted distribution group '{GroupDN}' from role claims.", groupDN);
+                // Active Directory does not expand membership through a group that is not security-enabled,
+                // so groups reachable only via this one are absent from the Windows token too.
+                logger.LogDebug("LdapAdapter omitted distribution group '{GroupDN}' from role claims and stopped traversing its parents.", groupDN);
+                return;
             }
 
             if (!resolveNestedGroups)
