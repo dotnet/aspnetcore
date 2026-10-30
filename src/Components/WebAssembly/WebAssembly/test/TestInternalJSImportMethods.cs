@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -8,10 +10,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
 {
     private readonly string _environment;
+    private readonly IReadOnlyDictionary<string, byte[]>? _configs;
 
-    public TestInternalJSImportMethods(string environment = "Production")
+    public TestInternalJSImportMethods(string environment = "Production", IReadOnlyDictionary<string, byte[]>? configs = null)
     {
         _environment = environment;
+        _configs = configs;
     }
 
     public string GetApplicationEnvironment()
@@ -20,8 +24,11 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationCulture()
         => "en-US";
 
+    public byte[]? GetConfig(string configFile)
+        => _configs?.TryGetValue(configFile, out var data) == true ? data : null;
+
     public string GetPersistedState()
-        => null;
+        => null!;
 
     public void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId) { }
 

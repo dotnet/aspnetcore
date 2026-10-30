@@ -9,6 +9,7 @@ import { attachDebuggerHotkey } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { Platform, System_Array, Pointer, System_Object, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
+import { WebAssemblyConfigLoader } from '../WebAssemblyConfigLoader';
 import { Blazor } from '../../GlobalExports';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
 import { JSInitializer } from '../../JSInitializers/JSInitializers';
@@ -166,6 +167,8 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfi
     Blazor._internal.getApplicationCulture = () => loadedConfig.applicationCulture!;
 
     onConfigLoadedCallback?.(loadedConfig);
+
+    await WebAssemblyConfigLoader.initAsync(loadedConfig, options);
 
     jsInitializer = await fetchAndInvokeInitializers(options, loadedConfig);
   };

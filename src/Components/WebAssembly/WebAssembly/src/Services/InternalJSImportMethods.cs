@@ -30,6 +30,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationCulture()
         => GetApplicationCultureCore();
 
+    public byte[]? GetConfig(string configFile)
+        => GetConfigCore(configFile);
+
     public void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId)
         => AttachRootComponentToElementCore(domElementSelector, componentId, rendererId);
 
@@ -77,6 +80,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport("Blazor._internal.getApplicationCulture", "blazor-internal")]
     private static partial string GetApplicationCultureCore();
+
+    [JSImport("Blazor._internal.getConfig", "blazor-internal")]
+    private static partial byte[]? GetConfigCore(string configFile);
 
     [JSImport("Blazor._internal.attachRootComponentToElement", "blazor-internal")]
     private static partial void AttachRootComponentToElementCore(string domElementSelector, int componentId, int rendererId);
