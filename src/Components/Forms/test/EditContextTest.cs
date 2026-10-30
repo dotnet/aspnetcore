@@ -126,6 +126,21 @@ public class EditContextTest
     }
 
     [Fact]
+    public void MarkAsModifiedTracksFieldAsModifiedWithoutRaisingOnFieldChanged()
+    {
+        var editContext = new EditContext(new object());
+        var field1 = editContext.Field("field1");
+        var didReceiveNotification = false;
+        editContext.OnFieldChanged += (sender, eventArgs) => didReceiveNotification = true;
+
+        editContext.MarkAsModified(field1);
+
+        Assert.True(editContext.IsModified());
+        Assert.True(editContext.IsModified(field1));
+        Assert.False(didReceiveNotification);
+    }
+
+    [Fact]
     public void CanEnumerateValidationMessagesAcrossAllStoresForSingleField()
     {
         // Arrange

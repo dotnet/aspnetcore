@@ -90,9 +90,16 @@ public sealed class EditContext
     /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>
     public void NotifyFieldChanged(in FieldIdentifier fieldIdentifier)
     {
-        GetOrAddFieldState(fieldIdentifier).IsModified = true;
+        MarkAsModified(fieldIdentifier);
         OnFieldChanged?.Invoke(this, new FieldChangedEventArgs(fieldIdentifier));
     }
+
+    /// <summary>
+    /// Marks the specified field as modified.
+    /// </summary>
+    /// <param name="fieldIdentifier">Identifies the field whose modification flag should be set.</param>
+    public void MarkAsModified(in FieldIdentifier fieldIdentifier)
+        => GetOrAddFieldState(fieldIdentifier).IsModified = true;
 
     /// <summary>
     /// Signals that some aspect of validation state has changed.

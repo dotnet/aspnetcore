@@ -127,6 +127,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         {
             _incomingValueBeforeParsing = value;
             _parsingValidationMessages?.Clear();
+            var previousParsingAttemptFailed = _previousParsingAttemptFailed;
+            var notifyFieldChangedOnSuccessfulRecovery = false;
 
             if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
             {
@@ -134,11 +136,15 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 // Then all subclasses get nullable support almost automatically (they just have to
                 // not reject Nullable<T> based on the type itself).
                 _parsingFailed = false;
+                notifyFieldChangedOnSuccessfulRecovery = previousParsingAttemptFailed && EqualityComparer<TValue>.Default.Equals(default, Value);
+                _previousParsingAttemptFailed = false;
                 CurrentValue = default!;
             }
             else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
             {
                 _parsingFailed = false;
+                notifyFieldChangedOnSuccessfulRecovery = previousParsingAttemptFailed && EqualityComparer<TValue>.Default.Equals(parsedValue, Value);
+                _previousParsingAttemptFailed = false;
                 CurrentValue = parsedValue!;
             }
             else
@@ -151,13 +157,19 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                     _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
                     _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
 
-                    // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                    EditContext.NotifyFieldChanged(FieldIdentifier);
+                    // The raw input changed, but the model value did not. Track the user interaction
+                    // without revalidating the unchanged model value.
+                    EditContext.MarkAsModified(FieldIdentifier);
                 }
             }
 
+            if (notifyFieldChangedOnSuccessfulRecovery)
+            {
+                EditContext?.NotifyFieldChanged(FieldIdentifier);
+            }
+
             // We can skip the validation notification if we were previously valid and still are
-            if (_parsingFailed || _previousParsingAttemptFailed)
+            if (_parsingFailed || previousParsingAttemptFailed)
             {
                 EditContext?.NotifyValidationStateChanged();
                 _previousParsingAttemptFailed = _parsingFailed;
