@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
@@ -105,12 +107,48 @@ public class QueryFeature : IQueryFeature
         var enumerable = new QueryStringEnumerable(queryString);
         foreach (var pair in enumerable)
         {
-            accumulator.Append(pair.DecodeName().Span, pair.DecodeValue().Span);
+            accumulator.Append(DecodeToString(pair.EncodedName), DecodeToString(pair.EncodedValue));
         }
 
         return accumulator.HasValues
             ? accumulator.GetResults()
             : null;
+    }
+
+    private static string DecodeToString(ReadOnlyMemory<char> chars)
+    {
+        var source = chars.Span;
+        if (!source.ContainsAny('%', '+'))
+        {
+            return chars.ToString();
+        }
+
+        return DecodeToStringSlow(source);
+    }
+
+    // Kept separate so the stack buffer doesn't penalize the common no-decoding path.
+    [SkipLocalsInit]
+    private static string DecodeToStringSlow(ReadOnlySpan<char> source)
+    {
+        // Decode into a temporary buffer to avoid allocating an intermediate char[] in addition to the string.
+        const int StackAllocThreshold = 256;
+        char[]? rented = null;
+        var buffer = source.Length <= StackAllocThreshold
+            ? stackalloc char[StackAllocThreshold]
+            : (rented = ArrayPool<char>.Shared.Rent(source.Length));
+        buffer = buffer.Slice(0, source.Length);
+
+        source.Replace(buffer, '+', ' ');
+        var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
+        Debug.Assert(success);
+        var result = new string(buffer.Slice(0, unescapedLength));
+
+        if (rented is not null)
+        {
+            ArrayPool<char>.Shared.Return(rented);
+        }
+
+        return result;
     }
 
     internal struct KvpAccumulator

@@ -91,6 +91,59 @@ internal
         public ReadOnlyMemory<char> DecodeValue()
             => Decode(EncodedValue);
 
+        /// <summary>
+        /// Decodes the name from this name/value pair directly into a string.
+        /// </summary>
+        internal string DecodeNameToString()
+            => DecodeToString(EncodedName);
+
+        /// <summary>
+        /// Decodes the value from this name/value pair directly into a string.
+        /// </summary>
+        internal string DecodeValueToString()
+            => DecodeToString(EncodedValue);
+
+        private static string DecodeToString(ReadOnlyMemory<char> chars)
+        {
+#if NET
+            ReadOnlySpan<char> source = chars.Span;
+            if (!source.ContainsAny('%', '+'))
+            {
+                return chars.ToString();
+            }
+
+            return DecodeToStringSlow(source);
+#else
+            return Decode(chars).ToString();
+#endif
+        }
+
+#if NET
+        // Kept separate so the stack buffer doesn't penalize the common no-decoding path.
+        private static string DecodeToStringSlow(ReadOnlySpan<char> source)
+        {
+            // Decode into a temporary buffer to avoid allocating an intermediate char[] in addition to the string.
+            const int StackAllocThreshold = 256;
+            char[]? rented = null;
+            Span<char> buffer = source.Length <= StackAllocThreshold
+                ? stackalloc char[StackAllocThreshold]
+                : (rented = ArrayPool<char>.Shared.Rent(source.Length));
+            buffer = buffer.Slice(0, source.Length);
+
+            source.Replace(buffer, '+', ' ');
+            var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
+            Debug.Assert(success);
+            var result = new string(buffer.Slice(0, unescapedLength));
+
+            if (rented is not null)
+            {
+                ArrayPool<char>.Shared.Return(rented);
+            }
+
+            return result;
+        }
+#endif
+
         private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
         {
             ReadOnlySpan<char> source = chars.Span;
