@@ -317,35 +317,45 @@ public static class DotNetDispatcher
     /// </exception>
     public static void EndInvokeJS(JSRuntime jsRuntime, [StringSyntax(StringSyntaxAttribute.Json)] string arguments)
     {
-        var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
-
-        // The payload that we're trying to parse is of the format
-        // [ taskId: long, success: boolean, value: string? | object ]
-        // where value is the .NET type T originally specified on InvokeAsync<T> or the error string if success is false.
-        // We parse the first two arguments and call in to JSRuntimeBase to deserialize the actual value.
-
-        var reader = new Utf8JsonReader(utf8JsonBytes);
-
-        if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
+        var count = Encoding.UTF8.GetByteCount(arguments);
+        var buffer = ArrayPool<byte>.Shared.Rent(count);
+        try
         {
-            throw new JsonException("Invalid JSON");
+            var receivedBytes = Encoding.UTF8.GetBytes(arguments, buffer);
+            Debug.Assert(count == receivedBytes);
+
+            // The payload that we're trying to parse is of the format
+            // [ taskId: long, success: boolean, value: string? | object ]
+            // where value is the .NET type T originally specified on InvokeAsync<T> or the error string if success is false.
+            // We parse the first two arguments and call in to JSRuntimeBase to deserialize the actual value.
+
+            var reader = new Utf8JsonReader(buffer.AsSpan(0, count));
+
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
+            {
+                throw new JsonException("Invalid JSON");
+            }
+
+            reader.Read();
+            var taskId = reader.GetInt64();
+
+            reader.Read();
+            var success = reader.GetBoolean();
+
+            reader.Read();
+            if (!jsRuntime.EndInvokeJS(taskId, success, ref reader))
+            {
+                return;
+            }
+
+            if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+            {
+                throw new JsonException("Invalid JSON");
+            }
         }
-
-        reader.Read();
-        var taskId = reader.GetInt64();
-
-        reader.Read();
-        var success = reader.GetBoolean();
-
-        reader.Read();
-        if (!jsRuntime.EndInvokeJS(taskId, success, ref reader))
+        finally
         {
-            return;
-        }
-
-        if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
-        {
-            throw new JsonException("Invalid JSON");
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 
