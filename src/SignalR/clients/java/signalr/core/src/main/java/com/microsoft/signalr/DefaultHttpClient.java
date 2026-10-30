@@ -4,14 +4,12 @@
 package com.microsoft.signalr;
 
 import java.io.IOException;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.subjects.SingleSubject;
@@ -42,55 +40,8 @@ final class DefaultHttpClient extends HttpClient {
         if (client != null) {
             this.client = client;
         } else {
-            OkHttpClient.Builder builder = new OkHttpClient.Builder().cookieJar(new CookieJar() {
-                private List<Cookie> cookieList = new ArrayList<>();
-                private Lock cookieLock = new ReentrantLock();
-
-                @Override
-                public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                    cookieLock.lock();
-                    try {
-                        for (Cookie cookie : cookies) {
-                            boolean replacedCookie = false;
-                            for (int i = 0; i < cookieList.size(); i++) {
-                                Cookie innerCookie = cookieList.get(i);
-                                if (cookie.name().equals(innerCookie.name()) && innerCookie.matches(url)) {
-                                    // We have a new cookie that matches an older one so we replace the older one.
-                                    cookieList.set(i, innerCookie);
-                                    replacedCookie = true;
-                                    break;
-                                }
-                            }
-                            if (!replacedCookie) {
-                                cookieList.add(cookie);
-                            }
-                        }
-                    } finally {
-                        cookieLock.unlock();
-                    }
-                }
-
-                @Override
-                public List<Cookie> loadForRequest(HttpUrl url) {
-                    cookieLock.lock();
-                    try {
-                        List<Cookie> matchedCookies = new ArrayList<>();
-                        List<Cookie> expiredCookies = new ArrayList<>();
-                        for (Cookie cookie : cookieList) {
-                            if (cookie.expiresAt() < System.currentTimeMillis()) {
-                                expiredCookies.add(cookie);
-                            } else if (cookie.matches(url)) {
-                                matchedCookies.add(cookie);
-                            }
-                        }
-
-                        cookieList.removeAll(expiredCookies);
-                        return matchedCookies;
-                    } finally {
-                        cookieLock.unlock();
-                    }
-                }
-            });
+            OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .cookieJar(new JavaNetCookieJar(new CookieManager(null, CookiePolicy.ACCEPT_ALL)));
 
             if (configureBuilder != null) {
                 configureBuilder.invoke(builder);

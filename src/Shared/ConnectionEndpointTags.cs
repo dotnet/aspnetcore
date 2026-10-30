@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Shared;
 
 internal static class ConnectionEndpointTags
 {
+    // The local port is almost always one of the few ports the server listens on, so reuse the first boxed value.
+    // It is never replaced, so the field is only read after startup and isn't contended between cores. A race at
+    // startup only results in an extra allocation.
+    private static object? s_boxedPort;
+
     /// <summary>
     /// Adds connection endpoint tags to a collection of tags, such as a <see cref="TagList"/>, using <see cref="IConnectionEndPointFeature"/>.
     /// </summary>
@@ -61,7 +66,7 @@ internal static class ConnectionEndpointTags
         if (localEndpoint is IPEndPoint localIPEndPoint)
         {
             tags.Add(new("server.address", localIPEndPoint.Address.ToString()));
-            tags.Add(new("server.port", localIPEndPoint.Port));
+            tags.Add(new("server.port", GetBoxedPort(localIPEndPoint.Port)));
 
             switch (localIPEndPoint.Address.AddressFamily)
             {
@@ -90,5 +95,19 @@ internal static class ConnectionEndpointTags
             tags.Add(new("server.address", localEndpoint.ToString()));
             tags.Add(new("network.transport", localEndpoint.AddressFamily.ToString()));
         }
+    }
+
+    private static object GetBoxedPort(int port)
+    {
+        var cached = s_boxedPort;
+        if (cached is not null)
+        {
+            return (int)cached == port ? cached : port;
+        }
+
+        object boxed = port;
+        s_boxedPort = boxed;
+
+        return boxed;
     }
 }

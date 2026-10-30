@@ -17,12 +17,18 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks;
 public class DefaultHubDispatcherTelemetryBenchmark
 {
     private DefaultHubDispatcher<DefaultHubDispatcherBenchmark.TestHub> _dispatcher;
-    private HubConnectionContext _connectionContext;
+    private HubConnectionContext[] _connectionContexts;
+    private int _next;
     private ActivityListener _listener;
     private Activity _connectionActivity;
 
     [Params(false, true)]
     public bool Tracing { get; set; }
+
+    // The number of distinct local ports that invocations alternate between. With 2, the local port
+    // changes on every invocation, so any single-entry cache of the boxed server.port value misses every time.
+    [Params(1, 2)]
+    public int Ports { get; set; }
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -54,30 +60,34 @@ public class DefaultHubDispatcherTelemetryBenchmark
             hubFilters: null,
             hubLifetimeManager);
 
-        var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-        var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Application, pair.Transport)
-        {
-            LocalEndPoint = new IPEndPoint(IPAddress.Loopback, 5000),
-            RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, 50000),
-        };
-
-        var contextOptions = new HubConnectionContextOptions()
-        {
-            KeepAliveInterval = TimeSpan.Zero,
-            StreamBufferCapacity = 10,
-        };
-
         // Invocation activities are linked to the activity that was current when the connection was established.
         _connectionActivity = new Activity("Microsoft.AspNetCore.Hosting.HttpRequestIn");
         _connectionActivity.SetIdFormat(ActivityIdFormat.W3C);
         _connectionActivity.Start();
         _connectionActivity.Stop();
 
-        _connectionContext = new DefaultHubDispatcherBenchmark.NoErrorHubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance)
+        _connectionContexts = new HubConnectionContext[Ports];
+        for (var i = 0; i < Ports; i++)
         {
-            OriginalActivity = _connectionActivity,
-            Protocol = new DefaultHubDispatcherBenchmark.FakeHubProtocol()
-        };
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Application, pair.Transport)
+            {
+                LocalEndPoint = new IPEndPoint(IPAddress.Loopback, 5000 + i),
+                RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, 50000),
+            };
+
+            var contextOptions = new HubConnectionContextOptions()
+            {
+                KeepAliveInterval = TimeSpan.Zero,
+                StreamBufferCapacity = 10,
+            };
+
+            _connectionContexts[i] = new DefaultHubDispatcherBenchmark.NoErrorHubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance)
+            {
+                OriginalActivity = _connectionActivity,
+                Protocol = new DefaultHubDispatcherBenchmark.FakeHubProtocol()
+            };
+        }
     }
 
     [GlobalCleanup]
@@ -89,6 +99,7 @@ public class DefaultHubDispatcherTelemetryBenchmark
     [Benchmark]
     public Task Invocation()
     {
-        return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "Invocation", Array.Empty<object>()));
+        var connectionContext = _connectionContexts[_next++ % _connectionContexts.Length];
+        return _dispatcher.DispatchMessageAsync(connectionContext, new InvocationMessage("123", "Invocation", Array.Empty<object>()));
     }
 }

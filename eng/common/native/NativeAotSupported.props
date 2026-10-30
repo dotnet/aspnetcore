@@ -3,16 +3,15 @@
 
     <!-- Reject unsupported OS via RID prefix match -->
     <_NativeAotSupportedOS Condition="
-      '$(TargetOS)' != 'browser' and
       '$(TargetOS)' != 'haiku' and
       '$(TargetOS)' != 'illumos' and
       '$(TargetOS)' != 'netbsd' and
-      '$(TargetOS)' != 'solaris'
+      '$(TargetOS)' != 'solaris' and
+      '$(TargetOS)' != 'openharmony'
     ">true</_NativeAotSupportedOS>
 
     <!-- Reject unsupported architectures via RID suffix match -->
     <_NativeAotSupportedArch Condition="
-      '$(TargetArchitecture)' != 'wasm' and
       '$(TargetArchitecture)' != 's390x' and
       '$(TargetArchitecture)' != 'ppc64le' and
       ('$(TargetArchitecture)' != 'x86' or '$(TargetOS)' == 'windows')
