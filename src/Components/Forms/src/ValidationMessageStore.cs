@@ -35,7 +35,8 @@ public sealed class ValidationMessageStore
     /// </summary>
     /// <param name="accessor">Identifies the field for which to add the message.</param>
     /// <param name="message">The validation message.</param>
-    public void Add(Expression<Func<object>> accessor, string message)
+    /// <typeparam name="TField">The field <see cref="Type"/>.</typeparam>
+    public void Add<TField>(Expression<Func<TField>> accessor, string message)
         => Add(FieldIdentifier.Create(accessor), message);
 
     /// <summary>
@@ -51,7 +52,8 @@ public sealed class ValidationMessageStore
     /// </summary>
     /// <param name="accessor">Identifies the field for which to add the messages.</param>
     /// <param name="messages">The validation messages to be added.</param>
-    public void Add(Expression<Func<object>> accessor, IEnumerable<string> messages)
+    /// <typeparam name="TField">The field <see cref="Type"/>.</typeparam>
+    public void Add<TField>(Expression<Func<TField>> accessor, IEnumerable<string> messages)
         => Add(FieldIdentifier.Create(accessor), messages);
 
     /// <summary>
