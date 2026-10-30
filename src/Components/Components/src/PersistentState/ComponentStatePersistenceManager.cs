@@ -19,6 +19,10 @@ public class ComponentStatePersistenceManager
     private bool _stateIsInitialized;
     private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
+    private ComponentsActivityState? _activityState;
+
+    // The manager is scoped on the server and shared by the host and renderer scopes in WebAssembly.
+    internal ComponentsActivityState ActivityState => LazyInitializer.EnsureInitialized(ref _activityState, () => new ComponentsActivityState(_logger));
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.

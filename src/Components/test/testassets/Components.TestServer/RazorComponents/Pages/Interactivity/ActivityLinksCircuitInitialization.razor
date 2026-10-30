@@ -1,0 +1,21 @@
+@page "/activity-links/{Mode}/circuit-initialization"
+
+<h1>Activity links circuit initialization</h1>
+
+<TestContentPackage.ActivityLinksTestTrigger @rendermode="InteractiveMode" />
+
+@code {
+    [Parameter]
+    public string Mode { get; set; } = "";
+
+    [SupplyParameterFromQuery]
+    public bool Prerender { get; set; } = true;
+
+    private IComponentRenderMode InteractiveMode => Mode switch
+    {
+        "server" => new InteractiveServerRenderMode(Prerender),
+        "webassembly" => new InteractiveWebAssemblyRenderMode(Prerender),
+        "auto" => new InteractiveAutoRenderMode(Prerender),
+        _ => throw new InvalidOperationException($"Unsupported test render mode '{Mode}'."),
+    };
+}

@@ -19,6 +19,9 @@ internal class ComponentsActivitySource
     private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
     private ComponentsActivityLinkStore? _componentsActivityLinkStore;
 
+    internal static bool HasListeners => ActivitySource.HasListeners();
+    internal bool HasNavigationActivity { get; private set; }
+
     // there is no System.Diagnostics.ActivitySource.IsSupported yet
     [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
     internal static bool IsSupported { get; } =
@@ -52,6 +55,7 @@ internal class ComponentsActivitySource
                     // store self link
                     _componentsActivityLinkStore!.SetActivityContext(ComponentsActivityLinkStore.Route, activity.Context,
                         new KeyValuePair<string, object?>("aspnetcore.components.route", route));
+                    HasNavigationActivity = true;
                 }
             }
 
