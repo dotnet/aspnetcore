@@ -91,6 +91,13 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         bool isErrorHandlerOrReExecuted = isErrorHandler || isReExecuted;
 
+        // A cross-site navigation may omit another tab's Strict cookie. Wait to determine whether this page needs one.
+        var bufferCrossSiteRequest = HttpMethods.IsGet(context.Request.Method) &&
+            string.Equals(context.Request.Headers["Sec-Fetch-Site"], "cross-site", StringComparison.OrdinalIgnoreCase) &&
+            context.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery) &&
+            context.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider &&
+            context.RequestServices.GetRequiredService<IAntiforgery>().GetTokens(context).CookieToken is not null;
+
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
         // component takes care of switching into your desired render mode when it produces its own output.
@@ -98,7 +105,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
+            waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted || bufferCrossSiteRequest);
 
         Task quiesceTask;
         if (!result.IsPost || isReExecuted)
@@ -131,6 +138,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             _renderer.SetNotFoundWhenResponseNotStarted();
         }
 
+        if (bufferCrossSiteRequest && _renderer.HasInteractiveComponents)
+        {
+            // Interactive components may render a form after activation, so establish their cookie before headers are sent.
+            context.RequestServices.GetRequiredService<IAntiforgery>().GetAndStoreTokens(context);
+        }
+
         if (!quiesceTask.IsCompleted)
         {
             // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
@@ -148,9 +161,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
             context.Response.Headers.ContentEncoding = "identity";
         }
-        else if (endpoint.Metadata.GetMetadata<ConfiguredRenderModesMetadata>()?.ConfiguredRenderModes.Length == 0)
+        else if (endpoint.Metadata.GetMetadata<ConfiguredRenderModesMetadata>()?.ConfiguredRenderModes.Length == 0 ||
+            (bufferCrossSiteRequest && !_renderer.HasInteractiveComponents))
         {
-            // Disable token generation on EndpointAntiforgeryStateProvider if we are not streaming.
+            // Static pages without forms must not generate a cookie merely to persist component state.
             var provider = (EndpointAntiforgeryStateProvider)context.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
             provider.DisableTokenGeneration();
         }

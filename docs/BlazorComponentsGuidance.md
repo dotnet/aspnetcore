@@ -38,6 +38,7 @@ validation guidance rather than defining a separate architecture.
 - Cover overlapping enhanced navigations with delayed streaming updates; verify the final DOM belongs to the latest navigation.
 - Persisted component state should serialize only required data; protect Server-consumed state with ASP.NET Core data protection, exclude secrets from WebAssembly or Auto client-readable state, and persist metadata and state atomically under consistent size limits.
 - Track quiescence through existing renderer and `SetParametersAsync` task flows rather than new public wait hooks unless the extension point is broadly useful.
+- With the default endpoint antiforgery provider and middleware, cross-site GET requests that need a new antiforgery cookie wait for rendering to finish before sending headers. This avoids replacing another tab's cookie for a static page without forms, while allowing asynchronously rendered forms to obtain usable tokens. Other requests retain streaming rendering. Account for this buffering when evaluating long-running or indefinite streaming responses; it does not prevent cookie replacement when the destination itself needs a form or an interactive token.
 
 ### Lifecycle, async flow, and renderer synchronization
 
