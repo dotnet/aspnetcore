@@ -186,6 +186,41 @@ public class ManagedAuthenticatedEncryptorTests
     }
 
 #if NET
+    [Fact]
+    public void Encrypt_KnownKey_WithPreAndPostBuffer()
+    {
+        // Arrange
+        Secret kdk = new Secret(Encoding.UTF8.GetBytes("master key"));
+        var genRandom = new SequentialGenRandom();
+        var encryptor = new ManagedAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmFactory: Aes.Create,
+            symmetricAlgorithmKeySizeInBytes: 256 / 8,
+            validationAlgorithmFactory: () => new HMACSHA256(),
+            genRandom: genRandom);
+        genRandom.Reset();
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 2, 3);
+        ArraySegment<byte> aad = new ArraySegment<byte>(new byte[] { 7, 6, 5, 4, 3, 2, 1, 0 }, 1, 4);
+
+        var preBufferSize = 3;
+        var postBufferSize = 4;
+
+        // Act
+        byte[] retVal = encryptor.Encrypt(
+            plaintext: plaintext,
+            additionalAuthenticatedData: aad,
+            preBufferSize: (uint)preBufferSize,
+            postBufferSize: (uint)postBufferSize);
+
+        // Assert
+        Assert.Equal(80 + preBufferSize + postBufferSize, retVal.Length);
+
+        var payload = retVal.AsSpan(preBufferSize, retVal.Length - preBufferSize - postBufferSize).ToArray();
+        Assert.Equal("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAA=", Convert.ToBase64String(payload));
+
+        var decrypted = encryptor.Decrypt(new ArraySegment<byte>(retVal, preBufferSize, payload.Length), aad);
+        Assert.Equal(plaintext.AsSpan().ToArray(), decrypted);
+    }
+
     [Theory]
     [InlineData(128, "SHA256")]
     [InlineData(192, "SHA256")]

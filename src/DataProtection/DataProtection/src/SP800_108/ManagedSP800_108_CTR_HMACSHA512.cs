@@ -96,9 +96,11 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         var prfInputLength = checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + (contextHeader.Length + contextData.Length) + sizeof(uint) /* [K]_2 */);
 
 #if NET10_0_OR_GREATER
+        // The label (AAD) contains the purpose strings, which commonly push the input past 128 bytes
+        // (e.g. application discriminator + cookie authentication purposes), so use a larger stack buffer.
         byte[]? prfInputArray = null;
-        Span<byte> prfInput = prfInputLength <= 128
-            ? stackalloc byte[128].Slice(0, prfInputLength)
+        Span<byte> prfInput = prfInputLength <= 512
+            ? stackalloc byte[512].Slice(0, prfInputLength)
             : (prfInputArray = new byte[prfInputLength]);
 #else
         var prfInputArray = new byte[prfInputLength];
