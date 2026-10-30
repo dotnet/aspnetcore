@@ -28,7 +28,10 @@ builder.Services.AddAntiforgery();
 var app = builder.Build();
 
 // just to make sure that it does not cause exceptions
-app.Urls.Add("http://localhost:8080");
+if (!app.Configuration.GetValue<bool>("SkipUrlConfiguration"))
+{
+    app.Urls.Add("http://localhost:8080");
+}
 
 app.UseAntiforgery();
 
