@@ -1485,7 +1485,14 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         using var listener = new ActivityListener
         {
             ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.PropagationData,
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+            {
+                var tags = options.Tags.ToDictionary();
+                Assert.Equal("GET", tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
+                Assert.Equal("http", tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("/hello", tags[HostingTelemetryHelpers.AttributeUrlPath]);
+                return ActivitySamplingResult.PropagationData;
+            },
             ActivityStopped = activity => stoppedActivity = activity
         };
 
@@ -1504,11 +1511,6 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.False(stoppedActivity.IsAllDataRequested);
 
         var tags = stoppedActivity.TagObjects.ToDictionary();
-
-        // Verify sampling tags are still present
-        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpRequestMethod));
-        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlScheme));
-        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlPath));
 
         // Verify end tags are NOT present since IsAllDataRequested is false
         Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpResponseStatusCode));
