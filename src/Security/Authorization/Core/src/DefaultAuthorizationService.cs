@@ -65,12 +65,28 @@ public class DefaultAuthorizationService : IAuthorizationService
 
         var authContext = _contextFactory.CreateContext(requirements, user, resource);
         var handlers = await _handlers.GetHandlersAsync(authContext).ConfigureAwait(false);
-        foreach (var handler in handlers)
+
+        // Handlers resolved from DI are an array; index into it to avoid allocating an enumerator.
+        if (handlers is IAuthorizationHandler[] handlersArray)
         {
-            await handler.HandleAsync(authContext).ConfigureAwait(false);
-            if (!_options.InvokeHandlersAfterFailure && authContext.HasFailed)
+            foreach (var handler in handlersArray)
             {
-                break;
+                await handler.HandleAsync(authContext).ConfigureAwait(false);
+                if (!_options.InvokeHandlersAfterFailure && authContext.HasFailed)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            foreach (var handler in handlers)
+            {
+                await handler.HandleAsync(authContext).ConfigureAwait(false);
+                if (!_options.InvokeHandlersAfterFailure && authContext.HasFailed)
+                {
+                    break;
+                }
             }
         }
 
