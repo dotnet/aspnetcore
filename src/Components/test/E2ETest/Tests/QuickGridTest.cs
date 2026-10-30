@@ -147,6 +147,14 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
+    public void VirtualizedRowCountIncludesHeaderAfterLoading()
+    {
+        app = Browser.MountTestComponent<QuickGridVirtualizeComponent>("no-provider-render");
+        Browser.Exists(By.CssSelector("#grid tr[aria-rowindex='2']"));
+        Browser.Equal("101", () => app.FindElement(By.CssSelector("#grid table")).GetDomAttribute("aria-rowcount"));
+    }
+
+    [Fact]
     public void FilterUsingSetCurrentPageDoesNotCauseExtraRefresh()
     {
         app = Browser.MountTestComponent<QuickGridFilterComponent>();
