@@ -118,6 +118,31 @@ public class BufferedTextWriterTest
         Assert.Equal("abcdefgh", underlying.FlushedOutput);
     }
 
+    [Fact]
+    public async Task CanFlushNonSegmentContentAfterSegmentContentWasFlushed()
+    {
+        var underlying = new StringWriter();
+        var writer = new BufferedTextWriter(underlying);
+
+        writer.Write("seg1".AsSpan());
+        await writer.FlushAsync();
+        writer.Write("seg2".AsSpan());
+        await writer.FlushAsync();
+
+        // Both buffers now hold already-flushed segment content; subsequent flushes
+        // containing only non-segment content must not re-emit it
+        writer.Write("str");
+        await writer.FlushAsync();
+        writer.Write('c');
+        await writer.FlushAsync();
+        writer.Write(123);
+        await writer.FlushAsync();
+        writer.Write("seg3".AsSpan());
+        await writer.FlushAsync();
+
+        Assert.Equal("seg1seg2strc123seg3", underlying.ToString());
+    }
+
     private class SlowFlushingTextWriter : StringWriter
     {
         public Task CompleteNextFlushAfter { get; set; }

@@ -54,7 +54,9 @@ internal class TextChunkListBuilder(int pageLength)
     public async Task WriteToAsync(TextWriter writer)
     {
         StringBuilder? tempBuffer = null;
-        var charArraySegments = _charArraySegments.ToString();
+        // If the buffer is pending a deferred clear, its content was already flushed and
+        // no chunk in this list refers to it, so there's no need to copy it to a string.
+        var charArraySegments = _charArraySegmentsNeedClear ? string.Empty : _charArraySegments.ToString();
 
         if (_priorPages is not null)
         {
