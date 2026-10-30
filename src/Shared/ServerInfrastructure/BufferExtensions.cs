@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -14,9 +15,6 @@ namespace System.Buffers;
 internal static class BufferExtensions
 {
     private const int _maxULongByteLength = 20;
-
-    [ThreadStatic]
-    private static byte[]? _numericBytesScratch;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<byte> ToSpan(in this ReadOnlySequence<byte> buffer)
@@ -170,22 +168,24 @@ internal static class BufferExtensions
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void WriteNumericMultiWrite(ref this BufferWriter<PipeWriter> buffer, ulong number)
     {
-        const byte AsciiDigitStart = (byte)'0';
-
-        var value = number;
-        var position = _maxULongByteLength;
-        var byteBuffer = NumericBytesScratch;
-        do
+        // Fast path, format directly into the available memory
+        if (number.TryFormat(buffer.Span, out var bytesWritten, provider: CultureInfo.InvariantCulture))
         {
-            // Consider using Math.DivRem() if available
-            var quotient = value / 10;
-            byteBuffer[--position] = (byte)(AsciiDigitStart + (value - quotient * 10)); // 0x30 = '0'
-            value = quotient;
+            buffer.Advance(bytesWritten);
+            return;
         }
-        while (value != 0);
 
-        var length = _maxULongByteLength - position;
-        buffer.Write(new ReadOnlySpan<byte>(byteBuffer, position, length));
+        WriteNumericAcrossSpans(ref buffer, number);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void WriteNumericAcrossSpans(ref BufferWriter<PipeWriter> buffer, ulong number)
+    {
+        // Not enough space left in the current span, format to a temporary buffer and write it across spans
+        Span<byte> byteBuffer = stackalloc byte[_maxULongByteLength];
+        var formatted = number.TryFormat(byteBuffer, out var bytesWritten, provider: CultureInfo.InvariantCulture);
+        Debug.Assert(formatted);
+        buffer.Write(byteBuffer.Slice(0, bytesWritten));
     }
 
     internal static void WriteEncoded(ref this BufferWriter<PipeWriter> buffer, string data, Encoding encoding)
@@ -243,15 +243,5 @@ internal static class BufferExtensions
             buffer.Ensure(minBufferSize);
             bytes = buffer.Span;
         }
-    }
-
-    private static byte[] NumericBytesScratch => _numericBytesScratch ?? CreateNumericBytesScratch();
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static byte[] CreateNumericBytesScratch()
-    {
-        var bytes = new byte[_maxULongByteLength];
-        _numericBytesScratch = bytes;
-        return bytes;
     }
 }
