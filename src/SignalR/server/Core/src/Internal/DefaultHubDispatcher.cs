@@ -22,6 +22,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 {
     private static readonly string _fullHubName = typeof(THub).FullName ?? typeof(THub).Name;
 
+    // The most tags added to an activity: 3 hub tags (rpc.method, rpc.system, rpc.service) and
+    // 4 connection endpoint tags (server.address, server.port, network.type, network.transport).
     private const int MaxActivityTags = 7;
 
     [ThreadStatic]

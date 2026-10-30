@@ -248,12 +248,13 @@ internal sealed class HubMethodDescriptor
     public string GetActivityDisplayName(string hubName, string target)
     {
         // The built-in protocols resolve targets to the hub method name, but methods are matched case-insensitively so
-        // other protocols can use targets that differ in case. Caching the display name with the last target that was
-        // used keeps the cache bounded to a single entry per method.
+        // other protocols can use targets that differ in case. Only the first target that is used is cached, and it is
+        // never replaced, so the cache is bounded to a single entry per method and targets that differ in case
+        // can't cause the cached value to be repeatedly swapped. A race at startup only results in an extra allocation.
         var cached = _activityDisplayName;
-        if (cached is not null && string.Equals(cached.Target, target, StringComparison.Ordinal))
+        if (cached is not null)
         {
-            return cached.DisplayName;
+            return string.Equals(cached.Target, target, StringComparison.Ordinal) ? cached.DisplayName : $"{hubName}/{target}";
         }
 
         var displayName = $"{hubName}/{target}";
