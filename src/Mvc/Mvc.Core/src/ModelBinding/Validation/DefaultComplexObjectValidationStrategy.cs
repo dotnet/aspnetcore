@@ -99,7 +99,7 @@ internal sealed class DefaultComplexObjectValidationStrategy : IValidationStrate
                             Resources.FormatValidationStrategy_MappedPropertyNotFound(parameterName, _modelMetadata.ModelType));
                     }
 
-                    _entry = new ValidationEntry(parameter, key, () => GetModel(_model, property));
+                    _entry = new ValidationEntry(parameter, key, _model, property.PropertyGetter!);
                 }
             }
             else
@@ -115,7 +115,7 @@ internal sealed class DefaultComplexObjectValidationStrategy : IValidationStrate
                 }
                 else
                 {
-                    _entry = new ValidationEntry(property, key, () => GetModel(_model, property));
+                    _entry = new ValidationEntry(property, key, _model, property.PropertyGetter!);
                 }
             }
 
@@ -129,11 +129,6 @@ internal sealed class DefaultComplexObjectValidationStrategy : IValidationStrate
         public void Reset()
         {
             throw new NotImplementedException();
-        }
-
-        private static object? GetModel(object container, ModelMetadata property)
-        {
-            return property.PropertyGetter!(container);
         }
     }
 }

@@ -221,21 +221,30 @@ public class ValidationVisitor
                     Container,
                     Model);
 
-                var results = new List<ModelValidationResult>();
+                List<ModelValidationResult>? results = null;
                 for (var i = 0; i < count; i++)
                 {
-                    results.AddRange(validators[i].Validate(context));
+                    // Only allocate the list when a validator produces a result. Validators typically return
+                    // an empty enumerable when the model is valid.
+                    foreach (var validatorResult in validators[i].Validate(context))
+                    {
+                        results ??= new List<ModelValidationResult>();
+                        results.Add(validatorResult);
+                    }
                 }
 
-                var resultsCount = results.Count;
-                for (var i = 0; i < resultsCount; i++)
+                if (results is not null)
                 {
-                    var result = results[i];
-                    var key = ModelNames.CreatePropertyModelName(Key, result.MemberName);
+                    var resultsCount = results.Count;
+                    for (var i = 0; i < resultsCount; i++)
+                    {
+                        var result = results[i];
+                        var key = ModelNames.CreatePropertyModelName(Key, result.MemberName);
 
-                    // It's OK for key to be the empty string here. This can happen when a top
-                    // level object implements IValidatableObject.
-                    ModelState.TryAddModelError(key, result.Message);
+                        // It's OK for key to be the empty string here. This can happen when a top
+                        // level object implements IValidatableObject.
+                        ModelState.TryAddModelError(key, result.Message);
+                    }
                 }
             }
         }
