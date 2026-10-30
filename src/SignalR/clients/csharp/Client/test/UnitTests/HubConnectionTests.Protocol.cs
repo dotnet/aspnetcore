@@ -1,8 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Collections.Concurrent;
+using System.Text;
 using System.Threading.Channels;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging;
 
@@ -999,6 +1004,158 @@ public partial class HubConnectionTests
                 await hubConnection.DisposeAsync().DefaultTimeout();
                 await connection.DisposeAsync().DefaultTimeout();
             }
+        }
+        [Fact]
+        public async Task ReceivedInvocationTargetReusesRegisteredHandlerName()
+        {
+            var connection = new TestConnection();
+            var protocol = new RecordingHubProtocol();
+            var hubConnection = CreateHubConnection(connection, protocol);
+            var handlerCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                // Build the name at runtime so it's not the same instance as the interned literal the protocol could produce.
+                var handlerName = new string("NonInternedTarget".AsSpan());
+                hubConnection.On<int>(handlerName, value => handlerCalled.TrySetResult(value));
+
+                await connection.ReceiveJsonMessage(new { type = 1, target = "NonInternedTarget", arguments = new object[] { 42 } }).DefaultTimeout();
+                Assert.Equal(42, await handlerCalled.Task.DefaultTimeout());
+
+                var invocation = Assert.IsType<InvocationMessage>(Assert.Single(protocol.ParsedMessages.OfType<InvocationMessage>()));
+                Assert.Same(handlerName, invocation.Target);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task GetTargetReturnsNullForUnknownOversizedOrInvalidTargets()
+        {
+            var connection = new TestConnection();
+            var protocol = new RecordingHubProtocol();
+            var hubConnection = CreateHubConnection(connection, protocol);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                var longName = new string('a', 300);
+                hubConnection.On<int>("Foo", _ => { });
+                hubConnection.On<int>("\uFFFD", _ => { });
+                hubConnection.On<int>(longName, _ => { });
+
+                // Pings are parsed with the same binder, so this captures it without invoking anything.
+                await connection.ReceiveJsonMessage(new { type = 6 }).DefaultTimeout();
+                var binder = await protocol.Binder.Task.DefaultTimeout();
+
+                Assert.Equal("Foo", binder.GetTarget("Foo"u8));
+                Assert.Null(binder.GetTarget("Bar"u8));
+                Assert.Null(binder.GetTarget(Encoding.UTF8.GetBytes(longName)));
+                // Invalid UTF-8 must not match a handler registered with the replacement character.
+                Assert.Null(binder.GetTarget(new byte[] { 0xFF }));
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task UnknownOversizedAndInvalidTargetsStillDispatchLikeBefore()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            var handlerCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                var longName = new string('a', 300);
+                hubConnection.On<int>(longName, value => handlerCalled.TrySetResult(value));
+
+                // Unknown target is ignored and doesn't close the connection.
+                await connection.ReceiveJsonMessage(new { type = 1, target = "Unknown", arguments = new object[] { 1 } }).DefaultTimeout();
+
+                // Oversized target still dispatches via the protocol's own string decoding.
+                await connection.ReceiveJsonMessage(new { type = 1, target = longName, arguments = new object[] { 2 } }).DefaultTimeout();
+                Assert.Equal(2, await handlerCalled.Task.DefaultTimeout());
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task InvalidUtf8TargetIsRejectedEvenIfReplacementCharacterHandlerIsRegistered()
+        {
+            using (StartVerifiableLog(write => write.EventId.Name == "ErrorReceivingHandshakeResponse" || write.EventId.Name == "ErrorProcessingMessage" || write.LogLevel >= LogLevel.Error))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                var handlerCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var closed = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+                hubConnection.Closed += e =>
+                {
+                    closed.TrySetResult(e);
+                    return Task.CompletedTask;
+                };
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    hubConnection.On<int>("\uFFFD", value => handlerCalled.TrySetResult(value));
+
+                    var bytes = new List<byte>();
+                    bytes.AddRange("{\"type\":1,\"target\":\""u8.ToArray());
+                    bytes.Add(0xFF);
+                    bytes.AddRange("\",\"arguments\":[1]}"u8.ToArray());
+                    bytes.Add(0x1e);
+                    await connection.ReceiveBytesAsync(bytes.ToArray()).DefaultTimeout();
+
+                    var exception = await closed.Task.DefaultTimeout();
+                    Assert.NotNull(exception);
+                    Assert.False(handlerCalled.Task.IsCompleted);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        private sealed class RecordingHubProtocol : IHubProtocol
+        {
+            private readonly JsonHubProtocol _inner = new JsonHubProtocol();
+
+            public ConcurrentQueue<HubMessage> ParsedMessages { get; } = new ConcurrentQueue<HubMessage>();
+            public TaskCompletionSource<IInvocationBinder> Binder { get; } = new TaskCompletionSource<IInvocationBinder>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public string Name => _inner.Name;
+            public int Version => _inner.Version;
+            public TransferFormat TransferFormat => _inner.TransferFormat;
+
+            public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
+            {
+                Binder.TrySetResult(binder);
+                if (_inner.TryParseMessage(ref input, binder, out message))
+                {
+                    ParsedMessages.Enqueue(message);
+                    return true;
+                }
+                return false;
+            }
+
+            public void WriteMessage(HubMessage message, IBufferWriter<byte> output) => _inner.WriteMessage(message, output);
+            public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message) => _inner.GetMessageBytes(message);
+            public bool IsVersionSupported(int version) => _inner.IsVersionSupported(version);
         }
     }
 }
