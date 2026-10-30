@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -34,12 +35,32 @@ public class PassThroughAuthorizationHandler : IAuthorizationHandler
     /// <param name="context">The authorization context.</param>
     public async Task HandleAsync(AuthorizationHandlerContext context)
     {
-        foreach (var handler in context.Requirements.OfType<IAuthorizationHandler>())
+        var requirements = context.Requirements;
+
+        // AuthorizationPolicy.Requirements is a ReadOnlyCollection; index into it to avoid allocating an iterator.
+        if (requirements is ReadOnlyCollection<IAuthorizationRequirement> requirementsList)
         {
-            await handler.HandleAsync(context).ConfigureAwait(false);
-            if (!_options.InvokeHandlersAfterFailure && context.HasFailed)
+            for (var i = 0; i < requirementsList.Count; i++)
             {
-                break;
+                if (requirementsList[i] is IAuthorizationHandler handler)
+                {
+                    await handler.HandleAsync(context).ConfigureAwait(false);
+                    if (!_options.InvokeHandlersAfterFailure && context.HasFailed)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            foreach (var handler in requirements.OfType<IAuthorizationHandler>())
+            {
+                await handler.HandleAsync(context).ConfigureAwait(false);
+                if (!_options.InvokeHandlersAfterFailure && context.HasFailed)
+                {
+                    break;
+                }
             }
         }
     }

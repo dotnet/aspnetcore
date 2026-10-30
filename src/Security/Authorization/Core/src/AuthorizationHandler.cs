@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,9 +20,25 @@ public abstract class AuthorizationHandler<TRequirement> : IAuthorizationHandler
     /// <param name="context">The authorization context.</param>
     public virtual async Task HandleAsync(AuthorizationHandlerContext context)
     {
-        foreach (var req in context.Requirements.OfType<TRequirement>())
+        var requirements = context.Requirements;
+
+        // AuthorizationPolicy.Requirements is a ReadOnlyCollection; index into it to avoid allocating an iterator.
+        if (requirements is ReadOnlyCollection<IAuthorizationRequirement> requirementsList)
         {
-            await HandleRequirementAsync(context, req).ConfigureAwait(false);
+            for (var i = 0; i < requirementsList.Count; i++)
+            {
+                if (requirementsList[i] is TRequirement req)
+                {
+                    await HandleRequirementAsync(context, req).ConfigureAwait(false);
+                }
+            }
+        }
+        else
+        {
+            foreach (var req in requirements.OfType<TRequirement>())
+            {
+                await HandleRequirementAsync(context, req).ConfigureAwait(false);
+            }
         }
     }
 
@@ -50,9 +67,25 @@ public abstract class AuthorizationHandler<TRequirement, TResource> : IAuthoriza
     {
         if (context.Resource is TResource resource)
         {
-            foreach (var req in context.Requirements.OfType<TRequirement>())
+            var requirements = context.Requirements;
+
+            // AuthorizationPolicy.Requirements is a ReadOnlyCollection; index into it to avoid allocating an iterator.
+            if (requirements is ReadOnlyCollection<IAuthorizationRequirement> requirementsList)
             {
-                await HandleRequirementAsync(context, req, resource).ConfigureAwait(false);
+                for (var i = 0; i < requirementsList.Count; i++)
+                {
+                    if (requirementsList[i] is TRequirement req)
+                    {
+                        await HandleRequirementAsync(context, req, resource).ConfigureAwait(false);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var req in requirements.OfType<TRequirement>())
+                {
+                    await HandleRequirementAsync(context, req, resource).ConfigureAwait(false);
+                }
             }
         }
     }
