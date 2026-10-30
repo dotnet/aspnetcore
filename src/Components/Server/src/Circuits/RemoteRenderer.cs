@@ -55,6 +55,7 @@ internal partial class RemoteRenderer : WebRenderer
         _serverComponentDeserializer = serverComponentDeserializer;
         _logger = logger;
         _resourceCollection = resourceCollection;
+        _rootComponentJSRuntime = jsRuntime;
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
     }
@@ -194,6 +195,8 @@ internal partial class RemoteRenderer : WebRenderer
 
     public Task ProcessBufferedRenderBatches()
     {
+        _webRootComponentManager?.ReplayPendingDisposalNotifications();
+
         // All the batches are sent in order based on the fact that SignalR
         // provides ordering for the underlying messages and that the batches
         // are always in order.

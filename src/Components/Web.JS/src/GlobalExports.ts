@@ -66,6 +66,7 @@ export interface IBlazor {
     getInitialComponentsUpdate?: () => Promise<string>;
     updateRootComponents?: (operations: string, webAssemblyState: string) => void;
     endUpdateRootComponents?: (batchId: number) => void;
+    endDisposeRootComponent?: (ssrComponentId: number) => void;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number;

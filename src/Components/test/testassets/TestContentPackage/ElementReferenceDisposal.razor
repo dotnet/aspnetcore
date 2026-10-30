@@ -1,0 +1,48 @@
+﻿@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<div id="element-reference-disposal-target-@Id" @ref="_element">
+    Initialized: <span id="element-reference-disposal-initialized-@Id">@_initialized</span>
+</div>
+<button id="element-reference-disposal-click-@Id" @onclick="() => _clickCount++">Clicks: @_clickCount</button>
+@if (!IsChild)
+{
+    <ElementReferenceDisposal Id="@(Id + "-child")" IsChild="true" />
+}
+
+@code {
+    private ElementReference _element;
+    private IJSObjectReference _module = null;
+    private bool _initialized;
+    private int _clickCount;
+
+    [Parameter, EditorRequired]
+    public string Id { get; set; }
+
+    [Parameter]
+    public bool IsChild { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/TestContentPackage/ElementReferenceDisposal.razor.js");
+            await _module.InvokeVoidAsync("initialize", _element, Id);
+            _initialized = true;
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("waitForDisposal", Id);
+            await _module.InvokeVoidAsync("dispose", _element, Id);
+            await _module.DisposeAsync();
+        }
+    }
+}

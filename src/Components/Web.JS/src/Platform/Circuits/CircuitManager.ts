@@ -647,6 +647,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     this._disposed = true;
     this._connection?.stop();
+    this._componentManager.onRendererDisposed?.(WebRendererId.Server);
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
     // without sending the disconnect message will result in the circuit being kept
