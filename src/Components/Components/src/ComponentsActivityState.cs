@@ -20,13 +20,14 @@ internal sealed class ComponentsActivityState(ILogger logger)
 
     public ComponentsActivityStateUpdate? Capture()
     {
-        if (_activityLinkStore is null || !ComponentsActivitySource.HasListeners)
+        if (_activityLinkStore is null)
         {
             return null;
         }
 
         ComponentsActivityRouteState? routeState = null;
-        if (_activityLinkStore.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var context, out var tag) &&
+        if (ComponentsActivitySource.HasListeners &&
+            _activityLinkStore.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var context, out var tag) &&
             context != default &&
             tag is { Value: string route })
         {
@@ -37,6 +38,7 @@ internal sealed class ComponentsActivityState(ILogger logger)
                 route);
         }
 
+        // Omitting the payload would leave retained interactive roots with stale correlation when tracing is disabled.
         return new(routeState);
     }
 

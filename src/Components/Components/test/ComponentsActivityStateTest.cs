@@ -4,6 +4,8 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
@@ -145,8 +147,10 @@ public class ComponentsActivityStateTest
         Assert.Null(update.Route);
     }
 
-    [Fact]
-    public void NavigationUpdate_DoesNotReplaceInteractiveRouterContext()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void NavigationUpdate_DoesNotReplaceInteractiveRouterContext(bool clearRoute)
     {
         using var listener = CreateListener();
         var store = new ComponentsActivityLinkStore(null);
@@ -157,7 +161,7 @@ public class ComponentsActivityStateTest
         var navigation = source.StartNavigateActivity("Counter", "/interactive");
         source.StopNavigateActivity(navigation, null);
 
-        state.Apply(CreateState(CreateContext(), "/ssr"));
+        state.Apply(clearRoute ? new ComponentsActivityStateUpdate(null) : CreateState(CreateContext(), "/ssr"));
 
         AssertRoute(store, navigation.Activity!.Context, "/interactive");
     }
@@ -260,7 +264,94 @@ public class ComponentsActivityStateTest
     }
 
     [Fact]
-    public void Persistence_WithoutActivityListenerDoesNotAddActivityPayload()
+    public void Persistence_DisablingActivityListenerClearsPreviouslyRestoredRoute()
+    {
+        using var remote = RemoteExecutor.Invoke(static async () =>
+        {
+            using var serverListener = CreateListener();
+            var serverServices = new ServiceCollection().AddLogging().AddScoped<ComponentStatePersistenceManager>();
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(serverServices);
+            using var serverProvider = serverServices.BuildServiceProvider(validateScopes: true);
+            var initialStore = new TestStore();
+            ActivityContext navigationContext;
+            using (var scope = serverProvider.CreateScope())
+            {
+                using var renderer = new TestRenderer(scope.ServiceProvider);
+                var manager = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                await manager.RestoreStateAsync(new TestStore());
+                var source = scope.ServiceProvider.GetRequiredService<ComponentsActivitySource>();
+                var navigation = source.StartNavigateActivity("PageA", "/initial");
+                Assert.NotNull(navigation.Activity);
+                navigationContext = navigation.Activity.Context;
+                source.StopNavigateActivity(navigation, null);
+                await manager.PersistStateAsync(initialStore, renderer);
+            }
+
+            var clientServices = new ServiceCollection().AddLogging().AddSingleton<ComponentStatePersistenceManager>();
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(clientServices);
+            using var clientProvider = clientServices.BuildServiceProvider(validateScopes: true);
+            using var clientScope = clientProvider.CreateScope();
+            using var clientRenderer = new TestRenderer(clientScope.ServiceProvider);
+            var clientManager = clientProvider.GetRequiredService<ComponentStatePersistenceManager>();
+            await clientManager.RestoreStateAsync(initialStore);
+            var clientStore = new ComponentsActivityLinkStore(clientRenderer);
+            var circuitContext = CreateContext();
+            clientStore.SetActivityContext(ComponentsActivityLinkStore.Circuit, circuitContext, null);
+            AssertRoute(clientStore, navigationContext, "/initial");
+            var button = new ActivityTestButton();
+            var componentId = clientRenderer.AssignRootComponentId(button);
+            await clientRenderer.RenderRootComponentAsync(componentId);
+            var eventHandlerId = clientRenderer.GetCurrentRenderTreeFrames(componentId).AsEnumerable()
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0).AttributeEventHandlerId;
+            Activity initialEvent = null;
+            serverListener.ActivityStopped = activity =>
+            {
+                if (activity.OperationName == ComponentsActivitySource.OnEventName)
+                {
+                    initialEvent = activity;
+                }
+            };
+            await clientRenderer.DispatchEventAsync(eventHandlerId, EventArgs.Empty);
+            Assert.NotNull(initialEvent);
+            Assert.Equal("/initial", initialEvent.GetTagItem("aspnetcore.components.route"));
+            Assert.Contains(initialEvent.Links, link => link.Context == navigationContext);
+
+            serverListener.Dispose();
+            Assert.False(ComponentsActivitySource.HasListeners);
+            var updateStore = new TestStore();
+            using (var scope = serverProvider.CreateScope())
+            {
+                using var renderer = new TestRenderer(scope.ServiceProvider);
+                var manager = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                await manager.RestoreStateAsync(new TestStore());
+                var source = scope.ServiceProvider.GetRequiredService<ComponentsActivitySource>();
+                var navigation = source.StartNavigateActivity("PageB", "/updated");
+                Assert.Null(navigation.Activity);
+                await manager.PersistStateAsync(updateStore, renderer);
+            }
+
+            using var clientListener = CreateListener();
+            Activity updatedEvent = null;
+            clientListener.ActivityStopped = activity =>
+            {
+                if (activity.OperationName == ComponentsActivitySource.OnEventName)
+                {
+                    updatedEvent = activity;
+                }
+            };
+            await clientManager.RestoreStateAsync(updateStore, RestoreContext.ValueUpdate);
+            await clientRenderer.DispatchEventAsync(eventHandlerId, EventArgs.Empty);
+
+            Assert.Equal(2, button.ClickCount);
+            Assert.NotNull(updatedEvent);
+            Assert.Null(updatedEvent.GetTagItem("aspnetcore.components.route"));
+            Assert.DoesNotContain(updatedEvent.Links, link => link.Context == navigationContext);
+            Assert.Equal(circuitContext, Assert.Single(updatedEvent.Links).Context);
+        });
+    }
+
+    [Fact]
+    public void Persistence_WithoutActivityListenerPersistsRouteClearUpdate()
     {
         using var remote = RemoteExecutor.Invoke(static async () =>
         {
@@ -276,8 +367,24 @@ public class ComponentsActivityStateTest
 
             await manager.PersistStateAsync(store, renderer);
 
-            Assert.Empty(store.State);
+            Assert.Equal(2, store.State.Count);
+            foreach (var payload in store.State.Values)
+            {
+                Assert.Equal("""{"route":null}""", System.Text.Encoding.UTF8.GetString(payload));
+            }
         });
+    }
+
+    private sealed class ActivityTestButton : ComponentBase
+    {
+        public int ClickCount { get; private set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, () => ClickCount++));
+            builder.CloseElement();
+        }
     }
 
     private static ComponentsActivityState CreateInitializedState(ComponentsActivityLinkStore store)
