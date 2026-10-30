@@ -20,7 +20,8 @@
     padding: 0.1rem 0.4rem;
 }
 
-    .quickgrid[theme=default] > tbody > tr > td {
+    .quickgrid[theme=default] > tbody > tr > td,
+    .quickgrid[theme=default] > tfoot > tr > td {
         padding: 0.1rem calc(0.4rem + var(--col-gap)) 0.1rem 0.4rem;
     }
 
