@@ -1010,6 +1010,33 @@ public class PrepareReviewTests
         Assert.Contains(
             "Collect every required guide worker's actual result before running target code or editing the validation workspace.",
             skill, StringComparison.Ordinal);
+        Assert.Contains("native local isolated scratch-repository flow", skill, StringComparison.Ordinal);
+        Assert.DoesNotContain("native local detached worktree flow", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Set its repository-local `core.hooksPath` to a newly created empty directory before any fetch or checkout",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Use `manifest.target.hostname` and `manifest.target.headRepository` to fetch the exact `manifest.target.head` into a temporary ref with hooks disabled",
+            skill, StringComparison.Ordinal);
+        Assert.Contains("then check it out detached.", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Do not alter refs or worktree registrations in the developer checkout; it remains the guidance source only.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Before validation starts, require the scratch `HEAD` to equal `manifest.target.head` and its status to be clean.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "require every dirty path to be a recorded temporary validation edit created by the coordinator.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Never execute target code in the developer checkout or frozen bundle.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "record validation as unavailable, and continue the source review.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Remove only that recorded scratch directory when validation finishes or fails.",
+            skill, StringComparison.Ordinal);
         Assert.Contains(
             "write temporary tests or repros when doing so is the smallest faithful way to decide a material candidate.",
             skill, StringComparison.Ordinal);
