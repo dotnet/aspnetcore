@@ -461,10 +461,11 @@ public partial class RazorViewEngine : IRazorViewEngine
 
         var page = result.ViewEntry.PageFactory();
 
-        var viewStarts = new IRazorPage[result.ViewStartEntries!.Count];
+        var viewStartEntries = result.ViewStartEntries!;
+        var viewStarts = viewStartEntries.Count == 0 ? Array.Empty<IRazorPage>() : new IRazorPage[viewStartEntries.Count];
         for (var i = 0; i < viewStarts.Length; i++)
         {
-            var viewStartItem = result.ViewStartEntries[i];
+            var viewStartItem = viewStartEntries[i];
             viewStarts[i] = viewStartItem.PageFactory();
         }
 
