@@ -52,4 +52,9 @@
   <ItemGroup>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableSansIoTls)' == 'true'">
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.EnableSansIoTls" Value="true" />
+  </ItemGroup>
+
 </Project>
