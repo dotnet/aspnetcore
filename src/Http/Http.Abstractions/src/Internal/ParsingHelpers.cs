@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
@@ -57,20 +58,83 @@ internal static class ParsingHelpers
         }
         else
         {
-            headers[key] = string.Join(',', value.Select(QuoteIfNeeded));
+            headers[key] = JoinQuoted(prefix: null, value);
         }
     }
 
-    // Quote items that contain commas and are not already quoted.
-    private static string? QuoteIfNeeded(string? value)
+    // Joins the values with ',' (null values are treated as empty), quoting items that contain commas and are not already quoted.
+    // When prefix is not null, the result is prefix + "," + joined values.
+    private static string JoinQuoted(string? prefix, StringValues values)
     {
-        if (!string.IsNullOrEmpty(value) &&
-            value.Contains(',') &&
-            (value[0] != '"' || value[value.Length - 1] != '"'))
+        var count = values.Count;
+
+        if (prefix is null && count == 1)
         {
-            return $"\"{value}\"";
+            var single = values[0];
+            if (!NeedsQuotes(single))
+            {
+                return single ?? string.Empty;
+            }
         }
-        return value;
+
+        var length = prefix is null ? count - 1 : prefix.Length + count;
+        for (var i = 0; i < count; i++)
+        {
+            var value = values[i];
+            if (value is not null)
+            {
+                length += NeedsQuotes(value) ? value.Length + 2 : value.Length;
+            }
+        }
+
+        return string.Create(length, (prefix, values), static (span, state) =>
+        {
+            var position = 0;
+            if (state.prefix is not null)
+            {
+                state.prefix.AsSpan().CopyTo(span);
+                position = state.prefix.Length;
+                span[position++] = ',';
+            }
+
+            var values = state.values;
+            for (var i = 0; i < values.Count; i++)
+            {
+                if (i > 0)
+                {
+                    span[position++] = ',';
+                }
+
+                var value = values[i];
+                if (value is null)
+                {
+                    continue;
+                }
+
+                if (NeedsQuotes(value))
+                {
+                    span[position++] = '"';
+                    value.AsSpan().CopyTo(span.Slice(position));
+                    position += value.Length;
+                    span[position++] = '"';
+                }
+                else
+                {
+                    value.AsSpan().CopyTo(span.Slice(position));
+                    position += value.Length;
+                }
+            }
+
+            Debug.Assert(position == span.Length);
+        });
+    }
+
+    // Items that contain commas and are not already quoted need to be quoted.
+    private static bool NeedsQuotes([NotNullWhen(true)] string? value)
+    {
+        return !string.IsNullOrEmpty(value) &&
+            value.Contains(',') &&
+            (value[0] != '"' || value[value.Length - 1] != '"');
     }
 
     private static string? DeQuote(string? value)
@@ -116,7 +180,7 @@ internal static class ParsingHelpers
         }
         else
         {
-            headers[key] = existing + "," + string.Join(',', values.Select(QuoteIfNeeded));
+            headers[key] = JoinQuoted(existing, values);
         }
     }
 

@@ -132,4 +132,97 @@ public class HeaderDictionaryTests
         IDictionary<string, StringValues> asIDictionary = emptyHeaders;
         Assert.Throws<KeyNotFoundException>(() => asIDictionary["Header1"]);
     }
+
+    [Theory]
+    [InlineData(new[] { "a" }, "a")]
+    [InlineData(new[] { "a", "b" }, "a,b")]
+    [InlineData(new[] { "a,b" }, "\"a,b\"")]
+    [InlineData(new[] { "\"a,b\"" }, "\"a,b\"")]
+    [InlineData(new[] { "\"a,b" }, "\"\"a,b\"")]
+    [InlineData(new[] { "a,b\"" }, "\"a,b\"\"")]
+    [InlineData(new[] { "," }, "\",\"")]
+    [InlineData(new[] { "\"" }, "\"")]
+    [InlineData(new[] { "a,b", "c", "\"d,e\"" }, "\"a,b\",c,\"d,e\"")]
+    [InlineData(new[] { null, "b" }, ",b")]
+    [InlineData(new[] { "a", null }, "a,")]
+    [InlineData(new[] { "", "" }, ",")]
+    [InlineData(new[] { "", "a,b" }, ",\"a,b\"")]
+    public void SetCommaSeparatedValues_JoinsAndQuotesValues(string[] values, string expected)
+    {
+        var headers = new HeaderDictionary();
+
+        headers.SetCommaSeparatedValues("Header1", values);
+
+        Assert.Equal(expected, headers["Header1"].ToString());
+        Assert.Equal(1, headers["Header1"].Count);
+    }
+
+    public static TheoryData<string[]> EmptyHeaderValues => new()
+    {
+        Array.Empty<string>(),
+        new[] { "" },
+        new string[] { null },
+    };
+
+    [Theory]
+    [MemberData(nameof(EmptyHeaderValues))]
+    public void SetCommaSeparatedValues_RemovesHeaderForEmptyValues(string[] values)
+    {
+        var headers = new HeaderDictionary
+        {
+            ["Header1"] = "existing"
+        };
+
+        headers.SetCommaSeparatedValues("Header1", values);
+
+        Assert.False(headers.ContainsKey("Header1"));
+    }
+
+    [Theory]
+    [InlineData(new[] { "a" }, "x,a")]
+    [InlineData(new[] { "a", "b,c" }, "x,a,\"b,c\"")]
+    [InlineData(new[] { "\"b,c\"" }, "x,\"b,c\"")]
+    [InlineData(new[] { "" }, "x,")]
+    [InlineData(new string[] { null }, "x,")]
+    [InlineData(new[] { null, "a" }, "x,,a")]
+    public void AppendCommaSeparatedValues_AppendsToExistingValue(string[] values, string expected)
+    {
+        var headers = new HeaderDictionary
+        {
+            ["Header1"] = "x"
+        };
+
+        headers.AppendCommaSeparatedValues("Header1", values);
+
+        Assert.Equal(expected, headers["Header1"].ToString());
+        Assert.Equal(1, headers["Header1"].Count);
+    }
+
+    [Fact]
+    public void AppendCommaSeparatedValues_AppendsToMultipleExistingValues()
+    {
+        var headers = new HeaderDictionary
+        {
+            ["Header1"] = new StringValues(new[] { "x", "y" })
+        };
+
+        headers.AppendCommaSeparatedValues("Header1", "a", "b,c");
+
+        Assert.Equal("x,y,a,\"b,c\"", headers["Header1"].ToString());
+        Assert.Equal(1, headers["Header1"].Count);
+    }
+
+    [Fact]
+    public void AppendCommaSeparatedValues_SetsValueWhenHeaderIsMissing()
+    {
+        var headers = new HeaderDictionary();
+
+        headers.AppendCommaSeparatedValues("Header1", "a", "b,c");
+        headers.AppendCommaSeparatedValues("Header2", "");
+        headers.AppendCommaSeparatedValues("Header3");
+
+        Assert.Equal("a,\"b,c\"", headers["Header1"].ToString());
+        Assert.False(headers.ContainsKey("Header2"));
+        Assert.False(headers.ContainsKey("Header3"));
+    }
 }
