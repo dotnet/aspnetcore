@@ -1,0 +1,23 @@
+<div id="error-boundary-recovery-@NestingDepth">
+    <ErrorBoundary @ref="boundary">
+        <ChildContent>
+            <ErrorBoundaryRecoveryChild NestingDepth="@NestingDepth" OnAttempt="@(() => attempts++)" />
+        </ChildContent>
+        <ErrorContent>
+            <button class="recover" @onclick="@(() => boundary!.Recover())">Recover (attempt @attempts)</button>
+            <ErrorBoundaryRecoveryDetails OnInitialize="@(() => errorContentInitializations++)"
+                                         OnDispose="@(() => errorContentDisposals++)"
+                                         InitializationCount="@(() => errorContentInitializations)"
+                                         DisposalCount="@(() => errorContentDisposals)" />
+        </ErrorContent>
+    </ErrorBoundary>
+</div>
+
+@code {
+    [Parameter] public int NestingDepth { get; set; }
+
+    private ErrorBoundary boundary;
+    private int attempts;
+    private int errorContentInitializations;
+    private int errorContentDisposals;
+}
