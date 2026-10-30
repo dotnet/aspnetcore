@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers;
@@ -169,16 +170,21 @@ public static class HeaderUtilities
         current++; // skip delimiter.
         current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
-        if (skipEmptyValues)
+        if (skipEmptyValues && (current < input.Length) && (input[current] == ','))
         {
-            while ((current < input.Length) && (input[current] == ','))
-            {
-                current++; // skip delimiter.
-                current = current + HttpRuleParser.GetWhitespaceLength(input, current);
-            }
+            current = SkipEmptyValues(input, current);
         }
 
         return current;
+    }
+
+    // Rare: one or more consecutive empty values (e.g. "a,,b"). Kept out of line so that
+    // GetNextNonEmptyOrWhitespaceIndex stays small; long runs are skipped vectorized.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int SkipEmptyValues(StringSegment input, int current)
+    {
+        Debug.Assert(input[current] == ',');
+        return current + HttpRuleParser.GetSeparatorsAndWhitespaceLength(input, current, ',');
     }
 
     private static int AdvanceCacheDirectiveIndex(int current, string headerValue)
