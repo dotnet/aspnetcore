@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -131,18 +131,55 @@ public class RequestLocalizationMiddleware
         IList<CultureInfo> supportedCultures,
         bool fallbackToParentCultures)
     {
+        if (cultureNames is List<StringSegment> list)
+        {
+            return GetCultureInfo(CollectionsMarshal.AsSpan(list), supportedCultures, fallbackToParentCultures);
+        }
+
+        if (cultureNames is StringSegment[] array)
+        {
+            return GetCultureInfo(new ReadOnlySpan<StringSegment>(array), supportedCultures, fallbackToParentCultures);
+        }
+
         foreach (var cultureName in cultureNames)
         {
-            // Allow empty string values as they map to InvariantCulture, whereas null culture values will throw in
-            // the CultureInfo ctor
-            if (cultureName != null)
+            var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures);
+            if (cultureInfo != null)
             {
-                var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures, currentDepth: 0);
-                if (cultureInfo != null)
-                {
-                    return cultureInfo;
-                }
+                return cultureInfo;
             }
+        }
+
+        return null;
+    }
+
+    private static CultureInfo? GetCultureInfo(
+        ReadOnlySpan<StringSegment> cultureNames,
+        IList<CultureInfo> supportedCultures,
+        bool fallbackToParentCultures)
+    {
+        foreach (var cultureName in cultureNames)
+        {
+            var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures);
+            if (cultureInfo != null)
+            {
+                return cultureInfo;
+            }
+        }
+
+        return null;
+    }
+
+    private static CultureInfo? GetCultureInfo(
+        StringSegment cultureName,
+        IList<CultureInfo> supportedCultures,
+        bool fallbackToParentCultures)
+    {
+        // Allow empty string values as they map to InvariantCulture, whereas null culture values will throw in
+        // the CultureInfo ctor
+        if (cultureName != null)
+        {
+            return GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures, currentDepth: 0);
         }
 
         return null;
@@ -188,8 +225,7 @@ public class RequestLocalizationMiddleware
             return null;
         }
 
-        var culture = supportedCultures.FirstOrDefault(
-            supportedCulture => StringSegment.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase));
+        var culture = FindSupportedCulture(name, supportedCultures);
 
         if (culture == null)
         {
@@ -197,5 +233,41 @@ public class RequestLocalizationMiddleware
         }
 
         return CultureInfo.ReadOnly(culture);
+    }
+
+    private static CultureInfo? FindSupportedCulture(StringSegment name, IList<CultureInfo> supportedCultures)
+    {
+        if (supportedCultures is List<CultureInfo> list)
+        {
+            return FindSupportedCulture(name, CollectionsMarshal.AsSpan(list));
+        }
+
+        if (supportedCultures is CultureInfo[] array)
+        {
+            return FindSupportedCulture(name, new ReadOnlySpan<CultureInfo>(array));
+        }
+
+        foreach (var supportedCulture in supportedCultures)
+        {
+            if (StringSegment.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                return supportedCulture;
+            }
+        }
+
+        return null;
+    }
+
+    private static CultureInfo? FindSupportedCulture(StringSegment name, ReadOnlySpan<CultureInfo> supportedCultures)
+    {
+        foreach (var supportedCulture in supportedCultures)
+        {
+            if (StringSegment.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                return supportedCulture;
+            }
+        }
+
+        return null;
     }
 }
