@@ -28,9 +28,10 @@ internal static partial class PrepareReviewProgram
     private const string ExecutionExclusionScope =
         "Per-guide workers running PR code or tests, and coordinator validation that requires unavailable external CI, infrastructure, credentials, or services";
     private const string ExecutionExclusionReason =
-        "Per-guide workers remain source-only. After collecting every worker result, a hosted or native coordinator may use a caller-supplied worktree at manifest.target.head " +
-        "to run targeted restore, build, test, browser, or temporary-repro validation under SKILL.md's coordinator rules. Never execute target code in the frozen bundle or developer checkout; " +
-        "record exact commands and results, keep temporary edits diagnostic-only, and clean native-local scratch worktrees. If validation is unavailable, record the reason and continue without reporting INCOMPLETE.";
+        "Per-guide workers remain source-only. After collecting every worker result, a hosted coordinator may use a caller-supplied worktree at manifest.target.head " +
+        "to run targeted restore, build, test, browser, or temporary-repro validation under SKILL.md's coordinator rules. Native local validation follows the skill's detached-worktree rules. " +
+        "Never execute target code in the frozen bundle or developer checkout; record exact commands and results, keep temporary edits diagnostic-only, and clean native-local scratch worktrees. " +
+        "If validation is unavailable, record the reason and continue without reporting INCOMPLETE.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 
     internal sealed record Options(

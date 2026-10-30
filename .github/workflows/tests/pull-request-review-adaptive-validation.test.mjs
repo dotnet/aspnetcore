@@ -20,8 +20,8 @@ assert.match(workflowSource, /worktree=\/tmp\/gh-aw\/review-worktree/);
 assert.match(workflowSource, /update-ref refs\/review\/head "\$REVIEW_HEAD"/);
 assert.match(workflowSource, /refs\/review\/merge-base:refs\/remotes\/review\/merge-base/);
 assert.match(workflowSource, /--depth=1 "\$store"/);
+assert.match(workflowSource, /status --porcelain\)"; then\s+:\s+else/);
 assert.match(workflowSource, /chmod -R a\+rX,a-w \/tmp\/gh-aw\/review-bundle/);
-assert.match(workflowSource, /REVIEW_WORKTREE_AVAILABLE=false/);
 assert.match(workflowSource, /Only after collecting every required guide worker's actual result/);
 assert.match(workflowSource, /write temporary\s+tests or repros/);
 assert.doesNotMatch(workflowSource, /review_execution|review-execution|execution\.json/);
@@ -32,7 +32,7 @@ assert.match(workflowLock, /--memory-limit 8g/);
 assert.match(workflowLock, /GH_AW_TOOL_TIMEOUT: "?1800"?/);
 assert.match(workflowLock, /worktree=\/tmp\/gh-aw\/review-worktree/);
 assert.match(workflowLock, /refs\/review\/head:refs\/remotes\/review\/head/);
-assert.match(workflowLock, /REVIEW_WORKTREE_AVAILABLE=false/);
+assert.match(workflowLock, /status --porcelain\)\\"; then\\n\s+:\\nelse/);
 assert.doesNotMatch(workflowLock, /review_execution|review-execution|review-build-sandbox/);
 
 assert.match(skill, /write temporary\s+tests or repros/);
