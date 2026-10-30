@@ -1,0 +1,3 @@
+*.json text eol=lf
+*.source text eol=lf
+*.patch text eol=lf

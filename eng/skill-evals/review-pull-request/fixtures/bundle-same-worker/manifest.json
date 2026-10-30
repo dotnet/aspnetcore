@@ -1,0 +1,180 @@
+{
+  "version": 2,
+  "ready": true,
+  "producer": "53ec4e793086acac8787e13fbc16c61db68ff365a0e67294c387178f46f46d32",
+  "target": {
+    "hostname": "github.com",
+    "repository": "owner/product",
+    "repositoryId": 1,
+    "pr": 42,
+    "headRepository": "contributor/product",
+    "head": "5789cbca8244dcff42ca0722f977b8a0e981b8b0",
+    "baseRepository": "owner/product",
+    "baseRef": "release/test",
+    "baseTip": "f63f93410a164d5c7dacdaba915873154f5e75db",
+    "mergeBase": "91606389c26d33ef670791412eefad940ca0d37f"
+  },
+  "suffix": ".source",
+  "sources": {
+    "head": {
+      "root": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0",
+      "commit": "5789cbca8244dcff42ca0722f977b8a0e981b8b0",
+      "tree": "e80c043b9be9ababecd01d06a92b89d59cf678a3",
+      "files": 8,
+      "sha256": "ab5ea863b9971b445681d9729b1828b295291ec77b530d38194c52c830c13a26",
+      "pointers": [
+        {
+          "path": "src/Mode.cs",
+          "kind": "symlink-text"
+        }
+      ]
+    },
+    "mergeBase": {
+      "root": "source/91606389c26d33ef670791412eefad940ca0d37f",
+      "commit": "91606389c26d33ef670791412eefad940ca0d37f",
+      "tree": "7fc9af042c9c2ef946037d4f669f77f8c6dd5b7f",
+      "files": 9,
+      "sha256": "6f319ac82911f508d499b6357fa3174155887f2cb9ab05d22bf7e429b0169378",
+      "pointers": []
+    },
+    "baseTip": {
+      "root": "source/f63f93410a164d5c7dacdaba915873154f5e75db",
+      "commit": "f63f93410a164d5c7dacdaba915873154f5e75db",
+      "tree": "c2301028287512559f72fb8b474da0500ea77dad",
+      "files": 9,
+      "sha256": "2be2df2411cbb7931d5c4aafd2eccc80f2d230342a55c045594fc1015036c8fa",
+      "pointers": []
+    }
+  },
+  "guidance": {
+    "mode": "local",
+    "originalRoot": "<synthetic-helper-fixture>",
+    "checkoutCommit": "1adbcf818c473ae3ce1aa102efbea93fde618c10",
+    "workingTreeChanges": true,
+    "sha256": "ab3324585d5ac767f3ff8991b40a68f3050b3f8cfbc29f99d11e96482d92812f",
+    "root": "guidance",
+    "files": 5
+  },
+  "routing": {
+    "path": ".github/skills/review-pull-request/routing.md",
+    "sha256": "c77dfefdb5d2e05a3650242e18adf8dfebbe49bd10d4b26c91b59b654cd1caf2"
+  },
+  "guides": [
+    {
+      "path": "docs/CrossCuttingGuidance.md",
+      "topics": [
+        "Topic"
+      ],
+      "assignment": {
+        "files": [
+          {
+            "kind": "guide",
+            "path": "guidance/docs/CrossCuttingGuidance.md.source",
+            "utf8Bytes": 152,
+            "sha256": "e1289372816dfda62fac0f657d4ee0312b777a890efb86053b9efe849b95c4c7"
+          },
+          {
+            "kind": "diff",
+            "path": "diff.patch",
+            "utf8Bytes": 737,
+            "sha256": "f7e86a60abfb026b28ce9a12f4b172c160018e8d951019c78053c3648c4b0c5f"
+          },
+          {
+            "kind": "changedFiles",
+            "path": "files.json",
+            "utf8Bytes": 898,
+            "sha256": "aa6b3894afa4260ea2091721992ab4bb390bbc4c74598208c5e535d7f44e47a4"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0000/policies/0000.source",
+            "utf8Bytes": 55,
+            "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0000-scope.source",
+            "utf8Bytes": 203,
+            "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0000-reason.source",
+            "utf8Bytes": 601,
+            "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0001-body.source",
+            "utf8Bytes": 71,
+            "sha256": "24ca206fffc4f61ad893866fafb0c7974c9063394ad58a503f8244615e2f4ed1"
+          }
+        ],
+        "sourceRoles": [
+          "head",
+          "mergeBase",
+          "baseTip"
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "path": "docs/Policy.md",
+      "anchor": "required-clause",
+      "body": {
+        "path": "required/guides/0000/policies/0000.source",
+        "utf8Bytes": 55,
+        "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f"
+      },
+      "guide": "docs/CrossCuttingGuidance.md"
+    }
+  ],
+  "context": [],
+  "skippedLinks": [],
+  "exclusions": [
+    {
+      "scope": {
+        "path": "required/coordinator/exclusions/0000-scope.source",
+        "utf8Bytes": 203,
+        "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+      },
+      "reason": {
+        "path": "required/coordinator/exclusions/0000-reason.source",
+        "utf8Bytes": 601,
+        "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+      }
+    },
+    {
+      "source": ".github/copilot-instructions.md#security-concerns-are-out-of-scope",
+      "body": {
+        "path": "required/coordinator/exclusions/0001-body.source",
+        "utf8Bytes": 71,
+        "sha256": "24ca206fffc4f61ad893866fafb0c7974c9063394ad58a503f8244615e2f4ed1"
+      }
+    }
+  ],
+  "artifacts": {
+    "diff.patch": "f7e86a60abfb026b28ce9a12f4b172c160018e8d951019c78053c3648c4b0c5f",
+    "files.json": "aa6b3894afa4260ea2091721992ab4bb390bbc4c74598208c5e535d7f44e47a4",
+    "pull.json": "c6be2d8bc834e5e86233e4d650f71faa76e8bd45985d17b9a62b25d39aacaf61",
+    "feedback.json": "1b3ffaa8fcb0c3e7a4f2abc09869797c25146b4756f0c17e4a4d70d0d2cc3e61"
+  },
+  "requiredText": {
+    "root": "required",
+    "files": 11,
+    "sha256": "e837b58b9fffe9fbfa969e974191226b797b2c00f86cd943bdb9a93197f5196c"
+  },
+  "timingsMs": {
+    "apiFreeze": 0,
+    "fetch": 0,
+    "changedFiles": 0,
+    "diff": 0,
+    "feedback": 0,
+    "exportTree:5789cbca8244dcff42ca0722f977b8a0e981b8b0": 0,
+    "exportTree:91606389c26d33ef670791412eefad940ca0d37f": 0,
+    "exportTree:f63f93410a164d5c7dacdaba915873154f5e75db": 0,
+    "manifest": 0
+  },
+  "limitations": "Tracked Git bytes only. Symlinks, submodules and LFS pointers are inert data and cannot establish their target behavior."
+}

@@ -1,0 +1,607 @@
+{
+  "version": 1,
+  "bundles": {
+    "valid": "bundle-same-worker",
+    "missingFeedback": "bundle-missing-feedback"
+  },
+  "invariants": {
+    "producer": "53ec4e793086acac8787e13fbc16c61db68ff365a0e67294c387178f46f46d32",
+    "target": {
+      "hostname": "github.com",
+      "repository": "owner/product",
+      "repositoryId": 1,
+      "pr": 42,
+      "headRepository": "contributor/product",
+      "head": "5789cbca8244dcff42ca0722f977b8a0e981b8b0",
+      "baseRepository": "owner/product",
+      "baseRef": "release/test",
+      "baseTip": "f63f93410a164d5c7dacdaba915873154f5e75db",
+      "mergeBase": "91606389c26d33ef670791412eefad940ca0d37f"
+    },
+    "sourceRoles": {
+      "head": {
+        "root": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0",
+        "commit": "5789cbca8244dcff42ca0722f977b8a0e981b8b0",
+        "tree": "e80c043b9be9ababecd01d06a92b89d59cf678a3",
+        "pointers": [
+          {
+            "path": "src/Mode.cs",
+            "kind": "symlink-text"
+          }
+        ]
+      },
+      "mergeBase": {
+        "root": "source/91606389c26d33ef670791412eefad940ca0d37f",
+        "commit": "91606389c26d33ef670791412eefad940ca0d37f",
+        "tree": "7fc9af042c9c2ef946037d4f669f77f8c6dd5b7f",
+        "pointers": []
+      },
+      "baseTip": {
+        "root": "source/f63f93410a164d5c7dacdaba915873154f5e75db",
+        "commit": "f63f93410a164d5c7dacdaba915873154f5e75db",
+        "tree": "c2301028287512559f72fb8b474da0500ea77dad",
+        "pointers": []
+      }
+    },
+    "guidance": {
+      "mode": "local",
+      "originalRoot": "<synthetic-helper-fixture>",
+      "checkoutCommit": "1adbcf818c473ae3ce1aa102efbea93fde618c10",
+      "workingTreeChanges": true
+    },
+    "pullBody": {
+      "path": "required/pull/body.source",
+      "utf8Bytes": 24931,
+      "lineCount": 178,
+      "maxUtf8LineBytes": 1045
+    },
+    "maximumUtf8LineBytes": 2048
+  },
+  "files": [
+    {
+      "path": "diff.patch",
+      "utf8Bytes": 737,
+      "lineCount": 33,
+      "maxUtf8LineBytes": 44,
+      "sha256": "f7e86a60abfb026b28ce9a12f4b172c160018e8d951019c78053c3648c4b0c5f",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "feedback.json",
+      "utf8Bytes": 1666,
+      "lineCount": 64,
+      "maxUtf8LineBytes": 84,
+      "sha256": "1b3ffaa8fcb0c3e7a4f2abc09869797c25146b4756f0c17e4a4d70d0d2cc3e61",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "files.json",
+      "utf8Bytes": 898,
+      "lineCount": 42,
+      "maxUtf8LineBytes": 54,
+      "sha256": "aa6b3894afa4260ea2091721992ab4bb390bbc4c74598208c5e535d7f44e47a4",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "guidance/.github/copilot-instructions.md.source",
+      "utf8Bytes": 87,
+      "lineCount": 3,
+      "maxUtf8LineBytes": 37,
+      "sha256": "4cd40ace1c5408276460754716378dd78bfb9dbb7340f161abd1ecf064c27760",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "guidance/.github/skills/review-pull-request/routing.md.source",
+      "utf8Bytes": 138,
+      "lineCount": 4,
+      "maxUtf8LineBytes": 54,
+      "sha256": "c77dfefdb5d2e05a3650242e18adf8dfebbe49bd10d4b26c91b59b654cd1caf2",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "guidance/docs/BlazorComponentsGuidance.md.source",
+      "utf8Bytes": 84,
+      "lineCount": 6,
+      "maxUtf8LineBytes": 25,
+      "sha256": "1f813f91873ca2634c15c2cfd0990cb9cc1839c9db5c47dada0996169f5c3432",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "guidance/docs/CrossCuttingGuidance.md.source",
+      "utf8Bytes": 152,
+      "lineCount": 7,
+      "maxUtf8LineBytes": 58,
+      "sha256": "e1289372816dfda62fac0f657d4ee0312b777a890efb86053b9efe849b95c4c7",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "guidance/docs/Policy.md.source",
+      "utf8Bytes": 98,
+      "lineCount": 5,
+      "maxUtf8LineBytes": 36,
+      "sha256": "415cc1bda61d406a4ba9ccbb94daf3562ac4677f45483a4ac7a857ef04e5ef08",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "manifest.json",
+      "utf8Bytes": 6153,
+      "lineCount": 180,
+      "maxUtf8LineBytes": 139,
+      "sha256": "6ab28c08530e885f66436da393e69034982ca44199248b78867cce0ef2dc8042",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "pull.json",
+      "utf8Bytes": 537,
+      "lineCount": 27,
+      "maxUtf8LineBytes": 80,
+      "sha256": "c6be2d8bc834e5e86233e4d650f71faa76e8bd45985d17b9a62b25d39aacaf61",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "required/coordinator/exclusions/0000-reason.source",
+      "utf8Bytes": 601,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "required/coordinator/exclusions/0000-scope.source",
+      "utf8Bytes": 203,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "required/coordinator/exclusions/0001-body.source",
+      "utf8Bytes": 71,
+      "lineCount": 2,
+      "maxUtf8LineBytes": 37,
+      "sha256": "24ca206fffc4f61ad893866fafb0c7974c9063394ad58a503f8244615e2f4ed1",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "required/feedback/comments/101.source",
+      "utf8Bytes": 30,
+      "lineCount": 2,
+      "maxUtf8LineBytes": 14,
+      "sha256": "145ba4045f5c2f9f2bdb4cf9d6d8676053aafa620ae987d6f7a79b5197a88892",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "required/feedback/inline/103.source",
+      "utf8Bytes": 39,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 38,
+      "sha256": "207897c02af173e11da568226773ae05709179a5770aa504139cfcac437bcf21",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "required/feedback/reviews/102.source",
+      "utf8Bytes": 40,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 39,
+      "sha256": "63b30c1dc2cf19e23490842df0e11fed7bace57b35578cd4a0e12b3123966130",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "required/guides/0000/exclusions/0000-reason.source",
+      "utf8Bytes": 601,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "required/guides/0000/exclusions/0000-scope.source",
+      "utf8Bytes": 203,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "required/guides/0000/exclusions/0001-body.source",
+      "utf8Bytes": 71,
+      "lineCount": 2,
+      "maxUtf8LineBytes": 37,
+      "sha256": "24ca206fffc4f61ad893866fafb0c7974c9063394ad58a503f8244615e2f4ed1",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "required/guides/0000/policies/0000.source",
+      "utf8Bytes": 55,
+      "lineCount": 2,
+      "maxUtf8LineBytes": 36,
+      "sha256": "c6ddc5c453025754e1d46cac21444e8b1471f0a585a6d1c625d16dd4c6b1135f",
+      "readRoles": [
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "required/pull/body.source",
+      "utf8Bytes": 24931,
+      "lineCount": 178,
+      "maxUtf8LineBytes": 1045,
+      "sha256": "f19acc465d5eb04758a6b0dca0f314e97e8d16d6f47d42b4680835770982cf40",
+      "readRoles": [
+        "coordinator"
+      ],
+      "coordinatorRequired": true
+    },
+    {
+      "path": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/.github/copilot-instructions.md.source",
+      "utf8Bytes": 33,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 32,
+      "sha256": "4a7e45d3490cd144353def06aaa40b1c925a832336d55a3f37199818be815f4b",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/.github/instructions/product.instructions.md.source",
+      "utf8Bytes": 35,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 34,
+      "sha256": "813ddb75d07dc34f18b52954e1b1d423deea43f2e5d15f5fe5082747c2d19bcb",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/AGENTS.md.source",
+      "utf8Bytes": 28,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 27,
+      "sha256": "d4f99a6335d950a21127cd0dde23bb036f830306bcc2f56f23ff16c81c618631",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/src/Large.cs.source",
+      "utf8Bytes": 45024,
+      "lineCount": 2501,
+      "maxUtf8LineBytes": 23,
+      "sha256": "5c0569a7a0c9dd70d1528a247929704fd8f88eb417c768d6ee6b21ff1d84779c",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/src/Mode.cs.source",
+      "utf8Bytes": 8,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 8,
+      "sha256": "00a3c82ff1d5f6c9335f56b67b95679622112b481b035f132ae27147521e12b0",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/src/Renamed.cs.source",
+      "utf8Bytes": 14,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 13,
+      "sha256": "91e77c04ba79f3fcd86b360f5963270a0291ed13b274706a179d59e7c5d3aede",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/src/Unchanged.cs.source",
+      "utf8Bytes": 17,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 16,
+      "sha256": "b87af3f7a36013e285085629a5049bdd575f6dbb6940a8c4d7e241a8bbe3a118",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/5789cbca8244dcff42ca0722f977b8a0e981b8b0/src/Value.cs.source",
+      "utf8Bytes": 11,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 10,
+      "sha256": "6c5f7f41624ff60274db343dbd886b5f3144a94266034b54680e73d746292c19",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/.github/copilot-instructions.md.source",
+      "utf8Bytes": 33,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 32,
+      "sha256": "4a7e45d3490cd144353def06aaa40b1c925a832336d55a3f37199818be815f4b",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/.github/instructions/product.instructions.md.source",
+      "utf8Bytes": 35,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 34,
+      "sha256": "813ddb75d07dc34f18b52954e1b1d423deea43f2e5d15f5fe5082747c2d19bcb",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/AGENTS.md.source",
+      "utf8Bytes": 28,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 27,
+      "sha256": "d4f99a6335d950a21127cd0dde23bb036f830306bcc2f56f23ff16c81c618631",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/src/Deleted.cs.source",
+      "utf8Bytes": 14,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 13,
+      "sha256": "7c253aacb3b9e10ab019616039edaf1e3a7784ab6245570c1a14ef3c4d261be2",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/src/Large.cs.source",
+      "utf8Bytes": 45024,
+      "lineCount": 2501,
+      "maxUtf8LineBytes": 23,
+      "sha256": "5c0569a7a0c9dd70d1528a247929704fd8f88eb417c768d6ee6b21ff1d84779c",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/src/Mode.cs.source",
+      "utf8Bytes": 14,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 13,
+      "sha256": "f6a985832a215fd76f8c8b06874a8d359cbb5091dfdfc1ede0d4fd5f4c46039e",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/src/OldName.cs.source",
+      "utf8Bytes": 14,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 13,
+      "sha256": "91e77c04ba79f3fcd86b360f5963270a0291ed13b274706a179d59e7c5d3aede",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/src/Unchanged.cs.source",
+      "utf8Bytes": 17,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 16,
+      "sha256": "b87af3f7a36013e285085629a5049bdd575f6dbb6940a8c4d7e241a8bbe3a118",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/91606389c26d33ef670791412eefad940ca0d37f/src/Value.cs.source",
+      "utf8Bytes": 12,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 11,
+      "sha256": "ad7e8c2c3a05ca8fb4a036f15927d9212cc607d3d4800301ccd0353273b002da",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/.github/copilot-instructions.md.source",
+      "utf8Bytes": 33,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 32,
+      "sha256": "4a7e45d3490cd144353def06aaa40b1c925a832336d55a3f37199818be815f4b",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/.github/instructions/product.instructions.md.source",
+      "utf8Bytes": 35,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 34,
+      "sha256": "813ddb75d07dc34f18b52954e1b1d423deea43f2e5d15f5fe5082747c2d19bcb",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/AGENTS.md.source",
+      "utf8Bytes": 28,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 27,
+      "sha256": "d4f99a6335d950a21127cd0dde23bb036f830306bcc2f56f23ff16c81c618631",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/src/Deleted.cs.source",
+      "utf8Bytes": 14,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 13,
+      "sha256": "7c253aacb3b9e10ab019616039edaf1e3a7784ab6245570c1a14ef3c4d261be2",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/src/Large.cs.source",
+      "utf8Bytes": 45024,
+      "lineCount": 2501,
+      "maxUtf8LineBytes": 23,
+      "sha256": "5c0569a7a0c9dd70d1528a247929704fd8f88eb417c768d6ee6b21ff1d84779c",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/src/Mode.cs.source",
+      "utf8Bytes": 14,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 13,
+      "sha256": "f6a985832a215fd76f8c8b06874a8d359cbb5091dfdfc1ede0d4fd5f4c46039e",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/src/OldName.cs.source",
+      "utf8Bytes": 14,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 13,
+      "sha256": "91e77c04ba79f3fcd86b360f5963270a0291ed13b274706a179d59e7c5d3aede",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/src/Unchanged.cs.source",
+      "utf8Bytes": 20,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 19,
+      "sha256": "9970c86177e85083647ba640f4a64ab5c2af49b55b33e805319e7fa8c6b71fa9",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    },
+    {
+      "path": "source/f63f93410a164d5c7dacdaba915873154f5e75db/src/Value.cs.source",
+      "utf8Bytes": 12,
+      "lineCount": 1,
+      "maxUtf8LineBytes": 11,
+      "sha256": "ad7e8c2c3a05ca8fb4a036f15927d9212cc607d3d4800301ccd0353273b002da",
+      "readRoles": [
+        "coordinator",
+        "worker"
+      ],
+      "coordinatorRequired": false
+    }
+  ]
+}

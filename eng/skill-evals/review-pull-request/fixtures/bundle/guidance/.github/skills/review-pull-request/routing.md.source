@@ -1,0 +1,4 @@
+| Changed path prefix | Guide |
+| --- | --- |
+| * | docs/CrossCuttingGuidance.md |
+| src/Value.cs | docs/BlazorComponentsGuidance.md |

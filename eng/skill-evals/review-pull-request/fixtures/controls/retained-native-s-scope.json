@@ -1,0 +1,286 @@
+{
+  "sourceEvidence": {
+    "arm": "S",
+    "retainedEventsSha256": "e3e188372ab4e28beda75cfe269ad0e0ede70a07499e1c78bcd738670105b955",
+    "retainedEventsBytes": 9380832,
+    "candidateRevision": "374fde1927b759db52996bb1074aa7473a543b12",
+    "trustedRevision": "a888f052c880760ddd6df5de8d98d4051622d546",
+    "eventIds": [
+      "affc4342-024c-413c-8fd3-82eec846d887",
+      "ab55b892-ece7-45f2-af58-5b606e26996b",
+      "3c4a9712-fc2c-46ca-8637-ca9b5275d494",
+      "8510d624-9466-4683-aa2d-dcd75faa51c7",
+      "d67eca28-c072-4b66-8406-ec1efc82984b",
+      "77e63d10-abed-48da-9a2d-5f6ea448ab5a",
+      "815c18d4-e9b1-45da-ad8b-b5488b63ecd8",
+      "35a66267-80ce-4caf-aee1-f5b6979d3217"
+    ]
+  },
+  "nativeScope": {
+    "candidateRevision": "374fde1927b759db52996bb1074aa7473a543b12",
+    "bundleRoot": "C:\\Users\\shneuvil\\AppData\\Local\\Temp\\review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1",
+    "workers": [
+      {
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "assignedFiles": [
+          "guidance/docs/CrossCuttingGuidance.md.source",
+          "files.json",
+          "diff.patch",
+          "required/policies/0000.source",
+          "required/policies/0001.source",
+          "required/policies/0002.source",
+          "required/policies/0003.source",
+          "required/policies/0004.source",
+          "required/policies/0005.source",
+          "required/exclusions/0000-scope.source",
+          "required/exclusions/0000-reason.source",
+          "required/exclusions/0001-body.source"
+        ],
+        "sourceRoots": [
+          "source/a7214701f7e3fc0558ee201bcf8552069a803a55",
+          "source/94416692e05da692feb0223a9790d5afb3f8b45c",
+          "source/d0eb43e3a128b317b2a8ab27180262b3c133a2bd"
+        ]
+      }
+    ]
+  },
+  "trajectory": {
+    "workDir": "C:\\Users\\shneuvil\\AppData\\Local\\Temp",
+    "output": "retained native scope excerpt",
+    "events": [
+      {
+        "type": "tool.execution_start",
+        "data": {
+          "toolCallId": "call_o8gPTcoTOUqIvlHS5tjy2YVy",
+          "toolName": "skill",
+          "arguments": {
+            "skill": "review-pull-request"
+          },
+          "turnId": "0",
+          "model": "gpt-6.1-sol",
+          "parentToolCallId": "call_zuCW1CM6NoLP5UUMKR7wplSS"
+        },
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "id": "affc4342-024c-413c-8fd3-82eec846d887",
+        "timestamp": "2026-10-27T15:37:20.697Z",
+        "parentId": "acea4bd3-6ca7-4bde-9df0-93e5f459f1d7"
+      },
+      {
+        "type": "tool.execution_complete",
+        "data": {
+          "toolCallId": "call_o8gPTcoTOUqIvlHS5tjy2YVy",
+          "model": "gpt-6.1-sol",
+          "interactionId": "732d961c-cd65-42b0-9df3-338af82e022b",
+          "turnId": "0",
+          "rte": true,
+          "success": true,
+          "result": {
+            "content": "Skill \"review-pull-request\" loaded successfully. Follow the instructions in the skill context."
+          },
+          "toolTelemetry": {
+            "properties": {
+              "skillNameHash": "35606e7ce4faec433f7e5d5e28334ffa62d5ad27286829c773d063d34f89d1a6",
+              "skillSource": "project",
+              "found": "true"
+            },
+            "restrictedProperties": {
+              "skillName": "review-pull-request"
+            },
+            "metrics": {
+              "skillContentLength": 16404,
+              "context_token_limit": 272000.0,
+              "context_current_tokens": 38776.0,
+              "large_output_threshold_bytes": 20480.0,
+              "result_token_count": 18
+            }
+          },
+          "parentToolCallId": "call_zuCW1CM6NoLP5UUMKR7wplSS"
+        },
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "id": "ab55b892-ece7-45f2-af58-5b606e26996b",
+        "timestamp": "2026-10-27T15:37:20.747Z",
+        "parentId": "759ca6c0-8ba7-45b8-833c-36f464cdd6d4"
+      },
+      {
+        "type": "tool.execution_start",
+        "data": {
+          "toolCallId": "call_XeGFBZt4UGdEfXGNboadXmTQ",
+          "toolName": "view",
+          "arguments": {
+            "path": "C:\\Users\\shneuvil\\AppData\\Local\\Temp\\review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1\\guidance\\docs\\CrossCuttingGuidance.md.source",
+            "view_range": [
+              1,
+              70
+            ]
+          },
+          "turnId": "2",
+          "model": "gpt-6.1-sol",
+          "toolTitle": "Viewing file",
+          "parentToolCallId": "call_zuCW1CM6NoLP5UUMKR7wplSS"
+        },
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "id": "3c4a9712-fc2c-46ca-8637-ca9b5275d494",
+        "timestamp": "2026-10-27T15:37:42.631Z",
+        "parentId": "8fd25028-eb1d-46f3-9169-5d8f85e856cf"
+      },
+      {
+        "type": "tool.execution_start",
+        "data": {
+          "toolCallId": "call_KjoewtC253ey0ZiIq63u96EP",
+          "toolName": "view",
+          "arguments": {
+            "path": "C:\\Users\\shneuvil\\AppData\\Local\\Temp\\review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1\\guidance\\docs\\CrossCuttingGuidance.md.source",
+            "view_range": [
+              71,
+              125
+            ]
+          },
+          "turnId": "2",
+          "model": "gpt-6.1-sol",
+          "toolTitle": "Viewing file",
+          "parentToolCallId": "call_zuCW1CM6NoLP5UUMKR7wplSS"
+        },
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "id": "8510d624-9466-4683-aa2d-dcd75faa51c7",
+        "timestamp": "2026-10-27T15:37:42.634Z",
+        "parentId": "3c4a9712-fc2c-46ca-8637-ca9b5275d494"
+      },
+      {
+        "type": "tool.execution_complete",
+        "data": {
+          "toolCallId": "call_KjoewtC253ey0ZiIq63u96EP",
+          "model": "gpt-6.1-sol",
+          "interactionId": "732d961c-cd65-42b0-9df3-338af82e022b",
+          "turnId": "2",
+          "rte": true,
+          "success": true,
+          "result": {
+            "content": "### Options, configuration, and dependency injection\r\n\r\n- Use `IConfiguration`, options, and DI for configurable behavior; avoid hard-coded values, environment-specific branches, hidden mutable/environmental static dependencies, or service locators in product APIs, while allowing established factories and BCL shared pools such as `ObjectPool.Create<T>` and `ArrayPool<T>.Shared` when ownership and lifetime semantics are clear.\r\n- Keep configuration keys, option names, defaults, environment-variable mappings, generated element IDs, and casing stable across providers, and document them when users can depend on them.\r\n- Add configuration knobs only for demonstrated scenarios; choose safe defaults and validate options early enough that failures point to the invalid setting.\r\n- Match DI lifetimes to the dependencies they capture; use idempotent `TryAdd`/`TryAddEnumerable` registration when repeated calls should compose with user services.\r\n- Keep compile-time and runtime configuration distinct: MSBuild properties, runtime host configuration, package metadata, and user options must not drift or leak into the wrong layer.\r\n\r\n### Diagnostics, logging, exceptions, and tool output\r\n\r\n- Throw specific exceptions with contextual messages for invalid input, unsupported states, timeouts, external command failures, and configuration errors; catch only exceptions you can handle or enrich.\r\n- Keep diagnostics actionable — include the invalid value, path, key, package, tool, timeout, or operation where useful — without leaking sensitive data or stack traces in normal output.\r\n- Use structured `ILogger`, EventSource, analyzer diagnostics, and console output at levels matching success, warning, failure, and verbose detail; do not add noisy hot-path logs.\r\n- For tools and scripts, separate normal output from diagnostics, preserve readable ordering under parallel execution, handle no-op cases gracefully, and suppress presentation features when output is redirected.\r\n- Analyzer diagnostics need stable IDs, clear messages, help links, generated-code suppression where appropriate, and tests that verify locations and examples.\r\n\r\n### Trust boundaries, security, and sensitive data\r\n\r\n- Treat file-provider inputs, physical paths, generated outputs, and tool/configuration values as untrusted at boundaries; normalize and validate roots before opening files so traversal, symlink escape, URI confusion, or provider mismatch cannot bypass the intended scope.\r\n- Construct process, script, MSBuild, and external tool invocations with argument lists, response files, and repository helpers; do not concatenate untrusted values into shell commands, script fragments, or properties where command/process injection or quoting bugs can change behavior.\r\n- Redact secrets, connection strings, tokens, user secrets, credentials, sensitive environment values, and unnecessary local paths from logs, exceptions, diagnostics, generated files, and test artifacts.\r\n- Keep security-sensitive defaults fail-closed and preserve validation at trust boundaries even when the changed path is primarily configuration, templates, tests, or tooling.\r\n\r\n### Localization, text, paths, and cross-platform behavior\r\n\r\n- Externalize user-facing strings through resource/localization infrastructure and keep culture, UI culture, fallback, satellite-assembly, and formatting behavior explicit.\r\n- Use culture-aware or ordinal string APIs per the contract; avoid locale-specific assumptions in identifiers, paths, configuration keys, analyzer comparisons, and persisted values.\r\n- Handle text encoding, line endings, and persisted or protocol output deliberately, using canonical repo/protocol formatting instead of platform defaults when tools consume the output.\r\n- Detect operating system, architecture, target framework, SDK, and host capabilities through supported APIs or MSBuild metadata; avoid hard-coded platform configuration or unsupported path assumptions.\r\n- Keep platform-specific tests explicit with platform skip conditions, queue conditions, and separate scenarios rather than burying incompatible behavior in conditional test bodies.\r\n\r\n### Analyzers, reflection, source generation, trimming, and AOT\r\n\r\n- Analyzer logic may stay syntax-only when syntax fully proves the diagnostic; add semantic models, symbols, and related or multiple locations only when needed for correctness, symbol identity, partial declarations, or actionable fixes, and avoid false positives in generated code.\r\n- Cache repeated Roslyn symbol, type, and syntax lookups; combine tree traversal with diagnostic construction when it avoids redundant reflection or compilation work.\r\n- Keep analyzer and code-fix packaging lean; avoid heavy workspace dependencies in analyzer assemblies unless necessary for the shipped scenario.\r\n- Prefer explicit reflection lookups, generic constraints, source-generated metadata, and annotated APIs over broad reflection scans that are fragile under trimming or AOT.\r\n- For shared-framework or template changes whose behavior depends on metadata availability, use the repository's [publish-time trimming and Native AOT validation procedure](Trimming.md#validate-trimming-behavior), including source-generated metadata paths.\r\n\r\n### Build, packaging, shared framework, and templates\r\n\r\n- Preserve layouts, package metadata, target names, template identifiers, shared-framework inclusions, reference/runtime asset separation, and SDK/tooling compatibility that downstream consumers already load.\r\n- Keep shared build values single-sourced and narrowly scoped; prefer authoritative project metadata over duplicate opt-in properties, and avoid repository-wide imports or suppressions for local issues.\r\n- Update interrelated dependency versions, feed settings, source-commit metadata, and parent relationships as a coherent set; pin versions when reproducibility or host compatibility matters.\r\n- Validate MSBuild conditions, item metadata, glob depth, command-line escaping, response-file usage, and path normalization carefully, since small mistakes can silently disable build or packaging logic.\r\n- Dependency, package, or license changes must maintain third-party attribution artifacts such as `THIRD-PARTY-NOTICES.txt`; passing builds or tests can still hide a notice, license metadata, or attribution regression.\r\n- In templates and widely used assets, avoid speculative churn; reserve unique identifiers, keep generated output stable, and add behavior changes only for demonstrated scenarios with tests.\r\n\r\n### Tests, determinism, and test utilities\r\n\r\n- Apply the [repository test requirements](../CONTRIBUTING.md#tests) and [faithful-validation requirements](../.github/copilot-instructions.md#running-tests). Add focused unit, integration, analyzer, template, or regression tests for changed behavior, covering success, failure, boundary, platform, and previously broken combinations.\r\n- Assert observable semantics — generated files, diagnostics, logs, configuration keys, exception messages, response headers, package metadata, and resource cleanup — rather than mirroring helper implementation details.\r\n- Keep tests deterministic: avoid timing-sensitive sleeps, current-working-directory assumptions, hard-coded ports, external service dependencies, order-sensitive output, and shared mutable state.\r\n- Test infrastructure should use shared helpers for unique paths, ports, retries, process execution, timeouts, output capture, Helix staging, and cleanup instead of duplicating per-test logic.\r\n- Preserve quarantine, skip conditions, pipeline conditions, and artifact staging until the protected scenario is understood; update the reason or implementation rather than removing the guard.",
+            "detailedContent": "\ndiff --git a/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/guidance/docs/CrossCuttingGuidance.md.source b/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/guidance/docs/CrossCuttingGuidance.md.source\nindex 0000000..0000000 100644\n--- a/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/guidance/docs/CrossCuttingGuidance.md.source\n+++ b/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/guidance/docs/CrossCuttingGuidance.md.source\n@@ -71,55 +71,55 @@\n ### Options, configuration, and dependency injection\n \n - Use `IConfiguration`, options, and DI for configurable behavior; avoid hard-coded values, environment-specific branches, hidden mutable/environmental static dependencies, or service locators in product APIs, while allowing established factories and BCL shared pools such as `ObjectPool.Create<T>` and `ArrayPool<T>.Shared` when ownership and lifetime semantics are clear.\n - Keep configuration keys, option names, defaults, environment-variable mappings, generated element IDs, and casing stable across providers, and document them when users can depend on them.\n - Add configuration knobs only for demonstrated scenarios; choose safe defaults and validate options early enough that failures point to the invalid setting.\n - Match DI lifetimes to the dependencies they capture; use idempotent `TryAdd`/`TryAddEnumerable` registration when repeated calls should compose with user services.\n - Keep compile-time and runtime configuration distinct: MSBuild properties, runtime host configuration, package metadata, and user options must not drift or leak into the wrong layer.\n \n ### Diagnostics, logging, exceptions, and tool output\n \n - Throw specific exceptions with contextual messages for invalid input, unsupported states, timeouts, external command failures, and configuration errors; catch only exceptions you can handle or enrich.\n - Keep diagnostics actionable — include the invalid value, path, key, package, tool, timeout, or operation where useful — without leaking sensitive data or stack traces in normal output.\n - Use structured `ILogger`, EventSource, analyzer diagnostics, and console output at levels matching success, warning, failure, and verbose detail; do not add noisy hot-path logs.\n - For tools and scripts, separate normal output from diagnostics, preserve readable ordering under parallel execution, handle no-op cases gracefully, and suppress presentation features when output is redirected.\n - Analyzer diagnostics need stable IDs, clear messages, help links, generated-code suppression where appropriate, and tests that verify locations and examples.\n \n ### Trust boundaries, security, and sensitive data\n \n - Treat file-provider inputs, physical paths, generated outputs, and tool/configuration values as untrusted at boundaries; normalize and validate roots before opening files so traversal, symlink escape, URI confusion, or provider mismatch cannot bypass the intended scope.\n - Construct process, script, MSBuild, and external tool invocations with argument lists, response files, and repository helpers; do not concatenate untrusted values into shell commands, script fragments, or properties where command/process injection or quoting bugs can change behavior.\n - Redact secrets, connection strings, tokens, user secrets, credentials, sensitive environment values, and unnecessary local paths from logs, exceptions, diagnostics, generated files, and test artifacts.\n - Keep security-sensitive defaults fail-closed and preserve validation at trust boundaries even when the changed path is primarily configuration, templates, tests, or tooling.\n \n ### Localization, text, paths, and cross-platform behavior\n \n - Externalize user-facing strings through resource/localization infrastructure and keep culture, UI culture, fallback, satellite-assembly, and formatting behavior explicit.\n - Use culture-aware or ordinal string APIs per the contract; avoid locale-specific assumptions in identifiers, paths, configuration keys, analyzer comparisons, and persisted values.\n - Handle text encoding, line endings, and persisted or protocol output deliberately, using canonical repo/protocol formatting instead of platform defaults when tools consume the output.\n - Detect operating system, architecture, target framework, SDK, and host capabilities through supported APIs or MSBuild metadata; avoid hard-coded platform configuration or unsupported path assumptions.\n - Keep platform-specific tests explicit with platform skip conditions, queue conditions, and separate scenarios rather than burying incompatible behavior in conditional test bodies.\n \n ### Analyzers, reflection, source generation, trimming, and AOT\n \n - Analyzer logic may stay syntax-only when syntax fully proves the diagnostic; add semantic models, symbols, and related or multiple locations only when needed for correctness, symbol identity, partial declarations, or actionable fixes, and avoid false positives in generated code.\n - Cache repeated Roslyn symbol, type, and syntax lookups; combine tree traversal with diagnostic construction when it avoids redundant reflection or compilation work.\n - Keep analyzer and code-fix packaging lean; avoid heavy workspace dependencies in analyzer assemblies unless necessary for the shipped scenario.\n - Prefer explicit reflection lookups, generic constraints, source-generated metadata, and annotated APIs over broad reflection scans that are fragile under trimming or AOT.\n - For shared-framework or template changes whose behavior depends on metadata availability, use the repository's [publish-time trimming and Native AOT validation procedure](Trimming.md#validate-trimming-behavior), including source-generated metadata paths.\n \n ### Build, packaging, shared framework, and templates\n \n - Preserve layouts, package metadata, target names, template identifiers, shared-framework inclusions, reference/runtime asset separation, and SDK/tooling compatibility that downstream consumers already load.\n - Keep shared build values single-sourced and narrowly scoped; prefer authoritative project metadata over duplicate opt-in properties, and avoid repository-wide imports or suppressions for local issues.\n - Update interrelated dependency versions, feed settings, source-commit metadata, and parent relationships as a coherent set; pin versions when reproducibility or host compatibility matters.\n - Validate MSBuild conditions, item metadata, glob depth, command-line escaping, response-file usage, and path normalization carefully, since small mistakes can silently disable build or packaging logic.\n - Dependency, package, or license changes must maintain third-party attribution artifacts such as `THIRD-PARTY-NOTICES.txt`; passing builds or tests can still hide a notice, license metadata, or attribution regression.\n - In templates and widely used assets, avoid speculative churn; reserve unique identifiers, keep generated output stable, and add behavior changes only for demonstrated scenarios with tests.\n \n ### Tests, determinism, and test utilities\n \n - Apply the [repository test requirements](../CONTRIBUTING.md#tests) and [faithful-validation requirements](../.github/copilot-instructions.md#running-tests). Add focused unit, integration, analyzer, template, or regression tests for changed behavior, covering success, failure, boundary, platform, and previously broken combinations.\n - Assert observable semantics — generated files, diagnostics, logs, configuration keys, exception messages, response headers, package metadata, and resource cleanup — rather than mirroring helper implementation details.\n - Keep tests deterministic: avoid timing-sensitive sleeps, current-working-directory assumptions, hard-coded ports, external service dependencies, order-sensitive output, and shared mutable state.\n - Test infrastructure should use shared helpers for unique paths, ports, retries, process execution, timeouts, output capture, Helix staging, and cleanup instead of duplicating per-test logic.\n - Preserve quarantine, skip conditions, pipeline conditions, and artifact staging until the protected scenario is understood; update the reason or implementation rather than removing the guard.\n"
+          },
+          "toolTelemetry": {
+            "properties": {
+              "command": "view",
+              "options": "{\"truncateBasedOn\":\"tokenCount\",\"truncateStyle\":\"middle\"}",
+              "inputs": "[\"path\",\"view_range\",\"command\"]",
+              "resolvedPathAgainstCwd": "false",
+              "fileExtension": "[\"not-safe\"]",
+              "viewType": "file"
+            },
+            "restrictedProperties": {},
+            "metrics": {
+              "resultLength": 7705,
+              "resultForLlmLength": 7705,
+              "context_token_limit": 272000.0,
+              "context_current_tokens": 43915.0,
+              "result_token_count": 1358
+            }
+          },
+          "parentToolCallId": "call_zuCW1CM6NoLP5UUMKR7wplSS"
+        },
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "id": "d67eca28-c072-4b66-8406-ec1efc82984b",
+        "timestamp": "2026-10-27T15:37:42.664Z",
+        "parentId": "ce54ba43-5ee1-4307-84f5-46219f4a2a96"
+      },
+      {
+        "type": "tool.execution_complete",
+        "data": {
+          "toolCallId": "call_XeGFBZt4UGdEfXGNboadXmTQ",
+          "model": "gpt-6.1-sol",
+          "interactionId": "732d961c-cd65-42b0-9df3-338af82e022b",
+          "turnId": "2",
+          "rte": true,
+          "success": true,
+          "result": {
+            "content": "# Cross-cutting guidance\r\n\r\nThis guidance covers ASP.NET Core source work. Consult the relevant sections alongside the\r\nrequested task and applicable repository and area instructions.\r\n\r\n## Overarching principles\r\n\r\n- Preserve compatibility and public API discipline over local convenience. New APIs, constructors, options, packages, templates, analyzer IDs, and shared-framework metadata become long-lived contracts.\r\n- Prefer existing ASP.NET Core, BCL, SDK, and repository infrastructure over custom helpers. Add abstractions only when they keep user code testable, composable, and stable.\r\n- Treat nullability, validation, cancellation, disposal, and thread-safety annotations as executable design contracts, not comments.\r\n- Separate startup, build-time, analyzer-time, and hot-path runtime work. Per-request, per-diagnostic, file-watcher, and template paths need allocation, caching, and determinism scrutiny.\r\n- Treat filesystem paths, tool commands, configuration, generated output, logs, and package attribution as trust boundaries that can regress even when builds and tests pass.\r\n\r\n## Topics\r\n\r\n### Cross-cutting scope and change shape\r\n\r\n- Apply the [contribution scope requirements](../CONTRIBUTING.md#before-submitting-the-pull-request) to product, tool, template, analyzer, and test-utility changes, including unrelated file moves, generated-file churn, version churn, and refactors beyond the affected scenario.\r\n- Preserve ownership boundaries between product code, shared source, templates, test infrastructure, and build infrastructure; do not expose shared implementation details through public namespaces or packages.\r\n- Prefer established shared helpers for process handling, retries, cancellation, file enumeration, CLI parsing, package metadata, and test hosting before adding one-off infrastructure.\r\n- Remove vestigial debug hooks, unused files, stale comments, obsolete workarounds, and duplicate conditional logic only once the scenario they protected is understood and still covered.\r\n\r\n### Public API surface, compatibility, and lifecycle\r\n\r\n- Minimize public surface area; keep speculative hooks, options, extension points, and constructor overloads internal until a demonstrated scenario and API review justify them.\r\n- Preserve public member names, constructor signatures, enum values, default option values, extension-method behavior, analyzer IDs, template identifiers, package identities, and shared-framework metadata unless the breaking change is deliberate and reviewed.\r\n- Use `[Obsolete]` with actionable migration guidance for deprecated APIs, and keep parallel or additive overloads when compatibility requires old members to remain.\r\n- Use applicable public API design criteria for changed public/protected APIs and shipped defaults/conventions. The [API review process](APIReviewProcess.md#process) governs that process; verify any concern against source signatures and contracts rather than reporting a design preference as a defect.\r\n- Public XML docs must accurately describe purpose, parameters, return values, exceptions, defaults, consumer-observable lifecycle, and non-obvious examples for IntelliSense and generated docs; follow the repository's [public XML-documentation requirement](../.github/copilot-instructions.md#formatting).\r\n\r\n### Nullability, validation, and correctness invariants\r\n\r\n- Validate public API arguments and externally supplied data at entry points with precise exception types, parameter names, and actionable messages; do not let invalid input surface later as `NullReferenceException` or an ambiguous failure.\r\n- Keep nullable annotations, member initialization, `MemberNotNull`-style attributes, and guard clauses aligned with real control-flow invariants; do not use annotations to hide possible null states.\r\n- Model unknown, unsupported, or partially restored states explicitly instead of silently mapping them into an existing known bucket; keep classification separate from filtering so tests can prove both.\r\n- Preserve producer-consumer invariants for buffers, streams, collections, and generated metadata; never advance, reuse, mutate, or expose data beyond what the owner granted.\r\n- Use explicit comparers, culture rules, and case-sensitivity decisions for strings, keys, file names, template identifiers, and configuration names when default equality is not the contract.\r\n\r\n### Async, cancellation, and background work\r\n\r\n- Use Task-based async through the whole call chain; avoid `.Result`, `.Wait()`, sync-over-async wrappers, and synchronous exception behavior that differs from the async contract.\r\n- Flow `CancellationToken` to cancellation-aware async I/O, process execution, analyzer APIs, and long-running test utility APIs; for `IFileProvider.Watch` and file-change notifications, manage `IChangeToken` registration and disposable lifetimes through a documented shutdown path.\r\n- Use `ConfigureAwait(false)` in library code that should not capture a synchronization context, while preserving app/test patterns that intentionally rely on one.\r\n- Wrap fire-and-forget or callback-started async work in explicit error handling so failures are observed, logged, or propagated instead of crashing later or being silently swallowed.\r\n- Prefer `IAsyncDisposable` and async fixture/helper patterns when cleanup is asynchronous; do not block during teardown or replace cancellation with unsafe object nulling.\r\n\r\n### Performance, allocations, caching, and pooling\r\n\r\n- Determine whether code runs at startup, build time, analyzer time, or on a hot runtime path before raising performance findings; optimize hot paths and repeated analyzer traversals first.\r\n- Minimize avoidable allocations in per-request, per-diagnostic, file-provider, localization, cache, and template-generation paths using spans, pooled buffers, capacity hints, cached symbols, and lazy computation where they materially help.\r\n- Use object pooling, `ArrayPool<T>`, shared immutable singleton results, and cache consolidation only when ownership, reset, invalidation, contention, and lifetime semantics are clear.\r\n- Defer expensive or failure-prone work until a caller needs it; avoid constructor, registration, or startup work that eagerly resolves files, assemblies, projects, reflection, or external tools without benefit.\r\n- Measure durations with elapsed-time APIs and keep benchmark or performance validation focused on the changed path rather than wall-clock or environment-sensitive measurements.\r\n\r\n### Resource lifetime, disposal, and I/O\r\n\r\n- Types owning streams, file watchers, pooled buffers, processes, temporary artifacts, native handles, subscriptions, or listeners must make ownership explicit and release deterministically on success, failure, replacement, and cancellation paths.\r\n- Implement `IDisposable`, `IAsyncDisposable`, `SafeHandle`, or try/finally according to the resource owned; do not hide cleanup in unrelated lifecycle methods.\r\n- APIs that start registrations, watches, listeners, or background work must prevent repeated starts from leaking prior instances and define whether the caller or callee owns disposal.\r\n- Use `IFileProvider` for virtual/read-only file access, plus path APIs and platform helpers instead of hard-coded separators, working-directory assumptions, or string concatenation; use `System.IO` or explicit writable abstractions when code must create, write, move, or delete files.\r\n- Treat files, directories, generated outputs, and tool inputs as race-prone: they can be missing, locked, replaced, case-sensitive, URI-shaped, or deleted between an existence check and use.\r\n\r\n### Thread-safety, shared state, and lazy initialization\r\n\r\n- Protect shared mutable state with locks, immutable snapshots, concurrent collections, or one-time initialization that preserves the invariant, not just individual operations.\r\n- Document thread-safety guarantees for caches, options snapshots, pools, file providers, analyzers, and shared singleton services when callers can access them concurrently.\r\n- Do not dispose or null shared `CancellationTokenSource`, watcher, logger, cache, or pooled state while callbacks or lazy work may still observe it; cancel first and coordinate completion.\r\n- Keep lock scopes readable; avoid callbacks, logging fan-out, async continuations, or service resolution while holding a lock unless the reentrancy and deadlock behavior is intentional.\r\n- Use immutable or readonly fields for configuration and shared dependencies after construction; mutable static state needs a concurrency and test-isolation reason.\r\n",
+            "detailedContent": "\ndiff --git a/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/guidance/docs/CrossCuttingGuidance.md.source b/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/guidance/docs/CrossCuttingGuidance.md.source\nindex 0000000..0000000 100644\n--- a/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/guidance/docs/CrossCuttingGuidance.md.source\n+++ b/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/guidance/docs/CrossCuttingGuidance.md.source\n@@ -1,70 +1,70 @@\n # Cross-cutting guidance\n \n This guidance covers ASP.NET Core source work. Consult the relevant sections alongside the\n requested task and applicable repository and area instructions.\n \n ## Overarching principles\n \n - Preserve compatibility and public API discipline over local convenience. New APIs, constructors, options, packages, templates, analyzer IDs, and shared-framework metadata become long-lived contracts.\n - Prefer existing ASP.NET Core, BCL, SDK, and repository infrastructure over custom helpers. Add abstractions only when they keep user code testable, composable, and stable.\n - Treat nullability, validation, cancellation, disposal, and thread-safety annotations as executable design contracts, not comments.\n - Separate startup, build-time, analyzer-time, and hot-path runtime work. Per-request, per-diagnostic, file-watcher, and template paths need allocation, caching, and determinism scrutiny.\n - Treat filesystem paths, tool commands, configuration, generated output, logs, and package attribution as trust boundaries that can regress even when builds and tests pass.\n \n ## Topics\n \n ### Cross-cutting scope and change shape\n \n - Apply the [contribution scope requirements](../CONTRIBUTING.md#before-submitting-the-pull-request) to product, tool, template, analyzer, and test-utility changes, including unrelated file moves, generated-file churn, version churn, and refactors beyond the affected scenario.\n - Preserve ownership boundaries between product code, shared source, templates, test infrastructure, and build infrastructure; do not expose shared implementation details through public namespaces or packages.\n - Prefer established shared helpers for process handling, retries, cancellation, file enumeration, CLI parsing, package metadata, and test hosting before adding one-off infrastructure.\n - Remove vestigial debug hooks, unused files, stale comments, obsolete workarounds, and duplicate conditional logic only once the scenario they protected is understood and still covered.\n \n ### Public API surface, compatibility, and lifecycle\n \n - Minimize public surface area; keep speculative hooks, options, extension points, and constructor overloads internal until a demonstrated scenario and API review justify them.\n - Preserve public member names, constructor signatures, enum values, default option values, extension-method behavior, analyzer IDs, template identifiers, package identities, and shared-framework metadata unless the breaking change is deliberate and reviewed.\n - Use `[Obsolete]` with actionable migration guidance for deprecated APIs, and keep parallel or additive overloads when compatibility requires old members to remain.\n - Use applicable public API design criteria for changed public/protected APIs and shipped defaults/conventions. The [API review process](APIReviewProcess.md#process) governs that process; verify any concern against source signatures and contracts rather than reporting a design preference as a defect.\n - Public XML docs must accurately describe purpose, parameters, return values, exceptions, defaults, consumer-observable lifecycle, and non-obvious examples for IntelliSense and generated docs; follow the repository's [public XML-documentation requirement](../.github/copilot-instructions.md#formatting).\n \n ### Nullability, validation, and correctness invariants\n \n - Validate public API arguments and externally supplied data at entry points with precise exception types, parameter names, and actionable messages; do not let invalid input surface later as `NullReferenceException` or an ambiguous failure.\n - Keep nullable annotations, member initialization, `MemberNotNull`-style attributes, and guard clauses aligned with real control-flow invariants; do not use annotations to hide possible null states.\n - Model unknown, unsupported, or partially restored states explicitly instead of silently mapping them into an existing known bucket; keep classification separate from filtering so tests can prove both.\n - Preserve producer-consumer invariants for buffers, streams, collections, and generated metadata; never advance, reuse, mutate, or expose data beyond what the owner granted.\n - Use explicit comparers, culture rules, and case-sensitivity decisions for strings, keys, file names, template identifiers, and configuration names when default equality is not the contract.\n \n ### Async, cancellation, and background work\n \n - Use Task-based async through the whole call chain; avoid `.Result`, `.Wait()`, sync-over-async wrappers, and synchronous exception behavior that differs from the async contract.\n - Flow `CancellationToken` to cancellation-aware async I/O, process execution, analyzer APIs, and long-running test utility APIs; for `IFileProvider.Watch` and file-change notifications, manage `IChangeToken` registration and disposable lifetimes through a documented shutdown path.\n - Use `ConfigureAwait(false)` in library code that should not capture a synchronization context, while preserving app/test patterns that intentionally rely on one.\n - Wrap fire-and-forget or callback-started async work in explicit error handling so failures are observed, logged, or propagated instead of crashing later or being silently swallowed.\n - Prefer `IAsyncDisposable` and async fixture/helper patterns when cleanup is asynchronous; do not block during teardown or replace cancellation with unsafe object nulling.\n \n ### Performance, allocations, caching, and pooling\n \n - Determine whether code runs at startup, build time, analyzer time, or on a hot runtime path before raising performance findings; optimize hot paths and repeated analyzer traversals first.\n - Minimize avoidable allocations in per-request, per-diagnostic, file-provider, localization, cache, and template-generation paths using spans, pooled buffers, capacity hints, cached symbols, and lazy computation where they materially help.\n - Use object pooling, `ArrayPool<T>`, shared immutable singleton results, and cache consolidation only when ownership, reset, invalidation, contention, and lifetime semantics are clear.\n - Defer expensive or failure-prone work until a caller needs it; avoid constructor, registration, or startup work that eagerly resolves files, assemblies, projects, reflection, or external tools without benefit.\n - Measure durations with elapsed-time APIs and keep benchmark or performance validation focused on the changed path rather than wall-clock or environment-sensitive measurements.\n \n ### Resource lifetime, disposal, and I/O\n \n - Types owning streams, file watchers, pooled buffers, processes, temporary artifacts, native handles, subscriptions, or listeners must make ownership explicit and release deterministically on success, failure, replacement, and cancellation paths.\n - Implement `IDisposable`, `IAsyncDisposable`, `SafeHandle`, or try/finally according to the resource owned; do not hide cleanup in unrelated lifecycle methods.\n - APIs that start registrations, watches, listeners, or background work must prevent repeated starts from leaking prior instances and define whether the caller or callee owns disposal.\n - Use `IFileProvider` for virtual/read-only file access, plus path APIs and platform helpers instead of hard-coded separators, working-directory assumptions, or string concatenation; use `System.IO` or explicit writable abstractions when code must create, write, move, or delete files.\n - Treat files, directories, generated outputs, and tool inputs as race-prone: they can be missing, locked, replaced, case-sensitive, URI-shaped, or deleted between an existence check and use.\n \n ### Thread-safety, shared state, and lazy initialization\n \n - Protect shared mutable state with locks, immutable snapshots, concurrent collections, or one-time initialization that preserves the invariant, not just individual operations.\n - Document thread-safety guarantees for caches, options snapshots, pools, file providers, analyzers, and shared singleton services when callers can access them concurrently.\n - Do not dispose or null shared `CancellationTokenSource`, watcher, logger, cache, or pooled state while callbacks or lazy work may still observe it; cancel first and coordinate completion.\n - Keep lock scopes readable; avoid callbacks, logging fan-out, async continuations, or service resolution while holding a lock unless the reentrancy and deadlock behavior is intentional.\n - Use immutable or readonly fields for configuration and shared dependencies after construction; mutable static state needs a concurrency and test-isolation reason.\n \n"
+          },
+          "toolTelemetry": {
+            "properties": {
+              "command": "view",
+              "options": "{\"truncateBasedOn\":\"tokenCount\",\"truncateStyle\":\"middle\"}",
+              "inputs": "[\"path\",\"view_range\",\"command\"]",
+              "resolvedPathAgainstCwd": "false",
+              "fileExtension": "[\"not-safe\"]",
+              "viewType": "file"
+            },
+            "restrictedProperties": {},
+            "metrics": {
+              "resultLength": 8555,
+              "resultForLlmLength": 8555,
+              "context_token_limit": 272000.0,
+              "context_current_tokens": 43915.0,
+              "result_token_count": 1568
+            }
+          },
+          "parentToolCallId": "call_zuCW1CM6NoLP5UUMKR7wplSS"
+        },
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "id": "77e63d10-abed-48da-9a2d-5f6ea448ab5a",
+        "timestamp": "2026-10-27T15:37:42.672Z",
+        "parentId": "84231a01-c543-427e-84dd-c9cd5042c95e"
+      },
+      {
+        "type": "tool.execution_start",
+        "data": {
+          "toolCallId": "call_m9Yth1k9zN9Jdl5V5yt94Ep4",
+          "toolName": "view",
+          "arguments": {
+            "path": "C:\\Users\\shneuvil\\AppData\\Local\\Temp\\review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1\\files.json",
+            "view_range": [
+              1,
+              50
+            ]
+          },
+          "turnId": "3",
+          "model": "gpt-6.1-sol",
+          "toolTitle": "Viewing file",
+          "parentToolCallId": "call_zuCW1CM6NoLP5UUMKR7wplSS"
+        },
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "id": "815c18d4-e9b1-45da-ad8b-b5488b63ecd8",
+        "timestamp": "2026-10-27T15:37:49.48Z",
+        "parentId": "f0b7e21d-8a39-4dc8-95b0-082c85640041"
+      },
+      {
+        "type": "tool.execution_complete",
+        "data": {
+          "toolCallId": "call_m9Yth1k9zN9Jdl5V5yt94Ep4",
+          "model": "gpt-6.1-sol",
+          "interactionId": "732d961c-cd65-42b0-9df3-338af82e022b",
+          "turnId": "3",
+          "rte": true,
+          "success": true,
+          "result": {
+            "content": "[\n  {\n    \"filename\": \"src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs\",\n    \"status\": \"modified\",\n    \"sha\": \"1218cae3d76bff951a6711a966648ed08fc66b6b\",\n    \"additions\": 7,\n    \"deletions\": 4,\n    \"changes\": 11\n  },\n  {\n    \"filename\": \"src/Components/Endpoints/src/FormMapping/FormDataReader.cs\",\n    \"status\": \"modified\",\n    \"sha\": \"7826f796e22d81624c97d45006a54f51165d2413\",\n    \"additions\": 19,\n    \"deletions\": 0,\n    \"changes\": 19\n  },\n  {\n    \"filename\": \"src/Components/Endpoints/test/Binding/FormDataMapperTests.cs\",\n    \"status\": \"modified\",\n    \"sha\": \"1c8d7e66f14c3cb1264589608657ed6bdb7bbb30\",\n    \"additions\": 108,\n    \"deletions\": 5,\n    \"changes\": 113\n  },\n  {\n    \"filename\": \"src/Components/Endpoints/test/FormMapping/BrowserFileFromFormFileTests.cs\",\n    \"status\": \"modified\",\n    \"sha\": \"8c2681a922a834839a107b6c39ce286c18b4310c\",\n    \"additions\": 19,\n    \"deletions\": 0,\n    \"changes\": 19\n  },\n  {\n    \"filename\": \"src/Http/Http.Extensions/src/RequestDelegateFactory.cs\",\n    \"status\": \"modified\",\n    \"sha\": \"63797b419ed3b7f630013d75cdb3de43e45c4ab6\",\n    \"additions\": 10,\n    \"deletions\": 1,\n    \"changes\": 11\n  },\n  {\n    \"filename\": \"src/Http/Http.Extensions/test/RequestDelegateFactoryTests.FormMapping.cs\",\n    \"status\": \"modified\",\n    \"sha\": \"d411608dc28bc149c74b6778429245cc581891f3\",\n    \"additions\": 167,\n    \"deletions\": 0,\n    \"changes\": 167\n  }\n]",
+            "detailedContent": "\ndiff --git a/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/files.json b/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/files.json\nindex 0000000..0000000 100644\n--- a/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/files.json\n+++ b/C:/Users/shneuvil/AppData/Local/Temp/review-bundle-c51d8541-ed26-4a98-9285-f8ab558520e1/files.json\n@@ -1,50 +1,50 @@\n [\n   {\n     \"filename\": \"src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs\",\n     \"status\": \"modified\",\n     \"sha\": \"1218cae3d76bff951a6711a966648ed08fc66b6b\",\n     \"additions\": 7,\n     \"deletions\": 4,\n     \"changes\": 11\n   },\n   {\n     \"filename\": \"src/Components/Endpoints/src/FormMapping/FormDataReader.cs\",\n     \"status\": \"modified\",\n     \"sha\": \"7826f796e22d81624c97d45006a54f51165d2413\",\n     \"additions\": 19,\n     \"deletions\": 0,\n     \"changes\": 19\n   },\n   {\n     \"filename\": \"src/Components/Endpoints/test/Binding/FormDataMapperTests.cs\",\n     \"status\": \"modified\",\n     \"sha\": \"1c8d7e66f14c3cb1264589608657ed6bdb7bbb30\",\n     \"additions\": 108,\n     \"deletions\": 5,\n     \"changes\": 113\n   },\n   {\n     \"filename\": \"src/Components/Endpoints/test/FormMapping/BrowserFileFromFormFileTests.cs\",\n     \"status\": \"modified\",\n     \"sha\": \"8c2681a922a834839a107b6c39ce286c18b4310c\",\n     \"additions\": 19,\n     \"deletions\": 0,\n     \"changes\": 19\n   },\n   {\n     \"filename\": \"src/Http/Http.Extensions/src/RequestDelegateFactory.cs\",\n     \"status\": \"modified\",\n     \"sha\": \"63797b419ed3b7f630013d75cdb3de43e45c4ab6\",\n     \"additions\": 10,\n     \"deletions\": 1,\n     \"changes\": 11\n   },\n   {\n     \"filename\": \"src/Http/Http.Extensions/test/RequestDelegateFactoryTests.FormMapping.cs\",\n     \"status\": \"modified\",\n     \"sha\": \"d411608dc28bc149c74b6778429245cc581891f3\",\n     \"additions\": 167,\n     \"deletions\": 0,\n     \"changes\": 167\n   }\n ]\n"
+          },
+          "toolTelemetry": {
+            "properties": {
+              "command": "view",
+              "options": "{\"truncateBasedOn\":\"tokenCount\",\"truncateStyle\":\"middle\"}",
+              "inputs": "[\"path\",\"view_range\",\"command\"]",
+              "resolvedPathAgainstCwd": "false",
+              "fileExtension": "[\".json\"]",
+              "viewType": "file"
+            },
+            "restrictedProperties": {},
+            "metrics": {
+              "resultLength": 1404,
+              "resultForLlmLength": 1404,
+              "context_token_limit": 272000.0,
+              "context_current_tokens": 48865.0,
+              "result_token_count": 500
+            }
+          },
+          "parentToolCallId": "call_zuCW1CM6NoLP5UUMKR7wplSS"
+        },
+        "agentId": "d8a64f14-59bc-4427-ad9a-969d3125af6f",
+        "id": "35a66267-80ce-4caf-aee1-f5b6979d3217",
+        "timestamp": "2026-10-27T15:37:49.528Z",
+        "parentId": "3862ef32-e70f-4b8c-8c17-357fbd727248"
+      }
+    ]
+  }
+}

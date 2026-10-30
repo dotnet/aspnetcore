@@ -1,0 +1,166 @@
+name: review-pull-request
+description: >-
+  Verifies review-pull-request setup recovery, same-worker clarification, hosted native
+  ready-v2 transport reads and role separation, and fail-closed handling of unavailable
+  required bundle bytes through actual tool trajectories rather than response phrasing.
+version: "1"
+type: capability
+
+tags:
+  area: pull-requests
+  repo: aspnetcore
+
+defaults:
+  runs: 1
+  timeout: 1200s
+  model: gpt-5.6-sol
+
+stimuli:
+  - name: native-missing-sdk-recovery
+    prompt: >-
+      Use review-pull-request to privately review dotnet/aspnetcore pull request 70024 at
+      exact head d3068c868d2fafeb5f3a37f94c4d8637ce063ed0. No bundle is supplied. Return the
+      completed review here without publishing feedback or executing the target pull
+      request's product code.
+    environment:
+      git:
+        type: clone
+        url: https://github.com/dotnet/aspnetcore.git
+        ref: 5f3aa6faa5dc66abc8f7cf6232945ccf614d12ff
+        shallow: true
+      files:
+        - src: ../trace-contract-grader.ps1
+          dest: .eval-grader/trace-contract-grader.ps1
+    tags:
+      network: live
+      risk: read-only
+      evidence: live-subject
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: program
+        config:
+          program: pwsh
+          args:
+            - -NoProfile
+            - -File
+            - .eval-grader/trace-contract-grader.ps1
+            - sdk-recovery
+            - -ExpectedPr
+            - "70024"
+            - -ExpectedHead
+            - d3068c868d2fafeb5f3a37f94c4d8637ce063ed0
+
+  - name: same-worker-clarification
+    prompt: >-
+      Use review-pull-request to privately review the supplied ready version-2 bundle at
+      .review-bundle/manifest.json. After collecting the assigned worker's initial report,
+      ask that same worker to clarify whether its strongest candidate survives the frozen
+      base contract, collect the completed follow-up, and only then synthesize the result.
+      Do not publish feedback or execute target code.
+    environment:
+      files:
+        - src: ../trace-contract-grader.ps1
+          dest: .eval-grader/trace-contract-grader.ps1
+        - src: fixture-contract.ps1
+          dest: .eval-grader/fixture-contract.ps1
+        - src: fixtures/contracts/inventory-same-worker.json
+          dest: .eval-grader/inventory-same-worker.json
+        - src: fixtures/bundle-same-worker
+          dest: .review-bundle
+    tags:
+      network: none
+      risk: read-only
+      evidence: live-subject
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: program
+        config:
+          program: pwsh
+          args:
+            - -NoProfile
+            - -File
+            - .eval-grader/trace-contract-grader.ps1
+            - same-worker-lifecycle
+            - .eval-grader/inventory-same-worker.json
+
+  - name: hosted-ready-v2-transport
+    prompt: >-
+      In a hosted-style environment, use review-pull-request to privately review the
+      supplied ready version-2 bundle at .review-bundle/manifest.json. Use only authorized
+      native readers and searches for bundle evidence. Return the completed review without
+      publishing feedback or executing target code.
+    environment:
+      files:
+        - src: ../trace-contract-grader.ps1
+          dest: .eval-grader/trace-contract-grader.ps1
+        - src: fixture-contract.ps1
+          dest: .eval-grader/fixture-contract.ps1
+        - src: fixtures/contracts/inventory.json
+          dest: .eval-grader/inventory.json
+        - src: fixtures/bundle
+          dest: .review-bundle
+    tags:
+      network: none
+      risk: read-only
+      evidence: live-subject
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: program
+        config:
+          program: pwsh
+          args:
+            - -NoProfile
+            - -File
+            - .eval-grader/trace-contract-grader.ps1
+            - ready-v2-transport
+            - .eval-grader/inventory.json
+
+  - name: unavailable-required-bytes-block
+    prompt: >-
+      In a hosted-style environment, use review-pull-request to privately review the
+      supplied bundle at .review-bundle/manifest.json. Use only authorized native readers
+      and searches for bundle evidence. Return the result without publishing feedback,
+      broadening permissions, fetching substitute source, or executing target code.
+    environment:
+      files:
+        - src: ../trace-contract-grader.ps1
+          dest: .eval-grader/trace-contract-grader.ps1
+        - src: fixture-contract.ps1
+          dest: .eval-grader/fixture-contract.ps1
+        - src: fixtures/contracts/inventory.json
+          dest: .eval-grader/inventory.json
+        - src: fixtures/bundle-missing-feedback
+          dest: .review-bundle
+    tags:
+      network: none
+      risk: read-only
+      evidence: live-subject-negative
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: program
+        config:
+          program: pwsh
+          args:
+            - -NoProfile
+            - -File
+            - .eval-grader/trace-contract-grader.ps1
+            - required-bytes-blocked
+            - .eval-grader/inventory.json
+
+scoring:
+  weights:
+    skill-invocation: 0.2
+    program: 0.8
+  threshold: 1

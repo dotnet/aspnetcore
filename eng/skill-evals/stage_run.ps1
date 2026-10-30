@@ -202,7 +202,18 @@ $trustedFiles = @(
     'eng/skill-evals/assert_results.ps1'
     'eng/skill-evals/skills-vs-baseline.experiment.yaml'
     'eng/skill-evals/skills-smoke.experiment.yaml'
+    'eng/skill-evals/trace-contract-grader.ps1'
 )
+$trustedEvalFiles = @(if ($EvalName -eq 'review-pull-request') {
+    @(
+        'eng/skill-evals/review-pull-request/eval.vally.yaml'
+        'eng/skill-evals/review-pull-request/fixture-contract.ps1'
+        'eng/skill-evals/review-pull-request/fixtures/contracts/inventory.json'
+        'eng/skill-evals/review-pull-request/fixtures/contracts/inventory-same-worker.json'
+    )
+} else {
+    @()
+})
 $candidateSkill = Join-Path $candidateRootPath ".github/skills/$EvalName"
 $candidateEvalRoot = Join-Path $candidateRootPath "eng/skill-evals/$EvalName"
 $candidateEval = Join-Path $candidateEvalRoot 'eval.vally.yaml'
@@ -224,7 +235,7 @@ if (Test-Path $candidateFixtures) {
     Assert-TreeIsSafe $candidateFixtures $candidateRootPath "Candidate fixtures '$EvalName'"
 }
 
-foreach ($relativePath in $trustedFiles) {
+foreach ($relativePath in @($trustedFiles) + @($trustedEvalFiles)) {
     $source = Join-Path $trustedRootPath $relativePath
     if (-not (Test-Path $source -PathType Leaf)) {
         throw "Missing trusted control-plane file '$relativePath'."
@@ -248,7 +259,9 @@ try {
 
     $evalTargetRoot = Join-Path $destinationPath "eng/skill-evals/$EvalName"
     New-Item -ItemType Directory -Path $evalTargetRoot -Force | Out-Null
-    Copy-Item $candidateEval (Join-Path $evalTargetRoot 'eval.vally.yaml')
+    if ($trustedEvalFiles.Count -eq 0) {
+        Copy-Item $candidateEval (Join-Path $evalTargetRoot 'eval.vally.yaml')
+    }
     if (Test-Path $candidateFixtures -PathType Container) {
         $fixturesTarget = Join-Path $evalTargetRoot 'fixtures'
         Copy-Item $candidateFixtures $fixturesTarget -Recurse -Force
@@ -257,6 +270,12 @@ try {
                 chmod +x $_.FullName
             }
         }
+    }
+    foreach ($relativePath in $trustedEvalFiles) {
+        $target = Join-Path $destinationPath $relativePath
+        New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force |
+            Out-Null
+        Copy-Item (Join-Path $trustedRootPath $relativePath) $target -Force
     }
 
     Assert-TreeIsSafe $destinationPath $destinationPath 'Staged evaluation tree'

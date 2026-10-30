@@ -1,0 +1,64 @@
+{
+  "comments": [
+    {
+      "id": 101,
+      "author": {
+        "login": "commenter",
+        "id": 201,
+        "type": "User"
+      },
+      "body": {
+        "path": "required/feedback/comments/101.source",
+        "utf8Bytes": 30,
+        "sha256": "145ba4045f5c2f9f2bdb4cf9d6d8676053aafa620ae987d6f7a79b5197a88892"
+      },
+      "createdAt": "2026-10-25T10:00:00Z",
+      "updatedAt": "2026-10-25T10:01:00Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": 102,
+      "author": {
+        "login": "reviewer",
+        "id": 202,
+        "type": "User"
+      },
+      "body": {
+        "path": "required/feedback/reviews/102.source",
+        "utf8Bytes": 40,
+        "sha256": "63b30c1dc2cf19e23490842df0e11fed7bace57b35578cd4a0e12b3123966130"
+      },
+      "state": "COMMENTED",
+      "submittedAt": "2026-10-25T10:02:00Z",
+      "commitId": "5789cbca8244dcff42ca0722f977b8a0e981b8b0"
+    }
+  ],
+  "inline": [
+    {
+      "id": 103,
+      "author": {
+        "login": "inline-reviewer",
+        "id": 203,
+        "type": "User"
+      },
+      "body": {
+        "path": "required/feedback/inline/103.source",
+        "utf8Bytes": 39,
+        "sha256": "207897c02af173e11da568226773ae05709179a5770aa504139cfcac437bcf21"
+      },
+      "path": "src/Value.cs",
+      "line": 1,
+      "side": "RIGHT",
+      "startLine": null,
+      "startSide": null,
+      "originalLine": 1,
+      "originalStartLine": null,
+      "commitId": "5789cbca8244dcff42ca0722f977b8a0e981b8b0",
+      "originalCommitId": "91606389c26d33ef670791412eefad940ca0d37f",
+      "inReplyToId": null,
+      "createdAt": "2026-10-25T10:03:00Z",
+      "updatedAt": "2026-10-25T10:04:00Z"
+    }
+  ]
+}

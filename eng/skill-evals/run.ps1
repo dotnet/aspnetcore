@@ -284,6 +284,8 @@ switch ($Action) {
         & (Join-Path $PSScriptRoot 'test_run.ps1')
         & (Join-Path $PSScriptRoot 'test_assert_results.ps1')
         & (Join-Path $PSScriptRoot 'test_stage_run.ps1')
+        & (Join-Path $PSScriptRoot 'test_review_pull_request_fixtures.ps1')
+        & (Join-Path $PSScriptRoot 'test_trace_contract_grader.ps1')
         & (Join-Path $PSScriptRoot 'test_workflow.ps1')
     }
     'Lint' {
