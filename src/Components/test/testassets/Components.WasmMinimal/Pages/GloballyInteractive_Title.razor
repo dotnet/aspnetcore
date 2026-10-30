@@ -1,0 +1,12 @@
+@page "/globally-interactive/title"
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>Current count: @count</PageTitle>
+
+<ShowExecutionMode />
+
+<button id="increment-count" @onclick="() => count++">Increment count</button>
+
+@code {
+    private int count;
+}

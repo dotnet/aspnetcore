@@ -191,8 +191,6 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 var (rootComponents, renderer, initializationTcs) = state;
                 try
                 {
-                    // Here, we add each root component but don't await the returned tasks so that the
-                    // components can be processed in parallel.
                     var count = rootComponents.Count;
                     var initialOperationCount = initialOperationBatch?.Operations.Length ?? 0;
                     var pendingRenders = new List<Task>(count + initialOperationCount);
@@ -207,7 +205,20 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
                     if (initialOperationBatch is not null)
                     {
-                        AddWebRootComponents(renderer, initialOperationBatch, pendingRenders);
+                        renderer.BeginInitialRootComponentRender();
+                        try
+                        {
+                            AddWebRootComponents(renderer, initialOperationBatch, pendingRenders);
+                        }
+                        finally
+                        {
+                            renderer.EndInitialRootComponentRender();
+                        }
+                    }
+
+                    if (initialOperationBatch is not null)
+                    {
+                        renderer.NotifyEndUpdateRootComponents(initialOperationBatch.BatchId);
                     }
 
                     // Now we wait for all components to finish rendering.
@@ -247,7 +258,5 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 operation.Marker?.Key,
                 operation.Descriptor!.Parameters));
         }
-
-        renderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
     }
 }

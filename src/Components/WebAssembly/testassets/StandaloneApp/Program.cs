@@ -13,6 +13,7 @@ public class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.RootComponents.Add<App>("app");
+        builder.RootComponents.Add<DependentRoot>("#dependent-root-host");
 
         // Conditionally enable OTel + service discovery (when OTEL_EXPORTER_OTLP_ENDPOINT is set by the gateway)
         if (!string.IsNullOrEmpty(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))

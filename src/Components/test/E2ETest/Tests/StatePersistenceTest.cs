@@ -276,6 +276,28 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming, stateValue: "other");
     }
 
+    [Fact]
+    public void StateIsAvailableToAsyncDescendantDuringInitialWebAssemblyRender()
+    {
+        Navigate("subdir/persistent-state/page-with-components?render-mode=wasm&async-child=true&suppress-autostart");
+
+        AssertPageState(
+            mode: "wasm",
+            renderMode: nameof(InteractiveWebAssemblyRenderMode),
+            interactive: false,
+            stateFound: true,
+            stateValue: "restored");
+
+        Browser.Click(By.Id("call-blazor-start"));
+
+        AssertPageState(
+            mode: "wasm",
+            renderMode: nameof(InteractiveWebAssemblyRenderMode),
+            interactive: true,
+            stateFound: true,
+            stateValue: "restored");
+    }
+
     // Regression test for https://github.com/dotnet/aspnetcore/issues/63895
     // The first enhanced navigation to a page with interactive components goes through the initial
     // root component update, which reads the persisted state independently. Subsequent enhanced

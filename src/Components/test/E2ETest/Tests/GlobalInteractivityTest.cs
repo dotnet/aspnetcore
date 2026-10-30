@@ -21,6 +21,52 @@ public class GlobalInteractivityTest(
     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
 
+    [Fact]
+    public void CanPrerenderAndHydrateHeadOutletWithoutLeavingTitleMissing()
+    {
+        Navigate("/subdir/globally-interactive/title?suppress-autostart");
+
+        Browser.Equal("Current count: 0", () => Browser.Title);
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        // MutationObserver callbacks can run after both synchronous root renders, hiding the gap.
+        javascript.ExecuteScript("""
+            window['__aspnetcore__testing__title_was_missing__'] = false;
+            window['__aspnetcore__testing__title_was_checked__'] = false;
+            const getAndRemoveExistingTitle = Blazor._internal.PageTitle.getAndRemoveExistingTitle;
+            window['__aspnetcore__testing__get_and_remove_existing_title__'] = getAndRemoveExistingTitle;
+            Blazor._internal.PageTitle.getAndRemoveExistingTitle = () => {
+                const title = getAndRemoveExistingTitle();
+                window['__aspnetcore__testing__title_was_checked__'] = true;
+                if (document.head.querySelector('title') === null) {
+                    window['__aspnetcore__testing__title_was_missing__'] = true;
+                }
+
+                return title;
+            };
+            """);
+
+        try
+        {
+            Browser.Click(By.Id("call-blazor-start"));
+            Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+
+            Browser.Equal("Current count: 0", () => Browser.Title);
+            Assert.True((bool)javascript.ExecuteScript("return window['__aspnetcore__testing__title_was_checked__'];"));
+            Assert.False((bool)javascript.ExecuteScript("return window['__aspnetcore__testing__title_was_missing__'];"));
+            Browser.True(() => (bool)javascript.ExecuteScript("return document.head.querySelectorAll('title').length === 1;"));
+
+            Browser.Click(By.Id("increment-count"));
+            Browser.Equal("Current count: 1", () => Browser.Title);
+            Browser.True(() => (bool)javascript.ExecuteScript("return document.head.querySelectorAll('title').length === 1;"));
+        }
+        finally
+        {
+            javascript.ExecuteScript("Blazor._internal.PageTitle.getAndRemoveExistingTitle = window['__aspnetcore__testing__get_and_remove_existing_title__'];");
+        }
+    }
+
     [Theory]
     [InlineData("server", false)]
     [InlineData("webassembly", false)]
