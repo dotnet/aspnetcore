@@ -207,7 +207,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
-      this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      if (isRendererAttached(WebRendererId.Server)) {
+        this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      }
 
       this.handleConnectionDown();
       this.abortPauseDeferrals('connection closed');
@@ -299,14 +301,23 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return true;
     }
 
-    this._connection = await this.startConnection();
+    const connection = await this.startConnection();
+    this._connection = connection;
 
     if (this._interopMethodsForReconnection) {
       attachWebRendererInterop(WebRendererId.Server, this._interopMethodsForReconnection);
       this._interopMethodsForReconnection = undefined;
     }
 
-    if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
+    let circuitConnected: boolean;
+    try {
+      circuitConnected = await connection.invoke<boolean>('ConnectCircuit', this._circuitId);
+    } catch (error) {
+      await this.stopConnectionAfterFailedCircuitInvocation(connection);
+      throw error;
+    }
+
+    if (!circuitConnected) {
       if (isRendererAttached(WebRendererId.Server)) {
         this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
       }
@@ -316,6 +327,14 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
+  }
+
+  private async stopConnectionAfterFailedCircuitInvocation(connection: HubConnection): Promise<void> {
+    try {
+      await connection.stop();
+    } catch (error) {
+      this._logger.log(LogLevel.Error, `Failed to stop the connection after a circuit invocation failed: ${error}`);
+    }
   }
 
   private abortPauseDeferrals(reason?: string): void {
@@ -444,6 +463,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._connection = await this.startConnection();
     }
 
+    const connection = this._connection!;
+
     if (this._resumingState.isInprogress()) {
       // If we are already resuming, wait for the current resume operation to complete.
       this._logger.log(LogLevel.Trace, 'Waiting for the circuit to finish resuming...');
@@ -466,21 +487,26 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       const persistedCircuitState = this._persistedCircuitState;
       this._persistedCircuitState = undefined;
 
-      const newCircuitId = await this._connection!.invoke<string>(
-        'ResumeCircuit',
-        this._circuitId,
-        navigationManagerFunctions.getBaseURI(),
-        navigationManagerFunctions.getLocationHref(),
-        persistedCircuitState?.components ?? '[]',
-        persistedCircuitState?.applicationState ?? '',
-      );
+      let newCircuitId: string;
+      try {
+        newCircuitId = await connection.invoke<string>(
+          'ResumeCircuit',
+          this._circuitId,
+          navigationManagerFunctions.getBaseURI(),
+          navigationManagerFunctions.getLocationHref(),
+          persistedCircuitState?.components ?? '[]',
+          persistedCircuitState?.applicationState ?? '',
+        );
+      } catch (error) {
+        await this.stopConnectionAfterFailedCircuitInvocation(connection);
+        throw error;
+      }
       if (!newCircuitId) {
         this._resumingState.complete(false);
         return resumingPromise;
       }
 
       this._pausingState.transitionTo(false);
-      this._resumingState.complete(true);
 
       this._circuitId = newCircuitId;
       this._renderQueue = new RenderQueue(this._logger);
@@ -489,6 +515,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
           handler.onCircuitOpened();
         }
       }
+
+      this._resumingState.complete(true);
 
       this._options.reconnectionHandler!.onConnectionUp();
       this._componentManager.onComponentReload?.(WebRendererId.Server);
