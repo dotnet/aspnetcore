@@ -21,8 +21,8 @@ public readonly struct EventCallback : IEventCallback
     public static readonly EventCallback Empty = new EventCallback(null, (Action)(() => { }));
 
     internal readonly MulticastDelegate? Delegate;
-    internal readonly IHandleEvent? Receiver;
-// Store binding provenance without adding another field to each callback.
+
+    // Store binding provenance without adding another field to each callback.
     private readonly object? _receiver;
 
     internal IHandleEvent? Receiver => _receiver is EventCallbackBindingReceiver bindingReceiver ? bindingReceiver.Receiver : (IHandleEvent?)_receiver;
