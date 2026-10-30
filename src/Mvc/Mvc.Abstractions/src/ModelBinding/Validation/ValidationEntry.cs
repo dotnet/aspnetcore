@@ -10,6 +10,7 @@ public struct ValidationEntry
 {
     private object? _model;
     private Func<object?>? _modelAccessor;
+    private Func<object, object?>? _propertyGetter;
 
     /// <summary>
     /// Creates a new <see cref="ValidationEntry"/>.
@@ -46,6 +47,15 @@ public struct ValidationEntry
         _modelAccessor = modelAccessor;
     }
 
+    // Lazily reads the model from a property of the container without allocating a closure.
+    internal ValidationEntry(ModelMetadata metadata, string key, object container, Func<object, object?> propertyGetter)
+    {
+        Metadata = metadata;
+        Key = key;
+        _model = container;
+        _propertyGetter = propertyGetter;
+    }
+
     /// <summary>
     /// The model prefix associated with <see cref="Model"/>.
     /// </summary>
@@ -67,6 +77,11 @@ public struct ValidationEntry
             {
                 _model = _modelAccessor();
                 _modelAccessor = null;
+            }
+            else if (_propertyGetter != null)
+            {
+                _model = _propertyGetter(_model!);
+                _propertyGetter = null;
             }
 
             return _model;
