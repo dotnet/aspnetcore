@@ -636,15 +636,34 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         return AttributeUtilities.CombineClassNames(AdditionalAttributes, gridClass) ?? string.Empty;
     }
 
-    private static string? ColumnClass(ColumnBase<TGridItem> column) => column.Align switch
+    private static string? ColumnClass(ColumnBase<TGridItem> column)
+        => CombineColumnClass(column.Align, column.Class);
+
+    private static string? ColumnClass(ColumnBase<TGridItem> column, TGridItem item)
     {
-        Align.Start => $"col-justify-start {column.Class}",
-        Align.Center => $"col-justify-center {column.Class}",
-        Align.End => $"col-justify-end {column.Class}",
-        Align.Left => $"col-justify-left {column.Class}",
-        Align.Right => $"col-justify-right {column.Class}",
-        _ => column.Class,
-    };
+        var classValue = column.GetClass(item);
+        return CombineColumnClass(column.Align, classValue);
+    }
+
+    private static string? CombineColumnClass(Align align, string? classValue)
+    {
+        var alignClass = align switch
+        {
+            Align.Start => "col-justify-start",
+            Align.Center => "col-justify-center",
+            Align.End => "col-justify-end",
+            Align.Left => "col-justify-left",
+            Align.Right => "col-justify-right",
+            _ => null,
+        };
+
+        if (alignClass is null)
+        {
+            return classValue;
+        }
+
+        return string.IsNullOrEmpty(classValue) ? alignClass : $"{alignClass} {classValue}";
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

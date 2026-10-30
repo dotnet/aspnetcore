@@ -27,6 +27,18 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// An optional factory that is used to compute the CSS class name for body cells in this column.
+    /// </summary>
+    /// <remarks>
+    /// This only applies to body cells for data rows, not header cells or placeholder rows.
+    /// If both <see cref="Class"/> and <see cref="CellClass"/> are provided, the resolved values are combined
+    /// into a single class attribute value (with <see cref="Class"/> first).
+    /// If <see cref="CellClass"/> returns <see langword="null"/>, the resolved class falls back to
+    /// <see cref="Class"/>; if <see cref="Class"/> is also <see langword="null"/>, no class is applied.
+    /// </remarks>
+    [Parameter] public Func<TGridItem, string?>? CellClass { get; set; }
+
+    /// <summary>
     /// If specified, controls the justification of table header and body cells for this column.
     /// </summary>
     [Parameter] public Align Align { get; set; }
@@ -104,6 +116,23 @@ public abstract partial class ColumnBase<TGridItem>
     /// </summary>
     /// <returns>True if the column should be sortable by default, otherwise false.</returns>
     protected virtual bool IsSortableByDefault() => false;
+
+    /// <summary>
+    /// Gets the resolved CSS class value for this column's body cells.
+    /// </summary>
+    /// <param name="item">The data item being rendered.</param>
+    /// <returns>The CSS class string, or <see langword="null" />.</returns>
+    internal string? GetClass(TGridItem item)
+    {
+        var cellClass = CellClass?.Invoke(item);
+        return (Class, cellClass) switch
+        {
+            (null, null) => null,
+            (_, null) => Class,
+            (null, _) => cellClass,
+            _ => $"{Class} {cellClass}",
+        };
+    }
 
     /// <summary>
     /// Constructs an instance of <see cref="ColumnBase{TGridItem}" />.
