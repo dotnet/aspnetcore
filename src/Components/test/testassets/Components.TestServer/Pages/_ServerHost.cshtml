@@ -66,6 +66,9 @@
         myJsRootComponentInitializers.captureRendererInterop(Blazor);
         Blazor.start({
             configureSignalR: builder => {
+                if (query.get('skipNegotiation') === 'true') {
+                    builder.withUrl('_blazor', { skipNegotiation: true, transport: 1 });
+                }
                 if (query.has('captureAuthenticationRefresh')) {
                     const build = builder.build.bind(builder);
                     builder.build = () => {
