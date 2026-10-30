@@ -92,7 +92,9 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
             return null;
         }
 
-        var candidates = new HashSet<ProviderCandidate>();
+        // At most one candidate per distinct encoding name: one per provider plus "identity".
+        var maxCandidates = _providers.Length + 1;
+        var candidates = new CandidateSelector(maxCandidates <= 32 ? stackalloc int[32] : new int[maxCandidates], _providers);
 
         foreach (var encoding in encodings)
         {
@@ -110,7 +112,7 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
 
                 if (StringSegment.Equals(provider.EncodingName, encodingName, StringComparison.OrdinalIgnoreCase))
                 {
-                    candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
+                    candidates.Add(i, quality);
                 }
             }
 
@@ -119,10 +121,8 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
             {
                 for (int i = 0; i < _providers.Length; i++)
                 {
-                    var provider = _providers[i];
-
                     // Any provider is a candidate.
-                    candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
+                    candidates.Add(i, quality);
                 }
 
                 break;
@@ -132,22 +132,11 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
             {
                 // We add 'identity' to the list of "candidates" with a very low priority and no provider.
                 // This will allow it to be ordered based on its quality (and priority) later in the method.
-                candidates.Add(new ProviderCandidate("identity", quality, priority: int.MaxValue, provider: null));
+                candidates.Add(CandidateSelector.IdentityIndex, quality);
             }
         }
 
-        ICompressionProvider? selectedProvider = null;
-        if (candidates.Count <= 1)
-        {
-            selectedProvider = candidates.FirstOrDefault().Provider;
-        }
-        else
-        {
-            selectedProvider = candidates
-                .OrderByDescending(x => x.Quality)
-                .ThenBy(x => x.Priority)
-                .First().Provider;
-        }
+        var selectedProvider = candidates.SelectedProvider;
 
         if (selectedProvider == null)
         {
@@ -258,37 +247,51 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
         return null;
     }
 
-    private readonly struct ProviderCandidate : IEquatable<ProviderCandidate>
+    // Selects the candidate with the highest quality, preferring the lowest priority (provider order, then "identity").
+    // Only the first occurrence of each encoding name (case-insensitive) is considered.
+    private ref struct CandidateSelector
     {
-        public ProviderCandidate(string encodingName, double quality, int priority, ICompressionProvider? provider)
+        public const int IdentityIndex = -1;
+
+        private readonly Span<int> _seen;
+        private readonly ICompressionProvider[] _providers;
+        private int _seenCount;
+        private bool _hasSelection;
+        private double _selectedQuality;
+        private int _selectedPriority;
+
+        public CandidateSelector(Span<int> seen, ICompressionProvider[] providers)
         {
-            EncodingName = encodingName;
-            Quality = quality;
-            Priority = priority;
-            Provider = provider;
+            _seen = seen;
+            _providers = providers;
         }
 
-        public string EncodingName { get; }
+        public ICompressionProvider? SelectedProvider { get; private set; }
 
-        public double Quality { get; }
-
-        public int Priority { get; }
-
-        public ICompressionProvider? Provider { get; }
-
-        public bool Equals(ProviderCandidate other)
+        public void Add(int index, double quality)
         {
-            return string.Equals(EncodingName, other.EncodingName, StringComparison.OrdinalIgnoreCase);
+            var encodingName = GetEncodingName(index);
+            for (var i = 0; i < _seenCount; i++)
+            {
+                if (string.Equals(GetEncodingName(_seen[i]), encodingName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+            }
+
+            _seen[_seenCount++] = index;
+
+            var priority = index == IdentityIndex ? int.MaxValue : index;
+            if (!_hasSelection || quality > _selectedQuality || (quality == _selectedQuality && priority < _selectedPriority))
+            {
+                _hasSelection = true;
+                _selectedQuality = quality;
+                _selectedPriority = priority;
+                SelectedProvider = index == IdentityIndex ? null : _providers[index];
+            }
         }
 
-        public override bool Equals(object? obj)
-        {
-            return obj is ProviderCandidate candidate && Equals(candidate);
-        }
-
-        public override int GetHashCode()
-        {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(EncodingName);
-        }
+        private readonly string GetEncodingName(int index)
+            => index == IdentityIndex ? "identity" : _providers[index].EncodingName;
     }
 }
