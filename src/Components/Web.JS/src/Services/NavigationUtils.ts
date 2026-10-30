@@ -6,6 +6,7 @@ import { WebRendererId } from '../Rendering/WebRendererId';
 let interactiveRouterRendererId: WebRendererId | undefined = undefined;
 let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
 let enhancedNavigationListener: typeof notifyEnhancedNavigationListeners | undefined;
+let interactiveRouterConnectionChecker: (() => boolean) | undefined;
 
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
@@ -155,4 +156,20 @@ export function setHasInteractiveRouter(rendererId: WebRendererId) {
   }
 
   interactiveRouterRendererId = rendererId;
+}
+
+/**
+ * Registers a callback reporting whether the interactive router can currently reach the runtime
+ * that owns it. Rendering modes whose router can lose its connection (i.e., Server) use this so
+ * that navigations can fall back to a full page load while disconnected.
+ * @param checker A callback returning true while the interactive router is reachable.
+ */
+export function setInteractiveRouterConnectionChecker(checker: (() => boolean) | undefined): void {
+  interactiveRouterConnectionChecker = checker;
+}
+
+export function isInteractiveRouterConnected(): boolean {
+  // Rendering modes that can't lose their connection (i.e., WebAssembly) never register a checker,
+  // so in their absence the interactive router is always considered reachable.
+  return interactiveRouterConnectionChecker?.() ?? true;
 }
