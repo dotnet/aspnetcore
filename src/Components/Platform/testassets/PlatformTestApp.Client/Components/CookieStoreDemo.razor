@@ -1,6 +1,7 @@
 @using Microsoft.JSInterop
 @inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <h2>Cookie Store</h2>
 
@@ -16,6 +17,9 @@
     <button id="set-cookie-with-max-age" @onclick="SetWithMaxAgeAsync">Set with max age</button>
     <button id="set-cookie-with-other-domain" @onclick="SetWithOtherDomainAsync">Set with another domain</button>
     <button id="set-cookie-partitioned" @onclick="SetPartitionedAsync">Set partitioned</button>
+    <button id="set-cookie-same-site-from-string" @onclick="SetSameSiteFromStringAsync">Set SameSite from a string</button>
+    <button id="set-cookie-unknown-same-site" @onclick="SetUnknownSameSiteAsync">Set an unknown SameSite</button>
+    <button id="read-same-site" @onclick="ReadSameSiteAsync">Read SameSite from JavaScript</button>
 </div>
 <div>
     <button id="get-cookie" @onclick="GetAsync">Get</button>
@@ -97,6 +101,34 @@
         await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, Partitioned = true });
 #pragma warning restore ASP0040
         return name;
+    });
+
+    // An app can create a value that the library does not define.
+    private Task SetSameSiteFromStringAsync() => RunAsync("Set SameSite from a string", async () =>
+    {
+        await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, SameSite = new CookieSameSite("lax") });
+        return name;
+    });
+
+    // The browser rejects a value it does not support, so the error shows that the string reaches it.
+    private Task SetUnknownSameSiteAsync() => RunAsync("Set an unknown SameSite", async () =>
+    {
+        try
+        {
+            await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, SameSite = new CookieSameSite("future-value") });
+            return name;
+        }
+        catch (JSException)
+        {
+            return "Rejected.";
+        }
+    });
+
+    // Cookie Store returns no SameSite, so String() stands in for a browser that returns a value the library does not define.
+    private Task ReadSameSiteAsync() => RunAsync("Read SameSite from JavaScript", async () =>
+    {
+        var sameSite = await JS.InvokeAsync<CookieSameSite>("String", "future-value");
+        return $"{sameSite}, known: {sameSite == CookieSameSite.Strict || sameSite == CookieSameSite.Lax || sameSite == CookieSameSite.None}";
     });
 
     private Task GetAsync() => RunAsync("Get", async () =>

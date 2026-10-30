@@ -142,6 +142,27 @@ public partial class CookieStoreTests : BrowserTest
     }
 
     [TestMethod]
+    public async Task CookieSameSite_PassesAndReadsValuesTheLibraryDoesNotDefine()
+    {
+        foreach (var path in CookieStorePaths)
+        {
+            await NavigateAsync(path, "#set-cookie");
+
+            var name = path == "/cookiestore-server" ? "server-same-site" : "wasm-same-site";
+            await _page.Locator("#cookie-name").FillAsync(name);
+
+            await RunAsync("#set-cookie-same-site-from-string", $"Set SameSite from a string: {name}");
+            Assert.AreEqual(SameSiteAttribute.Lax, (await GetBrowserCookieAsync(name)).SameSite);
+            await RunAsync("#delete-cookie", $"Delete: {name}");
+
+            await RunAsync("#set-cookie-unknown-same-site", "Set an unknown SameSite: Rejected.");
+            Assert.DoesNotContain(name, (await _context.CookiesAsync()).Select(browserCookie => browserCookie.Name));
+
+            await RunAsync("#read-same-site", "Read SameSite from JavaScript: future-value, known: False");
+        }
+    }
+
+    [TestMethod]
     public async Task CookieStore_ThrowsNotSupportedExceptionWithoutTheBrowserApi()
     {
         // Same as a page that is not a secure context. The context belongs to this test only.
