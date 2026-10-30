@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
@@ -18,6 +20,7 @@ public class ComponentStatePersistenceManager
     private bool _stateIsPersisted;
     private bool _stateIsInitialized;
     private readonly PersistentServicesRegistry? _servicesRegistry;
+    private readonly IServiceProvider? _serviceProvider;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
 
     /// <summary>
@@ -35,9 +38,11 @@ public class ComponentStatePersistenceManager
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="serviceProvider"></param>
-    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider) : this(logger)
+    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider)
+        : this(logger)
     {
         _servicesRegistry = new PersistentServicesRegistry(serviceProvider);
+        _serviceProvider = serviceProvider;
     }
 
     // For testing purposes only
@@ -168,6 +173,12 @@ public class ComponentStatePersistenceManager
         }
 
         _servicesRegistry!.RenderMode = renderMode;
+        if (_serviceProvider is IKeyedServiceProvider &&
+            _serviceProvider.GetKeyedService<JsonSerializerOptions>(
+                (typeof(ComponentStatePersistenceManager), renderMode.GetType())) is { } options)
+        {
+            State.SetJsonSerializerOptions(options);
+        }
     }
 
     private void InferRenderModes(Renderer renderer)
