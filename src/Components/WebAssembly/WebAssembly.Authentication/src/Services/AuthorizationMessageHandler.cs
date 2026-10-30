@@ -44,7 +44,6 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
             {
                 _lastToken = null;
 
-                // Token requests already in flight belong to the previous authentication state and must not be cached.
                 _authenticationStateChangedCts?.Cancel();
                 _authenticationStateChangedCts = null;
             };
