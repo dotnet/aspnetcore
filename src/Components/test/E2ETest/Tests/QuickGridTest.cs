@@ -140,6 +140,25 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
+    public void ColumnOptionsButtonExposesExpandedState()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var button = grid.FindElement(By.ClassName("col-options-button"));
+
+        Assert.Equal("false", button.GetDomAttribute("aria-expanded"));
+
+        button.Click();
+
+        Browser.Exists(By.CssSelector("#grid .col-options"));
+        Browser.Equal("true", () => button.GetDomAttribute("aria-expanded"));
+
+        grid.FindElement(By.Id("close-column-options")).Click();
+
+        Browser.DoesNotExist(By.CssSelector("#grid .col-options"));
+        Browser.Equal("false", () => button.GetDomAttribute("aria-expanded"));
+    }
+
+    [Fact]
     public void ItemsProviderCalledOnceWithVirtualize()
     {
         app = Browser.MountTestComponent<QuickGridVirtualizeComponent>();
