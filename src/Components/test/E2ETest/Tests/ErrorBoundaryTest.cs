@@ -28,6 +28,8 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
     [Theory]
     [InlineData("event-sync")]
     [InlineData("event-async")]
+    [InlineData("event-nonrendering-sync")]
+    [InlineData("event-nonrendering-async")]
     [InlineData("parametersset-sync")]
     [InlineData("parametersset-async")]
     [InlineData("parametersset-cascade-sync")]
@@ -123,6 +125,16 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.Collection(() => container.FindElements(By.ClassName("received-exception")),
             elem => Assert.Equal("Delayed asynchronous exception in OnParametersSetAsync", elem.Text));
 
+        AssertGlobalErrorState(false);
+    }
+
+    [Fact]
+    public void CanHandleNonRenderingEventErrorsAfterDisposingComponent()
+    {
+        var container = Browser.Exists(By.Id("nonrendering-error-after-disposal-test"));
+        container.FindElement(By.ClassName("throw-nonrendering-after-disposal")).Click();
+        Browser.Collection(() => container.FindElements(By.ClassName("received-exception")),
+            elem => Assert.Equal("Non-rendering event failed after removal", elem.Text));
         AssertGlobalErrorState(false);
     }
 
