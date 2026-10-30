@@ -268,8 +268,12 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.success(user && user.state);
             }
         } catch (error) {
-            if (requiresLogin || window.self !== window.top || !stateExists) {
+            if (window.self !== window.top) {
                 return this.operationCompleted();
+            }
+
+            if (requiresLogin || !stateExists) {
+                return this.redirect();
             }
 
             return this.error('There was an error signing in.');

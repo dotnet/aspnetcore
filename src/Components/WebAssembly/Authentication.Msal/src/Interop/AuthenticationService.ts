@@ -305,6 +305,9 @@ class MsalAuthorizeService implements AuthorizeService {
             this.trace('completeSignIn-result', authenticationResult);
             if (authenticationResult) {
                 this.trace('completeSignIn-success', authenticationResult);
+                if (authenticationResult.status === AuthenticationResultStatus.OperationCompleted && window.self === window.top) {
+                    return this.redirect();
+                }
                 return authenticationResult;
             }
             this.debug('No authentication result.');
