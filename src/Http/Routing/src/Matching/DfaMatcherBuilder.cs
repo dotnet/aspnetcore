@@ -826,8 +826,8 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 _complexSegments.Add((segment, i));
             }
 
-            // Constraints created from inline text that aren't known to be cacheable might be stateful,
-            // so don't share them between DFA states.
+            // Parameter policies that aren't known to be cacheable might be stateful, so don't share them
+            // between DFA states.
             var isCacheable = true;
             foreach (var kvp in routeEndpoint.RoutePattern.ParameterPolicies)
             {
@@ -837,7 +837,7 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 {
                     var reference = parameterPolicyReferences[i];
                     var parameterPolicy = _parameterPolicyFactory.Create(parameter, reference);
-                    if (reference.ParameterPolicy is null && !IsCacheable(parameterPolicy))
+                    if (!IsCacheable(reference, parameterPolicy))
                     {
                         isCacheable = false;
                     }
@@ -878,14 +878,16 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         }
     }
 
-    private static bool IsCacheable(IParameterPolicy parameterPolicy)
+    private static bool IsCacheable(RoutePatternParameterPolicyReference reference, IParameterPolicy parameterPolicy)
     {
         if (parameterPolicy is OptionalRouteConstraint optionalRouteConstraint)
         {
             parameterPolicy = optionalRouteConstraint.InnerConstraint;
         }
 
-        return parameterPolicy is ICachableParameterPolicy;
+        // A policy instance supplied on the route pattern is already shared by every DFA state. A custom
+        // ParameterPolicyFactory could return a different instance, so only trust the supplied instance itself.
+        return ReferenceEquals(parameterPolicy, reference.ParameterPolicy) || parameterPolicy is ICachableParameterPolicy;
     }
 
     private static bool HasAdditionalRequiredSegments(RouteEndpoint endpoint, int depth)
