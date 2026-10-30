@@ -77,12 +77,16 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
                 {
                     var unprotectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
                     _spanDataProtector.Unprotect(protectedBytes, ref unprotectBuffer);
-                    dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectBuffer.WrittenSpan);
+                    dataFromCookie = JsonSerializer.Deserialize(
+                        unprotectBuffer.WrittenSpan,
+                        RazorComponentsJsonSerializerContext.Default.DictionaryStringJsonElement);
                 }
                 else
                 {
                     var unprotectedBytes = _dataProtector.Unprotect(protectedBytes.ToArray());
-                    dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
+                    dataFromCookie = JsonSerializer.Deserialize(
+                        unprotectedBytes,
+                        RazorComponentsJsonSerializerContext.Default.DictionaryStringJsonElement);
                 }
 
                 if (dataFromCookie is null)
