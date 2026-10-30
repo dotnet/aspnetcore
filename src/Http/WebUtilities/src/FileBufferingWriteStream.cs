@@ -267,6 +267,7 @@ public sealed class FileBufferingWriteStream : Stream
         if (FileStream == null)
         {
             var tempFileDirectory = _tempFileDirectoryAccessor();
+            Directory.CreateDirectory(tempFileDirectory);
             var tempFileName = Path.Combine(tempFileDirectory, "ASPNETCORE_" + Guid.NewGuid() + ".tmp");
 
             // Create a temp file with the correct Unix file mode before moving it to the assigned tempFileName in the _tempFileDirectory.
