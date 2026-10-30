@@ -5,6 +5,8 @@
     <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>annotations</Nullable>
+    <DefineConstants>$(DefineConstants);COMPONENTS_SERVER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +16,9 @@
     <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Server" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Server" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Server" />
   </ItemGroup>
 
 </Project>
