@@ -98,7 +98,13 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         var hubActivator = scopedServiceProvider.GetRequiredService<IHubActivator<THub>>();
         if (_hubActivatorKind == 0)
         {
-            _hubActivatorKind = hubActivator is DefaultHubActivator<THub> ? 1 : 2;
+            // Only take the fast path when the effective registration is SignalR's own open generic descriptor
+            // (not a factory or a user registration that happened to return the default activator), and the
+            // container actually produced it (third-party containers may have registrations outside the collection).
+            var isDefault = hubActivator.GetType() == typeof(DefaultHubActivator<THub>)
+                && scopedServiceProvider.GetService<DefaultHubActivatorRegistration>() is { } registration
+                && registration.IsDefaultActivatorRegistered(typeof(IHubActivator<THub>));
+            _hubActivatorKind = isDefault ? 1 : 2;
         }
 
         return hubActivator;

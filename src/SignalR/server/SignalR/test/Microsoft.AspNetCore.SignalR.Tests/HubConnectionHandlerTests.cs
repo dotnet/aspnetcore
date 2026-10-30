@@ -3366,6 +3366,56 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task HubActivatorFactoryIsUsedForEveryScopeEvenIfItFirstReturnsDefaultActivator()
+    {
+        using (StartVerifiableLog())
+        {
+            var resolveCount = 0;
+            var customActivators = new System.Collections.Concurrent.ConcurrentQueue<CustomHubActivator<MethodHub>>();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddScoped<IHubActivator<MethodHub>>(sp =>
+                {
+                    // The first scope (OnConnectedAsync) gets the built-in activator, later scopes get a custom one.
+                    if (Interlocked.Increment(ref resolveCount) == 1)
+                    {
+                        return new DefaultHubActivator<MethodHub>(sp);
+                    }
+                    var activator = new CustomHubActivator<MethodHub>(sp);
+                    customActivators.Enqueue(activator);
+                    return activator;
+                });
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                for (var i = 0; i < 3; i++)
+                {
+                    var completion = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                    Assert.Null(completion.Error);
+                }
+
+                // OnConnectedAsync and the three invocations each resolved the activator from DI
+                Assert.Equal(4, Volatile.Read(ref resolveCount));
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+
+            // OnDisconnectedAsync
+            Assert.Equal(5, Volatile.Read(ref resolveCount));
+            Assert.Equal(4, customActivators.Count);
+            Assert.All(customActivators, a => Assert.Equal(1, a.ReleaseCount));
+        }
+    }
+
+    [Fact]
     public async Task StreamMethodThatReturnsNullWillCleanup()
     {
         using (StartVerifiableLog())
