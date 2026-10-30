@@ -108,6 +108,60 @@ public class JsonHubProtocolTests : JsonHubProtocolTestsBase
     }
 
     [Fact]
+    public void TargetUsesBinderGetTargetWhenNotEscaped()
+    {
+        var input = Frame("{\"type\":1,\"target\":\"Method\",\"arguments\":[]}");
+        var cachedTarget = new string("Method".AsSpan());
+        var binder = new GetTargetBinder(cachedTarget);
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
+
+        Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var message));
+
+        var invocation = Assert.IsType<InvocationMessage>(message);
+        Assert.Same(cachedTarget, invocation.Target);
+        Assert.Equal(1, binder.GetTargetCalls);
+    }
+
+    [Fact]
+    public void EscapedTargetIsNotPassedToBinderGetTarget()
+    {
+        // "\u004Dethod" is the escaped form of "Method"; the raw bytes must not be used for the lookup.
+        var input = Frame("{\"type\":1,\"target\":\"\\u004Dethod\",\"arguments\":[]}");
+        var binder = new GetTargetBinder("Wrong");
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
+
+        Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var message));
+
+        var invocation = Assert.IsType<InvocationMessage>(message);
+        Assert.Equal("Method", invocation.Target);
+        Assert.Equal(0, binder.GetTargetCalls);
+    }
+
+    private sealed class GetTargetBinder : IInvocationBinder
+    {
+        private readonly string _target;
+
+        public GetTargetBinder(string target)
+        {
+            _target = target;
+        }
+
+        public int GetTargetCalls { get; private set; }
+
+        public string GetTarget(ReadOnlySpan<byte> utf8Bytes)
+        {
+            GetTargetCalls++;
+            return _target;
+        }
+
+        public IReadOnlyList<Type> GetParameterTypes(string methodName) => Array.Empty<Type>();
+
+        public Type GetReturnType(string invocationId) => typeof(object);
+
+        public Type GetStreamItemType(string streamId) => typeof(object);
+    }
+
+    [Fact]
     public void PolymorphicWorksWithInvocation()
     {
         Person todo = new JsonPersonExtended()

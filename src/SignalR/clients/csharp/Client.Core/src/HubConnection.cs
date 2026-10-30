@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -2701,6 +2702,28 @@ public partial class HubConnection : IAsyncDisposable
                 $"Server timeout ({_hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.");
             Connection.Transport.Input.CancelPendingRead();
         }
+
+#if NET
+        // Returns the registered handler name so hub protocols don't allocate a new target string for every invocation received.
+        string? IInvocationBinder.GetTarget(ReadOnlySpan<byte> utf8Bytes)
+        {
+            const int MaxStackallocLength = 256;
+            if (utf8Bytes.Length > MaxStackallocLength)
+            {
+                return null;
+            }
+
+            // UTF-8 never decodes to more chars than bytes.
+            Span<char> chars = stackalloc char[utf8Bytes.Length];
+            if (!Encoding.UTF8.TryGetChars(utf8Bytes, chars, out var charsWritten))
+            {
+                return null;
+            }
+
+            var lookup = _hubConnection._handlers.GetAlternateLookup<ReadOnlySpan<char>>();
+            return lookup.TryGetValue(chars.Slice(0, charsWritten), out var target, out _) ? target : null;
+        }
+#endif
 
         Type IInvocationBinder.GetReturnType(string invocationId)
         {
