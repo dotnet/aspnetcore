@@ -10,7 +10,10 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// <summary>
 /// Represents a live browser URL query parameter collection.
 /// </summary>
-public sealed class UrlSearchParams : IInternalAsyncDisposal
+/// <remarks>
+/// Dispose instances created by <see cref="UrlSearchParamsConstructor"/>. Instances obtained from <see cref="Url.SearchParams"/> are owned by their URL and should not be disposed separately.
+/// </remarks>
+public sealed class UrlSearchParams : IAsyncDisposable, IInternalAsyncDisposal
 {
     private Task<IJSObjectReference>? _referenceTask;
     private readonly IJSObjectReference? _ownerReference;
@@ -178,7 +181,7 @@ public sealed class UrlSearchParams : IInternalAsyncDisposal
     /// </summary>
     /// <returns>An asynchronous sequence of query parameter names and values.</returns>
     /// <remarks>
-    /// Each enumeration starts a new live iterator on its first advance. Keep the collection's owner alive
+    /// Each enumeration starts a new live iterator on its first advance. Keep the collection alive
     /// until enumeration ends. Cancellation is observed between browser operations; it does not abort an operation in progress.
     /// </remarks>
     public IAsyncEnumerable<KeyValuePair<string, string>> EntriesAsync()
@@ -189,7 +192,7 @@ public sealed class UrlSearchParams : IInternalAsyncDisposal
     /// </summary>
     /// <returns>An asynchronous sequence of query parameter names.</returns>
     /// <remarks>
-    /// Each enumeration starts a new live iterator on its first advance. Keep the collection's owner alive
+    /// Each enumeration starts a new live iterator on its first advance. Keep the collection alive
     /// until enumeration ends. Cancellation is observed between browser operations; it does not abort an operation in progress.
     /// </remarks>
     public IAsyncEnumerable<string> KeysAsync()
@@ -200,7 +203,7 @@ public sealed class UrlSearchParams : IInternalAsyncDisposal
     /// </summary>
     /// <returns>An asynchronous sequence of query parameter values.</returns>
     /// <remarks>
-    /// Each enumeration starts a new live iterator on its first advance. Keep the collection's owner alive
+    /// Each enumeration starts a new live iterator on its first advance. Keep the collection alive
     /// until enumeration ends. Cancellation is observed between browser operations; it does not abort an operation in progress.
     /// </remarks>
     public IAsyncEnumerable<string> ValuesAsync()
@@ -217,7 +220,14 @@ public sealed class UrlSearchParams : IInternalAsyncDisposal
         return await reference.InvokeAsync<string>("toString").ConfigureAwait(false);
     }
 
-    async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
+    /// <summary>
+    /// Releases the query parameter collection.
+    /// </summary>
+    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
+    /// <remarks>
+    /// Do not dispose this instance if it was obtained from <see cref="Url.SearchParams"/>. The containing URL owns that instance.
+    /// </remarks>
+    public async ValueTask DisposeAsync()
     {
         if (_disposed)
         {
@@ -231,6 +241,9 @@ public sealed class UrlSearchParams : IInternalAsyncDisposal
             await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
         }
     }
+
+    ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
+        => DisposeAsync();
 
     private async IAsyncEnumerable<T> EnumerateAsync<T>(
         string identifier,

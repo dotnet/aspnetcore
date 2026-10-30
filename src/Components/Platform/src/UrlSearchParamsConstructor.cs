@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 namespace Microsoft.AspNetCore.Components.Platform;
 
 /// <summary>
-/// Creates browser URLSearchParams objects.
+/// Creates caller-owned browser URLSearchParams objects.
 /// </summary>
 public sealed class UrlSearchParamsConstructor
 {
@@ -21,17 +21,17 @@ public sealed class UrlSearchParamsConstructor
     /// <summary>
     /// Creates an empty query parameter collection.
     /// </summary>
-    /// <returns>The owner of the created query parameter collection.</returns>
-    public ValueTask<UrlSearchParamsOwner> CreateAsync()
+    /// <returns>The created query parameter collection, which the caller must dispose.</returns>
+    public ValueTask<UrlSearchParams> CreateAsync()
         => CreateCoreAsync([]);
 
     /// <summary>
     /// Creates a query parameter collection by parsing a query string.
     /// </summary>
     /// <param name="init">The query string.</param>
-    /// <returns>The owner of the created query parameter collection.</returns>
+    /// <returns>The created query parameter collection, which the caller must dispose.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="init"/> is <see langword="null"/>.</exception>
-    public ValueTask<UrlSearchParamsOwner> CreateAsync(string init)
+    public ValueTask<UrlSearchParams> CreateAsync(string init)
     {
         ArgumentNullException.ThrowIfNull(init);
 
@@ -42,9 +42,9 @@ public sealed class UrlSearchParamsConstructor
     /// Creates a query parameter collection from a record of names and values.
     /// </summary>
     /// <param name="init">The query parameter names and values.</param>
-    /// <returns>The owner of the created query parameter collection.</returns>
+    /// <returns>The created query parameter collection, which the caller must dispose.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="init"/> is <see langword="null"/>.</exception>
-    public ValueTask<UrlSearchParamsOwner> CreateAsync(IReadOnlyDictionary<string, string> init)
+    public ValueTask<UrlSearchParams> CreateAsync(IReadOnlyDictionary<string, string> init)
     {
         ArgumentNullException.ThrowIfNull(init);
 
@@ -55,9 +55,9 @@ public sealed class UrlSearchParamsConstructor
     /// Creates a query parameter collection from an ordered sequence of names and values.
     /// </summary>
     /// <param name="init">The ordered query parameter names and values.</param>
-    /// <returns>The owner of the created query parameter collection.</returns>
+    /// <returns>The created query parameter collection, which the caller must dispose.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="init"/> is <see langword="null"/>.</exception>
-    public ValueTask<UrlSearchParamsOwner> CreateAsync(IEnumerable<KeyValuePair<string, string>> init)
+    public ValueTask<UrlSearchParams> CreateAsync(IEnumerable<KeyValuePair<string, string>> init)
     {
         ArgumentNullException.ThrowIfNull(init);
 
@@ -66,10 +66,10 @@ public sealed class UrlSearchParamsConstructor
         return CreateCoreAsync([entries]);
     }
 
-    private async ValueTask<UrlSearchParamsOwner> CreateCoreAsync(object?[] arguments)
+    private async ValueTask<UrlSearchParams> CreateCoreAsync(object?[] arguments)
     {
         var reference = await _jsRuntime.InvokeConstructorAsync("URLSearchParams", arguments).ConfigureAwait(false);
 
-        return new UrlSearchParamsOwner(new UrlSearchParams(reference));
+        return new UrlSearchParams(reference);
     }
 }

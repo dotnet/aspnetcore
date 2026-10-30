@@ -25,12 +25,18 @@ public class PublicApiTest
     [Theory]
     [InlineData(typeof(Window))]
     [InlineData(typeof(Storage))]
-    [InlineData(typeof(UrlSearchParams))]
     public void SharedInstances_CannotBeDisposedByApplicationCode(Type type)
     {
         Assert.False(typeof(IAsyncDisposable).IsAssignableFrom(type));
         Assert.False(typeof(IDisposable).IsAssignableFrom(type));
         Assert.Null(type.GetMethod("DisposeAsync", BindingFlags.Public | BindingFlags.Instance));
+    }
+
+    [Fact]
+    public void CallerOwnedUrlSearchParams_CanBeDisposedByApplicationCode()
+    {
+        Assert.True(typeof(IAsyncDisposable).IsAssignableFrom(typeof(UrlSearchParams)));
+        Assert.NotNull(typeof(UrlSearchParams).GetMethod(nameof(IAsyncDisposable.DisposeAsync)));
     }
 
     [Fact]

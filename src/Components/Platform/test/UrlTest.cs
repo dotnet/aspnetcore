@@ -110,8 +110,7 @@ public class UrlTest
     {
         var jsRuntime = new RecordingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
-        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("tag=one&page=2");
-        var searchParams = owner.Value;
+        await using var searchParams = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("tag=one&page=2");
 
         await searchParams.AppendAsync("tag", "two");
         await searchParams.SetAsync("page", "3");
@@ -183,8 +182,8 @@ public class UrlTest
     {
         var jsRuntime = new RecordingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
-        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
-        var sequence = owner.Value.ValuesAsync();
+        await using var searchParams = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
+        var sequence = searchParams.ValuesAsync();
         await using var first = sequence.GetAsyncEnumerator();
         await using var second = sequence.GetAsyncEnumerator();
 
@@ -204,9 +203,9 @@ public class UrlTest
     {
         var jsRuntime = new RecordingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
-        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
+        await using var searchParams = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
 
-        await foreach (var value in owner.Value.ValuesAsync())
+        await foreach (var value in searchParams.ValuesAsync())
         {
             Assert.Equal("first", value);
             break;
@@ -216,7 +215,7 @@ public class UrlTest
         var exception = new InvalidOperationException("Consumer failed.");
         var actual = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await foreach (var value in owner.Value.ValuesAsync())
+            await foreach (var value in searchParams.ValuesAsync())
             {
                 throw exception;
             }
@@ -224,7 +223,7 @@ public class UrlTest
 
         Assert.Same(exception, actual);
         Assert.All(jsRuntime.Iterators, iterator => Assert.True(iterator.Disposed));
-        Assert.Equal(["first", "second"], await CollectAsync(owner.Value.ValuesAsync()));
+        Assert.Equal(["first", "second"], await CollectAsync(searchParams.ValuesAsync()));
     }
 
     [Fact]
@@ -232,8 +231,8 @@ public class UrlTest
     {
         var jsRuntime = new RecordingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
-        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first");
-        await using var iterator = owner.Value.ValuesAsync().GetAsyncEnumerator();
+        await using var searchParams = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first");
+        await using var iterator = searchParams.ValuesAsync().GetAsyncEnumerator();
         Assert.True(await iterator.MoveNextAsync());
         var reference = jsRuntime.Iterators.Single();
         var exception = new JSException("Iterator failed.");
@@ -250,12 +249,12 @@ public class UrlTest
     {
         var jsRuntime = new RecordingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
-        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
+        await using var searchParams = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first&item=second");
         using var cancellation = new CancellationTokenSource();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
-            await foreach (var value in owner.Value.ValuesAsync().WithCancellation(cancellation.Token))
+            await foreach (var value in searchParams.ValuesAsync().WithCancellation(cancellation.Token))
             {
                 Assert.Equal("first", value);
                 cancellation.Cancel();
@@ -272,9 +271,9 @@ public class UrlTest
     {
         var jsRuntime = new RecordingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
-        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first");
+        await using var searchParams = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync("item=first");
         using var cancellation = new CancellationTokenSource();
-        await using var iterator = owner.Value.ValuesAsync().GetAsyncEnumerator(cancellation.Token);
+        await using var iterator = searchParams.ValuesAsync().GetAsyncEnumerator(cancellation.Token);
         Assert.True(await iterator.MoveNextAsync());
         var reference = jsRuntime.Iterators.Single();
         reference.PendingNext = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -293,8 +292,8 @@ public class UrlTest
     {
         var jsRuntime = new RecordingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
-        await using var owner = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync();
-        await using var iterator = owner.Value.ValuesAsync().GetAsyncEnumerator(new CancellationToken(canceled: true));
+        await using var searchParams = await provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams.CreateAsync();
+        await using var iterator = searchParams.ValuesAsync().GetAsyncEnumerator(new CancellationToken(canceled: true));
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => iterator.MoveNextAsync().AsTask());
 
@@ -326,15 +325,14 @@ public class UrlTest
         var url = await window.Url.CreateAsync("https://example.test/");
         var borrowed = url.SearchParams;
         await borrowed.GetSizeAsync();
-        var owner = await window.UrlSearchParams.CreateAsync();
-        var owned = owner.Value;
+        var owned = await window.UrlSearchParams.CreateAsync();
         await using var iterator = owned.EntriesAsync().GetAsyncEnumerator();
         Assert.False(await iterator.MoveNextAsync());
 
         await url.DisposeAsync();
         await url.DisposeAsync();
-        await owner.DisposeAsync();
-        await owner.DisposeAsync();
+        await owned.DisposeAsync();
+        await owned.DisposeAsync();
         await iterator.DisposeAsync();
 
         Assert.True(jsRuntime.UrlReferences.Single().Disposed);
@@ -343,9 +341,27 @@ public class UrlTest
         Assert.True(jsRuntime.Iterators.Single().Disposed);
         await Assert.ThrowsAsync<ObjectDisposedException>(() => url.GetHrefAsync().AsTask());
         await Assert.ThrowsAsync<ObjectDisposedException>(() => borrowed.GetSizeAsync().AsTask());
-        Assert.Throws<ObjectDisposedException>(() => _ = owner.Value);
         await Assert.ThrowsAsync<ObjectDisposedException>(() => owned.GetSizeAsync().AsTask());
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await CollectAsync(owned.EntriesAsync()));
+    }
+
+    [Fact]
+    public async Task DisposingBorrowedSearchParamsDoesNotDisposeUrl()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        await using var url = await provider.GetRequiredService<IBrowserPlatform>().Window.Url.CreateAsync("https://example.test/");
+        var borrowed = url.SearchParams;
+
+        await borrowed.DisposeAsync();
+
+        Assert.Same(borrowed, url.SearchParams);
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => borrowed.GetSizeAsync().AsTask());
+        Assert.Equal("https://example.test/", await url.GetHrefAsync());
+
+        await url.DisposeAsync();
+
+        Assert.True(jsRuntime.UrlReferences.Single().Disposed);
     }
 
     [Fact]

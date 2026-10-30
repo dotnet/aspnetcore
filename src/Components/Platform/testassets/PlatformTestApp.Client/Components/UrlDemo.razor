@@ -45,15 +45,14 @@
         {
             ["record"] = "value",
         };
-        await using var recordOwner = await Browser.Window.UrlSearchParams.CreateAsync(record);
+        await using var recordSearchParams = await Browser.Window.UrlSearchParams.CreateAsync(record);
 
         IEnumerable<KeyValuePair<string, string>> sequence =
         [
             new("item", "first"),
             new("item", "second"),
         ];
-        await using var sequenceOwner = await Browser.Window.UrlSearchParams.CreateAsync(sequence);
-        var searchParams = sequenceOwner.Value;
+        await using var searchParams = await Browser.Window.UrlSearchParams.CreateAsync(sequence);
         var sequenceEntries = searchParams.EntriesAsync();
         var entries = new List<KeyValuePair<string, string>>();
         await foreach (var entry in sequenceEntries)
@@ -122,7 +121,7 @@
             serialized == href &&
             json == href &&
             parsedHref == href &&
-            await recordOwner.Value.ToStringAsync() == "record=value" &&
+            await recordSearchParams.ToStringAsync() == "record=value" &&
             await searchParams.GetSizeAsync() == 3 &&
             await searchParams.GetAsync("item") == "first" &&
             (await searchParams.GetAllAsync("item")).SequenceEqual(["first", "second", "third"]) &&

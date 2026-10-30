@@ -22,6 +22,9 @@ public sealed class Url : IAsyncDisposable
     /// <summary>
     /// Gets the URL query parameter collection.
     /// </summary>
+    /// <remarks>
+    /// This instance is owned by the URL. Do not dispose it separately; it is released when the URL is disposed.
+    /// </remarks>
     public UrlSearchParams SearchParams
     {
         get
