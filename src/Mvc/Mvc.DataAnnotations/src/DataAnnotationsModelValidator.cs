@@ -16,6 +16,7 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
     private static readonly object _emptyValidationContextInstance = new object();
     private readonly IStringLocalizer? _stringLocalizer;
     private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
+    private readonly bool _canValidateWithoutContext;
 
     /// <summary>
     ///  Create a new instance of <see cref="DataAnnotationsModelValidator"/>.
@@ -35,6 +36,7 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
         Attribute = attribute;
         _stringLocalizer = stringLocalizer;
+        _canValidateWithoutContext = CanValidateWithoutContext(attribute);
     }
 
     /// <summary>
@@ -68,6 +70,21 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         }
 
         var metadata = validationContext.ModelMetadata;
+
+        // Perf: Creating a ValidationContext is relatively expensive. Well-known attributes that do not use the
+        // ValidationContext can be validated without one. On failure, produce the same result that
+        // ValidationAttribute.GetValidationResult would: FormatErrorMessage(DisplayName) for the member being validated.
+        if (_canValidateWithoutContext)
+        {
+            if (Attribute.IsValid(validationContext.Model))
+            {
+                return Enumerable.Empty<ModelValidationResult>();
+            }
+
+            var message = ResolveErrorMessage(validationContext, Attribute.FormatErrorMessage(metadata.GetDisplayName()));
+            return new[] { new ModelValidationResult(memberName: null, message) };
+        }
+
         var memberName = metadata.Name;
         var container = validationContext.Container;
 
@@ -83,18 +100,7 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         var result = Attribute.GetValidationResult(validationContext.Model, context);
         if (result is not null)
         {
-            string? errorMessage;
-            if (_stringLocalizer != null &&
-                !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
-                string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
-                Attribute.ErrorMessageResourceType == null)
-            {
-                errorMessage = GetErrorMessage(validationContext) ?? result.ErrorMessage;
-            }
-            else
-            {
-                errorMessage = result.ErrorMessage;
-            }
+            var errorMessage = ResolveErrorMessage(validationContext, result.ErrorMessage);
 
             var validationResults = new List<ModelValidationResult>();
             if (result.MemberNames != null)
@@ -127,6 +133,37 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         }
 
         return Enumerable.Empty<ModelValidationResult>();
+    }
+
+    private static bool CanValidateWithoutContext(ValidationAttribute attribute)
+    {
+        // Only built-in attributes whose IsValid(object) produces the same result as IsValid(object, ValidationContext).
+        // Use exact type checks since derived types may override IsValid(object, ValidationContext).
+        var type = attribute.GetType();
+        return type == typeof(RequiredAttribute) ||
+            type == typeof(RangeAttribute) ||
+            type == typeof(StringLengthAttribute) ||
+            type == typeof(MinLengthAttribute) ||
+            type == typeof(MaxLengthAttribute) ||
+            type == typeof(LengthAttribute) ||
+            type == typeof(RegularExpressionAttribute) ||
+            type == typeof(EmailAddressAttribute) ||
+            type == typeof(PhoneAttribute) ||
+            type == typeof(UrlAttribute) ||
+            type == typeof(CreditCardAttribute);
+    }
+
+    private string? ResolveErrorMessage(ModelValidationContext validationContext, string? defaultErrorMessage)
+    {
+        if (_stringLocalizer != null &&
+            !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
+            string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
+            Attribute.ErrorMessageResourceType == null)
+        {
+            return GetErrorMessage(validationContext) ?? defaultErrorMessage;
+        }
+
+        return defaultErrorMessage;
     }
 
     private string? GetErrorMessage(ModelValidationContextBase validationContext)

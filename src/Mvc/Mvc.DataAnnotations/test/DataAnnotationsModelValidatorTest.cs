@@ -258,6 +258,106 @@ public class DataAnnotationsModelValidatorTest
         Assert.Empty(result);
     }
 
+    public static TheoryData<ValidationAttribute, object, bool> Validate_BuiltInAttributes_Data
+        => new TheoryData<ValidationAttribute, object, bool>
+        {
+            { new RequiredAttribute(), "value", true },
+            { new RequiredAttribute(), "", false },
+            { new RequiredAttribute(), null, false },
+            { new RangeAttribute(1, 10), 5, true },
+            { new RangeAttribute(1, 10), 11, false },
+            { new StringLengthAttribute(3), "abc", true },
+            { new StringLengthAttribute(3), "abcd", false },
+            { new MinLengthAttribute(2), "ab", true },
+            { new MinLengthAttribute(2), "a", false },
+            { new MaxLengthAttribute(2), "ab", true },
+            { new MaxLengthAttribute(2), "abc", false },
+            { new LengthAttribute(1, 2), "ab", true },
+            { new LengthAttribute(1, 2), "abc", false },
+            { new RegularExpressionAttribute("^[a-z]+$"), "abc", true },
+            { new RegularExpressionAttribute("^[a-z]+$"), "ABC", false },
+            { new EmailAddressAttribute(), "someone@example.com", true },
+            { new EmailAddressAttribute(), "invalid", false },
+            { new PhoneAttribute(), "425-555-0100", true },
+            { new PhoneAttribute(), "invalid", false },
+            { new UrlAttribute(), "https://example.com", true },
+            { new UrlAttribute(), "invalid", false },
+            { new CreditCardAttribute(), "4111111111111111", true },
+            { new CreditCardAttribute(), "4111111111111112", false },
+        };
+
+    [Theory]
+    [MemberData(nameof(Validate_BuiltInAttributes_Data))]
+    public void Validate_BuiltInAttributes_ReturnsExpectedResults(ValidationAttribute attribute, object model, bool isValid)
+    {
+        // Arrange
+        var metadata = _metadataProvider.GetMetadataForProperty(typeof(SampleModel), nameof(SampleModel.Name));
+        var validator = new DataAnnotationsModelValidator(
+            new ValidationAttributeAdapterProvider(),
+            attribute,
+            stringLocalizer: null);
+        var validationContext = new ModelValidationContext(
+            actionContext: new ActionContext(),
+            modelMetadata: metadata,
+            metadataProvider: _metadataProvider,
+            container: new SampleModel(),
+            model: model);
+
+        // Act
+        var results = validator.Validate(validationContext);
+
+        // Assert
+        if (isValid)
+        {
+            Assert.Empty(results);
+        }
+        else
+        {
+            var result = Assert.Single(results);
+            Assert.Empty(result.MemberName);
+            Assert.Equal(attribute.FormatErrorMessage(nameof(SampleModel.Name)), result.Message);
+        }
+    }
+
+    [Fact]
+    public void Validate_DerivedBuiltInAttribute_ReceivesValidationContext()
+    {
+        // Arrange
+        var attribute = new DerivedRequiredAttribute();
+        var metadata = _metadataProvider.GetMetadataForProperty(typeof(SampleModel), nameof(SampleModel.Name));
+        var container = new SampleModel();
+        var validator = new DataAnnotationsModelValidator(
+            new ValidationAttributeAdapterProvider(),
+            attribute,
+            stringLocalizer: null);
+        var validationContext = new ModelValidationContext(
+            actionContext: new ActionContext(),
+            modelMetadata: metadata,
+            metadataProvider: _metadataProvider,
+            container: container,
+            model: "value");
+
+        // Act
+        var results = validator.Validate(validationContext);
+
+        // Assert
+        var result = Assert.Single(results);
+        Assert.Equal("Context error", result.Message);
+        Assert.Same(container, attribute.ValidationContext.ObjectInstance);
+        Assert.Equal(nameof(SampleModel.Name), attribute.ValidationContext.MemberName);
+    }
+
+    private class DerivedRequiredAttribute : RequiredAttribute
+    {
+        public ValidationContext ValidationContext { get; private set; }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            ValidationContext = validationContext;
+            return new ValidationResult("Context error");
+        }
+    }
+
     public static TheoryData<string, IEnumerable<string>, IEnumerable<ModelValidationResult>>
         Validate_ReturnsExpectedResults_Data
     {
