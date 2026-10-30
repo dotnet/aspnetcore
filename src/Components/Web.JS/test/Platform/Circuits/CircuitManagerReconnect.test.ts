@@ -1,12 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { describe, expect, jest, test } from '@jest/globals';
+import { afterEach, describe, expect, jest, test } from '@jest/globals';
+import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { CircuitManager } from '../../../src/Platform/Circuits/CircuitManager';
 import { resolveOptions } from '../../../src/Platform/Circuits/CircuitStartOptions';
 import { JSEventRegistry } from '../../../src/Services/JSEventRegistry';
+import { isRendererAttached } from '../../../src/Rendering/WebRendererInteropMethods';
+import { WebRendererId } from '../../../src/Rendering/WebRendererId';
 
 describe('CircuitManager reconnect', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   test('stops the connection when ConnectCircuit throws', async () => {
     const error = new Error('ConnectCircuit failed');
     let stopped = false;
@@ -97,7 +104,7 @@ describe('CircuitManager reconnect', () => {
       internal._connection = connection;
       internal._pausingState.transitionTo(true);
 
-      await expect(manager.resume()).rejects.toThrow();
+      await expect(manager.resume()).rejects.toBe(callbackError);
 
       expect(connection.invoke).toHaveBeenCalledTimes(
         callback === 'onCircuitOpened' ? 1 : 0,
@@ -106,4 +113,36 @@ describe('CircuitManager reconnect', () => {
       expect(connection.state).toBe('Connected');
     },
   );
+
+  test('onclose does not throw when renderer interop is already detached', async () => {
+    let closeHandler: ((error?: Error) => void) | undefined;
+    const connection = {
+      on: jest.fn(),
+      onclose: jest.fn((handler: (error?: Error) => void) => { closeHandler = handler; }),
+      start: () => Promise.resolve(),
+    } as unknown as HubConnection;
+    jest.spyOn(HubConnectionBuilder.prototype, 'build').mockReturnValue(connection);
+
+    const onConnectionDown = jest.fn();
+    const manager = new CircuitManager(
+      {} as never,
+      '',
+      resolveOptions({
+        circuitHandlers: [],
+        reconnectionHandler: { onConnectionDown, onConnectionUp: () => { } },
+      }),
+      { log: () => { } } as never,
+      new JSEventRegistry(),
+    );
+
+    await (manager as unknown as { startConnection(): Promise<HubConnection> }).startConnection();
+
+    // Simulate the renderer interop already being detached (e.g. after ConnectCircuit returned false).
+    expect(isRendererAttached(WebRendererId.Server)).toBe(false);
+
+    // The onclose handler must not throw even though the renderer interop is no longer registered,
+    // so connection-down bookkeeping still runs.
+    expect(() => closeHandler!(new Error('connection closed'))).not.toThrow();
+    expect(onConnectionDown).toHaveBeenCalledTimes(1);
+  });
 });
