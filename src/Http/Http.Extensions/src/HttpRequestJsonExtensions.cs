@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
@@ -370,7 +371,13 @@ public static class HttpRequestJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mt))
+        var contentType = request.ContentType;
+        if (TryMatchSimpleJsonContentType(contentType, out var isJson, out charset))
+        {
+            return isJson;
+        }
+
+        if (!MediaTypeHeaderValue.TryParse(contentType, out var mt))
         {
             charset = StringSegment.Empty;
             return false;
@@ -392,6 +399,77 @@ public static class HttpRequestJsonExtensions
 
         charset = StringSegment.Empty;
         return false;
+    }
+
+    // token = 1*<any CHAR except CTLs or separators>
+    private static readonly SearchValues<char> s_tokenChars =
+        SearchValues.Create("!#$%&'*+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
+
+    // Allocation-free handling of the most common Content-Type shapes ("type/subtype" and
+    // "application/json; charset=token"). Returns false if the full MediaTypeHeaderValue parser is required.
+    private static bool TryMatchSimpleJsonContentType(string? contentType, out bool isJson, out StringSegment charset)
+    {
+        isJson = false;
+        // Matches MediaTypeHeaderValue.Charset, which has no value when the parameter is absent.
+        charset = default;
+
+        if (string.IsNullOrEmpty(contentType))
+        {
+            return false;
+        }
+
+        var span = contentType.AsSpan();
+        if (span.StartsWith(ContentTypeConstants.JsonContentType, StringComparison.OrdinalIgnoreCase))
+        {
+            var rest = span.Slice(ContentTypeConstants.JsonContentType.Length);
+            if (rest.IsEmpty)
+            {
+                isJson = true;
+                return true;
+            }
+
+            // "; charset=<token>"
+            if (rest[0] != ';')
+            {
+                return false;
+            }
+
+            rest = rest.Slice(1).TrimStart(' ');
+            const string CharsetPrefix = "charset=";
+            if (!rest.StartsWith(CharsetPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var value = rest.Slice(CharsetPrefix.Length);
+            if (value.IsEmpty || value.ContainsAnyExcept(s_tokenChars))
+            {
+                return false;
+            }
+
+            isJson = true;
+            charset = new StringSegment(contentType, contentType.Length - value.Length, value.Length);
+            return true;
+        }
+
+        // "type/subtype" consisting only of token characters, i.e. no parameters or whitespace.
+        var slashIndex = span.IndexOf('/');
+        if (slashIndex <= 0)
+        {
+            return false;
+        }
+
+        var type = span.Slice(0, slashIndex);
+        var subType = span.Slice(slashIndex + 1);
+        if (subType.IsEmpty || type.ContainsAnyExcept(s_tokenChars) || subType.ContainsAnyExcept(s_tokenChars))
+        {
+            return false;
+        }
+
+        // Matches +json, e.g. application/ld+json
+        var suffixIndex = subType.LastIndexOf('+');
+        isJson = suffixIndex >= 0 && subType.Slice(suffixIndex + 1).Equals("json", StringComparison.OrdinalIgnoreCase);
+        return true;
     }
 
     private static JsonSerializerOptions ResolveSerializerOptions(HttpContext httpContext)
