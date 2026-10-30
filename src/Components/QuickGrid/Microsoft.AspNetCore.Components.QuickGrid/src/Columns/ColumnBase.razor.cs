@@ -40,6 +40,7 @@ public abstract partial class ColumnBase<TGridItem>
     /// <summary>
     /// If specified, indicates that this column has this associated options UI. A button to display this
     /// UI will be included in the header cell by default.
+    /// The default button exposes whether the options content is expanded.
     ///
     /// If <see cref="HeaderTemplate" /> is used, it is left up to that template to render any relevant
     /// "show options" UI and invoke the grid's <see cref="QuickGrid{TGridItem}.ShowColumnOptionsAsync(ColumnBase{TGridItem})" />).
