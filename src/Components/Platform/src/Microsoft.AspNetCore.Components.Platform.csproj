@@ -17,4 +17,8 @@
     <ProjectReference Include="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>

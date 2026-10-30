@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!-- Keep Roslyn's dependency versions instead of centrally pinned product packages in the compiler host. -->
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <Description>CSharp Analyzers for ASP.NET Core.</Description>
     <IsShippingPackage>false</IsShippingPackage>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
@@ -12,8 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Features.ExternalAccess" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" VersionOverride="$(Analyzer_MicrosoftCodeAnalysisCSharpVersion_LatestVS)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features.ExternalAccess" VersionOverride="$(Analyzer_MicrosoftCodeAnalysisFeaturesExternalAccessVersion_LatestVS)" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.App.CodeFixes" />

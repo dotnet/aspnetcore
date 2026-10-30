@@ -35,3 +35,5 @@
 /src/SignalR/                                                                     @BrennanConroy @halter73
 /src/submodules                                                                   @dotnet/aspnet-build @wtgodbe
 /**/PublicAPI.*Shipped.txt                                                        @dotnet/aspnet-api-review @tdykstra
+/**/package.json                                                                  @dotnet/aspnet-build @wtgodbe
+/**/package-lock.json                                                             @dotnet/aspnet-build @wtgodbe
