@@ -350,11 +350,20 @@ function Complete-Action {
         objectIds = @($actor, $Action.pr)
         claimsSha256 = $claimsSha256
     }
+    $resultArtifactPath = Join-Path $script:ProofRoot ("result-" + [guid]::NewGuid().ToString("N") + ".json")
+    [IO.File]::WriteAllText(
+        $resultArtifactPath,
+        (([ordered]@{ schemaVersion = 1; result = "generic non-envelope artifact" } | ConvertTo-Json -Compress) + "`n"),
+        [Text.UTF8Encoding]::new($false))
     [IO.File]::WriteAllText(
         $proofPath,
         (ConvertTo-SfroCanonicalJson $proofEnvelope) + "`n",
         [Text.UTF8Encoding]::new($false))
     $evidence.proofs = @(
+        [ordered]@{
+            path = $resultArtifactPath
+            sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $resultArtifactPath).Hash.ToLowerInvariant()
+        },
         [ordered]@{
             path = $proofPath
             sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $proofPath).Hash.ToLowerInvariant()

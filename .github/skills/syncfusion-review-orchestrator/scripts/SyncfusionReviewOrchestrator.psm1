@@ -71,7 +71,10 @@ function Assert-SfroProofArtifacts {
         Assert-Sfro (Test-SfroSha256 $proof.sha256) "Receipt proof artifact hash is invalid."
         Assert-Sfro ((Get-SfroFileSha256 $proof.path) -ceq $proof.sha256) "Receipt proof artifact hash mismatch."
         $envelope = ConvertFrom-SfroJson (Get-Content -LiteralPath $proof.path -Raw)
-        if ($envelope.schemaVersion -eq 1 -and
+        $requiredKeys = @("schemaVersion", "intentId", "actionId", "kind", "source", "objectIds", "claimsSha256")
+        if ($envelope -is [Collections.IDictionary] -and
+            @($requiredKeys | Where-Object { -not $envelope.Contains($_) }).Count -eq 0 -and
+            $envelope.schemaVersion -eq 1 -and
             $envelope.intentId -ceq $Receipt.intentId -and
             $envelope.actionId -ceq $Receipt.actionId -and
             $envelope.kind -ceq $Action.kind -and
