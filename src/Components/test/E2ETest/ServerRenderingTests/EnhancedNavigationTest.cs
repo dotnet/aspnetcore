@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using OpenQA.Selenium.BiDi;
 using OpenQA.Selenium.DevTools;
@@ -95,6 +96,67 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // For example, the default error middleware will only serve the error page if this content type is requested.
         // The blazor-enhanced-nav parameter can be used to trigger arbitrary server-side behaviors.
         Assert.Contains("accept: text/html; blazor-enhanced-nav=on", allHeaders);
+    }
+
+    [Fact]
+    public void GetFormNetworkFailureFallsBackToFullPageLoadAndPreservesValues()
+    {
+        var (id, state) = StartNetworkFailureScenario("GeT");
+        try
+        {
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            Browser.Exists(By.Id("failed-get-form")).Click();
+            WaitForNetworkFailureRequest(state);
+            Assert.Equal(0, state.PostRequests);
+            state.Release();
+
+            Browser.Equal(2, () => state.FullPageRequests);
+            Browser.Equal("hello & world", () => Browser.Exists(By.Id("received-value")).Text);
+            Assert.Contains("value=hello+%26+world", Browser.Url);
+            Assert.Throws<StaleElementReferenceException>(() => originalDocument.GetDomProperty("tagName"));
+        }
+        finally
+        {
+            state.Release();
+            NetworkFailures.Remove(id);
+        }
+    }
+
+    [Fact]
+    public void PostNetworkFailureShowsErrorAndCompletesLoadingWithoutReplaying()
+    {
+        var (id, state) = StartNetworkFailureScenario();
+        try
+        {
+            var originalUrl = Browser.Url;
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            ObserveNetworkFailureNavigation();
+            Browser.Exists(By.Id("failed-post")).Click();
+            WaitForNetworkFailureRequest(state);
+            Browser.Equal(true, () => ReadNetworkFailureNavigation("loading"));
+            state.Release();
+
+            Browser.True(() => Browser.Exists(By.Id("blazor-error-ui")).Displayed);
+            Browser.Equal(false, () => ReadNetworkFailureNavigation("loading"));
+            Browser.Equal(1L, () => ReadNetworkFailureNavigation("ended"));
+            Assert.True(state.PostRequests > 0);
+            Assert.Equal(state.EnhancedRequests, state.PostRequests);
+            Assert.Equal(1, state.FullPageRequests);
+            Assert.Equal(originalUrl, Browser.Url);
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+            Assert.Equal("hello & world", Browser.FindElement(By.Id("submitted-value")).GetDomProperty("value"));
+
+            Browser.Exists(By.Id("successful-navigation")).Click();
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            Browser.Equal(2L, () => ReadNetworkFailureNavigation("ended"));
+            Browser.Equal(false, () => ReadNetworkFailureNavigation("loading"));
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+        }
+        finally
+        {
+            state.Release();
+            NetworkFailures.Remove(id);
+        }
     }
 
     [Fact]
@@ -1067,4 +1129,39 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Ensure we actually observed the new content, not just the presence of the element.
         return string.Equals(elements[0].Text, expectedText, StringComparison.Ordinal);
     };
+
+     private EnhancedNavigationFailureState NetworkFailures
+        => _serverFixture.Host.Services.GetRequiredService<EnhancedNavigationFailureState>();
+
+    private (string Id, EnhancedNavigationFailureState.RequestState State) StartNetworkFailureScenario(string formmethod = "get")
+    {
+        var id = Guid.NewGuid().ToString("N");
+        Navigate($"{ServerPathBase}/nav/network-failure/{id}?formmethod={formmethod}");
+        Browser.Exists(By.Id("blazor-started"));
+
+        return (id, NetworkFailures.Get(id));
+    }
+
+    private void WaitForNetworkFailureRequest(EnhancedNavigationFailureState.RequestState state)
+        => Browser.True(() => state.EnhancedRequests > 0);
+
+    private void ObserveNetworkFailureNavigation()
+    {
+        // WebDriver cannot subscribe to Blazor events directly; observe the real lifecycle without replacing fetch.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("""
+            window.networkFailureNavigation = { started: 0, ended: 0, loading: false };
+            Blazor.addEventListener('enhancednavigationstart', () => {
+                window.networkFailureNavigation.started++;
+                window.networkFailureNavigation.loading = true;
+            });
+            Blazor.addEventListener('enhancednavigationend', () => {
+                window.networkFailureNavigation.ended++;
+                window.networkFailureNavigation.loading = false;
+            });
+            """);
+    }
+
+    private object ReadNetworkFailureNavigation(string property)
+        => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.networkFailureNavigation[arguments[0]];", property);
+
 }

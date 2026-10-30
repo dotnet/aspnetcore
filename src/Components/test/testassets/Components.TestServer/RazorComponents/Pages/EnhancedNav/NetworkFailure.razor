@@ -1,0 +1,39 @@
+@page "/nav/network-failure/{Id}"
+@using Microsoft.AspNetCore.Components.Forms
+@using TestServer
+@inject EnhancedNavigationFailureState Failures
+
+<h1>Network failure</h1>
+
+<a id="successful-navigation" href="nav">Successful navigation</a>
+
+<form action="@Action" method="post" data-enhance @formname="network-failure">
+    <AntiforgeryToken />
+    <input id="submitted-value" name="value" value="hello &amp; world" />
+    <button id="failed-get-form" type="submit" formmethod="@Formmethod">Submit GET</button>
+    <button id="failed-post" type="submit" formmethod="post">Submit POST</button>
+</form>
+
+<p id="received-value">@Value</p>
+<div id="blazor-error-ui" style="display: none">An unhandled error has occurred.</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? Value { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string Formmethod { get; set; } = "get";
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private string Action => $"nav/network-failure-fetch/{Id}";
+
+    protected override void OnInitialized()
+    {
+        var enhanced = HttpContext.Request.Headers.Accept.ToString().Contains("blazor-enhanced-nav=on", StringComparison.Ordinal);
+        Failures.Get(Id).RecordRequest(enhanced, isPost: HttpMethods.IsPost(HttpContext.Request.Method));
+    }
+}
