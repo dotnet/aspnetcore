@@ -96,7 +96,7 @@ internal sealed class OutputCacheMiddleware
         return InvokeAwaited(httpContext, policies);
     }
 
-    private async Task InvokeAwaited(HttpContext httpContext, IReadOnlyList<IOutputCachePolicy> policies)
+    private async Task InvokeAwaited(HttpContext httpContext, IOutputCachePolicy[] policies)
     {
         var context = new OutputCacheContext { HttpContext = httpContext };
 
@@ -220,46 +220,48 @@ internal sealed class OutputCacheMiddleware
         }
     }
 
-    internal bool TryGetRequestPolicies(HttpContext httpContext, out IReadOnlyList<IOutputCachePolicy> policies)
+    internal bool TryGetRequestPolicies(HttpContext httpContext, out IOutputCachePolicy[] policies)
     {
         policies = Array.Empty<IOutputCachePolicy>();
-        List<IOutputCachePolicy>? result = null;
 
         var basePolicies = _policyProvider.GetBasePolicies();
-        if (basePolicies.Count > 0)
-        {
-            result = new();
-            result.AddRange(basePolicies);
-        }
+        var basePoliciesCount = basePolicies.Count;
 
         var metadata = httpContext.GetEndpoint()?.Metadata;
 
         var policy = metadata?.GetMetadata<IOutputCachePolicy>();
 
-        if (policy != null)
+        var attribute = metadata?.GetMetadata<OutputCacheAttribute>();
+
+        var count = basePoliciesCount + (policy != null ? 1 : 0) + (attribute != null ? 1 : 0);
+        if (count == 0)
         {
-            result ??= new();
-            result.Add(policy);
+            return false;
         }
 
-        var attribute = metadata?.GetMetadata<OutputCacheAttribute>();
+        var result = new IOutputCachePolicy[count];
+        var index = 0;
+
+        for (; index < basePoliciesCount; index++)
+        {
+            result[index] = basePolicies[index];
+        }
+
+        if (policy != null)
+        {
+            result[index++] = policy;
+        }
 
         if (attribute != null)
         {
-            result ??= new();
-            result.Add(attribute.BuildPolicy());
+            result[index] = attribute.BuildPolicy();
         }
 
-        if (result != null)
-        {
-            policies = result;
-            return true;
-        }
-
-        return false;
+        policies = result;
+        return true;
     }
 
-    internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry, IReadOnlyList<IOutputCachePolicy> policies)
+    internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry, IOutputCachePolicy[] policies)
     {
         if (cacheEntry == null)
         {
@@ -329,7 +331,7 @@ internal sealed class OutputCacheMiddleware
         return false;
     }
 
-    internal async Task<bool> TryServeFromCacheAsync(OutputCacheContext cacheContext, IReadOnlyList<IOutputCachePolicy> policies)
+    internal async Task<bool> TryServeFromCacheAsync(OutputCacheContext cacheContext, IOutputCachePolicy[] policies)
     {
         CreateCacheKey(cacheContext);
 
