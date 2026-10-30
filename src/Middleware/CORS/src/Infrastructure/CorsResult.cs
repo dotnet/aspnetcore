@@ -12,6 +12,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure;
 public class CorsResult
 {
     private TimeSpan? _preflightMaxAge;
+    private List<string>? _allowedMethods;
+    private List<string>? _allowedHeaders;
+    private List<string>? _allowedExposedHeaders;
 
     /// <summary>
     /// Gets or sets a value that determines if the current request is a CORS-preflight request.
@@ -37,17 +40,17 @@ public class CorsResult
     /// <summary>
     /// Gets the allowed methods.
     /// </summary>
-    public IList<string> AllowedMethods { get; } = new List<string>();
+    public IList<string> AllowedMethods => _allowedMethods ??= new List<string>();
 
     /// <summary>
     /// Gets the allowed headers.
     /// </summary>
-    public IList<string> AllowedHeaders { get; } = new List<string>();
+    public IList<string> AllowedHeaders => _allowedHeaders ??= new List<string>();
 
     /// <summary>
     /// Gets the allowed headers that can be exposed on the response.
     /// </summary>
-    public IList<string> AllowedExposedHeaders { get; } = new List<string>();
+    public IList<string> AllowedExposedHeaders => _allowedExposedHeaders ??= new List<string>();
 
     /// <summary>
     /// Gets or sets a value indicating if a 'Vary' header with the value 'Origin' is required.
@@ -70,6 +73,38 @@ public class CorsResult
                 throw new ArgumentOutOfRangeException(nameof(value), Resources.PreflightMaxAgeOutOfRange);
             }
             _preflightMaxAge = value;
+        }
+    }
+
+    internal List<string>? AllowedMethodsOrNull => _allowedMethods;
+
+    internal List<string>? AllowedHeadersOrNull => _allowedHeaders;
+
+    internal List<string>? AllowedExposedHeadersOrNull => _allowedExposedHeaders;
+
+    internal void AddAllowedMethod(string method)
+        => (_allowedMethods ??= new List<string>(1)).Add(method);
+
+    internal void AddAllowedMethods(IList<string>? methods)
+        => AddValues(ref _allowedMethods, methods);
+
+    internal void AddAllowedHeaders(IList<string>? headers)
+        => AddValues(ref _allowedHeaders, headers);
+
+    internal void AddAllowedExposedHeaders(IList<string>? headers)
+        => AddValues(ref _allowedExposedHeaders, headers);
+
+    private static void AddValues(ref List<string>? target, IList<string>? values)
+    {
+        if (values is null || values.Count == 0)
+        {
+            return;
+        }
+
+        target ??= new List<string>(values.Count);
+        for (var i = 0; i < values.Count; i++)
+        {
+            target.Add(values[i]);
         }
     }
 
