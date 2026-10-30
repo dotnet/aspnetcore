@@ -30,6 +30,16 @@ internal sealed partial class HttpResponseHeaders : HttpHeaders
         return new Enumerator(this);
     }
 
+    /// <summary>
+    /// Gets an enumerator that does not format the Content-Length header value as a string.
+    /// When the current header is Content-Length, <see cref="Enumerator.Current"/> has a default value
+    /// and callers should read the ContentLength property instead.
+    /// </summary>
+    internal Enumerator GetEnumeratorWithRawContentLength()
+    {
+        return new Enumerator(this, formatContentLength: false);
+    }
+
     protected override IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
     {
         return GetEnumerator();
@@ -146,10 +156,17 @@ internal sealed partial class HttpResponseHeaders : HttpHeaders
         private KnownHeaderType _currentKnownType;
         private readonly bool _hasUnknown;
         private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
+        private readonly bool _formatContentLength;
 
         internal Enumerator(HttpResponseHeaders collection)
+            : this(collection, formatContentLength: true)
+        {
+        }
+
+        internal Enumerator(HttpResponseHeaders collection, bool formatContentLength)
         {
             _collection = collection;
+            _formatContentLength = formatContentLength;
             _currentBits = collection._bits;
             _next = GetNext(_currentBits, collection.ContentLength.HasValue);
             _current = default;
