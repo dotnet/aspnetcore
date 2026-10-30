@@ -55,6 +55,13 @@ Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.get -> string
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.set -> void
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Window.get -> Microsoft.AspNetCore.Components.Platform.Window!
+Microsoft.AspNetCore.Components.Platform.Screen
+Microsoft.AspNetCore.Components.Platform.Screen.GetAvailHeightAsync() -> System.Threading.Tasks.ValueTask<int>
+Microsoft.AspNetCore.Components.Platform.Screen.GetAvailWidthAsync() -> System.Threading.Tasks.ValueTask<int>
+Microsoft.AspNetCore.Components.Platform.Screen.GetColorDepthAsync() -> System.Threading.Tasks.ValueTask<uint>
+Microsoft.AspNetCore.Components.Platform.Screen.GetHeightAsync() -> System.Threading.Tasks.ValueTask<int>
+Microsoft.AspNetCore.Components.Platform.Screen.GetPixelDepthAsync() -> System.Threading.Tasks.ValueTask<uint>
+Microsoft.AspNetCore.Components.Platform.Screen.GetWidthAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Storage
 Microsoft.AspNetCore.Components.Platform.Storage.ClearAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.GetItemAsync(string! key) -> System.Threading.Tasks.ValueTask<string?>
@@ -66,6 +73,9 @@ Microsoft.AspNetCore.Components.Platform.Window
 Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions
 Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
 Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).CookieStore.get -> Microsoft.AspNetCore.Components.Platform.CookieStore!
+Microsoft.AspNetCore.Components.Platform.WindowScreenExtensions
+Microsoft.AspNetCore.Components.Platform.WindowScreenExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
+Microsoft.AspNetCore.Components.Platform.WindowScreenExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).Screen.get -> Microsoft.AspNetCore.Components.Platform.Screen!
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!

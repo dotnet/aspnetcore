@@ -1,0 +1,44 @@
+@using System.Globalization
+@inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
+
+<h2>Screen</h2>
+
+<div>
+    <button id="get-avail-width" @onclick="GetAvailWidthAsync">Available width</button>
+    <button id="get-avail-height" @onclick="GetAvailHeightAsync">Available height</button>
+    <button id="get-width" @onclick="GetWidthAsync">Width</button>
+    <button id="get-height" @onclick="GetHeightAsync">Height</button>
+    <button id="get-color-depth" @onclick="GetColorDepthAsync">Color depth</button>
+    <button id="get-pixel-depth" @onclick="GetPixelDepthAsync">Pixel depth</button>
+</div>
+<p id="screen-result" role="status" data-run="@runCount">@result</p>
+
+@code {
+    private string result = "No operation has run.";
+    private int runCount;
+
+    private Task GetAvailWidthAsync() => RunAsync("Available width", async () =>
+        (await Browser.Window.Screen.GetAvailWidthAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private Task GetAvailHeightAsync() => RunAsync("Available height", async () =>
+        (await Browser.Window.Screen.GetAvailHeightAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private Task GetWidthAsync() => RunAsync("Width", async () =>
+        (await Browser.Window.Screen.GetWidthAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private Task GetHeightAsync() => RunAsync("Height", async () =>
+        (await Browser.Window.Screen.GetHeightAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private Task GetColorDepthAsync() => RunAsync("Color depth", async () =>
+        (await Browser.Window.Screen.GetColorDepthAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private Task GetPixelDepthAsync() => RunAsync("Pixel depth", async () =>
+        (await Browser.Window.Screen.GetPixelDepthAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private async Task RunAsync(string operation, Func<Task<string>> run)
+    {
+        result = $"{operation}: {await run()}";
+        // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
+        runCount++;
+    }
+}
