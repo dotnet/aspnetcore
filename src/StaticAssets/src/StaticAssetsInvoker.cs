@@ -169,6 +169,9 @@ internal class StaticAssetsInvoker
                         }
                     }
                     context.Response.Clear();
+                    _logger.FileNotFound(Route);
+                    context.Response.Headers.CacheControl = "no-store";
+                    await SendStatusAsync(requestContext, StatusCodes.Status404NotFound);
                 }
                 return;
             case PreconditionState.NotModified:
