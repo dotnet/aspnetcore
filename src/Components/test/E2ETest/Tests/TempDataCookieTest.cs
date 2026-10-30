@@ -132,7 +132,7 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Navigate($"{ServerPathBase}/tempdata");
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
         Browser.FindElement(By.Id("set-values-not-read")).Click();
-        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Exists(By.Id("redirect-without-read-button")).Click();
         Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
     }
 
