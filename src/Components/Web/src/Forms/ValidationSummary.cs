@@ -62,7 +62,13 @@ public class ValidationSummary : ComponentBase, IDisposable
         if (AssignedRenderMode is not null)
         {
             // Interactive .NET validation
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "aria-live", "polite");
+            builder.AddAttribute(2, "aria-atomic", "true");
+
             RenderInteractiveRenderTree(builder);
+
+            builder.CloseElement();
         }
         else
         {
