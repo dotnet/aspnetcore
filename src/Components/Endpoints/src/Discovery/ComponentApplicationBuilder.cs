@@ -17,6 +17,8 @@ internal class ComponentApplicationBuilder
 
     internal ComponentCollectionBuilder Components { get; } = new ComponentCollectionBuilder();
 
+    internal IReadOnlyCollection<string> AssemblyNames => _assemblies;
+
     /// <summary>
     /// Builds the component application definition.
     /// </summary>

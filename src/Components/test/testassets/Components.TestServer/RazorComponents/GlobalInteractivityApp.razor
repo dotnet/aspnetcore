@@ -6,7 +6,7 @@
     <HeadOutlet @rendermode="@PageRenderMode" />
 </head>
 <body>
-    <Components.WasmMinimal.Routes @rendermode="@PageRenderMode" />
+    <Components.WasmMinimal.Routes @rendermode="@PageRenderMode" UseConfiguredAssemblies="true" />
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script>
         Blazor.start({
