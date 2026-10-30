@@ -98,7 +98,17 @@ public class DefaultConnectionContext : ConnectionContext,
     /// <inheritdoc />
     public override void Abort(ConnectionAbortedException abortReason)
     {
-        ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionClosedTokenSource);
+        ThreadPool.UnsafeQueueUserWorkItem(static cts =>
+        {
+            try
+            {
+                ((CancellationTokenSource)cts!).Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // The connection can be disposed between scheduling and running the cancellation.
+            }
+        }, _connectionClosedTokenSource);
     }
 
     /// <inheritdoc />
