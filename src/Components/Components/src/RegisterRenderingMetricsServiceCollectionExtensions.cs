@@ -41,7 +41,6 @@ public static class ComponentsMetricsServiceCollectionExtensions
         IServiceCollection services)
     {
         services.TryAddScoped<ComponentsActivitySource>();
-        AddComponentsActivityStatePersistence(services);
 
         return services;
     }

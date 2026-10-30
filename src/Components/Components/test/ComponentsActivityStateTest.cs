@@ -211,10 +211,31 @@ public class ComponentsActivityStateTest
     }
 
     [Fact]
+    public void TracingRegistration_DoesNotRequirePersistenceServices()
+    {
+        var services = new ServiceCollection().AddLogging();
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true,
+        });
+        using var scope = provider.CreateScope();
+        using var renderer = new TestRenderer(scope.ServiceProvider);
+
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<ComponentsActivitySource>());
+        Assert.Null(provider.GetService<ComponentStatePersistenceManager>());
+        Assert.Null(provider.GetService<RegisteredPersistentServiceRegistrationCollection>());
+    }
+
+    [Fact]
     public async Task SingletonPersistenceManager_RestoresStateAcrossHostAndRendererScopes()
     {
         var services = new ServiceCollection().AddLogging().AddSingleton<ComponentStatePersistenceManager>();
         ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+        services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.AddSupplyValueFromPersistentComponentStateProvider();
         using var provider = services.BuildServiceProvider(validateScopes: true);
         using var scope = provider.CreateScope();
 
@@ -231,7 +252,14 @@ public class ComponentsActivityStateTest
     {
         var serverServices = new ServiceCollection().AddLogging().AddScoped<ComponentStatePersistenceManager>();
         ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(serverServices);
-        using var serverProvider = serverServices.BuildServiceProvider(validateScopes: true);
+        serverServices.AddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        serverServices.AddSupplyValueFromPersistentComponentStateProvider();
+        var providerOptions = new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true,
+        };
+        using var serverProvider = serverServices.BuildServiceProvider(providerOptions);
         using var serverScope = serverProvider.CreateScope();
         using var renderer = new TestRenderer(serverScope.ServiceProvider);
         var serverManager = serverScope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
@@ -248,8 +276,9 @@ public class ComponentsActivityStateTest
         Assert.Contains(typeof(PersistentServicesRegistry).FullName!, store.State.Keys);
 
         var clientServices = new ServiceCollection().AddLogging().AddSingleton<ComponentStatePersistenceManager>();
+        clientServices.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         clientServices.AddSupplyValueFromPersistentComponentStateProvider();
-        using var clientProvider = clientServices.BuildServiceProvider(validateScopes: true);
+        using var clientProvider = clientServices.BuildServiceProvider(providerOptions);
         var clientManager = clientProvider.GetRequiredService<ComponentStatePersistenceManager>();
 
         await clientManager.RestoreStateAsync(store);
@@ -271,6 +300,8 @@ public class ComponentsActivityStateTest
             using var serverListener = CreateListener();
             var serverServices = new ServiceCollection().AddLogging().AddScoped<ComponentStatePersistenceManager>();
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(serverServices);
+            serverServices.AddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+            serverServices.AddSupplyValueFromPersistentComponentStateProvider();
             using var serverProvider = serverServices.BuildServiceProvider(validateScopes: true);
             var initialStore = new TestStore();
             ActivityContext navigationContext;
@@ -289,6 +320,8 @@ public class ComponentsActivityStateTest
 
             var clientServices = new ServiceCollection().AddLogging().AddSingleton<ComponentStatePersistenceManager>();
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(clientServices);
+            clientServices.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+            clientServices.AddSupplyValueFromPersistentComponentStateProvider();
             using var clientProvider = clientServices.BuildServiceProvider(validateScopes: true);
             using var clientScope = clientProvider.CreateScope();
             using var clientRenderer = new TestRenderer(clientScope.ServiceProvider);
@@ -357,6 +390,8 @@ public class ComponentsActivityStateTest
         {
             var services = new ServiceCollection().AddLogging().AddScoped<ComponentStatePersistenceManager>();
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+            services.AddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+            services.AddSupplyValueFromPersistentComponentStateProvider();
             using var provider = services.BuildServiceProvider();
             using var scope = provider.CreateScope();
             using var renderer = new TestRenderer(scope.ServiceProvider);
