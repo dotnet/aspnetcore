@@ -126,6 +126,8 @@ are expressed as central `<PackageVersion>` items.
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.openharmony-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.openharmony-arm64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.freebsd-arm64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.openbsd-x64" />
@@ -148,6 +150,8 @@ are expressed as central `<PackageVersion>` items.
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.openharmony-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.openharmony-arm64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.freebsd-arm64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.openbsd-x64" />
