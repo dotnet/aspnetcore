@@ -51,11 +51,19 @@ internal sealed class PredicatePolicy : IOutputCachePolicy
             return action(policy, context, cancellationToken);
         }
 
+        if (context.PolicyApplicabilityResults?.TryGetValue(this, out var predicateResult) == true)
+        {
+            return predicateResult ? action(policy, context, cancellationToken) : ValueTask.CompletedTask;
+        }
+
         var task = _predicate(context);
 
         if (task.IsCompletedSuccessfully)
         {
-            if (task.Result)
+            predicateResult = task.Result;
+            (context.PolicyApplicabilityResults ??= [])[this] = predicateResult;
+
+            if (predicateResult)
             {
                 return action(policy, context, cancellationToken);
             }
@@ -67,7 +75,10 @@ internal sealed class PredicatePolicy : IOutputCachePolicy
 
         async ValueTask Awaited(ValueTask<bool> task)
         {
-            if (await task)
+            predicateResult = await task;
+            (context.PolicyApplicabilityResults ??= [])[this] = predicateResult;
+
+            if (predicateResult)
             {
                 await action(policy, context, cancellationToken);
             }
