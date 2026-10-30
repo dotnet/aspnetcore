@@ -112,7 +112,7 @@ function Remove-FixtureSnapshotBlock
     $snapshotStart = $Body.LastIndexOf("${separator}## Snapshot`n", [StringComparison]::Ordinal)
     Assert-True ($snapshotStart -ge 0) "The fixture body must contain a snapshot section."
     $suffix = $separator + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse) `
-        -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -MaxSnapshotLength (65000 - $snapshotStart - $separator.Length))
+        -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -MaxSnapshotLength (64000 - $snapshotStart - $separator.Length))
     Assert-True ($Body.EndsWith($suffix, [StringComparison]::Ordinal)) "The fixture body must end with its exact frozen snapshot."
     Assert-True ([regex]::Matches($Body, "(?m)^## Snapshot$").Count -eq 1) "Only one snapshot section is permitted."
 
@@ -1156,7 +1156,7 @@ try
     Assert-True ($combinedNormal.areas[1].id -ceq "repository-wide" -and -not $combinedNormal.areas[1].openByDefault) "Repository-wide must be the second, collapsed baseline."
     $combinedNormalBody = Invoke-Renderer -Pulse $combinedNormal
     Assert-CombinedPresentationLayout -Pulse $combinedNormal -Body $combinedNormalBody
-    Assert-True ($combinedNormalBody.Length -le 65000) "The combined two-area report must remain within the publication body limit."
+    Assert-True ($combinedNormalBody.Length -le 64000) "The combined two-area report must remain within the canonical publication body limit."
     Assert-True ([regex]::Matches($combinedNormalBody, "\[dotnet/aspnetcore#101\]\(https://github\.com/dotnet/aspnetcore/pull/101\)").Count -eq 2) "The same pull request may appear once in each independently generated area."
     $combinedPostIngestionBody = Invoke-PinnedOutputSanitizer -Content $combinedNormalBody
     Assert-True ([string]::Equals($combinedPostIngestionBody, $combinedNormalBody, [StringComparison]::Ordinal)) "Pinned gh-aw output sanitization must preserve the complete combined report byte-for-byte."
@@ -1618,7 +1618,7 @@ try
     foreach ($line in $awfConfigLines)
     {
         $normalizedLine = $line.Replace("\", "")
-        Assert-True ($normalizedLine.Contains("v0.28.23")) "Every inference stage must use the reviewed AWF v0.28.23 runtime."
+        Assert-True ($normalizedLine.Contains("v0.28.57")) "Every inference stage must use the reviewed AWF v0.28.57 runtime."
     }
     $mainConfigLine = $awfConfigLines[0].Replace("\", "")
     $detectorConfigLine = $awfConfigLines[1].Replace("\", "")
@@ -1630,11 +1630,8 @@ try
     Assert-True (-not $detectorConfigLine.Contains("maxAiCredits")) "Detector credit budgeting must be absent to keep token steering disabled."
     Assert-True (-not $detectorConfigLine.Contains("modelFallback")) "Detector fallback is enforced behaviorally by the singleton post-rewrite model policy, not a literal field."
     Assert-True (-not $lock.Contains("GH_AW_EVALS_MODEL")) "No evaluation inference stage may be introduced."
-    $publicationPreparationIndex = $lock.IndexOf("name: Preserve canonical Pulse body on publication", [StringComparison]::Ordinal)
-    $publicationJobIndex = $lock.IndexOf("`n  safe_outputs:", [StringComparison]::Ordinal)
-    $publicationHandlerIndex = $lock.IndexOf("name: Process Safe Outputs", [StringComparison]::Ordinal)
-    Assert-True ($publicationPreparationIndex -gt $publicationJobIndex -and $publicationPreparationIndex -lt $publicationHandlerIndex) "Workflow-id decoration must be disabled only in the publication job before the real handler."
-    Assert-True ([regex]::Matches($lock, 'core\.exportVariable\("GH_AW_WORKFLOW_ID", ""\)').Count -eq 1) "Only one publication-scoped workflow-id override is allowed."
+    Assert-True (-not $lock.Contains("name: Preserve canonical Pulse body on publication")) "Publication must retain the workflow identity required by gh-aw execution provenance."
+    Assert-True (-not $lock.Contains('core.exportVariable("GH_AW_WORKFLOW_ID", "")')) "Publication must not clear the workflow identity required by gh-aw execution provenance."
     Assert-True (-not $lock.Contains("Configure Git credentials")) "No generated git credential step may run without a checkout."
     Assert-True ([regex]::Matches($lock, "(?m)^  safe-outputs:").Count -eq 0) "The hyphenated job alias must not create a custom mutation-capable job."
     Assert-True ([regex]::Matches($lock, "(?m)^  safe_outputs:").Count -eq 1) "Exactly one built-in safe-output job must be generated."
@@ -1673,14 +1670,15 @@ try
     }
     $validatorStepIndex = $lock.IndexOf("name: Validate the sole publication payload", [StringComparison]::Ordinal)
     $evidenceStepIndex = $lock.IndexOf("name: Upload validated Pulse publication evidence", [StringComparison]::Ordinal)
-    $cleanupStepIndex = $lock.IndexOf("name: Remove sanitized Pulse data", [StringComparison]::Ordinal)
-    Assert-True ($evidenceStepIndex -gt $validatorStepIndex -and $evidenceStepIndex -lt $cleanupStepIndex) "Canonical audit evidence must be retained only after validation and before cleanup."
-    $evidenceStep = $lock.Substring($evidenceStepIndex, $cleanupStepIndex - $evidenceStepIndex)
+    $publicationJobIndex = $lock.IndexOf("`n  safe_outputs:", [StringComparison]::Ordinal)
+    $publicationHandlerIndex = $lock.IndexOf("name: Process Safe Outputs", $publicationJobIndex, [StringComparison]::Ordinal)
+    Assert-True ($validatorStepIndex -gt $publicationJobIndex -and $validatorStepIndex -lt $publicationHandlerIndex) "Trusted validation must run in the safe-output job before publication."
+    Assert-True ($evidenceStepIndex -gt $validatorStepIndex -and $evidenceStepIndex -lt $publicationHandlerIndex) "Canonical audit evidence must be retained only after validation and before publication."
+    $evidenceStep = $lock.Substring($evidenceStepIndex, $publicationHandlerIndex - $evidenceStepIndex)
     Assert-True ($evidenceStep.Contains('pr-attention-pulse-validator/pulse-input.json') -and $evidenceStep.Contains('pr-attention-pulse-validator/pulse-body.md')) "Publication evidence must use the private canonical copies, not model-visible files."
     Assert-True (-not $lock.Contains("--allow-tool shell(jq)")) "Publication must not grant jq permission."
     $fallbackArtifactIndex = $lock.IndexOf("name: Upload agent output fallback artifact", [StringComparison]::Ordinal)
-    Assert-True ($validatorStepIndex -gt $agentStepStart -and $validatorStepIndex -lt $fallbackArtifactIndex) "Trusted validation must run before either publication artifact is uploaded."
-    Assert-True ($lock.Substring([Math]::Max(0, $validatorStepIndex - 40), [Math]::Min(120, $lock.Length - [Math]::Max(0, $validatorStepIndex - 40))).Contains("if: always()")) "Trusted validation must run after any earlier agent-job failure."
+    Assert-True ($fallbackArtifactIndex -gt $agentStepStart -and $fallbackArtifactIndex -lt $validatorStepIndex) "The agent output artifacts must be uploaded before trusted validation in the safe-output job."
     $canonicalCopyIndex = $lock.IndexOf("Copy-Item .pr-attention-pulse/pulse-input.json", [StringComparison]::Ordinal)
     $normalizationStepIndex = $lock.IndexOf("name: Normalize the trusted Pulse body for ingestion", [StringComparison]::Ordinal)
     $firstPrivateRootCheckIndex = $lock.IndexOf("Assert-PrivateValidatorRoot -Path `$validatorRoot", [StringComparison]::Ordinal)
@@ -1860,7 +1858,7 @@ try
                 $expectedRow = Invoke-PinnedOutputSanitizer -Content $rawRows[$index]
                 Assert-True ([string]::Equals($normalizedRows[$index], $expectedRow, [StringComparison]::Ordinal)) "Only the existing pinned Unicode transformations may change a complete candidate row."
             }
-            Assert-True ($normalized.Length -ge 200 -and $normalized.Length -le 65000) "The original publication body size limits must remain sufficient."
+            Assert-True ($normalized.Length -ge 200 -and $normalized.Length -le 64000) "The canonical publication body size limits must reserve room for runtime provenance."
         }
     }
 

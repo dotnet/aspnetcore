@@ -59,6 +59,11 @@ public class HelixTestRunnerOptions
             { Argument = new Argument<string>(), Required = true },
 
             new Option(
+                aliases: new string[] { "--filter" },
+                description: "An optional test filter")
+            { Argument = new Argument<string>(), Required = false },
+
+            new Option(
                 aliases: new string[] { "--source" },
                 description: "The restore sources to use during testing")
             { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true }
@@ -95,6 +100,7 @@ public class HelixTestRunnerOptions
             RuntimeVersion = sharedFxVersion,
             Targets = targets.ToArray(),
             TargetsFile = targetsFile,
+            TestFilter = parseResult.ValueForOption<string>("--filter"),
             Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout"), CultureInfo.InvariantCulture),
 
             // When targeting pack builds, it has exactly the same version as the shared framework.
@@ -116,6 +122,7 @@ public class HelixTestRunnerOptions
     public string RuntimeVersion { get; private set; }
     public string[] Targets { get; private set; }
     public string TargetsFile { get; private set; }
+    public string TestFilter { get; private set; }
     public TimeSpan Timeout { get; private set; }
 
     public string AspNetRef { get; private set; }

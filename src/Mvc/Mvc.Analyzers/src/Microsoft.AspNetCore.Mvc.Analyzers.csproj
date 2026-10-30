@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->

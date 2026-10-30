@@ -12,7 +12,6 @@
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Tools\SDK-Analyzers\Components\src\Microsoft.AspNetCore.Components.SdkAnalyzers.csproj" />
 
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
 
     <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
   </ItemGroup>

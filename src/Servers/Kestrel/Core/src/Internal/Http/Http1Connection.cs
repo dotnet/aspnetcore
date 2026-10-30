@@ -881,10 +881,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _currentIPersistentStateFeature = this;
     }
 
-    protected override void OnRequestProcessingEnding()
-    {
-    }
-
     protected override string CreateRequestId()
         => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', _requestCount);
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import importlib.util
+import hashlib
 import json
 import os
 import pathlib
@@ -171,6 +172,7 @@ def case_b_record(issue=1, operating_systems=None):
         "originating_case": "case-b",
         "case_b_eligible": True,
         "case_b_issue": issue,
+        "case_b_issue_verified": True,
         "source_resolution": {
             "status": "exact",
             "path": TEST_PATH,
@@ -215,8 +217,9 @@ def create_patch(
     extra_file=None,
     rename=None,
     executable=None,
+    source_path=TEST_PATH,
 ):
-    file_path = root / TEST_PATH
+    file_path = root / source_path
     file_path.write_text(updated_source, encoding="utf-8")
     if extra_file:
         extra_path = root / extra_file
@@ -274,6 +277,7 @@ def validate(
     agent_output,
     transport,
     current_main=None,
+    unquarantine=None,
 ):
     evidence = root / "evidence"
     evidence.mkdir(exist_ok=True)
@@ -282,6 +286,20 @@ def validate(
     output_path = evidence / "agent-output.json"
     write_json(eligibility_path, eligibility)
     write_json(history_path, history)
+    unquarantine_path = evidence / "unquarantine.json"
+    if unquarantine is None:
+        unquarantine = {
+            **history,
+            "history_sha256": hashlib.sha256(history_path.read_bytes()).hexdigest(),
+            "complete": True,
+            "pipelines": {"84": {"build_count": 1}, "87": {"build_count": 0}},
+            "targets": [
+                {**target, "eligible": True}
+                for target in history["targets"]
+                if target.get("status") == "first-quarantine"
+            ],
+        }
+    write_json(unquarantine_path, unquarantine)
     write_json(output_path, agent_output)
     return MODULE.validate_outputs(
         root,
@@ -293,6 +311,7 @@ def validate(
         REF,
         commit,
         current_main=current_main or commit,
+        unquarantine_path=unquarantine_path,
     )
 
 
@@ -320,6 +339,30 @@ def assert_rejected(callback, message):
         assert message in str(error), error
     else:
         raise AssertionError(f"Expected validation failure containing {message!r}")
+
+
+def test_pull_request_repository():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, commit = initialize_repository(root)
+        transport = root / "transport"
+        transport.mkdir()
+        eligibility, history = receipts(commit, case_a_record())
+        for repository in ("aspnetcore", "dotnet/runtime", f" {REPOSITORY} "):
+            request = pull_request("test-quarantine/repository")
+            request["repo"] = repository
+            assert_rejected(
+                lambda: validate(
+                    root,
+                    commit,
+                    eligibility,
+                    history,
+                    {"items": [case_a_issue(), request]},
+                    transport,
+                ),
+                "must target the workflow repository",
+            )
+    print("PASS pull request repository")
 
 
 def test_theory_target_binding(data="HttpProtocols.Http3", displayed="Http3", supported=True, provider=""):
@@ -453,7 +496,257 @@ def test_row_comment_ownership():
     assert actual == [("-", None, "inline", data), ("+", "1", "data", data)], actual
 
 
+def test_shared_attribute_validation(operation):
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        attribute = '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]'
+
+        def shared_source(value):
+            text = source(value)
+            if operation.startswith("mixed-rows"):
+                common = (
+                    '[QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+                    'OperatingSystems.Windows, 1)]' if value else "[InlineData(1)]"
+                )
+                text = source().replace(
+                    "    public void",
+                    f"    [ConditionalTheory]\n    {common}\n#if IIS_FUNCTIONALS\n"
+                    '    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/1", '
+                    "OperatingSystems.Windows, 2)]\n#endif\n    public void",
+                ).replace("ReturnsExpectedResponse()", "ReturnsExpectedResponse(int value)")
+            if operation == "separate-attributes":
+                attribute_line = f"    {value}\n" if value else ""
+                text = source().replace(
+                    "    public void",
+                    f"#if IIS_FUNCTIONALS\n{attribute_line}#else\n{attribute_line}"
+                    "#endif\n    public void",
+                )
+            return text.replace(
+                "namespace Microsoft.AspNetCore.Tests;",
+                "#if IIS_FUNCTIONALS\nnamespace Microsoft.AspNetCore.Tests;\n"
+                "#else\nnamespace Microsoft.AspNetCore.Express.Tests;\n#endif",
+            )
+
+        initialize_repository(root, shared_source("" if operation == "addition" else attribute))
+        (root / "src/Sample.Tests/Sample.Tests.csproj").write_text(
+            "<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>"
+            "</PropertyGroup></Project>", encoding="utf-8",
+        )
+        express = root / "src/Express.Tests"
+        express.mkdir()
+        (express / "Express.Tests.csproj").write_text(
+            '<Project><ItemGroup><Compile Include="../Sample.Tests/SampleTests.cs" />'
+            '</ItemGroup></Project>', encoding="utf-8",
+        )
+        run(root, "git", "add", ".")
+        run(root, "git", "commit", "-qm", "Add shared consumers")
+        commit = run(root, "git", "rev-parse", "HEAD")
+        targets = [
+            {**target, "issue": 1, "status": "first-quarantine"}
+            for target in MODULE.target_map(root, MODULE.ELIGIBILITY.build_source_index(root)).values()
+        ]
+        eligibility, history = receipts(commit, case_a_record(), targets)
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/shared"
+        create_patch(root, transport, branch, shared_source(
+            '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_sample")]'
+            if operation == "addition" else "",
+        ))
+        output = {"items": [pull_request(branch)]}
+        if operation == "addition":
+            output["items"].insert(0, case_a_issue())
+            assert_rejected(
+                lambda: validate(root, commit, eligibility, history, output, transport),
+                "must add exactly one target",
+            )
+        else:
+            assert len(targets) == (3 if operation.startswith("mixed-rows") else 2), targets
+            if operation in ("missing-receipt", "mixed-rows-missing"):
+                if operation == "mixed-rows-missing":
+                    history["targets"] = [
+                        target for target in targets
+                        if not (".Express." in target["type"] and target.get("data") == "1")
+                    ]
+                    assert len(history["targets"]) == 2, history
+                else:
+                    history["targets"].pop()
+                assert_rejected(
+                    lambda: validate(root, commit, eligibility, history, output, transport),
+                    "not an exact first quarantine",
+                )
+            elif operation == "ineligible":
+                history_path = root / "history-for-hash.json"
+                write_json(history_path, history)
+                unquarantine = {
+                    **history,
+                    "history_sha256": hashlib.sha256(history_path.read_bytes()).hexdigest(),
+                    "complete": True,
+                    "pipelines": {"84": {"build_count": 1}, "87": {"build_count": 0}},
+                    "targets": [{**target, "eligible": index == 0} for index, target in enumerate(targets)],
+                }
+                assert_rejected(
+                    lambda: validate(root, commit, eligibility, history, output, transport, unquarantine=unquarantine),
+                    "lacks deterministic Part 2 eligibility",
+                )
+            else:
+                result = validate(root, commit, eligibility, history, output, transport)
+                assert result[0]["targets"] == 2, result
+        print(f"PASS shared attribute validation: {operation}")
+
+
+def test_linked_source_freshness(change):
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        attribute = '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]'
+        initial = source(attribute).replace(
+            "namespace Microsoft.AspNetCore.Tests;",
+            "#if IIS_FUNCTIONALS\nnamespace Microsoft.AspNetCore.Tests;\n"
+            "#else\nnamespace Microsoft.AspNetCore.Express.Tests;\n#endif",
+        )
+        initialize_repository(root, initial)
+        shared_path = "src/SharedTests/SampleTests.cs"
+        (root / shared_path).parent.mkdir()
+        run(root, "git", "mv", TEST_PATH, shared_path)
+        for project, symbol in (("Sample.Tests", "IIS_FUNCTIONALS"), ("Express.Tests", "EXPRESS")):
+            path = root / "src" / project
+            path.mkdir(exist_ok=True)
+            (path / f"{project}.csproj").write_text(
+                f"<Project><PropertyGroup><DefineConstants>{symbol}</DefineConstants>"
+                '</PropertyGroup><ItemGroup><Compile Include="../SharedTests/**/*.cs" />'
+                '</ItemGroup></Project>', encoding="utf-8",
+            )
+        run(root, "git", "add", ".")
+        run(root, "git", "commit", "-qm", "Link shared test source")
+        snapshot = run(root, "git", "rev-parse", "HEAD")
+        targets = [
+            {**target, "issue": 1, "status": "first-quarantine"}
+            for target in MODULE.target_map(root, MODULE.ELIGIBILITY.build_source_index(root)).values()
+        ]
+        assert len(targets) == 2, targets
+        eligibility, history = receipts(snapshot, case_a_record(), targets)
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/linked-freshness"
+        create_patch(
+            root, transport, branch, initial.replace(f"    {attribute}\n", ""),
+            source_path=shared_path,
+        )
+        if change == "target":
+            (root / shared_path).write_text(initial + "// changed after evidence\n", encoding="utf-8")
+        elif change == "moved":
+            (root / "src/Other").mkdir()
+            run(root, "git", "mv", shared_path, "src/Other/Moved.cs")
+        elif change in ("new-consumer", "unrelated-project"):
+            project = root / "src/Other.Tests"
+            project.mkdir()
+            include = (
+                '<ItemGroup><Compile Include="../SharedTests/**/*.cs" /></ItemGroup>'
+                if change == "new-consumer" else ""
+            )
+            (project / "Other.Tests.csproj").write_text(
+                f'<Project><PropertyGroup><DefineConstants Condition="$(Unknown)">OTHER'
+                f'</DefineConstants></PropertyGroup>{include}</Project>', encoding="utf-8",
+            )
+        else:
+            path = root / ("src/SharedTests/Helper.cs" if change == "sibling" else "src/Other/Helper.cs")
+            path.parent.mkdir(exist_ok=True)
+            path.write_text("public class Helper {}\n", encoding="utf-8")
+        run(root, "git", "add", ".")
+        run(root, "git", "commit", "-qm", "Advance main after evidence")
+        current_main = run(root, "git", "rev-parse", "HEAD")
+
+        def validate_patch():
+            return validate(
+                root, snapshot, eligibility, history,
+                {"items": [pull_request(branch)]}, transport, current_main=current_main,
+            )
+
+        if change in ("unrelated", "unrelated-project"):
+            assert validate_patch()[0]["targets"] == 2
+        else:
+            assert_rejected(validate_patch, "changed a validated test project")
+        print(f"PASS linked-source freshness: {change}")
+
+
+def test_unproven_shared_consumers(case):
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        attribute = '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]'
+        initial = source(attribute)
+        if case in ("assembly", "conditional-assembly"):
+            initial = f"[assembly: {attribute[1:-1]}]\n"
+            if case == "conditional-assembly":
+                initial = f"#if IIS_FUNCTIONALS\n{initial}#endif\n"
+        elif case != "same-identity":
+            initial = initial.replace(
+                "namespace Microsoft.AspNetCore.Tests;",
+                "#if IIS_FUNCTIONALS\nnamespace Microsoft.AspNetCore.Tests;\n"
+                "#else\nnamespace Microsoft.AspNetCore.Express.Tests;\n#endif",
+            )
+        initialize_repository(root, initial)
+        (root / "src/Sample.Tests/Sample.Tests.csproj").write_text(
+            "<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>"
+            "</PropertyGroup></Project>", encoding="utf-8",
+        )
+        express = root / "src/Express.Tests"
+        express.mkdir()
+        constants = (
+            '<PropertyGroup><DefineConstants Condition="$(Unknown)">EXPRESS</DefineConstants>'
+            '</PropertyGroup>' if case in ("constants", "excluded") else ""
+        )
+        condition = ' Condition="$(Unknown)"' if case == "membership" else ""
+        remove = '<Compile Remove="../Sample.Tests/SampleTests.cs" />' if case == "excluded" else ""
+        (express / "Express.Tests.csproj").write_text(
+            f'<Project>{constants}<ItemGroup>'
+            f'<Compile Include="../Sample.Tests/SampleTests.cs"{condition} />'
+            f'{remove}</ItemGroup></Project>', encoding="utf-8",
+        )
+        run(root, "git", "add", ".")
+        run(root, "git", "commit", "-qm", "Add shared consumers")
+        snapshot = run(root, "git", "rev-parse", "HEAD")
+        index = MODULE.ELIGIBILITY.build_source_index(root)
+        targets = [
+            {**target, "issue": 1, "status": "first-quarantine"}
+            for target in MODULE.target_map(root, index).values()
+        ]
+        assert len(targets) == 1, targets
+        eligibility, history = receipts(snapshot, case_a_record(), targets)
+        transport = root / "transport"
+        transport.mkdir()
+        branch = "test-quarantine/unproven-consumers"
+        create_patch(
+            root, transport, branch,
+            initial.replace(f"[assembly: {attribute[1:-1]}]\n", "")
+            if case in ("assembly", "conditional-assembly")
+            else initial.replace(f"    {attribute}\n", ""),
+        )
+
+        def check():
+            return validate(
+                root, snapshot, eligibility, history,
+                {"items": [pull_request(branch)]}, transport,
+            )
+
+        if case in ("excluded", "conditional-assembly"):
+            assert check()[0]["targets"] == 1
+        else:
+            assert_rejected(check, "unproven consuming projects")
+            collected = MODULE.ELIGIBILITY.collect_requarantine_history(root, "HEAD")
+            assert collected["targets"] and all(
+                target["status"] == "ambiguous" for target in collected["targets"]
+            ), collected
+        print(f"PASS shared consumer protection: {case}")
+
+
 def main():
+    for case in ("constants", "membership", "assembly", "same-identity", "excluded", "conditional-assembly"):
+        test_unproven_shared_consumers(case)
+    for change in ("target", "sibling", "moved", "new-consumer", "unrelated", "unrelated-project"):
+        test_linked_source_freshness(change)
+    for operation in ("addition", "removal", "separate-attributes", "mixed-rows", "mixed-rows-missing", "missing-receipt", "ineligible"):
+        test_shared_attribute_validation(operation)
+    test_pull_request_repository()
     test_theory_target_binding(provider="[MsQuicSupported]")
     test_theory_target_binding(
         supported=False, provider="[MsQuicSupported]\n    [MemberData(nameof(GetRows))]"
@@ -532,6 +825,8 @@ def main():
             ),
         )
         eligibility, history = receipts(commit, case_a_record())
+        request = pull_request(branch)
+        request["repo"] = REPOSITORY
         result = validate(
             root,
             commit,
@@ -540,7 +835,7 @@ def main():
             {
                 "items": [
                     case_a_issue(),
-                    pull_request(branch),
+                    request,
                 ],
             },
             transport,
@@ -707,6 +1002,21 @@ def main():
             transport,
         )
         assert result[0]["operation"] == "unquarantine", result
+        evidence = json.loads((root / "evidence" / "unquarantine.json").read_text())
+        for changed, message in (
+            ({**evidence, "targets": []}, "Part 2 eligibility"),
+            ({**evidence, "complete": False}, "incomplete or unbound"),
+            ({**evidence, "history_sha256": "0" * 64}, "incomplete or unbound"),
+            ({**evidence, "pipelines": {"84": {}}}, "incomplete or unbound"),
+        ):
+            assert_rejected(
+                lambda changed=changed: validate(
+                    root, commit, eligibility, history,
+                    {"items": [pull_request(branch)]}, transport,
+                    unquarantine=changed,
+                ),
+                message,
+            )
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)

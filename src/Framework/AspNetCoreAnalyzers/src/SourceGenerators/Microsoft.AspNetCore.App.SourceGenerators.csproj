@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!-- Keep Roslyn's dependency versions instead of centrally pinned product packages in the compiler host. -->
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IsPackable>false</IsPackable>
@@ -10,9 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" VersionOverride="$(SourceGenerator_MicrosoftCodeAnalysisCommonVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" VersionOverride="$(SourceGenerator_MicrosoftCodeAnalysisCSharpVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" VersionOverride="$(SourceGenerator_MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
   </ItemGroup>
 
 </Project>

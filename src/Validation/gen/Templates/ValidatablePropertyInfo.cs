@@ -7,12 +7,16 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
         global::System.Type declaringType,
         global::System.Type propertyType,
         string name,
-        DisplayNameInfo? displayNameInfo = null)
+        DisplayNameInfo? displayNameInfo = null,
+        bool isUnionValue = false,
+        global::System.Func<object, bool>? skipValidation = null)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
         DisplayNameInfo = displayNameInfo;
+        IsUnionValue = isUnionValue;
+        SkipValidation = skipValidation;
     }
 
     [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
@@ -23,6 +27,11 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
     internal string Name { get; }
 
     internal DisplayNameInfo? DisplayNameInfo { get; }
+
+    // The synthesized union Value property is object-typed, so collection detection must use the active case type.
+    internal bool IsUnionValue { get; }
+
+    internal global::System.Func<object, bool>? SkipValidation { get; }
 
     private global::System.Reflection.PropertyInfo Property
         => DeclaringType.GetProperty(Name, global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly) ?? throw new global::System.InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
@@ -64,6 +73,11 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
         global::System.ArgumentNullException.ThrowIfNull(containingObject);
 
         var propertyValue = Property.GetValue(containingObject);
+        if (propertyValue is not null && SkipValidation?.Invoke(propertyValue) is true)
+        {
+            return;
+        }
+
         var validationAttributes = GetValidationAttributes();
 
         // Calculate and save the current path
@@ -107,8 +121,14 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
         try
         {
             // Handle enumerable values
-            if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
+            if (IsEnumerable(IsUnionValue && propertyValue is not null ? propertyValue.GetType() : PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
             {
+                // Collection union cases can have validation of their own as well as validatable elements.
+                if (IsUnionValue && validationOptions.TryGetValidatableTypeInfo(propertyValue.GetType(), out var collectionType))
+                {
+                    await collectionType.ValidateAsync(propertyValue, context, cancellationToken);
+                }
+
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
 
@@ -164,6 +184,11 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
         global::System.ArgumentNullException.ThrowIfNull(containingObject);
 
         var propertyValue = Property.GetValue(containingObject);
+        if (propertyValue is not null && SkipValidation?.Invoke(propertyValue) is true)
+        {
+            return;
+        }
+
         var validationAttributes = GetValidationAttributes();
 
         // Calculate and save the current path
@@ -207,8 +232,14 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
         try
         {
             // Handle enumerable values
-            if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
+            if (IsEnumerable(IsUnionValue && propertyValue is not null ? propertyValue.GetType() : PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
             {
+                // Collection union cases can have validation of their own as well as validatable elements.
+                if (IsUnionValue && validationOptions.TryGetValidatableTypeInfo(propertyValue.GetType(), out var collectionType))
+                {
+                    collectionType.Validate(propertyValue, context);
+                }
+
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
 

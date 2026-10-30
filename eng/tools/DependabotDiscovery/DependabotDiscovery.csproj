@@ -86,7 +86,6 @@
     <PackageReference Include="StackExchange.Redis" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="System.Buffers" />
-    <PackageReference Include="System.CodeDom" />
     <PackageReference Include="System.CommandLine.Experimental" />
     <PackageReference Include="System.ComponentModel" />
     <PackageReference Include="System.ComponentModel.Annotations" />

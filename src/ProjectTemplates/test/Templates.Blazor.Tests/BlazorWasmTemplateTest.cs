@@ -15,7 +15,6 @@ namespace BlazorTemplates.Tests;
 
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
-[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66293")]
 public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
     public override string ProjectType { get; } = "blazorwasm";
@@ -47,6 +46,24 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
         using (serveProcess)
         {
             await TestBasicInteractionInNewPageAsync(browserKind, listeningUri, appName);
+        }
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWasmStandaloneTemplate_WeatherDoesNotOverflowAtNarrowViewport(BrowserKind browserKind)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync();
+        var (serveProcess, listeningUri) = project.ServePublishedStandaloneApp(Output);
+        using (serveProcess)
+        {
+            await AssertWeatherDoesNotOverflowAtNarrowViewportAsync(browserKind, listeningUri);
         }
     }
 

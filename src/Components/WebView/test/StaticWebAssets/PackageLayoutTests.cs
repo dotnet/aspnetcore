@@ -21,6 +21,31 @@ public class PackageLayoutTests
     private const string WebAssemblyPackageId = "Microsoft.AspNetCore.Components.WebAssembly";
     private const string AssetsInternalPackageId = "Microsoft.AspNetCore.App.Internal.Assets";
     private const string IdentityUIPackageId = "Microsoft.AspNetCore.Identity.UI";
+    private const string AutoPausePackageId = "Microsoft.AspNetCore.Components.Server.AutoPause";
+
+    [ConditionalFact]
+    [RequiresBuiltPackages(AutoPausePackageId)]
+    public void AutoPausePackage_DoesNotShipRawContent()
+    {
+        using var package = PackageArchive.Open(AutoPausePackageId);
+
+        Assert.DoesNotContain(package.EntryNames, entry =>
+            entry.StartsWith("content/", StringComparison.OrdinalIgnoreCase) ||
+            entry.StartsWith("contentFiles/", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [ConditionalFact]
+    [RequiresBuiltPackages(AutoPausePackageId)]
+    public void AutoPausePackage_ShipsFingerprintedInitializer()
+    {
+        using var package = PackageArchive.Open(AutoPausePackageId);
+        using var manifest = package.ReadPackageAssetsManifest();
+
+        var asset = GetAsset(manifest, ".lib.module.js");
+        var fingerprint = asset.GetProperty("Fingerprint").GetString();
+        Assert.False(string.IsNullOrEmpty(fingerprint));
+        Assert.True(package.HasEntry($"staticwebassets/{AutoPausePackageId}.{fingerprint}.lib.module.js"));
+    }
 
     [ConditionalFact]
     public void WebViewPackage_ShipsStaticWebAssets()

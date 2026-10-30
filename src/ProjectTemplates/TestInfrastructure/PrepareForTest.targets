@@ -5,10 +5,6 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfVersion)/tools/net12.0/any/dotnet-ef.dll</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
       <_Parameter2>$(TestPackageRestorePath)</_Parameter2>
     </AssemblyAttribute>
@@ -57,6 +53,7 @@
 
   <Target Name="PrepareForTest" BeforeTargets="GetAssemblyAttributes" Condition=" '$(DesignTimeBuild)' != 'true' ">
     <PropertyGroup>
+      <_DotNetEfPackageRoot>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfVersion)/</_DotNetEfPackageRoot>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
       <TemplateTestDotNetRoot Condition="'$(IsHelixJob)' != 'true'">$(TestTemplateCreationFolder).dotnet\</TemplateTestDotNetRoot>
@@ -65,6 +62,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <_DotNetEfTool Include="$(_DotNetEfPackageRoot)tools/*/any/dotnet-ef.dll" />
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>DotNetEfFullPath</_Parameter1>
+        <_Parameter2>@(_DotNetEfTool->'%(FullPath)')</_Parameter2>
+      </AssemblyAttribute>
+
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>ArtifactsShippingPackagesDir</_Parameter1>
         <_Parameter2>$(ArtifactsShippingPackagesDir)</_Parameter2>
@@ -95,6 +99,11 @@
         <_Parameter2>$(TemplateTestDotNetRoot)$(_DotNetHostFileName)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
+
+    <Error Condition="'@(_DotNetEfTool)' == ''"
+           Text="Could not find dotnet-ef.dll under '$(_DotNetEfPackageRoot)tools'." />
+    <Error Condition="'@(_DotNetEfTool->Count())' != '1'"
+           Text="Expected one dotnet-ef.dll under '$(_DotNetEfPackageRoot)tools', but found @(_DotNetEfTool->Count())." />
 
     <Message Importance="high" Text="Preparing environment for tests" />
     <!-- Remove the template creation folders and the package-restore folders to ensure that when we run the tests we don't

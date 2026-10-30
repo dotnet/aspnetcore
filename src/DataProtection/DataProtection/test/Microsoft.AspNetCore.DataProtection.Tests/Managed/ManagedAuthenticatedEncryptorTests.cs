@@ -20,6 +20,73 @@ namespace Microsoft.AspNetCore.DataProtection.Managed;
 
 public class ManagedAuthenticatedEncryptorTests
 {
+    [Theory]
+    [InlineData(0)]
+    [InlineData(32)]
+    [InlineData(1024)]
+    public void KeyedValidationFactory_PreservesCustomAlgorithmPayloads(int plaintextLength)
+    {
+        var legacyRandom = new SequentialGenRandom();
+        var keyedRandom = new SequentialGenRandom();
+        var legacyKeyAssignments = 0;
+        var keyedFactoryCalls = 0;
+        using var legacy = new ManagedAuthenticatedEncryptor(new Secret(new byte[64]), Aes.Create, 32,
+            validationAlgorithmFactory: () => new TrackingHmac(Array.Empty<byte>(), () => legacyKeyAssignments++),
+            genRandom: legacyRandom);
+        using var keyed = new ManagedAuthenticatedEncryptor(new Secret(new byte[64]), Aes.Create, 32,
+            validationAlgorithmFactory: () => new TrackingHmac(Array.Empty<byte>(), () => throw new InvalidOperationException("The keyed factory must set the key in the constructor.")),
+            genRandom: keyedRandom,
+            keyedValidationAlgorithmFactory: key =>
+            {
+                keyedFactoryCalls++;
+                return new TrackingHmac(key, () => throw new InvalidOperationException("The key must not be reassigned."));
+            });
+        legacyRandom.Reset();
+        keyedRandom.Reset();
+        legacyKeyAssignments = 0;
+        keyedFactoryCalls = 0;
+        var plaintext = new ArraySegment<byte>(Enumerable.Range(0, plaintextLength).Select(i => (byte)i).ToArray());
+        var aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("keyed-factory"));
+
+        var legacyPayload = legacy.Encrypt(plaintext, aad);
+        var keyedPayload = keyed.Encrypt(plaintext, aad);
+
+        Assert.Equal(legacyPayload, keyedPayload);
+        Assert.Equal(plaintext.ToArray(), keyed.Decrypt(new ArraySegment<byte>(legacyPayload), aad));
+        Assert.Equal(plaintext.ToArray(), legacy.Decrypt(new ArraySegment<byte>(keyedPayload), aad));
+        Assert.Equal(2, legacyKeyAssignments);
+        Assert.Equal(2, keyedFactoryCalls);
+#if NET
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(keyed, plaintext, aad);
+#endif
+    }
+
+    [Theory]
+    [InlineData(typeof(HMACSHA256))]
+    [InlineData(typeof(HMACSHA512))]
+    [InlineData(typeof(HMACSHA384))]
+    [InlineData(typeof(HMACSHA1))]
+    [InlineData(typeof(HMACMD5))]
+    public void ConfiguredValidationAlgorithm_PreservesLegacyPayloads(Type algorithmType)
+    {
+        using var secret = new Secret(new byte[64]);
+        using var legacy = new ManagedAuthenticatedEncryptor(new Secret(secret), Aes.Create, 32,
+            validationAlgorithmFactory: () => (KeyedHashAlgorithm)Activator.CreateInstance(algorithmType)!);
+        var configuration = new ManagedAuthenticatedEncryptorConfiguration { ValidationAlgorithmType = algorithmType };
+        using var configured = new ManagedAuthenticatedEncryptorFactory(NullLoggerFactory.Instance).CreateAuthenticatedEncryptorInstance(secret, configuration)!;
+        var plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
+        var aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
+
+        var legacyPayload = legacy.Encrypt(plaintext, aad);
+        var configuredPayload = configured.Encrypt(plaintext, aad);
+
+        Assert.Equal(plaintext.ToArray(), configured.Decrypt(new ArraySegment<byte>(legacyPayload), aad));
+        Assert.Equal(plaintext.ToArray(), legacy.Decrypt(new ArraySegment<byte>(configuredPayload), aad));
+#if NET
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(configured, plaintext, aad);
+#endif
+    }
+
     [Fact]
     public void Encrypt_Decrypt_RoundTrips()
     {
@@ -194,5 +261,18 @@ public class ManagedAuthenticatedEncryptorTests
 
         // Indirectly testing that SelfTest ran by checking that random bytes were consumed
         Assert.NotEqual(initialValue, genRandom.CurrentValue);
+    }
+
+    private sealed class TrackingHmac(byte[] key, Action onKeyAssignment) : HMACSHA384(key)
+    {
+        public override byte[] Key
+        {
+            get => base.Key;
+            set
+            {
+                onKeyAssignment();
+                base.Key = value;
+            }
+        }
     }
 }

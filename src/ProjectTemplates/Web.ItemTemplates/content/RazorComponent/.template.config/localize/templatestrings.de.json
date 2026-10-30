@@ -3,7 +3,7 @@
   "name": "Razor Komponente",
   "description": "Eine mit Razor implementierte, wiederverwendbare Benutzeroberflächenkomponente.",
   "symbols/namespace/description": "Namespace für den generierten Code",
-  "symbols/use-code-behind/description": "create component with a code-behind file",
-  "symbols/use-code-behind/displayName": "Use Code Behind",
+  "symbols/use-code-behind/description": "Komponente mit einer Code-Behind-Datei erstellen",
+  "symbols/use-code-behind/displayName": "Code-Behind verwenden",
   "postActions/openInEditor/description": "Öffnet Component1.razor im Editor"
 }

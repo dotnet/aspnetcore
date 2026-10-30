@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- This is needed to support codepaths that use NullabilityInfoContext. -->
     <Features>$(Features.Replace('nullablePublicOnly', ''))</Features>
@@ -16,7 +17,6 @@
     <PackageReference Include="FSharp.Core" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Verify.SourceGenerators" />
     <PackageReference Include="Verify.XUnit" />
 

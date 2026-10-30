@@ -88,6 +88,17 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         return isRequired;
     }
 
+    protected async Task AssertWeatherDoesNotOverflowAtNarrowViewportAsync(BrowserKind browserKind, string listeningUri)
+    {
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        var page = await browser.NewPageAsync();
+        await page.SetViewportSizeAsync(320, 800);
+        await page.GotoAsync($"{listeningUri.TrimEnd('/')}/weather");
+        await page.WaitForFunctionAsync("() => document.querySelectorAll('article table>tbody>tr').length === 5");
+        var documentWidth = await page.EvaluateAsync<int>("document.documentElement.scrollWidth");
+        Assert.True(documentWidth <= 320, $"Weather document width was {documentWidth}px at a 320px viewport.");
+    }
+
     protected async Task TestBasicInteractionInNewPageAsync(
         BrowserKind browserKind,
         string listeningUri,
@@ -619,7 +630,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             // Asynchronously loads and displays the table of weather forecasts
             await page.WaitForSelectorAsync("table>tbody>tr");
-            Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
+            Assert.Equal(5, await page.Locator("article table>tbody>tr").CountAsync());
         }
 
         if (!pagesToExclude.HasFlag(BlazorTemplatePages.Home))
@@ -754,7 +765,10 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         {
             var navMenu = page.Locator(".nav-scrollable");
 
-            await page.ClickAsync(".navbar-toggler");
+            if (!await navMenu.IsVisibleAsync())
+            {
+                await page.ClickAsync(".navbar-toggler");
+            }
             await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
 
             await page.ClickAsync("nav a[href='']");

@@ -17,7 +17,12 @@ internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, I
     // micro-optimization: Using nuint as the value type to avoid GC write barriers; could replace with ConcurrentHashSet if that becomes available
     private readonly ConcurrentDictionary<PinnedBlockMemoryPool, nuint> _pools = new();
 
-    public PinnedBlockMemoryPoolFactory(MemoryPoolMetrics metrics, TimeProvider? timeProvider = null, ILogger<PinnedBlockMemoryPoolFactory>? logger = null)
+    public PinnedBlockMemoryPoolFactory(MemoryPoolMetrics metrics, ILogger<PinnedBlockMemoryPoolFactory>? logger = null)
+        : this(metrics, timeProvider: TimeProvider.System, logger: logger)
+    {
+    }
+
+    internal PinnedBlockMemoryPoolFactory(MemoryPoolMetrics metrics, TimeProvider? timeProvider, ILogger<PinnedBlockMemoryPoolFactory>? logger = null)
     {
         _timeProvider = timeProvider ?? TimeProvider.System;
         _metrics = metrics;

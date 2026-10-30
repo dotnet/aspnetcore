@@ -297,7 +297,7 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
 </p>
 <strong>This should launch a new browser window with debugging enabled..</p>
 <h2>Underlying exception:</h2>
-<pre>{ex}</pre>
+<pre>{WebUtility.HtmlEncode(ex.ToString())}</pre>
                 ");
 
             return;

@@ -17,7 +17,7 @@ param(
     [string[]]$VallyPrefix = @(
         '--yes',
         '--registry=https://packagefeedproxy.microsoft.io/npm/',
-        '@microsoft/vally-cli@0.14.0'
+        '@microsoft/vally-cli@0.19.0'
     ),
 
     [Parameter(ValueFromRemainingArguments = $true)]

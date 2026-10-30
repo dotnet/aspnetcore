@@ -2,14 +2,43 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal static class Helpers
 {
-    public static ReadOnlySpan<byte> ChunkTerminator => "0\r\n\r\n"u8;
-    public static ReadOnlySpan<byte> CRLF => "\r\n"u8;
+    private static ReadOnlySpan<byte> ChunkTerminator => "0\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> CRLF => "\r\n"u8;
+
+    // HTTP.SYS reads a chunk's buffer asynchronously, long after the send has been
+    // queued, so the address has to stay valid for at least that long. These two are
+    // constants, so keep a single copy of each on the pinned object heap: the address
+    // is then stable for the life of the process and the chunks below can be built
+    // once, leaving callers with nothing to pin and no lifetime to track.
+    private static readonly byte[] PinnedChunkTerminator = AllocatePinned(ChunkTerminator);
+    private static readonly byte[] PinnedCRLF = AllocatePinned(CRLF);
+
+    internal static readonly HTTP_DATA_CHUNK ChunkTerminatorChunk = CreateMemoryChunk(PinnedChunkTerminator);
+    internal static readonly HTTP_DATA_CHUNK CRLFChunk = CreateMemoryChunk(PinnedCRLF);
+
+    private static byte[] AllocatePinned(ReadOnlySpan<byte> bytes)
+    {
+        var pinned = GC.AllocateUninitializedArray<byte>(bytes.Length, pinned: true);
+        bytes.CopyTo(pinned);
+        return pinned;
+    }
+
+    private static unsafe HTTP_DATA_CHUNK CreateMemoryChunk(byte[] pinnedBuffer)
+    {
+        var chunk = default(HTTP_DATA_CHUNK);
+        chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        chunk.Anonymous.FromMemory.pBuffer = (void*)Marshal.UnsafeAddrOfPinnedArrayElement(pinnedBuffer, 0);
+        chunk.Anonymous.FromMemory.BufferLength = (uint)pinnedBuffer.Length;
+        return chunk;
+    }
 
     internal static ArraySegment<byte> GetChunkHeader(long size)
     {

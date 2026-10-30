@@ -143,6 +143,9 @@
     <!-- don't warn about calling ConfigureAwait in test methods. we already commonly get off the xunit threads because they cause issues. -->
     <NoWarn>$(NoWarn);xUnit1030</NoWarn>
 
+    <!-- Preserve the existing analyzer baseline when transitive pinning promotes xunit.analyzers. -->
+    <NoWarn>$(NoWarn);xUnit1053;xUnit2030;xUnit2031</NoWarn>
+
     <NoWarn Condition="'$(_DevBuild)' == 'true'">$(NoWarn);NU3027</NoWarn>
   </PropertyGroup>
 

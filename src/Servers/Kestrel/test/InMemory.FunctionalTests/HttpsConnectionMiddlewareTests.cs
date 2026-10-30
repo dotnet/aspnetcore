@@ -1408,6 +1408,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             {
                 ServerCertificate = _x509Certificate2,
                 ClientCertificateMode = mode,
+                // Resumed TLS sessions skip certificate validation callbacks.
+                OnAuthenticate = (_, sslOptions) => sslOptions.AllowTlsResume = false,
                 ClientCertificateValidation = (certificate, chain, sslPolicyErrors) =>
                 {
                     clientCertificateValidationCalled = true;
@@ -1441,6 +1443,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             {
                 ServerCertificate = _x509Certificate2,
                 ClientCertificateMode = mode,
+                OnAuthenticate = (_, sslOptions) => sslOptions.AllowTlsResume = false,
                 ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => false
             });
         }
@@ -1465,7 +1468,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             listenOptions.UseHttps(new HttpsConnectionAdapterOptions
             {
                 ServerCertificate = _x509Certificate2,
-                ClientCertificateMode = mode
+                ClientCertificateMode = mode,
+                OnAuthenticate = (_, sslOptions) => sslOptions.AllowTlsResume = false
             });
         }
 
@@ -1488,6 +1492,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             {
                 options.ServerCertificate = _x509Certificate2;
                 options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                options.OnAuthenticate = (_, sslOptions) => sslOptions.AllowTlsResume = false;
                 options.ClientCertificateValidation = (certificate, x509Chain, sslPolicyErrors) => false;
                 options.AllowAnyClientCertificate();
             });
