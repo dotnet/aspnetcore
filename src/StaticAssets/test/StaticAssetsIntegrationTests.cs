@@ -672,7 +672,8 @@ public class StaticAssetsIntegrationTests
         using var compressedWriter = new StreamWriter(gzipStream);
         compressedWriter.Write(resource.Content);
         compressedWriter.Flush();
-        return fileStream.Length;
+        compressedWriter.Close();
+        return new FileInfo(filePath).Length;
     }
 
     private static string GetEtagForFile(string compressedFilePath)
@@ -1594,6 +1595,112 @@ public class StaticAssetsIntegrationTests
         File.Delete(Path.Combine(webRoot, "sample.txt"));
         File.Delete(Path.Combine(webRoot, "sample.txt.gz"));
 
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+
+        using var response = await client.SendAsync(request);
+
+        await AssertMissingAssetResponseAsync(response);
+    }
+
+    [Theory]
+    [InlineData(true, false, "GET")]
+    [InlineData(true, false, "HEAD")]
+    [InlineData(true, false, "NotModified")]
+    [InlineData(true, false, "UnsatisfiableRange")]
+    [InlineData(true, false, "PreconditionFailed")]
+    [InlineData(true, true, "GET")]
+    [InlineData(true, true, "HEAD")]
+    [InlineData(true, true, "NotModified")]
+    [InlineData(true, true, "UnsatisfiableRange")]
+    [InlineData(true, true, "PreconditionFailed")]
+    [InlineData(false, false, "GET")]
+    [InlineData(false, true, "GET")]
+    public async Task CompressedMappedAssetWithMissingSource_HonorsRuntimeReload(
+        bool reloadStaticAssetsAtRuntime,
+        bool previouslyServed,
+        string requestType)
+    {
+        var appName = $"{nameof(CompressedMappedAssetWithMissingSource_HonorsRuntimeReload)}_{reloadStaticAssetsAtRuntime}_{previouslyServed}_{requestType}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(appName, webRoot, [new TestResource("sample.txt", "Hello, World!", true)]);
+
+        var sourcePath = Path.Combine(webRoot, "sample.txt");
+        var compressedPath = Path.Combine(webRoot, "sample.txt.gz");
+        Assert.True(File.Exists(sourcePath));
+        Assert.True(File.Exists(compressedPath));
+        var compressedBytes = await File.ReadAllBytesAsync(compressedPath);
+        var compressedETag = new EntityTagHeaderValue($"\"{GetEtagForFile(compressedPath)}\"");
+        var logs = new RecordingLoggerProvider();
+        await using var app = await StartMissingAssetTestAppAsync(
+            appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime, logs);
+        using var client = app.GetTestClient();
+
+        if (previouslyServed)
+        {
+            using var initialRequest = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+            initialRequest.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+            using var served = await client.SendAsync(initialRequest);
+            Assert.Equal(HttpStatusCode.OK, served.StatusCode);
+            Assert.Equal(["gzip"], served.Content.Headers.ContentEncoding);
+            Assert.Equal(compressedETag, served.Headers.ETag);
+            Assert.Equal(compressedBytes, await served.Content.ReadAsByteArrayAsync());
+        }
+
+        File.Delete(sourcePath);
+        Assert.False(File.Exists(sourcePath));
+        Assert.True(File.Exists(compressedPath));
+
+        using var request = new HttpRequestMessage(requestType == "HEAD" ? HttpMethod.Head : HttpMethod.Get, "/sample.txt");
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+        if (requestType == "NotModified")
+        {
+            request.Headers.IfNoneMatch.Add(compressedETag);
+        }
+        else if (requestType == "UnsatisfiableRange")
+        {
+            request.Headers.Range = new RangeHeaderValue(compressedBytes.Length + 1, null);
+        }
+        else if (requestType == "PreconditionFailed")
+        {
+            request.Headers.IfMatch.Add(new EntityTagHeaderValue("\"different\""));
+        }
+
+        using var response = await client.SendAsync(request);
+        if (reloadStaticAssetsAtRuntime)
+        {
+            await AssertMissingAssetResponseAsync(response);
+            Assert.Contains(logs.Writes, write =>
+                write.EventId.Id == 18 &&
+                write.EventId.Name == "MappedAssetFileNotFound" &&
+                write.Level == LogLevel.Warning &&
+                write.Exception is FileNotFoundException);
+        }
+        else
+        {
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(["gzip"], response.Content.Headers.ContentEncoding);
+            Assert.Equal(compressedETag, response.Headers.ETag);
+            Assert.Equal(compressedBytes, await response.Content.ReadAsByteArrayAsync());
+            Assert.DoesNotContain(logs.Writes, write => write.EventId.Name == "MappedAssetFileNotFound");
+        }
+    }
+
+    [Fact]
+    public async Task CompressedMappedAsset_SourceDisappearsDuringMetadataProbe_Returns404WithNoStore()
+    {
+        var appName = nameof(CompressedMappedAsset_SourceDisappearsDuringMetadataProbe_Returns404WithNoStore);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        using var files = new MissingAssetTestFiles(appName, contentRoot);
+        CreateTestManifest(appName, webRoot, [new TestResource("sample.txt", "Hello, World!", true)]);
+
+        await using var app = await StartMissingAssetTestAppAsync(
+            appName, contentRoot, webRoot, reloadStaticAssetsAtRuntime: true);
+        app.Environment.WebRootFileProvider = new CompositeFileProvider(
+            new FailDuringMetadataProbeFileProvider("sample.txt"),
+            app.Environment.WebRootFileProvider);
+        using var client = app.GetTestClient();
         using var request = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
         request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
 

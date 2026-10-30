@@ -148,7 +148,7 @@ internal class StaticAssetsInvoker
         }
         catch (FileNotFoundException ex)
         {
-            HandleFileNotFound(context, ex);
+            HandleFileNotFound(context, ex, _logger);
             return;
         }
 
@@ -178,7 +178,7 @@ internal class StaticAssetsInvoker
                 }
                 catch (FileNotFoundException ex)
                 {
-                    HandleFileNotFound(context, ex);
+                    HandleFileNotFound(context, ex, _logger);
                 }
                 return;
             case PreconditionState.NotModified:
@@ -196,14 +196,14 @@ internal class StaticAssetsInvoker
         }
     }
 
-    private void HandleFileNotFound(HttpContext context, FileNotFoundException exception)
+    internal static void HandleFileNotFound(HttpContext context, FileNotFoundException exception, ILogger logger)
     {
         if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() is not null)
         {
             var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
             if (!environment.IsDevelopment() && environment.WebRootFileProvider is not CompositeFileProvider)
             {
-                _logger.EnsureStaticWebAssetsEnabled();
+                logger.EnsureStaticWebAssetsEnabled();
             }
         }
 
@@ -218,7 +218,7 @@ internal class StaticAssetsInvoker
         // cache: 'force-cache'), so tell them not to store it.
         context.Response.Headers.CacheControl = "no-store";
 
-        _logger.MappedAssetFileNotFound(context.Request.Path.ToString(), exception);
+        logger.MappedAssetFileNotFound(context.Request.Path.ToString(), exception);
     }
 
     private async Task SendAsync(StaticAssetInvocationContext context)
