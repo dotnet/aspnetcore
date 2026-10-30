@@ -16,6 +16,7 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
     private static readonly object _emptyValidationContextInstance = new object();
     private readonly IStringLocalizer? _stringLocalizer;
     private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
+    private readonly bool _canValidateWithoutContext;
 
     /// <summary>
     ///  Create a new instance of <see cref="DataAnnotationsModelValidator"/>.
@@ -35,6 +36,7 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
         Attribute = attribute;
         _stringLocalizer = stringLocalizer;
+        _canValidateWithoutContext = CanValidateWithoutContext(attribute);
     }
 
     /// <summary>
@@ -65,6 +67,13 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
                     nameof(validationContext.MetadataProvider),
                     typeof(ModelValidationContext)),
                 nameof(validationContext));
+        }
+
+        // Perf: Creating a ValidationContext is relatively expensive. For well-known attributes that do not use the
+        // ValidationContext, check whether the value is valid first and only create the context to produce errors.
+        if (_canValidateWithoutContext && Attribute.IsValid(validationContext.Model))
+        {
+            return Enumerable.Empty<ModelValidationResult>();
         }
 
         var metadata = validationContext.ModelMetadata;
@@ -127,6 +136,24 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         }
 
         return Enumerable.Empty<ModelValidationResult>();
+    }
+
+    private static bool CanValidateWithoutContext(ValidationAttribute attribute)
+    {
+        // Only built-in attributes whose IsValid(object) produces the same result as IsValid(object, ValidationContext).
+        // Use exact type checks since derived types may override IsValid(object, ValidationContext).
+        var type = attribute.GetType();
+        return type == typeof(RequiredAttribute) ||
+            type == typeof(RangeAttribute) ||
+            type == typeof(StringLengthAttribute) ||
+            type == typeof(MinLengthAttribute) ||
+            type == typeof(MaxLengthAttribute) ||
+            type == typeof(LengthAttribute) ||
+            type == typeof(RegularExpressionAttribute) ||
+            type == typeof(EmailAddressAttribute) ||
+            type == typeof(PhoneAttribute) ||
+            type == typeof(UrlAttribute) ||
+            type == typeof(CreditCardAttribute);
     }
 
     private string? GetErrorMessage(ModelValidationContextBase validationContext)
