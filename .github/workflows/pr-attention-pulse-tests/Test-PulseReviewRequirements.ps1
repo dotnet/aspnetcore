@@ -111,8 +111,8 @@ Invoke-Control "DetectorModelPolicy" {
     $config = [regex]::Match($detector, "printf '%s\\n' '(?<config>\{.+\})' >")
     Assert-True $config.Success "The generated detector AWF configuration could not be read."
     $apiProxy = ($config.Groups["config"].Value | ConvertFrom-Json -Depth 50).apiProxy
-    Assert-True ($null -eq $apiProxy.PSObject.Properties["allowedModels"]) "The detector model is pinned by COPILOT_MODEL rather than a duplicated API proxy allowlist."
-    foreach ($name in @("allowedModels", "enableTokenSteering", "maxAiCredits", "modelFallback"))
+    Assert-True (@($apiProxy.allowedModels).Count -eq 1 -and ($apiProxy.allowedModels -join ",") -ceq "gpt-5.6-sol") "The detector must enforce the singleton gpt-5.6-sol model allowlist."
+    foreach ($name in @("enableTokenSteering", "maxAiCredits", "modelFallback"))
     {
         Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
     }

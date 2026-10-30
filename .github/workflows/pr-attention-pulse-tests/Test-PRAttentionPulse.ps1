@@ -1623,7 +1623,7 @@ try
     $mainConfigLine = $awfConfigLines[0].Replace("\", "")
     $detectorConfigLine = $awfConfigLines[1].Replace("\", "")
     Assert-True ($mainConfigLine.Contains('"allowedModels":["gpt-5.6-sol"]')) "The main inference stage must enforce the singleton model allowlist."
-    Assert-True (-not $detectorConfigLine.Contains('"allowedModels"')) "The detector must rely on its explicit COPILOT_MODEL pin rather than duplicate the main API proxy allowlist."
+    Assert-True ($detectorConfigLine.Contains('"allowedModels":["gpt-5.6-sol"]')) "The detector inference stage must enforce the singleton model allowlist."
     Assert-True ($mainConfigLine.Contains('"enableTokenSteering":false')) "Main-agent token steering must be explicitly disabled."
     Assert-True ($mainConfigLine.Contains('"modelFallback":{"enabled":false}')) "Main-agent model fallback must be explicitly disabled."
     Assert-True (-not $detectorConfigLine.Contains("enableTokenSteering")) "Detector token steering must be absent, which is false in AWF."
