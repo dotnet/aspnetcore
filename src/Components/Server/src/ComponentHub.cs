@@ -510,20 +510,18 @@ internal sealed partial class ComponentHub : Hub
         _ = circuitHost.ReceiveByteArray(id, data);
     }
 
-    public async ValueTask<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
+    public async ValueTask<int> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)
         {
-            return false;
+            return (int)RemoteJSDataStreamResult.StreamDisposed;
         }
 
-        // Note: this await will block the circuit. This is intentional.
-        // The call into the circuitHost.ReceiveJSDataChunk will block regardless as we call into Renderer.Dispatcher.InvokeAsync
-        // which ensures we're running on the main circuit thread so that the server/client remain in the same
-        // synchronization context. Additionally, we're utilizing the return value as a heartbeat for the transfer
-        // process, and without it would likely need to setup a separate endpoint to handle that functionality.
-        return await circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error);
+        // The call into circuitHost.ReceiveJSDataChunk runs on the Renderer.Dispatcher so that the
+        // server and client remain in the same synchronization context. The pipe write itself does
+        // not block the circuit when the reader applies backpressure.
+        return (int)await circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error);
     }
 
     public async IAsyncEnumerable<ArraySegment<byte>> SendDotNetStreamToJS(long streamId)
