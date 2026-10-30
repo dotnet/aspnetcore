@@ -281,6 +281,31 @@ public class FormDataMapperTests
         // Assert
         Assert.Null(result);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CanDeserialize_ComplexTypes_WithNullableCustomParsableProperty_EmptyValue(bool collectErrors)
+    {
+        var collection = new Dictionary<string, StringValues>() { ["Point"] = string.Empty };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        if (collectErrors)
+        {
+            reader.ErrorHandler = (key, message, attemptedValue) => errors.Add(new(key, message, attemptedValue));
+        }
+
+        var result = FormDataMapper.Map<TypeWithNullableValuePoint>(reader, new FormDataMapperOptions());
+
+        Assert.NotNull(result);
+        Assert.Null(result.Point);
+        Assert.Empty(errors);
+    }
+
+    private sealed class TypeWithNullableValuePoint
+    {
+        public ValuePoint? Point { get; set; }
+    }
 #nullable disable
 
     [Fact]
