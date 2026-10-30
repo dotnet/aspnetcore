@@ -1,0 +1,13 @@
+<p class="child-value">@Value</p>
+<p class="attributes">@string.Join(",", Attributes.Keys.OrderBy(key => key, StringComparer.Ordinal))</p>
+<button class="toggle" @onclick="Toggle">Toggle captured callback value</button>
+
+@code {
+    [Parameter] public bool Value { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> Attributes { get; set; }
+
+    private Task Toggle()
+    {
+        return ((EventCallback<bool>)Attributes["ValueChanged"]).InvokeAsync(!Value);
+    }
+}

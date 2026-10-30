@@ -16,7 +16,13 @@ public readonly struct EventCallback<TValue> : IEventCallback
     public static readonly EventCallback<TValue> Empty = new EventCallback<TValue>(null, (Action)(() => { }));
 
     internal readonly MulticastDelegate? Delegate;
-    internal readonly IHandleEvent? Receiver;
+
+    // Store binding provenance without adding another field to each callback.
+    private readonly object? _receiver;
+
+    internal IHandleEvent? Receiver => _receiver is EventCallbackBindingReceiver bindingReceiver ? bindingReceiver.Receiver : (IHandleEvent?)_receiver;
+
+    internal bool IsBinding => _receiver is EventCallbackBindingReceiver;
 
     /// <summary>
     /// Creates the new <see cref="EventCallback{TValue}"/>.
@@ -25,9 +31,19 @@ public readonly struct EventCallback<TValue> : IEventCallback
     /// <param name="delegate">The delegate to bind.</param>
     public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate)
     {
-        Receiver = receiver;
+        _receiver = receiver;
         Delegate = @delegate;
     }
+
+    internal EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate, bool isBinding)
+    {
+        _receiver = isBinding ? EventCallbackBindingReceiver.Get(receiver) : receiver;
+        Delegate = @delegate;
+    }
+
+    bool IEventCallback.IsBinding => IsBinding;
+
+    object IEventCallback.WithoutBinding() => new EventCallback<TValue>(Receiver, Delegate);
 
     /// <summary>
     /// Gets a value that indicates whether the delegate associated with this event dispatcher is non-null.
@@ -64,8 +80,11 @@ public readonly struct EventCallback<TValue> : IEventCallback
 
     internal EventCallback AsUntyped()
     {
-        return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate);
+        return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate, isBinding: IsBinding);
     }
+
+    internal EventCallback<TValue> AsBinding()
+        => IsBinding ? this : new EventCallback<TValue>(Receiver, Delegate, isBinding: true);
 
     object? IEventCallback.UnpackForRenderTree()
     {

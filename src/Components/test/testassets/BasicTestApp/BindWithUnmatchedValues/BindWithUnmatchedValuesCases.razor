@@ -1,0 +1,33 @@
+<ErrorBoundary>
+    <ChildContent>
+        <MissingCallbackWithCapture @bind-Value="_missingValue" class="ordinary-attribute" />
+    </ChildContent>
+    <ErrorContent>
+        <p id="missing-callback-with-capture">@context.Message</p>
+    </ErrorContent>
+</ErrorBoundary>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MissingCallbackWithoutCapture @bind-Value="_missingValue" />
+    </ChildContent>
+    <ErrorContent>
+        <p id="missing-callback-without-capture">@context.Message</p>
+    </ErrorContent>
+</ErrorBoundary>
+
+<div id="declared-callback">
+    <p id="declared-callback-parent-value">@_boundValue</p>
+    <DeclaredCallbackWithCapture @bind-Value="_boundValue" class="ordinary-attribute" />
+</div>
+
+<div id="explicit-callback">
+    <p id="explicit-callback-parent-value">@_explicitValue</p>
+    <MissingCallbackWithCapture Value="_explicitValue" ValueChanged="@(EventCallback.Factory.Create<bool>(this, value => _explicitValue = value))" class="ordinary-attribute" />
+</div>
+
+@code {
+    private bool _missingValue;
+    private bool _boundValue;
+    private bool _explicitValue;
+}

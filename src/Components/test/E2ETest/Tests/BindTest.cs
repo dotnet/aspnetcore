@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using BasicTestApp.BindWithUnmatchedValues;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -2072,5 +2073,51 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
             $"document.querySelector('{cssSelector}').value = '{value}'");
         javascript.ExecuteScript(
             $"document.querySelector('{cssSelector}').dispatchEvent(new KeyboardEvent('change'));");
+    }
+
+    [Fact]
+    public void CanBindComponentWithUnmatchedValues()
+    {
+        Browser.MountTestComponent<BindWithUnmatchedValuesCases>();
+        var parentValue = Browser.Exists(By.Id("declared-callback-parent-value"));
+        Browser.Equal("False", () => parentValue.Text);
+        Browser.Equal("class", () => Browser.FindElement(By.Id("declared-callback-attributes")).Text);
+
+        Browser.Exists(By.Id("declared-callback-toggle")).Click();
+        Browser.Equal("True", () => parentValue.Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("declared-callback-child-value")).Text);
+
+        Browser.Exists(By.Id("declared-callback-toggle")).Click();
+        Browser.Equal("False", () => parentValue.Text);
+        Browser.Equal("False", () => Browser.FindElement(By.Id("declared-callback-child-value")).Text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void BindingComponentWithoutChangeCallback_Throws(bool captureUnmatchedValues)
+    {
+        Browser.MountTestComponent<BindWithUnmatchedValuesCases>();
+        var componentType = captureUnmatchedValues
+            ? typeof(MissingCallbackWithCapture)
+            : typeof(MissingCallbackWithoutCapture);
+        var errorId = captureUnmatchedValues ? "missing-callback-with-capture" : "missing-callback-without-capture";
+
+        Browser.Equal(
+            $"Object of type '{componentType.FullName}' does not have a property matching the name 'ValueChanged'.",
+            () => Browser.FindElement(By.Id(errorId)).Text);
+    }
+
+    [Fact]
+    public void ExplicitChangeCallback_CanBeCapturedAsUnmatchedValue()
+    {
+        Browser.MountTestComponent<BindWithUnmatchedValuesCases>();
+        var parentValue = Browser.Exists(By.Id("explicit-callback-parent-value"));
+        Browser.Equal("False", () => parentValue.Text);
+        Browser.Equal("ValueChanged,class", () => Browser.FindElement(By.CssSelector("#explicit-callback .attributes")).Text);
+
+        Browser.Exists(By.CssSelector("#explicit-callback .toggle")).Click();
+        Browser.Equal("True", () => parentValue.Text);
+        Browser.Equal("True", () => Browser.FindElement(By.CssSelector("#explicit-callback .child-value")).Text);
     }
 }

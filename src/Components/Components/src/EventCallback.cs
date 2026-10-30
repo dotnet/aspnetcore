@@ -21,8 +21,13 @@ public readonly struct EventCallback : IEventCallback
     public static readonly EventCallback Empty = new EventCallback(null, (Action)(() => { }));
 
     internal readonly MulticastDelegate? Delegate;
-    internal readonly IHandleEvent? Receiver;
 
+    // Store binding provenance without adding another field to each callback.
+    private readonly object? _receiver;
+
+    internal IHandleEvent? Receiver => _receiver is EventCallbackBindingReceiver bindingReceiver ? bindingReceiver.Receiver : (IHandleEvent?)_receiver;
+
+    internal bool IsBinding => _receiver is EventCallbackBindingReceiver;
     /// <summary>
     /// Creates the new <see cref="EventCallback"/>.
     /// </summary>
@@ -30,9 +35,19 @@ public readonly struct EventCallback : IEventCallback
     /// <param name="delegate">The delegate to bind.</param>
     public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate)
     {
-        Receiver = receiver;
+        _receiver = receiver;
         Delegate = @delegate;
     }
+
+    internal EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate, bool isBinding)
+    {
+        _receiver = isBinding ? EventCallbackBindingReceiver.Get(receiver) : receiver;
+        Delegate = @delegate;
+    }
+
+    bool IEventCallback.IsBinding => IsBinding;
+
+    object IEventCallback.WithoutBinding() => new EventCallback(Receiver, Delegate);
 
     /// <summary>
     /// Gets a value that indicates whether the delegate associated with this event dispatcher is non-null.

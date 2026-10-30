@@ -8,5 +8,9 @@ internal interface IEventCallback
 {
     bool HasDelegate { get; }
 
+    bool IsBinding { get; }
+
+    object WithoutBinding();
+
     object? UnpackForRenderTree();
 }
