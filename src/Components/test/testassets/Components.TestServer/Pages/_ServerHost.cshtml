@@ -54,6 +54,10 @@
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
         const query = new URLSearchParams(location.search);
+        if (query.has('navigationReconnection')) {
+            window.navigationReconnectionDisconnected = false;
+        }
+
         if (query.has('accelerateAuthenticationRefresh')) {
             const setTimeout = window.setTimeout;
             window.setTimeout = (handler, timeout, ...args) =>
@@ -65,6 +69,11 @@
 
         myJsRootComponentInitializers.captureRendererInterop(Blazor);
         Blazor.start({
+            // A custom handler disables automatic reconnects so these tests can call Blazor.reconnect explicitly.
+            reconnectionHandler: query.has('navigationReconnection') ? {
+                onConnectionDown: () => { window.navigationReconnectionDisconnected = true; },
+                onConnectionUp: () => { window.navigationReconnectionDisconnected = false; },
+            } : undefined,
             configureSignalR: builder => {
                 if (query.has('captureAuthenticationRefresh')) {
                     const build = builder.build.bind(builder);
