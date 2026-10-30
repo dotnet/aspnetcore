@@ -37,6 +37,17 @@ public class TimeoutControlTests
     }
 
     [Fact]
+    public void DoesNotTimeOutWhenTimeoutIsMaxValue()
+    {
+        var now = _timeProvider.GetTimestamp();
+        _timeoutControl.Initialize();
+        _timeoutControl.SetTimeout(TimeSpan.MaxValue, TimeoutReason.KeepAlive);
+        _timeoutControl.Tick(_timeProvider.GetTimestamp(now, TimeSpan.FromDays(365)));
+
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+    }
+
+    [Fact]
     public void DoesNotTimeOutWhenRequestBodyDoesNotSatisfyMinimumDataRateButDebuggerIsAttached()
     {
         var mockDebugger = new Mock<IDebugger>();
