@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "syncfusion-review-2026-10",
+  "repository": "dotnet/aspnetcore",
+  "pr": 70001,
+  "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "intentId": "fixture-clean",
+  "expectedLogin": "PureWeen",
+  "label": "agent-reviewed",
+  "visibleComment": "Copilot's local review panel found no issues to raise at this commit.",
+  "marker": "<!-- agent-reviewed-local-panel:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa -->",
+  "panelComplete": true,
+  "allOriginalsNoFindings": true,
+  "assessmentSurvivorCount": 0
+}

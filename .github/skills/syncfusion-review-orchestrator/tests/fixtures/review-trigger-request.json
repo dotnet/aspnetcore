@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "syncfusion-review-2026-10",
+  "repository": "dotnet/aspnetcore",
+  "pr": 70001,
+  "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "intentId": "fixture-trigger",
+  "intentReservedAtUtc": "2026-10-29T20:00:00Z",
+  "expectedLogin": "PureWeen",
+  "command": "/review",
+  "knownTriggers": [
+    {
+      "campaignId": "syncfusion-review-2026-10",
+      "pr": 70001,
+      "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "command": "/review",
+      "readbackVerified": true,
+      "commentId": 123
+    }
+  ]
+}

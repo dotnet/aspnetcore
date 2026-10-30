@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "responses": {
+    "GET user": [
+      {
+        "value": {
+          "login": "PureWeen"
+        }
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/pulls/70001": [
+      {
+        "value": {
+          "state": "open",
+          "draft": false,
+          "merged_at": null,
+          "head": {
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      },
+      {
+        "value": {
+          "state": "open",
+          "draft": false,
+          "merged_at": null,
+          "head": {
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      },
+      {
+        "value": {
+          "state": "open",
+          "draft": false,
+          "merged_at": null,
+          "head": {
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      },
+      {
+        "value": {
+          "state": "open",
+          "draft": false,
+          "merged_at": null,
+          "head": {
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/issues/70001/labels?per_page=100": [
+      {
+        "value": []
+      },
+      {
+        "value": [
+          {
+            "name": "agent-reviewed"
+          }
+        ]
+      }
+    ],
+    "GET repos/dotnet/aspnetcore/issues/70001/comments?per_page=100": [
+      {
+        "value": [
+          {
+            "id": 303,
+            "body": "Copilot's local review panel found no issues to raise at this commit.\n\n<!-- agent-reviewed-local-panel:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa -->"
+          }
+        ]
+      },
+      {
+        "value": [
+          {
+            "id": 303,
+            "body": "Copilot's local review panel found no issues to raise at this commit.\n\n<!-- agent-reviewed-local-panel:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa -->"
+          }
+        ]
+      }
+    ],
+    "POST repos/dotnet/aspnetcore/issues/70001/labels": [
+      {
+        "value": [
+          {
+            "name": "agent-reviewed"
+          }
+        ]
+      }
+    ]
+  }
+}

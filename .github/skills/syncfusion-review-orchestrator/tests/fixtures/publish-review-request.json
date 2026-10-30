@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "syncfusion-review-2026-10",
+  "repository": "dotnet/aspnetcore",
+  "pr": 70001,
+  "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "intentId": "fixture-publication",
+  "expectedLogin": "PureWeen",
+  "event": "COMMENT",
+  "marker": "<!-- sf-review:fixture -->",
+  "body": "Human-directed and GitHub Copilot-generated.\n\n<!-- sf-review:fixture -->",
+  "feedbackComplete": true,
+  "diffSha256": "91d1e4f0e4052e56c3f612ddbdb2a272be371cc6d32325b3d31f5712cb08b260",
+  "feedbackSha256": "7bb962036dc5369d3f260f5b14b7c8e9e52516663591d7a2137b3c77d0dbc914",
+  "findingsSha256": "8b22f603aabfec0ff0d6367925b7e30488537e5e381112ce2925291e684e0120",
+  "findings": [
+    {
+      "id": "finding-1",
+      "path": "src/Fixture.cs",
+      "line": 12,
+      "side": "RIGHT",
+      "fingerprint": "<!-- finding:fixture-f1 -->"
+    }
+  ],
+  "comments": [
+    {
+      "path": "src/Fixture.cs",
+      "line": 12,
+      "side": "RIGHT",
+      "body": "Agent-written: this fixture finding exercises atomic publication.\n\n<!-- finding:fixture-f1 -->"
+    }
+  ]
+}
