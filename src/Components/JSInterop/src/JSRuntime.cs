@@ -23,6 +23,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private readonly ConcurrentDictionary<long, IPendingAsyncCall> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
     private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
+    private readonly object _pendingTasksLock = new();
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
@@ -139,48 +140,52 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         CancellationToken cancellationToken,
         object?[]? args)
     {
-        var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-        var pendingCall = new PendingAsyncCall<TValue>();
-        if (cancellationToken.CanBeCanceled)
+        // Capture and dispatch share this lock so a captured call cannot begin dispatch after capture returns.
+        lock (_pendingTasksLock)
         {
-            _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
+            var taskId = Interlocked.Increment(ref _nextPendingTaskId);
+            var pendingCall = new PendingAsyncCall<TValue>();
+            if (cancellationToken.CanBeCanceled)
             {
-                pendingCall.Cancel(cancellationToken);
-                CleanupTasksAndRegistrations(taskId);
-            });
-        }
-        _pendingTasks[taskId] = pendingCall;
+                _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
+                {
+                    pendingCall.Cancel(cancellationToken);
+                    CleanupTasksAndRegistrations(taskId);
+                });
+            }
+            _pendingTasks[taskId] = pendingCall;
 
-        try
-        {
-            if (cancellationToken.IsCancellationRequested)
+            try
             {
-                pendingCall.Cancel(cancellationToken);
-                CleanupTasksAndRegistrations(taskId);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    pendingCall.Cancel(cancellationToken);
+                    CleanupTasksAndRegistrations(taskId);
+
+                    return new ValueTask<TValue>(pendingCall.Task);
+                }
+
+                var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
+                var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
+                var invocationInfo = new JSInvocationInfo
+                {
+                    AsyncHandle = taskId,
+                    TargetInstanceId = targetInstanceId,
+                    Identifier = identifier,
+                    CallType = callType,
+                    ResultType = resultType,
+                    ArgsJson = argsJson,
+                };
+
+                BeginInvokeJS(invocationInfo);
 
                 return new ValueTask<TValue>(pendingCall.Task);
             }
-
-            var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
-            var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
-            var invocationInfo = new JSInvocationInfo
+            catch
             {
-                AsyncHandle = taskId,
-                TargetInstanceId = targetInstanceId,
-                Identifier = identifier,
-                CallType = callType,
-                ResultType = resultType,
-                ArgsJson = argsJson,
-            };
-
-            BeginInvokeJS(invocationInfo);
-
-            return new ValueTask<TValue>(pendingCall.Task);
-        }
-        catch
-        {
-            CleanupTasksAndRegistrations(taskId);
-            throw;
+                CleanupTasksAndRegistrations(taskId);
+                throw;
+            }
         }
     }
 
@@ -191,6 +196,49 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             registration.Dispose();
         }
+    }
+
+    /// <summary>
+    /// Captures all pending asynchronous JavaScript calls so they can be failed with the specified exception.
+    /// </summary>
+    /// <param name="exception">The exception used to complete the pending calls.</param>
+    /// <returns>An action that fails the captured calls.</returns>
+    protected Action CapturePendingTasks(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        List<IPendingAsyncCall> pendingCalls;
+        List<CancellationTokenRegistration> cancellationRegistrations;
+        lock (_pendingTasksLock)
+        {
+            pendingCalls = new List<IPendingAsyncCall>();
+            cancellationRegistrations = new List<CancellationTokenRegistration>();
+            foreach (var taskId in _pendingTasks.Keys)
+            {
+                if (_pendingTasks.TryRemove(taskId, out var pendingCall))
+                {
+                    pendingCalls.Add(pendingCall);
+                }
+
+                if (_cancellationRegistrations.TryRemove(taskId, out var registration))
+                {
+                    cancellationRegistrations.Add(registration);
+                }
+            }
+        }
+
+        return () =>
+        {
+            foreach (var pendingCall in pendingCalls)
+            {
+                pendingCall.Fail(exception);
+            }
+
+            foreach (var registration in cancellationRegistrations)
+            {
+                registration.Dispose();
+            }
+        };
     }
 
     /// <summary>
