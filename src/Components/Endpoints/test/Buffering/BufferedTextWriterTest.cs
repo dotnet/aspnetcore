@@ -69,6 +69,55 @@ public class BufferedTextWriterTest
         Assert.Equal("abc", underlying.FlushedOutput);
     }
 
+    [Fact]
+    public async Task CanWriteCharSegmentsAcrossMultipleFlushes()
+    {
+        var underlying = new StringWriter();
+        var writer = new BufferedTextWriter(underlying);
+
+        for (var i = 0; i < 5; i++)
+        {
+            var chars = $"[{i}]".ToCharArray();
+            writer.Write(chars, 0, chars.Length);
+            writer.Write($"<{i}>".AsSpan());
+            writer.Write('|');
+            await writer.FlushAsync();
+        }
+
+        Assert.Equal("[0]<0>|[1]<1>|[2]<2>|[3]<3>|[4]<4>|", underlying.ToString());
+    }
+
+    [Fact]
+    public async Task CanWriteCharSegmentsWhileFlushIsInProgress()
+    {
+        var underlying = new SlowFlushingTextWriter();
+        var writer = new BufferedTextWriter(underlying);
+
+        // Start the first flush
+        writer.Write("ab".AsSpan());
+        var flush1Tcs = new TaskCompletionSource();
+        underlying.CompleteNextFlushAfter = flush1Tcs.Task;
+        var flushAsyncTask1 = writer.FlushAsync();
+        Assert.False(flushAsyncTask1.IsCompleted);
+
+        // While that's running, write more segments and start a second flush
+        writer.Write(new[] { 'c', 'd' }, 0, 2);
+        underlying.CompleteNextFlushAfter = null;
+        var flushAsyncTask2 = writer.FlushAsync();
+
+        flush1Tcs.SetResult();
+        await flushAsyncTask1;
+        await flushAsyncTask2;
+        Assert.Equal("abcd", underlying.FlushedOutput);
+
+        // Buffers that were flushed can be reused for further segments
+        writer.Write("ef".AsSpan());
+        await writer.FlushAsync();
+        writer.Write("gh".AsSpan());
+        await writer.FlushAsync();
+        Assert.Equal("abcdefgh", underlying.FlushedOutput);
+    }
+
     private class SlowFlushingTextWriter : StringWriter
     {
         public Task CompleteNextFlushAfter { get; set; }
