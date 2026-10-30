@@ -16,6 +16,7 @@ public class AuthenticationProperties
     internal const string IsPersistentKey = ".persistent";
     internal const string RedirectUriKey = ".redirect";
     internal const string RefreshKey = ".refresh";
+    internal const string RotateKey = ".rotate";
     internal const string UtcDateTimeFormat = "r";
 
     /// <summary>
@@ -114,6 +115,22 @@ public class AuthenticationProperties
     {
         get => GetBool(RefreshKey);
         set => SetBool(RefreshKey, value);
+    }
+
+    /// <summary>
+    /// Gets or sets if the session identifier should be rotated when signing in.
+    /// </summary>
+    /// <remarks>
+    /// Only honored by handlers that keep session state on the server, such as cookie
+    /// authentication configured with a <c>SessionStore</c>. Set this when signing in a
+    /// principal whose privileges differ from the one already in the request, so that a
+    /// pre-existing session identifier cannot be reused to reach the new ticket.
+    /// </remarks>
+    [JsonIgnore]
+    public bool? RotateSessionKey
+    {
+        get => GetBool(RotateKey);
+        set => SetBool(RotateKey, value);
     }
 
     /// <summary>
