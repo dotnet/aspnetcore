@@ -123,7 +123,7 @@ internal sealed class Http3HeadersEnumerator : IEnumerator<KeyValuePair<string, 
         if (knownHeaderType == KnownHeaderType.ContentLength && _headersType == HeadersType.Headers)
         {
             // The value is not formatted as a string by the enumerator to avoid an allocation per response.
-            // Header writers should use TryGetCurrentContentLength; Current formats it on demand.
+            // Header writers should use TryGetCurrentContentLength; Current formats it on demand and caches it.
             Debug.Assert(value.Count == 0);
             _current = new KeyValuePair<string, string>(name, null!);
             _currentIsRawContentLength = true;
@@ -180,7 +180,15 @@ internal sealed class Http3HeadersEnumerator : IEnumerator<KeyValuePair<string, 
     }
 
     private KeyValuePair<string, string> GetFormattedContentLength()
-        => new KeyValuePair<string, string>(_current.Key, HeaderUtilities.FormatNonNegativeInt64(_responseHeaders!.ContentLength.GetValueOrDefault()));
+    {
+        // Format on first read and cache so repeated Current reads (e.g. with a custom encoding selector) don't allocate again.
+        if (_current.Value is null)
+        {
+            _current = new KeyValuePair<string, string>(_current.Key, HeaderUtilities.FormatNonNegativeInt64(_responseHeaders!.ContentLength.GetValueOrDefault()));
+        }
+
+        return _current;
+    }
 
     public void Dispose()
     {
