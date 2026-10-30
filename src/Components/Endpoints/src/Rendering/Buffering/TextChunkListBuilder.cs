@@ -13,6 +13,25 @@ internal class TextChunkListBuilder(int pageLength)
     private TextChunkPage? _currentPage;
     private List<TextChunkPage>? _priorPages;
 
+    // Backing storage for the CharArraySegment chunks in this list. Each list has its own
+    // so that it can be reset when the list is cleared, without affecting the other list
+    // that BufferedTextWriter may be writing to while this one is being flushed.
+    private readonly StringBuilder _charArraySegments = new();
+    private bool _charArraySegmentsNeedClear;
+
+    public void Add(ReadOnlySpan<char> value)
+    {
+        if (_charArraySegmentsNeedClear)
+        {
+            // Deferred until needed because clearing a multi-chunk StringBuilder allocates,
+            // which would be wasted work after the final flush.
+            _charArraySegments.Clear();
+            _charArraySegmentsNeedClear = false;
+        }
+
+        Add(new TextChunk(value, _charArraySegments));
+    }
+
     public void Add(TextChunk value)
     {
         if (_currentPage is null)
@@ -32,9 +51,12 @@ internal class TextChunkListBuilder(int pageLength)
         }
     }
 
-    public async Task WriteToAsync(TextWriter writer, string charArraySegments)
+    public async Task WriteToAsync(TextWriter writer)
     {
         StringBuilder? tempBuffer = null;
+        // If the buffer is pending a deferred clear, its content was already flushed and
+        // no chunk in this list refers to it, so there's no need to copy it to a string.
+        var charArraySegments = _charArraySegmentsNeedClear ? string.Empty : _charArraySegments.ToString();
 
         if (_priorPages is not null)
         {
@@ -66,5 +88,6 @@ internal class TextChunkListBuilder(int pageLength)
         }
 
         _priorPages?.Clear();
+        _charArraySegmentsNeedClear = _charArraySegments.Length > 0;
     }
 }

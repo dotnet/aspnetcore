@@ -32,17 +32,17 @@ internal readonly struct TextChunk
         _charValue = value;
     }
 
-    public TextChunk(ArraySegment<char> value, StringBuilder charArraySegmentScope)
+    public TextChunk(ReadOnlySpan<char> value, StringBuilder charArraySegmentScope)
     {
-        // An ArraySegment<char> is mutable (as in, its underlying buffer is). So
+        // The memory behind a span is mutable (e.g., a pooled or reused buffer). So
         // we must copy its value. To avoid this being a separate allocation each time,
         // use a StringBuilder as a growable buffer for these values. We rely on
         // the caller of WriteToAsync being able to supply the .ToString() result
         // of that StringBuilder, since we don't want to call that on each WriteToAsync.
         _type = TextChunkType.CharArraySegment;
         _charArraySegmentStart = charArraySegmentScope.Length;
-        _charArraySegmentLength = value.Count;
-        charArraySegmentScope.Append((Span<char>)value);
+        _charArraySegmentLength = value.Length;
+        charArraySegmentScope.Append(value);
     }
 
     public TextChunk(int value)
