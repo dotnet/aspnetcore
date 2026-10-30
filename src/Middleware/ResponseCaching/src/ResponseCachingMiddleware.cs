@@ -526,12 +526,11 @@ public class ResponseCachingMiddleware
         }
         else
         {
-            var originalArray = stringValues.ToArray();
-            var newArray = new string[originalArray.Length];
+            var newArray = new string[stringValues.Count];
 
-            for (var i = 0; i < originalArray.Length; i++)
+            for (var i = 0; i < newArray.Length; i++)
             {
-                newArray[i] = originalArray[i]!.ToUpperInvariant();
+                newArray[i] = stringValues[i]!.ToUpperInvariant();
             }
 
             // Since the casing has already been normalized, use Ordinal comparison
