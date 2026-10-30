@@ -26,7 +26,6 @@ public class FileBufferingReadStream : Stream
     private string? _tempFileName;
 
     private Stream _buffer;
-    private byte[]? _rentedBuffer;
     private bool _inMemory = true;
     private bool _completelyBuffered;
 
@@ -79,9 +78,7 @@ public class FileBufferingReadStream : Stream
         _bytePool = bytePool;
         if (memoryThreshold <= _maxRentedBufferSize)
         {
-            _rentedBuffer = bytePool.Rent(memoryThreshold);
-            _buffer = new MemoryStream(_rentedBuffer);
-            _buffer.SetLength(0);
+            _buffer = new PooledMemoryStream(bytePool, memoryThreshold);
         }
         else
         {
@@ -131,9 +128,7 @@ public class FileBufferingReadStream : Stream
         _bytePool = bytePool;
         if (memoryThreshold <= _maxRentedBufferSize)
         {
-            _rentedBuffer = bytePool.Rent(memoryThreshold);
-            _buffer = new MemoryStream(_rentedBuffer);
-            _buffer.SetLength(0);
+            _buffer = new PooledMemoryStream(bytePool, memoryThreshold);
         }
         else
         {
@@ -277,30 +272,32 @@ public class FileBufferingReadStream : Stream
             _inMemory = false;
             var oldBuffer = _buffer;
             _buffer = CreateTempFile();
-            if (_rentedBuffer == null)
+
+            using (oldBuffer)
             {
-                // Copy data from the in memory buffer to the file stream using a pooled buffer
-                oldBuffer.Position = 0;
-                var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
-                try
+                if (oldBuffer is PooledMemoryStream pooledBuffer)
                 {
-                    var copyRead = oldBuffer.Read(rentedBuffer);
-                    while (copyRead > 0)
+                    _buffer.Write(pooledBuffer.WrittenMemory.Span);
+                }
+                else
+                {
+                    // Copy data from the in memory buffer to the file stream using a pooled buffer
+                    oldBuffer.Position = 0;
+                    var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
+                    try
                     {
-                        _buffer.Write(rentedBuffer.AsSpan(0, copyRead));
-                        copyRead = oldBuffer.Read(rentedBuffer);
+                        var copyRead = oldBuffer.Read(rentedBuffer);
+                        while (copyRead > 0)
+                        {
+                            _buffer.Write(rentedBuffer.AsSpan(0, copyRead));
+                            copyRead = oldBuffer.Read(rentedBuffer);
+                        }
+                    }
+                    finally
+                    {
+                        _bytePool.Return(rentedBuffer);
                     }
                 }
-                finally
-                {
-                    _bytePool.Return(rentedBuffer);
-                }
-            }
-            else
-            {
-                _buffer.Write(_rentedBuffer.AsSpan(0, (int)oldBuffer.Length));
-                _bytePool.Return(_rentedBuffer);
-                _rentedBuffer = null;
             }
         }
 
@@ -353,30 +350,32 @@ public class FileBufferingReadStream : Stream
             _inMemory = false;
             var oldBuffer = _buffer;
             _buffer = CreateTempFile();
-            if (_rentedBuffer == null)
+
+            using (oldBuffer)
             {
-                oldBuffer.Position = 0;
-                var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
-                try
+                if (oldBuffer is PooledMemoryStream pooledBuffer)
                 {
-                    // oldBuffer is a MemoryStream, no need to do async reads.
-                    var copyRead = oldBuffer.Read(rentedBuffer);
-                    while (copyRead > 0)
+                    await _buffer.WriteAsync(pooledBuffer.WrittenMemory, cancellationToken);
+                }
+                else
+                {
+                    oldBuffer.Position = 0;
+                    var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
+                    try
                     {
-                        await _buffer.WriteAsync(rentedBuffer.AsMemory(0, copyRead), cancellationToken);
-                        copyRead = oldBuffer.Read(rentedBuffer);
+                        // oldBuffer is a MemoryStream, no need to do async reads.
+                        var copyRead = oldBuffer.Read(rentedBuffer);
+                        while (copyRead > 0)
+                        {
+                            await _buffer.WriteAsync(rentedBuffer.AsMemory(0, copyRead), cancellationToken);
+                            copyRead = oldBuffer.Read(rentedBuffer);
+                        }
+                    }
+                    finally
+                    {
+                        _bytePool.Return(rentedBuffer);
                     }
                 }
-                finally
-                {
-                    _bytePool.Return(rentedBuffer);
-                }
-            }
-            else
-            {
-                await _buffer.WriteAsync(_rentedBuffer.AsMemory(0, (int)oldBuffer.Length), cancellationToken);
-                _bytePool.Return(_rentedBuffer);
-                _rentedBuffer = null;
             }
         }
 
@@ -468,11 +467,6 @@ public class FileBufferingReadStream : Stream
         if (!_disposed)
         {
             _disposed = true;
-            if (_rentedBuffer != null)
-            {
-                _bytePool.Return(_rentedBuffer);
-            }
-
             if (disposing)
             {
                 _buffer.Dispose();
@@ -486,11 +480,6 @@ public class FileBufferingReadStream : Stream
         if (!_disposed)
         {
             _disposed = true;
-            if (_rentedBuffer != null)
-            {
-                _bytePool.Return(_rentedBuffer);
-            }
-
             await _buffer.DisposeAsync();
         }
     }

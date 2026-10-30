@@ -111,6 +111,24 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
+    public void PaginatorNavigationHasAccessibleName()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+
+        Browser.Equal("Pagination", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".first-paginator .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("Pagination", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".top-paginator .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("People pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+
+        Browser.Click(By.Id("toggle-paginator-labelledby"));
+
+        Browser.Equal("More people pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+
+        Browser.Click(By.Id("toggle-paginator-labelledby"));
+
+        Browser.Equal("People pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+    }
+
+    [Fact]
     public void DualPaginatorsNavigatesAndBothUpdate()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
@@ -124,6 +142,33 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
         Assert.Contains("people_page=2", Browser.Url);
+    }
+
+    [Theory]
+    [InlineData("first-paginator", "5", "43 items")]
+    [InlineData("bottom-paginator", "9", "Custom summary")]
+    public void PaginatorExposesPageChangesWithoutMovingFocus(string paginatorClass, string pageCount, string summaryText)
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.Id("quickgrid-interactive-ready"));
+
+        var paginator = Browser.FindElement(By.ClassName(paginatorClass));
+        var status = paginator.FindElement(By.ClassName("pagination-text"));
+        var summary = paginator.FindElement(By.ClassName("summary"));
+        var next = paginator.FindElement(By.CssSelector("a.go-next"));
+
+        Assert.Equal($"Page 1 of {pageCount}", status.Text);
+        Assert.Equal("polite", status.GetDomAttribute("aria-live"));
+        Assert.Equal("true", status.GetDomAttribute("aria-atomic"));
+        Assert.Null(summary.GetDomAttribute("aria-live"));
+
+        next.SendKeys(Keys.Enter);
+
+        Browser.Equal($"Page 2 of {pageCount}", () => status.Text);
+        Browser.Equal(next, () => Browser.SwitchTo().ActiveElement());
+        Assert.Equal("polite", status.GetDomAttribute("aria-live"));
+        Assert.Equal("true", status.GetDomAttribute("aria-atomic"));
+        Assert.Equal(summaryText, summary.Text);
     }
 
     [Fact]

@@ -242,6 +242,10 @@ public class KestrelServerLimits
     /// When a connection is upgraded to another protocol, such as WebSockets, its connection is counted against the
     /// <see cref="MaxConcurrentUpgradedConnections" /> limit instead of <see cref="MaxConcurrentConnections" />.
     /// </para>
+    /// <para>
+    /// This limit does not apply to HTTP/2 or HTTP/3 connections, where other protocols can be carried through
+    /// tunnels on individual streams while the underlying connection remains HTTP/2 or HTTP/3.
+    /// </para>
     /// </remarks>
     public long? MaxConcurrentUpgradedConnections
     {

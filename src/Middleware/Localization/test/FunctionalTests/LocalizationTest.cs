@@ -58,21 +58,21 @@ public class LocalizationTest
     }
 
     [Fact]
-    public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback()
+    public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_WithNonPredefinedCulture()
     {
         return RunTest(
             typeof(StartupResourcesInFolder),
             "fr-FR-test",
-            "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
+            "Hello Hello Hello Hello");
     }
 
     [Fact]
-    public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_CultureHierarchyTooDeep()
+    public Task Localization_PredefinedCultureFallsBackToParent()
     {
         return RunTest(
-            typeof(StartupResourcesInFolder),
-            "fr-FR-test-again-too-deep-to-work",
-            "Hello Hello Hello Hello");
+            typeof(StartupCultureFallback),
+            "en-US",
+            "en en");
     }
 
     [Fact]

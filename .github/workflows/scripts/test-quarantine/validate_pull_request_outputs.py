@@ -2,6 +2,7 @@
 
 import argparse
 import collections
+import hashlib
 import importlib.util
 import json
 import os
@@ -414,6 +415,7 @@ def validate_addition(target, eligibility, issue_items):
             isinstance(record, dict)
             and record.get("originating_case") == "case-b"
             and record.get("case_b_eligible") is True
+            and record.get("case_b_issue_verified") is True
             and record.get("case_b_issue") == issue
             and record.get("current_quarantine_state") == "not-quarantined"
             and record.get("latest_quarantine_transition") == "removed"
@@ -443,7 +445,7 @@ def history_target_map(history):
     return result
 
 
-def validate_removals(removed, history_targets):
+def validate_removals(removed, history_targets, unquarantine_targets):
     issues = set()
     for key, target in removed.items():
         reference = target["reference"]
@@ -461,6 +463,16 @@ def validate_removals(removed, history_targets):
             raise ValidationError(
                 f"Unquarantine target is not an exact first quarantine: {key}"
             )
+        evidence = unquarantine_targets.get(key)
+        if (
+            not isinstance(evidence, dict)
+            or evidence.get("eligible") is not True
+            or evidence.get("issue") != issue
+            or evidence.get("introduced_utc") != history_target.get("introduced_utc")
+        ):
+            raise ValidationError(
+                f"Unquarantine target lacks deterministic Part 2 eligibility: {key}"
+            )
         issues.add(issue)
     if len(issues) != 1:
         raise ValidationError(
@@ -468,25 +480,50 @@ def validate_removals(removed, history_targets):
         )
 
 
-def changed_project_roots(root, base_commit, current_main, project_roots):
+def changed_project_roots(root, base_commit, current_main, project_roots, target_paths=()):
     if current_main == base_commit:
         return set()
     result = run(
         root,
         "git",
         "diff",
+        "--no-renames",
         "--name-only",
         f"{base_commit}..{current_main}",
     )
     changed = set(result.stdout.splitlines())
-    return {
+    scopes_by_project = {
+        project_root: set(target_paths)
+        | set(ELIGIBILITY.project_paths(root, project_root, base_commit))
+        | set(ELIGIBILITY.project_paths(root, project_root, current_main))
+        for project_root in project_roots
+    }
+    stale = {
         project_root
         for project_root in project_roots
         if any(
-            path == project_root or path.startswith(f"{project_root}/")
+            path == scope or path.startswith(f"{scope}/")
             for path in changed
+            for scope in scopes_by_project[project_root]
         )
     }
+    for path in changed:
+        if not path.endswith(".csproj"):
+            continue
+        project_root = str(pathlib.PurePosixPath(path).parent)
+        for commit in (base_commit, current_main):
+            context = ELIGIBILITY.project_context(root, project_root, commit)
+            for target_path in target_paths:
+                membership = ELIGIBILITY.project_membership(root, project_root, context, target_path)
+                if membership is True or (membership is None and (
+                    pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(target_path).parents
+                    or (context and any(
+                        ELIGIBILITY.compile_glob_matches(root, project_root, pattern, target_path)
+                        for pattern in context["includes"]
+                    ))
+                )):
+                    stale.add(project_root)
+    return stale
 
 
 def validate_commit_changes(root, base_commit, head_commit, branch):
@@ -572,6 +609,7 @@ def validate_outputs(
     ref,
     commit,
     current_main=None,
+    unquarantine_path=None,
 ):
     repo_root = pathlib.Path(repo_root).resolve()
     payload = load_json(agent_output_path)
@@ -584,6 +622,18 @@ def validate_outputs(
         ref,
         commit,
     )
+    if unquarantine_path is None:
+        raise ValidationError("Required deterministic Part 2 receipt is missing")
+    unquarantine = load_json(unquarantine_path)
+    validate_receipts(unquarantine, history, repository, ref, commit)
+    if (
+        unquarantine.get("complete") is not True
+        or unquarantine.get("history_sha256")
+        != hashlib.sha256(pathlib.Path(history_path).read_bytes()).hexdigest()
+        or set(unquarantine.get("pipelines", {})) != {"84", "87"}
+    ):
+        raise ValidationError("Deterministic Part 2 collection is incomplete or unbound")
+    unquarantine_targets = history_target_map(unquarantine)
     pull_requests = items(payload, "create_pull_request")
     issue_items = items(payload, "create_quarantine_issue")
     if not pull_requests:
@@ -730,6 +780,13 @@ def validate_outputs(
                         != target_operating_systems(target)
                     )
                 }
+                if any(
+                    target.get("source_ambiguous")
+                    for target in [*removed.values(), *added.values()]
+                ):
+                    raise ValidationError(
+                        "Quarantine edit has unproven consuming projects"
+                    )
                 if removed and added:
                     raise ValidationError(
                         f"Branch {item['branch']!r} mixes quarantine additions "
@@ -751,21 +808,22 @@ def validate_outputs(
                     (removed.get(key) or added[key])["project_root"]
                     for key in targets
                 }
+                target_paths = {
+                    (removed.get(key) or added[key])["path"]
+                    for key in targets
+                }
                 stale_roots = changed_project_roots(
                     repo_root,
                     history_commit,
                     current_main,
                     project_roots,
+                    target_paths,
                 )
                 if stale_roots:
                     raise ValidationError(
                         "origin/main changed a validated test project after "
                         f"evidence collection: {sorted(stale_roots)}"
                     )
-                target_paths = {
-                    (removed.get(key) or added[key])["path"]
-                    for key in targets
-                }
                 if not paths.issubset(target_paths):
                     raise ValidationError(
                         f"Patch changes files outside its quarantine targets: "
@@ -820,7 +878,18 @@ def validate_outputs(
                     })
                 else:
                     expected_attributes = collections.Counter()
+                    physical_targets = set()
                     for target in removed.values():
+                        physical_target = (
+                            target["scope"],
+                            target["path"],
+                            tuple(target["attribute_lines"]),
+                            target.get("data"),
+                            target["reference"],
+                        )
+                        if physical_target in physical_targets:
+                            continue
+                        physical_targets.add(physical_target)
                         expected_attributes.update([(
                             "-",
                             target["reference"],
@@ -843,7 +912,7 @@ def validate_outputs(
                             "Unquarantine pull request attribute lines do not "
                             "match its derived targets"
                         )
-                    validate_removals(removed, history_targets)
+                    validate_removals(removed, history_targets, unquarantine_targets)
                     summaries.append({
                         "branch": item["branch"],
                         "operation": "unquarantine",
@@ -904,6 +973,7 @@ def main():
             args.repository,
             args.ref,
             args.commit,
+            unquarantine_path=evidence_directory / "test-quarantine-unquarantine-eligibility.json",
         )
     except ValidationError as error:
         raise SystemExit(f"FATAL: {error}") from error

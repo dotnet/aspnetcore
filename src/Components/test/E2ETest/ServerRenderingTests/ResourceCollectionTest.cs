@@ -56,6 +56,19 @@ public partial class ResourceCollectionTest : ServerTestBase<BasicTestAppServerS
         Browser.True(() => JsModuleRegex.IsMatch(Browser.Exists(By.Id("js-module")).Text));
     }
 
+    [Fact]
+    public void StaticRendering_ImportsFingerprintedAutoPauseInitializer()
+    {
+        Navigate($"{ServerPathBase}/resource-collection?render-mode=Server");
+
+        Browser.Equal("Server", () => Browser.Exists(By.Id("platform-name")).Text);
+
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("""
+            return performance.getEntriesByType('resource').some(resource =>
+                /\/Microsoft\.AspNetCore\.Components\.Server\.AutoPause\.[a-z0-9]{10}\.lib\.module\.js$/.test(resource.name));
+            """));
+    }
+
     [GeneratedRegex("""BasicTestApp\.[a-zA-Z0-9]{10}\.styles\.css""")]
     private static partial Regex AppStylesRegex { get; }
     [GeneratedRegex(""".*Index\.[a-zA-Z0-9]{10}\.mjs""")]

@@ -1,0 +1,159 @@
+@using Microsoft.JSInterop
+@inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
+@inject NavigationManager Navigation
+
+<h2>Cookie Store</h2>
+
+<label for="cookie-name">Name</label>
+<input id="cookie-name" @bind="name" />
+<label for="cookie-value">Value</label>
+<input id="cookie-value" @bind="value" />
+
+<div>
+    <button id="set-cookie" @onclick="SetAsync">Set</button>
+    <button id="set-cookie-with-defaults" @onclick="SetWithDefaultsAsync">Set with defaults</button>
+    <button id="set-cookie-with-options" @onclick="SetWithOptionsAsync">Set with options</button>
+    <button id="set-cookie-with-max-age" @onclick="SetWithMaxAgeAsync">Set with max age</button>
+    <button id="set-cookie-with-other-domain" @onclick="SetWithOtherDomainAsync">Set with another domain</button>
+    <button id="set-cookie-partitioned" @onclick="SetPartitionedAsync">Set partitioned</button>
+</div>
+<div>
+    <button id="get-cookie" @onclick="GetAsync">Get</button>
+    <button id="get-cookie-with-options" @onclick="GetWithOptionsAsync">Get with options</button>
+    <button id="get-all-cookies" @onclick="GetAllAsync">Get all</button>
+    <button id="get-all-cookies-with-name" @onclick="GetAllWithNameAsync">Get all with name</button>
+    <button id="get-all-cookies-with-options" @onclick="GetAllWithOptionsAsync">Get all with options</button>
+</div>
+<div>
+    <button id="delete-cookie" @onclick="DeleteAsync">Delete</button>
+    <button id="delete-cookie-with-options" @onclick="DeleteWithOptionsAsync">Delete with options</button>
+    <button id="delete-cookie-partitioned" @onclick="DeletePartitionedAsync">Delete partitioned</button>
+</div>
+<p id="cookie-result" role="status" data-run="@runCount">@result</p>
+
+@code {
+    // A path other than the page path shows that the Path member reaches the browser.
+    private const string OptionsPath = "/cookie-path";
+
+    private string name = "cookie";
+    private string value = "initial";
+    private string result = "No operation has run.";
+    private int runCount;
+
+    private Task SetAsync() => RunAsync("Set", async () =>
+    {
+        await Browser.Window.CookieStore.SetAsync(name, value);
+        return name;
+    });
+
+    private Task SetWithDefaultsAsync() => RunAsync("Set with defaults", async () =>
+    {
+        await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value });
+        return name;
+    });
+
+    private Task SetWithOptionsAsync() => RunAsync("Set with options", async () =>
+    {
+        await Browser.Window.CookieStore.SetAsync(new CookieInit
+        {
+            Name = name,
+            Value = value,
+            Expires = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeMilliseconds(),
+            Path = OptionsPath,
+            SameSite = CookieSameSite.Lax,
+        });
+        return name;
+    });
+
+    private Task SetWithMaxAgeAsync() => RunAsync("Set with max age", async () =>
+    {
+        await Browser.Window.CookieStore.SetAsync(new CookieInit
+        {
+            Name = name,
+            Value = value,
+            MaxAge = 3600,
+            SameSite = CookieSameSite.None,
+        });
+        return name;
+    });
+
+    private Task SetWithOtherDomainAsync() => RunAsync("Set with another domain", async () =>
+    {
+        // The browser rejects a domain that does not match the page, so the error shows that Domain reaches it.
+        try
+        {
+            await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, Domain = "example.com" });
+            return name;
+        }
+        catch (JSException)
+        {
+            return "Rejected.";
+        }
+    });
+
+    private Task SetPartitionedAsync() => RunAsync("Set partitioned", async () =>
+    {
+#pragma warning disable ASP0040 // Partitioned is experimental.
+        await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, Partitioned = true });
+#pragma warning restore ASP0040
+        return name;
+    });
+
+    private Task GetAsync() => RunAsync("Get", async () =>
+    {
+        try
+        {
+            return Format(await Browser.Window.CookieStore.GetAsync(name));
+        }
+        catch (NotSupportedException ex)
+        {
+            return $"Not supported: {ex.InnerException?.GetType().Name}";
+        }
+    });
+
+    private Task GetWithOptionsAsync() => RunAsync("Get with options", async () =>
+        Format(await Browser.Window.CookieStore.GetAsync(new CookieStoreGetOptions { Name = name })));
+
+    private Task GetAllAsync() => RunAsync("Get all", async () =>
+        Format(await Browser.Window.CookieStore.GetAllAsync()));
+
+    private Task GetAllWithNameAsync() => RunAsync("Get all with name", async () =>
+        Format(await Browser.Window.CookieStore.GetAllAsync(name)));
+
+    // The browser accepts only the URL of the current page.
+    private Task GetAllWithOptionsAsync() => RunAsync("Get all with options", async () =>
+        Format(await Browser.Window.CookieStore.GetAllAsync(new CookieStoreGetOptions { Name = name, Url = Navigation.Uri })));
+
+    private Task DeleteAsync() => RunAsync("Delete", async () =>
+    {
+        await Browser.Window.CookieStore.DeleteAsync(name);
+        return name;
+    });
+
+    private Task DeleteWithOptionsAsync() => RunAsync("Delete with options", async () =>
+    {
+        await Browser.Window.CookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = name, Path = OptionsPath });
+        return name;
+    });
+
+    private Task DeletePartitionedAsync() => RunAsync("Delete partitioned", async () =>
+    {
+#pragma warning disable ASP0040 // Partitioned is experimental.
+        await Browser.Window.CookieStore.DeleteAsync(new CookieStoreDeleteOptions { Name = name, Partitioned = true });
+#pragma warning restore ASP0040
+        return name;
+    });
+
+    private async Task RunAsync(string operation, Func<Task<string>> run)
+    {
+        result = $"{operation}: {await run()}";
+        // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
+        runCount++;
+    }
+
+    private static string Format(CookieListItem? cookie)
+        => cookie is null ? "Cookie is missing." : $"Found: {cookie.Name}={cookie.Value}";
+
+    private static string Format(IReadOnlyList<CookieListItem> cookies)
+        => cookies.Count == 0 ? "No cookies." : $"Found: {string.Join("; ", cookies.Select(cookie => $"{cookie.Name}={cookie.Value}"))}";
+}

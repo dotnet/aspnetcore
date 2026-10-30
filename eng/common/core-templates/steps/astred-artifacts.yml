@@ -47,7 +47,6 @@ steps:
   env:
     ASTRED_BINLOG_DIR: ${{ parameters.binlogDir }}
     ASTRED_CAPTURE_PATH: ${{ parameters.capturePath }}
-  condition: succeededOrFailed()
   continueOnError: true
 
 - pwsh: |
@@ -94,12 +93,12 @@ steps:
   env:
     ASTRED_SOURCES_PATH: ${{ parameters.sourcesPath }}
     ASTRED_CAPTURE_PATH: ${{ parameters.capturePath }}
-  condition: succeededOrFailed()
   continueOnError: true
 
 - task: UploadAstred@0
   displayName: Upload Digest to Astred
-  condition: and(succeededOrFailed(), eq(variables['ASTRED_DIGEST_READY'], 'true'))
+  condition: and(succeeded(), eq(variables['ASTRED_DIGEST_READY'], 'true'))
+  continueOnError: true
   inputs:
     SourcePath: ${{ parameters.capturePath }}/upload
   env:

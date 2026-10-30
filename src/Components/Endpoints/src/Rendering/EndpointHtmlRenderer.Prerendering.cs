@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -198,6 +199,8 @@ internal partial class EndpointHtmlRenderer
 
         async Task Execute()
         {
+            ExceptionDispatchInfo? navigationExceptionInfo = null;
+
             while (_nonStreamingPendingTasks.Count > 0)
             {
                 // Create a Task that represents the remaining ongoing work for the rendering process
@@ -214,9 +217,15 @@ internal partial class EndpointHtmlRenderer
                 }
                 catch (NavigationException navigationException)
                 {
-                    await HandleNavigationException(_httpContext, navigationException);
+                    // Keep draining so work queued before the redirect is still observed, but let the caller
+                    // discard the rendered output. A navigation thrown while a component was initializing its
+                    // children abandons that diff after the new render tree was already swapped in, leaving
+                    // uninitialized sibling frames that must never be written.
+                    navigationExceptionInfo ??= ExceptionDispatchInfo.Capture(navigationException);
                 }
             }
+
+            navigationExceptionInfo?.Throw();
         }
     }
 

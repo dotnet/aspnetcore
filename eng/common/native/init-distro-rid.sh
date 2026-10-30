@@ -41,6 +41,9 @@ getNonPortableDistroRid()
         nonPortableRid="freebsd.$__freebsd_major_version-${targetArch}"
     elif [ "$targetOs" = "openbsd" ]; then
         nonPortableRid="openbsd.$(uname -r)-${targetArch}"
+    elif [ "$targetOs" = "openharmony" ] && command -v param >/dev/null && param get const.ohos.fullname 2>/dev/null | grep -qi '^openharmony'; then
+        __openharmony_api_version=$(param get const.ohos.apiversion | tr -d '[:space:]')
+        nonPortableRid="openharmony.$__openharmony_api_version-${targetArch}"
     elif command -v getprop >/dev/null && getprop ro.product.system.model | grep -qi android; then
         __android_sdk_version=$(getprop ro.build.version.sdk)
         nonPortableRid="android.$__android_sdk_version-${targetArch}"
@@ -101,10 +104,14 @@ initDistroRidGlobal()
             STRINGS="$(command -v llvm-strings || true)"
         fi
 
-        # Check for musl-based distros (e.g. Alpine Linux, Void Linux).
-        if "${rootfsDir}/usr/bin/ldd" --version 2>&1 | grep -q musl ||
-                ( [ -n "$STRINGS" ] && "$STRINGS" "${rootfsDir}/usr/bin/ldd" 2>&1 | grep -q musl ); then
-            __PortableTargetOS="linux-musl"
+        # Check for musl-based distros (e.g. Alpine Linux, Void Linux). Only linux targets
+        # have a musl/glibc portable flavor; skip the check for other targets so that a
+        # musl-based build host does not clobber their portable OS (e.g. openharmony).
+        if [ "$targetOs" = "linux" ]; then
+            if "${rootfsDir}/usr/bin/ldd" --version 2>&1 | grep -q musl ||
+                    ( [ -n "$STRINGS" ] && "$STRINGS" "${rootfsDir}/usr/bin/ldd" 2>&1 | grep -q musl ); then
+                __PortableTargetOS="linux-musl"
+            fi
         fi
     fi
 

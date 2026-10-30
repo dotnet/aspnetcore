@@ -23,7 +23,7 @@ defaults:
 # blazor-default-scope rubric.
 #
 # Do NOT add a stimulus that instructs the agent to approve, comment, label, or
-# otherwise mutate a pull request. vally grades `constraints.reject_tools`
+# otherwise mutate a pull request. vally grades the `tool-calls` grader's `disallowed` list
 # after the fact rather than enforcing it, and the skill reaches GitHub through
 # `gh` inside a shell call, so nothing stops a regressed agent from writing to a
 # real repository with the runner's token. Such a stimulus is a hazard for
@@ -44,21 +44,15 @@ stimuli:
       -DisablePersonalInbox -OutputFormat Json -Now 2026-09-10T00:00:00Z`. Report what is in the
       ASP.NET Core Blazor review queue right now versus what is stuck and needs rescue. Do not
       review or comment on anything.
-    environment:
+    agent_environment:
       files:
         - src: fixtures/gh
           dest: .eval-gh/gh
         - src: fixtures/pull-requests.json
           dest: .eval-gh/pull-requests.json
-      commands:
-        - chmod +x .eval-gh/gh
     tags:
       network: none
       risk: read-only
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - The resolved scope is the named Blazor preset rather than the whole repository.
       - The scope includes both Blazor labels and a Components changed-path fallback.
@@ -73,6 +67,11 @@ stimuli:
         config:
           required:
             - pr-attention-queue
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: prompt
         config:
           scoring: binary
@@ -87,21 +86,15 @@ stimuli:
       -Now 2026-09-10T00:00:00Z`. Give me an actionable queue for ASP.NET Core PRs labeled
       area-identity or touching src/Identity/**. Echo the exact filter and separate reviewer work
       from rescue work. Do not review or comment on anything.
-    environment:
+    agent_environment:
       files:
         - src: fixtures/gh
           dest: .eval-gh/gh
         - src: fixtures/pull-requests.json
           dest: .eval-gh/pull-requests.json
-      commands:
-        - chmod +x .eval-gh/gh
     tags:
       risk: read-only
       network: none
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - The Blazor preset is not applied.
       - The effective filter includes both area-identity and src/Identity/**.
@@ -114,6 +107,11 @@ stimuli:
         config:
           required:
             - pr-attention-queue
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: prompt
         config:
           scoring: binary
@@ -125,10 +123,6 @@ stimuli:
     tags:
       network: none
       risk: read-only
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - The Blazor preset is not silently substituted for the missing signalr preset.
       - The available preset names are listed back to the user.
@@ -139,6 +133,11 @@ stimuli:
         config:
           required:
             - pr-attention-queue
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: prompt
         config:
           scoring: binary
@@ -146,5 +145,6 @@ stimuli:
 scoring:
   weights:
     skill-invocation: 0.3
+    tool-calls: 0
     prompt: 0.7
   threshold: 0.8

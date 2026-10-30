@@ -402,6 +402,7 @@ public class RequestTests : LoggedTest
     [Fact]
     public async Task IncompleteRequestBodyDoesNotLogAsApplicationError()
     {
+        var bodyReadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appErrorLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var badRequestLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var connectionStoppedLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -437,7 +438,9 @@ public class RequestTests : LoggedTest
             var buffer = new byte[1024];
 
             // Attempt to read more of the body than will show up.
-            await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+            var readTask = context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+            bodyReadStarted.TrySetResult();
+            await readTask;
         }, new TestServiceContext(LoggerFactory));
 
         using (var connection = server.CreateConnection())
@@ -450,6 +453,8 @@ public class RequestTests : LoggedTest
                 "Content-Length: 100",  // Declare a larger body than will be sent
                 "",
                 "");
+
+            await bodyReadStarted.Task.DefaultTimeout();
         }
 
         await connectionStoppedLogged.Task.DefaultTimeout();

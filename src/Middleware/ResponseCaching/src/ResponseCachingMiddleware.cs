@@ -371,7 +371,8 @@ public class ResponseCachingMiddleware
 
     internal void FinalizeCacheBody(ResponseCachingContext context)
     {
-        if (context.ShouldCacheResponse && context.ResponseCachingStream.BufferingEnabled)
+        if (context.ShouldCacheResponse && context.ResponseCachingStream.BufferingEnabled
+            && !context.HttpContext.RequestAborted.IsCancellationRequested)
         {
             var contentLength = context.HttpContext.Response.ContentLength;
             var cachedResponseBody = context.ResponseCachingStream.GetCachedResponseBody();

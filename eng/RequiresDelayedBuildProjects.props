@@ -19,6 +19,7 @@
     <RequiresDelayedBuild Include="$(RepoRoot)src/Grpc/JsonTranscoding/test/testassets/IntegrationTestsWebsite/IntegrationTestsWebsite.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src/Grpc/JsonTranscoding/test/testassets/Sandbox/Sandbox.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src/OpenApi/test/Microsoft.AspNetCore.OpenApi.NativeAotTests/Microsoft.AspNetCore.OpenApi.NativeAotTests.proj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src/OpenApi/test/Microsoft.AspNetCore.OpenApi.TrimmingTests/Microsoft.AspNetCore.OpenApi.TrimmingTests.proj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src/ProjectTemplates/test/Templates.Blazor.Tests/Templates.Blazor.Tests.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src/ProjectTemplates/test/Templates.Blazor.WebAssembly.Auth.Tests/Templates.Blazor.WebAssembly.Auth.Tests.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src/ProjectTemplates/test/Templates.Blazor.WebAssembly.Tests/Templates.Blazor.WebAssembly.Tests.csproj" />

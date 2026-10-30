@@ -14,6 +14,51 @@ namespace Microsoft.Extensions.Localization;
 
 public class RequestLocalizationMiddlewareTest
 {
+    [Fact]
+    public async Task RequestLocalizationMiddleware_DoesNotFallBackFromNonPredefinedCulture()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRequestLocalization(options =>
+                        {
+                            options.SetDefaultCulture("en-US")
+                                .AddSupportedCultures("en-US", "fr-FR")
+                                .AddSupportedUICultures("en-US", "fr-FR")
+                                .AddInitialRequestCultureProvider(new CookieRequestCultureProvider
+                                {
+                                    CookieName = "Preferences"
+                                });
+                        });
+
+                        app.Run(context =>
+                        {
+                            var requestCulture = context.Features.Get<IRequestCultureFeature>();
+
+                            Assert.Equal("en-US", requestCulture.RequestCulture.Culture.Name);
+                            Assert.Equal("en-US", requestCulture.RequestCulture.UICulture.Name);
+
+                            return Task.CompletedTask;
+                        });
+                    });
+            }).Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var client = server.CreateClient();
+        const string nonPredefinedCulture = "fr-FR-a0000001-b0000001-c0000001-d0000001-e0000001";
+        client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue("Preferences", $"c={nonPredefinedCulture}|uic={nonPredefinedCulture}").ToString());
+
+        var response = await client.GetAsync(string.Empty);
+
+        response.EnsureSuccessStatusCode();
+    }
+
     [Theory]
     [InlineData("zh-Hans-CN", "zh")]
     [InlineData("zh-Hans", "zh")]

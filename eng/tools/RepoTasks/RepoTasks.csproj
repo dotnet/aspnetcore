@@ -1,13 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+
+  <PropertyGroup>
+    <!-- These tasks run on the LKG SDK, not the runtime being built. Targeting its bundled framework
+         does not prevent central transitive pinning from selecting live BCL package versions.
+         Keep the bootstrap/previous-input package versions instead, including ConfigurationManager
+         and its dependencies brought in by Microsoft.Build.Utilities.Core. Set this before SDK props
+         import the VMR package-version overrides. -->
+    <SkipCurrentSourceBuiltPackageVersionOverrides Condition="'$(DotNetBuild)' == 'true'">true</SkipCurrentSourceBuiltPackageVersionOverrides>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework Condition="'$(DotNetBuild)' == 'true'">$(BundledNETCoreAppTargetFramework)</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
     <!-- No need to track public APIs of these MSBuild tasks. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <EnableKnownPackVersionUpdatesForCurrentTargetFramework Condition="'$(DotNetBuild)' == 'true'">false</EnableKnownPackVersionUpdatesForCurrentTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +30,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

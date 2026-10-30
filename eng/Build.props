@@ -152,7 +152,8 @@
       <!-- BuildJava -->
       <ItemGroup>
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
-                      Exclude="@(ProjectToExclude)" />
+                      Exclude="@(ProjectToExclude)"
+                      BuildInParallel="false" />
 
         <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />

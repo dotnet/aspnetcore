@@ -103,7 +103,11 @@ as a separate exact-SHA candidate. For each selected eval, it creates a clean
 temporary tree containing only the trusted runner, assertion, and central
 experiments plus the candidate's selected skill, `eval.vally.yaml`, and fixture
 tree. Symlinks, reparse points, path traversal names, source-nested staging
-destinations, and missing inputs fail closed. The trusted runner and assertion
+destinations, and missing inputs fail closed. Staging also rejects a candidate
+`eval.vally.yaml` that declares a `commands`, `mcpServers`, or
+`executor.config.provider` field, since those let an eval run arbitrary
+commands, start MCP servers, or redirect model calls; staged fixture files have
+their executable bit set automatically instead. The trusted runner and assertion
 execute from that staged tree, so candidate changes to `run.ps1`,
 `assert_results.ps1`, central experiments, or the workflow cannot gain code
 execution in the PAT-backed step. Both baseline and skilled variants must
@@ -138,7 +142,7 @@ consistently across all workflows that consume the environment rather than
 uniquely to this workflow.
 
 Hosted `Validate`, `Lint`, and `Run` operations use the toolchain pinned by
-`evaluation-tools/package-lock.json`, including `@microsoft/vally-cli@0.14.0`
+`evaluation-tools/package-lock.json`, including `@microsoft/vally-cli@0.19.0`
 and `@github/copilot@1.0.80`. The manifest also constrains transitive Copilot
 packages to that compatible version so the SDK and native platform package
 retain the same `./sdk` entry point. The workflow installs that lockfile with

@@ -94,6 +94,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool _deferAnchorRestoreClear;
 
+    private bool _pendingViewportFill;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -510,7 +512,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _pendingAnchorRestore = false;
             _deferAnchorRestoreClear = false;
 
-            await _jsInterop.RefreshObserversAsync(_loading);
+            var refreshViewport = _pendingViewportFill;
+            _pendingViewportFill = false;
+            await _jsInterop.RefreshObserversAsync(_loading, refreshViewport);
         }
 
         // Apply InitialItemIndex once: drive the first fetch via ScrollToItemAsync rather than
@@ -687,6 +691,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
         if (_pendingAnchorRestore)
         {
+            _pendingViewportFill |= reason == SpacerVisibilityReason.ViewportFill;
             return;
         }
         if (_initialIndex.Phase == InitialIndexPhase.None && InitialItemIndex > 0)
@@ -739,6 +744,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
         if (_pendingAnchorRestore || reason == SpacerVisibilityReason.ProgrammaticScroll)
         {
+            _pendingViewportFill |= reason == SpacerVisibilityReason.ViewportFill;
             return;
         }
         if (reason == SpacerVisibilityReason.UserScroll)

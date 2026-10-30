@@ -28,6 +28,11 @@ public partial class Paginator : IDisposable
     [Parameter] public RenderFragment? SummaryTemplate { get; set; }
 
     /// <summary>
+    /// Gets or sets additional attributes to be applied to the navigation element.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
     /// Constructs an instance of <see cref="Paginator" />.
     /// </summary>
     public Paginator()

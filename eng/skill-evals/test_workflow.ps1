@@ -83,8 +83,8 @@ if ($evaluationToolsManifest.dependencies.'@github/copilot' -ne '1.0.80') {
 if ($evaluationToolsManifest.overrides.'@github/copilot' -ne '1.0.80') {
     throw 'The evaluation tool manifest does not constrain transitive Copilot packages to 1.0.80.'
 }
-if ($evaluationToolsManifest.dependencies.'@microsoft/vally-cli' -ne '0.14.0') {
-    throw 'The evaluation tool manifest does not pin @microsoft/vally-cli 0.14.0.'
+if ($evaluationToolsManifest.dependencies.'@microsoft/vally-cli' -ne '0.19.0') {
+    throw 'The evaluation tool manifest does not pin @microsoft/vally-cli 0.19.0.'
 }
 
 $evaluationToolsLock = Get-Content (
@@ -92,7 +92,7 @@ $evaluationToolsLock = Get-Content (
 ) -Raw | ConvertFrom-Json -AsHashtable
 $lockedRoot = $evaluationToolsLock.packages['']
 if ($lockedRoot.dependencies['@github/copilot'] -ne '1.0.80' -or
-    $lockedRoot.dependencies['@microsoft/vally-cli'] -ne '0.14.0') {
+    $lockedRoot.dependencies['@microsoft/vally-cli'] -ne '0.19.0') {
     throw 'The evaluation tool lockfile root does not match the pinned manifest.'
 }
 foreach ($lockedPackage in @(

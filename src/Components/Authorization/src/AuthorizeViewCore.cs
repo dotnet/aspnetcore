@@ -16,6 +16,7 @@ public abstract class AuthorizeViewCore : ComponentBase
 {
     private AuthenticationState? currentAuthenticationState;
     private bool? isAuthorized;
+    private CancellationTokenSource? authorizationCts;
 
     /// <summary>
     /// The content that will be displayed if the user is authorized.
@@ -85,12 +86,27 @@ public abstract class AuthorizeViewCore : ComponentBase
             throw new InvalidOperationException($"Authorization requires a cascading parameter of type Task<{nameof(AuthenticationState)}>. Consider using {typeof(CascadingAuthenticationState).Name} to supply this.");
         }
 
+        // Newer parameters arriving need to cancel the evaluation in flight so that it does not apply superseded results.
+        authorizationCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        authorizationCts = cts;
+        var cancellationToken = cts.Token;
+
         // Clear the previous result of authorization
         // This will cause the Authorizing state to be displayed until the authorization has been completed
         isAuthorized = null;
 
-        currentAuthenticationState = await AuthenticationState;
-        isAuthorized = await IsAuthorizedAsync(currentAuthenticationState.User);
+        // Nothing in the authorization pipeline accepts a CancellationToken, so we cannot use it to abort the work.
+        var authenticationState = await AuthenticationState;
+        var authorized = await IsAuthorizedAsync(authenticationState.User);
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        currentAuthenticationState = authenticationState;
+        isAuthorized = authorized;
     }
 
     /// <summary>

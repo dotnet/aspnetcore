@@ -28,7 +28,7 @@
 
   <Target Name="ResolveProjectReferences">
     <MSBuild Projects="@(ProjectReference)"
-             BuildInParallel="true" />
+             BuildInParallel="false" />
   </Target>
 
   <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
