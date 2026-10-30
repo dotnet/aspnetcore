@@ -1,0 +1,11 @@
+@page "/route-view-layout-transition/alternate/{Value?}"
+@layout RootLayout
+@inherits TrackedPageBase
+
+<h1 id="page-name">@nameof(AlternateLayoutPage)</h1>
+<p>Value: <code id="page-value">@Value</code></p>
+
+@code {
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+}
