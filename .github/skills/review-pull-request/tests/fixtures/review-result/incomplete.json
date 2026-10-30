@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "status": "INCOMPLETE",
+  "reason": "One routed guide did not return a complete report",
+  "target": {
+    "host": "github.com",
+    "repository": "dotnet/aspnetcore",
+    "pullRequest": 12347,
+    "head": "9999999999999999999999999999999999999999",
+    "mergeBase": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "baseTip": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "guidance": {
+    "source": "cccccccccccccccccccccccccccccccccccccccc",
+    "routingSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "review": {
+    "path": "per-guide"
+  },
+  "guides": [
+    {
+      "path": "docs/CrossCuttingGuidance.md",
+      "status": "complete",
+      "evaluationStatus": "EVALUATED",
+      "requested": {
+        "agentType": "general-purpose",
+        "model": "gpt-5.6-sol",
+        "effort": "high"
+      },
+      "observed": {
+        "agentType": "general-purpose",
+        "model": "gpt-5.6-sol",
+        "effort": "high"
+      },
+      "completedChecks": [
+        "Checked the changed API path"
+      ],
+      "exclusions": []
+    },
+    {
+      "path": "docs/IncompleteGuidance.md",
+      "status": "incomplete",
+      "evaluationStatus": "UNEVALUATED",
+      "requested": {
+        "agentType": "general-purpose",
+        "model": "gemini-4-argon",
+        "effort": "high"
+      },
+      "observed": {
+        "agentType": "unknown",
+        "model": "unknown",
+        "effort": "unknown"
+      },
+      "completedChecks": [],
+      "exclusions": []
+    }
+  ],
+  "uncovered": [],
+  "candidates": {
+    "accepted": [
+      {
+        "id": "candidate-retained",
+        "severity": "P2",
+        "confidence": 8,
+        "summary": "A completed guide found a source-supported issue",
+        "anchor": {
+          "path": "src/Example/Feature.cs",
+          "line": 19,
+          "endLine": null,
+          "side": "RIGHT"
+        },
+        "trigger": "Call the changed API with the affected input",
+        "effect": "The operation returns an incorrect value"
+      }
+    ],
+    "duplicate": [],
+    "unresolved": [],
+    "discarded": []
+  },
+  "execution": {
+    "classification": "unavailable",
+    "available": false,
+    "receipt": null,
+    "reason": "Optional local execution was not requested"
+  },
+  "limitations": [
+    "The retained accepted candidate is not publishable until coverage completes"
+  ],
+  "publication": {
+    "eligible": false,
+    "resultDigest": null,
+    "summaryRendererVersion": 1
+  }
+}

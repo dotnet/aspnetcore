@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "reason": "The frozen merge-base source was unavailable",
+  "target": {
+    "host": "github.com",
+    "repository": "dotnet/aspnetcore",
+    "pullRequest": 12348,
+    "head": "dddddddddddddddddddddddddddddddddddddddd",
+    "mergeBase": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "baseTip": "ffffffffffffffffffffffffffffffffffffffff"
+  },
+  "guidance": {
+    "source": "1111111111111111111111111111111111111111",
+    "routingSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "review": {
+    "path": "per-guide"
+  },
+  "guides": [],
+  "uncovered": [
+    {
+      "area": "Full PR diff",
+      "reason": "A required frozen source role could not be read"
+    }
+  ],
+  "candidates": {
+    "accepted": [],
+    "duplicate": [],
+    "unresolved": [],
+    "discarded": []
+  },
+  "execution": {
+    "classification": "unavailable",
+    "available": false,
+    "receipt": null,
+    "reason": "Review execution did not start"
+  },
+  "limitations": [
+    "No completed coverage is claimed"
+  ],
+  "publication": {
+    "eligible": false,
+    "resultDigest": null,
+    "summaryRendererVersion": 1
+  }
+}

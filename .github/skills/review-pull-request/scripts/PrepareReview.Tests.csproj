@@ -12,6 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../tests/PrepareReviewTests.cs" Link="PrepareReviewTests.cs" />
+    <Compile Include="../tests/ReviewResultTests.cs" Link="ReviewResultTests.cs" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "status": "NO_FINDINGS",
+  "reason": null,
+  "target": {
+    "host": "github.com",
+    "repository": "dotnet/aspnetcore",
+    "pullRequest": 12346,
+    "head": "5555555555555555555555555555555555555555",
+    "mergeBase": "6666666666666666666666666666666666666666",
+    "baseTip": "7777777777777777777777777777777777777777"
+  },
+  "guidance": {
+    "source": "8888888888888888888888888888888888888888",
+    "routingSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "review": {
+    "path": "per-guide"
+  },
+  "guides": [
+    {
+      "path": "docs/BlazorComponentsGuidance.md",
+      "status": "complete",
+      "evaluationStatus": "EVALUATED",
+      "requested": {
+        "agentType": "general-purpose",
+        "model": "gpt-5.6-sol",
+        "effort": "high"
+      },
+      "observed": {
+        "agentType": "general-purpose",
+        "model": "gpt-5.6-sol",
+        "effort": "high"
+      },
+      "completedChecks": [
+        "Checked the changed render path"
+      ],
+      "exclusions": [
+        {
+          "scope": "Browser execution",
+          "reason": "The supplied-bundle review is source-only"
+        }
+      ]
+    },
+    {
+      "path": "docs/CrossCuttingGuidance.md",
+      "status": "complete",
+      "evaluationStatus": "EVALUATED",
+      "requested": {
+        "agentType": "general-purpose",
+        "model": "gpt-5.6-sol",
+        "effort": "high"
+      },
+      "observed": {
+        "agentType": "general-purpose",
+        "model": "gpt-5.6-sol",
+        "effort": "high"
+      },
+      "completedChecks": [
+        "Checked the affected public contract"
+      ],
+      "exclusions": []
+    }
+  ],
+  "uncovered": [
+    {
+      "area": "Generated browser output",
+      "reason": "No browser execution was performed"
+    }
+  ],
+  "candidates": {
+    "accepted": [],
+    "duplicate": [
+      {
+        "id": "candidate-existing",
+        "summary": "The existing review covers the confirmed root cause",
+        "canonicalRootCause": "root-existing",
+        "existingFeedback": {
+          "kind": "review-comment",
+          "id": "discussion-r200",
+          "status": "open",
+          "reviewedHead": "5555555555555555555555555555555555555555",
+          "url": "https://github.com/dotnet/aspnetcore/pull/12346#discussion_r200"
+        }
+      }
+    ],
+    "unresolved": [
+      {
+        "id": "candidate-contract",
+        "summary": "The external browser contract could change the result",
+        "missingEvidence": "A primary browser specification for the affected operation"
+      }
+    ],
+    "discarded": []
+  },
+  "execution": {
+    "classification": "source-only",
+    "available": false,
+    "receipt": null,
+    "reason": null
+  },
+  "limitations": [
+    "The unresolved external contract is retained in the canonical ledger"
+  ],
+  "publication": {
+    "eligible": true,
+    "resultDigest": null,
+    "summaryRendererVersion": 1
+  }
+}

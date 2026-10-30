@@ -259,3 +259,28 @@ and unresolved candidates. Use `FINDINGS` when at least one new finding survives
 An excluded scope must remain visible, never be reported as completed. Neither
 `INCOMPLETE` nor `BLOCKED` licenses partial publication; source-only confidence is not
 runtime proof.
+
+## Local deterministic result preview
+
+For a native local coordinator, project the same final result into the version-1
+canonical envelope used by
+`.github/skills/review-pull-request/scripts/review-result.cs`. Use the exact contract
+shown by the fixtures under
+`.github/skills/review-pull-request/tests/fixtures/review-result/`; do not invent a
+second summary shape. The envelope retains the frozen target and guidance identities,
+review path, every routed guide's requested and observed worker configuration and
+evaluation status, accepted/duplicate/unresolved/discarded candidate ledger, uncovered
+and excluded scope, optional execution classification and receipt, limitations,
+publication eligibility, result digest, and renderer version.
+
+Run the deterministic validator and renderer only after synthesis:
+
+```text
+dotnet run <installed-skill-dir>/scripts/review-result.cs -- --input <review-result-input.json> --output <session-artifact-directory>
+```
+
+It writes validated `review-result.v1.json` and `review-summary.v1.md` artifacts and
+prints the same Markdown bytes to the terminal. The preview is local-only and does not
+authorize or perform a GitHub write. Keep the legacy terminal result during this
+migration. Hosted runs continue using their existing safe-output adapter and must not
+invoke this file-writing path.

@@ -1,0 +1,111 @@
+{
+  "publication": {
+    "summaryRendererVersion": 1,
+    "resultDigest": null,
+    "eligible": true
+  },
+  "limitations": [
+    "Browser execution was outside the source-only review boundary"
+  ],
+  "execution": {
+    "reason": null,
+    "receipt": null,
+    "available": false,
+    "classification": "source-only"
+  },
+  "candidates": {
+    "discarded": [
+      {
+        "reason": "The called overload preserves the previous observable result",
+        "summary": "The nearby helper appeared to change behavior",
+        "id": "candidate-discarded"
+      }
+    ],
+    "unresolved": [],
+    "duplicate": [
+      {
+        "existingFeedback": {
+          "url": null,
+          "reviewedHead": "1111111111111111111111111111111111111111",
+          "status": "open",
+          "id": "discussion-r100",
+          "kind": "review-comment"
+        },
+        "canonicalRootCause": "root-existing",
+        "summary": "The existing review already reports the same root cause",
+        "id": "candidate-duplicate"
+      }
+    ],
+    "accepted": [
+      {
+        "effect": "The request returns the stale value instead of the current value",
+        "trigger": "Change the option after the first request and send a second request",
+        "anchor": {
+          "side": "RIGHT",
+          "endLine": 88,
+          "line": 87,
+          "path": "src/Example/Cache.cs"
+        },
+        "summary": "The cached value is reused after the option changes",
+        "confidence": 9,
+        "severity": "P2",
+        "id": "candidate-cache"
+      },
+      {
+        "effect": "The generated documentation omits the generic parameter",
+        "trigger": "Generate API documentation for the new generic member",
+        "anchor": {
+          "side": "RIGHT",
+          "endLine": null,
+          "line": 42,
+          "path": "src/Example/PublicApi.cs"
+        },
+        "summary": "The generic parameter documentation is missing",
+        "confidence": 10,
+        "severity": "P3",
+        "id": "candidate-docs"
+      }
+    ]
+  },
+  "uncovered": [],
+  "guides": [
+    {
+      "exclusions": [],
+      "completedChecks": [
+        "Checked public API documentation",
+        "Checked compatibility"
+      ],
+      "observed": {
+        "effort": "unknown",
+        "model": "unknown",
+        "agentType": "unknown"
+      },
+      "requested": {
+        "effort": "not supplied (runtime default)",
+        "model": "gpt-5.6-sol",
+        "agentType": "general-purpose"
+      },
+      "evaluationStatus": "EVALUATED",
+      "status": "complete",
+      "path": "docs/CrossCuttingGuidance.md"
+    }
+  ],
+  "review": {
+    "path": "per-guide"
+  },
+  "guidance": {
+    "routingSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source": "2222222222222222222222222222222222222222"
+  },
+  "target": {
+    "baseTip": "3333333333333333333333333333333333333333",
+    "mergeBase": "4444444444444444444444444444444444444444",
+    "head": "1111111111111111111111111111111111111111",
+    "pullRequest": 12345,
+    "repository": "dotnet/aspnetcore",
+    "host": "github.com"
+  },
+  "reason": null,
+  "status": "FINDINGS",
+  "schemaVersion": 1
+}
