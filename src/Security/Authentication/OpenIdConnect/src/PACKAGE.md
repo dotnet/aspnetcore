@@ -64,6 +64,36 @@ The main types provided by `Microsoft.AspNetCore.Authentication.OpenIdConnect` a
 
 For more information on these types and their usage, refer to the [official documentation](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.authentication.openidconnect).
 
+## `max_age` validation
+
+When `OpenIdConnectOptions.MaxAge` or `OpenIdConnectChallengeProperties.MaxAge` is set, the handler sends `max_age` and validates the signed ID token's `auth_time` claim against the exact value sent for that authorization transaction. The claim must be an integral, nonnegative OpenID Connect NumericDate. Missing, malformed, future, or stale values fail authentication after normal token and protocol validation. `OpenIdConnectOptions.TokenValidationParameters.ClockSkew` applies to both future and stale comparisons.
+
+This validation checks the trusted identity provider's signed assertion. It does not prove that a particular authentication ceremony occurred and cannot protect an application from an identity provider that signs false data. It does not validate UserInfo or refresh-token responses and does not change the local authentication cookie lifetime.
+
+Applications using a temporarily incompatible identity provider can restore the earlier request-only behavior with the `Microsoft.AspNetCore.Authentication.OpenIdConnect.DisableMaxAgeValidation` compatibility switch:
+
+```json
+{
+  "runtimeOptions": {
+    "configProperties": {
+      "Microsoft.AspNetCore.Authentication.OpenIdConnect.DisableMaxAgeValidation": true
+    }
+  }
+}
+```
+
+The equivalent process-wide code configuration is:
+
+```csharp
+AppContext.SetSwitch(
+    "Microsoft.AspNetCore.Authentication.OpenIdConnect.DisableMaxAgeValidation",
+    true);
+```
+
+The switch defaults to `false` and is intended only as a temporary provider-compatibility escape hatch. Applications that do not configure a `max_age` are unaffected. The most common way applications configure this is through `OpenIdConnectOptions.MaxAge`.
+
+When pushed authorization and validation are used, set or modify `max_age` in `OnRedirectToIdentityProvider`; changing it later in `OnPushAuthorization` is rejected unless pushing is skipped, because the handler has already correlated the value with the authorization response.
+
 ## Additional Documentation
 
 For additional documentation on using OpenID Connect authentication in ASP.NET Core, you can refer to the following resources:

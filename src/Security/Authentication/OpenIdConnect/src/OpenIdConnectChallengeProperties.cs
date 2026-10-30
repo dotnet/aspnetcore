@@ -44,7 +44,8 @@ public class OpenIdConnectChallengeProperties : OAuthChallengeProperties
     { }
 
     /// <summary>
-    /// The "max_age" parameter value being used for a challenge request.
+    /// The "max_age" parameter value being used for a challenge request. This overrides <see cref="OpenIdConnectOptions.MaxAge"/>.
+    /// The handler validates the identity provider's signed "auth_time" claim against the value sent for this challenge.
     /// </summary>
     public TimeSpan? MaxAge
     {
