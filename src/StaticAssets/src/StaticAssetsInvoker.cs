@@ -86,6 +86,14 @@ internal class StaticAssetsInvoker
         file :
         throw new FileNotFoundException($"The file '{_resource.AssetPath}' could not be found.");
 
+    private void EnsureFileExists()
+    {
+        if (!_fileProvider.GetFileInfo(_resource.AssetPath).Exists)
+        {
+            throw new FileNotFoundException($"The file '{_resource.AssetPath}' could not be found.");
+        }
+    }
+
     private Task ApplyResponseHeadersAsync(StaticAssetInvocationContext context, int statusCode)
     {
         if (statusCode < 400)
@@ -134,6 +142,16 @@ internal class StaticAssetsInvoker
             _logger);
 
         var (preconditionState, isRange, range) = requestContext.ComprehendRequestHeaders();
+        try
+        {
+            EnsureFileExists();
+        }
+        catch (FileNotFoundException ex)
+        {
+            HandleFileNotFound(context, ex, _logger);
+            return;
+        }
+
         switch (preconditionState)
         {
             case PreconditionState.Unspecified:
@@ -158,17 +176,9 @@ internal class StaticAssetsInvoker
                     _logger.FileServed(Route, PhysicalPath);
                     return;
                 }
-                catch (FileNotFoundException)
+                catch (FileNotFoundException ex)
                 {
-                    if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() != null)
-                    {
-                        var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-                        if (!environment.IsDevelopment() && environment.WebRootFileProvider is not CompositeFileProvider)
-                        {
-                            _logger.EnsureStaticWebAssetsEnabled();
-                        }
-                    }
-                    context.Response.Clear();
+                    HandleFileNotFound(context, ex, _logger);
                 }
                 return;
             case PreconditionState.NotModified:
@@ -184,6 +194,31 @@ internal class StaticAssetsInvoker
                 Debug.Fail(exception.ToString());
                 throw exception;
         }
+    }
+
+    internal static void HandleFileNotFound(HttpContext context, FileNotFoundException exception, ILogger logger)
+    {
+        if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() is not null)
+        {
+            var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+            if (!environment.IsDevelopment() && environment.WebRootFileProvider is not CompositeFileProvider)
+            {
+                logger.EnsureStaticWebAssetsEnabled();
+            }
+        }
+
+        // The manifest maps this route, but its file can't be opened (for example, it was deleted or renamed,
+        // or a build is rewriting it). Don't complete the request as an empty 200 that clients and caches
+        // would treat as the real asset. Clear() throws if the response has already started, so a response
+        // that is already being sent is never rewritten.
+        context.Response.Clear();
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+
+        // A 404 on its own can still be stored and reused by caches (for example by a fetch that uses
+        // cache: 'force-cache'), so tell them not to store it.
+        context.Response.Headers.CacheControl = "no-store";
+
+        logger.MappedAssetFileNotFound(context.Request.Path.ToString(), exception);
     }
 
     private async Task SendAsync(StaticAssetInvocationContext context)
