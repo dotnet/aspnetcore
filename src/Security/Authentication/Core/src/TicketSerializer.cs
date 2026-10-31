@@ -44,6 +44,16 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <returns>The deserialized <see cref="AuthenticationTicket"/>, or <see langword="null"/> if the format is unsupported.</returns>
     public virtual AuthenticationTicket? Deserialize(byte[] data)
     {
+        // When this is exactly TicketSerializer, none of the virtual Read* methods can have been
+        // overridden, so the payload can be read directly from the buffer without a stream and reader.
+        if (GetType() == typeof(TicketSerializer))
+        {
+            ArgumentNullException.ThrowIfNull(data);
+
+            var payloadReader = new BinaryPayloadReader(data);
+            return ReadTicket(ref payloadReader);
+        }
+
         using (var memory = new MemoryStream(data))
         {
             using (var reader = new BinaryReader(memory))
@@ -248,6 +258,86 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         var claim = new Claim(type, value, valueType, issuer, originalIssuer, identity);
 
         // Read the number of properties stored in the claim.
+        var count = reader.ReadInt32();
+
+        for (var index = 0; index != count; ++index)
+        {
+            var key = reader.ReadString();
+            var propertyValue = reader.ReadString();
+
+            claim.Properties.Add(key, propertyValue);
+        }
+
+        return claim;
+    }
+
+    // The following methods must stay in sync with Read, ReadIdentity and ReadClaim.
+    private static AuthenticationTicket? ReadTicket(ref BinaryPayloadReader reader)
+    {
+        if (reader.ReadInt32() != FormatVersion)
+        {
+            return null;
+        }
+
+        var scheme = reader.ReadString();
+
+        var count = reader.ReadInt32();
+        if (count < 0)
+        {
+            return null;
+        }
+
+        var identities = new ClaimsIdentity[count];
+        for (var index = 0; index != count; ++index)
+        {
+            identities[index] = ReadIdentity(ref reader);
+        }
+
+        var properties = PropertiesSerializer.Read(ref reader);
+
+        return new AuthenticationTicket(new ClaimsPrincipal(identities), properties, scheme);
+    }
+
+    private static ClaimsIdentity ReadIdentity(ref BinaryPayloadReader reader)
+    {
+        var authenticationType = reader.ReadString();
+        var nameClaimType = reader.ReadStringWithDefault(ClaimsIdentity.DefaultNameClaimType);
+        var roleClaimType = reader.ReadStringWithDefault(ClaimsIdentity.DefaultRoleClaimType);
+
+        var count = reader.ReadInt32();
+
+        var identity = new ClaimsIdentity(authenticationType, nameClaimType, roleClaimType);
+
+        for (var index = 0; index != count; ++index)
+        {
+            var claim = ReadClaim(ref reader, identity);
+
+            identity.AddClaim(claim);
+        }
+
+        if (reader.ReadBoolean())
+        {
+            identity.BootstrapContext = reader.ReadString();
+        }
+
+        if (reader.ReadBoolean())
+        {
+            identity.Actor = ReadIdentity(ref reader);
+        }
+
+        return identity;
+    }
+
+    private static Claim ReadClaim(ref BinaryPayloadReader reader, ClaimsIdentity identity)
+    {
+        var type = reader.ReadStringWithDefault(identity.NameClaimType);
+        var value = reader.ReadString();
+        var valueType = reader.ReadStringWithDefault(ClaimValueTypes.String);
+        var issuer = reader.ReadStringWithDefault(ClaimsIdentity.DefaultIssuer);
+        var originalIssuer = reader.ReadStringWithDefault(issuer);
+
+        var claim = new Claim(type, value, valueType, issuer, originalIssuer, identity);
+
         var count = reader.ReadInt32();
 
         for (var index = 0; index != count; ++index)
