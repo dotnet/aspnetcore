@@ -100,18 +100,45 @@ internal sealed class StackTraceHelper
         // ResolveStateMachineMethod may have set declaringType to null
         if (type != null)
         {
-            declaringTypeName = TypeNameHelper.GetTypeDisplayName(type, includeGenericParameterNames: true);
+            // Use generic type definition for consistent display on Mono where types are inflated
+            var typeForDisplay = type.IsGenericType && !type.IsGenericTypeDefinition ?
+                type.GetGenericTypeDefinition() : type;
+            declaringTypeName = TypeNameHelper.GetTypeDisplayName(typeForDisplay, includeGenericParameterNames: true);
         }
 
         string? genericArguments = null;
         if (method.IsGenericMethod)
         {
-            genericArguments = "<" + string.Join(", ", method.GetGenericArguments()
+            // Use generic method definition to get parameter names (T, U) instead of concrete types (string, int)
+            // This is especially important on Mono where stack frame methods are inflated with concrete types
+            Type[] genericArgs;
+            if (method is MethodInfo methodInfo && !method.IsGenericMethodDefinition)
+            {
+                genericArgs = methodInfo.GetGenericMethodDefinition().GetGenericArguments();
+            }
+            else
+            {
+                genericArgs = method.GetGenericArguments();
+            }
+            genericArguments = "<" + string.Join(", ", genericArgs
                 .Select(arg => TypeNameHelper.GetTypeDisplayName(arg, fullName: false, includeGenericParameterNames: true))) + ">";
         }
 
         // Method parameters
-        var parameters = method.GetParameters().Select(parameter =>
+        // Use method from generic type definition for consistent parameter type display
+        MethodBase methodForParams = method;
+        if (method.IsGenericMethod && !method.IsGenericMethodDefinition && method is MethodInfo methodInfoForParams)
+        {
+            // Handle generic methods: use the generic method definition
+            methodForParams = methodInfoForParams.GetGenericMethodDefinition();
+        }
+        else if (method.DeclaringType != null && method.DeclaringType.IsGenericType && !method.DeclaringType.IsGenericTypeDefinition)
+        {
+            // Handle methods on generic types: get the method from the generic type definition
+            // This is especially important on Mono where methods on generic types show concrete type parameters
+            methodForParams = TryGetMethodFromGenericTypeDefinition(method) ?? method;
+        }
+        var parameters = methodForParams.GetParameters().Select(parameter =>
         {
             var parameterType = parameter.ParameterType;
 
@@ -234,6 +261,38 @@ internal sealed class StackTraceHelper
         }
 
         return false;
+    }
+
+    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "Method lookup on generic type definition for stack trace display. Failure is acceptable and handled gracefully.")]
+    private static MethodBase? TryGetMethodFromGenericTypeDefinition(MethodBase method)
+    {
+        try
+        {
+            if (method.DeclaringType?.IsGenericType != true || method.DeclaringType.IsGenericTypeDefinition)
+            {
+                return null;
+            }
+
+            var genericTypeDefinition = method.DeclaringType.GetGenericTypeDefinition();
+            var methodsOnGenericType = genericTypeDefinition.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+
+            // Find the matching method on the generic type definition
+            foreach (var candidateMethod in methodsOnGenericType)
+            {
+                if (candidateMethod.Name == method.Name &&
+                    candidateMethod.MetadataToken == method.MetadataToken)
+                {
+                    return candidateMethod;
+                }
+            }
+        }
+        catch
+        {
+            // If we can't get the generic type definition method, return null
+            // This maintains compatibility with trimming scenarios
+        }
+
+        return null;
     }
 
     private static bool HasStackTraceHiddenAttribute(MemberInfo memberInfo)
