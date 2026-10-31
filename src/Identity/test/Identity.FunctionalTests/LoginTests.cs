@@ -282,6 +282,37 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
     }
 
     [Fact]
+    public async Task ExternalLoginIsChallengedForTwoFactorWhenAccountHasTwoFactorEnabled()
+    {
+        // Arrange
+        void ConfigureTestServices(IServiceCollection services) =>
+            services.SetupTestThirdPartyLogin();
+
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
+
+        var guid = Guid.NewGuid();
+        var userName = $"{guid}";
+        var email = $"{guid}@example.com";
+
+        var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        var manage = await index.ClickManageLinkWithExternalLoginAsync();
+        var twoFactor = await manage.ClickTwoFactorLinkAsync();
+        var enableAuthenticator = await twoFactor.ClickEnableAuthenticatorLinkAsync();
+        var showRecoveryCodes = await enableAuthenticator.SendValidCodeAsync();
+
+        var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
+
+        // Act & Assert
+        // Use a new client to simulate a new browser session. Signing in again via the same
+        // external provider must now be challenged for the second factor instead of completing
+        // immediately, matching the behavior of the password sign-in path.
+        await UserStories.LoginWithSocialLogin2FaAsync(newClient, userName, twoFactorKey);
+    }
+
+    [Fact]
     public async Task CanLoginWithASocialLoginProvider()
     {
         // Arrange
