@@ -154,16 +154,9 @@ public class RequestLocalizationMiddleware
         bool fallbackToParentCultures,
         int currentDepth)
     {
-        // If the cultureName is an empty string there
-        // is no chance we can resolve the culture info.
-        if (cultureName.Equals(string.Empty))
-        {
-            return null;
-        }
-
         var culture = GetCultureInfo(cultureName, supportedCultures);
 
-        if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
+        if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth && cultureName != CultureInfo.InvariantCulture.Name)
         {
             try
             {
