@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
@@ -168,6 +171,76 @@ public unsafe class SP800_108Tests
 
         // Act & assert
         TestCngKeyDerivation((pbKdk, cbKdk) => new Win8SP800_108_CTR_HMACSHA512Provider(pbKdk, cbKdk), kdk, label, contextHeader, context, numDerivedBytes, expectedDerivedSubkeyAsBase64);
+    }
+
+    // Label lengths straddle the internal stack buffer threshold used for the PRF input.
+    [Theory]
+    [InlineData(0, 64)]
+    [InlineData(100, 64)]
+    [InlineData(400, 64)]
+    [InlineData(400, 96)]
+    [InlineData(600, 64)]
+    [InlineData(2000, 96)]
+    public void DeriveKeys_Managed_LongLabel_MatchesReferenceImplementation(int labelLength, int numDerivedBytes)
+    {
+        // Arrange
+        byte[] kdk = new byte[64];
+        for (int i = 0; i < kdk.Length; i++)
+        {
+            kdk[i] = (byte)i;
+        }
+
+        byte[] label = new byte[labelLength];
+        for (int i = 0; i < label.Length; i++)
+        {
+            label[i] = (byte)(i * 7);
+        }
+
+        byte[] contextHeader = Encoding.UTF8.GetBytes("contextHeader");
+        byte[] context = Encoding.UTF8.GetBytes("context");
+
+        var operationSubkeyLength = numDerivedBytes / 2;
+        var operationSubkey = new byte[operationSubkeyLength];
+        var validationSubkey = new byte[numDerivedBytes - operationSubkeyLength];
+
+        // Leave non-zero data in a pooled buffer of the PRF input size so a rented buffer isn't implicitly zeroed.
+        var prfInputLength = 4 + label.Length + 1 + contextHeader.Length + context.Length + 4;
+        var dirty = ArrayPool<byte>.Shared.Rent(prfInputLength);
+        dirty.AsSpan().Fill(0xFF);
+        ArrayPool<byte>.Shared.Return(dirty);
+
+        // Act
+        ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(kdk, label, contextHeader, context, operationSubkey, validationSubkey);
+
+        // Assert
+        var expected = DeriveKeysReference(kdk, label, contextHeader, context, numDerivedBytes);
+        Assert.Equal(expected, operationSubkey.Concat(validationSubkey).ToArray());
+    }
+
+    // Straightforward implementation of SP800-108 CTR mode with HMACSHA512 as the PRF (Sec. 5.1).
+    private static byte[] DeriveKeysReference(byte[] kdk, byte[] label, byte[] contextHeader, byte[] context, int numDerivedBytes)
+    {
+        var output = new byte[numDerivedBytes];
+        var outputSizeInBits = (uint)numDerivedBytes * 8;
+        using var prf = new HMACSHA512(kdk);
+
+        var offset = 0;
+        for (uint i = 1; offset < numDerivedBytes; i++)
+        {
+            var input = new byte[4 + label.Length + 1 + contextHeader.Length + context.Length + 4];
+            BinaryPrimitives.WriteUInt32BigEndian(input, i);
+            label.CopyTo(input, 4);
+            contextHeader.CopyTo(input, 4 + label.Length + 1);
+            context.CopyTo(input, 4 + label.Length + 1 + contextHeader.Length);
+            BinaryPrimitives.WriteUInt32BigEndian(input.AsSpan(input.Length - 4), outputSizeInBits);
+
+            var block = prf.ComputeHash(input);
+            var count = Math.Min(block.Length, numDerivedBytes - offset);
+            Buffer.BlockCopy(block, 0, output, offset, count);
+            offset += count;
+        }
+
+        return output;
     }
 
     private static void TestCngKeyDerivation(ProviderFactory factory, byte[] kdk, byte[] label, byte[] contextHeader, byte[] context, int numDerivedBytes, string expectedDerivedSubkeyAsBase64)

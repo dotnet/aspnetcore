@@ -96,10 +96,12 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         var prfInputLength = checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + (contextHeader.Length + contextData.Length) + sizeof(uint) /* [K]_2 */);
 
 #if NET10_0_OR_GREATER
-        byte[]? prfInputArray = null;
+        // The label (AAD) contains the purpose strings, which commonly push the input past 128 bytes
+        // (e.g. application discriminator + cookie authentication purposes), so rent instead of allocating.
+        byte[]? rentedPrfInput = null;
         Span<byte> prfInput = prfInputLength <= 128
             ? stackalloc byte[128].Slice(0, prfInputLength)
-            : (prfInputArray = new byte[prfInputLength]);
+            : (rentedPrfInput = ArrayPool<byte>.Shared.Rent(prfInputLength)).AsSpan(0, prfInputLength);
 #else
         var prfInputArray = new byte[prfInputLength];
         var prfInput = prfInputArray.AsSpan();
@@ -116,6 +118,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 
             // Copy label and context to prfInput since they're stable over all iterations
             label.CopyTo(prfInput.Slice(sizeof(uint)));
+            prfInput[sizeof(uint) + label.Length] = 0x00; // the buffer may be rented, so don't rely on it being zeroed
             contextHeader.CopyTo(prfInput.Slice(sizeof(uint) + label.Length + 1));
             contextData.CopyTo(prfInput.Slice(sizeof(uint) + label.Length + 1 + contextHeader.Length));
 
@@ -130,7 +133,9 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 #if NET10_0_OR_GREATER
                 if (prf is not null)
                 {
-                    var prfOutputArray = prf.ComputeHash(prfInputArray ?? prfInput.ToArray());
+                    var prfOutputArray = rentedPrfInput is not null
+                        ? prf.ComputeHash(rentedPrfInput, 0, prfInputLength)
+                        : prf.ComputeHash(prfInput.ToArray());
                     prfOutputArray.CopyTo(prfOutput);
                 }
                 else
@@ -172,6 +177,13 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         finally
         {
             prfInput.Clear();
+#if NET10_0_OR_GREATER
+            if (rentedPrfInput is not null)
+            {
+                // Contains key derivation input, so clear it before returning it to the pool.
+                ArrayPool<byte>.Shared.Return(rentedPrfInput, clearArray: true);
+            }
+#endif
         }
     }
 }

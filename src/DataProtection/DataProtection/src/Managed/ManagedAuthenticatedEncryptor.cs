@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed;
 // produced by the CNG-based Encrypt(CBC) + HMAC authenticated encryptor.
 internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncryptor, IDisposable
 #if NET
-    , ISpanAuthenticatedEncryptor
+    , ISpanAuthenticatedEncryptor, IOptimizedAuthenticatedEncryptor
 #endif
 {
     // Even when IVs are chosen randomly, CBC is susceptible to IV collisions within a single
@@ -189,12 +189,28 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
     {
         try
         {
+            using var symmetricAlgorithm = CreateSymmetricAlgorithm();
+            EncryptCore(symmetricAlgorithm, plaintext, additionalAuthenticatedData, ref destination);
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            // Homogenize all exceptions to CryptographicException.
+            throw Error.CryptCommon_GenericError(ex);
+        }
+    }
+
+    // The same SymmetricAlgorithm instance is used to calculate the output size and to perform the encryption,
+    // which avoids creating multiple instances per operation.
+    private void EncryptCore<TWriter>(SymmetricAlgorithm symmetricAlgorithm, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
+        where TWriter : IBufferWriter<byte>, allows ref struct
+    {
+        try
+        {
             var keyModifierLength = KEY_MODIFIER_SIZE_IN_BYTES;
             var ivLength = _symmetricAlgorithmBlockSizeInBytes;
 
             // Calculate the required total size upfront
-            using var symmetricAlgorithmForSizing = CreateSymmetricAlgorithm();
-            var cipherTextLength = symmetricAlgorithmForSizing.GetCiphertextLengthCbc(plaintext.Length);
+            var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plaintext.Length);
             var macLength = _validationAlgorithmDigestLengthInBytes;
             var totalRequiredSize = keyModifierLength + ivLength + cipherTextLength + macLength;
 
@@ -244,7 +260,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                         operationSubkey: encryptionSubkey,
                         validationSubkey: validationSubkey);
 
-                    using var symmetricAlgorithm = CreateSymmetricAlgorithm();
                     symmetricAlgorithm.SetKey(encryptionSubkey);
 
                     // Perform the encryption operation
@@ -293,38 +308,46 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
     }
 #endif
 
-    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
+#if NET
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
     {
         plaintext.Validate();
         additionalAuthenticatedData.Validate();
-        var plainTextSpan = plaintext.AsSpan();
 
-#if NET
-        var symmetricAlgorithm = CreateSymmetricAlgorithm();
+        using var symmetricAlgorithm = CreateSymmetricAlgorithm();
         var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plaintext.Count);
         var outputSize = KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes /* IV */ + cipherTextLength + _validationAlgorithmDigestLengthInBytes /* MAC */;
 
-        byte[]? rentedBuffer = null;
-        var buffer = outputSize <= 256
-            ? stackalloc byte[256]
-            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+        // Encrypt directly into the returned array (which includes the requested pre- and post-buffers) to avoid intermediate copies.
+        var retVal = new byte[checked(preBufferSize + (uint)outputSize + postBufferSize)];
+        var outputSpan = retVal.AsSpan(checked((int)preBufferSize), outputSize);
 
-        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
+        var writer = new RefPooledArrayBufferWriter<byte>(outputSpan);
         try
         {
-            Encrypt(plaintext, additionalAuthenticatedData, ref refPooledBuffer);
-            CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == outputSize, "bytesWritten == size");
-            return refPooledBuffer.WrittenSpan.ToArray();
+            EncryptCore(symmetricAlgorithm, plaintext, additionalAuthenticatedData, ref writer);
+
+            var written = writer.WrittenSpan;
+            CryptoUtil.Assert(written.Length == outputSize, "bytesWritten == size");
+            CryptoUtil.Assert(written.Overlaps(outputSpan, out var elementOffset) && elementOffset == 0, "Payload must be written to the output buffer.");
         }
         finally
         {
-            refPooledBuffer.Dispose();
-            if (rentedBuffer is not null)
-            {
-                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
-            }
+            writer.Dispose();
         }
+
+        return retVal;
+    }
+#endif
+
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
+    {
+#if NET
+        return Encrypt(plaintext, additionalAuthenticatedData, preBufferSize: 0, postBufferSize: 0);
 #else
+        plaintext.Validate();
+        additionalAuthenticatedData.Validate();
+
         try
         {
             var keyModifierLength = KEY_MODIFIER_SIZE_IN_BYTES;
