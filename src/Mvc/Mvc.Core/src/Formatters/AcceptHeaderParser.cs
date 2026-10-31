@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -22,27 +23,41 @@ internal static class AcceptHeaderParser
         ArgumentNullException.ThrowIfNull(parsedValues);
         for (var i = 0; i < acceptHeaders.Count; i++)
         {
-            var charIndex = 0;
-            var value = acceptHeaders[i];
+            ParseAcceptHeaderValue(acceptHeaders[i], parsedValues);
+        }
+    }
 
-            while (!string.IsNullOrEmpty(value) && charIndex < value.Length)
+    // Overload that avoids boxing the StringValues to IList<string>.
+    public static void ParseAcceptHeader(StringValues acceptHeaders, IList<MediaTypeSegmentWithQuality> parsedValues)
+    {
+        ArgumentNullException.ThrowIfNull(parsedValues);
+        for (var i = 0; i < acceptHeaders.Count; i++)
+        {
+            ParseAcceptHeaderValue(acceptHeaders[i], parsedValues);
+        }
+    }
+
+    private static void ParseAcceptHeaderValue(string? value, IList<MediaTypeSegmentWithQuality> parsedValues)
+    {
+        var charIndex = 0;
+
+        while (!string.IsNullOrEmpty(value) && charIndex < value.Length)
+        {
+            var startCharIndex = charIndex;
+
+            if (TryParseValue(value, ref charIndex, out var output))
             {
-                var startCharIndex = charIndex;
-
-                if (TryParseValue(value, ref charIndex, out var output))
+                // The entry may not contain an actual value, like Accept: application/json, , */*
+                if (output.MediaType.HasValue)
                 {
-                    // The entry may not contain an actual value, like Accept: application/json, , */*
-                    if (output.MediaType.HasValue)
-                    {
-                        parsedValues.Add(output);
-                    }
+                    parsedValues.Add(output);
                 }
+            }
 
-                if (charIndex <= startCharIndex)
-                {
-                    Debug.Fail("ParseAcceptHeader should advance charIndex, this is a bug.");
-                    break;
-                }
+            if (charIndex <= startCharIndex)
+            {
+                Debug.Fail("ParseAcceptHeader should advance charIndex, this is a bug.");
+                break;
             }
         }
     }
