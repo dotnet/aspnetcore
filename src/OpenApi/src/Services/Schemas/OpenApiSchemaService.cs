@@ -581,7 +581,54 @@ internal sealed class OpenApiSchemaService(
 
     private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
     {
+        // Most schemas don't contain any relative references. The schema tree was freshly created by
+        // the exporter and isn't shared, so it can be returned as-is instead of being rebuilt.
+        if (!ContainsRelativeReference(node))
+        {
+            return node;
+        }
+
         return ResolveReferencesRecursive(node, rootSchema);
+    }
+
+    private static bool ContainsRelativeReference(JsonNode node)
+    {
+        if (node is JsonObject jsonObject)
+        {
+            for (var i = 0; i < jsonObject.Count; i++)
+            {
+                var (key, value) = jsonObject.GetAt(i);
+                if (value is null)
+                {
+                    continue;
+                }
+
+                if (key == OpenApiConstants.RefKeyword &&
+                    value is JsonValue refValue &&
+                    refValue.TryGetValue<string>(out var refString) &&
+                    refString.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (ContainsRelativeReference(value))
+                {
+                    return true;
+                }
+            }
+        }
+        else if (node is JsonArray jsonArray)
+        {
+            for (var i = 0; i < jsonArray.Count; i++)
+            {
+                if (jsonArray[i] is { } item && ContainsRelativeReference(item))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static JsonNode ResolveReferencesRecursive(JsonNode node, JsonNode rootSchema)
@@ -620,7 +667,7 @@ internal sealed class OpenApiSchemaService(
                 if (property.Value != null)
                 {
                     var processedValue = ResolveReferencesRecursive(property.Value, rootSchema);
-                    newObject[property.Key] = processedValue?.DeepClone();
+                    newObject[property.Key] = DetachedOrClone(processedValue);
                 }
                 else
                 {
@@ -637,7 +684,7 @@ internal sealed class OpenApiSchemaService(
                 if (jsonArray[i] != null)
                 {
                     var processedValue = ResolveReferencesRecursive(jsonArray[i]!, rootSchema);
-                    newArray.Add(processedValue?.DeepClone());
+                    newArray.Add(DetachedOrClone(processedValue));
                 }
                 else
                 {
@@ -650,6 +697,12 @@ internal sealed class OpenApiSchemaService(
         // Return non-$ref nodes as-is
         return node;
     }
+
+    // Nodes that are still attached to the source tree (leaf values and unresolved references) must be cloned
+    // before they can be added to the new tree. Nodes created by ResolveReferencesRecursive (new objects, new arrays
+    // and clones of resolved references) are already detached, so cloning them again would only copy the same
+    // subtree once per level of nesting.
+    private static JsonNode DetachedOrClone(JsonNode node) => node.Parent is null ? node : node.DeepClone();
 
     private static JsonNode? ResolveReference(string refPath, JsonNode rootSchema)
     {
