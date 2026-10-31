@@ -107,20 +107,27 @@ public sealed class FileBufferingWriteStream : Stream
     public override void Write(byte[] buffer, int offset, int count)
     {
         ValidateBufferArguments(buffer, offset, count);
+
+        Write(buffer.AsSpan(offset, count));
+    }
+
+    /// <inheritdoc />
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
         ThrowIfDisposed();
 
-        if (_bufferLimit.HasValue && _bufferLimit - Length < count)
+        if (_bufferLimit.HasValue && _bufferLimit - Length < buffer.Length)
         {
             Dispose();
             throw new IOException("Buffer limit exceeded.");
         }
 
         // Allow buffering in memory if we're below the memory threshold once the current buffer is written.
-        var allowMemoryBuffer = (_memoryThreshold - count) >= PagedByteBuffer.Length;
+        var allowMemoryBuffer = (_memoryThreshold - buffer.Length) >= PagedByteBuffer.Length;
         if (allowMemoryBuffer)
         {
             // Buffer content in the MemoryStream if it has capacity.
-            PagedByteBuffer.Add(buffer, offset, count);
+            PagedByteBuffer.Add(buffer);
             Debug.Assert(PagedByteBuffer.Length <= _memoryThreshold);
         }
         else
@@ -132,7 +139,7 @@ public sealed class FileBufferingWriteStream : Stream
             // Spool memory content to disk.
             PagedByteBuffer.MoveTo(FileStream);
 
-            FileStream.Write(buffer, offset, count);
+            FileStream.Write(buffer);
         }
     }
 
