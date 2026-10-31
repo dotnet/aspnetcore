@@ -56,18 +56,16 @@ internal sealed class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<st
 
     private void CreateOrUpdateGroupWithConnection(string groupName, HubConnectionContext connection)
     {
-        _groups.AddOrUpdate(groupName, _ => AddConnectionToGroup(connection, new GroupConnectionList()),
-            (key, oldCollection) =>
-            {
-                AddConnectionToGroup(connection, oldCollection);
-                return oldCollection;
-            });
+        _groups.AddOrUpdate(groupName,
+            static (_, connection) => AddConnectionToGroup(connection, new GroupConnectionList()),
+            static (_, oldCollection, connection) => AddConnectionToGroup(connection, oldCollection),
+            connection);
     }
 
     private static GroupConnectionList AddConnectionToGroup(
         HubConnectionContext connection, GroupConnectionList group)
     {
-        group.AddOrUpdate(connection.ConnectionId, connection, (_, __) => connection);
+        group[connection.ConnectionId] = connection;
         return group;
     }
 }
@@ -76,6 +74,13 @@ internal sealed class GroupConnectionList : ConcurrentDictionary<string, HubConn
 {
     public override bool Equals(object? obj)
     {
+        // Count takes every lock in the dictionary, so skip it when the dictionary is compared to itself
+        // (e.g. TryUpdate in HubGroupList.Add).
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
         if (obj is ConcurrentDictionary<string, HubConnectionContext> list)
         {
             return list.Count == Count;
