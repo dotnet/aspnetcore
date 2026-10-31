@@ -88,6 +88,100 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task ScopedHubActivatorFactoryIsResolvedForEveryScopeEvenIfItReturnsTheDefaultActivator()
+    {
+        using (StartVerifiableLog())
+        {
+            var trackDispose = new TrackDispose();
+            var customActivator = new CountingHubActivator<DisposeTrackingHub>();
+            var resolveCount = 0;
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s =>
+            {
+                s.AddSingleton(trackDispose);
+                // Returns the default activator for the first scope (OnConnectedAsync) and alternates afterwards.
+                s.AddScoped<IHubActivator<DisposeTrackingHub>>(sp => Interlocked.Increment(ref resolveCount) % 2 == 1
+                    ? new DefaultHubActivator<DisposeTrackingHub>(sp)
+                    : customActivator.WithServices(sp));
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<DisposeTrackingHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                for (var i = 0; i < 4; i++)
+                {
+                    await client.InvokeAsync(nameof(DisposeTrackingHub.GetDisposeCount)).DefaultTimeout();
+                }
+
+                Assert.Equal(5, Volatile.Read(ref resolveCount));
+                Assert.Equal(2, customActivator.CreateCount);
+                Assert.Equal(2, customActivator.ReleaseCount);
+
+                client.Dispose();
+
+                await connectionHandlerTask;
+            }
+        }
+    }
+
+    [Fact]
+    public void HubActivatorRegistrationsOnlyReportsTheUnchangedDefaultRegistration()
+    {
+        var services = new ServiceCollection();
+        services.AddSignalR();
+        Assert.True(new HubActivatorRegistrations(services).IsDefaultRegistration(typeof(IHubActivator<DisposeTrackingHub>)));
+
+        // Keyed registrations don't affect non-keyed resolution.
+        services.AddKeyedScoped(typeof(IHubActivator<>), "key", typeof(CountingHubActivator<>));
+        Assert.True(new HubActivatorRegistrations(services).IsDefaultRegistration(typeof(IHubActivator<DisposeTrackingHub>)));
+
+        // A closed registration overrides the default for that hub only.
+        services.AddScoped<IHubActivator<DisposeTrackingHub>>(sp => new DefaultHubActivator<DisposeTrackingHub>(sp));
+        var registrations = new HubActivatorRegistrations(services);
+        Assert.False(registrations.IsDefaultRegistration(typeof(IHubActivator<DisposeTrackingHub>)));
+        Assert.True(registrations.IsDefaultRegistration(typeof(IHubActivator<SimpleHub>)));
+
+        // A later open generic registration overrides the default for all hubs.
+        services.AddScoped(typeof(IHubActivator<>), typeof(CountingHubActivator<>));
+        Assert.False(new HubActivatorRegistrations(services).IsDefaultRegistration(typeof(IHubActivator<SimpleHub>)));
+    }
+
+    private sealed class CountingHubActivator<THub> : IHubActivator<THub> where THub : Hub
+    {
+        private IServiceProvider _services;
+        public int CreateCount;
+        public int ReleaseCount;
+
+        public CountingHubActivator()
+        {
+        }
+
+        public CountingHubActivator(IServiceProvider services)
+        {
+            _services = services;
+        }
+
+        public CountingHubActivator<THub> WithServices(IServiceProvider services)
+        {
+            _services = services;
+            return this;
+        }
+
+        public THub Create()
+        {
+            Interlocked.Increment(ref CreateCount);
+            return ActivatorUtilities.CreateInstance<THub>(_services);
+        }
+
+        public void Release(THub hub)
+        {
+            Interlocked.Increment(ref ReleaseCount);
+            hub.Dispose();
+        }
+    }
+
+    [Fact]
     public async Task DefaultHubActivatorDoesNotDisposeHubResolvedFromServiceProvider()
     {
         using (StartVerifiableLog())
