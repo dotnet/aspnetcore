@@ -11,8 +11,19 @@ const workflowLock = fs.readFileSync(
   path.join(repositoryRoot, '.github/workflows/pull-request-review.lock.yml'), 'utf8');
 const skill = fs.readFileSync(
   path.join(repositoryRoot, '.github/skills/review-pull-request/SKILL.md'), 'utf8');
+const localWorkerProfile = fs.readFileSync(
+  path.join(repositoryRoot, '.github/agents/review-guide-worker.agent.md'), 'utf8');
 const retargetDiagnostic =
   'The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.';
+const normalizeProfile = value => value.replaceAll('\r\n', '\n').trimEnd();
+const inlineWorkerProfile = workflowSource.match(
+  /## agent: `review-guide-worker`\r?\n([\s\S]+)$/);
+
+assert.ok(inlineWorkerProfile, 'The hosted review-guide-worker profile must be extractable.');
+assert.equal(
+  normalizeProfile(localWorkerProfile),
+  normalizeProfile(inlineWorkerProfile[1]),
+  'The local and hosted review-guide-worker profiles must remain identical.');
 
 assert.match(workflowSource, /bash:\s*\[":\*"\]/);
 assert.match(workflowSource, /^\s+edit:\s*$/m);
