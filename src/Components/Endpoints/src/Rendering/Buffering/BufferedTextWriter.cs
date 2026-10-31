@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
@@ -53,8 +54,10 @@ internal class BufferedTextWriter : TextWriter
 
     public override void Write(int value)
     {
-        Span<char> buffer = stackalloc char[11]; // Enough for int.MinValue in invariant format
-        if (value.TryFormat(buffer, out var charsWritten, provider: FormatProvider))
+        // Non-negative ints format as ASCII digits in every culture, so they can be copied eagerly.
+        // Negative ints keep the deferred path so the culture's NegativeSign is resolved at flush time, as before.
+        Span<char> buffer = stackalloc char[10];
+        if (value >= 0 && value.TryFormat(buffer, out var charsWritten, provider: CultureInfo.InvariantCulture))
         {
             _currentOutput.Add(buffer.Slice(0, charsWritten));
         }

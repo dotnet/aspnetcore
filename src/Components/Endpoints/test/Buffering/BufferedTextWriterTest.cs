@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+
 namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
 
 public class BufferedTextWriterTest
@@ -159,7 +161,31 @@ public class BufferedTextWriterTest
         writer.Write('z');
         await writer.FlushAsync();
 
-        Assert.Equal("<a>" + longString + (-123).ToString(writer.FormatProvider) + int.MinValue.ToString(writer.FormatProvider) + "z", underlying.ToString());
+        Assert.Equal("<a>" + longString + (-123).ToString(CultureInfo.CurrentCulture) + int.MinValue.ToString(CultureInfo.CurrentCulture) + "z", underlying.ToString());
+    }
+
+    [Fact]
+    public async Task NegativeIntsUseCultureAtFlushTime()
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            var underlying = new StringWriter();
+            var writer = new BufferedTextWriter(underlying);
+            var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            culture.NumberFormat.NegativeSign = "~";
+
+            writer.Write(-5);
+            writer.Write(7);
+            CultureInfo.CurrentCulture = culture;
+            await writer.FlushAsync();
+
+            Assert.Equal("~57", underlying.ToString());
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
     }
 
     private class SlowFlushingTextWriter : StringWriter
