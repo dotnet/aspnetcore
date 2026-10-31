@@ -304,11 +304,12 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
             var span = CollectionsMarshal.AsSpan(edges);
             for (var i = 0; i < span.Length; i++)
             {
-                // Ordinal comparison to match the previous behavior of a dictionary keyed by EdgeKey, which
-                // uses an ordinal hash code.
+                // Same key equality as the Dictionary<EdgeKey, ...> previously used here: keys match when both
+                // GetHashCode (ordinal) and Equals (case-insensitive) agree. An ordinal match satisfies both.
                 var edgeKey = span[i].Key;
                 if (edgeKey.IsCorsPreflightRequest == key.IsCorsPreflightRequest &&
-                    string.Equals(edgeKey.HttpMethod, key.HttpMethod, StringComparison.Ordinal))
+                    (string.Equals(edgeKey.HttpMethod, key.HttpMethod, StringComparison.Ordinal) ||
+                     (edgeKey.Equals(key) && edgeKey.GetHashCode() == key.GetHashCode())))
                 {
                     return span[i].Value;
                 }
