@@ -30,11 +30,12 @@ internal sealed class HubMethodDescriptor
     private ConditionalWeakTable<IAuthorizationPolicyProvider, AuthorizationPolicy>? _authorizationPolicies;
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
-    private ActivityDisplayName? _activityDisplayName;
+    private string? _activityDisplayName;
 
     public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<object> authorizationMetadata)
     {
         MethodExecutor = methodExecutor;
+        Name = methodExecutor.MethodInfo.Name;
 
         NonAsyncReturnType = (MethodExecutor.IsMethodAsync)
             ? MethodExecutor.AsyncResultType!
@@ -162,6 +163,8 @@ internal sealed class HubMethodDescriptor
 
     public List<(int, object?)>? KeyedServiceKeys { get; private set; }
 
+    public string Name { get; init; }
+
     public ObjectMethodExecutor MethodExecutor { get; }
 
     public IReadOnlyList<Type> ParameterTypes { get; }
@@ -245,22 +248,11 @@ internal sealed class HubMethodDescriptor
         return _makeCancelableEnumerator.Invoke(stream, cancellationToken);
     }
 
-    public string GetActivityDisplayName(string hubName, string target)
+    public string GetActivityDisplayName(string hubName)
     {
-        // The built-in protocols resolve targets to the hub method name, but methods are matched case-insensitively so
-        // other protocols can use targets that differ in case. Only the first target that is used is cached, and it is
-        // never replaced, so the cache is bounded to a single entry per method and targets that differ in case
-        // can't cause the cached value to be repeatedly swapped. A race at startup only results in an extra allocation.
-        var cached = _activityDisplayName;
-        if (cached is not null)
-        {
-            return string.Equals(cached.Target, target, StringComparison.Ordinal) ? cached.DisplayName : $"{hubName}/{target}";
-        }
-
-        var displayName = $"{hubName}/{target}";
-        _activityDisplayName = new ActivityDisplayName(target, displayName);
-
-        return displayName;
+        // The hub name and the name this method is registered with never change, so the display
+        // name is only built once. A race on the first use only results in an extra allocation.
+        return _activityDisplayName ??= $"{hubName}/{Name}";
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
@@ -347,11 +339,5 @@ internal sealed class HubMethodDescriptor
         }
 
         return streamType;
-    }
-
-    private sealed class ActivityDisplayName(string target, string displayName)
-    {
-        public string Target { get; } = target;
-        public string DisplayName { get; } = displayName;
     }
 }

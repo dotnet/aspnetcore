@@ -938,7 +938,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
             var authorizationMetadata = methodInfo.GetCustomAttributes(inherit: true);
             EnsureNoAuthenticationSchemeSpecified(authorizationMetadata);
-            _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizationMetadata);
+            _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizationMetadata) { Name = methodName };
             _cachedMethodNames.Add(methodName);
 
             Log.HubMethodBound(_logger, hubName, methodName);
@@ -1040,7 +1040,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
         if (activity is not null)
         {
-            activity.DisplayName = descriptor?.GetActivityDisplayName(_fullHubName, methodName) ?? $"{_fullHubName}/{methodName}";
+            activity.DisplayName = descriptor?.GetActivityDisplayName(_fullHubName) ?? $"{_fullHubName}/{methodName}";
             activity.Start();
         }
 
