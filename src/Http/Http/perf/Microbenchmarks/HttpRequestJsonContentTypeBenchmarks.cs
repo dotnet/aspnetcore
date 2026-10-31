@@ -12,7 +12,7 @@ public class HttpRequestJsonContentTypeBenchmarks
     private DefaultHttpContext _json;
     private DefaultHttpContext _jsonUtf8;
     private DefaultHttpContext _problem;
-    private MemoryStream _body;
+    private byte[] _body;
 
     [GlobalSetup]
     public void Setup()
@@ -23,8 +23,7 @@ public class HttpRequestJsonContentTypeBenchmarks
         _jsonUtf8.Request.ContentType = "application/json; charset=utf-8";
         _problem = new DefaultHttpContext();
         _problem.Request.ContentType = "application/problem+json";
-        _body = new MemoryStream(Encoding.UTF8.GetBytes("{\"name\":\"a\",\"value\":1}"));
-        _jsonUtf8.Request.Body = _body;
+        _body = Encoding.UTF8.GetBytes("{\"name\":\"a\",\"value\":1}");
     }
 
     [Benchmark]
@@ -39,8 +38,16 @@ public class HttpRequestJsonContentTypeBenchmarks
     [Benchmark]
     public async Task<Item> ReadFromJson()
     {
-        _body.Position = 0;
-        return await _jsonUtf8.Request.ReadFromJsonAsync<Item>();
+        // A fresh request each time so the body (and its cached BodyReader) isn't already consumed.
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/json; charset=utf-8";
+        context.Request.Body = new MemoryStream(_body);
+        var item = await context.Request.ReadFromJsonAsync<Item>();
+        if (item?.Value != 1)
+        {
+            throw new InvalidOperationException("Unexpected result.");
+        }
+        return item;
     }
 
     public class Item
