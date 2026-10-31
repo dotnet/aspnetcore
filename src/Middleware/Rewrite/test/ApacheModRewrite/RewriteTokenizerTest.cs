@@ -76,6 +76,19 @@ public class RewriteTokenizerTest
     }
 
     [Fact]
+    public void Tokenize_PreservesRegexEscapeSequences()
+    {
+        var testString = @"RewriteRule ^/(\d)$ /?num=$1";
+        var tokens = Tokenizer.Tokenize(testString);
+
+        var expected = new List<string>();
+        expected.Add(@"RewriteRule");
+        expected.Add(@"^/(\d)$");
+        expected.Add(@"/?num=$1");
+        Assert.Equal(expected, tokens);
+    }
+
+    [Fact]
     public void Tokenize_AssertFormatExceptionWhenEscapeCharacterIsAtEndOfString()
     {
         var ex = Assert.Throws<FormatException>(() => Tokenizer.Tokenize("\\"));

@@ -221,6 +221,31 @@ public class ModRewriteMiddlewareTest
     }
 
     [Fact]
+    public async Task Invoke_ShouldPreserveRegexShorthandCharacterClasses()
+    {
+        var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^/(\d)$ /?num=$1"));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+               .Configure(app =>
+               {
+                   app.UseRewriter(options);
+                   app.Run(context => context.Response.WriteAsync(context.Request.QueryString.Value));
+               });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("http://www.foo.org/7");
+
+        Assert.Equal("?num=7", response);
+    }
+
+    [Fact]
     public async Task Invoke_HandleNegatedRewriteRules()
     {
         var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule !^/$ /homepage.html"));
