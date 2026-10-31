@@ -95,6 +95,7 @@ internal sealed class IISHttpServer : IServer
     public unsafe Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
     {
         _httpServerHandle = GCHandle.Alloc(this);
+        _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
         _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
         _nativeApplication.RegisterCallbacks(
@@ -105,8 +106,6 @@ internal sealed class IISHttpServer : IServer
             &OnRequestsDrained,
             (IntPtr)_httpServerHandle,
             (IntPtr)_httpServerHandle);
-
-        _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
         return Task.CompletedTask;
     }
