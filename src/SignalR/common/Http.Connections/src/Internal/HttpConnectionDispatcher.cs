@@ -292,8 +292,7 @@ internal sealed partial class HttpConnectionDispatcher
         // Server sent events transport
         // GET /{path}
         // Accept: text/event-stream
-        var headers = context.Request.GetTypedHeaders();
-        if (headers.Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue("text/event-stream")) == true)
+        if (IsServerSentEventsRequest(context.Request))
         {
             // Connection must already exist
             var connection = await GetConnectionAsync(context, endpointMetadata);
@@ -622,6 +621,23 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         NegotiateProtocol.WriteResponse(response, writer);
+    }
+
+    internal static bool IsServerSentEventsRequest(HttpRequest request)
+    {
+        // Every long polling and WebSocket GET comes through here, and parsing Accept allocates.
+        // A parsed "text/event-stream" media type can only exist if the raw header contains its "event-stream" subtype token,
+        // so only parse when that substring is present.
+        var accept = request.Headers.Accept;
+        for (var i = 0; i < accept.Count; i++)
+        {
+            if (accept[i]?.Contains("event-stream", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return request.GetTypedHeaders().Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue("text/event-stream")) == true;
+            }
+        }
+
+        return false;
     }
 
     private static bool ServerHasWebSockets(IFeatureCollection features)
