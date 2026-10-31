@@ -22,6 +22,7 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.DocumentTransformers);
         Assert.IsType<DelegateOpenApiDocumentTransformer>(insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Document, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.OperationTransformers);
         Assert.Empty(options.SchemaTransformers);
@@ -40,6 +41,7 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.DocumentTransformers);
         Assert.Same(transformer, insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Document, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.OperationTransformers);
         Assert.Empty(options.SchemaTransformers);
@@ -57,6 +59,7 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.DocumentTransformers);
         Assert.IsType<TypeBasedOpenApiDocumentTransformer>(insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Document, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.OperationTransformers);
         Assert.Empty(options.SchemaTransformers);
@@ -79,6 +82,7 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.OperationTransformers);
         Assert.IsType<DelegateOpenApiOperationTransformer>(insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Operation, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.SchemaTransformers);
@@ -97,6 +101,7 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.OperationTransformers);
         Assert.Same(transformer, insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Operation, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.SchemaTransformers);
@@ -114,6 +119,7 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.OperationTransformers);
         Assert.IsType<TypeBasedOpenApiOperationTransformer>(insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Operation, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.SchemaTransformers);
@@ -136,6 +142,7 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.SchemaTransformers);
         Assert.IsType<DelegateOpenApiSchemaTransformer>(insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Schema, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.OperationTransformers);
@@ -154,6 +161,7 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.SchemaTransformers);
         Assert.Same(transformer, insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Schema, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.OperationTransformers);
@@ -171,9 +179,16 @@ public class OpenApiOptionsTests
         // Assert
         var insertedTransformer = Assert.Single(options.SchemaTransformers);
         Assert.IsType<TypeBasedOpenApiSchemaTransformer>(insertedTransformer);
+        AssertRegistration(insertedTransformer, OpenApiTransformerKind.Schema, Assert.Single(options.Transformers));
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.OperationTransformers);
+    }
+
+    private static void AssertRegistration(object transformer, OpenApiTransformerKind kind, OpenApiTransformerRegistration registration)
+    {
+        Assert.Same(transformer, registration.Transformer);
+        Assert.Equal(kind, registration.Kind);
     }
 
     private class TestOpenApiDocumentTransformer : IOpenApiDocumentTransformer
