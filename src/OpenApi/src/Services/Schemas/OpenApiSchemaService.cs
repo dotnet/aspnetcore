@@ -620,7 +620,7 @@ internal sealed class OpenApiSchemaService(
                 if (property.Value != null)
                 {
                     var processedValue = ResolveReferencesRecursive(property.Value, rootSchema);
-                    newObject[property.Key] = processedValue?.DeepClone();
+                    newObject[property.Key] = DetachedOrClone(processedValue);
                 }
                 else
                 {
@@ -637,7 +637,7 @@ internal sealed class OpenApiSchemaService(
                 if (jsonArray[i] != null)
                 {
                     var processedValue = ResolveReferencesRecursive(jsonArray[i]!, rootSchema);
-                    newArray.Add(processedValue?.DeepClone());
+                    newArray.Add(DetachedOrClone(processedValue));
                 }
                 else
                 {
@@ -650,6 +650,12 @@ internal sealed class OpenApiSchemaService(
         // Return non-$ref nodes as-is
         return node;
     }
+
+    // Nodes that are still attached to the source tree (leaf values and unresolved references) must be cloned
+    // before they can be added to the new tree. Nodes created by ResolveReferencesRecursive (new objects, new arrays
+    // and clones of resolved references) are already detached, so cloning them again would only copy the same
+    // subtree once per level of nesting.
+    private static JsonNode DetachedOrClone(JsonNode node) => node.Parent is null ? node : node.DeepClone();
 
     private static JsonNode? ResolveReference(string refPath, JsonNode rootSchema)
     {
