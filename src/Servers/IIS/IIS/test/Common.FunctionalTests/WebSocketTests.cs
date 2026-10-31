@@ -164,6 +164,64 @@ public abstract class WebSocketsTests : FunctionalTestsBase
         }
     }
 
+    [ConditionalFact]
+    public async Task DuplicateWebSocketUpgradeHeader_Success()
+    {
+        // This test verifies that WebSocket upgrade requests with duplicate "websocket" values
+        // in the Upgrade header (e.g., "Upgrade: websocket, websocket") are accepted.
+        // This is a valid scenario per RFC 9110 which doesn't require header values to be distinct.
+        if (Fixture.DeploymentParameters.HostingModel == HostingModel.InProcess)
+        {
+            // InProcess uses a different code path that already handles this correctly
+            return;
+        }
+
+        Uri uri = new Uri(Fixture.DeploymentResult.ApplicationBaseUri + "WebSocketEcho");
+        using TcpClient client = new TcpClient();
+        await client.ConnectAsync(uri.Host, uri.Port);
+        NetworkStream stream = client.GetStream();
+
+        // Send WebSocket upgrade request with duplicate "websocket" in Upgrade header
+        var secWebSocketKey = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        await SendWebSocketUpgradeRequestWithDuplicateHeader(stream, uri, secWebSocketKey);
+
+        // Read the response
+        StreamReader reader = new StreamReader(stream);
+        string statusLine = await reader.ReadLineAsync();
+        string[] parts = statusLine.Split(' ');
+
+        // Verify we get 101 Switching Protocols
+        Assert.Equal(101, int.Parse(parts[1], CultureInfo.InvariantCulture));
+    }
+
+    private async Task SendWebSocketUpgradeRequestWithDuplicateHeader(NetworkStream stream, Uri uri, string secWebSocketKey)
+    {
+        // Send an HTTP/1.1 WebSocket upgrade request with duplicate "websocket" in Upgrade header
+        StringBuilder builder = new StringBuilder();
+        builder.Append("GET ");
+        builder.Append(uri.PathAndQuery);
+        builder.Append(" HTTP/1.1");
+        builder.Append("\r\n");
+
+        builder.Append("Host: ");
+        builder.Append(uri.Host);
+        builder.Append(':');
+        builder.Append(uri.Port);
+        builder.Append("\r\n");
+
+        builder.Append("Connection: Upgrade\r\n");
+        // Duplicate "websocket" values in Upgrade header - this is what we're testing
+        builder.Append("Upgrade: websocket, websocket\r\n");
+        builder.Append("Sec-WebSocket-Version: 13\r\n");
+        builder.Append("Sec-WebSocket-Key: ");
+        builder.Append(secWebSocketKey);
+        builder.Append("\r\n");
+
+        builder.Append("\r\n");
+        var requestBytes = Encoding.ASCII.GetBytes(builder.ToString());
+        await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
+    }
+
     private async Task SendHttp10Request(NetworkStream stream, Uri uri)
     {
         // Send an HTTP GET request
