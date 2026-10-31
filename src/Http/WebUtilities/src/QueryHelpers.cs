@@ -30,7 +30,7 @@ public static class QueryHelpers
         ArgumentNullException.ThrowIfNull(value);
 
         var anchorIndex = uri.IndexOf('#');
-        var baseLength = anchorIndex == -1 ? uri.Length : anchorIndex;
+        var baseLength = anchorIndex < 0 ? uri.Length : anchorIndex;
         var separator = uri.AsSpan(0, baseLength).Contains('?') ? '&' : '?';
         var encodedName = UrlEncoder.Default.Encode(name);
         var encodedValue = UrlEncoder.Default.Encode(value);
