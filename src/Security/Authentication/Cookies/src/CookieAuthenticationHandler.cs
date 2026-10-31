@@ -216,6 +216,11 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
         if (context.Principal == null)
         {
+            // Discard any refresh requested by CheckForRefreshAsync so a rejected principal isn't renewed.
+            _shouldRefresh = false;
+            _refreshIssuedUtc = null;
+            _refreshExpiresUtc = null;
+            _refreshTicket = null;
             return AuthenticateResults.NoPrincipal;
         }
 
