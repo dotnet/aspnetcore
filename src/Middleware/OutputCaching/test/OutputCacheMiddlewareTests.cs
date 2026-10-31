@@ -30,6 +30,65 @@ public abstract class OutputCacheMiddlewareTests
     public abstract ITestOutputCacheStore GetStore();
 
     [Fact]
+    public void TryGetRequestPolicies_CombinesBaseEndpointAndAttributePoliciesInOrder()
+    {
+        var basePolicy1 = new NoopPolicy();
+        var basePolicy2 = new NoopPolicy();
+        var endpointPolicy = new NoopPolicy();
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(basePolicy1);
+        options.AddBasePolicy(basePolicy2);
+        var middleware = TestUtils.CreateTestMiddleware(options: options);
+        var context = TestUtils.CreateTestContext(options: options);
+        context.HttpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(endpointPolicy, new OutputCacheAttribute()), "test"));
+
+        Assert.True(middleware.TryGetRequestPolicies(context.HttpContext, out var policies));
+
+        Assert.Equal(4, policies.Count);
+        Assert.Same(basePolicy1, policies[0]);
+        Assert.Same(basePolicy2, policies[1]);
+        Assert.Same(endpointPolicy, policies[2]);
+        Assert.NotNull(policies[3]);
+    }
+
+    [Theory]
+    [InlineData(false, false, false, 0)]
+    [InlineData(true, false, false, 1)]
+    [InlineData(false, true, false, 1)]
+    [InlineData(false, false, true, 1)]
+    [InlineData(true, true, true, 3)]
+    public void TryGetRequestPolicies_ReturnsPoliciesFromAllSources(bool basePolicy, bool endpointPolicy, bool attribute, int expectedCount)
+    {
+        var options = new OutputCacheOptions();
+        if (basePolicy)
+        {
+            options.AddBasePolicy(new NoopPolicy());
+        }
+        var metadata = new List<object>();
+        if (endpointPolicy)
+        {
+            metadata.Add(new NoopPolicy());
+        }
+        if (attribute)
+        {
+            metadata.Add(new OutputCacheAttribute());
+        }
+        var middleware = TestUtils.CreateTestMiddleware(options: options);
+        var context = TestUtils.CreateTestContext(options: options);
+        context.HttpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(metadata), "test"));
+
+        Assert.Equal(expectedCount > 0, middleware.TryGetRequestPolicies(context.HttpContext, out var policies));
+        Assert.Equal(expectedCount, policies.Count);
+    }
+
+    private sealed class NoopPolicy : IOutputCachePolicy
+    {
+        public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation) => ValueTask.CompletedTask;
+        public ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation) => ValueTask.CompletedTask;
+        public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation) => ValueTask.CompletedTask;
+    }
+
+    [Fact]
     public async Task TryServeFromCacheAsync_OnlyIfCached_Serves504()
     {
         var cache = GetStore();
