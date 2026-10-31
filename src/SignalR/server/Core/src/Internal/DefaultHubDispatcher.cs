@@ -34,8 +34,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
 
     // Tracks whether IHubActivator<THub> resolves to the built-in DefaultHubActivator<THub>.
-    // 0 = unknown, 1 = default activator, 2 = custom activator.
-    private int _hubActivatorKind;
+    private HubActivatorKind _hubActivatorKind;
 
     [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported")]
     [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
@@ -90,13 +89,13 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         // resolved-services cache grows) and is relatively expensive. The default activator is internal,
         // stateless apart from the scoped provider and not disposable, so when the container is known to
         // produce it we can construct it directly with the same scoped provider.
-        if (_hubActivatorKind == 1)
+        if (_hubActivatorKind == HubActivatorKind.Default)
         {
             return new DefaultHubActivator<THub>(scopedServiceProvider);
         }
 
         var hubActivator = scopedServiceProvider.GetRequiredService<IHubActivator<THub>>();
-        if (_hubActivatorKind == 0)
+        if (_hubActivatorKind == HubActivatorKind.Unknown)
         {
             // Only take the fast path when the effective registration is SignalR's own open generic descriptor
             // (not a factory or a user registration that happened to return the default activator), and the
@@ -104,10 +103,17 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             var isDefault = hubActivator.GetType() == typeof(DefaultHubActivator<THub>)
                 && scopedServiceProvider.GetService<DefaultHubActivatorRegistration>() is { } registration
                 && registration.IsDefaultActivatorRegistered(typeof(IHubActivator<THub>));
-            _hubActivatorKind = isDefault ? 1 : 2;
+            _hubActivatorKind = isDefault ? HubActivatorKind.Default : HubActivatorKind.Custom;
         }
 
         return hubActivator;
+    }
+
+    private enum HubActivatorKind
+    {
+        Unknown,
+        Default,
+        Custom,
     }
 
     public override async Task OnConnectedAsync(HubConnectionContext connection)
