@@ -298,6 +298,32 @@ public class ContentDispositionHeaderValueTest
         Assert.Equal(httpFileName.AsSpan(), contentDisposition.FileNameStar); // Should roundtrip through FileNameStar encoding
     }
 
+    [Theory]
+    [InlineData("report-2024.pdf", "attachment; filename=report-2024.pdf; filename*=UTF-8''report-2024.pdf")]
+    [InlineData("Quarterly Report.pdf", "attachment; filename=\"Quarterly Report.pdf\"; filename*=UTF-8''Quarterly%20Report.pdf")]
+    [InlineData("a\"b\\c.txt", "attachment; filename=\"a\\\"b\\\\c.txt\"; filename*=UTF-8''a%22b%5Cc.txt")]
+    [InlineData("na\u00EFve.txt", "attachment; filename=na_ve.txt; filename*=UTF-8''na%C3%AFve.txt")]
+    [InlineData("\u20AC.txt", "attachment; filename=_.txt; filename*=UTF-8''%E2%82%AC.txt")]
+    [InlineData("\U0001F600 x.txt", "attachment; filename=\"__ x.txt\"; filename*=UTF-8''%F0%9F%98%80%20x.txt")]
+    public void SetHttpFileName_ToString_FormatsExpectedHeader(string httpFileName, string expected)
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("attachment");
+        contentDisposition.SetHttpFileName(httpFileName);
+        Assert.Equal(expected, contentDisposition.ToString());
+    }
+
+    [Fact]
+    public void SetHttpFileName_ToString_LoneSurrogatesEncodedAsReplacementChar()
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("attachment");
+        contentDisposition.SetHttpFileName("a" + (char)0xD800 + "b");
+        Assert.Equal("attachment; filename=a_b; filename*=UTF-8''a%EF%BF%BDb", contentDisposition.ToString());
+
+        contentDisposition = new ContentDispositionHeaderValue("attachment");
+        contentDisposition.SetHttpFileName(((char)0xDC00).ToString());
+        Assert.Equal("attachment; filename=_; filename*=UTF-8''%EF%BF%BD", contentDisposition.ToString());
+    }
+
     [Fact]
     public void Dates_AddDateParameterThenUseProperty_ParametersEntryIsOverwritten()
     {
