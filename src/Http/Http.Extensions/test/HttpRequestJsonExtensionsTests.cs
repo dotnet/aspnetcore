@@ -23,6 +23,11 @@ public class HttpRequestJsonExtensionsTests
     [InlineData("APPLICATION/JSON", true)]
     [InlineData("APPLICATION/JSON; CHARSET=UTF-8", true)]
     [InlineData("APPLICATION/LD+JSON", true)]
+    [InlineData("application/json;charset=utf-8", true)]
+    [InlineData("application/json; charset=utf-16", true)]
+    [InlineData("application/json; charset=utf-8; foo=bar", true)]
+    [InlineData("application/jsonx", false)]
+    [InlineData("application/json; charset=utf-8x", true)]
     public void HasJsonContentType(string? contentType, bool hasJsonContentType)
     {
         var request = new DefaultHttpContext().Request;
@@ -113,6 +118,26 @@ public class HttpRequestJsonExtensionsTests
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
+    }
+
+    [Theory]
+    [InlineData("application/json")]
+    [InlineData("APPLICATION/JSON")]
+    [InlineData("application/json; charset=utf-8")]
+    [InlineData("Application/Json; Charset=UTF-8")]
+    [InlineData("application/json;charset=utf-8")]
+    public async Task ReadFromJsonAsyncGeneric_CommonJsonContentTypes_ReturnValue(string contentType)
+    {
+        // Arrange
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = contentType;
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(@"{""name"": ""激光""}"));
+
+        // Act
+        var result = await context.Request.ReadFromJsonAsync<Dictionary<string, string>>();
+
+        // Assert
+        Assert.Equal("激光", result!["name"]);
     }
 
     [Fact]

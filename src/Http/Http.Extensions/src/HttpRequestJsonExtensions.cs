@@ -23,6 +23,8 @@ public static class HttpRequestJsonExtensions
         "Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.";
     private const string RequiresDynamicCodeMessage = "JSON serialization and deserialization might require types that cannot be statically analyzed and need runtime code generation. " +
         "Use the overload that takes a JsonTypeInfo or JsonSerializerContext for native AOT applications.";
+    private const string Utf8Charset = "utf-8";
+    private const string JsonContentTypeWithUtf8Charset = ContentTypeConstants.JsonContentType + "; charset=" + Utf8Charset;
     // Fallback to the stream-based overloads for JsonSerializer.DeserializeAsync
     // This is to give users with custom JsonConverter implementations the chance to update their
     // converters to support ReadOnlySequence<T> if needed while still keeping their apps working.
@@ -370,7 +372,22 @@ public static class HttpRequestJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mt))
+        var contentType = request.ContentType;
+
+        // Fast paths for the most common values, which parse to the same media type and charset.
+        if (string.Equals(contentType, ContentTypeConstants.JsonContentType, StringComparison.OrdinalIgnoreCase))
+        {
+            charset = default;
+            return true;
+        }
+
+        if (string.Equals(contentType, JsonContentTypeWithUtf8Charset, StringComparison.OrdinalIgnoreCase))
+        {
+            charset = new StringSegment(Utf8Charset);
+            return true;
+        }
+
+        if (!MediaTypeHeaderValue.TryParse(contentType, out var mt))
         {
             charset = StringSegment.Empty;
             return false;
