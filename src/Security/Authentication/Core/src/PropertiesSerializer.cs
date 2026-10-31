@@ -75,7 +75,6 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
         }
     }
 
-    /// <inheritdoc />
     internal static void Write(ref BinaryPayloadWriter writer, AuthenticationProperties properties)
     {
         ArgumentNullException.ThrowIfNull(properties);
@@ -90,6 +89,7 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
         }
     }
 
+    /// <inheritdoc />
     public virtual AuthenticationProperties? Read(BinaryReader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);
