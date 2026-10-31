@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Buffers.Text;
 using System.Collections;
 using System.Globalization;
@@ -155,12 +156,44 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         return true;
     }
 
+    private const int MaxScratchNameLength = 64;
+    private char[]? _unknownNameScratch;
+
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AppendUnknownHeaders(string name, string valueString)
+    private void AppendUnknownHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
     {
-        name = GetInternedHeaderName(name);
-        Unknown.TryGetValue(name, out var existing);
-        Unknown[name] = AppendValue(existing, valueString);
+        string nameStr;
+        string key;
+        if ((uint)(name.Length - 1) < MaxScratchNameLength &&
+            !name.Contains((byte)0) &&
+            Ascii.ToUtf16(name, _unknownNameScratch ??= new char[MaxScratchNameLength], out var written) == OperationStatus.Done)
+        {
+            // The scratch buffer is private to this instance and only used transiently within this method.
+            var nameChars = _unknownNameScratch.AsSpan(0, written);
+            if (TryGetInternedHeaderName(nameChars, out var internedName))
+            {
+                // Reuse the preallocated name unless a custom encoding selector could observe a different casing.
+                nameStr = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector) || nameChars.SequenceEqual(internedName)
+                    ? internedName
+                    : new string(nameChars);
+                key = internedName;
+            }
+            else
+            {
+                nameStr = key = new string(nameChars);
+            }
+        }
+        else
+        {
+            // Empty, too long or invalid; GetHeaderName throws for invalid names.
+            nameStr = name.GetHeaderName();
+            key = GetInternedHeaderName(nameStr);
+        }
+
+        var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
+        var unknown = Unknown;
+        unknown.TryGetValue(key, out var existing);
+        unknown[key] = AppendValue(existing, valueStr);
     }
 
     public Enumerator GetEnumerator()

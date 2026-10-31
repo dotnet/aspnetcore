@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -143,6 +144,14 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
         }
 
         return name;
+    }
+
+    protected static bool TryGetInternedHeaderName(ReadOnlySpan<char> name, [NotNullWhen(true)] out string? internedName)
+        => InternedHeaderNamesLookup.Instance.TryGetValue(name, out internedName);
+
+    private static class InternedHeaderNamesLookup
+    {
+        public static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> Instance = _internedHeaderNames.GetAlternateLookup<ReadOnlySpan<char>>();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
