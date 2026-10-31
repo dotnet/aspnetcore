@@ -772,6 +772,184 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
     }
 
+    [Theory]
+    // A leading run of '/' and '\' is collapsed so the value cannot resolve as a scheme-relative authority.
+    [InlineData("//attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("///attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("//////attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("/\\attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("\\attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("\\\\attacker.example/landing/", "/attacker.example/landing/")]
+    [InlineData("////", "/")]
+    // Positive controls: only a leading run collapses, and absolute URIs are left alone.
+    [InlineData("/me", "/me")]
+    [InlineData("/a//b/", "/a//b/")]
+    [InlineData("/me?returnUrl=//attacker.example", "/me?returnUrl=//attacker.example")]
+    [InlineData("https://spa.example/done", "https://spa.example/done")]
+    public async Task ReplyPathNormalizesLeadingSlashesInRedirectUri(string redirectUri, string expected)
+    {
+        var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
+        using var host = await CreateHost(o =>
+        {
+            o.ClientId = "Test Id";
+            o.ClientSecret = "Test Secret";
+            o.StateDataFormat = stateFormat;
+            o.BackchannelHttpHandler = CreateBackchannel();
+        });
+
+        var properties = new AuthenticationProperties();
+        var correlationKey = ".xsrf";
+        var correlationValue = "TestCorrelationId";
+        properties.Items.Add(correlationKey, correlationValue);
+        properties.RedirectUri = redirectUri;
+        var state = stateFormat.Protect(properties);
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync(
+            "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+            $".AspNetCore.Correlation.{correlationValue}=N");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        Assert.Equal(expected, transaction.Response.Headers.GetValues("Location").First());
+    }
+
+    [Fact]
+    public async Task ReplyPathNormalizesReturnUriBeforeTicketReceivedObservesIt()
+    {
+        string observedReturnUri = null;
+        var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
+        using var host = await CreateHost(o =>
+        {
+            o.ClientId = "Test Id";
+            o.ClientSecret = "Test Secret";
+            o.StateDataFormat = stateFormat;
+            o.BackchannelHttpHandler = CreateBackchannel();
+            o.Events = new OAuthEvents
+            {
+                OnTicketReceived = context =>
+                {
+                    observedReturnUri = context.ReturnUri;
+                    return Task.FromResult(0);
+                }
+            };
+        });
+
+        var properties = new AuthenticationProperties();
+        var correlationKey = ".xsrf";
+        var correlationValue = "TestCorrelationId";
+        properties.Items.Add(correlationKey, correlationValue);
+        properties.RedirectUri = "//attacker.example/landing/";
+        var state = stateFormat.Protect(properties);
+        using var server = host.GetTestServer();
+        await server.SendAsync(
+            "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+            $".AspNetCore.Correlation.{correlationValue}=N");
+        Assert.Equal("/attacker.example/landing/", observedReturnUri);
+    }
+
+    [Fact]
+    public async Task ReplyPathNormalizesReturnUriWhenTicketReceivedHandlesTheResponse()
+    {
+        // A TicketReceived handler that redirects and calls HandleResponse never reaches the handler's own
+        // Response.Redirect, so this only passes when the value is normalized before the event runs.
+        var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
+        using var host = await CreateHost(o =>
+        {
+            o.ClientId = "Test Id";
+            o.ClientSecret = "Test Secret";
+            o.StateDataFormat = stateFormat;
+            o.BackchannelHttpHandler = CreateBackchannel();
+            o.Events = new OAuthEvents
+            {
+                OnTicketReceived = context =>
+                {
+                    context.Response.Redirect(context.ReturnUri);
+                    context.HandleResponse();
+                    return Task.FromResult(0);
+                }
+            };
+        });
+
+        var properties = new AuthenticationProperties();
+        var correlationKey = ".xsrf";
+        var correlationValue = "TestCorrelationId";
+        properties.Items.Add(correlationKey, correlationValue);
+        properties.RedirectUri = "//attacker.example/landing/";
+        var state = stateFormat.Protect(properties);
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync(
+            "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+            $".AspNetCore.Correlation.{correlationValue}=N");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        Assert.Equal("/attacker.example/landing/", transaction.Response.Headers.GetValues("Location").First());
+    }
+
+    [Fact]
+    public async Task ReplyPathHonorsAbsoluteReturnUriSetByTicketReceived()
+    {
+        var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
+        using var host = await CreateHost(o =>
+        {
+            o.ClientId = "Test Id";
+            o.ClientSecret = "Test Secret";
+            o.StateDataFormat = stateFormat;
+            o.BackchannelHttpHandler = CreateBackchannel();
+            o.Events = new OAuthEvents
+            {
+                OnTicketReceived = context =>
+                {
+                    context.ReturnUri = "https://elsewhere.example/x";
+                    return Task.FromResult(0);
+                }
+            };
+        });
+
+        var properties = new AuthenticationProperties();
+        var correlationKey = ".xsrf";
+        var correlationValue = "TestCorrelationId";
+        properties.Items.Add(correlationKey, correlationValue);
+        properties.RedirectUri = "//attacker.example/landing/";
+        var state = stateFormat.Protect(properties);
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync(
+            "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+            $".AspNetCore.Correlation.{correlationValue}=N");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        Assert.Equal("https://elsewhere.example/x", transaction.Response.Headers.GetValues("Location").First());
+    }
+
+    [Fact]
+    public async Task ReplyPathWithAccessDeniedError_NormalizesReturnUrl()
+    {
+        string observedReturnUrl = null;
+        var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
+        using var host = await CreateHost(o =>
+        {
+            o.ClientId = "Test Id";
+            o.ClientSecret = "Test Secret";
+            o.StateDataFormat = stateFormat;
+            o.AccessDeniedPath = "/access-denied";
+            o.Events = new OAuthEvents()
+            {
+                OnAccessDenied = ctx =>
+                {
+                    observedReturnUrl = ctx.ReturnUrl;
+                    return Task.FromResult(0);
+                }
+            };
+        });
+
+        var properties = new AuthenticationProperties();
+        properties.Items.Add(".xsrf", "correlationId");
+        properties.RedirectUri = "//attacker.example/landing/";
+        var state = stateFormat.Protect(properties);
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync(
+            "https://example.com/signin-google?error=access_denied&state=" + UrlEncoder.Default.Encode(state),
+            ".AspNetCore.Correlation.correlationId=N");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        Assert.Equal("/attacker.example/landing/", observedReturnUrl);
+        Assert.Equal("https://example.com/access-denied?ReturnUrl=%2Fattacker.example%2Flanding%2F", transaction.Response.Headers.GetValues("Location").First());
+    }
+
     [Fact]
     public async Task ValidateAuthenticatedContext()
     {
