@@ -17,23 +17,26 @@ const retargetDiagnostic =
 assert.match(workflowSource, /bash:\s*\[":\*"\]/);
 assert.match(workflowSource, /^\s+edit:\s*$/m);
 assert.match(workflowSource, /memory:\s*8g/);
-assert.doesNotMatch(workflowSource, /^\s+- (?:containers|dotnet|github|java|node|powershell|python)\s*$/m);
+assert.doesNotMatch(workflowSource, /^\s+- (?:containers|defaults|dotnet|github|java|node|powershell|python)\s*$/m);
 assert.match(workflowSource, /- "builds\.dotnet\.microsoft\.com"/);
 assert.match(workflowSource, /- "ci\.dot\.net"/);
 assert.match(workflowSource, /- "pkgs\.dev\.azure\.com"/);
 assert.match(workflowSource, /- "\*\.vsblob\.vsassets\.io"/);
 assert.match(workflowSource, /- "data\.nuget\.org"/);
 assert.match(workflowSource, /- "oneocsp\.microsoft\.com"/);
-assert.match(workflowSource, /- "release-assets\.githubusercontent\.com"/);
-assert.match(workflowSource, /- "storage\.googleapis\.com"/);
 assert.match(workflowSource, /- "www\.microsoft\.com"/);
 assert.match(workflowSource, /- playwright/);
+assert.doesNotMatch(workflowSource, /- "(?:github\.com|release-assets\.githubusercontent\.com|storage\.googleapis\.com)"/);
 assert.match(workflowSource, /DOTNET_CLI_TELEMETRY_OPTOUT:\s*"1"/);
 assert.match(workflowSource, /name: Verify restricted review workers/);
 assert.match(workflowSource, /expectedAgentName = 'review-guide-worker'/);
 assert.match(workflowSource, /allowedTools = new Set\(\['glob', 'grep', 'read_file', 'rg', 'search', 'skill', 'view'\]\)/);
-assert.match(workflowSource, /workersRequired = manifest\.ready === true/);
-assert.match(workflowSource, /if \(workersRequired && subagents\.size === 0\)/);
+assert.match(workflowSource, /REVIEW_EXPECTED_WORKER_COUNT: \$\{\{ steps\.prepare_review_bundle\.outputs\.expected_worker_count \}\}/);
+assert.match(workflowSource, /const expectedWorkerCount = Number\(expectedWorkerCountValue\)/);
+assert.match(workflowSource, /id: prepare_review_bundle/);
+assert.match(workflowSource, /printf 'expected_worker_count=%s\\n' "\$expected_worker_count" >> "\$GITHUB_OUTPUT"/);
+assert.match(workflowSource, /Ready review manifest has no routed guides/);
+assert.match(workflowSource, /if \(subagents\.size !== expectedWorkerCount\)/);
 assert.match(workflowSource, /if \(event\.data\?\.parentToolCallId\)/);
 assert.match(workflowSource, /## agent: `review-guide-worker`/);
 assert.match(workflowSource, /tools: \["read", "search", "skill"\]/);
@@ -45,6 +48,11 @@ assert.match(workflowSource, /status --porcelain\)"; then\s+:\s+else/);
 assert.match(workflowSource, /chmod -R a\+rX,a-w \/tmp\/gh-aw\/review-bundle/);
 assert.match(workflowSource, /Only after collecting every required guide worker's actual result/);
 assert.match(workflowSource, /write temporary\s+tests or repros/);
+assert.match(workflowSource, /PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1/);
+assert.match(workflowSource, /existing `Microsoft\.Playwright` NuGet dependency/);
+assert.match(workflowSource, /Do not inject package-feed credentials/);
+assert.match(workflowSource, /configured npm feed requires authentication/);
+assert.match(workflowSource, /explicitly\s+select an already-installed system Chrome or Chromium executable/);
 assert.doesNotMatch(workflowSource, /review_execution|review-execution|execution\.json/);
 assert.equal(workflowSource.split(retargetDiagnostic).length - 1, 2);
 assert.doesNotMatch(workflowSource, /The PR head moved or closed after review; safe outputs are blocked\./);
@@ -57,8 +65,8 @@ assert.match(workflowLock, /Restore inline sub-agents from activation artifact/)
 assert.match(workflowLock, /Verify restricted review workers/);
 assert.match(workflowLock, /builds\.dotnet\.microsoft\.com/);
 assert.match(workflowLock, /pkgs\.dev\.azure\.com/);
-assert.match(workflowLock, /release-assets\.githubusercontent\.com/);
-assert.match(workflowLock, /storage\.googleapis\.com/);
+assert.doesNotMatch(workflowLock, /release-assets\.githubusercontent\.com/);
+assert.doesNotMatch(workflowLock, /storage\.googleapis\.com/);
 assert.doesNotMatch(workflowLock, /api\.nuget\.org/);
 assert.doesNotMatch(workflowLock, /registry\.npmjs\.org/);
 assert.doesNotMatch(workflowLock, /pypi\.org/);
@@ -84,22 +92,16 @@ try {
   const verifierPath = path.join(tempRoot, 'verify.cjs');
   fs.writeFileSync(verifierPath, verifierMatch[1]);
 
-  const runVerifier = (events, manifest) => {
+  const runVerifier = (events, expectedWorkerCount) => {
     const sessionPath = path.join(tempRoot, 'agent-session.jsonl');
-    const manifestPath = path.join(tempRoot, 'manifest.json');
     fs.writeFileSync(sessionPath, events.map(event => JSON.stringify(event)).join('\n'));
-    if (manifest === undefined) {
-      fs.rmSync(manifestPath, { force: true });
-    } else {
-      fs.writeFileSync(manifestPath, JSON.stringify(manifest));
-    }
 
     return spawnSync(process.execPath, [verifierPath], {
       encoding: 'utf8',
       env: {
         ...process.env,
         REVIEW_WORKER_SESSION_PATH: sessionPath,
-        REVIEW_BUNDLE_MANIFEST_PATH: manifestPath,
+        REVIEW_EXPECTED_WORKER_COUNT: expectedWorkerCount,
       },
     });
   };
@@ -114,23 +116,33 @@ try {
     agentId: 'worker-1',
     data: { toolName },
   });
-  const readyManifest = { ready: true, guides: [{}] };
+  const secondWorkerStarted = {
+    ...workerStarted,
+    agentId: 'worker-2',
+  };
+  assert.equal(runVerifier([workerStarted, workerTool('skill'), workerTool('view')], '1').status, 0);
+  assert.equal(runVerifier([], '0').status, 0);
+  assert.equal(runVerifier([workerStarted, secondWorkerStarted], '2').status, 0);
 
-  assert.equal(runVerifier([workerStarted, workerTool('skill'), workerTool('view')], readyManifest).status, 0);
-  assert.equal(runVerifier([], { ready: true, guides: [] }).status, 0);
-  assert.equal(runVerifier([], undefined).status, 0);
+  const invalidWorkerRequirement = runVerifier([], '');
+  assert.notEqual(invalidWorkerRequirement.status, 0);
+  assert.match(invalidWorkerRequirement.stderr, /Trusted worker count is invalid/);
 
-  const missingWorker = runVerifier([], readyManifest);
+  const missingWorker = runVerifier([], '1');
   assert.notEqual(missingWorker.status, 0);
-  assert.match(missingWorker.stderr, /No per-guide review worker was recorded/);
+  assert.match(missingWorker.stderr, /Expected 1 per-guide review worker\(s\), but recorded 0/);
+
+  const missingSecondWorker = runVerifier([workerStarted], '2');
+  assert.notEqual(missingSecondWorker.status, 0);
+  assert.match(missingSecondWorker.stderr, /Expected 2 per-guide review worker\(s\), but recorded 1/);
 
   const wrongWorker = runVerifier([
     { ...workerStarted, data: { agentName: 'general-purpose' } },
-  ], readyManifest);
+  ], '1');
   assert.notEqual(wrongWorker.status, 0);
   assert.match(wrongWorker.stderr, /Unexpected subagent 'general-purpose'/);
 
-  const disallowedTool = runVerifier([workerStarted, workerTool('bash')], readyManifest);
+  const disallowedTool = runVerifier([workerStarted, workerTool('bash')], '1');
   assert.notEqual(disallowedTool.status, 0);
   assert.match(disallowedTool.stderr, /used disallowed tool 'bash'/);
 
@@ -140,7 +152,7 @@ try {
       type: 'tool.execution_start',
       data: { toolName: 'bash', parentToolCallId: 'worker-1' },
     },
-  ], readyManifest);
+  ], '1');
   assert.notEqual(unattributedWorkerTool.status, 0);
   assert.match(unattributedWorkerTool.stderr, /is missing an agent ID/);
 } finally {

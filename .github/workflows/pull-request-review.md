@@ -51,23 +51,44 @@ skills:
 
 network:
   allowed:
-    # gh-aw's baseline OS package and certificate-revocation endpoints.
-    - defaults
     # Repository SDK bootstrap and approved package feeds.
     - "*.vsblob.vsassets.io"
     - "builds.dotnet.microsoft.com"
     - "ci.dot.net"
     - "data.nuget.org"
-    - "oneocsp.microsoft.com"
     - "pkgs.dev.azure.com"
+    # OS package installation for browser dependencies.
+    - "archive.ubuntu.com"
+    - "azure.archive.ubuntu.com"
+    - "packages.microsoft.com"
+    - "security.ubuntu.com"
+    # Package signature and certificate revocation checks.
+    - "crl.geotrust.com"
+    - "crl.globalsign.com"
+    - "crl.identrust.com"
+    - "crl.sectigo.com"
+    - "crl.thawte.com"
+    - "crl.usertrust.com"
+    - "crl.verisign.com"
+    - "crl3.digicert.com"
+    - "crl4.digicert.com"
+    - "crls.ssl.com"
+    - "ocsp.digicert.com"
+    - "ocsp.geotrust.com"
+    - "ocsp.globalsign.com"
+    - "ocsp.identrust.com"
+    - "ocsp.sectigo.com"
+    - "ocsp.ssl.com"
+    - "ocsp.thawte.com"
+    - "ocsp.usertrust.com"
+    - "ocsp.verisign.com"
+    - "oneocsp.microsoft.com"
+    - "s.symcb.com"
+    - "s.symcd.com"
+    - "ts-crl.ws.symantec.com"
+    - "ts-ocsp.ws.symantec.com"
     - "www.microsoft.com"
-    # The checked-in Gradle wrapper redirects its distribution download through GitHub.
-    - "downloads.gradle-dn.com"
-    - "github.com"
-    - "release-assets.githubusercontent.com"
-    - "services.gradle.org"
-    # Playwright's Chromium-for-Testing downloads redirect here.
-    - "storage.googleapis.com"
+    # Microsoft-hosted Playwright browser and media downloads.
     - playwright
 
 tools:
@@ -89,18 +110,23 @@ env:
 post-steps:
   - name: Verify restricted review workers
     if: always()
+    env:
+      REVIEW_EXPECTED_WORKER_COUNT: ${{ steps.prepare_review_bundle.outputs.expected_worker_count }}
     run: |
       set -euo pipefail
       node - <<'NODE'
       const fs = require('fs');
 
       const sessionPath = process.env.REVIEW_WORKER_SESSION_PATH || '/tmp/gh-aw/agent-session.jsonl';
-      const manifestPath = process.env.REVIEW_BUNDLE_MANIFEST_PATH || '/tmp/gh-aw/review-bundle/manifest.json';
       const expectedAgentName = 'review-guide-worker';
       const allowedTools = new Set(['glob', 'grep', 'read_file', 'rg', 'search', 'skill', 'view']);
+      const expectedWorkerCountValue = process.env.REVIEW_EXPECTED_WORKER_COUNT;
 
       if (!fs.existsSync(sessionPath)) {
         throw new Error(`Copilot session transcript is missing: ${sessionPath}`);
+      }
+      if (!/^(0|[1-9][0-9]*)$/.test(expectedWorkerCountValue ?? '')) {
+        throw new Error(`Trusted worker count is invalid: ${expectedWorkerCountValue ?? '<missing>'}`);
       }
 
       const events = fs.readFileSync(sessionPath, 'utf8')
@@ -116,18 +142,7 @@ post-steps:
 
       const subagents = new Map();
       const violations = [];
-      let workersRequired = false;
-
-      if (fs.existsSync(manifestPath)) {
-        try {
-          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-          workersRequired = manifest.ready === true &&
-            Array.isArray(manifest.guides) &&
-            manifest.guides.length > 0;
-        } catch {
-          // A malformed bundle is reported through the coordinator's BLOCKED path.
-        }
-      }
+      const expectedWorkerCount = Number(expectedWorkerCountValue);
 
       for (const event of events) {
         if (event.type !== 'subagent.started') {
@@ -146,8 +161,9 @@ post-steps:
         }
       }
 
-      if (workersRequired && subagents.size === 0) {
-        violations.push('No per-guide review worker was recorded.');
+      if (subagents.size !== expectedWorkerCount) {
+        violations.push(
+          `Expected ${expectedWorkerCount} per-guide review worker(s), but recorded ${subagents.size}.`);
       }
 
       for (const event of events) {
@@ -434,6 +450,7 @@ pre-agent-steps:
     with:
       dotnet-version: 11.0.100-rc.1.26420.103
   - name: Prepare trusted frozen review bundle
+    id: prepare_review_bundle
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REVIEW_REPO: ${{ github.repository }}
@@ -457,6 +474,17 @@ pre-agent-steps:
         --base-tip "$REVIEW_BASE" --merge-base "$REVIEW_MERGE_BASE" --base-ref "$REVIEW_BASE_REF" \
         --guidance "$REVIEW_REPO@$GITHUB_WORKFLOW_SHA" --output /tmp/gh-aw/review-bundle
       test -s /tmp/gh-aw/review-bundle/manifest.json
+      expected_worker_count="$(node -e '
+        const manifest = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+        if (manifest.ready !== true) {
+          process.stdout.write("0");
+        } else if (!Array.isArray(manifest.guides) || manifest.guides.length === 0) {
+          throw new Error("Ready review manifest has no routed guides.");
+        } else {
+          process.stdout.write(String(manifest.guides.length));
+        }
+      ' /tmp/gh-aw/review-bundle/manifest.json)"
+      printf 'expected_worker_count=%s\n' "$expected_worker_count" >> "$GITHUB_OUTPUT"
       store=/tmp/gh-aw/review-bundle/.objects
       git --git-dir "$store" update-ref refs/review/head "$REVIEW_HEAD"
       git --git-dir "$store" update-ref refs/review/merge-base "$REVIEW_MERGE_BASE"
@@ -555,6 +583,16 @@ tests or repros in the validation worktree. Prefer the smallest faithful command
 observable boundary. Do not run a repository-wide build or test suite merely for
 reassurance. Temporary edits are diagnostic only: never commit, push, publish, or include
 them in a safe output. Do not modify `/tmp/gh-aw/review-bundle`.
+Use only package feeds configured by the repository and already-allowlisted Microsoft-hosted
+tool endpoints. If a target tool distribution is not already available and requires another
+host, record that validation path as unavailable instead of widening egress.
+For Playwright Chromium validation, set `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` and explicitly
+select an already-installed system Chrome or Chromium executable when one is available;
+the default Chrome-for-Testing download redirects to a host that is intentionally blocked.
+Prefer the repository's existing `Microsoft.Playwright` NuGet dependency, restored through
+its `NuGet.config`, when that is a faithful boundary. Do not inject package-feed credentials
+into the sandbox or widen egress. If JavaScript dependencies are not already available and
+the configured npm feed requires authentication, record that validation path as unavailable.
 
 A failing build or test is not automatically a finding. Establish its source cause or
 baseline behavior before acceptance. A passing test is evidence against a candidate, not

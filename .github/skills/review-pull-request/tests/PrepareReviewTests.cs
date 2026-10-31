@@ -1036,7 +1036,10 @@ public class PrepareReviewTests
             "Do not replace those rules with a second review policy in this adapter.",
             workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "Workers are contractually source-only and must not receive coordinator-only inputs, the validation worktree, or coordinator execution output.",
+            "Every guide worker must use the native `review-guide-worker` profile, whose explicit tool list exposes only reading, searching, and skill loading.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "Workers are source-only and must not receive coordinator-only inputs, the validation worktree, or coordinator execution output.",
             workflow, StringComparison.Ordinal);
         Assert.Contains("Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.", workflow, StringComparison.Ordinal);
         Assert.Contains(
