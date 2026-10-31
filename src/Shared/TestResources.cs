@@ -28,7 +28,7 @@ public static class TestResources
 
         try
         {
-            return new X509Certificate2(GetCertPath(certName), "testPassword");
+            return X509CertificateLoader.LoadPkcs12FromFile(GetCertPath(certName), "testPassword");
         }
         finally
         {
@@ -38,7 +38,7 @@ public static class TestResources
 
     public static X509Certificate2 GetTestCertificate(string certName, string password)
     {
-        return new X509Certificate2(GetCertPath(certName), password);
+        return X509CertificateLoader.LoadPkcs12FromFile(GetCertPath(certName), password);
     }
 
     public static X509Certificate2 GetTestCertificateWithKey(string certName, string keyName)
@@ -48,7 +48,7 @@ public static class TestResources
         {
             using (cert)
             {
-                return new X509Certificate2(cert.Export(X509ContentType.Pkcs12));
+                return X509CertificateLoader.LoadPkcs12(cert.Export(X509ContentType.Pkcs12), "");
             }
         }
         return cert;

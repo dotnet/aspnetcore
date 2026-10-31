@@ -158,7 +158,7 @@ internal sealed class TlsConfigurationLoader
         {
             try
             {
-                var certificate = new X509Certificate2(certificatePath, certificateConfig.Password);
+                var certificate = X509CertificateLoader.LoadPkcs12FromFile(certificatePath, certificateConfig.Password);
 
                 if (IsDevelopmentCertificate(certificate))
                 {

@@ -402,7 +402,7 @@ public class Program
                         X509Certificate2 cert = certReq.CreateSelfSigned(DateTimeOffset.UtcNow.AddMonths(-1), DateTimeOffset.UtcNow.AddMonths(1));
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
-                            cert = new X509Certificate2(cert.Export(X509ContentType.Pfx));
+                            cert = X509CertificateLoader.LoadPkcs12(cert.Export(X509ContentType.Pfx), "");
                         }
                         listenOptions.UseHttps(cert);
                     }
