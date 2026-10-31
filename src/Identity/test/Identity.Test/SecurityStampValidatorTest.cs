@@ -417,4 +417,65 @@ public class SecurityStampTest
     [Fact]
     public Task TwoFactorRememberClientOnValidatePrincipalRejectsWhenValidateSecurityStampFails()
         => RunRememberClientCookieTest(shouldStampValidate: false, validationSuccess: false);
+
+    [Fact]
+    public void SecurityStampValidatorLoggersUseTypeCategory()
+    {
+        var userManager = MockHelpers.MockUserManager<PocoUser>();
+        var identityOptions = new Mock<IOptions<IdentityOptions>>();
+        identityOptions.Setup(a => a.Value).Returns(new IdentityOptions());
+        var signInManager = new Mock<SignInManager<PocoUser>>(userManager.Object,
+            new Mock<IHttpContextAccessor>().Object, new Mock<IUserClaimsPrincipalFactory<PocoUser>>().Object, identityOptions.Object, null, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
+        var options = Options.Create(new SecurityStampValidatorOptions());
+
+        var loggerFactory1 = new CategoryRecordingLoggerFactory();
+        var loggerFactory2 = new CategoryRecordingLoggerFactory();
+
+        var validator1 = new SecurityStampValidator<PocoUser>(options, signInManager.Object, loggerFactory1);
+        var validator2 = new SecurityStampValidator<PocoUser>(options, signInManager.Object, loggerFactory1);
+        var validator3 = new SecurityStampValidator<PocoUser>(options, signInManager.Object, loggerFactory2);
+        var twoFactorValidator = new TwoFactorSecurityStampValidator<PocoUser>(options, signInManager.Object, loggerFactory2);
+
+        Assert.Same(validator1.Logger, validator2.Logger);
+        Assert.Equal("Microsoft.AspNetCore.Identity.SecurityStampValidator", ((CategoryLogger)validator1.Logger).Category);
+        Assert.NotSame(validator1.Logger, validator3.Logger);
+        Assert.Equal("Microsoft.AspNetCore.Identity.SecurityStampValidator", ((CategoryLogger)validator3.Logger).Category);
+        Assert.Equal("Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator", ((CategoryLogger)twoFactorValidator.Logger).Category);
+        Assert.Throws<ArgumentNullException>("factory", () => new SecurityStampValidator<PocoUser>(options, signInManager.Object, null));
+    }
+
+    private sealed class CategoryRecordingLoggerFactory : ILoggerFactory
+    {
+        private readonly Dictionary<string, CategoryLogger> _loggers = new();
+
+        public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
+
+        public ILogger CreateLogger(string categoryName)
+        {
+            if (!_loggers.TryGetValue(categoryName, out var logger))
+            {
+                logger = new CategoryLogger(categoryName);
+                _loggers.Add(categoryName, logger);
+            }
+
+            return logger;
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class CategoryLogger(string category) : ILogger
+    {
+        public string Category { get; } = category;
+
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => false;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+        }
+    }
 }
