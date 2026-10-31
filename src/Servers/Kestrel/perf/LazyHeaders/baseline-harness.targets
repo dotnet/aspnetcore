@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks'">
+    <DefineConstants>$(DefineConstants);LAZY_HEADERS_BASELINE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks'">
+    <Compile Include="$(LazyHeadersHarnessRoot)/src/Servers/Kestrel/perf/Microbenchmarks/LazyRequestHeadersBenchmark.cs" />
+  </ItemGroup>
+</Project>

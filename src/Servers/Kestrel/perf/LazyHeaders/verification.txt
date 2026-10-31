@@ -1,0 +1,184 @@
+=== headers-tests-final.log ===
+Total tests: 939
+     Passed: 939
+
+=== functional-tests-final.log ===
+  Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesBodyReadsAndKeepAliveReuse [303 ms]
+Total tests: 1
+     Passed: 1
+
+=== allocation-eager-control.log ===
+[xUnit.net 00:00:02.16]     Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 1) [FAIL]
+[xUnit.net 00:00:02.17]         /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs(160,0): at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol)
+[xUnit.net 00:00:02.18]     Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 2) [FAIL]
+[xUnit.net 00:00:02.18]         /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs(160,0): at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol)
+[xUnit.net 00:00:02.18]            at InvokeStub_HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Object, Span`1)
+[xUnit.net 00:00:02.18]     Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 3) [FAIL]
+[xUnit.net 00:00:02.18]         /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs(160,0): at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol)
+[xUnit.net 00:00:02.18]            at InvokeStub_HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Object, Span`1)
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 1) [14 ms]
+Expected: 0
+Actual:   3200
+     at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol) in /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs:line 160
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 2) [1 ms]
+Expected: 0
+Actual:   3200
+     at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol) in /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs:line 160
+   at InvokeStub_HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Object, Span`1)
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(protocol: 3) [1 ms]
+Expected: 0
+Actual:   3200
+     at Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Int32 protocol) in /root/copilot-worktrees/aspnetcore-lazy-headers/src/Servers/Kestrel/Core/test/HttpRequestHeadersLazyTests.cs:line 160
+   at InvokeStub_HttpRequestHeadersLazyTests.IgnoredChangingValuesAllocateNoStringsAfterWarmup(Object, Span`1)
+Total tests: 3
+     Failed: 3
+
+=== base-tests.log ===
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithStaticPort_TransportsGetIPv6Any [569 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithEphemeralPort_TransportsGetIPv6Any [48 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.DoesNotReloadOnConfigurationChangeByDefault [99 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ReloadsOnConfigurationChangeWhenOptedIn [46 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithEphemeralPort_MultiplexedTransportsGetIPv6Any [36 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "*") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "contoso.com") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: ".localhost") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "+") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "randomhost") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://+:80") [1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://contoso.com:80") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://*:80") [< 1 ms]
+Failed!  - Failed:    13, Passed:  9900, Skipped:     1, Total:  9914, Duration: 9 s - Microsoft.AspNetCore.Server.Kestrel.Core.Tests.dll (net12.0)
+
+=== core-tests-final.log ===
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "*") [6 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "contoso.com") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: ".localhost") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "+") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.ParseAddressDefaultsToAnyIPOnInvalidIPAddress(host: "randomhost") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://+:80") [3 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://contoso.com:80") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.AddressBinderTests.FallbackToIPv4WhenIPv6AnyBindFails(address: "http://*:80") [< 1 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithStaticPort_TransportsGetIPv6Any [71 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithEphemeralPort_TransportsGetIPv6Any [24 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.DoesNotReloadOnConfigurationChangeByDefault [64 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ReloadsOnConfigurationChangeWhenOptedIn [14 ms]
+  Failed Microsoft.AspNetCore.Server.Kestrel.Core.Tests.KestrelServerTests.ListenIPWithEphemeralPort_MultiplexedTransportsGetIPv6Any [10 ms]
+Failed!  - Failed:    13, Passed:  9928, Skipped:     1, Total:  9942, Duration: 9 s - Microsoft.AspNetCore.Server.Kestrel.Core.Tests.dll (net12.0)
+
+Baseline and head full-Core failing-case identities are identical (13 IPv6 expectations).
+
+=== additional opt-in protocol decoder checks ===
+  Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesQPackDecodingAndStreamReuse [242 ms]
+  Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesHttp2BodyReads [294 ms]
+  Passed Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.LazyRequestHeadersTests.LazyUserAgentSurvivesBodyReadsAndKeepAliveReuse [205 ms]
+Total tests: 3
+     Passed: 3
+
+=== broader existing protocol functional regression selection ===
+Source: b597192b98a516602dd80ddbef7de34a0c6df2c3
+Command after source activate.sh:
+dotnet test src/Servers/Kestrel/test/InMemory.FunctionalTests/InMemory.FunctionalTests.csproj --no-restore --no-build -c Release --filter 'FullyQualifiedName~Http2|FullyQualifiedName~Http3|FullyQualifiedName~LazyRequestHeadersTests' --logger 'console;verbosity=normal'
+Test Run Successful.
+Total tests: 780
+     Passed: 775
+    Skipped: 5
+No failures. Includes all three isolated opt-in cases; the existing tests run the default-off path. Not a performance result.
+Skipped cases:
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2.TlsTests.TlsHandshakeRejectsTlsLessThan12
+Reason: TLS 1.1 ciphers are now disabled by default: https://github.com/dotnet/docs/issues/20842
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http1AndHttp2DowngradeToHttp1ForHttpsOnIncompatibleWindowsVersions
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http2DoesNotThrowOnCompatibleWindowsVersions
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http2ThrowsOnIncompatibleWindowsVersions
+Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.HttpsConnectionMiddlewareTests.Http1AndHttp2DoesNotDowngradeOnCompatibleWindowsVersions
+Reasons for the four HTTPS middleware cases: downgrade/error logic only applies on Windows.
+
+=== HTTP/1.1-only scope revision (supersedes multi-protocol allocation claims above) ===
+The experimental parser callback enables lazy ingestion only for HTTP/1.1.
+HPACK and QPACK indexed ingestion no longer call the lazy helper.
+Named-header Append defaults to eager, preserving HTTP/2/HTTP/3 literal-name ingestion.
+Shared storage/accessors remain; no zero-overhead claim is made for other protocols.
+All following checks used Release builds after source activate.sh:
+
+dotnet test src/Servers/Kestrel/Core/test/Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj --no-restore -c Release --filter 'FullyQualifiedName~HttpRequestHeaders'
+Passed: 940, Failed: 0, Skipped: 0.
+IgnoredChangingValuesAreLazyOnlyForHttp1:
+100 changing five-byte values after warmup, lazy switch enabled:
+HTTP/1 explicitly allowed: 0 bytes.
+HPACK index 58: 3200 bytes.
+QPACK index 95: 3200 bytes.
+Default named-header ingestion (HTTP/2/HTTP/3 literal path): 3200 bytes.
+
+dotnet test src/Servers/Kestrel/Core/test/Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj --no-restore --no-build -c Release --filter 'FullyQualifiedName~Http1ConnectionTests'
+Passed: 3415, Failed: 0, Skipped: 0.
+
+dotnet test src/Servers/Kestrel/test/InMemory.FunctionalTests/InMemory.FunctionalTests.csproj --no-restore -c Release --filter 'FullyQualifiedName~Http2|FullyQualifiedName~Http3|FullyQualifiedName~LazyRequestHeadersTests' --logger 'console;verbosity=normal'
+Passed: 775, Failed: 0, Skipped: 5 (same skip reasons listed above).
+Includes hosted opt-in HTTP/1.1 body/keep-alive test and eager HTTP/2/HTTP/3 compatibility tests with the process switch enabled.
+
+Current Microbenchmarks project builds on head and unchanged baseline with 0 warnings/errors.
+Baseline import defines LAZY_HEADERS_BASELINE only to omit the new HTTP/1 named-append opt-in argument against the baseline API.
+Historical JSON/CSV/raw measurements and DLL hashes above remain from the earlier multi-protocol prototype.
+They were not rerun or relabeled as measurements of this revision.
+No Crank jobs ran. HTTP/1.1 end-to-end baseline/off/on comparisons remain outstanding.
+
+=== new narrowed HTTP/1 diagnostic run ===
+Source and fixture: dff3b6a81dd5be2e7e76e706919293e76ef4d1df
+Shipping code: 651a4e198ff654bcb19d3a81af23055f9503c97b
+Shipping baseline: 2d105dd1fd119edff9a797a1b1aeca6d771c6134 (unchanged)
+Fixture SHA256: e8279f1ede552663f0ac97ad703e5087f644d81234d73d686d6a0bfb9baee1e9
+Both runs completed 16 of 16 benchmarks; all statistics have at least 6 retained values.
+Full JSON and exact compressed raw output: http1-only/{head,base}.full.json and http1-only/{head,base}.raw.txt.gz
+Derived 32-row CSV: http1-only/measurements.csv
+Head then baseline, shared container, not interleaved or isolated.
+Same Release in-process debug configuration and run arguments documented in README.
+Changing ignored HTTP/1 values: baseline/off/on allocations 88/88/0 bytes per operation.
+Baseline/off/on means: 45.59/47.68/25.45 ns.
+Stable read: 0 bytes for each; 15.61/18.92/25.81 ns.
+Narrow allocation mechanism only, not an overall win or Crank/end-to-end evidence.
+
+=== republished HTTP/1.1-only workload socket checks ===
+Shipping source: 651a4e198ff654bcb19d3a81af23055f9503c97b
+Release publication after scope revision; host/dependencies identical for both variants.
+Baseline variant replaces only Core DLL from 2d105dd1fd119edff9a797a1b1aeca6d771c6134.
+24 head checks (off/on x ignore/read/enumerate x four requests), 12 baseline checks.
+Asserted actual HTTP/1.1, response 200, exact Hello World body, exact observed header lengths,
+and same persistent socket for changed, absent and duplicate values.
+Verified actual loaded local Core DLL path through each process's memory mappings.
+Head Core SHA256: 12673a338e7c884ddf126ca292e5e61be70df750c6ae23d44cc85751aeba9d31
+Base Core SHA256: 7175498ad5d77f11fa7672fe89bf4a51ad7a8b8410ed1cbc4c85906ee1fe27f5
+Structured results and method: http1-only/workload-smoke.json
+Not Crank, throughput, counter collection or agent upload/layout evidence.
+
+=== genuine local Crank HTTP/1.1 primary comparison ===
+Completed 60/60 primary runs: stable/changing x ignore/read x base/off/on x 5 repetitions.
+Original net12 server runtime and same Release host/dependencies/GC; only Core DLL replaced.
+Each run verifies actually uploaded/loaded Core SHA256 and runtime libcoreclr path/SHA256.
+Positive requests/RPS/latency percentiles, application and load raw measurements in every run.
+Total measured requests: 70130567. Bad responses: 0. Socket errors: 0.
+189806 timestamped measurements retained across application/load result sets.
+Fixed 16 connections,2wrk threads,10s timeout,15s warmup,30s measurement,keepalive,pipeline1.
+Variant order rotates and case order reverses per repetition; no outlier/best-run removal.
+First53 successful runs retained; interrupted attempt54 retained and54-60 resumed after session interruption.
+Primary raw archive contains exact logs/results/resolved configs/loaded identities and reproduction/analysis scripts.
+crank-local/primary-derived-runs.csv has all60rows and explicit sample counts/missing values.
+Each trimmed server allocation window contains24samples; all startup/warmup maxima excluded.
+Window is27to3seconds before first wrapper RPS result event, an approximate measurement interior.
+No allocation-rate/total-request division or bytes/request claim.
+Median changing-ignore base/off/on RPS39214/38275/39059; allocation14.89/14.59/10.35decimalMB/s.
+No trustworthy overall throughput gain established; read/default-off diagnostic costs remain.
+Shared two-core server/client/agent; loadCPU ~48-52core%,serverCPU ~110-114core%; no isolated ceiling claim.
+Tool/source/runtime/payload hashes and original serverGC config retained in crank-local/identities.json and payload-environment.json.
+Earlier pilot/setup/timeout failures retained in crank-local/pilots-and-initial-timeouts.tar.gz, not selected as outcome results.
+
+=== supplemental end-to-end cases ===
+9/9 predetermined cases completed: enumerate/changing,ignore/duplicate,read/duplicate x base/off/on.
+One repetition each, same16connections/2threads/10stimeout/15swarmup/30smeasurement.
+All have positive load requests/RPS/percentiles, application/load measurements and loaded identities.
+10400644 measured requests,0bad responses; baseline enumerate/changing has15timeouts.
+All other supplemental socket-error counts0.
+Runner stopped on that baseline error, then continued remaining planned cases in record-errors mode without replacement or rerun.
+Supplemental set is not error-free; not pooled with the60primaryruns, not used to claim a performance win.
+Exact raw results/logs/configs/identities: crank-local/supplemental-raw.tar.gz
+Per-run values: crank-local/supplemental-derived-runs.csv
+Archive/data SHA256: crank-local/artifact-sha256.txt
+Verified empty agent job queue and stopped owned agent after all runs.

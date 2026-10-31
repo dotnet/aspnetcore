@@ -1,0 +1,362 @@
+[
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 2,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 2,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 2,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 2,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 2,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 2,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 2,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 2,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 2,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 2,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 2,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 2,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 3,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 3,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 3,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 3,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 3,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 3,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 3,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 3,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 3,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 3,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 3,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 3,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 4,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 4,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 4,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 4,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 4,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 4,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 4,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 4,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 4,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 4,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 4,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 4,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 5,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 5,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 5,
+    "access": "ignore",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 5,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 5,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 5,
+    "access": "ignore",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 5,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "off"
+  },
+  {
+    "repetition": 5,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "on"
+  },
+  {
+    "repetition": 5,
+    "access": "read-all",
+    "mode": "stable",
+    "variant": "base"
+  },
+  {
+    "repetition": 5,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 5,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 5,
+    "access": "read-all",
+    "mode": "changing",
+    "variant": "base"
+  }
+]

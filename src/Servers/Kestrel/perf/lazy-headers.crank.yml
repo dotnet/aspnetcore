@@ -1,0 +1,40 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/0d35cad5102892b091d9a88a52ea1f7a91bb1381/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+
+variables:
+  access: ignore
+  lazy: false
+  headerMode: stable
+  # Override with an immutable commit URL when recording measurements.
+  headerScript: https://raw.githubusercontent.com/dotnet/aspnetcore/perfboss/lazy-user-agent-poc/src/Servers/Kestrel/perf/lazy-headers.wrk.lua
+
+jobs:
+  wrk:
+    source:
+      branchOrCommit: 0d35cad5102892b091d9a88a52ea1f7a91bb1381
+  lazy-headers:
+    source:
+      # Publish the application in Release before invoking the controller.
+      localFolder: ../../../../artifacts/bin/LazyHeadersApp/Release/net12.0/publish
+      noBuild: true
+    executable: LazyHeadersApp
+    arguments: "--urls http://0.0.0.0:5000 --access {{access}} --lazy {{lazy}}"
+    readyStateText: "Application started."
+    options:
+      counterProviders:
+        - System.Runtime
+
+scenarios:
+  lazy-headers:
+    application:
+      job: lazy-headers
+    load:
+      job: wrk
+      variables:
+        serverPort: 5000
+        connections: 256
+        threads: 16
+        warmup: 15
+        duration: 30
+        script: "{{headerScript}}"
+        scriptArguments: "{{headerMode}}"

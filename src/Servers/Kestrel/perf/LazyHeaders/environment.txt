@@ -1,0 +1,91 @@
+.NET SDK:
+ Version:           11.0.100-rc.1.26420.103
+ Commit:            1d599674e3
+ Workload version:  11.0.100-manifests.d9992e59
+ MSBuild version:   18.11.0-1.26420.103+1d599674e
+
+Runtime Environment:
+ OS Name:     ubuntu
+ OS Version:  24.04
+ OS Platform: Linux
+ RID:         linux-x64
+ Base Path:   /root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet/sdk/11.0.100-rc.1.26420.103
+
+.NET workloads installed:
+There are no installed workloads to display.
+Configured to use workload sets when installing new manifests.
+No workload sets are installed. Run "dotnet workload restore" to install a workload set.
+
+Host:
+  Version:      12.0.0-alpha.1.26473.114
+  Architecture: x64
+  Commit:       c567e8ff13
+
+.NET SDKs installed:
+  11.0.100-rc.1.26420.103 [/root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet/sdk]
+  11.0.100-rc.1.26420.103 [/root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet/sdk]
+
+.NET runtimes installed:
+  Microsoft.AspNetCore.App 11.0.0-rc.1.26420.103 [/root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet/shared/Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 11.0.0-rc.1.26420.103 [/root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet/shared/Microsoft.NETCore.App]
+  Microsoft.NETCore.App 12.0.0-alpha.1.26473.114 [/root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet/shared/Microsoft.NETCore.App]
+
+Other architectures found:
+  None
+
+Environment variables:
+  DOTNET_ROOT                              [/root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet]
+  DOTNET_RUNNING_IN_CONTAINER              [true]
+  DOTNET_SYSTEM_NET_DISABLEIPV6            [1]
+  DOTNET_USE_POLLING_FILE_WATCHER          [true]
+
+global.json file:
+  /root/copilot-worktrees/aspnetcore-lazy-headers/global.json
+
+Learn more:
+  https://aka.ms/dotnet/info
+
+Download .NET:
+  https://aka.ms/dotnet/download
+
+Architecture:                         x86_64
+CPU op-mode(s):                       32-bit, 64-bit
+Address sizes:                        46 bits physical, 48 bits virtual
+Byte Order:                           Little Endian
+CPU(s):                               2
+On-line CPU(s) list:                  0,1
+Vendor ID:                            AuthenticAMD
+Model name:                           AMD EPYC 9V74 80-Core Processor
+BIOS Model name:                        CPU @ 0.0GHz
+BIOS CPU family:                      0
+CPU family:                           25
+Model:                                17
+Thread(s) per core:                   1
+Core(s) per socket:                   2
+Socket(s):                            1
+Stepping:                             1
+BogoMIPS:                             5192.26
+Flags:                                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid extd_apicid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx512_bf16 clzero xsaveerptr arat npt nrip_save tsc_scale vmcb_clean pausefilter pfthreshold v_vmsave_vmload avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm arch_capabilities
+Virtualization:                       AMD-V
+Hypervisor vendor:                    KVM
+Virtualization type:                  full
+L1d cache:                            32 KiB (1 instance)
+L1i cache:                            32 KiB (1 instance)
+L2 cache:                             1 MiB (1 instance)
+L3 cache:                             32 MiB (1 instance)
+NUMA node(s):                         1
+NUMA node0 CPU(s):                    0,1
+Vulnerability Gather data sampling:   Not affected
+Vulnerability Itlb multihit:          Not affected
+Vulnerability L1tf:                   Not affected
+Vulnerability Mds:                    Not affected
+Vulnerability Meltdown:               Not affected
+Vulnerability Mmio stale data:        Not affected
+Vulnerability Reg file data sampling: Not affected
+Vulnerability Retbleed:               Not affected
+Vulnerability Spec rstack overflow:   Vulnerable: Safe RET, no microcode
+Vulnerability Spec store bypass:      Vulnerable
+Vulnerability Spectre v1:             Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:             Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
+Vulnerability Srbds:                  Not affected
+Vulnerability Tsx async abort:        Not affected

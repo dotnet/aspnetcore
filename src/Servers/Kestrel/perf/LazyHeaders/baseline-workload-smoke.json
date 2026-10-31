@@ -1,0 +1,119 @@
+[
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "ignore",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "ignore",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "ignore",
+    "values": [],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "ignore",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "read",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 5
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "read",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 7
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "read",
+    "values": [],
+    "status": 200,
+    "observedLength": 0
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "read",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 12
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "enumerate",
+    "values": [
+      "first"
+    ],
+    "status": 200,
+    "observedLength": 20
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "enumerate",
+    "values": [
+      "changed"
+    ],
+    "status": 200,
+    "observedLength": 22
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "enumerate",
+    "values": [],
+    "status": 200,
+    "observedLength": 15
+  },
+  {
+    "source": "base",
+    "lazy": false,
+    "access": "enumerate",
+    "values": [
+      "first",
+      "second"
+    ],
+    "status": 200,
+    "observedLength": 26
+  }
+]

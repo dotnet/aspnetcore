@@ -1,0 +1,32 @@
+{
+  "startedUtc": "2026-10-22T04:03:50.201218+00:00",
+  "source": "96def7878b6e2ff7fb5f1afd73e54b4be35c103d",
+  "headPayload": "/root/.copilot/session-state/9e4e8454a8a64a58b1c512b207828d8e/files/generalized-final-head",
+  "basePayload": "/root/.copilot/session-state/9e4e8454a8a64a58b1c512b207828d8e/files/generalized-final-base",
+  "coreSha256": {
+    "base": "7175498ad5d77f11fa7672fe89bf4a51ad7a8b8410ed1cbc4c85906ee1fe27f5",
+    "head": "f486ecd632bb37ec9f4b7aa820493a2872e390d45054674acc4cfb3ca466496e"
+  },
+  "controllerSha256": "d920e893fc7f295d36509166b8fe41e0212b4380eb6b1a1ebef639e91735ad88",
+  "configSha256": "6f42c21e808dd2d76f595fab4bbdbcb364fa5a4e238050b5e587661842a29560",
+  "profileSha256": "b7a81bb1731acbcaeaeb746519cc9191726f3d6a92159f420ac3d0d1f04177f9",
+  "scriptSha256": "61dd9207c4a9258aab479ae1e0887a35dcfec0e1e92fd5d6de8fbeeeefe36c97",
+  "runnerSha256": "0502e2449fcfa7e0663960a28b1be1725486344da71c372008e1681b2eb5e368",
+  "wrapperManifest": {
+    "Microsoft.Crank.EventSources.dll": "1fb3ff4b68997080e5d78d5c7d8668e7391227e8b0fbfe774aad41417067b8ec",
+    "Microsoft.Crank.Jobs.Wrk": "a9c01114a36065e987acb811466ef136cba91d9ac90ce3b974d2f4c7993cb1d8",
+    "Microsoft.Crank.Jobs.Wrk.deps.json": "f2d9cad54315b5ad0a07e33272aeaee708d210bcc1fe93f9bfbe1301c095aec0",
+    "Microsoft.Crank.Jobs.Wrk.dll": "40b8f503a8c10b826bfa73b2d6272d32a59d3ecd84b7157b73d34524a12e6df7",
+    "Microsoft.Crank.Jobs.Wrk.runtimeconfig.json": "9950d4583cfc9a106857c0d5b8a75b53e8774852b57b80bc3823a74d44a4d87f",
+    "scripts/pipeline.lua": "d201005485774a3b176da3f3eed7865473d3dfc31d52df0e3d739a9e678c5f8c"
+  },
+  "wrkSha256": "d689dd6384794d71132d6f33b7377a6da6e9e73455d1c66d02d1583d0b73d446",
+  "warmupSeconds": 15,
+  "measurementSeconds": 30,
+  "connections": 16,
+  "threads": 2,
+  "timeoutSeconds": 10,
+  "sharedLoopback": true,
+  "serverRuntimeRoot": "/root/copilot-worktrees/aspnetcore-lazy-headers/.dotnet",
+  "recordErrors": true
+}

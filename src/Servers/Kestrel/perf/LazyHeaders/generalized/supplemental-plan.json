@@ -1,0 +1,146 @@
+[
+  {
+    "repetition": 1,
+    "access": "read-one",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "read-one",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "read-one",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "enumerate",
+    "mode": "changing",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "enumerate",
+    "mode": "changing",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "enumerate",
+    "mode": "changing",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "duplicate-known",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "duplicate-known",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "duplicate-known",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "duplicate-known",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "duplicate-known",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "duplicate-known",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "duplicate-unknown",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "duplicate-unknown",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "duplicate-unknown",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "duplicate-unknown",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "duplicate-unknown",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "duplicate-unknown",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "budget",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "budget",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "ignore",
+    "mode": "budget",
+    "variant": "on"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "budget",
+    "variant": "base"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "budget",
+    "variant": "off"
+  },
+  {
+    "repetition": 1,
+    "access": "read-all",
+    "mode": "budget",
+    "variant": "on"
+  }
+]

@@ -1,0 +1,398 @@
+{
+  "shippingSource": "651a4e198ff654bcb19d3a81af23055f9503c97b",
+  "baseSource": "2d105dd1fd119edff9a797a1b1aeca6d771c6134",
+  "coreDllSha256": {
+    "head": "12673a338e7c884ddf126ca292e5e61be70df750c6ae23d44cc85751aeba9d31",
+    "base": "7175498ad5d77f11fa7672fe89bf4a51ad7a8b8410ed1cbc4c85906ee1fe27f5"
+  },
+  "method": "Identical Release-published host/dependencies, only Core DLL replaced for baseline. Actual loaded local Core verified in process mappings. Four HTTP/1.1 requests per persistent connection: changed, absent and duplicate values; response body and exact observed lengths asserted. Correctness only, not Crank or load evidence.",
+  "checks": [
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "ignore",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "ignore",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "ignore",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "ignore",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "read",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 5
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "read",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 7
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "read",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "read",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 12
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "enumerate",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 19
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "enumerate",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 21
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "enumerate",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 14
+    },
+    {
+      "variant": "head",
+      "lazy": "false",
+      "access": "enumerate",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 25
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "ignore",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "ignore",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "ignore",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "ignore",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "read",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 5
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "read",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 7
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "read",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "read",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 12
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "enumerate",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 19
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "enumerate",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 21
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "enumerate",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 14
+    },
+    {
+      "variant": "head",
+      "lazy": "true",
+      "access": "enumerate",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 25
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "ignore",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "ignore",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "ignore",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "ignore",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "read",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 5
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "read",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 7
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "read",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 0
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "read",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 12
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "enumerate",
+      "values": [
+        "first"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 19
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "enumerate",
+      "values": [
+        "changed"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 21
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "enumerate",
+      "values": [],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 14
+    },
+    {
+      "variant": "base",
+      "lazy": "false",
+      "access": "enumerate",
+      "values": [
+        "first",
+        "second"
+      ],
+      "status": 200,
+      "httpVersion": "1.1",
+      "observedLength": 25
+    }
+  ]
+}
