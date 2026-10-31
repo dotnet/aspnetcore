@@ -180,7 +180,7 @@ internal sealed class HostingApplicationDiagnostics
         if (startTimestamp != 0)
         {
             currentTimestamp = Stopwatch.GetTimestamp();
-            var reachedPipelineEnd = httpContext.Items.ContainsKey(RequestUnhandledKey);
+            var reachedPipelineEnd = TryGetItem(httpContext, RequestUnhandledKey, out _);
 
             // Non-inline
             LogRequestFinished(context, startTimestamp, currentTimestamp);
@@ -189,7 +189,7 @@ internal sealed class HostingApplicationDiagnostics
             {
                 Debug.Assert(context.MetricsTagsFeature != null, "MetricsTagsFeature should be set if MetricsEnabled is true.");
 
-                var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+                var endpoint = GetOriginalEndpoint(httpContext);
                 var disableHttpRequestDurationMetric = endpoint?.Metadata.GetMetadata<IDisableHttpMetricsMetadata>() != null || context.MetricsTagsFeature.MetricsDisabled;
                 var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
 
@@ -269,6 +269,35 @@ internal sealed class HostingApplicationDiagnostics
 
         // Logging Scope is finished with
         context.Scope?.Dispose();
+    }
+
+    private static Endpoint? GetOriginalEndpoint(HttpContext httpContext)
+    {
+        // Same as HttpExtensions.GetOriginalEndpoint, but avoids allocating HttpContext.Items.
+        var endpoint = httpContext.GetEndpoint();
+        if (endpoint == null && TryGetItem(httpContext, HttpExtensions.OriginalEndpointKey, out var e) && e is Endpoint originalEndpoint)
+        {
+            endpoint = originalEndpoint;
+        }
+        return endpoint;
+    }
+
+    private static bool TryGetItem(HttpContext httpContext, object key, out object? value)
+    {
+        if (httpContext.GetType() == typeof(DefaultHttpContext))
+        {
+            // DefaultHttpContext.Items is backed by IItemsFeature and creates it on first access.
+            // Read the feature directly so a request that never used Items doesn't allocate it here.
+            if (httpContext.Features.Get<IItemsFeature>() is not { } itemsFeature)
+            {
+                value = null;
+                return false;
+            }
+
+            return itemsFeature.Items.TryGetValue(key, out value);
+        }
+
+        return httpContext.Items.TryGetValue(key, out value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -562,7 +591,7 @@ internal sealed class HostingApplicationDiagnostics
             activity.SetTag(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
         }
 
-        var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+        var endpoint = GetOriginalEndpoint(httpContext);
         var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
         if (route is not null)
         {

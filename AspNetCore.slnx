@@ -320,6 +320,7 @@
     <Project Path="src/Hosting/Abstractions/src/Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
   </Folder>
   <Folder Name="/src/Hosting/Hosting/">
+    <Project Path="src/Hosting/Hosting/perf/Microbenchmarks/Microsoft.AspNetCore.Hosting.Microbenchmarks.csproj" />
     <Project Path="src/Hosting/Hosting/src/Microsoft.AspNetCore.Hosting.csproj" />
     <Project Path="src/Hosting/Hosting/test/Microsoft.AspNetCore.Hosting.Tests.csproj" />
   </Folder>
