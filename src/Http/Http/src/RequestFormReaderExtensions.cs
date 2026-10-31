@@ -26,7 +26,7 @@ public static class RequestFormReaderExtensions
 
         if (!request.HasFormContentType)
         {
-            throw new InvalidOperationException("Incorrect Content-Type: " + request.ContentType);
+            FormFeature.ThrowInvalidContentType(request.ContentType);
         }
 
         var features = request.HttpContext.Features;

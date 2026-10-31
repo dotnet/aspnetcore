@@ -145,7 +145,7 @@ public class FormFeature : IFormFeature
 
         if (!HasFormContentType)
         {
-            throw new InvalidOperationException("This request does not have a Content-Type header. Forms are available from requests with bodies like POSTs and a form Content-Type of either application/x-www-form-urlencoded or multipart/form-data.");
+            ThrowInvalidContentType(_request?.ContentType);
         }
 
         // c.f., https://aka.ms/aspnet/forms-async
@@ -186,7 +186,7 @@ public class FormFeature : IFormFeature
 
         if (!HasFormContentType)
         {
-            throw new InvalidOperationException("Incorrect Content-Type: " + _request.ContentType);
+            ThrowInvalidContentType(_request?.ContentType);
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -353,6 +353,12 @@ public class FormFeature : IFormFeature
         // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
         return contentType != null && contentType.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase);
     }
+
+    [DoesNotReturn]
+    internal static void ThrowInvalidContentType(string? contentType) =>
+        throw new InvalidOperationException(string.IsNullOrEmpty(contentType)
+            ? "This request does not have a Content-Type header. Forms are available from requests with bodies like POSTs and a form Content-Type of either application/x-www-form-urlencoded or multipart/form-data."
+            : $"Incorrect Content-Type: {contentType}. Forms are available from requests with bodies like POSTs and a form Content-Type of either application/x-www-form-urlencoded or multipart/form-data.");
 
     private bool ResolveHasInvalidAntiforgeryValidationFeature()
     {

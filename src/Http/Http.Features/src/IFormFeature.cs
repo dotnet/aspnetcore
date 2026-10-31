@@ -32,6 +32,16 @@ public interface IFormFeature
     /// </para>
     /// </summary>
     /// <returns>The <see cref="IFormCollection"/>.</returns>
+    /// <exception cref="System.InvalidOperationException">
+    ///     The request does not have a form Content-Type (<c>application/x-www-form-urlencoded</c>
+    ///     or <c>multipart/form-data</c>). Check <see cref="HasFormContentType"/> before reading.
+    /// </exception>
+    /// <exception cref="System.IO.InvalidDataException">
+    ///     The request body is malformed, or one of the configured form limits was exceeded.
+    /// </exception>
+    /// <exception cref="System.IO.IOException">
+    ///     An error occurred while reading the request body.
+    /// </exception>
     IFormCollection ReadForm();
 
     /// <summary>
@@ -39,5 +49,18 @@ public interface IFormFeature
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    /// <exception cref="System.InvalidOperationException">
+    ///     The request does not have a form Content-Type (<c>application/x-www-form-urlencoded</c>
+    ///     or <c>multipart/form-data</c>). Check <see cref="HasFormContentType"/> before reading.
+    /// </exception>
+    /// <exception cref="System.IO.InvalidDataException">
+    ///     The request body is malformed, or one of the configured form limits was exceeded.
+    /// </exception>
+    /// <exception cref="System.IO.IOException">
+    ///     An error occurred while reading the request body.
+    /// </exception>
+    /// <exception cref="System.OperationCanceledException">
+    ///     <paramref name="cancellationToken"/> was cancelled.
+    /// </exception>
     Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken);
 }
