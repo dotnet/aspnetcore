@@ -113,7 +113,7 @@ public class OpenApiOperationGeneratorTests
     public void AddsMultipleRequestFormatsFromMetadataWithRequestTypeAndOptionalBodyParameter()
     {
         var operation = GetOpenApiOperation(
-            [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = true)] () => { });
+            [Consumes<InferredJsonClass>("application/custom0", "application/custom1", IsOptional = true)] () => { });
         var request = operation.RequestBody;
         Assert.NotNull(request);
         Assert.Equal(2, request.Content.Count);
@@ -131,7 +131,7 @@ public class OpenApiOperationGeneratorTests
     public void AddsMultipleRequestFormatsFromMetadataWithRequiredBodyParameter()
     {
         var operation = GetOpenApiOperation(
-            [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = false)] (InferredJsonClass fromBody) => { });
+            [Consumes<InferredJsonClass>("application/custom0", "application/custom1", IsOptional = false)] (InferredJsonClass fromBody) => { });
 
         var request = operation.RequestBody;
         Assert.NotNull(request);
