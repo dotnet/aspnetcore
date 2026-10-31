@@ -32,8 +32,8 @@ public class RequestHeadersAppendBenchmark
     {
         string[] names = Headers switch
         {
-            HeaderSet.InternedUnknown => ["DNT", "Keep-Alive", "X-Requested-With", "Request-Id", "Sec-WebSocket-Key", "Sec-WebSocket-Version"],
-            HeaderSet.InternedUnknownLowercase => ["dnt", "keep-alive", "x-requested-with", "request-id", "sec-websocket-key", "sec-websocket-version"],
+            HeaderSet.InternedUnknown => ["DNT", "X-Requested-With", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Protocol", "Sec-WebSocket-Extensions"],
+            HeaderSet.InternedUnknownLowercase => ["dnt", "x-requested-with", "sec-websocket-key", "sec-websocket-version", "sec-websocket-protocol", "sec-websocket-extensions"],
             _ => ["sec-ch-ua", "sec-ch-ua-mobile", "sec-fetch-site", "sec-fetch-mode", "X-Forwarded-For", "X-Forwarded-Proto"],
         };
 
