@@ -4,6 +4,8 @@
 using System.Diagnostics;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -54,6 +56,14 @@ internal sealed partial class RateLimitingMiddleware
 
         _globalLimiter = options.Value.GlobalLimiter;
         _endpointLimiter = CreateEndpointLimiter();
+
+        // The endpoint limiter is created and owned by this middleware. Its internal
+        // timer would otherwise keep the host reachable after shutdown, so dispose it
+        // when the application stops. The global limiter is provided by the user via
+        // options and its lifetime remains owned by the user.
+        // The callback doesn't capture this instance so the registration itself can't root it.
+        var lifetime = serviceProvider.GetService<IHostApplicationLifetime>();
+        lifetime?.ApplicationStopped.Register(static state => ((PartitionedRateLimiter<HttpContext>)state!).Dispose(), _endpointLimiter);
     }
 
     // TODO - EventSource?
