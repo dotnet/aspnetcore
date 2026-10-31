@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -41,6 +42,11 @@ internal sealed class RenderBatchWriter : IDisposable
     private readonly Dictionary<string, int> _deduplicatedStringIndices;
     private readonly BinaryWriter _binaryWriter;
     private readonly bool _useUtf16StringTable;
+
+    // Private scratch space used to assemble fixed-size records before writing them in a single call.
+    // Every write fully overwrites the bytes it emits, so no data carries over between records or batches.
+    private const int ScratchBufferSize = 256;
+    private byte[]? _scratchBuffer = ArrayPool<byte>.Shared.Rent(ScratchBufferSize);
 
     public RenderBatchWriter(Stream output, bool leaveOpen)
         : this(output, leaveOpen, useUtf16StringTable: false)
@@ -114,7 +120,7 @@ internal sealed class RenderBatchWriter : IDisposable
         // the recipient can index into the array directly without walking it.
         // So we output some value for all properties, even when not applicable
         // for this specific RenderTreeEditType.
-        Span<byte> buffer = stackalloc byte[16];
+        var buffer = _scratchBuffer.AsSpan(0, 16);
         BinaryPrimitives.WriteInt32LittleEndian(buffer, (int)edit.Type);
         BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(4), edit.SiblingIndex);
 
@@ -149,8 +155,8 @@ internal sealed class RenderBatchWriter : IDisposable
         // Since we can fit every frame type into 16 bytes (plus 4 bytes for the
         // frame type), use that as the common size. For smaller frames, the
         // remaining bytes are zero padding. The whole frame is assembled in a
-        // stack buffer so it can be written to the output in a single call.
-        Span<byte> buffer = stackalloc byte[20];
+        // scratch buffer so it can be written to the output in a single call.
+        var buffer = _scratchBuffer.AsSpan(0, 20);
         buffer.Clear();
 
         // TODO: Change this to write as a short, saving 2 bytes per frame
@@ -220,19 +226,7 @@ internal sealed class RenderBatchWriter : IDisposable
         var startPos = (int)_binaryWriter.BaseStream.Position;
         _binaryWriter.Write(numbers.Count);
 
-        var count = numbers.Count;
-        if (BitConverter.IsLittleEndian)
-        {
-            _binaryWriter.Write(MemoryMarshal.AsBytes(numbers.Array.AsSpan(0, count)));
-        }
-        else
-        {
-            var array = numbers.Array;
-            for (var index = 0; index < count; index++)
-            {
-                _binaryWriter.Write(array[index]);
-            }
-        }
+        WriteInt32Values(numbers.Array.AsSpan(0, numbers.Count));
 
         return startPos;
     }
@@ -242,21 +236,42 @@ internal sealed class RenderBatchWriter : IDisposable
         var startPos = (int)_binaryWriter.BaseStream.Position;
         _binaryWriter.Write(numbers.Count);
 
-        var count = numbers.Count;
-        if (BitConverter.IsLittleEndian)
-        {
-            _binaryWriter.Write(MemoryMarshal.AsBytes(numbers.Array.AsSpan(0, count)));
-        }
-        else
-        {
-            var array = numbers.Array;
-            for (var index = 0; index < count; index++)
-            {
-                _binaryWriter.Write(array[index]);
-            }
-        }
+        WriteUInt64Values(numbers.Array.AsSpan(0, numbers.Count));
 
         return startPos;
+    }
+
+    void WriteInt32Values(ReadOnlySpan<int> values)
+    {
+        // Encode in chunks through the scratch buffer so each chunk is a single write to the output.
+        var buffer = _scratchBuffer.AsSpan(0, ScratchBufferSize);
+        while (!values.IsEmpty)
+        {
+            var chunkLength = Math.Min(values.Length, ScratchBufferSize / sizeof(int));
+            for (var i = 0; i < chunkLength; i++)
+            {
+                BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(i * sizeof(int)), values[i]);
+            }
+
+            _binaryWriter.Write(buffer.Slice(0, chunkLength * sizeof(int)));
+            values = values.Slice(chunkLength);
+        }
+    }
+
+    void WriteUInt64Values(ReadOnlySpan<ulong> values)
+    {
+        var buffer = _scratchBuffer.AsSpan(0, ScratchBufferSize);
+        while (!values.IsEmpty)
+        {
+            var chunkLength = Math.Min(values.Length, ScratchBufferSize / sizeof(ulong));
+            for (var i = 0; i < chunkLength; i++)
+            {
+                BinaryPrimitives.WriteUInt64LittleEndian(buffer.Slice(i * sizeof(ulong)), values[i]);
+            }
+
+            _binaryWriter.Write(buffer.Slice(0, chunkLength * sizeof(ulong)));
+            values = values.Slice(chunkLength);
+        }
     }
 
     int GetStringIndex(string? value, bool allowDeduplication)
@@ -340,5 +355,11 @@ internal sealed class RenderBatchWriter : IDisposable
     {
         _strings.Dispose();
         _binaryWriter.Dispose();
+
+        if (_scratchBuffer is { } scratchBuffer)
+        {
+            _scratchBuffer = null;
+            ArrayPool<byte>.Shared.Return(scratchBuffer);
+        }
     }
 }

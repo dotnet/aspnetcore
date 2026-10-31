@@ -94,6 +94,40 @@ public class RenderBatchWriterTest
     }
 
     [Fact]
+    public void CanIncludeLargeDisposedIdArrays()
+    {
+        // Arrange: lengths that span multiple internal write chunks and end with a partial chunk
+        var componentIds = Enumerable.Range(0, 151).Select(i => i * 7919 - 500000).ToArray();
+        var eventHandlerIds = Enumerable.Range(0, 71).Select(i => ulong.MaxValue - (ulong)i * 104729).ToArray();
+
+        // Act
+        var bytes = Serialize(new RenderBatch(
+            new ArrayRange<RenderTreeDiff>(),
+            new ArrayRange<RenderTreeFrame>(),
+            new ArrayRange<int>(componentIds, 150),
+            new ArrayRange<ulong>(eventHandlerIds, 70),
+            default));
+
+        // Assert
+        var componentIdsStart = ReadInt(bytes, bytes.Length - 12);
+        Assert.Equal(150, ReadInt(bytes, componentIdsStart));
+        for (var i = 0; i < 150; i++)
+        {
+            Assert.Equal(componentIds[i], ReadInt(bytes, componentIdsStart + 4 + i * 4));
+        }
+
+        var eventHandlerIdsStart = ReadInt(bytes, bytes.Length - 8);
+        Assert.Equal(componentIdsStart + 4 + 150 * 4, eventHandlerIdsStart);
+        Assert.Equal(70, ReadInt(bytes, eventHandlerIdsStart));
+        for (var i = 0; i < 70; i++)
+        {
+            Assert.Equal(eventHandlerIds[i], BinaryPrimitives.ReadUInt64LittleEndian(bytes.Slice(eventHandlerIdsStart + 4 + i * 8, 8)));
+        }
+
+        Assert.Equal(eventHandlerIdsStart + 4 + 70 * 8, ReadInt(bytes, bytes.Length - 4)); // Strings follow immediately
+    }
+
+    [Fact]
     public void CanIncludeUpdatedComponentsWithEmptyEdits()
     {
         // Arrange/Act
