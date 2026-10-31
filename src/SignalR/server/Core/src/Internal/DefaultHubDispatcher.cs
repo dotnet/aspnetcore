@@ -109,7 +109,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return hubActivator;
     }
 
-    private enum HubActivatorKind
+    private enum HubActivatorKind : byte
     {
         Unknown,
         Default,
