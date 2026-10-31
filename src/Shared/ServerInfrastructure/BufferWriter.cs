@@ -89,7 +89,7 @@ internal ref struct BufferWriter<T> where T : IBufferWriter<byte>
     /// </summary>
     /// <param name="source">The buffer to copy in.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Write(scoped ReadOnlySpan<byte> source)
+    public void Write(ReadOnlySpan<byte> source)
     {
         if (_span.IsEmpty && !source.IsEmpty)
         {
@@ -139,7 +139,7 @@ internal ref struct BufferWriter<T> where T : IBufferWriter<byte>
     /// Copies the caller's buffer into this writer, potentially across multiple buffers from the underlying writer.
     /// </summary>
     /// <param name="source">The buffer to copy into this writer.</param>
-    private void WriteMultiBuffer(scoped ReadOnlySpan<byte> source)
+    private void WriteMultiBuffer(ReadOnlySpan<byte> source)
     {
         while (source.Length > 0)
         {
