@@ -21,7 +21,7 @@ public class DefaultActionDescriptorCollectionProviderTest
         var expected3 = new ActionDescriptor();
         var actionDescriptorProvider2 = GetActionDescriptorProvider(expected2, expected3);
 
-        var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
+        using var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionDescriptorProvider1, actionDescriptorProvider2 },
             Enumerable.Empty<IActionDescriptorChangeProvider>(),
             NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
@@ -44,7 +44,7 @@ public class DefaultActionDescriptorCollectionProviderTest
         // Arrange
         var actionDescriptorProvider = GetActionDescriptorProvider(new ActionDescriptor());
 
-        var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
+        using var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionDescriptorProvider },
             Enumerable.Empty<IActionDescriptorChangeProvider>(),
             NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
@@ -94,7 +94,7 @@ public class DefaultActionDescriptorCollectionProviderTest
                 invocations++;
             });
         var changeProvider = new TestChangeProvider();
-        var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
+        using var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionDescriptorProvider.Object },
             new[] { changeProvider },
             NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
