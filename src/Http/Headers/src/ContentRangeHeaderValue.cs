@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers;
@@ -173,15 +172,13 @@ public class ContentRangeHeaderValue
     /// <inheritdoc/>
     public override string ToString()
     {
-        var sb = new StringBuilder();
+        var sb = StringBuilderCache.Acquire();
         sb.Append(Unit.AsSpan());
         sb.Append(' ');
 
         if (HasRange)
         {
-            sb.Append(From.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
-            sb.Append('-');
-            sb.Append(To.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
+            sb.Append(NumberFormatInfo.InvariantInfo, $"{From.GetValueOrDefault()}-{To.GetValueOrDefault()}");
         }
         else
         {
@@ -191,14 +188,14 @@ public class ContentRangeHeaderValue
         sb.Append('/');
         if (HasLength)
         {
-            sb.Append(Length.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
+            sb.Append(NumberFormatInfo.InvariantInfo, $"{Length.GetValueOrDefault()}");
         }
         else
         {
             sb.Append('*');
         }
 
-        return sb.ToString();
+        return StringBuilderCache.GetStringAndRelease(sb);
     }
 
     /// <summary>

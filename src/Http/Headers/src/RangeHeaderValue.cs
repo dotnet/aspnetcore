@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers;
@@ -75,7 +74,7 @@ public class RangeHeaderValue
     /// <inheritdoc />
     public override string ToString()
     {
-        var sb = new StringBuilder();
+        var sb = StringBuilderCache.Acquire();
         sb.Append(_unit.AsSpan());
         sb.Append('=');
 
@@ -96,7 +95,7 @@ public class RangeHeaderValue
             sb.Append(range.To);
         }
 
-        return sb.ToString();
+        return StringBuilderCache.GetStringAndRelease(sb);
     }
 
     /// <inheritdoc />
