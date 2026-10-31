@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -2701,6 +2702,29 @@ public partial class HubConnection : IAsyncDisposable
                 $"Server timeout ({_hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.");
             Connection.Transport.Input.CancelPendingRead();
         }
+
+#if NET
+        // Returns the registered handler name so hub protocols don't allocate a new target string for every invocation received.
+        string? IInvocationBinder.GetTarget(ReadOnlySpan<byte> utf8Bytes)
+        {
+            const int MaxStackallocLength = 256;
+            if (utf8Bytes.Length > MaxStackallocLength)
+            {
+                return null;
+            }
+
+            // UTF-8 never decodes to more chars than bytes.
+            Span<char> chars = stackalloc char[utf8Bytes.Length];
+            // Decode strictly so invalid UTF-8 falls back to the protocol's own validation instead of matching a handler via U+FFFD.
+            if (System.Text.Unicode.Utf8.ToUtf16(utf8Bytes, chars, out _, out var charsWritten, replaceInvalidSequences: false) != OperationStatus.Done)
+            {
+                return null;
+            }
+
+            var lookup = _hubConnection._handlers.GetAlternateLookup<ReadOnlySpan<char>>();
+            return lookup.TryGetValue(chars.Slice(0, charsWritten), out var target, out _) ? target : null;
+        }
+#endif
 
         Type IInvocationBinder.GetReturnType(string invocationId)
         {
