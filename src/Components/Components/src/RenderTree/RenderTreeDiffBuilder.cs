@@ -4,7 +4,6 @@
 #nullable disable warnings
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -347,19 +346,18 @@ internal static class RenderTreeDiffBuilder
             var key = KeyValue(ref frame);
             if (key != null)
             {
-                ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(result, key, out var exists);
-                if (!exists)
+                if (!result.TryGetValue(key, out var existingEntry))
                 {
-                    entry = new KeyedItemInfo(-1, newStartIndex);
+                    result[key] = new KeyedItemInfo(-1, newStartIndex);
                 }
                 else
                 {
-                    if (entry.NewIndex >= 0)
+                    if (existingEntry.NewIndex >= 0)
                     {
                         ThrowExceptionForDuplicateKey(key, frame);
                     }
 
-                    entry = new KeyedItemInfo(entry.OldIndex, newStartIndex);
+                    result[key] = new KeyedItemInfo(existingEntry.OldIndex, newStartIndex);
                 }
             }
 
