@@ -180,6 +180,20 @@ public class RazorPagesRazorViewEngineOptionsSetupTest
             expander => Assert.IsType<PageViewLocationExpander>(expander));
     }
 
+    [Theory]
+    [InlineData("/Pages", "Index.cshtml", "/Pages/Index.cshtml")]
+    [InlineData("/Pages/", "Index.cshtml", "/Pages/Index.cshtml")]
+    [InlineData("/Pages", "/Index.cshtml", "/Pages/Index.cshtml")]
+    [InlineData("/Pages/", "/Index.cshtml", "/Pages/Index.cshtml")]
+    public void CombinePath_NormalizesSingleSeparator(string path1, string path2, string expected)
+    {
+        // Act
+        var actual = RazorPagesRazorViewEngineOptionsSetup.CombinePath(path1, path2);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
     private static RazorViewEngineOptions GetViewEngineOptions()
     {
         var defaultSetup = new RazorViewEngineOptionsSetup();
