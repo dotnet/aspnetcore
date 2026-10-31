@@ -72,6 +72,62 @@ public class BufferedReadStreamTests
         Assert.Equal(content, line);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReadLine_MultipleBufferedLines_ReturnsEachLineAndLeavesRemainder(bool async)
+    {
+        var stream = MakeStream("first\r\n\r\na\rb\nc\r\r\nh\u00e9llo\r\ntail", bufferSize: 4096);
+
+        Assert.Equal("first", await ReadLine(stream, async, lengthLimit: 100));
+        Assert.Equal("", await ReadLine(stream, async, lengthLimit: 100));
+        Assert.Equal("a\rb\nc\r", await ReadLine(stream, async, lengthLimit: 100));
+        Assert.Equal("h\u00e9llo", await ReadLine(stream, async, lengthLimit: 100));
+        Assert.Equal("tail", Encoding.UTF8.GetString(stream.BufferedData));
+        Assert.Equal("tail", await ReadLine(stream, async, lengthLimit: 100));
+        Assert.Equal("", await ReadLine(stream, async, lengthLimit: 100));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReadLine_BufferedLineAtLengthLimit_Succeeds(bool async)
+    {
+        // The limit applies to the line content plus the CR.
+        var stream = MakeStream("abc\r\nnext\r\n", bufferSize: 4096);
+
+        Assert.Equal("abc", await ReadLine(stream, async, lengthLimit: 4));
+        Assert.Equal("next", await ReadLine(stream, async, lengthLimit: 5));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReadLine_BufferedLineExceedingLengthLimit_Throws(bool async)
+    {
+        var stream = MakeStream("abc\r\nnext\r\n", bufferSize: 4096);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => ReadLine(stream, async, lengthLimit: 3));
+        Assert.Equal("Line length limit 3 exceeded.", exception.Message);
+    }
+
+    private static Task<string> ReadLine(BufferedReadStream stream, bool async, int lengthLimit)
+    {
+        if (async)
+        {
+            return stream.ReadLineAsync(lengthLimit, CancellationToken.None);
+        }
+
+        try
+        {
+            return Task.FromResult(stream.ReadLine(lengthLimit));
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<string>(ex);
+        }
+    }
+
     private static BufferedReadStream MakeStream(string text, int bufferSize)
     {
         return new BufferedReadStream(new MemoryStream(Encoding.UTF8.GetBytes(text)), bufferSize);

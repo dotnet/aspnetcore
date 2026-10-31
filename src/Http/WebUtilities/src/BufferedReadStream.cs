@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -346,6 +347,11 @@ public class BufferedReadStream : Stream
     public string ReadLine(int lengthLimit)
     {
         CheckDisposed();
+        if (_bufferCount > 0 && TryReadLineFromBuffer(lengthLimit, out var bufferedLine))
+        {
+            return bufferedLine;
+        }
+
         using (var builder = new MemoryStream(200))
         {
             bool foundCR = false, foundCRLF = false;
@@ -371,6 +377,11 @@ public class BufferedReadStream : Stream
     public async Task<string> ReadLineAsync(int lengthLimit, CancellationToken cancellationToken)
     {
         CheckDisposed();
+        if (_bufferCount > 0 && TryReadLineFromBuffer(lengthLimit, out var bufferedLine))
+        {
+            return bufferedLine;
+        }
+
         using (var builder = new MemoryStream(200))
         {
             bool foundCR = false, foundCRLF = false;
@@ -383,6 +394,26 @@ public class BufferedReadStream : Stream
 
             return DecodeLine(builder, foundCRLF);
         }
+    }
+
+    // Fast path for when the whole line, including its CRLF, is already buffered and within the limit.
+    // Otherwise the caller falls back to the accumulating path, which also produces the limit error.
+    private bool TryReadLineFromBuffer(int lengthLimit, [NotNullWhen(true)] out string? line)
+    {
+        var buffered = _buffer.AsSpan(_bufferOffset, _bufferCount);
+        var crlfIndex = buffered.IndexOf("\r\n"u8);
+
+        // The accumulating path checks the limit for every byte up to and including the CR.
+        if (crlfIndex < 0 || crlfIndex + 1 > lengthLimit)
+        {
+            line = null;
+            return false;
+        }
+
+        line = Encoding.UTF8.GetString(buffered.Slice(0, crlfIndex));
+        _bufferOffset += crlfIndex + 2;
+        _bufferCount -= crlfIndex + 2;
+        return true;
     }
 
     private void ProcessLineChar(MemoryStream builder, ref int lineLength, int lengthLimit, ref bool foundCR, ref bool foundCRLF)
