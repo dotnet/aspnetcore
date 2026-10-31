@@ -1,1 +1,12 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthorizationCodeReceivedContext.HandleClientAuthentication() -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthorizationCodeReceivedContext.HandledClientAuthentication.get -> bool
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration.ClientId.get -> string!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration.ClientId.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration.ClientSecret.get -> string?
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration.ClientSecret.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration.OpenIdConnectClientRegistration() -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration.TokenValidationParameters.get -> Microsoft.IdentityModel.Tokens.TokenValidationParameters!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration.TokenValidationParameters.set -> void
+virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.ResolveClientRegistrationAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectClientRegistration!>
