@@ -105,6 +105,7 @@ internal sealed class OpenApiSchemaService(
             if (context.PropertyInfo is { } jsonPropertyInfo)
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
+                schema.MoveAssociatedParameterDefaultToReference(jsonPropertyInfo);
             }
             var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
             var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
