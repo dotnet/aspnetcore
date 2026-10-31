@@ -43,6 +43,10 @@ public class ResponseHeadersWritingBenchmark
     [Benchmark(OperationsPerInvoke = Iterations)]
     public void Output()
     {
+        _responseHeaders.Reset();
+        _responseHeaders.SetRawServer(Constants.ServerName, _bytesServer);
+        _responseHeaders.SetRawDate(DateHeaderValues.String, DateHeaderValues.Bytes);
+
         switch (Type)
         {
             case BenchmarkTypes.TechEmpowerPlaintext:
@@ -182,14 +186,6 @@ public class ResponseHeadersWritingBenchmark
         _dateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
         _dateHeaderValueManager.OnHeartbeat();
         _writer = new Writer();
-    }
-
-    [IterationSetup]
-    public void IterationSetup()
-    {
-        _responseHeaders.Reset();
-        _responseHeaders.SetRawServer(Constants.ServerName, _bytesServer);
-        _responseHeaders.SetRawDate(DateHeaderValues.String, DateHeaderValues.Bytes);
     }
 
     public class Writer : PipeWriter

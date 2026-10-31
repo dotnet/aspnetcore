@@ -17,7 +17,7 @@ public class FormPipeReaderInternalsBenchmark
     private readonly byte[] _secondUtf8 = Encoding.UTF8.GetBytes("o&haha=hehe&lol=temp");
     private FormPipeReader _formPipeReader;
 
-    [IterationSetup]
+    [GlobalSetup]
     public void Setup()
     {
         _formPipeReader = new FormPipeReader(null);
