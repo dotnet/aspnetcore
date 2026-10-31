@@ -3,6 +3,7 @@
 
 #nullable enable
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace System.Net.Http.HPack;
@@ -15,6 +16,9 @@ internal sealed class DynamicHPackEncoder
     internal readonly EncoderHeaderEntry Head;
 
     private readonly bool _allowDynamicCompression;
+    // Indexed by HPACK static table index (1-based). Shared across encoders; entries are immutable so reads and writes are atomic.
+    private static readonly NameHash?[] s_staticNameHashes = new NameHash?[H2StaticTable.Count + 1];
+
     private readonly EncoderHeaderEntry[] _headerBuckets;
     private readonly byte _hashMask;
     private uint _headerTableSize;
@@ -124,7 +128,7 @@ internal sealed class DynamicHPackEncoder
         int headerLength, Encoding? valueEncoding, out int bytesWritten)
     {
         // Compute the name hash once and reuse it for the lookup, index resolution and insertion.
-        int hash = name.GetHashCode();
+        int hash = staticTableIndex > 0 ? GetStaticNameHash(staticTableIndex, name) : name.GetHashCode();
         EncoderHeaderEntry? headerField = GetEntry(hash, name, value);
         if (headerField != null)
         {
@@ -168,6 +172,35 @@ internal sealed class DynamicHPackEncoder
             // Removed entries are tracked to be reused.
             PushRemovedEntry(removed);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int GetStaticNameHash(int staticTableIndex, string name)
+    {
+        // Headers with a static table index almost always use the same name string instance (e.g. a HeaderNames constant),
+        // so cache the hash for that instance. The cached hash is only used for the exact same string reference, so it
+        // is always equal to name.GetHashCode().
+        NameHash?[] cache = s_staticNameHashes;
+        if ((uint)staticTableIndex < (uint)cache.Length)
+        {
+            NameHash? cached = cache[staticTableIndex];
+            if (cached != null && ReferenceEquals(cached.Name, name))
+            {
+                return cached.Hash;
+            }
+
+            int hash = name.GetHashCode();
+            cache[staticTableIndex] = new NameHash(name, hash);
+            return hash;
+        }
+
+        return name.GetHashCode();
+    }
+
+    private sealed class NameHash(string name, int hash)
+    {
+        public readonly string Name = name;
+        public readonly int Hash = hash;
     }
 
     private EncoderHeaderEntry? GetEntry(int hash, string name, string value)
