@@ -2367,6 +2367,45 @@ public class InputTagHelperTest
         Assert.Equal(expectedType, output.TagName);
     }
 
+    [Theory]
+    [InlineData(nameof(InputTypeModel.Text), null, null, "text", "String")]
+    [InlineData(nameof(InputTypeModel.Text), "HiddenInput", "EmailAddress", "hidden", "HiddenInput")]
+    [InlineData(nameof(InputTypeModel.Text), "unknown", "EmailAddress", "email", "EmailAddress")]
+    [InlineData(nameof(InputTypeModel.Text), "unknown", "emailaddress", "email", "emailaddress")]
+    [InlineData(nameof(InputTypeModel.Text), "unknown", "unknown", "text", "String")]
+    [InlineData(nameof(InputTypeModel.Number), null, null, "number", "Int32")]
+    [InlineData(nameof(InputTypeModel.NullableNumber), "unknown", null, "number", "Int32")]
+    [InlineData(nameof(InputTypeModel.NullableBool), null, null, "text", "String")]
+    [InlineData(nameof(InputTypeModel.Enum), null, null, "text", "String")]
+    [InlineData(nameof(InputTypeModel.Derived), null, null, "text", "text")]
+    [InlineData(nameof(InputTypeModel.FormFile), null, null, "file", "IFormFile")]
+    [InlineData(nameof(InputTypeModel.FormFiles), null, null, "file", TemplateRenderer.IEnumerableOfIFormFileName)]
+    public void GetInputType_ReturnsExpectedInputTypeAndHint(
+        string propertyName,
+        string templateHint,
+        string dataTypeName,
+        string expectedInputType,
+        string expectedHint)
+    {
+        // Arrange
+        var metadataProvider = new TestModelMetadataProvider();
+        metadataProvider.ForProperty<InputTypeModel>(propertyName).DisplayDetails(dd =>
+        {
+            dd.TemplateHint = templateHint;
+            dd.DataTypeName = dataTypeName;
+        });
+        var metadata = metadataProvider.GetMetadataForProperty(typeof(InputTypeModel), propertyName);
+        var modelExplorer = new ModelExplorer(metadataProvider, metadata, model: null);
+        var tagHelper = new TestableInputTagHelper(new TestableHtmlGenerator(metadataProvider));
+
+        // Act
+        var inputType = tagHelper.GetInputTypeForTest(modelExplorer, out var hint);
+
+        // Assert
+        Assert.Equal(expectedInputType, inputType);
+        Assert.Equal(expectedHint, hint);
+    }
+
     private static InputTagHelper GetTagHelper(
         IHtmlGenerator htmlGenerator,
         object model,
@@ -2475,5 +2514,48 @@ public class InputTagHelperTest
     private class NestedModel
     {
         public string Text { get; set; }
+    }
+
+    private class TestableInputTagHelper : InputTagHelper
+    {
+        public TestableInputTagHelper(IHtmlGenerator generator)
+            : base(generator)
+        {
+        }
+
+        public string GetInputTypeForTest(ModelExplorer modelExplorer, out string inputTypeHint)
+            => GetInputType(modelExplorer, out inputTypeHint);
+    }
+
+    private enum InputTypeEnum
+    {
+        One,
+    }
+
+    private class InputTypeBase
+    {
+    }
+
+    private class InputTypeDerived : InputTypeBase
+    {
+    }
+
+    private class InputTypeModel
+    {
+        public string Text { get; set; }
+
+        public int Number { get; set; }
+
+        public int? NullableNumber { get; set; }
+
+        public bool? NullableBool { get; set; }
+
+        public InputTypeEnum Enum { get; set; }
+
+        public InputTypeDerived Derived { get; set; }
+
+        public IFormFile FormFile { get; set; }
+
+        public IEnumerable<IFormFile> FormFiles { get; set; }
     }
 }

@@ -38,6 +38,48 @@ public class TagBuilderTest
         Assert.Equal(new KeyValuePair<string, string>(expectedKey, expectedValue), attribute);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MergeAttributes_Dictionary_MatchesOtherDictionaryTypes(bool replaceExisting)
+    {
+        // Arrange
+        var entries = new KeyValuePair<string, object>[]
+        {
+            new("class", "new-class"),
+            new("data-number", 42),
+            new("data-null", null),
+            new("data-bool", true),
+            new("Id", "new-id"),
+        };
+        var dictionary = new Dictionary<string, object>();
+        var sortedList = new SortedList<string, object>();
+        foreach (var entry in entries)
+        {
+            dictionary.Add(entry.Key, entry.Value);
+            sortedList.Add(entry.Key, entry.Value);
+        }
+
+        var tagBuilder = new TagBuilder("p");
+        tagBuilder.Attributes["class"] = "existing-class";
+        tagBuilder.Attributes["id"] = "existing-id";
+        var expectedTagBuilder = new TagBuilder("p");
+        expectedTagBuilder.Attributes["class"] = "existing-class";
+        expectedTagBuilder.Attributes["id"] = "existing-id";
+
+        // Act
+        tagBuilder.MergeAttributes(dictionary, replaceExisting);
+        expectedTagBuilder.MergeAttributes(sortedList, replaceExisting);
+
+        // Assert
+        Assert.Equal(expectedTagBuilder.Attributes, tagBuilder.Attributes);
+        Assert.Equal(replaceExisting ? "new-class" : "existing-class", tagBuilder.Attributes["class"]);
+        Assert.Equal(replaceExisting ? "new-id" : "existing-id", tagBuilder.Attributes["id"]);
+        Assert.Equal("42", tagBuilder.Attributes["data-number"]);
+        Assert.Equal(string.Empty, tagBuilder.Attributes["data-null"]);
+        Assert.Equal("True", tagBuilder.Attributes["data-bool"]);
+    }
+
     [Fact]
     public void AddCssClass_IgnoresCase()
     {
