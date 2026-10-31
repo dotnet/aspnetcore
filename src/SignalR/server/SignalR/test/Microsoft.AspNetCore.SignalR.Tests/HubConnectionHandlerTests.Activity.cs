@@ -92,6 +92,66 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
+    public async Task HubMethodActivityUsesResolvedHubMethodName()
+    {
+        using (StartVerifiableLog())
+        {
+            var serverChannel = Channel.CreateUnbounded<Activity>();
+            var testSource = new ActivitySource("test_source");
+
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                // Provided by hosting layer normally
+                builder.AddSingleton(testSource);
+            }, LoggerFactory);
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
+
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => ReferenceEquals(activitySource, signalrSource),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                Assert.Equal(SignalRServerActivitySource.OnConnected, connectActivity.OperationName);
+
+                // Targets are matched to hub methods case-insensitively and the activity uses the hub method name.
+                // Invoking another method in between checks the display name is cached per method.
+                var invocations = new (string Target, object[] Args, string MethodName)[]
+                {
+                    ("Echo", ["test"], nameof(MethodHub.Echo)),
+                    ("echo", ["test"], nameof(MethodHub.Echo)),
+                    ("RenamedMethod", [], "RenamedMethod"),
+                    ("Echo", ["test"], nameof(MethodHub.Echo)),
+                };
+
+                foreach (var (target, args, methodName) in invocations)
+                {
+                    await client.SendInvocationAsync(target, args).DefaultTimeout();
+                    Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+
+                    var invocationActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                    Assert.Equal(SignalRServerActivitySource.InvocationIn, invocationActivity.OperationName);
+                    Assert.Equal($"{typeof(MethodHub).FullName}/{methodName}", invocationActivity.DisplayName);
+                    Assert.Equal(methodName, invocationActivity.GetTagItem("rpc.method"));
+                }
+
+                client.Dispose();
+
+                await connectionHandlerTask;
+            }
+        }
+    }
+
+    [Fact]
     public async Task HubMethodInvokesCreateActivities_ReadTraceHeaders()
     {
         using (StartVerifiableLog())

@@ -30,10 +30,12 @@ internal sealed class HubMethodDescriptor
     private ConditionalWeakTable<IAuthorizationPolicyProvider, AuthorizationPolicy>? _authorizationPolicies;
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
+    private string? _activityDisplayName;
 
     public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<object> authorizationMetadata)
     {
         MethodExecutor = methodExecutor;
+        Name = methodExecutor.MethodInfo.Name;
 
         NonAsyncReturnType = (MethodExecutor.IsMethodAsync)
             ? MethodExecutor.AsyncResultType!
@@ -161,6 +163,8 @@ internal sealed class HubMethodDescriptor
 
     public List<(int, object?)>? KeyedServiceKeys { get; private set; }
 
+    public string Name { get; init; }
+
     public ObjectMethodExecutor MethodExecutor { get; }
 
     public IReadOnlyList<Type> ParameterTypes { get; }
@@ -242,6 +246,13 @@ internal sealed class HubMethodDescriptor
         }
 
         return _makeCancelableEnumerator.Invoke(stream, cancellationToken);
+    }
+
+    public string GetActivityDisplayName(string hubName)
+    {
+        // The hub name and the name this method is registered with never change, so the display
+        // name is only built once. A race on the first use only results in an extra allocation.
+        return _activityDisplayName ??= $"{hubName}/{Name}";
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
