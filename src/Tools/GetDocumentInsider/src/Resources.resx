@@ -216,6 +216,6 @@
     <value>The name of the generated OpenAPI document. When the default document (v1) is generated, this maps to {FileName}.json. For custom file names, this maps to {FileName}_{DocumentName}.json.</value>
   </data>
   <data name="FileNameFormatInvalid" xml:space="preserve">
-    <value>FileName format invalid, only Alphanumeric and "_ -" authorized</value>
+    <value>FileName format invalid, only alphanumeric characters, ".", "_" and "-" are authorized</value>
   </data>
 </root>
