@@ -863,7 +863,11 @@ public class Http2StreamTests : Http2TestBase
     [InlineData("/a\u0161")]
     [InlineData("/\u0161a")]
     [InlineData("/a\u0161a")]
-    public async Task HEADERS_Received_CharacterLargerThanByte_Reset(string path)
+    [InlineData("/a%2F\u00C2\u0080")]
+    [InlineData("/a%2F\u00C2\u00A9")]
+    [InlineData("/a%2F\u00C3\u00A9")]
+    [InlineData("/a%2F\u00E9\u0080\u0080")]
+    public async Task HEADERS_Received_NonAsciiPath_Reset(string path)
     {
         var pathBytes = Encoding.UTF8.GetBytes(path);
         var headerBlock = new byte[4 + pathBytes.Length];
