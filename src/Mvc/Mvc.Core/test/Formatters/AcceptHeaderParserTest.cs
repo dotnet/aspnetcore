@@ -119,6 +119,40 @@ public class AcceptHeaderParserTest
         Assert.Equal(expected, parsed);
     }
 
+    [Fact]
+    public void ParseAcceptHeader_StringValues_ParsesMultipleHeaderValues()
+    {
+        // Arrange
+        var expected = new List<MediaTypeSegmentWithQuality>
+            {
+                new MediaTypeSegmentWithQuality(new StringSegment("application/json"), 1.0),
+                new MediaTypeSegmentWithQuality(new StringSegment("text/plain;q=0.9"), 0.9),
+                new MediaTypeSegmentWithQuality(new StringSegment("application/xml;q=0.8"), 0.8)
+            };
+        var parsed = new List<MediaTypeSegmentWithQuality>();
+
+        // Act
+        AcceptHeaderParser.ParseAcceptHeader(
+            new StringValues(new[] { "application/json, text/plain;q=0.9", "", null, "application/xml;q=0.8" }),
+            parsed);
+
+        // Assert
+        Assert.Equal(expected, parsed);
+    }
+
+    [Fact]
+    public void ParseAcceptHeader_StringValues_Empty_ParsesNothing()
+    {
+        // Arrange
+        var parsed = new List<MediaTypeSegmentWithQuality>();
+
+        // Act
+        AcceptHeaderParser.ParseAcceptHeader(StringValues.Empty, parsed);
+
+        // Assert
+        Assert.Empty(parsed);
+    }
+
     // The text "*/*Content-Type" parses as a valid media type value. However it's followed
     // by ':' instead of whitespace or a delimiter, which means that it's actually invalid.
     [Fact]

@@ -146,10 +146,24 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
         return selectedFormatter;
     }
 
-    private List<MediaTypeSegmentWithQuality> GetAcceptableMediaTypes(HttpRequest request)
+    private IList<MediaTypeSegmentWithQuality> GetAcceptableMediaTypes(HttpRequest request)
     {
-        var result = new List<MediaTypeSegmentWithQuality>();
-        AcceptHeaderParser.ParseAcceptHeader(request.Headers.Accept, result);
+        var acceptHeader = request.Headers.Accept;
+        if (acceptHeader.Count == 0)
+        {
+            return Array.Empty<MediaTypeSegmentWithQuality>();
+        }
+
+        // Pre-size the list using the number of comma separated entries so that the common case of a short Accept
+        // header does not over-allocate or grow the backing array.
+        var capacity = 0;
+        for (var i = 0; i < acceptHeader.Count; i++)
+        {
+            capacity += acceptHeader[i] is { } value ? value.AsSpan().Count(',') + 1 : 0;
+        }
+
+        var result = new List<MediaTypeSegmentWithQuality>(capacity);
+        AcceptHeaderParser.ParseAcceptHeader(acceptHeader, result);
         for (var i = 0; i < result.Count; i++)
         {
             var mediaType = new MediaType(result[i].MediaType);
@@ -171,8 +185,9 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
     {
         Log.SelectFirstCanWriteFormatter(_logger);
 
-        foreach (var formatter in formatters)
+        for (var i = 0; i < formatters.Count; i++)
         {
+            var formatter = formatters[i];
             formatterContext.ContentType = new StringSegment();
             formatterContext.ContentTypeIsServerDefined = false;
 
@@ -215,10 +230,12 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
         IList<IOutputFormatter> formatters,
         MediaTypeCollection acceptableContentTypes)
     {
-        foreach (var formatter in formatters)
+        for (var i = 0; i < formatters.Count; i++)
         {
-            foreach (var contentType in acceptableContentTypes)
+            var formatter = formatters[i];
+            for (var j = 0; j < acceptableContentTypes.Count; j++)
             {
+                var contentType = acceptableContentTypes[j];
                 formatterContext.ContentType = new StringSegment(contentType);
                 formatterContext.ContentTypeIsServerDefined = true;
 
