@@ -26,12 +26,12 @@ internal static partial class PrepareReviewProgram
     private const string TargetMovedDuringPreparationMessage =
         "The target or base branch moved during preparation; no ready manifest was written.";
     private const string ExecutionExclusionScope =
-        "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree";
+        "Per-guide workers running PR code or tests, and coordinator validation that requires unavailable external CI, infrastructure, credentials, or services";
     private const string ExecutionExclusionReason =
-        "Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
-        "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
-        "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
-        "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.";
+        "Per-guide workers remain source-only. After collecting every worker result, a hosted coordinator may use a caller-supplied worktree at manifest.target.head " +
+        "to run targeted restore, build, test, browser, or temporary-repro validation under SKILL.md's coordinator rules. Native local validation follows the skill's detached-worktree rules. " +
+        "Never execute target code in the frozen bundle or developer checkout; record exact commands and results, keep temporary edits diagnostic-only, and clean native-local scratch worktrees. " +
+        "If validation is unavailable, record the reason and continue without reporting INCOMPLETE.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 
     internal sealed record Options(
@@ -42,7 +42,10 @@ internal static partial class PrepareReviewProgram
         string? Hostname = null,
         string? Guidance = null,
         string? GuidanceRoot = null,
-        bool Check = false);
+        bool Check = false,
+        string? BaseTip = null,
+        string? MergeBase = null,
+        string? BaseRef = null);
 
     internal sealed record Dependencies(
         Func<string, string?, Task<JsonNode?>>? Api = null,
@@ -98,6 +101,7 @@ internal static partial class PrepareReviewProgram
     private static Options ParseArguments(string[] args)
     {
         string? repo = null, pr = null, output = null, head = null, hostname = null, guidance = null, guidanceRoot = null;
+        string? baseTip = null, mergeBase = null, baseRef = null;
         var check = false;
         for (var index = 0; index < args.Length; index++)
         {
@@ -107,7 +111,7 @@ internal static partial class PrepareReviewProgram
                 check = true;
                 continue;
             }
-            Require(name is "--repo" or "--pr" or "--output" or "--head" or "--hostname" or "--guidance" or "--guidance-root"
+            Require(name is "--repo" or "--pr" or "--output" or "--head" or "--hostname" or "--guidance" or "--guidance-root" or "--base-tip" or "--merge-base" or "--base-ref"
                 && index + 1 < args.Length, $"Unknown or incomplete option: {name}");
             var value = args[++index];
             switch (name)
@@ -119,9 +123,12 @@ internal static partial class PrepareReviewProgram
                 case "--hostname": hostname = value; break;
                 case "--guidance": guidance = value; break;
                 case "--guidance-root": guidanceRoot = value; break;
+                case "--base-tip": baseTip = value; break;
+                case "--merge-base": mergeBase = value; break;
+                case "--base-ref": baseRef = value; break;
             }
         }
-        return new(repo, pr, output ?? string.Empty, head, hostname, guidance, guidanceRoot, check);
+        return new(repo, pr, output ?? string.Empty, head, hostname, guidance, guidanceRoot, check, baseTip, mergeBase, baseRef);
     }
 
     internal static string[] GitArguments(params string[] args) => ["-c", "core.longpaths=true", .. args];
@@ -1297,6 +1304,11 @@ internal static partial class PrepareReviewProgram
             "Cannot resolve a single target repository; specify --repo OWNER/REPO and --pr NUMBER.");
         Require(options.Output.Length > 0, "Specify a new --output directory, or --check an existing prepared directory.");
         Require(options.Head is null || FullShaRegex().IsMatch(options.Head), "--head must be a full immutable commit.");
+        Require(options.BaseTip is null && options.MergeBase is null && options.BaseRef is null
+            || options.Head is not null && options.BaseTip is not null && FullShaRegex().IsMatch(options.BaseTip)
+                && options.MergeBase is not null && FullShaRegex().IsMatch(options.MergeBase)
+                && !string.IsNullOrEmpty(options.BaseRef),
+            "A frozen base requires --head, --base-tip, --merge-base, and --base-ref with full immutable commits.");
         Require(options.Guidance is null || options.GuidanceRoot is null, "Select either --guidance or --guidance-root.");
         var producer = ProducerHash(dependencies.ProducerSourcePath);
         var host = options.Hostname ?? "github.com";
@@ -1334,14 +1346,21 @@ internal static partial class PrepareReviewProgram
             var head = pull["head"]!["sha"]!.GetValue<string>();
             Require(options.Head is null || options.Head == head, "The live PR head differs from the expected frozen head.");
             var baseRef = pull["base"]!["ref"]!.GetValue<string>();
-            var encodedRef = Uri.EscapeDataString(baseRef);
-            var branch = (await Api($"{endpoint}/git/ref/heads/{encodedRef}"))!.AsObject();
-            var baseTip = branch["object"]?["sha"]?.GetValue<string>() ?? "";
+            Require(options.BaseRef is null || options.BaseRef == baseRef, "The live PR base ref differs from the expected frozen base.");
+            var baseTip = options.BaseTip ?? "";
+            if (options.BaseTip is null)
+            {
+                var encodedRef = Uri.EscapeDataString(baseRef);
+                var branch = (await Api($"{endpoint}/git/ref/heads/{encodedRef}"))!.AsObject();
+                baseTip = branch["object"]?["sha"]?.GetValue<string>() ?? "";
+            }
             Require(FullShaRegex().IsMatch(baseTip), "The base branch did not resolve to a full commit.");
             var comparison = (await Api($"{endpoint}/compare/{baseTip}...{head}"))!.AsObject();
             var mergeBase = comparison["merge_base_commit"]?["sha"]?.GetValue<string>() ?? "";
             Require(comparison["base_commit"]?["sha"]?.GetValue<string>() == baseTip && FullShaRegex().IsMatch(mergeBase),
                 "GitHub did not return the expected immutable comparison identities.");
+            Require(options.MergeBase is null || options.MergeBase == mergeBase,
+                "The comparison differs from the expected frozen merge base.");
             return (new JsonObject
             {
                 ["hostname"] = host,

@@ -3,6 +3,7 @@ name: Workflow tests
 on:
   pull_request:
     paths:
+      - '.github/agents/**'
       - '.github/workflows/**'
       - '.github/skills/**'
 
@@ -33,7 +34,7 @@ jobs:
         shell: bash
         run: |
           shopt -s globstar nullglob
-          tests=(.github/workflows/**/test_*.py .github/workflows/**/test_*.js .github/workflows/**/test_*.cjs)
+          tests=(.github/workflows/**/test_*.py .github/workflows/**/test_*.js .github/workflows/**/test_*.cjs .github/workflows/**/*.test.mjs)
           if ((${#tests[@]} == 0)); then
             echo "::error::No workflow test scripts found."
             exit 1
@@ -42,7 +43,7 @@ jobs:
             echo "::group::$test"
             case "$test" in
               *.py) python3 -B "$test" ;;
-              *.js|*.cjs) node "$test" ;;
+              *.js|*.cjs|*.mjs) node "$test" ;;
             esac
             echo "::endgroup::"
           done
@@ -79,3 +80,22 @@ jobs:
         env:
           GH_CONFIG_DIR: ${{ runner.temp }}/pulse-toolchain
         run: ./.github/workflows/pr-attention-pulse-tests/Test-PRAttentionPulse.ps1
+
+  review_producer:
+    name: PR review producer fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install repository .NET SDK
+        run: ./eng/common/dotnet.sh
+
+      - name: Run PR review producer fixtures
+        run: |
+          source ./activate.sh
+          dotnet run --project .github/skills/review-pull-request/scripts/PrepareReview.Tests.csproj -- \
+            -preEnumerateTheories -noColor
