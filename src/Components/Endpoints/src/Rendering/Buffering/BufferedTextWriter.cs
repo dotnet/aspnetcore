@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
@@ -8,11 +9,18 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
 internal class BufferedTextWriter : TextWriter
 {
     private const int PageSize = 256;
+
+    // Strings up to this length are copied into the output buffer so that they can be coalesced
+    // with adjacent writes. Longer strings (e.g., large markup blocks) are held by reference.
+    private const int MaxCopiedStringLength = 128;
     private readonly TextWriter _underlying;
-    private readonly StringBuilder _charArraySegmentBuilder = new();
     private TextChunkListBuilder _currentOutput;
     private TextChunkListBuilder? _previousOutput;
     private Task _currentFlushAsyncTask = Task.CompletedTask;
+
+    // Private scratch space for formatting ints (int.MaxValue has 10 digits). It is only used
+    // transiently inside Write(int); the formatted chars are copied into the output before returning.
+    private char[]? _intFormatBuffer;
 
     public BufferedTextWriter(TextWriter underlying)
     {
@@ -23,21 +31,44 @@ internal class BufferedTextWriter : TextWriter
     public override Encoding Encoding => Encoding.UTF8;
 
     public override void Write(char value)
-        => _currentOutput.Add(new TextChunk(value));
+        => _currentOutput.Add(new ReadOnlySpan<char>(in value));
 
     public override void Write(char[] buffer, int index, int count)
-        => _currentOutput.Add(new TextChunk(new ArraySegment<char>(buffer, index, count), _charArraySegmentBuilder));
+        => _currentOutput.Add(buffer.AsSpan(index, count));
+
+    public override void Write(ReadOnlySpan<char> buffer)
+        => _currentOutput.Add(buffer);
 
     public override void Write(string? value)
     {
-        if (value is not null)
+        if (value is null)
+        {
+            return;
+        }
+
+        if (value.Length <= MaxCopiedStringLength)
+        {
+            _currentOutput.Add(value.AsSpan());
+        }
+        else
         {
             _currentOutput.Add(new TextChunk(value));
         }
     }
 
     public override void Write(int value)
-        => _currentOutput.Add(new TextChunk(value));
+    {
+        // Non-negative ints format as ASCII digits in every culture, so they can be copied eagerly.
+        // Negative ints keep the deferred path so the culture's NegativeSign is resolved at flush time, as before.
+        if (value >= 0 && value.TryFormat(_intFormatBuffer ??= new char[10], out var charsWritten, provider: CultureInfo.InvariantCulture))
+        {
+            _currentOutput.Add(_intFormatBuffer.AsSpan(0, charsWritten));
+        }
+        else
+        {
+            _currentOutput.Add(new TextChunk(value));
+        }
+    }
 
     public override void Flush()
         => throw new NotSupportedException();
@@ -62,7 +93,7 @@ internal class BufferedTextWriter : TextWriter
         _currentOutput = _previousOutput ?? new(PageSize);
         _previousOutput = outputToFlush;
 
-        await outputToFlush.WriteToAsync(_underlying, _charArraySegmentBuilder.ToString());
+        await outputToFlush.WriteToAsync(_underlying);
         outputToFlush.Clear();
         await _underlying.FlushAsync();
     }

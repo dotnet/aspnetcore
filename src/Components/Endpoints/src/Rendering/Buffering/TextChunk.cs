@@ -16,6 +16,7 @@ internal readonly struct TextChunk
     // by _type. That will reduce memory usage and improve locality.
     private readonly string? _stringValue;
     private readonly char _charValue;
+    private readonly int _charArraySegmentPage;
     private readonly int _charArraySegmentStart;
     private readonly int _charArraySegmentLength;
     private readonly int _intValue;
@@ -32,18 +33,18 @@ internal readonly struct TextChunk
         _charValue = value;
     }
 
-    public TextChunk(ArraySegment<char> value, StringBuilder charArraySegmentScope)
+    private TextChunk(int charArraySegmentPage, int charArraySegmentStart, int charArraySegmentLength)
     {
-        // An ArraySegment<char> is mutable (as in, its underlying buffer is). So
-        // we must copy its value. To avoid this being a separate allocation each time,
-        // use a StringBuilder as a growable buffer for these values. We rely on
-        // the caller of WriteToAsync being able to supply the .ToString() result
-        // of that StringBuilder, since we don't want to call that on each WriteToAsync.
         _type = TextChunkType.CharArraySegment;
-        _charArraySegmentStart = charArraySegmentScope.Length;
-        _charArraySegmentLength = value.Count;
-        charArraySegmentScope.Append((Span<char>)value);
+        _charArraySegmentPage = charArraySegmentPage;
+        _charArraySegmentStart = charArraySegmentStart;
+        _charArraySegmentLength = charArraySegmentLength;
     }
+
+    // Represents a range within one of the char pages that are supplied to WriteToAsync. This avoids
+    // storing a reference to caller-supplied char arrays, which may be mutated after the write.
+    public static TextChunk ForCharArraySegment(int page, int start, int length)
+        => new TextChunk(page, start, length);
 
     public TextChunk(int value)
     {
@@ -51,7 +52,7 @@ internal readonly struct TextChunk
         _intValue = value;
     }
 
-    public Task WriteToAsync(TextWriter writer, string charArraySegments, ref StringBuilder? tempBuffer)
+    public Task WriteToAsync(TextWriter writer, List<char[]> charPages, ref StringBuilder? tempBuffer)
     {
         switch (_type)
         {
@@ -60,7 +61,7 @@ internal readonly struct TextChunk
             case TextChunkType.Char:
                 return writer.WriteAsync(_charValue);
             case TextChunkType.CharArraySegment:
-                return writer.WriteAsync(charArraySegments.AsMemory(_charArraySegmentStart, _charArraySegmentLength));
+                return writer.WriteAsync(charPages[_charArraySegmentPage].AsMemory(_charArraySegmentStart, _charArraySegmentLength));
             case TextChunkType.Int:
                 // The same technique could be used to optimize writing other
                 // nonstring types, but currently only int is often used
