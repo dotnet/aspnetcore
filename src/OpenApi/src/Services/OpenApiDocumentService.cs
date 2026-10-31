@@ -644,7 +644,7 @@ internal sealed class OpenApiDocumentService(
     private static bool IsRequired(ApiParameterDescription parameter)
     {
         var hasRequiredAttribute = parameter.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescriptor &&
-            parameterInfoDescriptor.ParameterInfo.GetCustomAttributes(inherit: true).Any(attr => attr is RequiredAttribute);
+            parameterInfoDescriptor.ParameterInfo.IsDefined(typeof(RequiredAttribute), inherit: true);
         // Per the OpenAPI specification, parameters that are sourced from the path
         // are always required, regardless of the requiredness status of the parameter.
         return parameter.Source == BindingSource.Path || parameter.IsRequired || hasRequiredAttribute;

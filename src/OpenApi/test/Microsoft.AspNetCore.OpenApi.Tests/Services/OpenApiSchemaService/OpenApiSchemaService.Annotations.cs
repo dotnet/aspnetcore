@@ -142,6 +142,32 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaDescriptions_HandlesDerivedDescriptionAttributes()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DerivedDescriptionDto dto) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Components.Schemas["DerivedDescriptionDto"];
+            Assert.Equal("Derived class description", schema.Description);
+            var property = Assert.Single(schema.Properties);
+            Assert.Equal("value", property.Key);
+            Assert.Equal("Derived property description", property.Value.Description);
+        });
+    }
+
+    private sealed class DerivedDescriptionAttribute(string description) : DescriptionAttribute(description);
+
+    [DerivedDescription("Derived class description")]
+    public class DerivedDescriptionDto
+    {
+        [DerivedDescription("Derived property description")]
+        public string Value { get; set; }
+    }
+
+    [Fact]
     public async Task SchemaDeprecated_HandlesObsoleteType()
     {
         var builder = CreateBuilder();
