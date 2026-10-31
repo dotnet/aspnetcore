@@ -3,12 +3,14 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -349,6 +351,22 @@ internal static class JsonNodeSchemaExtensions
             schema.ApplyRouteConstraints(constraints);
         }
 
+        // Enum parameters generated from the bare type have no property-level converter context
+        // and surface as "type": "integer". When the property on the container type has a
+        // converter that serializes enums as strings, drop the type so the block below applies
+        // the string enum values instead.
+        var forceStringEnum = parameterDescription.Source is { } converterSource && IsNonBodyBindingSource(converterSource)
+            && parameterDescription.Type is { } converterParamType
+            && (Nullable.GetUnderlyingType(converterParamType) ?? converterParamType) is { IsEnum: true }
+            && schema[OpenApiSchemaKeywords.EnumKeyword] is not JsonArray
+            && parameterDescription.ModelMetadata is { ContainerType: { } containerType, PropertyName: { } propertyName }
+            && GetPropertyJsonConverterType(containerType, propertyName) is { } converterType
+            && IsStringEnumConverterType(converterType);
+        if (forceStringEnum && schema is JsonObject schemaObject)
+        {
+            schemaObject.Remove(OpenApiSchemaKeywords.TypeKeyword);
+        }
+
         // Parameters sourced from query, path, header, and form are bound via Enum.TryParse,
         // which only accepts the original C# member names — not names transformed by a JSON
         // naming policy (e.g. KebabCaseLower). Replace the schema's enum values and default
@@ -358,7 +376,7 @@ internal static class JsonNodeSchemaExtensions
             && parameterDescription.Type is { } paramType)
         {
             var enumType = Nullable.GetUnderlyingType(paramType) ?? paramType;
-            if (enumType.IsEnum && schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray)
+            if (enumType.IsEnum && (schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray || forceStringEnum))
             {
                 var memberNames = Enum.GetNames(enumType);
                 var enumArray = new JsonArray();
@@ -416,6 +434,16 @@ internal static class JsonNodeSchemaExtensions
             || bindingSource == BindingSource.Path
             || bindingSource == BindingSource.Form
             || bindingSource == BindingSource.FormFile;
+
+        static bool IsStringEnumConverterType(Type converterType) =>
+            typeof(JsonStringEnumConverter).IsAssignableFrom(converterType)
+            || (converterType.IsGenericType && converterType.GetGenericTypeDefinition() == typeof(JsonStringEnumConverter<>));
+
+        [UnconditionalSuppressMessage("Trimming", "IL2070",
+            Justification = "Container types for [AsParameters] are preserved by the model binding infrastructure.")]
+        static Type? GetPropertyJsonConverterType(Type containerType, string propertyName) =>
+            containerType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)
+                ?.GetCustomAttribute<JsonConverterAttribute>()?.ConverterType;
     }
 
     /// <summary>

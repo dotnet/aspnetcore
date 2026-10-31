@@ -1294,5 +1294,289 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [FromQuery(Name = "id")]
         public int? Id { get; set; }
     }
+
+    private enum PropertyConverterSort { A, B, C }
+
+    private record QueryWithPropertyConverter
+    {
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public PropertyConverterSort? Sort { get; init; }
+    }
+
+    private class PropertyConverterRequestBody
+    {
+        public string? Term { get; init; }
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesPropertyLevelJsonStringEnumConverterWithRequestBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/with-body", ([AsParameters] QueryWithPropertyConverter query, PropertyConverterRequestBody body) => body);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/with-body"].Operations![HttpMethod.Post];
+            var sortParam = Assert.Single(operation.Parameters!, p => p.Name == "Sort");
+            var schema = sortParam.Schema!;
+            Assert.Null(schema.Type);
+            Assert.NotNull(schema.Enum);
+            Assert.Collection(schema.Enum!,
+                value => Assert.Equal("A", value.GetValue<string>()),
+                value => Assert.Equal("B", value.GetValue<string>()),
+                value => Assert.Equal("C", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesPropertyLevelJsonStringEnumConverterWithoutRequestBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/without-body", ([AsParameters] QueryWithPropertyConverter query) => query);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/without-body"].Operations![HttpMethod.Get];
+            var sortParam = Assert.Single(operation.Parameters!, p => p.Name == "Sort");
+            var schema = sortParam.Schema!;
+            Assert.Null(schema.Type);
+            Assert.NotNull(schema.Enum);
+            Assert.Collection(schema.Enum!,
+                value => Assert.Equal("A", value.GetValue<string>()),
+                value => Assert.Equal("B", value.GetValue<string>()),
+                value => Assert.Equal("C", value.GetValue<string>()));
+        });
+    }
+
+    private record QueryWithGenericPropertyConverter
+    {
+        [JsonConverter(typeof(JsonStringEnumConverter<PropertyConverterSort>))]
+        public PropertyConverterSort? Sort { get; init; }
+    }
+
+    private sealed class DerivedStringEnumConverter : JsonStringEnumConverter
+    {
+    }
+
+    private record QueryWithDerivedPropertyConverter
+    {
+        [JsonConverter(typeof(DerivedStringEnumConverter))]
+        public PropertyConverterSort? Sort { get; init; }
+    }
+
+    private sealed class NumericSortConverter : JsonConverter<PropertyConverterSort>
+    {
+        public override PropertyConverterSort Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => (PropertyConverterSort)reader.GetInt32();
+
+        public override void Write(Utf8JsonWriter writer, PropertyConverterSort value, JsonSerializerOptions options)
+            => writer.WriteNumberValue((int)value);
+    }
+
+    private record QueryWithNumericPropertyConverter
+    {
+        [JsonConverter(typeof(NumericSortConverter))]
+        public PropertyConverterSort Sort { get; init; }
+    }
+
+    private record QueryWithNonNullablePropertyConverter
+    {
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public PropertyConverterSort Sort { get; init; }
+    }
+
+    private record QueryWithHeaderPropertyConverter
+    {
+        [FromHeader(Name = "X-Sort")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public PropertyConverterSort? Sort { get; init; }
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesGenericJsonStringEnumConverterWithRequestBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/generic-converter", ([AsParameters] QueryWithGenericPropertyConverter query, PropertyConverterRequestBody body) => body);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/generic-converter"].Operations![HttpMethod.Post];
+            var sortParam = Assert.Single(operation.Parameters!, p => p.Name == "Sort");
+            var schema = sortParam.Schema!;
+            Assert.Null(schema.Type);
+            Assert.NotNull(schema.Enum);
+            Assert.Collection(schema.Enum!,
+                value => Assert.Equal("A", value.GetValue<string>()),
+                value => Assert.Equal("B", value.GetValue<string>()),
+                value => Assert.Equal("C", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesDerivedJsonStringEnumConverterWithRequestBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/derived-converter", ([AsParameters] QueryWithDerivedPropertyConverter query, PropertyConverterRequestBody body) => body);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/derived-converter"].Operations![HttpMethod.Post];
+            var sortParam = Assert.Single(operation.Parameters!, p => p.Name == "Sort");
+            var schema = sortParam.Schema!;
+            Assert.Null(schema.Type);
+            Assert.NotNull(schema.Enum);
+            Assert.Collection(schema.Enum!,
+                value => Assert.Equal("A", value.GetValue<string>()),
+                value => Assert.Equal("B", value.GetValue<string>()),
+                value => Assert.Equal("C", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesNonNullablePropertyLevelJsonStringEnumConverterWithRequestBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/non-nullable-converter", ([AsParameters] QueryWithNonNullablePropertyConverter query, PropertyConverterRequestBody body) => body);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/non-nullable-converter"].Operations![HttpMethod.Post];
+            var sortParam = Assert.Single(operation.Parameters!, p => p.Name == "Sort");
+            var schema = sortParam.Schema!;
+            Assert.Null(schema.Type);
+            Assert.NotNull(schema.Enum);
+            Assert.Collection(schema.Enum!,
+                value => Assert.Equal("A", value.GetValue<string>()),
+                value => Assert.Equal("B", value.GetValue<string>()),
+                value => Assert.Equal("C", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesHeaderBoundPropertyLevelJsonStringEnumConverterWithRequestBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/header-converter", ([AsParameters] QueryWithHeaderPropertyConverter query, PropertyConverterRequestBody body) => body);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/header-converter"].Operations![HttpMethod.Post];
+            var sortParam = Assert.Single(operation.Parameters!, p => p.Name == "X-Sort");
+            var schema = sortParam.Schema!;
+            Assert.Null(schema.Type);
+            Assert.NotNull(schema.Enum);
+            Assert.Collection(schema.Enum!,
+                value => Assert.Equal("A", value.GetValue<string>()),
+                value => Assert.Equal("B", value.GetValue<string>()),
+                value => Assert.Equal("C", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_IgnoresNonStringEnumPropertyLevelConverterWithRequestBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/numeric-converter", ([AsParameters] QueryWithNumericPropertyConverter query, PropertyConverterRequestBody body) => body);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/numeric-converter"].Operations![HttpMethod.Post];
+            var sortParam = Assert.Single(operation.Parameters!, p => p.Name == "Sort");
+            var schema = sortParam.Schema!;
+            // Converters that do not serialize enums as strings are left alone.
+            Assert.Equal(JsonSchemaType.Integer, schema.Type);
+            Assert.Null(schema.Enum);
+        });
+    }
+
+    private record QueryWithPathPropertyConverter
+    {
+        [FromRoute(Name = "Sort")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public PropertyConverterSort Sort { get; init; }
+    }
+
+    private record QueryWithFormPropertyConverter
+    {
+        [FromForm(Name = "Sort")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public PropertyConverterSort? Sort { get; init; }
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesRouteBoundPropertyLevelJsonStringEnumConverterWithRequestBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/path-converter/{Sort}", ([AsParameters] QueryWithPathPropertyConverter query, PropertyConverterRequestBody body) => body);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/path-converter/{Sort}"].Operations![HttpMethod.Post];
+            var sortParam = Assert.Single(operation.Parameters!, p => p.Name == "Sort");
+            var schema = sortParam.Schema!;
+            Assert.Null(schema.Type);
+            Assert.NotNull(schema.Enum);
+            Assert.Collection(schema.Enum!,
+                value => Assert.Equal("A", value.GetValue<string>()),
+                value => Assert.Equal("B", value.GetValue<string>()),
+                value => Assert.Equal("C", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesFormBoundPropertyLevelJsonStringEnumConverter()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form-converter", ([AsParameters] QueryWithFormPropertyConverter query) => Results.Ok());
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/form-converter"].Operations![HttpMethod.Post];
+            var schema = operation.RequestBody!.Content!["application/x-www-form-urlencoded"].Schema!;
+            var sortSchema = schema.Properties!["Sort"];
+            Assert.Null(sortSchema.Type);
+            Assert.NotNull(sortSchema.Enum);
+            Assert.Collection(sortSchema.Enum!,
+                value => Assert.Equal("A", value.GetValue<string>()),
+                value => Assert.Equal("B", value.GetValue<string>()),
+                value => Assert.Equal("C", value.GetValue<string>()));
+        });
+    }
 #nullable restore
 }
