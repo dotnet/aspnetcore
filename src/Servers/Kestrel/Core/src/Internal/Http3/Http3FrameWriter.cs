@@ -48,7 +48,8 @@ internal sealed class Http3FrameWriter
     // HTTP/3 doesn't have a max frame size (peer can optionally specify a size).
     // Write headers to a buffer that can grow. Possible performance improvement
     // by writing directly to output writer (difficult as frame length is prefixed).
-    private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
+    // Created on first use because control streams never write headers.
+    private ArrayBufferWriter<byte>? _headerEncodingBuffer;
     private readonly Http3HeadersEnumerator _headersEnumerator = new();
     private int _headersTotalSize;
 
@@ -67,7 +68,6 @@ internal sealed class Http3FrameWriter
         _http3Stream = http3Stream;
         _outgoingFrame = new Http3RawFrame();
         _flusher = new TimingPipeFlusher(timeoutControl, log);
-        _headerEncodingBuffer = new ArrayBufferWriter<byte>(HeaderBufferSize);
 
         // Note that max total header size value doesn't react to settings change during a stream.
         // Unlikely to be a problem in practice:
@@ -85,7 +85,7 @@ internal sealed class Http3FrameWriter
         _connectionId = connectionId;
 
         _headersTotalSize = 0;
-        _headerEncodingBuffer.Clear();
+        _headerEncodingBuffer?.Clear();
         _unflushedBytes = 0;
         _completed = false;
         _aborted = false;
@@ -306,10 +306,11 @@ internal sealed class Http3FrameWriter
             {
                 _headersEnumerator.Initialize(headers);
                 _headersTotalSize = 0;
-                _headerEncodingBuffer.Clear();
+                var headerEncodingBuffer = GetHeaderEncodingBuffer();
+                headerEncodingBuffer.Clear();
 
                 _outgoingFrame.PrepareHeaders();
-                var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
+                var buffer = headerEncodingBuffer.GetSpan(HeaderBufferSize);
                 var done = QPackHeaderWriter.BeginEncodeHeaders(_headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                 FinishWritingHeaders(payloadLength, done);
             }
@@ -364,7 +365,7 @@ internal sealed class Http3FrameWriter
                 _headersEnumerator.Initialize(headers);
 
                 _outgoingFrame.PrepareHeaders();
-                var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
+                var buffer = GetHeaderEncodingBuffer().GetSpan(HeaderBufferSize);
                 var done = QPackHeaderWriter.BeginEncodeHeaders(statusCode, _headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                 FinishWritingHeaders(payloadLength, done);
             }
@@ -380,23 +381,27 @@ internal sealed class Http3FrameWriter
         }
     }
 
+    private ArrayBufferWriter<byte> GetHeaderEncodingBuffer()
+        => _headerEncodingBuffer ??= new ArrayBufferWriter<byte>(HeaderBufferSize);
+
     private void FinishWritingHeaders(int payloadLength, bool done)
     {
-        _headerEncodingBuffer.Advance(payloadLength);
+        var headerEncodingBuffer = GetHeaderEncodingBuffer();
+        headerEncodingBuffer.Advance(payloadLength);
 
         while (!done)
         {
             ValidateHeadersTotalSize();
-            var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
+            var buffer = headerEncodingBuffer.GetSpan(HeaderBufferSize);
             done = QPackHeaderWriter.Encode(_headersEnumerator!, buffer, ref _headersTotalSize, out payloadLength);
-            _headerEncodingBuffer.Advance(payloadLength);
+            headerEncodingBuffer.Advance(payloadLength);
         }
 
         ValidateHeadersTotalSize();
 
-        _outgoingFrame.RemainingLength = _headerEncodingBuffer.WrittenCount;
+        _outgoingFrame.RemainingLength = headerEncodingBuffer.WrittenCount;
         WriteHeaderUnsynchronized();
-        _outputWriter.Write(_headerEncodingBuffer.WrittenSpan);
+        _outputWriter.Write(headerEncodingBuffer.WrittenSpan);
 
         void ValidateHeadersTotalSize()
         {
