@@ -3,6 +3,7 @@
 
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -57,7 +58,8 @@ public class ObjectResultExecutorBenchmark
             _httpContext.Request.Headers.Accept = Accept;
         }
         _httpContext.Response.Headers.Clear();
-        _httpContext.Response.Body = Stream.Null;
+        // Use a fresh response body feature for every invocation so each sample measures the same writer lifecycle.
+        _httpContext.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(Stream.Null));
         return _executor.ExecuteAsync(_actionContext, _result);
     }
 

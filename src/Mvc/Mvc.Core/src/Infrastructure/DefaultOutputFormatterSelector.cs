@@ -24,6 +24,7 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
         return left.Quality > right.Quality ? -1 : (left.Quality == right.Quality ? 0 : 1);
     };
 
+    private const int MaxInitialAcceptCapacity = 16;
     private readonly ILogger _logger;
     private readonly IList<IOutputFormatter> _formatters;
     private readonly bool _respectBrowserAcceptHeader;
@@ -155,14 +156,15 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
         }
 
         // Pre-size the list using the number of comma separated entries so that the common case of a short Accept
-        // header does not over-allocate or grow the backing array.
+        // header does not over-allocate or grow the backing array. The initial capacity is bounded so that headers
+        // containing many empty entries don't over-allocate; the list grows as needed for longer headers.
         var capacity = 0;
-        for (var i = 0; i < acceptHeader.Count; i++)
+        for (var i = 0; i < acceptHeader.Count && capacity < MaxInitialAcceptCapacity; i++)
         {
             capacity += acceptHeader[i] is { } value ? value.AsSpan().Count(',') + 1 : 0;
         }
 
-        var result = new List<MediaTypeSegmentWithQuality>(capacity);
+        var result = new List<MediaTypeSegmentWithQuality>(Math.Min(capacity, MaxInitialAcceptCapacity));
         AcceptHeaderParser.ParseAcceptHeader(acceptHeader, result);
         for (var i = 0; i < result.Count; i++)
         {
