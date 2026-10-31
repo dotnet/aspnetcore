@@ -6,7 +6,6 @@ using System.Buffers.Text;
 using System.Collections;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
@@ -157,20 +156,20 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         return true;
     }
 
+    private const int MaxScratchNameLength = 64;
+    private char[]? _unknownNameScratch;
+
     [MethodImpl(MethodImplOptions.NoInlining)]
-    [SkipLocalsInit]
     private void AppendUnknownHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
     {
-        const int MaxStackNameLength = 64;
-
         string nameStr;
         string key;
-        Span<char> nameChars = stackalloc char[MaxStackNameLength];
-        if ((uint)(name.Length - 1) < MaxStackNameLength &&
+        if ((uint)(name.Length - 1) < MaxScratchNameLength &&
             !name.Contains((byte)0) &&
-            Ascii.ToUtf16(name, nameChars, out var written) == OperationStatus.Done)
+            Ascii.ToUtf16(name, _unknownNameScratch ??= new char[MaxScratchNameLength], out var written) == OperationStatus.Done)
         {
-            nameChars = nameChars.Slice(0, written);
+            // The scratch buffer is private to this instance and only used transiently within this method.
+            var nameChars = _unknownNameScratch.AsSpan(0, written);
             if (TryGetInternedHeaderName(nameChars, out var internedName))
             {
                 // Reuse the preallocated name unless a custom encoding selector could observe a different casing.
@@ -192,8 +191,9 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         }
 
         var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
-        ref var values = ref CollectionsMarshal.GetValueRefOrAddDefault(Unknown, key, out _);
-        values = AppendValue(values, valueStr);
+        var unknown = Unknown;
+        unknown.TryGetValue(key, out var existing);
+        unknown[key] = AppendValue(existing, valueStr);
     }
 
     public Enumerator GetEnumerator()
