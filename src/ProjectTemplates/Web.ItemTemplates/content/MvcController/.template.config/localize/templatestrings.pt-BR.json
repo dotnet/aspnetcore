@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Controlador MVC",
+  "description": "Controlador MVC com ou sem ações de leitura/gravação",
+  "symbols/namespace/description": "Namespace do código gerado",
+  "symbols/actions/description": "Criar um controlador com ações de leitura/gravação",
+  "symbols/actions/displayName": "Adicionar Ações de Leitura/Gravação",
+  "postActions/openInEditor/description": "Abre o controlador criado no editor"
+}

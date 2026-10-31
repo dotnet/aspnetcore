@@ -1,0 +1,48 @@
+@page "/virtualization"
+@rendermode InteractiveServer
+
+<NativeAotStatus />
+<h1>Virtualization and expressions</h1>
+
+<div id="viewport" style="height: 200px; overflow-y: auto;">
+    <Virtualize Items="_items" Context="item" ItemSize="20">
+        <div class="row" style="height:20px">@item</div>
+    </Virtualize>
+</div>
+
+<p id="expression-created">@_gettersCreated|@_settersCreated</p>
+<p id="expression-invoked">@_gettersInvoked|@_settersInvoked</p>
+<p id="expression-value">@_target.MaxItemCount</p>
+
+@code {
+    private readonly List<string> _items = [.. Enumerable.Range(0, 500).Select(i => $"row-{i}")];
+    private readonly ExpressionTarget _target = new();
+    private int _gettersCreated;
+    private int _settersCreated;
+    private int _gettersInvoked;
+    private int _settersInvoked;
+
+    protected override void OnInitialized()
+    {
+        var target = Expression.Constant(_target);
+        var property = Expression.Property(target, nameof(ExpressionTarget.MaxItemCount));
+        var getter = Expression.Lambda<Func<int>>(property).Compile();
+        _gettersCreated++;
+
+        var value = Expression.Parameter(typeof(int), "value");
+        var setter = Expression.Lambda<Action<int>>(Expression.Assign(property, value), value).Compile();
+        _settersCreated++;
+
+        _ = getter();
+        _gettersInvoked++;
+        setter(10_000);
+        _settersInvoked++;
+        _ = getter();
+        _gettersInvoked++;
+    }
+
+    private sealed class ExpressionTarget
+    {
+        public int MaxItemCount { get; set; }
+    }
+}

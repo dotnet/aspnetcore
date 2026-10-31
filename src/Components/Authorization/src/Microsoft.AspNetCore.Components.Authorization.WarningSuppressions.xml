@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Components.Authorization, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2110</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.RenderContentInDefaultLayout(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder,Microsoft.AspNetCore.Components.RenderFragment)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2111</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.RenderContentInDefaultLayout(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder,Microsoft.AspNetCore.Components.RenderFragment)</property>
+    </attribute>
+  </assembly>
+</linker>

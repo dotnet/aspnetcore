@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Local testing does not work when bin/ directory is not in project directory due to deployer expectations. -->
+    <BaseOutputPath />
+    <OutputPath />
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Składnik Razor",
+  "description": "Składnik interfejsu użytkownika wielokrotnego użytku implementowany przy użyciu składni Razor",
+  "symbols/namespace/description": "przestrzeń nazw wygenerowanego kodu",
+  "symbols/use-code-behind/description": "utwórz składnik za pomocą pliku kodu code-behind",
+  "symbols/use-code-behind/displayName": "Użyj kodu code behind",
+  "postActions/openInEditor/description": "Otwiera plik Component1.razor w edytorze"
+}

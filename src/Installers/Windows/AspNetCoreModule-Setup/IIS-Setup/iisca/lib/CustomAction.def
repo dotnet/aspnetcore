@@ -1,0 +1,15 @@
+; Copyright (c) Microsoft Corporation. All rights reserved.
+; Licensed under the MIT license.
+
+LIBRARY iisca
+
+EXPORTS
+
+    ; IIS Common Config custom actions
+
+    IISScheduleInstallCA
+    IISScheduleUninstallCA
+    IISExecuteCA
+    IISBeginTransactionCA
+    IISRollbackTransactionCA
+    IISCommitTransactionCA

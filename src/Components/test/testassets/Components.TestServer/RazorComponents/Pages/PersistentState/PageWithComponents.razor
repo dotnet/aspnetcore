@@ -1,0 +1,65 @@
+﻿@page "/persistent-state/page-with-components"
+@using TestContentPackage.PersistentComponents
+
+<h3>Streaming page with components</h3>
+
+<h3>
+    This page can render one or more components with different render modes and different streaming rendering modes.
+    It accepts a render-mode query parameter which is used to determine the render mode for the components on the page.
+    It also accepts a streaming-id query parameter which is used to select whether to render a component that uses streaming rendering or not.
+</h3>
+
+<p id="render-mode">Render mode: @_renderMode?.GetType()?.Name</p>
+<p id="streaming-id">Streaming id:@StreamingId</p>
+@if (_renderMode != null)
+{
+    <CascadingValue Name="RunningOnServer" Value="true">
+        @if (!string.IsNullOrEmpty(StreamingId))
+        {
+            <StreamingComponentWithPersistentState @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
+        }
+        else
+        {
+            <NonStreamingComponentWithPersistentState @rendermode="@_renderMode" ServerState="@ServerState" />
+        }
+    </CascadingValue>
+}
+@if (!string.IsNullOrEmpty(StreamingId))
+{
+    <a id="end-streaming" href="@($"persistent-state/end-streaming?streaming-id={StreamingId}")" target="_blank">End streaming</a>
+}
+
+<a id="page-no-components-link" href=@($"persistent-state/page-no-components?render-mode={RenderMode}&streaming-id={StreamingId}")>Go to page with no components</a>
+
+
+@code {
+
+    private IComponentRenderMode _renderMode;
+
+    [SupplyParameterFromQuery(Name = "render-mode")] public string RenderMode { get; set; }
+
+    [SupplyParameterFromQuery(Name = "streaming-id")] public string StreamingId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "server-state")] public string ServerState { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(RenderMode))
+        {
+            switch (RenderMode)
+            {
+                case "server":
+                    _renderMode = new InteractiveServerRenderMode(true);
+                    break;
+                case "wasm":
+                    _renderMode = new InteractiveWebAssemblyRenderMode(true);
+                    break;
+                case "auto":
+                    _renderMode = new InteractiveAutoRenderMode(true);
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid render mode: {RenderMode}");
+            }
+        }
+    }
+}

@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "SCSS 樣式表 (SASS)",
+  "description": "SCSS 是編譯成 CSS 的語言",
+  "postActions/openInEditor/description": "在編輯器中開啟 styleSheet1.scss"
+}

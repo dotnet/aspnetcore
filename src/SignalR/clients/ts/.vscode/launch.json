@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Node - Attach by Process ID",
+            "processId": "${command:PickProcess}"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest - All",
+            "program": "${workspaceFolder}/common/node_modules/jest/bin/jest",
+            "cwd": "${workspaceFolder}",
+            "args": ["--runInBand"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+          },
+          {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest - Current File",
+            "program": "${workspaceFolder}/common/node_modules/jest/bin/jest",
+            "cwd": "${workspaceFolder}",
+            "args": ["${fileBasename}"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+          }
+    ]
+}

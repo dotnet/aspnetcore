@@ -1,0 +1,25 @@
+LIBRARY aspnetcoreCA
+
+EXPORTS
+
+    ; IIS Common Config custom actions
+
+    IISScheduleInstallCA
+    IISScheduleUninstallCA
+    IISExecuteCA
+    IISBeginTransactionCA
+    IISRollbackTransactionCA
+    IISCommitTransactionCA
+
+    CheckForSharedConfigurationCA
+
+    ScheduleInstallWindowsHotfixCA
+    ExecuteInstallWindowsHotfixCA
+    ExecuteCleanUpWindowsHotfixCA
+    ScheduleRebootIfRequiredCA
+
+    AddConfigSection
+    RemoveConfigSection
+    RegisterANCMCompressionCA
+
+    CheckForServicesRunningCA

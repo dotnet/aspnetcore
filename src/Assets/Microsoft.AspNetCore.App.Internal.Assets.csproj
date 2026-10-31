@@ -1,0 +1,96 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor" DefaultTargets="Pack">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>ASP.NET Core static framework assets</Description>
+    <PackageId>Microsoft.AspNetCore.App.Internal.Assets</PackageId>
+    <IsPackable>true</IsPackable>
+    <OutputType>Library</OutputType>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ImplicitUsings>disable</ImplicitUsings>
+
+    <!-- Disable compression in this library package: the assets are consumed by root apps
+         which compress them in their own obj dirs during publish. Keeping compression enabled
+         here causes a race condition when multiple apps publish in parallel — they all invoke
+         this project's publish-compression targets targeting the same shared obj dir. -->
+    <CompressionEnabled>false</CompressionEnabled>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
+
+    <!-- The package doesn't produce any lib or ref assemblies -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+    <!-- The required assets aren't available when the JavaScript build is intentionally disabled. -->
+    <IsPackable Condition="'$(BuildNodeJS)' == 'false'">false</IsPackable>
+
+    <!-- Validate the package inputs before NuGet evaluates its incremental GenerateNuspec target. -->
+    <BeforePack>_ValidateBlazorPackageInputs;$(BeforePack)</BeforePack>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</_BlazorJSContentRoot>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorJSContentRoot>
+  </PropertyGroup>
+
+  <!-- Include blazor JS files as Content under wwwroot/ so the SWA pipeline discovers them.
+       ContentRoot points to the JS dist folder so the runtime middleware can serve files directly.
+       Condition on BuildNodeJS since the files won't exist during No-NodeJS CI builds. -->
+  <!-- blazor.webassembly.js is provided by Microsoft.AspNetCore.Components.WebAssembly instead.
+       It flows to Blazor Web Apps through the client project P2P reference chain. -->
+  <ItemGroup>
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js.map" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js.map" />
+
+    <Content Include="@(_BlazorJSFile)" Condition="'$(BuildNodeJS)' != 'false'"
+      Link="wwwroot\_framework\%(FileName)%(Extension)" ContentRoot="$(_BlazorJSContentRoot)\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <StaticWebAssetGroupDefinition Include="BlazorFramework"
+      Value="enabled" SourceId="$(PackageId)" Order="0"
+      IncludePattern="**" />
+  </ItemGroup>
+
+  <Target Name="_ValidateBlazorJSFiles">
+    <ItemGroup>
+      <_MissingBlazorJSFile Include="@(_BlazorJSFile)" Condition="!Exists('%(_BlazorJSFile.Identity)')" />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_MissingBlazorJSFile)' != ''"
+      Text="The following Blazor assets do not exist: @(_MissingBlazorJSFile, ', '). Run 'npm run build' in the repo root to generate them." />
+  </Target>
+
+  <Target Name="_CheckBlazorJSPath"
+    AfterTargets="ResolveProjectReferences"
+    Condition="'$(BuildNodeJS)' != 'false'"
+    DependsOnTargets="_ValidateBlazorJSFiles" />
+
+  <Target Name="_ValidateBlazorPackageInputs"
+    Condition="'$(IsPackable)' == 'true'"
+    DependsOnTargets="_ValidateBlazorJSFiles" />
+
+  <!-- Validate the final NuGet input list after the static web assets pack targets have populated it.
+       _PackageFiles is the list passed directly to NuGet's PackTask. -->
+  <Target Name="_ValidateBlazorPackageContents"
+    BeforeTargets="GenerateNuspec"
+    Condition="'$(IsPackable)' == 'true'">
+    <ItemGroup>
+      <_ExpectedBlazorPackagePath Include="@(_BlazorJSFile->'staticwebassets\_framework\%(FileName)%(Extension)')" />
+      <_ActualPackagePath Include="@(_PackageFiles->'%(PackagePath)')" />
+      <_MissingBlazorPackagePath Include="@(_ExpectedBlazorPackagePath)"
+        Exclude="@(_ActualPackagePath)" />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_MissingBlazorPackagePath)' != ''"
+      Text="The package is missing the following required Blazor assets: @(_MissingBlazorPackagePath, ', ')." />
+  </Target>
+
+</Project>

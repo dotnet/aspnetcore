@@ -1,0 +1,153 @@
+parameters:
+  # Optional: dependencies of the job
+  dependsOn: ''
+
+  # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
+  pool: ''
+
+  # Project-scoped WIF service connection for Ceapex feed authentication.
+  CeapexServiceConnection: 'dnceng-onelocbuild-ceapex'
+
+  # GitHub App authentication for the OneLoc check-in PR.
+  GitHubAppServiceConnection: 'dnceng-oneloc-githubapp'
+  GitHubAppKeyVaultName: 'EngKeyVault'
+  GitHubAppIdSecretName: 'oneloc-localization-app-app-id'
+  GitHubAppPrivateKeySecretName: 'oneloc-localization-app-app-private-key'
+
+  SourcesDirectory: $(System.DefaultWorkingDirectory)
+  CreatePr: true
+  AutoCompletePr: false
+  ReusePr: true
+  UseLfLineEndings: true
+  UseCheckedInLocProjectJson: false
+  SkipLocProjectJsonGeneration: false
+  LanguageSet: VS_Main_Languages
+  LclSource: lclFilesInRepo
+  LclPackageId: ''
+  RepoType: gitHub
+  GitHubOrg: dotnet
+  MirrorRepo: ''
+  MirrorBranch: main
+  xLocCustomPowerShellScript: ''
+  condition: ''
+  JobNameSuffix: ''
+  is1ESPipeline: ''
+jobs:
+- job: OneLocBuild${{ parameters.JobNameSuffix }}
+
+  dependsOn: ${{ parameters.dependsOn }}
+
+  displayName: OneLocBuild${{ parameters.JobNameSuffix }}
+
+  variables:
+    - name: _GenerateLocProjectArguments
+      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
+        -LanguageSet "${{ parameters.LanguageSet }}"
+        -CreateNeutralXlfs
+    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
+      - name: _GenerateLocProjectArguments
+        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
+    - template: /eng/common/core-templates/variables/pool-providers.yml
+      parameters:
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
+
+  ${{ if ne(parameters.pool, '') }}:
+    pool: ${{ parameters.pool }}
+  ${{ if eq(parameters.pool, '') }}:
+    pool:
+      # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+      ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+        name: AzurePipelines-EO
+        image: 1ESPT-Windows2025
+        demands: Cmd
+        os: windows
+      # If it's not devdiv, it's dnceng
+      ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+        name: $(DncEngInternalBuildPool)
+        image: windows.vs2026.amd64
+        os: windows
+
+  steps:
+    - ${{ if eq(parameters.is1ESPipeline, '') }}:
+      - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
+    - ${{ if notIn(variables['System.TeamProject'], 'internal', 'DevDiv') }}:
+      - 'OneLocBuild is supported only in dnceng/internal and DevDiv/DevDiv.': error
+    - ${{ if eq(parameters.CeapexServiceConnection, '') }}:
+      - 'CeapexServiceConnection must identify a WIF service connection.': error
+
+    - ${{ if ne(parameters.SkipLocProjectJsonGeneration, 'true') }}:
+      - task: Powershell@2
+        inputs:
+          filePath: $(System.DefaultWorkingDirectory)/eng/common/generate-locproject.ps1
+          arguments: $(_GenerateLocProjectArguments)
+        displayName: Generate LocProject.json
+        condition: ${{ parameters.condition }}
+
+    # Acquire a short-lived Entra token for Ceapex feed access.
+    - template: /eng/common/templates/steps/get-federated-access-token.yml
+      parameters:
+        federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
+        outputVariableName: 'CeapexEntraToken'
+        condition: ${{ parameters.condition }}
+
+    # Mint a short-lived GitHub App installation token for the loc check-in PR.
+    - ${{ if eq(parameters.RepoType, 'gitHub') }}:
+      - template: /eng/common/core-templates/steps/get-github-app-token.yml
+        parameters:
+          is1ESPipeline: ${{ parameters.is1ESPipeline }}
+          ${{ if and(eq(variables['System.TeamProject'], 'DevDiv'), eq(parameters.GitHubAppServiceConnection, 'dnceng-oneloc-githubapp')) }}:
+            azureSubscription: 'devdiv-oneloc-githubapp'
+          ${{ else }}:
+            azureSubscription: ${{ parameters.GitHubAppServiceConnection }}
+          keyVaultName: ${{ parameters.GitHubAppKeyVaultName }}
+          appIdSecretName: ${{ parameters.GitHubAppIdSecretName }}
+          appPrivateKeySecretName: ${{ parameters.GitHubAppPrivateKeySecretName }}
+          installationOwner: ${{ parameters.GitHubOrg }}
+          outputVariableName: 'GitHubAppInstallationToken'
+          condition: ${{ parameters.condition }}
+
+    - task: OneLocBuild@2
+      displayName: OneLocBuild
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      inputs:
+        locProj: eng/Localize/LocProject.json
+        outDir: $(Build.ArtifactStagingDirectory)
+        lclSource: ${{ parameters.LclSource }}
+        lclPackageId: ${{ parameters.LclPackageId }}
+        isCreatePrSelected: ${{ parameters.CreatePr }}
+        isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
+        ${{ if eq(parameters.CreatePr, true) }}:
+          isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
+          isShouldReusePrSelected: ${{ parameters.ReusePr }}
+        packageSourceAuth: patAuth
+        patVariable: $(CeapexEntraToken)
+        ${{ if eq(parameters.RepoType, 'gitHub') }}:
+          repoType: ${{ parameters.RepoType }}
+          gitHubPatVariable: "$(GitHubAppInstallationToken)"
+        ${{ if ne(parameters.MirrorRepo, '') }}:
+          isMirrorRepoSelected: true
+          gitHubOrganization: ${{ parameters.GitHubOrg }}
+          mirrorRepo: ${{ parameters.MirrorRepo }}
+          mirrorBranch: ${{ parameters.MirrorBranch }}
+        ${{ if ne(parameters.xLocCustomPowerShellScript, '') }}:
+          xLocCustomPowerShellScript: ${{ parameters.xLocCustomPowerShellScript }}
+      condition: ${{ parameters.condition }}
+
+    # Copy the locProject.json to the root of the Loc directory, then publish a pipeline artifact
+    - task: CopyFiles@2
+      displayName: Copy LocProject.json
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)/eng/Localize/'
+        Contents: 'LocProject.json'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/loc'
+      condition: ${{ parameters.condition }}
+
+    - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+      parameters:
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
+        args:
+          targetPath: '$(Build.ArtifactStagingDirectory)/loc'
+          artifactName: 'Loc'
+          displayName: 'Publish Localization Files'
+          condition: ${{ parameters.condition }}

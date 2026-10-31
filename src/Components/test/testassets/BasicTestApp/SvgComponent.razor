@@ -1,0 +1,90 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+
+<strong>Note all features implemented here are currently supported. See https://github.com/dotnet/aspnetcore/issues/18271 and SvgTest for more info.</strong>
+
+<h3>SVG with Callback</h3>
+<svg height="250" width="250" id="svg-with-callback">
+    <circle cx="125" cy="125" r=@radius fill="red" stroke="black" stroke-width="3" style="@styleValue" />
+</svg>
+
+<button @onclick=@(() => { radius *= 2; styleValue = null; })>Click me</button>
+
+<h3>SVG with Child Component</h3>
+<svg height="250" width="250" id="svg-with-child-component">
+    <SvgCircleComponent />
+</svg>
+
+<h3>SVG with Foreign Object</h3>
+<p>
+    Browsers expect that there is a single parent element under the `foreignObject` or elements
+    will fail to render properly. Here, we ensure that that the text elements are wrapped in parent
+    paragraph element.
+</p>
+<svg width="200" height="200" id="svg-with-foreign-object" xmlns="http://www.w3.org/2000/svg">
+    <foreignObject x="0" y="0" width="200" height="200">
+        <p>
+            <strong>thestringfoo</strong>
+            <strong>@bar</strong>
+        </p>
+    </foreignObject>
+</svg>
+
+<h3>SVG with link</h3>
+<p>
+    We can render SVGs within a foreign object as long as the SVG content is once
+    again wrapped in an SVG element. Here, we provided a complete SVG as a child of
+    NavLink to render the circle icon.
+</p>
+<svg id="svg-with-link">
+    <foreignObject x="0" y="0" width="200" height="200">
+        <NavLink href="counter" id="navlink-in-svg">
+            <svg>
+                <circle cx="100" cy="100" r="10" xmlns="http://www.w3.org/2000/svg"></circle>
+            </svg>
+        </NavLink>
+    </foreignObject>
+</svg>
+
+<h3>SVG with input element and two-way binding</h3>
+<p>
+    The `foreignObject` element must provide `width` and `height` attributes
+    in order for child elements to be rendered correctly in browsers.
+</p>
+<svg id="svg-with-two-way-binding" xmlns="http://www.w3.org/2000/svg">
+    <foreignObject width="200" height="200">
+        <div>
+            <input @bind="value" @bind:event="oninput" type="number"/> Two-way binding
+        </div>
+    </foreignObject>
+</svg>
+<p id="svg-with-two-way-binding-value">@value</p>
+
+
+<h3>SVG with render fragment</h3>
+<p>
+    Some elements might pass an `xmlns` attribute set to either `http://www.w3.org/1999/xhtml`
+    or `http://www.w3.org/2000/svg`. This is generally immaterial and the `element.namespaceUri`
+    that is set from `createElementNS` impacts the namespace used for the element.
+</p>
+<svg id="svg-with-render-fragment">
+    <foreignObject width="100" height="100">
+            <div>
+                @rf
+            </div>
+    </foreignObject>
+</svg>
+
+<h3>SVG with scoped CSS</h3>
+<svg id="svg-with-css-scope">
+    <circle cx="125" cy="125" r=@radius stroke-width="3" />
+</svg>
+
+@code {
+    int radius = 10;
+    string styleValue = "stroke: red;";
+    string bar = "thestringbar";
+
+    int value = 10;
+
+    RenderFragment rf = @<text><i>Hello</i></text>;
+}

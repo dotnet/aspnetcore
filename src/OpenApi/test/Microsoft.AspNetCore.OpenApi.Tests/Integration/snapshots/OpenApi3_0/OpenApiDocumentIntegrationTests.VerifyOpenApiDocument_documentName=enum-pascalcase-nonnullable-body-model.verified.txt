@@ -1,0 +1,65 @@
+﻿{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Sample | enum-pascalcase-nonnullable-body-model",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/enums/pascalcase/nonnullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PascalCaseNonNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseNonNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PascalCaseNonNullableModel": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PascalCaseStatus"
+          }
+        }
+      },
+      "PascalCaseStatus": {
+        "enum": [
+          "Active",
+          "Inactive",
+          "Pending"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

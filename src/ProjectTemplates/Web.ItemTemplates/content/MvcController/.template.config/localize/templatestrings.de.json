@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC-Controller",
+  "description": "MVC-Controller mit oder ohne Lese-/Schreibaktionen",
+  "symbols/namespace/description": "Namespace für den generierten Code",
+  "symbols/actions/description": "Controller mit Lese-/Schreibaktionen erstellen",
+  "symbols/actions/displayName": "Read/Write-Aktionen hinzufügen",
+  "postActions/openInEditor/description": "Öffnet den erstellten Controller im Editor."
+}

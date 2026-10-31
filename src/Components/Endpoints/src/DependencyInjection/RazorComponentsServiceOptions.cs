@@ -1,0 +1,144 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Hybrid;
+
+namespace Microsoft.AspNetCore.Components.Endpoints;
+
+/// <summary>
+/// Provides options for configuring server-side rendering of Razor Components.
+/// </summary>
+public sealed class RazorComponentsServiceOptions
+{
+    // Fairly long default lifetime to allow for clock skew across servers
+    private TimeSpan _temporaryRedirectionUrlValidityDuration = TimeSpan.FromMinutes(5);
+
+    internal FormDataMapperOptions _formMappingOptions = new();
+
+    /// <summary>
+    /// Gets or sets a value that determines whether to include detailed information on errors.
+    /// </summary>
+    public bool DetailedErrors { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value that determines whether client-side validation is disabled for all
+    /// forms rendered with static server-side rendering. When <see langword="false"/> (the default),
+    /// forms using <see cref="Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator"/> emit
+    /// client-side validation rules so user errors can be reported without a round trip to the
+    /// server. When <see langword="true"/>, no client-side validation rules are emitted and only
+    /// server-side validation runs.
+    /// </summary>
+    public bool DisableClientValidation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum number of elements allowed in a form collection.
+    /// </summary>
+    public int MaxFormMappingCollectionSize
+    {
+        get => _formMappingOptions.MaxCollectionSize;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
+            _formMappingOptions.MaxCollectionSize = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum depth allowed when recursively mapping form data.
+    /// </summary>
+    public int MaxFormMappingRecursionDepth
+    {
+        get => _formMappingOptions.MaxRecursionDepth;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, 1);
+            _formMappingOptions.MaxRecursionDepth = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum number of errors allowed when mapping form data.
+    /// </summary>
+    public int MaxFormMappingErrorCount
+    {
+        get => _formMappingOptions.MaxErrorCount;
+        set
+        {
+            _formMappingOptions.MaxErrorCount = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum size of the buffer used to read form data keys.
+    /// </summary>
+    public int MaxFormMappingKeySize
+    {
+        get => _formMappingOptions.MaxKeyBufferSize;
+        set => _formMappingOptions.MaxKeyBufferSize = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the lifetime of data protection validity for temporary redirection URLs
+    /// emitted by Blazor server-side rendering. These are only used transiently so the lifetime
+    /// only needs to be long enough for a client to receive the URL and begin navigation to it.
+    /// However, it should also be long enough to allow for clock skew across servers.
+    /// </summary>
+    public TimeSpan TemporaryRedirectionUrlValidityDuration
+    {
+        get => _temporaryRedirectionUrlValidityDuration;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value.TotalMilliseconds, 0);
+            _temporaryRedirectionUrlValidityDuration = value;
+        }
+    }
+
+    /// <summary>
+    /// Determines the settings used to create the TempData cookie.
+    /// </summary>
+    public CookieBuilder TempDataCookie { get; set; } = new()
+    {
+        Name = CookieTempDataProvider.CookieName,
+        HttpOnly = true,
+        SameSite = SameSiteMode.Lax,
+        IsEssential = false,
+        SecurePolicy = CookieSecurePolicy.SameAsRequest,
+    };
+
+    internal string? JavaScriptInitializers { get; set; }
+
+    /// <summary>
+    /// Gets or sets the storage provider type for TempData.
+    /// Defaults to <see cref="TempDataProviderType.Cookie"/>.
+    /// </summary>
+    public TempDataProviderType TempDataProviderType { get; set; } = TempDataProviderType.Cookie;
+
+    /// <summary>
+    /// Gets or sets the maximum size, in bytes, of the in-memory cache used by <see cref="CacheView"/>
+    /// for server-side rendering. When the limit is reached, no new entries are cached until
+    /// existing entries expire. Defaults to 100 MB. A value of 0 configures a zero-byte
+    /// cache size limit, so entries are not cached.
+    /// </summary>
+    public long CacheViewSizeLimit
+    {
+        get => _cacheViewSizeLimit;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            _cacheViewSizeLimit = value;
+        }
+    }
+
+    private long _cacheViewSizeLimit = 100 * 1024 * 1024;
+
+    /// <summary>
+    /// Gets or sets the <see cref="HybridCache"/> used by <see cref="CacheView"/> for server-side
+    /// rendering. When left unset, the registered <see cref="HybridCache"/> service is used if one is
+    /// available; otherwise the in-memory store is used.
+    /// </summary>
+    public HybridCache? CacheViewHybridCache { get; set; }
+
+    internal static readonly TimeSpan DefaultCacheViewExpiration = TimeSpan.FromSeconds(30);
+}

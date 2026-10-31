@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Support for writing functional tests for MVC applications.</Description>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
+    <IsPackable>true</IsPackable>
+    <!-- We're disable NU5100 explicitly bundling assemblies as tasks so they are not referenced when consumed. -->
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" IncludeAssets="ContentFiles;Build" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\TestHost\src\Microsoft.AspNetCore.TestHost.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Testing.Tasks\src\Microsoft.AspNetCore.Mvc.Testing.Tasks.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
+    <Content Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Mvc.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Tasks.dll" Pack="true" PackagePath="tasks/netstandard2.0/" />
+    <Content Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive/$(TargetFramework)/" />
+  </ItemGroup>
+</Project>

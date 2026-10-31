@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Arkusz stylów języka LESS",
+  "description": "LESS to język kompilowany na język CSS.",
+  "postActions/openInEditor/description": "Otwiera plik styleSheet1.less w edytorze"
+}

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>GetDocument.Insider</AssemblyName>
+    <Description>GetDocument Command-line Tool inside man</Description>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
+    <IsShippingPackage>false</IsShippingPackage>
+    <NoWarn>$(NoWarn);nullable</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+    <PackageReference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" IncludeAssets="ContentFiles;Build" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.OpenApi" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
+  </ItemGroup>
+
+  <Target Name="BuildX86" BeforeTargets="Build" Condition=" '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' And '$(Platform)' != 'x86' ">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="TargetFramework=$(TargetFramework);Platform=x86" Targets="Build" />
+  </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.ApiDescription.Tool.Tests" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+</Project>

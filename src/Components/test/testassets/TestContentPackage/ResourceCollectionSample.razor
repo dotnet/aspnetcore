@@ -1,0 +1,22 @@
+﻿@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Web;
+@inject IJSRuntime JSRuntime
+
+<p id="platform-name">@RendererInfo.Name</p>
+
+<p id="basic-app-styles">@Assets["BasicTestApp.styles.css"]</p>
+
+@if (!RendererInfo.IsInteractive)
+{
+    <button id="import-module" onclick="import('./Index.mjs')">Import JS Module</button>    
+}else
+{
+    <button id="import-module" @onclick="ManualImport">Import JS Module</button>
+}
+
+@code{
+    private async Task ManualImport()
+    {
+        await JSRuntime.InvokeVoidAsync("import", "./Index.mjs");
+    }
+}

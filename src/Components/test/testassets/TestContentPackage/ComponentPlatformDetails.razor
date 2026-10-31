@@ -1,0 +1,34 @@
+﻿
+<p id="host-render-mode">@_renderMode</p>
+<p id="platform-is-interactive">@_isInteractive</p>
+
+@code {
+
+    private string _renderMode = "";
+    private bool _isInteractive = false;
+
+    protected override void OnInitialized()
+    {
+        if (AssignedRenderMode is InteractiveServerRenderMode)
+        {
+            _renderMode = $"server";
+        }
+        else if (AssignedRenderMode is InteractiveWebAssemblyRenderMode)
+        {
+            _renderMode = $"webassembly";
+        }
+        else if (AssignedRenderMode is InteractiveAutoRenderMode)
+        {
+            _renderMode = $"auto";
+        }
+        else
+        {
+            _renderMode = "static";
+        }
+
+        if (RendererInfo.IsInteractive)
+        {
+            _isInteractive = true;
+        }
+    }
+}

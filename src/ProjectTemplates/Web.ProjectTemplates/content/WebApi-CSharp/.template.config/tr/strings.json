@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "ASP.NET Core Web API'si",
+    "description": "OpenAPI ve kimlik doğrulaması için isteğe bağlı destek ile birlikte ASP.NET Core denetleyicilerini veya minimal API'leri kullanarak RESTful Web API'si oluşturmaya yönelik proje şablonu.",
+    "parameter.DisableOpenAPI.name": "_OpenAPI desteğini etkinleştir",
+    "parameter.DisableOpenAPI.description": "OpenAPI (Swagger) desteğini etkinleştirir",
+    "parameter.UseMinimalAPIs.name": "Denetleyicileri kullan",
+    "parameter.UseMinimalAPIs.description": "Minimal API yerine denetleyicileri kullanın."
+  }
+}

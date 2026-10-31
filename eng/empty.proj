@@ -1,0 +1,5 @@
+<!-- eng\common\build.ps1 fails without a project to build, so we give it this empty project to satisfy its desires -->
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+</Project>

@@ -1,0 +1,34 @@
+﻿<div>
+    <h2>Error throwing buttons</h2>
+    <p>
+        <button id="throw-simple-exception" @onclick="@(ThrowSimple)">Throw simple exception</button>
+        <button id="throw-inner-exception" @onclick="@(ThrowInner)">Throw with inner exception</button>
+        <button id="throw-aggregate-exception" @onclick="@(ThrowAggregate)">Throw aggregate exception</button>
+    </p>
+</div>
+
+@code {
+    int currentCount = 0;
+
+    void ThrowSimple()
+    {
+        currentCount++;
+        throw new InvalidTimeZoneException("Doing something that won't work!");
+    }
+
+    void ThrowInner()
+    {
+        currentCount++;
+        throw new InvalidTimeZoneException("Here is the outer exception",
+            new ArithmeticException("Here is the inner exception"));
+    }
+
+    void ThrowAggregate()
+    {
+        currentCount++;
+        throw new AggregateException(
+            new InvalidTimeZoneException("Aggregate exception 1"),
+            new InvalidTimeZoneException("Aggregate exception 2"),
+            new InvalidTimeZoneException("Aggregate exception 3"));
+    }
+}

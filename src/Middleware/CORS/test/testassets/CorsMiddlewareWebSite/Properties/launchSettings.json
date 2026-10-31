@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "CorsMiddlewareWebSite": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:61226;http://localhost:61227"
+    }
+  }
+}

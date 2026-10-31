@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)\CommandLineUtils\Utilities\DotNetMuxer.cs" Link="Shared\DotNetMuxer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../build/Microsoft.AspNetCore.OpenApi.targets" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+</Project>

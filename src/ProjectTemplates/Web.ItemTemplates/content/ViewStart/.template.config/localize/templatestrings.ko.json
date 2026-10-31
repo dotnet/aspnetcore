@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC ViewStart",
+  "description": "MVC ViewStart 페이지",
+  "postActions/openInEditor/description": "편집기에서 ViewStart.cshtml을 엽니다(_V)"
+}

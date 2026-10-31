@@ -1,0 +1,167 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.IO;
+using System.Net.Http;
+using System.ServiceProcess;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
+using Xunit;
+
+#if !IIS_FUNCTIONALS
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+#if IISEXPRESS_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
+#elif NEWHANDLER_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests;
+#elif NEWSHIM_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
+#endif
+
+#else
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+#endif
+
+[Collection(PublishedSitesCollection.Name)]
+public class ApplicationInitializationTests : IISFunctionalTestBase
+{
+    public ApplicationInitializationTests(PublishedSitesFixture fixture) : base(fixture)
+    {
+    }
+
+    [ConditionalTheory]
+    [RequiresIIS(IISCapability.ApplicationInitialization)]
+    [InlineData(HostingModel.InProcess, true)]
+    [InlineData(HostingModel.OutOfProcess, true)]
+    [InlineData(HostingModel.InProcess, false)]
+    [InlineData(HostingModel.OutOfProcess, false)]
+    public async Task ApplicationPreloadStartsApp(HostingModel hostingModel, bool delayShutdown)
+    {
+        // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+        using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
+        {
+            var baseDeploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            baseDeploymentParameters.TransformArguments(
+                (args, contentRoot) => $"{args} CreateFile \"{Path.Combine(contentRoot, "Started.txt")}\"");
+            EnablePreload(baseDeploymentParameters);
+
+            baseDeploymentParameters.HandlerSettings["shutdownDelay"] = delayShutdown ? "1000" : "0";
+            var result = await DeployAsync(baseDeploymentParameters);
+
+            await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
+            StopServer();
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.Started(result), Logger);
+
+            if (delayShutdown)
+            {
+                await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.ShutdownMessage(result), Logger);
+            }
+            else
+            {
+                Assert.True(result.HostProcess.HasExited);
+
+                var entries = EventLogHelpers.GetEntries(result);
+                var expectedRegex = new Regex(EventLogHelpers.ShutdownMessage(result), RegexOptions.Singleline);
+                var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
+                Assert.Empty(matchedEntries);
+            }
+        }
+    }
+
+    [ConditionalFact]
+    [RequiresIIS(IISCapability.ApplicationInitialization)]
+    [RequiresNewHandler]
+    public async Task ApplicationPreloadDrainsRequestDuringShutdown()
+    {
+        // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+        using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            deploymentParameters.TransformArguments((args, _) => $"{args} HostBuilder");
+            EnablePreload(deploymentParameters);
+
+            var result = await DeployAsync(deploymentParameters);
+            // The deployment client's LoggingHandler buffers the response body, defeating ResponseHeadersRead.
+            // We're purposefully blocking the response from being sent on the server side until the app shutdown starts.
+            using var client = new HttpClient
+            {
+                BaseAddress = new Uri(result.ApplicationBaseUri),
+                Timeout = TimeSpan.FromSeconds(200),
+            };
+            using var response = await client.GetAsync("/CompleteAfterAppStartsShuttingDown", HttpCompletionOption.ResponseHeadersRead);
+            var responseBodyTask = response.Content.ReadAsStringAsync();
+
+            Logger.LogInformation("Creating app_offline.htm.");
+            AddAppOffline(result.ContentRoot);
+
+            Logger.LogInformation("Waiting for the response body to complete.");
+            var responseBody = await responseBodyTask;
+            Logger.LogInformation("The response body completed.");
+            Assert.Equal("StartedCompleted", responseBody);
+
+            Logger.LogInformation("Waiting for the worker process to stop.");
+            result.AssertWorkerProcessStop();
+            Logger.LogInformation("The worker process stopped.");
+        }
+    }
+
+    [ConditionalTheory]
+    [RequiresIIS(IISCapability.ApplicationInitialization)]
+    [RequiresNewHandler]
+    [InlineData(HostingModel.InProcess)]
+    [InlineData(HostingModel.OutOfProcess)]
+    public async Task ApplicationInitializationPageIsRequested(HostingModel hostingModel)
+    {
+        // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+        using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
+        {
+            var baseDeploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            EnablePreload(baseDeploymentParameters);
+
+            baseDeploymentParameters.ServerConfigActionList.Add(
+                (config, _) =>
+                {
+                    config
+                        .RequiredElement("system.webServer")
+                        .GetOrAdd("applicationInitialization")
+                        .GetOrAdd("add", "initializationPage", "/CreateFile");
+                });
+
+            var result = await DeployAsync(baseDeploymentParameters);
+
+            await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
+            StopServer();
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.Started(result), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.ShutdownMessage(result), Logger);
+        }
+    }
+
+    private static void EnablePreload(IISDeploymentParameters baseDeploymentParameters)
+    {
+        baseDeploymentParameters.EnsureSection("applicationInitialization", "system.webServer");
+        baseDeploymentParameters.ServerConfigActionList.Add(
+            (config, _) =>
+            {
+
+                foreach (var site in config
+                    .RequiredElement("system.applicationHost")
+                    .RequiredElement("sites")
+                    .Elements("site"))
+                {
+                    site
+                        .RequiredElement("application")
+                        .SetAttributeValue("preloadEnabled", true);
+                }
+            });
+
+        baseDeploymentParameters.EnableModule("ApplicationInitializationModule", "%IIS_BIN%\\warmup.dll");
+    }
+}

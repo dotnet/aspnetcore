@@ -1,0 +1,8 @@
+schemaVersion: 0.0.1
+isProduction: true
+accountableOwners:
+  service: 4db45fa9-fb0f-43ce-b523-ad1da773dfbc
+routing:
+  defaultAreaPath:
+    org: devdiv
+    path: DevDiv\ASP.NET Core\Policy Violations

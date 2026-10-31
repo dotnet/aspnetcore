@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+
+<body>
+    <h1 id="transportName">Unknown Transport</h1>
+
+    <form id="sendmessage">
+        <input type="text" id="data" />
+        <input type="submit" value="Send" />
+    </form>
+
+    <ul id="messages"></ul>
+    <script src="lib/signalr/signalr.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let transportType = signalR.HttpTransportType[getParameterByName('transport')] || signalR.HttpTransportType.WebSockets;
+
+            document.getElementById('transportName').innerHTML = signalR.HttpTransportType[transportType];
+
+            let url = 'http://' + document.location.host + '/chat';
+            let connection = new signalR.HttpConnection(url, { transport: transportType, logger: signalR.LogLevel.Trace });
+
+            connection.onreceive = function (data) {
+                let child = document.createElement('li');
+                child.innerText = data;
+                document.getElementById('messages').appendChild(child);
+            };
+
+            document.getElementById('sendmessage').addEventListener('submit', function (event) {
+                let data = document.getElementById('data').value;
+                connection.send(data);
+                event.preventDefault();
+            });
+
+            connection.start(signalR.TransferFormat.Text).then(function () {
+                console.log("Opened");
+            }, function () {
+                console.log("Error opening connection");
+            });
+        });
+    </script>
+</body>
+
+</html>

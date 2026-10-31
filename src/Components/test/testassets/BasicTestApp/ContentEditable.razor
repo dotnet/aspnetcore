@@ -1,0 +1,17 @@
+﻿@using BasicTestApp.FormsTest
+
+<h3 id="clickable">ContentEditable</h3>
+
+<div contenteditable="true" style="border: 1px solid gray;" id="editable-div" @onblur="HandleBlur">
+    <EditableText Content="@content"></EditableText>
+</div>
+
+@code {
+    public string content = "";
+
+    private async Task HandleBlur()
+    {
+        await Task.Delay(1000);
+        Console.WriteLine("Handle blur...");
+    }
+}

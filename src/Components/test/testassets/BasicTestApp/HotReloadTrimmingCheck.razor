@@ -1,0 +1,41 @@
+@using System.Diagnostics.CodeAnalysis
+
+<h2>Hot Reload Trimming Check</h2>
+<p>
+    HotReloadManager type found:
+    <span id="hot-reload-manager-found">@HotReloadManagerFound</span>
+</p>
+<p>
+    UpdateApplication method found:
+    <span id="update-application-found">@UpdateApplicationFound</span>
+</p>
+
+@code {
+#nullable enable
+    string HotReloadManagerFound { get; set; } = "unknown";
+    string UpdateApplicationFound { get; set; } = "unknown";
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+        Justification = "This is a test component that intentionally uses reflection to check trimming behavior.")]
+    protected override void OnInitialized()
+    {
+        HotReloadManagerFound = "false";
+        UpdateApplicationFound = "false";
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            var hotReloadManagerType = assembly.GetType("Microsoft.AspNetCore.Components.HotReload.HotReloadManager");
+            if (hotReloadManagerType is not null)
+            {
+                HotReloadManagerFound = "true";
+                var method = hotReloadManagerType.GetMethod("UpdateApplication", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                if (method is not null)
+                {
+                    UpdateApplicationFound = "true";
+                }
+                break;
+            }
+        }
+    }
+#nullable restore
+}

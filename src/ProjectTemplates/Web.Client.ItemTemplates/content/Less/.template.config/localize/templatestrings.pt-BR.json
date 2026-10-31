@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Folha de Estilo LESS",
+  "description": "LESS é uma linguagem que compila em CSS",
+  "postActions/openInEditor/description": "Abre styleSheet1.less no editor"
+}

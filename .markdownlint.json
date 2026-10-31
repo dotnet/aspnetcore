@@ -1,0 +1,20 @@
+{
+    "default": true,
+    "ul-indent":                       false,
+    "no-trailing-spaces":              false,
+    "line-length":                     false,
+    "blanks-around-headings":          false,
+    "no-duplicate-heading":            { "siblings_only": true },
+    "no-trailing-punctuation":         false,
+    "ol-prefix":                       { "one_or_ordered": true },
+    "blanks-around-fences":            false,
+    "blanks-around-lists":             false,
+    "no-inline-html":                 { "allowed_elements": [ "summary", "details" ]},
+    "no-bare-urls":                    false,
+    "single-trailing-newline":         false,
+    "emphasis-style":                  false,
+
+    // rule settings and options are documented in https://github.com/DavidAnson/markdownlint
+    // feel free to disable more low value rules in here; get rule name from the error message.
+    // the purpose of the linter is to catch significant issues like broken links.
+}

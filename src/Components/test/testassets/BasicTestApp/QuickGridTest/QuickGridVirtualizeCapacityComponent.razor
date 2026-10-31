@@ -1,0 +1,93 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using System.Linq
+
+<h3>QuickGrid Virtualize fast-scroll capacity test</h3>
+
+<p>
+    <strong>Test:</strong> With an async ItemsProvider and a declared ItemSize smaller than the
+    real row height, fast scrolling must not leave the viewport stuck on placeholders. Pick a
+    row-height mode: variable-height rows (a Description column with 1-8 lines) additionally
+    stress the size-estimate and window-advance logic.
+</p>
+
+<p>
+    <button id="qg-mode-fixed" @onclick="() => _variableHeight = false">Fixed height</button>
+    <button id="qg-mode-variable" @onclick="() => _variableHeight = true">Variable height</button>
+</p>
+
+<p id="items-provider-call-count">ItemsProvider calls: @ItemsProviderCallCount</p>
+
+<style>
+    .qg-cap-cell { height: 50px; line-height: 50px; }
+    .qg-varcap-cell { padding: 4px 8px; vertical-align: top; }
+    .qg-varcap-desc { white-space: pre-line; }
+</style>
+
+@if (_variableHeight == false)
+{
+    <div id="qg-capacity" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
+        <QuickGrid ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="25">
+            <PropertyColumn Property="@(p => p.Id)" Title="ID" Class="qg-cap-cell" />
+            <PropertyColumn Property="@(p => p.Name)" Title="Name" Class="qg-cap-cell" />
+        </QuickGrid>
+    </div>
+}
+else if (_variableHeight == true)
+{
+    <div id="qg-variable-capacity" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
+        <QuickGrid ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="25">
+            <PropertyColumn Property="@(p => p.Id)" Title="ID" Class="qg-varcap-cell" />
+            <PropertyColumn Property="@(p => p.Name)" Title="Name" Class="qg-varcap-cell" />
+            <TemplateColumn Title="Description" Class="qg-varcap-cell">
+                <div class="qg-varcap-desc">@context.Description</div>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+}
+
+@code {
+    internal class Person
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+    private const int TotalItems = 1000;
+
+    private bool? _variableHeight;
+
+    private GridItemsProvider<Person> itemsProvider = default!;
+
+    int ItemsProviderCallCount = 0;
+
+    protected override void OnInitialized()
+    {
+        itemsProvider = async request =>
+        {
+            await Task.Delay(50);
+            ItemsProviderCallCount++;
+
+            var items = Enumerable.Range(request.StartIndex, request.Count ?? TotalItems)
+                .Where(i => i < TotalItems)
+                .Select(i => new Person
+                {
+                    Id = i + 1,
+                    Name = $"Person {i + 1}",
+                    Description = GenerateDescription(i)
+                })
+                .ToList();
+
+            StateHasChanged();
+            return GridItemsProviderResult.From(items: items, totalItemCount: TotalItems);
+        };
+    }
+
+    private static string GenerateDescription(int index)
+    {
+        var lineCount = 1 + (index % 8);
+        var lines = Enumerable.Range(0, lineCount)
+            .Select(l => $"Line {l + 1}: Item {index + 1} description text.");
+        return string.Join("\n", lines);
+    }
+}

@@ -1,0 +1,71 @@
+﻿@using System.Net
+@using System.Net.Http
+@inject HttpClient Http
+
+<h1>Binary HTTP request tester</h1>
+
+<p>
+    <div>URI:</div>
+    <input id="request-uri" @bind="uri" size="60"/>
+</p>
+
+<button id="send-request" @onclick="DoRequest">Request</button>
+
+@if (responseStatusCode.HasValue)
+{
+    <h2>Response</h2>
+    <p><div>Status:</div><span id="response-status">@responseStatusCode</span></p>
+    <p><div>StatusText:</div><span id="response-status-text">@responseStatusText</span></p>
+}
+
+<span id="test-outcome">@testOutcome</span>
+
+@code {
+    string uri = "";
+    HttpStatusCode? responseStatusCode;
+    string responseStatusText;
+    string testOutcome = "";
+
+    async Task DoRequest()
+    {
+        responseStatusCode = null;
+        responseStatusText = null;
+        testOutcome = null;
+
+        try
+        {
+            var bytes = await Http.GetByteArrayAsync(uri);
+            if (bytes.Length != 256)
+            {
+                testOutcome = "Expected 256 bytes but got " + bytes.Length.ToString();
+                return;
+            }
+
+            var reversedBytes = bytes.ToArray();
+            Array.Reverse(reversedBytes);
+
+            var response = await Http.PostAsync(uri, new ByteArrayContent(reversedBytes));
+            responseStatusCode = response.StatusCode;
+            responseStatusText = response.ReasonPhrase;
+            var doubleReversed = await response.Content.ReadAsByteArrayAsync();
+
+            for (int i = 0; i <= byte.MaxValue; i++)
+            {
+                if (doubleReversed[i] != (byte)i)
+                {
+                    testOutcome = $"Expected byte at index {i} to have value {i} but actually was {doubleReversed[i]}";
+                    return;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            if (ex is AggregateException)
+            {
+                ex = ex.InnerException;
+            }
+            responseStatusCode = HttpStatusCode.SeeOther;
+            testOutcome = ex.Message + Environment.NewLine + ex.StackTrace;
+        }
+    }
+}

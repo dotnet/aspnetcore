@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Localization\sample\LocalizationSample.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Localization\testassets\LocalizationWebsite\LocalizationWebsite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+
+    <ProjectReference Include="$(RepoRoot)src\Hosting\TestHost\src\Microsoft.AspNetCore.TestHost.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
+  </ItemGroup>
+
+</Project>

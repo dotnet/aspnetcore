@@ -1,0 +1,14 @@
+﻿<h1>Render Attributes Before connectedCallback</h1>
+
+<p>
+    When the connectedcallback event fires, it's nice to have the attributes of the HTML element set already,
+    as data is usually passed to the component using custom attributes.
+</p>
+
+
+<custom-web-component-data-from-attribute myattribute="@attributeString"></custom-web-component-data-from-attribute>
+
+
+@code {
+    string attributeString = "success";
+}

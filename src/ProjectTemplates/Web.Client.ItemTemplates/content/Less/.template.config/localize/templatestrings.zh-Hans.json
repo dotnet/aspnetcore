@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "LESS 样式表",
+  "description": "LESS 是可编译为 CSS 的一种语言",
+  "postActions/openInEditor/description": "在编辑器中打开 styleSheet1.less"
+}

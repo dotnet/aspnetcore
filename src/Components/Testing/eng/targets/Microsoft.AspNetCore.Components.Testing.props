@@ -1,0 +1,36 @@
+<!--
+  Microsoft.AspNetCore.Components.Testing.props
+  =========================
+  Default property values for E2E test projects that reference Microsoft.AspNetCore.Components.Testing.
+  Imported automatically via NuGet (buildTransitive).
+-->
+<Project>
+
+  <PropertyGroup>
+    <!--
+      Controls how E2E app projects are prepared at build time.
+        build   (default) — copies the project source so 'dotnet run' works (including after publish).
+        publish           — publishes the app for faster startup (native exe / framework-dependent).
+        all               — copies source AND publishes, producing two manifest entries per app.
+    -->
+    <E2EAppMode Condition="'$(E2EAppMode)' == ''">build</E2EAppMode>
+
+    <!--
+      Relative directory under the output root where E2E apps are placed.
+      Override this to change the folder name (e.g., 'test-apps').
+    -->
+    <E2EAppsRelativeDir Condition="'$(E2EAppsRelativeDir)' == ''">e2e-apps</E2EAppsRelativeDir>
+
+    <!--
+      Directory that E2E test artifacts (screenshots, console logs, server output,
+      Playwright traces/videos) are written to. Injected into the test assembly as an
+      [assembly: AssemblyMetadata] value and read by TestArtifactDirectory at runtime,
+      so artifacts stay within build/output locations instead of the machine temp folder.
+      A relative value is resolved against the test assembly directory at runtime; an
+      absolute value is used as-is. The E2E_ARTIFACTS_DIR environment variable still
+      takes precedence at runtime.
+    -->
+    <E2EArtifactsPath Condition="'$(E2EArtifactsPath)' == ''">test-artifacts</E2EArtifactsPath>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,36 @@
+html, body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #212529;
+}
+
+.dojo-main {
+    min-height: 100vh;
+}
+
+.dojo-scenarios {
+    padding-left: 1.25rem;
+}
+
+.dojo-scenario__title {
+    margin: 0;
+    padding: 1rem 1.5rem;
+    font-size: 1.125rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.dojo-scenario__welcome {
+    color: #6c757d;
+}
+
+.agentic-chat {
+    min-height: 100vh;
+    transition: background 200ms ease;
+}
+
+.agentic-chat__action-status {
+    display: block;
+    margin: 0.5rem 1rem;
+    color: #495057;
+    font-size: 0.875rem;
+}

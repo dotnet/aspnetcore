@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor 뷰",
+  "description": "빈 Razor 뷰",
+  "postActions/openInEditor/description": "편집기에서 생성된 뷰를 엽니다."
+}

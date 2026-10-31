@@ -1,0 +1,78 @@
+﻿body {
+    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
+    font-size: .813em;
+    line-height: 1.4em;
+    color: #222;
+}
+
+h1, h2, h3, h4, h5 {
+    font-weight: 100;
+}
+
+h1 {
+    color: #44525e;
+    margin: 15px 0 15px 0;
+}
+
+h2 {
+    margin: 10px 5px 0 0;
+}
+
+h3 {
+    color: #363636;
+    margin: 5px 5px 0 0;
+}
+
+code {
+    font-family: Consolas, "Courier New", courier, monospace;
+}
+
+a {
+    color: #1ba1e2;
+    text-decoration: none;
+}
+
+    a:hover {
+        color: #13709e;
+        text-decoration: underline;
+    }
+
+hr {
+    border: 1px #ddd solid;
+}
+
+body .titleerror {
+    padding: 3px;
+}
+
+#applyMigrations {
+    font-size: 14px;
+    background: #44c5f2;
+    color: #ffffff;
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+    #applyMigrations:disabled {
+        background-color: #a9e4f9;
+        border-color: #44c5f2;
+    }
+
+.error {
+    color: red;
+}
+
+.expanded {
+    display: block;
+}
+
+.collapsed {
+    display: none;
+}

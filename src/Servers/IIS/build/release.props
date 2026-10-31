@@ -1,0 +1,42 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+<!--
+  LinkIncremental (/INCREMENTAL:NO)    build does not contain padding or thunks
+-->
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <LinkIncremental>false</LinkIncremental>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+
+<!--
+  Optimization - Full (/Ox)    Uses maximum optimization
+  FavorSizeOrSpeed - Size (/Ot)    Favors fast code
+  RuntimeTypeInfo (GR-)    Disables run-time type information (RTTI)
+  FunctionLevelLinking (/Gy)    Enables function-level linking.
+  IntrinsicFunctions (/Oi) Requests the compiler to use intrinsic functions
+  StringPooling (/GF)    Enables string pooling.
+
+  OptimizeReferences (/OPT:REF)    eliminates functions and data that are never referenced
+  EnableCOMDATFolding (/OPT:ICF    perform identical COMDAT folding
+  LinkTimeCodeGeneration (/LCTG)    perform whole-program optimization
+-->
+
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+  </ItemDefinitionGroup>
+
+</Project>

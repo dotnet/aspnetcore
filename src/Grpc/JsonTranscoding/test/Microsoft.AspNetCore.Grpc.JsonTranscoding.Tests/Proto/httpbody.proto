@@ -1,0 +1,26 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/api/httpbody.proto";
+
+package transcoding;
+
+service HttpBodyService {
+  rpc HelloWorld(HelloWorldRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {
+      get: "/helloworld"
+    };
+  }
+}
+
+message HttpBodySubField {
+  string name = 1;
+  google.api.HttpBody sub = 2;
+}
+
+message HelloWorldRequest {
+  string name = 1;
+}

@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SelfHostServer": {
+      "commandName": "Project",
+      "launchBrowser": true
+    }
+  }
+}
+

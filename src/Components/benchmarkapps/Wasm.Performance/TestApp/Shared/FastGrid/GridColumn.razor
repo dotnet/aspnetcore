@@ -1,0 +1,23 @@
+﻿@typeparam TRowData
+@using Microsoft.AspNetCore.Components.Rendering
+@code {
+    [CascadingParameter] public Grid<TRowData> OwnerGrid { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public TRowData RowData { get; set; }
+    [Parameter] public RenderFragment<TRowData> ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        OwnerGrid.AddColumn(this);
+    }
+
+    internal void RenderHeader(RenderTreeBuilder __builder)
+    {
+        <th>@Title</th>
+    }
+
+    internal void RenderCell(RenderTreeBuilder __builder, TRowData rowData)
+    {
+        <td>@ChildContent(rowData)</td>
+    }
+}

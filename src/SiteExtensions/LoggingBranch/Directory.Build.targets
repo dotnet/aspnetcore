@@ -1,0 +1,18 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <Import Project="..\Sdk\SiteExtension.targets" />
+
+  <PropertyGroup>
+    <!-- There is no build output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- There are no symbols. -->
+    <IncludeSymbols>false</IncludeSymbols>
+    <!-- Manually control dependencies -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <RunPackageAnalysis>false</RunPackageAnalysis>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+</Project>

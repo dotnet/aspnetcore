@@ -1,0 +1,96 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm EditContext="@editContext">
+    <p class="name input-group">
+        Name: <InputText @ref="inputTextReference" @bind-Value="person.Name" placeholder="Enter your name" class="input-control" />
+        <button @onclick="async () => await inputTextReference.Element.Value.FocusAsync()">Focus</button>
+    </p>
+
+    <p class="age input-group">
+        Age (years): <InputNumber @ref="inputNumberReference" @bind-Value="person.AgeInYears" placeholder="Enter your age" class="input-control"  />
+        <button @onclick="async () => await inputNumberReference.Element.Value.FocusAsync()">Focus</button>
+    </p>
+
+    <p class="description input-group">
+        Description: <InputTextArea @ref="inputTextAreaReference" @bind-Value="person.Description" placeholder="Tell us about yourself"  class="input-control" />
+        <button @onclick="async () => await inputTextAreaReference.Element.Value.FocusAsync()">Focus</button>
+    </p>
+
+    <p class="renewal-date input-group">
+        Renewal date: <InputDate @ref="inputDateReference" @bind-Value="person.RenewalDate" placeholder="Enter the date" class="input-control" />
+        <button @onclick="async () => await inputDateReference.Element.Value.FocusAsync()" value="Focus">Focus</button>
+    </p>
+
+    <p class="ticket-class input-group">
+        Ticket class:
+        <InputSelect @ref="inputSelectReference" @bind-Value="person.TicketClass" size="4"  class="input-control">
+            <option>(select)</option>
+            <option value="@TicketClass.Economy">Economy class</option>
+            <option value="@TicketClass.Premium">Premium class</option>
+            <option value="@TicketClass.First">First class</option>
+        </InputSelect>
+        <span id="selected-ticket-class">@person.TicketClass</span>
+        <button @onclick="async () => await inputSelectReference.Element.Value.FocusAsync()">Focus</button>
+
+    </p>
+
+    <p class="photo input-group">
+        Identifying photo:
+        <InputFile @ref="inputFile"  class="input-control" />
+        <button @onclick="async () => await inputFile.Element.Value.FocusAsync()" value="Focus">Focus</button>
+    </p>
+
+    <p class="accepts-terms input-group">
+        Accepts terms: <InputCheckbox @ref="inputCheckboxReference" @bind-Value="person.AcceptsTerms" title="You have to check this"  class="input-control" />
+        <button @onclick="async () => await inputCheckboxReference.Element.Value.FocusAsync()">Focus</button>
+    </p>
+
+    <p class="select-bool-values input-group">
+        T/F: 77 + 33 = 100<br>
+        <InputRadioGroup @bind-Value="person.IsSelectMathStatementTrue">
+            <InputRadio Value="true" @ref="inputRadioReference" class="input-control" />true<br>
+            <InputRadio Value="false" />false<br>
+        </InputRadioGroup>
+        <button @onclick="async () => await inputRadioReference.Element.Value.FocusAsync()">Focus</button>
+    </p>
+
+</EditForm>
+
+@code {
+    InputText inputTextReference;
+    InputNumber<int> inputNumberReference;
+    InputTextArea inputTextAreaReference;
+    InputDate<DateTime> inputDateReference;
+    InputSelect<TicketClass> inputSelectReference;
+    InputCheckbox inputCheckboxReference;
+    InputRadio<bool> inputRadioReference;
+    InputFile inputFile;
+
+    Person person = new Person();
+    EditContext editContext;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(person);
+    }
+
+    class Person
+    {
+        public string Name { get; set; }
+
+        public int AgeInYears { get; set; }
+
+        public DateTime RenewalDate { get; set; } = DateTime.Now;
+
+        public bool AcceptsTerms { get; set; }
+
+        public bool IsSelectMathStatementTrue { get; set; }
+
+        public string Description { get; set; }
+
+        public TicketClass TicketClass { get; set; }
+    }
+
+    enum TicketClass { Economy, Premium, First }
+}
+

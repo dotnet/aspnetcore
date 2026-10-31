@@ -1,0 +1,34 @@
+<Project>
+  <!--
+  The Web.SDK unconditionally adds the components analyzer to all qualifying Web projects. A project qualifiies if it targets netcoreapp3.0 or later and does not have a flag that
+  prevents the implicit analyzer from being added. We want to ensure that when a Web project also references this package, typically as the result of referencing a component class library,
+  the analyzer in the SDK always wins.
+
+  "ResolvedAnalyzers" contains the list of analyzers that are resolved from package references. "Analyzer" contains the list of of analyzers used by the compiler.
+  The ResolveLockFileAnalyzers target copies items from ResolvedAnalyzers to Analyzer.
+
+  The target below runs before ResolveLockFileAnalyzers executes. If it discovers that the Analyzer item group was previously populated by the WebSDK, it prevents the analyzer from the package
+  from being used by removing it from the ResolvedAnalyzers list.
+
+  Note: Prior to 3.1.3, this package prevented the analyzer from the SDK from being used by setting DisableImplicitComponentsAnalyzers=true. This would have prevented newer versions of the analyzer
+  from the SDK from ever being used. A compilation of SDK and package version combinations:
+
+  Package Version         SDK Version     Result
+  ==================================================
+  Earlier than 3.1.3      Any            Package wins
+  3.1.3 or newer          Any            SDK wins
+  -->
+  <Target Name="_RemoveComponentAnalyzer" BeforeTargets="ResolveLockFileAnalyzers" Condition="'@(Analyzer->Count())' != '0'">
+    <ItemGroup>
+      <_AspNetCoreComponentsAnalyzerName Include="$([System.IO.Path]::GetFileNameWithoutExtension('%(Analyzer.Identity)'))" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_AspNetCoreComponentsAnalyzerPath>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)../../analyzers/dotnet/cs/Microsoft.AspNetCore.Components.Analyzers.dll'))</_AspNetCoreComponentsAnalyzerPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'@(_AspNetCoreComponentsAnalyzerName->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Analyzers'))' == 'true'">
+      <ResolvedAnalyzers Remove="$(_AspNetCoreComponentsAnalyzerPath)" />
+    </ItemGroup>
+  </Target>
+</Project>

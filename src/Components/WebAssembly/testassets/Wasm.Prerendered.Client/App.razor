@@ -1,0 +1,17 @@
+﻿<h3>WebAssembly prerendered app with page title</h3>
+
+<PageTitle>Current count: @_counter</PageTitle>
+
+<p>
+    <span>Current count: @_counter</span><br>
+    <button id="increment-count" @onclick="IncrementCounter">Increment count</button>
+</p>
+
+@code {
+    private int _counter = 0;
+
+    private void IncrementCounter()
+    {
+        _counter++;
+    }
+}

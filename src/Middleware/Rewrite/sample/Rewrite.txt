@@ -1,0 +1,4 @@
+﻿# Rewrite path with additional sub directory
+RewriteCond %{HTTP_HOST}   !^www\.example\.com [NC,OR]
+RewriteCond %{SERVER_PORT} !^5000$
+RewriteRule ^/(.*)         http://www.example.com/$1 [L,R=302]

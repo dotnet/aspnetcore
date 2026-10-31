@@ -1,0 +1,7 @@
+steps:
+- template: /eng/common/core-templates/steps/source-index-stage1-publish.yml
+  parameters:
+    is1ESPipeline: true
+
+    ${{ each parameter in parameters }}:
+      ${{ parameter.key }}: ${{ parameter.value }}

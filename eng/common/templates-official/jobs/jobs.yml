@@ -1,0 +1,7 @@
+jobs:
+- template: /eng/common/core-templates/jobs/jobs.yml
+  parameters:
+    is1ESPipeline: true
+
+    ${{ each parameter in parameters }}:
+      ${{ parameter.key }}: ${{ parameter.value }}

@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC ViewImports",
+  "description": "MVC ビュー インポート ページ",
+  "symbols/namespace/description": "生成されたコードの名前空間",
+  "postActions/openInEditor/description": "エディターで _ViewImports.cshtml を開きます"
+}

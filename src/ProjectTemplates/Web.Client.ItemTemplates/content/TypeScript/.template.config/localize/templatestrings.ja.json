@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "TypeScript ファイル",
+  "description": "空の TypeScript ソース ファイル",
+  "postActions/openInEditor/description": "エディターで file1.ts を開きます"
+}

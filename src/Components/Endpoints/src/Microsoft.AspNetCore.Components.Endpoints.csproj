@@ -1,0 +1,85 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Server side rendering for ASP.NET Core Components.</Description>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="FormMapping\FormDataResources.resx" ExcludeFromManifest="true" />
+    <EmbeddedResource Update="Resources.resx" ExcludeFromManifest="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Components\ComponentMarker.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ResourceCollectionResolver.cs" LinkBase="Assets" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializer.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentInvocationSequence.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="FormMapping" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentKeyHelper.cs" Link="Shared\ComponentKeyHelper.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ResourceCollectionProvider.cs" Link="Shared\ResourceCollectionProvider.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\CultureStateProvider.cs" Link="Shared\CultureStateProvider.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
+    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)MiddlewareInvokedKeys.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ChunkingCookieManager\**\*.cs" LinkBase="Internal" />
+    <Compile Include="$(SharedSourceRoot)Components\ComponentsActivityLinkStore.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\Reflection\PropertyGetter.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\Reflection\PropertySetter.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderFragmentSerializer.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderFragmentCapture.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
+
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+
+    <ProjectReference Include="$(RepoRoot)src\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Html.Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\StaticAssets\src\Microsoft.AspNetCore.StaticAssets.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\ILLink.Substitutions.xml" LogicalName="ILLink.Substitutions.xml" />
+  </ItemGroup>
+
+</Project>

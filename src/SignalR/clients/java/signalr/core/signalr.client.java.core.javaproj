@@ -1,0 +1,22 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- This package ID is only ever used along with eng/PatchConfig.props to determine when to patch the Java client. -->
+    <PackageId>java:signalr</PackageId>
+    <!-- In servicing builds, this will be set to value if the Java client is not configured to be released in the currently building patch. -->
+    <IsPackable>true</IsPackable>
+    <PublishDir>$(OutputPath)</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Jars Include="
+        signalr-$(PackageVersion).jar;
+        signalr-$(PackageVersion)-javadoc.jar;
+        signalr-$(PackageVersion)-sources.jar;" />
+    <PomFile Include="signalr-$(PackageVersion).pom" />
+    <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+</Project>

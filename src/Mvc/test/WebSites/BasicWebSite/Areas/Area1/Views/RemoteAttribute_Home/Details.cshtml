@@ -1,0 +1,78 @@
+﻿@model BasicWebSite.Models.RemoteAttributeUser
+@{
+    Layout = "_Layout.cshtml";
+    object areaName;
+    ViewContext.RouteData.Values.TryGetValue("area", out areaName);
+    areaName = areaName ?? "root";
+    ViewBag.Title = "Details in " + areaName + " area.";
+}
+
+<h2>@ViewBag.Title</h2>
+<div>
+    <h4>Person</h4>
+    <hr />
+
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Id)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Id)
+        </dd>
+    </dl>
+
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.UserId1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserId1)
+        </dd>
+    </dl>
+
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.UserId2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserId2)
+        </dd>
+    </dl>
+
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.UserId3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserId3)
+        </dd>
+    </dl>
+
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.UserId4)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserId4)
+        </dd>
+    </dl>
+
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.UserId5)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserId5)
+        </dd>
+    </dl>
+</div>
+
+<p>
+    @Html.ActionLink("Create a new one", "Create")
+</p>

@@ -1,0 +1,42 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<h1>Environment View Test</h1>
+
+<div id="environment-boundary-test">
+    <EnvironmentView Include="Development">
+        <div id="dev-only-content" class="visible">
+            This content is only visible in Development.
+        </div>
+    </EnvironmentView>
+
+    <EnvironmentView Exclude="Production">
+        <div id="non-production-content" class="visible">
+            This content is visible in all environments except Production.
+        </div>
+    </EnvironmentView>
+
+    <EnvironmentView Include="Development, Staging">
+        <div id="dev-staging-content" class="visible">
+            This content is visible in Development and Staging.
+        </div>
+    </EnvironmentView>
+
+    <EnvironmentView Include="Production">
+        <div id="prod-only-content" class="visible">
+            This content is only visible in Production.
+        </div>
+    </EnvironmentView>
+
+    <EnvironmentView Exclude="Development">
+        <div id="non-dev-content" class="visible">
+            This content is visible in all environments except Development.
+        </div>
+    </EnvironmentView>
+</div>
+
+<p id="current-environment">Current Environment: @HostEnvironment.EnvironmentName</p>
+
+@code {
+    [Inject]
+    public Microsoft.Extensions.Hosting.IHostEnvironment HostEnvironment { get; set; } = default!;
+}

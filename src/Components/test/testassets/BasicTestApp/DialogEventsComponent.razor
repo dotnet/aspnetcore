@@ -1,0 +1,25 @@
+﻿<div>
+    <p>
+        Output: <span id="output">@message</span>
+    </p>
+
+    <button id="show-dialog" onclick="document.getElementById('my-dialog').showModal()">
+        Show modal dialog
+    </button>
+
+    <dialog id="my-dialog" @onclose="OnClose" @oncancel="OnCancel">
+        <form method="dialog">
+            <button id="dialog-close">Close</button>
+        </form>
+    </dialog>
+</div>
+
+@code {
+    string message;
+
+    void OnClose(EventArgs e)
+        => message += "onclose,";
+
+    void OnCancel(EventArgs e)
+        => message += "oncancel,";
+}
