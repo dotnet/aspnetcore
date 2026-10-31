@@ -21,6 +21,8 @@ public class ServerVariableTests
     [InlineData("HTTP_CONNECTION", "connection", (int)UriMatchPart.Path)]
     [InlineData("HTTP_URL", "/foo", (int)UriMatchPart.Path)]
     [InlineData("HTTP_URL", "http://example.com/foo?bar=1", (int)UriMatchPart.Full)]
+    [InlineData("PATH_INFO", "/foo", (int)UriMatchPart.Path)]
+    [InlineData("PATH_INFO", "/foo", (int)UriMatchPart.Full)]
     [InlineData("QUERY_STRING", "bar=1", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_FILENAME", "/foo", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_URI", "/foo", (int)UriMatchPart.Path)]
@@ -48,6 +50,8 @@ public class ServerVariableTests
     [InlineData("HTTP_CONNECTION", "other-connection", (int)UriMatchPart.Path)]
     [InlineData("HTTP_URL", "http://otherexample.com/other-foo?bar=2", (int)UriMatchPart.Full)]
     [InlineData("HTTP_URL", "http://otherexample.com/other-foo?bar=2", (int)UriMatchPart.Path)]
+    [InlineData("PATH_INFO", "/other-foo", (int)UriMatchPart.Path)]
+    [InlineData("PATH_INFO", "/other-foo", (int)UriMatchPart.Full)]
     [InlineData("QUERY_STRING", "bar=2", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_FILENAME", "/other-foo", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_URI", "/other-foo", (int)UriMatchPart.Path)]
@@ -71,6 +75,7 @@ public class ServerVariableTests
             ["HTTP_USER_AGENT"] = "other-useragent",
             ["HTTP_CONNECTION"] = "other-connection",
             ["HTTP_URL"] = "http://otherexample.com/other-foo?bar=2",
+            ["PATH_INFO"] = "/other-foo",
             ["QUERY_STRING"] = "bar=2",
             ["REQUEST_FILENAME"] = "/other-foo",
             ["REQUEST_URI"] = "/other-foo",
@@ -96,6 +101,8 @@ public class ServerVariableTests
     [InlineData("HTTP_CONNECTION", "connection", (int)UriMatchPart.Path)]
     [InlineData("HTTP_URL", "/foo", (int)UriMatchPart.Path)]
     [InlineData("HTTP_URL", "http://example.com/foo?bar=1", (int)UriMatchPart.Full)]
+    [InlineData("PATH_INFO", "/foo", (int)UriMatchPart.Path)]
+    [InlineData("PATH_INFO", "/foo", (int)UriMatchPart.Full)]
     [InlineData("QUERY_STRING", "bar=1", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_FILENAME", "/foo", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_URI", "/foo", (int)UriMatchPart.Path)]
@@ -119,6 +126,7 @@ public class ServerVariableTests
             ["HTTP_USER_AGENT"] = "other-useragent",
             ["HTTP_CONNECTION"] = "other-connection",
             ["HTTP_URL"] = "http://otherexample.com/other-foo?bar=2",
+            ["PATH_INFO"] = "/other-foo",
             ["QUERY_STRING"] = "bar=2",
             ["REQUEST_FILENAME"] = "/other-foo",
             ["REQUEST_URI"] = "/other-foo",
@@ -130,6 +138,44 @@ public class ServerVariableTests
 
         // Assert
         Assert.Equal(expected, lookup);
+    }
+
+    [Theory]
+    [InlineData("", "", "")]
+    [InlineData("", "/", "/")]
+    [InlineData("/app", "/foo", "/app/foo")]
+    [InlineData("/app", "", "/app")]
+    [InlineData("/my%20app", "/caf%C3%A9%20menu", "/my app/café menu")]
+    [InlineData("", "/foo%2Fbar", "/foo%2Fbar")]
+    [InlineData("", "/foo%252Fbar", "/foo%2Fbar")]
+    public void PathInfoUsesDecodedPathAndPathBaseWithoutQueryString(string pathBase, string path, string expected)
+    {
+        var httpContext = CreateTestHttpContext();
+        httpContext.Request.PathBase = PathString.FromUriComponent(pathBase);
+        httpContext.Request.Path = PathString.FromUriComponent(path);
+        var serverVar = ServerVariables.FindServerVariable("PATH_INFO", new ParserContext("test"), UriMatchPart.Full, false);
+
+        var result = serverVar.Evaluate(CreateTestRewriteContext(httpContext), null, null);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData((int)UriMatchPart.Path)]
+    [InlineData((int)UriMatchPart.Full)]
+    public void PathInfoFallsBackToManagedPathWhenServerVariableIsNull(int uriMatchPart)
+    {
+        var httpContext = CreateTestHttpContext();
+        httpContext.Request.PathBase = "/app";
+        httpContext.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
+        {
+            ["PATH_INFO"] = null
+        }));
+        var serverVar = ServerVariables.FindServerVariable("PATH_INFO", new ParserContext("test"), (UriMatchPart)uriMatchPart, false);
+
+        var result = serverVar.Evaluate(CreateTestRewriteContext(httpContext), null, null);
+
+        Assert.Equal("/app/foo", result);
     }
 
     private static HttpContext CreateTestHttpContext()
