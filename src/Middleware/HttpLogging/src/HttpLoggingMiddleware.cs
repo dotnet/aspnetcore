@@ -114,7 +114,7 @@ internal sealed class HttpLoggingMiddleware
         if (logContext.IsAnyEnabled(HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.RequestQuery))
         {
             // Size the parameter list up front to avoid repeated growth while adding properties and headers.
-            EnsureParameterCapacity(logContext, RequestPropertyCount, loggingFields.HasFlag(HttpLoggingFields.RequestHeaders) ? request.Headers : null);
+            EnsureRequestParameterCapacity(logContext, loggingFields, request, options.CombineLogs);
 
             if (loggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
             {
@@ -339,8 +339,8 @@ internal sealed class HttpLoggingMiddleware
         var loggingFields = logContext.LoggingFields;
         var response = logContext.HttpContext.Response;
 
-        // Status code + optional duration (combined logs), plus the response headers.
-        EnsureParameterCapacity(logContext, 2, loggingFields.HasFlag(HttpLoggingFields.ResponseHeaders) ? response.Headers : null);
+        // Size the parameter list up front to avoid repeated growth while adding the status code and headers.
+        EnsureParameterCapacity(logContext, CountResponseParameters(loggingFields, response.Headers, options.CombineLogs));
 
         if (loggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
         {
@@ -359,13 +359,83 @@ internal sealed class HttpLoggingMiddleware
         }
     }
 
-    // Protocol, Method, Scheme, PathBase, Path, QueryString, plus Duration when logs are combined.
-    private const int RequestPropertyCount = 7;
+    private static void EnsureRequestParameterCapacity(HttpLoggingInterceptorContext logContext, HttpLoggingFields loggingFields, HttpRequest request, bool combineLogs)
+    {
+        var count = 0;
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+        {
+            count++;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestMethod))
+        {
+            count++;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestScheme))
+        {
+            count++;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestPath))
+        {
+            // PathBase and Path.
+            count += 2;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestQuery))
+        {
+            count++;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+        {
+            count += request.Headers.Count;
+        }
+        if (combineLogs)
+        {
+            // The response parameters are added to the same list, reserve the ones known up front.
+            count += CountResponseParameters(loggingFields, headers: null, combineLogs: true);
+        }
 
-    private static void EnsureParameterCapacity(HttpLoggingInterceptorContext logContext, int propertyCount, IHeaderDictionary? headers)
+        EnsureParameterCapacity(logContext, count);
+    }
+
+    private static int CountResponseParameters(HttpLoggingFields loggingFields, IHeaderDictionary? headers, bool combineLogs)
+    {
+        var count = 0;
+        if (loggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
+        {
+            count++;
+        }
+        if (headers is not null && loggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+        {
+            count += headers.Count;
+        }
+        if (combineLogs)
+        {
+            // Combined logs append the bodies and duration after the response headers.
+            if (loggingFields.HasFlag(HttpLoggingFields.RequestBody))
+            {
+                // RequestBody and RequestBodyStatus.
+                count += 2;
+            }
+            if (loggingFields.HasFlag(HttpLoggingFields.ResponseBody))
+            {
+                count++;
+            }
+            if (loggingFields.HasFlag(HttpLoggingFields.Duration))
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // Sizes the list exactly rather than doubling, the parameter counts are known up front.
+    private static void EnsureParameterCapacity(HttpLoggingInterceptorContext logContext, int additionalCount)
     {
         var parameters = logContext.InternalParameters;
-        parameters.EnsureCapacity(parameters.Count + propertyCount + (headers?.Count ?? 0));
+        var required = parameters.Count + additionalCount;
+        if (required > parameters.Capacity)
+        {
+            parameters.Capacity = required;
+        }
     }
 
     internal static void FilterHeaders(HttpLoggingInterceptorContext logContext,
