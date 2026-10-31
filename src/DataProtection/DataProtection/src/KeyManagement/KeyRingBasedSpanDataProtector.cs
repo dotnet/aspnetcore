@@ -160,7 +160,7 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
 
             // Perform the decryption operation.
             ReadOnlySpan<byte> actualCiphertext = protectedData.Slice(sizeof(uint) + sizeof(Guid)); // chop off magic header + key id
-            ReadOnlySpan<byte> aad = _aadTemplate.GetAadForKey(keyIdFromPayload, isProtecting: false);
+            byte[] aad = _aadTemplate.GetAadForKey(keyIdFromPayload, isProtecting: false);
 
             // At this point, actualCiphertext := { encryptorSpecificPayload },
             // so all that's left is to invoke the decryption routine directly.
@@ -172,7 +172,7 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             else
             {
                 // If SpanDataProtector is used, but encryptor does not support span-based APIs, fall-back to the byte[] path.
-                var result = requestedEncryptor.Decrypt(actualCiphertext.ToArray(), aad.ToArray());
+                var result = requestedEncryptor.Decrypt(new ArraySegment<byte>(actualCiphertext.ToArray()), new ArraySegment<byte>(aad));
                 var span = destination.GetSpan(result.Length);
                 result.CopyTo(span);
                 destination.Advance(result.Length);
