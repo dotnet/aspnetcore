@@ -19,6 +19,11 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
     private readonly ICompressionProvider[] _providers;
     private readonly HashSet<string> _mimeTypes;
     private readonly HashSet<string> _excludedMimeTypes;
+    private readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _mimeTypesLookup;
+    private readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _excludedMimeTypesLookup;
+    // The "type" part of "type/*" entries, so partial matches don't need to build a "type/*" string per response.
+    private readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _partialMimeTypesLookup;
+    private readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _excludedPartialMimeTypesLookup;
     private readonly bool _enableForHttps;
     private readonly ILogger _logger;
 
@@ -66,6 +71,11 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
             responseCompressionOptions.ExcludedMimeTypes ?? Enumerable.Empty<string>(),
             StringComparer.OrdinalIgnoreCase
         );
+
+        _mimeTypesLookup = _mimeTypes.GetAlternateLookup<ReadOnlySpan<char>>();
+        _excludedMimeTypesLookup = _excludedMimeTypes.GetAlternateLookup<ReadOnlySpan<char>>();
+        _partialMimeTypesLookup = CreatePartialMimeTypes(_mimeTypes).GetAlternateLookup<ReadOnlySpan<char>>();
+        _excludedPartialMimeTypesLookup = CreatePartialMimeTypes(_excludedMimeTypes).GetAlternateLookup<ReadOnlySpan<char>>();
 
         _enableForHttps = responseCompressionOptions.EnableForHttps;
 
@@ -194,16 +204,23 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
             return false;
         }
 
+        bool? shouldCompressExact;
+        ReadOnlySpan<char> mediaType;
         var separator = mimeType.IndexOf(';');
         if (separator >= 0)
         {
             // Remove the content-type optional parameters
-            mimeType = mimeType.Substring(0, separator);
-            mimeType = mimeType.Trim();
+            mediaType = mimeType.AsSpan(0, separator).Trim();
+            shouldCompressExact = ShouldCompressExact(mediaType);
+        }
+        else
+        {
+            mediaType = mimeType;
+            shouldCompressExact = ShouldCompressExact(mimeType);
         }
 
-        var shouldCompress = ShouldCompressExact(mimeType) //check exact match type/subtype
-            ?? ShouldCompressPartial(mimeType) //check partial match type/*
+        var shouldCompress = shouldCompressExact //check exact match type/subtype
+            ?? ShouldCompressPartial(mediaType) //check partial match type/*
             ?? _mimeTypes.Contains("*/*"); //check wildcard */*
 
         if (shouldCompress)
@@ -212,7 +229,10 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
             return true;
         }
 
-        _logger.NoCompressionForContentType(mimeType);
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.NoCompressionForContentType(separator >= 0 ? mediaType.ToString() : mimeType);
+        }
         return false;
     }
 
@@ -245,17 +265,56 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
         return null;
     }
 
-    private bool? ShouldCompressPartial(string? mimeType)
+    private bool? ShouldCompressExact(ReadOnlySpan<char> mimeType)
     {
-        var slashPos = mimeType?.IndexOf('/');
-
-        if (slashPos >= 0)
+        //Check excluded MIME types first, then included
+        if (_excludedMimeTypesLookup.Contains(mimeType))
         {
-            var partialMimeType = string.Concat(mimeType!.AsSpan(0, slashPos.Value), "/*");
-            return ShouldCompressExact(partialMimeType);
+            return false;
+        }
+
+        if (_mimeTypesLookup.Contains(mimeType))
+        {
+            return true;
         }
 
         return null;
+    }
+
+    private bool? ShouldCompressPartial(ReadOnlySpan<char> mimeType)
+    {
+        var slashPos = mimeType.IndexOf('/');
+
+        if (slashPos >= 0)
+        {
+            // Equivalent to ShouldCompressExact("type/*")
+            var type = mimeType.Slice(0, slashPos);
+            if (_excludedPartialMimeTypesLookup.Contains(type))
+            {
+                return false;
+            }
+
+            if (_partialMimeTypesLookup.Contains(type))
+            {
+                return true;
+            }
+        }
+
+        return null;
+    }
+
+    private static HashSet<string> CreatePartialMimeTypes(HashSet<string> mimeTypes)
+    {
+        var partialMimeTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var mimeType in mimeTypes)
+        {
+            // Only entries of the form "type/*" where "type" has no '/' can match a "type/*" lookup.
+            if (mimeType.EndsWith("/*", StringComparison.Ordinal) && mimeType.IndexOf('/') == mimeType.Length - 2)
+            {
+                partialMimeTypes.Add(mimeType.Substring(0, mimeType.Length - 2));
+            }
+        }
+        return partialMimeTypes;
     }
 
     private readonly struct ProviderCandidate : IEquatable<ProviderCandidate>
