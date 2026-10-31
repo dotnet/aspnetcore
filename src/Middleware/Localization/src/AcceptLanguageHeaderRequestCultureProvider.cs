@@ -64,29 +64,34 @@ public class AcceptLanguageHeaderRequestCultureProvider : RequestCultureProvider
         return NullProviderCultureResult;
     }
 
-    // Stable insertion sort by descending quality, equivalent to OrderByDescending for small inputs.
+    // Equivalent to a stable OrderByDescending for small inputs: each value's position is the number of values
+    // that sort before it (higher quality, or equal quality and earlier in the header).
     private static List<StringSegment> SortByQuality(IList<StringWithQualityHeaderValue> values, int count)
     {
-        Span<int> order = stackalloc int[MaxValuesToSortInPlace];
-        order = order.Slice(0, count);
         var comparer = StringWithQualityHeaderValueComparer.QualityComparer;
+        var result = new List<StringSegment>(count);
+        for (var i = 0; i < count; i++)
+        {
+            result.Add(default);
+        }
 
         for (var i = 0; i < count; i++)
         {
             var value = values[i];
-            var j = i - 1;
-            while (j >= 0 && comparer.Compare(values[order[j]], value) < 0)
+            var position = 0;
+            for (var k = 0; k < count; k++)
             {
-                order[j + 1] = order[j];
-                j--;
+                if (k != i)
+                {
+                    var comparison = comparer.Compare(values[k], value);
+                    if (comparison > 0 || (comparison == 0 && k < i))
+                    {
+                        position++;
+                    }
+                }
             }
-            order[j + 1] = i;
-        }
 
-        var result = new List<StringSegment>(count);
-        for (var i = 0; i < count; i++)
-        {
-            result.Add(values[order[i]].Value);
+            result[position] = value.Value;
         }
 
         return result;

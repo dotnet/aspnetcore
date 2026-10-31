@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -133,7 +132,16 @@ public class RequestLocalizationMiddleware
     {
         if (cultureNames is List<StringSegment> list)
         {
-            return GetCultureInfo(CollectionsMarshal.AsSpan(list), supportedCultures, fallbackToParentCultures);
+            for (var i = 0; i < list.Count; i++)
+            {
+                var cultureInfo = GetCultureInfo(list[i], supportedCultures, fallbackToParentCultures);
+                if (cultureInfo != null)
+                {
+                    return cultureInfo;
+                }
+            }
+
+            return null;
         }
 
         if (cultureNames is StringSegment[] array)
@@ -239,7 +247,16 @@ public class RequestLocalizationMiddleware
     {
         if (supportedCultures is List<CultureInfo> list)
         {
-            return FindSupportedCulture(name, CollectionsMarshal.AsSpan(list));
+            for (var i = 0; i < list.Count; i++)
+            {
+                var supportedCulture = list[i];
+                if (StringSegment.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return supportedCulture;
+                }
+            }
+
+            return null;
         }
 
         if (supportedCultures is CultureInfo[] array)
