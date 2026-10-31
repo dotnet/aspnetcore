@@ -59,6 +59,37 @@ public class StaticFileContextTest
         Assert.True(result);
     }
 
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(12345L)]
+    [InlineData(-1L)]
+    [InlineData(long.MinValue)]
+    public async Task ApplyResponseHeaders_WritesExpectedETagAndLastModified(long length)
+    {
+        var options = new StaticFileOptions();
+        var fileProvider = new TestFileProvider();
+        var lastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, 678, TimeSpan.FromHours(2));
+        fileProvider.AddFile("/foo.txt", new TestFileInfo { LastModified = lastModified, Length = length });
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = HttpMethods.Get;
+        httpContext.Request.Path = new PathString("/foo.txt");
+        httpContext.Request.Headers.IfNoneMatch = "*";
+        StaticFileMiddleware.ValidatePath(httpContext, PathString.Empty, out var subPath);
+        StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+        var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
+
+        Assert.True(context.LookupFileInfo());
+        await context.ServeStaticFile(httpContext, _ => Task.CompletedTask);
+
+        var truncated = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.FromHours(2)).ToUniversalTime();
+        var expectedETag = "\"" + Convert.ToString(truncated.ToFileTime() ^ length, 16) + "\"";
+        Assert.Equal(StatusCodes.Status304NotModified, httpContext.Response.StatusCode);
+        Assert.Equal(expectedETag, httpContext.Response.Headers.ETag.ToString());
+        Assert.Equal("Thu, 02 Jan 2014 01:04:05 GMT", httpContext.Response.Headers.LastModified.ToString());
+        Assert.Equal("bytes", httpContext.Response.Headers.AcceptRanges.ToString());
+        Assert.Equal("text/plain", httpContext.Response.ContentType);
+    }
+
     [Fact]
     public async Task EnablesHttpsCompression_IfMatched()
     {
