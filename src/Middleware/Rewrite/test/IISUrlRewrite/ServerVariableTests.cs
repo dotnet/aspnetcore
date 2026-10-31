@@ -132,6 +132,31 @@ public class ServerVariableTests
         Assert.Equal(expected, lookup);
     }
 
+    [Theory]
+    [InlineData((int)UriMatchPart.Path)]
+    [InlineData((int)UriMatchPart.Full)]
+    public void UrlServerVariableReturnsTheRequestPath(int uriMatchPart)
+    {
+        var segment = ServerVariables.FindServerVariable("URL", new ParserContext("URL"), (UriMatchPart)uriMatchPart, true);
+        var result = segment.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
+
+        Assert.Equal("/foo", result);
+    }
+
+    [Fact]
+    public void UrlServerVariableUsesIISFeatureWhenAvailable()
+    {
+        var context = CreateTestHttpContext();
+        context.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
+        {
+            ["URL"] = "/from-iis"
+        }));
+        var segment = ServerVariables.FindServerVariable("URL", new ParserContext("URL"), UriMatchPart.Path, false);
+        var result = segment.Evaluate(CreateTestRewriteContext(context), CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
+
+        Assert.Equal("/from-iis", result);
+    }
+
     private static HttpContext CreateTestHttpContext()
     {
         var context = new DefaultHttpContext();

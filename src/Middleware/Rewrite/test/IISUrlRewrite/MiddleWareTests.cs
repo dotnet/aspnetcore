@@ -151,6 +151,32 @@ public class MiddlewareTests
     }
 
     [Fact]
+    public async Task Invoke_RedirectToLowerCaseUsingUrlServerVariable()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Convert URL to lower case"" stopProcessing=""true"">
+                <match url="".*[A-Z].*"" ignoreCase=""false"" />
+                <action type=""Redirect"" url=""{ToLower:{URL}}"" redirectType=""Permanent"" />
+                </rule>
+                </rules>
+                </rewrite>"));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.UseRewriter(options));
+            }).Build();
+
+        await host.StartAsync();
+
+        var response = await host.GetTestServer().CreateClient().GetAsync("/MiXeD?foo=bar");
+
+        Assert.Equal("/mixed?foo=bar", response.Headers.Location!.OriginalString);
+    }
+
+    [Fact]
     public async Task Invoke_RedirectToLowerCase()
     {
         var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
