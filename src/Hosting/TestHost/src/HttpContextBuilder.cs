@@ -83,7 +83,14 @@ internal sealed class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFe
     /// <returns></returns>
     internal Task<HttpContext> SendAsync(CancellationToken cancellationToken)
     {
-        var registration = cancellationToken.Register(ClientInitiatedAbort);
+        var registration = cancellationToken.Register(() =>
+        {
+            ClientInitiatedAbort();
+
+            // The client gave up on this request. Fail its task now, the way a real server would, instead of
+            // waiting for an application that may never check RequestAborted.
+            _responseTcs.TrySetException(new OperationCanceledException("The request was canceled.", cancellationToken));
+        });
 
         // Everything inside this function happens in the SERVER's execution context (unless PreserveExecutionContext is true)
         async Task RunRequestAsync()

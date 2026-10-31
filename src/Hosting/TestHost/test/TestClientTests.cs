@@ -1082,6 +1082,40 @@ public class TestClientTests
     }
 
     [Fact]
+    public async Task ClientCancellationThrowsWithoutWaitingForApplication()
+    {
+        var applicationStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var applicationCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.Run(async ctx =>
+                    {
+                        // The application never observes RequestAborted and keeps running after the client gives up.
+                        applicationStarted.SetResult();
+                        await applicationCompleted.Task;
+                    }));
+            });
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        using var client = server.CreateClient();
+        using var cts = new CancellationTokenSource();
+
+        var requestTask = client.GetAsync("http://localhost:12345", cts.Token);
+        await applicationStarted.Task.DefaultTimeout();
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => requestTask.DefaultTimeout());
+
+        applicationCompleted.SetResult();
+    }
+
+    [Fact]
     public async Task AsyncLocalValueOnClientIsNotPreserved()
     {
         var asyncLocal = new AsyncLocal<object>();
