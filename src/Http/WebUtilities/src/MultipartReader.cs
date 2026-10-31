@@ -122,7 +122,7 @@ public class MultipartReader
             }
 
             var name = line.Substring(0, splitIndex);
-            var value = line.Substring(splitIndex + 1, line.Length - splitIndex - 1).Trim();
+            var value = line.AsSpan(splitIndex + 1).Trim().ToString();
             accumulator.Append(name, value);
             if (accumulator.KeyCount > HeadersCountLimit)
             {
