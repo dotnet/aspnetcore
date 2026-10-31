@@ -78,6 +78,7 @@ public class BufferedReadStreamTests
     public async Task ReadLine_MultipleBufferedLines_ReturnsEachLineAndLeavesRemainder(bool async)
     {
         var stream = MakeStream("first\r\n\r\na\rb\nc\r\r\nh\u00e9llo\r\ntail", bufferSize: 4096);
+        Assert.True(stream.EnsureBuffered());
 
         Assert.Equal("first", await ReadLine(stream, async, lengthLimit: 100));
         Assert.Equal("", await ReadLine(stream, async, lengthLimit: 100));
@@ -95,6 +96,7 @@ public class BufferedReadStreamTests
     {
         // The limit applies to the line content plus the CR.
         var stream = MakeStream("abc\r\nnext\r\n", bufferSize: 4096);
+        Assert.True(stream.EnsureBuffered());
 
         Assert.Equal("abc", await ReadLine(stream, async, lengthLimit: 4));
         Assert.Equal("next", await ReadLine(stream, async, lengthLimit: 5));
@@ -106,6 +108,7 @@ public class BufferedReadStreamTests
     public async Task ReadLine_BufferedLineExceedingLengthLimit_Throws(bool async)
     {
         var stream = MakeStream("abc\r\nnext\r\n", bufferSize: 4096);
+        Assert.True(stream.EnsureBuffered());
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(() => ReadLine(stream, async, lengthLimit: 3));
         Assert.Equal("Line length limit 3 exceeded.", exception.Message);
