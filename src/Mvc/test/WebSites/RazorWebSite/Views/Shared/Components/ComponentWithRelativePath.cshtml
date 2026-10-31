@@ -1,7 +1,0 @@
-﻿@model Person
-@{
-    Layout = "../_ComponentLayout.cshtml";
-}
-Component with Relative Path
-@Html.DisplayFor(model => model.Name, templateName: "~/Views/Shared/DisplayTemplates/Name.cshtml")
-@Html.DisplayFor(model => model.Address, templateName: "../../InheritingInherits/_ViewComponent.cshtml")
