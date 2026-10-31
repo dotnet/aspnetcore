@@ -351,7 +351,9 @@ internal sealed class DefaultAntiforgery : IAntiforgery
     }
 
     /// <summary>
-    /// Sets the 'Cache-Control' header to 'no-cache, no-store' and 'Pragma' header to 'no-cache' overriding any user set value.
+    /// Sets the 'Cache-Control' header to 'no-cache, no-store' (or 'no-cache, private' when
+    /// <see cref="AntiforgeryOptions.AllowBackForwardCache"/> is set) and the 'Pragma' header to
+    /// 'no-cache', overriding any user set value.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
     private void SetDoNotCacheHeaders(HttpContext httpContext)
@@ -359,19 +361,28 @@ internal sealed class DefaultAntiforgery : IAntiforgery
         var logWarning = false;
         var responseHeaders = httpContext.Response.Headers;
 
+        // When AllowBackForwardCache is enabled, omit "no-store" so browsers keep the response in the
+        // back/forward cache, and use "private" to keep it out of shared caches. Otherwise use the
+        // stricter "no-cache, no-store".
+        var expectedCacheControl = _options.AllowBackForwardCache ? "no-cache, private" : "no-cache, no-store";
+
         if (responseHeaders.TryGetValue(HeaderNames.CacheControl, out var cacheControlHeader) &&
             CacheControlHeaderValue.TryParse(cacheControlHeader.ToString(), out var cacheControlHeaderValue))
         {
             // If the Cache-Control is already set, override it only if required
-            if (!cacheControlHeaderValue.NoCache || !cacheControlHeaderValue.NoStore)
+            var isAcceptable = _options.AllowBackForwardCache
+                ? cacheControlHeaderValue.NoCache && !cacheControlHeaderValue.NoStore
+                : cacheControlHeaderValue.NoCache && cacheControlHeaderValue.NoStore;
+
+            if (!isAcceptable)
             {
                 logWarning = true;
-                responseHeaders.CacheControl = "no-cache, no-store";
+                responseHeaders.CacheControl = expectedCacheControl;
             }
         }
         else
         {
-            responseHeaders.CacheControl = "no-cache, no-store";
+            responseHeaders.CacheControl = expectedCacheControl;
         }
 
         if (responseHeaders.TryGetValue(HeaderNames.Pragma, out var pragmaHeader) && pragmaHeader.Count > 0)
