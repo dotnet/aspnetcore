@@ -9,6 +9,8 @@ const workflowSource = fs.readFileSync(
   path.join(repositoryRoot, '.github/workflows/pull-request-review.md'), 'utf8');
 const workflowLock = fs.readFileSync(
   path.join(repositoryRoot, '.github/workflows/pull-request-review.lock.yml'), 'utf8');
+const workflowTests = fs.readFileSync(
+  path.join(repositoryRoot, '.github/workflows/workflow-tests.yml'), 'utf8');
 const skill = fs.readFileSync(
   path.join(repositoryRoot, '.github/skills/review-pull-request/SKILL.md'), 'utf8');
 const localWorkerProfile = fs.readFileSync(
@@ -89,6 +91,8 @@ assert.match(workflowLock, /status --porcelain\)\\"; then\\n\s+:\\nelse/);
 assert.doesNotMatch(workflowLock, /review_execution|review-execution|review-build-sandbox/);
 assert.equal(workflowLock.split(retargetDiagnostic).length - 1, 2);
 assert.doesNotMatch(workflowLock, /The PR head moved or closed after review; safe outputs are blocked\./);
+
+assert.match(workflowTests, /- '\.github\/agents\/\*\*'/);
 
 assert.match(skill, /write temporary\s+tests or repros/);
 assert.match(skill, /Temporary validation edits are diagnostic only/);

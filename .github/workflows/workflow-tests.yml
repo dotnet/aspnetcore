@@ -3,6 +3,7 @@ name: Workflow tests
 on:
   pull_request:
     paths:
+      - '.github/agents/**'
       - '.github/workflows/**'
       - '.github/skills/**'
 
