@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -1252,6 +1253,28 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         var pathEncoded = pathSegment.Contains('%');
+
+        // Fast path: when the path isn't percent-encoded and has no dot segments, PathDecoder.DecodePath doesn't modify it,
+        // so the path can be validated without narrowing it to bytes first. Requests that don't match this fast path,
+        // including invalid ones, use the slower path below.
+        if (!pathEncoded && !pathSegment.Contains("/.", StringComparison.Ordinal))
+        {
+            if (QueryString!.Length == 0)
+            {
+                // DecodePath returns the raw target when there's no query. Every char must still fit in a byte.
+                if (!pathSegment.ContainsAnyExceptInRange((char)0, (char)byte.MaxValue))
+                {
+                    Path = RawTarget!;
+                    return true;
+                }
+            }
+            else if (Ascii.IsValid(pathSegment))
+            {
+                // DecodePath creates an ASCII string from the path when there's a query.
+                Path = pathSegment.ToString();
+                return true;
+            }
+        }
 
         // Compare with Http1Connection.OnOriginFormTarget
 
