@@ -1,9 +1,0 @@
-{
-  "extends": "../Shared.JS/tsconfig.json",
-  "compilerOptions": {
-    "noImplicitAny": false,
-    "noEmitOnError": true,
-    "removeComments": false,
-    "useDefineForClassFields": false
-  },
-}

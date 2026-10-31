@@ -1,4 +1,0 @@
-#nullable enable
-Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver
-Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames() -> System.Collections.Generic.IEnumerable<string!>!
-static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApiCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

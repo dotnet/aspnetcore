@@ -1,3 +1,0 @@
-<!-- This file prevents any other Directory.Build.targets from a parent folder to be loaded -->
-<Project>
-</Project>

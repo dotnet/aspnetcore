@@ -1,3 +1,0 @@
-#nullable enable
-Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Order.get -> string?
-Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Order.set -> void

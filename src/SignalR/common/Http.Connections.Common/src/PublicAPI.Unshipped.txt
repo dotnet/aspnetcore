@@ -1,3 +1,0 @@
-#nullable enable
-Microsoft.AspNetCore.Http.Connections.NegotiationResponse.TokenLifetime.get -> System.TimeSpan?
-Microsoft.AspNetCore.Http.Connections.NegotiationResponse.TokenLifetime.set -> void

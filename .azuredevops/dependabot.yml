@@ -1,5 +1,0 @@
-version: 2
-
-# Disabling dependabot on Azure DevOps as this is a mirrored repo. Updates should go through github.
-enable-campaigned-updates: false
-enable-security-updates: false

@@ -1,2 +1,0 @@
-EXPORTS
-    CreateApplication = aspnetcorev2_outofprocess_arm64.CreateApplication
