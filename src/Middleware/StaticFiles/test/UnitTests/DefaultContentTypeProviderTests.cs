@@ -64,4 +64,78 @@ public class DefaultContentTypeProviderTests
         string contentType;
         Assert.True(provider.TryGetContentType($"{new string(System.IO.Path.GetInvalidPathChars())}.txt", out contentType));
     }
+
+    [Fact]
+    public void CustomCaseSensitiveMappingIsRespected()
+    {
+        var provider = new FileExtensionContentTypeProvider(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { ".txt", "text/custom" },
+        });
+
+        Assert.True(provider.TryGetContentType("file.txt", out var contentType));
+        Assert.Equal("text/custom", contentType);
+        Assert.False(provider.TryGetContentType("file.TXT", out _));
+    }
+
+    [Fact]
+    public void ChangesToMappingsAfterConstructionAreObserved()
+    {
+        var provider = new FileExtensionContentTypeProvider();
+
+        Assert.False(provider.TryGetContentType("file.custom", out _));
+        provider.Mappings[".custom"] = "application/x-custom";
+        Assert.True(provider.TryGetContentType("file.CUSTOM", out var contentType));
+        Assert.Equal("application/x-custom", contentType);
+
+        provider.Mappings.Remove(".txt");
+        Assert.False(provider.TryGetContentType("file.txt", out _));
+    }
+
+    [Fact]
+    public void TrailingDotLooksUpDotKey()
+    {
+        var provider = new FileExtensionContentTypeProvider(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { ".", "application/x-dot" },
+        });
+
+        Assert.True(provider.TryGetContentType("file.", out var contentType));
+        Assert.Equal("application/x-dot", contentType);
+    }
+
+    [Fact]
+    public void NonDictionaryMappingIsUsed()
+    {
+        var provider = new FileExtensionContentTypeProvider(new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { ".txt", "text/custom" },
+        });
+
+        Assert.True(provider.TryGetContentType("file.TXT", out var contentType));
+        Assert.Equal("text/custom", contentType);
+    }
+
+    [Fact]
+    public void DerivedDictionaryTryGetValueIsUsed()
+    {
+        var mapping = new InterceptingDictionary { { ".txt", "text/plain" } };
+        var provider = new FileExtensionContentTypeProvider(mapping);
+
+        Assert.True(provider.TryGetContentType("file.txt", out var contentType));
+        Assert.Equal("intercepted", contentType);
+        Assert.Equal(".txt", Assert.Single(mapping.RequestedKeys));
+    }
+
+    private sealed class InterceptingDictionary : Dictionary<string, string>, IDictionary<string, string>
+    {
+        public List<string> RequestedKeys { get; } = new();
+
+        bool IDictionary<string, string>.TryGetValue(string key, out string value)
+        {
+            RequestedKeys.Add(key);
+            value = "intercepted";
+            return true;
+        }
+    }
 }
