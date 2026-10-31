@@ -250,6 +250,55 @@ public class TicketSerializerTests
         Assert.Equal("custom", properties.Items["read-by"]);
     }
 
+    [Fact]
+    public void Deserialize_ReturnsWellKnownClaimTypeConstants()
+    {
+        var identity = new ClaimsIdentity("auth");
+        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "id", ClaimValueTypes.Integer32));
+        identity.AddClaim(new Claim(ClaimTypes.Role, "role"));
+        identity.AddClaim(new Claim(ClaimTypes.Email, "email", ClaimValueTypes.Email));
+        // Same length as ClaimTypes.Role and close to it, but not well-known.
+        identity.AddClaim(new Claim(ClaimTypes.Role[..^1] + "x", "custom"));
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), "scheme");
+
+        var claims = TicketSerializer.Default.Deserialize(TicketSerializer.Default.Serialize(ticket)).Principal.Claims.ToArray();
+
+        Assert.Same(ClaimTypes.NameIdentifier, claims[0].Type);
+        Assert.Same(ClaimValueTypes.Integer32, claims[0].ValueType);
+        Assert.Same(ClaimTypes.Role, claims[1].Type);
+        Assert.Same(ClaimTypes.Email, claims[2].Type);
+        Assert.Same(ClaimValueTypes.Email, claims[2].ValueType);
+        Assert.Equal(ClaimTypes.Role[..^1] + "x", claims[3].Type);
+    }
+
+    [Fact]
+    public void Deserialize_RoundTripsAllWellKnownClaimTypes()
+    {
+        var constants = typeof(ClaimTypes).GetFields().Concat(typeof(ClaimValueTypes).GetFields())
+            .Where(f => f.IsLiteral)
+            .Select(f => (string)f.GetValue(null))
+            .ToArray();
+        Assert.NotEmpty(constants);
+
+        var identity = new ClaimsIdentity("auth");
+        foreach (var constant in constants)
+        {
+            identity.AddClaim(new Claim(constant, constant, constant));
+        }
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), "scheme");
+
+        var claims = TicketSerializer.Default.Deserialize(TicketSerializer.Default.Serialize(ticket)).Principal.Claims.ToArray();
+
+        Assert.Equal(constants.Length, claims.Length);
+        for (var i = 0; i < constants.Length; i++)
+        {
+            // ClaimTypes.Name is the identity's name claim type, so it round-trips through the placeholder.
+            Assert.Equal(constants[i], claims[i].Type);
+            Assert.Equal(constants[i], claims[i].Value);
+            Assert.Equal(constants[i], claims[i].ValueType);
+        }
+    }
+
     private static AuthenticationTicket ReadWithBinaryReader(TicketSerializer serializer, byte[] data)
     {
         using var reader = new BinaryReader(new MemoryStream(data));

@@ -301,8 +301,8 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     private static ClaimsIdentity ReadIdentity(ref BinaryPayloadReader reader)
     {
         var authenticationType = reader.ReadString();
-        var nameClaimType = reader.ReadStringWithDefault(ClaimsIdentity.DefaultNameClaimType);
-        var roleClaimType = reader.ReadStringWithDefault(ClaimsIdentity.DefaultRoleClaimType);
+        var nameClaimType = reader.ReadClaimTypeWithDefault(ClaimsIdentity.DefaultNameClaimType);
+        var roleClaimType = reader.ReadClaimTypeWithDefault(ClaimsIdentity.DefaultRoleClaimType);
 
         var count = reader.ReadInt32();
 
@@ -330,9 +330,9 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
 
     private static Claim ReadClaim(ref BinaryPayloadReader reader, ClaimsIdentity identity)
     {
-        var type = reader.ReadStringWithDefault(identity.NameClaimType);
+        var type = reader.ReadClaimTypeWithDefault(identity.NameClaimType);
         var value = reader.ReadString();
-        var valueType = reader.ReadStringWithDefault(ClaimValueTypes.String);
+        var valueType = reader.ReadClaimTypeWithDefault(ClaimValueTypes.String);
         var issuer = reader.ReadStringWithDefault(ClaimsIdentity.DefaultIssuer);
         var originalIssuer = reader.ReadStringWithDefault(issuer);
 

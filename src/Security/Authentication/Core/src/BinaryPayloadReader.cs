@@ -56,6 +56,26 @@ internal ref struct BinaryPayloadReader
         return bytes.IsEmpty ? string.Empty : Encoding.UTF8.GetString(bytes);
     }
 
+    /// <summary>
+    /// Same as <see cref="ReadStringWithDefault(string)"/>, but returns the existing string constant
+    /// for well-known claim types and claim value types instead of allocating a new string.
+    /// </summary>
+    public string ReadClaimTypeWithDefault(string defaultValue)
+    {
+        var bytes = ReadStringBytes();
+        if (bytes.Length == 1 && bytes[0] == 0)
+        {
+            return defaultValue;
+        }
+
+        if (bytes.IsEmpty)
+        {
+            return string.Empty;
+        }
+
+        return WellKnownClaimStrings.Find(bytes) ?? Encoding.UTF8.GetString(bytes);
+    }
+
     private ReadOnlySpan<byte> ReadStringBytes()
     {
         var length = Read7BitEncodedInt();
