@@ -706,6 +706,8 @@ public class DisposeTrackingHub : TestHub
         _trackDispose = trackDispose;
     }
 
+    public int GetDisposeCount() => _trackDispose.DisposeCount;
+
     protected override void Dispose(bool dispose)
     {
         if (dispose)

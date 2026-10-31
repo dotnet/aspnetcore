@@ -33,6 +33,13 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
 
+    // Whether IHubActivator<THub> is known to be the default registration, so it can be created directly
+    // instead of being resolved from each new scope. Unknown until the first activator is resolved.
+    private const int HubActivatorUnknown = 0;
+    private const int HubActivatorDefault = 1;
+    private const int HubActivatorCustom = 2;
+    private volatile int _hubActivatorKind;
+
     [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported")]
     [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
     [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
@@ -80,11 +87,35 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
+    private IHubActivator<THub> GetHubActivator(IServiceProvider scopedServiceProvider)
+    {
+        if (_hubActivatorKind == HubActivatorDefault)
+        {
+            // Equivalent to resolving the default scoped registration, but avoids populating the scope's resolved services.
+            return new DefaultHubActivator<THub>(scopedServiceProvider);
+        }
+
+        var hubActivator = scopedServiceProvider.GetRequiredService<IHubActivator<THub>>();
+
+        if (_hubActivatorKind == HubActivatorUnknown)
+        {
+            // Only bypass DI when the registration itself is the default one; a custom registration (for example a factory)
+            // could return different activators per scope. Checking the resolved type also guards against containers
+            // that have registrations outside of the IServiceCollection.
+            var isDefault = hubActivator is DefaultHubActivator<THub>
+                && scopedServiceProvider.GetService<HubActivatorRegistrations>() is { } registrations
+                && registrations.IsDefaultRegistration(typeof(IHubActivator<THub>));
+            _hubActivatorKind = isDefault ? HubActivatorDefault : HubActivatorCustom;
+        }
+
+        return hubActivator;
+    }
+
     public override async Task OnConnectedAsync(HubConnectionContext connection)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
-        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        var hubActivator = GetHubActivator(scope.ServiceProvider);
         var hub = hubActivator.Create();
         Activity? activity = null;
         try
@@ -121,7 +152,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
-        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        var hubActivator = GetHubActivator(scope.ServiceProvider);
         var hub = hubActivator.Create();
         Activity? activity = null;
         try
@@ -168,7 +199,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
-        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        var hubActivator = GetHubActivator(scope.ServiceProvider);
         var hub = hubActivator.Create();
         Activity? activity = null;
         try
@@ -373,7 +404,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         long? streamOwner = null;
         try
         {
-            hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+            hubActivator = GetHubActivator(scope.ServiceProvider);
             hub = hubActivator.Create();
             var hubCallerContext = connection.HubCallerContext;
 
