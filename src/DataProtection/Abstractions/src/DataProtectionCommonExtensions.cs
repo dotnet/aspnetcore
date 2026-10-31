@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if NET
+using System.Buffers;
+#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -160,6 +163,13 @@ public static class DataProtectionCommonExtensions
 
         try
         {
+#if NET
+            if (protector is ISpanDataProtector spanProtector)
+            {
+                return ProtectWithSpanProtector(spanProtector, plaintext);
+            }
+#endif
+
             byte[] plaintextAsBytes = EncodingUtil.SecureUtf8Encoding.GetBytes(plaintext);
             byte[] protectedDataAsBytes = protector.Protect(plaintextAsBytes);
             return WebEncoders.Base64UrlEncode(protectedDataAsBytes);
@@ -188,6 +198,13 @@ public static class DataProtectionCommonExtensions
         try
         {
             byte[] protectedDataAsBytes = WebEncoders.Base64UrlDecode(protectedData);
+#if NET
+            if (protector is ISpanDataProtector spanProtector)
+            {
+                return UnprotectWithSpanProtector(spanProtector, protectedDataAsBytes);
+            }
+#endif
+
             byte[] plaintextAsBytes = protector.Unprotect(protectedDataAsBytes);
             return EncodingUtil.SecureUtf8Encoding.GetString(plaintextAsBytes);
         }
@@ -197,4 +214,45 @@ public static class DataProtectionCommonExtensions
             throw Error.CryptCommon_GenericError(ex);
         }
     }
+
+#if NET
+    // Avoids the intermediate plaintext and protected byte[] allocations of the byte[]-based path. The payload is identical:
+    // ISpanDataProtector.Protect/Unprotect produce/consume the same format as IDataProtector.Protect/Unprotect.
+    private static string ProtectWithSpanProtector(ISpanDataProtector protector, string plaintext)
+    {
+        var plaintextByteCount = EncodingUtil.SecureUtf8Encoding.GetByteCount(plaintext);
+        var plaintextBuffer = ArrayPool<byte>.Shared.Rent(plaintextByteCount);
+        var destination = new ClearingPooledBufferWriter(plaintextByteCount + ProtectOverheadEstimate);
+        try
+        {
+            var plaintextBytesWritten = EncodingUtil.SecureUtf8Encoding.GetBytes(plaintext, plaintextBuffer);
+            protector.Protect(plaintextBuffer.AsSpan(0, plaintextBytesWritten), ref destination);
+            return WebEncoders.Base64UrlEncode(destination.WrittenSpan);
+        }
+        finally
+        {
+            // The rented buffer holds plaintext, so it must be cleared before it goes back to the pool.
+            ArrayPool<byte>.Shared.Return(plaintextBuffer, clearArray: true);
+            destination.Dispose();
+        }
+    }
+
+    private static string UnprotectWithSpanProtector(ISpanDataProtector protector, byte[] protectedData)
+    {
+        // The plaintext is never larger than the protected payload for the built-in protectors; the writer grows if needed.
+        var destination = new ClearingPooledBufferWriter(protectedData.Length);
+        try
+        {
+            protector.Unprotect(protectedData, ref destination);
+            return EncodingUtil.SecureUtf8Encoding.GetString(destination.WrittenSpan);
+        }
+        finally
+        {
+            destination.Dispose();
+        }
+    }
+
+    // Magic header + key id + key modifier + IV/nonce + padding + MAC/tag for the built-in encryptors.
+    private const int ProtectOverheadEstimate = 128;
+#endif
 }
