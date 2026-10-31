@@ -151,6 +151,51 @@ public class MiddlewareTests
     }
 
     [Fact]
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/24618. A rewrite map lookup
+    // nested inside an action URL (for example {id-map:{C:1}}) must evaluate its key with its own
+    // string builder. Otherwise the key evaluation appends to and clears the shared RewriteContext
+    // builder that the surrounding pattern is still using, so the map lookup misses and the rest of
+    // the action URL is lost.
+    public async Task Invoke_RewriteMapNestedInActionUrlEvaluatesKey()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Rewrite with rewrite map"" stopProcessing=""true"">
+                <match url=""page\.asp$"" />
+                <conditions>
+                <add input=""{QUERY_STRING}"" pattern=""id=([0-9-]+)"" />
+                </conditions>
+                <action type=""Rewrite"" url=""newpage.aspx?id={id-map:{C:1}}"" appendQueryString=""false"" />
+                </rule>
+                </rules>
+                <rewriteMaps>
+                <rewriteMap name=""id-map"" defaultValue="""">
+                <add key=""1234-1234"" value=""abcd-abcd"" />
+                </rewriteMap>
+                </rewriteMaps>
+                </rewrite>"));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("page.asp?id=1234-1234");
+
+        Assert.Equal("/newpage.aspx?id=abcd-abcd", response);
+    }
+
+    [Fact]
     public async Task Invoke_RedirectToLowerCase()
     {
         var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
