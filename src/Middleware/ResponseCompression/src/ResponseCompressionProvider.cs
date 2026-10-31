@@ -92,9 +92,7 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
             return null;
         }
 
-        // At most one candidate per distinct encoding name: one per provider plus "identity".
-        var maxCandidates = _providers.Length + 1;
-        var candidates = new CandidateSelector(maxCandidates <= 32 ? stackalloc int[32] : new int[maxCandidates], _providers);
+        var candidates = new CandidateSelector(_providers);
 
         foreach (var encoding in encodings)
         {
@@ -249,37 +247,42 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
 
     // Selects the candidate with the highest quality, preferring the lowest priority (provider order, then "identity").
     // Only the first occurrence of each encoding name (case-insensitive) is considered.
-    private ref struct CandidateSelector
+    private struct CandidateSelector
     {
         public const int IdentityIndex = -1;
 
-        private readonly Span<int> _seen;
         private readonly ICompressionProvider[] _providers;
-        private int _seenCount;
+        // Tracks which slots (provider index, or _providers.Length for "identity") have been added.
+        private ulong _seenMask;
+        private readonly bool[]? _seenOverflow;
         private bool _hasSelection;
         private double _selectedQuality;
         private int _selectedPriority;
 
-        public CandidateSelector(Span<int> seen, ICompressionProvider[] providers)
+        public CandidateSelector(ICompressionProvider[] providers)
         {
-            _seen = seen;
             _providers = providers;
+            if (providers.Length + 1 > 64)
+            {
+                _seenOverflow = new bool[providers.Length + 1];
+            }
         }
 
         public ICompressionProvider? SelectedProvider { get; private set; }
 
         public void Add(int index, double quality)
         {
-            var encodingName = GetEncodingName(index);
-            for (var i = 0; i < _seenCount; i++)
+            var slot = index == IdentityIndex ? _providers.Length : index;
+            var encodingName = GetEncodingName(slot);
+            for (var i = 0; i <= _providers.Length; i++)
             {
-                if (string.Equals(GetEncodingName(_seen[i]), encodingName, StringComparison.OrdinalIgnoreCase))
+                if (IsSeen(i) && string.Equals(GetEncodingName(i), encodingName, StringComparison.OrdinalIgnoreCase))
                 {
                     return;
                 }
             }
 
-            _seen[_seenCount++] = index;
+            MarkSeen(slot);
 
             var priority = index == IdentityIndex ? int.MaxValue : index;
             if (!_hasSelection || quality > _selectedQuality || (quality == _selectedQuality && priority < _selectedPriority))
@@ -291,7 +294,22 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
             }
         }
 
-        private readonly string GetEncodingName(int index)
-            => index == IdentityIndex ? "identity" : _providers[index].EncodingName;
+        private readonly bool IsSeen(int slot)
+            => _seenOverflow is null ? (_seenMask & (1UL << slot)) != 0 : _seenOverflow[slot];
+
+        private void MarkSeen(int slot)
+        {
+            if (_seenOverflow is null)
+            {
+                _seenMask |= 1UL << slot;
+            }
+            else
+            {
+                _seenOverflow[slot] = true;
+            }
+        }
+
+        private readonly string GetEncodingName(int slot)
+            => slot == _providers.Length ? "identity" : _providers[slot].EncodingName;
     }
 }

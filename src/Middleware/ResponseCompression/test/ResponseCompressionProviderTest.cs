@@ -60,6 +60,28 @@ public class ResponseCompressionProviderTest
         Assert.Same(identity, provider.GetCompressionProvider(CreateContext("identity, custom;q=0.5")));
     }
 
+    [Theory]
+    [InlineData(10)]
+    [InlineData(63)]
+    [InlineData(64)]
+    [InlineData(100)]
+    public void GetCompressionProvider_ManyProviders_SelectsHighestQualityThenFirst(int count)
+    {
+        var providers = new ICompressionProvider[count];
+        for (var i = 0; i < count; i++)
+        {
+            // Every name is registered twice so duplicates are exercised in both halves.
+            providers[i] = new TestCompressionProvider("enc" + (i % (count / 2)));
+        }
+        var provider = CreateProvider(providers);
+        var last = count / 2 - 1;
+
+        Assert.Same(providers[0], provider.GetCompressionProvider(CreateContext("*")));
+        Assert.Same(providers[last], provider.GetCompressionProvider(CreateContext($"enc0;q=0.5, ENC{last}, enc0")));
+        Assert.Same(providers[last], provider.GetCompressionProvider(CreateContext($"identity;q=0.9, enc{last}")));
+        Assert.Null(provider.GetCompressionProvider(CreateContext($"enc{last};q=0.5, identity")));
+    }
+
     private static ResponseCompressionProvider CreateProvider(params ICompressionProvider[] providers)
     {
         var services = new ServiceCollection()
