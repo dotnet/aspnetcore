@@ -22,8 +22,10 @@ const inlineWorkerProfile = workflowSource.match(
 assert.ok(inlineWorkerProfile, 'The hosted review-guide-worker profile must be extractable.');
 assert.equal(
   normalizeProfile(localWorkerProfile),
-  normalizeProfile(inlineWorkerProfile[1]),
-  'The local and hosted review-guide-worker profiles must remain identical.');
+  normalizeProfile(inlineWorkerProfile[1]).replace(
+    'tools: ["read", "search", "skill"]',
+    'tools: ["read", "search", "skill"]\nstrict-tools-list: true'),
+  'The local review-guide-worker profile may differ only by its strict local tool-list enforcement.');
 
 assert.match(workflowSource, /bash:\s*\[":\*"\]/);
 assert.match(workflowSource, /^\s+edit:\s*$/m);
