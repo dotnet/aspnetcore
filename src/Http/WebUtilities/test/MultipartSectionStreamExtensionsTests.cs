@@ -122,6 +122,31 @@ public class MultipartSectionStreamExtensionsTests
         await Assert.ThrowsAsync<ArgumentException>(async () => await section.ReadAsStringAsync(CancellationToken.None));
     }
 
+    [Theory]
+    [InlineData("text/plain")]
+    [InlineData("text/plain; charset=iso-8859-1")]
+    public async Task ReadAsStringAsync_BufferedSection_CanceledToken_MatchesStreamReader(string contentType)
+    {
+        const string Boundary = "9051914041544843365972754266";
+        var body = "--" + Boundary + "\r\n" +
+            "Content-Disposition: form-data; name=\"text\"\r\n" +
+            "Content-Type: " + contentType + "\r\n" +
+            "\r\n" +
+            "text default\r\n" +
+            "--" + Boundary + "--\r\n";
+        var reader = new MultipartReader(Boundary, new MemoryStream(Encoding.UTF8.GetBytes(body)));
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // StreamReader.ReadToEndAsync only observes the token through the underlying stream reads, and buffered
+        // section bodies complete without checking it. The UTF-8 fast path must behave the same as the
+        // StreamReader path used for other charsets.
+        Assert.Equal("text default", await section.ReadAsStringAsync(cts.Token));
+    }
+
     private static async Task<string> ReadAsStringAsync(byte[] bytes, string? contentType, int[]? readSizes)
     {
         var section = new MultipartSection
