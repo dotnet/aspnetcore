@@ -8,6 +8,10 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
 internal class BufferedTextWriter : TextWriter
 {
     private const int PageSize = 256;
+
+    // Strings up to this length are copied into the output buffer so that they can be coalesced
+    // with adjacent writes. Longer strings (e.g., large markup blocks) are held by reference.
+    private const int MaxCopiedStringLength = 128;
     private readonly TextWriter _underlying;
     private TextChunkListBuilder _currentOutput;
     private TextChunkListBuilder? _previousOutput;
@@ -22,7 +26,7 @@ internal class BufferedTextWriter : TextWriter
     public override Encoding Encoding => Encoding.UTF8;
 
     public override void Write(char value)
-        => _currentOutput.Add(new TextChunk(value));
+        => _currentOutput.Add(new ReadOnlySpan<char>(in value));
 
     public override void Write(char[] buffer, int index, int count)
         => _currentOutput.Add(buffer.AsSpan(index, count));
@@ -32,14 +36,33 @@ internal class BufferedTextWriter : TextWriter
 
     public override void Write(string? value)
     {
-        if (value is not null)
+        if (value is null)
+        {
+            return;
+        }
+
+        if (value.Length <= MaxCopiedStringLength)
+        {
+            _currentOutput.Add(value.AsSpan());
+        }
+        else
         {
             _currentOutput.Add(new TextChunk(value));
         }
     }
 
     public override void Write(int value)
-        => _currentOutput.Add(new TextChunk(value));
+    {
+        Span<char> buffer = stackalloc char[11]; // Enough for int.MinValue in invariant format
+        if (value.TryFormat(buffer, out var charsWritten, provider: FormatProvider))
+        {
+            _currentOutput.Add(buffer.Slice(0, charsWritten));
+        }
+        else
+        {
+            _currentOutput.Add(new TextChunk(value));
+        }
+    }
 
     public override void Flush()
         => throw new NotSupportedException();

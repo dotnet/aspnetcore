@@ -143,6 +143,25 @@ public class BufferedTextWriterTest
         Assert.Equal("seg1seg2strc123seg3", underlying.ToString());
     }
 
+    [Fact]
+    public async Task WritesLongAndShortStringsAndInts()
+    {
+        var underlying = new StringWriter();
+        var writer = new BufferedTextWriter(underlying);
+        var longString = new string('x', 1000);
+
+        writer.Write("<a>");
+        writer.Write(longString);
+        writer.Write(-123);
+        writer.Write(int.MinValue);
+        writer.Write(string.Empty);
+        writer.Write((string)null);
+        writer.Write('z');
+        await writer.FlushAsync();
+
+        Assert.Equal("<a>" + longString + "-123" + int.MinValue.ToString(writer.FormatProvider) + "z", underlying.ToString());
+    }
+
     private class SlowFlushingTextWriter : StringWriter
     {
         public Task CompleteNextFlushAfter { get; set; }
