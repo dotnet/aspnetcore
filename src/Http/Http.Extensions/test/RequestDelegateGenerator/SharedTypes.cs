@@ -16,6 +16,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
+public class FromServicesParameterList
+{
+    [FromServices]
+    public virtual TestService Service { get; set; } = null!;
+}
+
+public class InheritedFromServicesParameterList : FromServicesParameterList
+{
+    public override TestService Service { get; set; } = null!;
+}
+
 #nullable  enable
 
 public class TestService

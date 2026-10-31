@@ -121,6 +121,29 @@ internal static class SymbolExtensions
         return false;
     }
 
+    public static bool TryGetInheritedAttributeImplementingInterface(this IPropertySymbol property, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        var current = property.OverriddenProperty;
+        while (current is not null)
+        {
+            foreach (var attributeData in current.GetAttributes())
+            {
+                if (attributeData.AttributeClass is { } attributeClass &&
+                    attributeClass.Implements(interfaceType) &&
+                    IsInherited(attributeClass))
+                {
+                    matchedAttribute = attributeData;
+                    return true;
+                }
+            }
+
+            current = current.OverriddenProperty;
+        }
+
+        matchedAttribute = null;
+        return false;
+    }
+
     public static bool HasAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType)
     {
         return attributes.TryGetAttributeImplementingInterface(interfaceType, out var _);
@@ -193,6 +216,32 @@ internal static class SymbolExtensions
             }
         }
         return false;
+    }
+
+    private static bool IsInherited(INamedTypeSymbol attributeType)
+    {
+        foreach (var type in attributeType.GetThisAndBaseTypes())
+        {
+            var usage = type.GetAttributes().FirstOrDefault(
+                attribute => attribute.AttributeClass?.ToDisplayString() == typeof(AttributeUsageAttribute).FullName);
+            if (usage is null)
+            {
+                continue;
+            }
+
+            foreach (var namedArgument in usage.NamedArguments)
+            {
+                if (namedArgument.Key == nameof(AttributeUsageAttribute.Inherited) &&
+                    namedArgument.Value.Value is bool inherited)
+                {
+                    return inherited;
+                }
+            }
+
+            return true;
+        }
+
+        return true;
     }
 
     public static bool IsType(this INamedTypeSymbol type, string typeName, SemanticModel semanticModel)

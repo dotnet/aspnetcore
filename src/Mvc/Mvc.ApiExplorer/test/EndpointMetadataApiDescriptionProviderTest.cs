@@ -1001,6 +1001,14 @@ public partial class EndpointMetadataApiDescriptionProviderTest
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}", httpMethods: ["POST"]), "foo");
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}", httpMethods: ["POST"]));
     }
+
+    [Fact]
+    public void ExcludesInheritedFromServicesPropertyFromApiDescription()
+    {
+        var apiDescription = GetApiDescription(([AsParameters] InheritedFromServicesArgumentList req) => { });
+
+        Assert.Empty(apiDescription.ParameterDescriptions);
+    }
 #nullable enable
 
     public class AsParametersWithRequiredMembers
@@ -2248,6 +2256,17 @@ public partial class EndpointMetadataApiDescriptionProviderTest
     private class ArgumentListClassWithReadOnlyProperties : ArgumentListClass
     {
         public int ReadOnly { get; }
+    }
+
+    private class FromServicesArgumentList
+    {
+        [FromServices]
+        public virtual IServiceProvider Service { get; set; } = null!;
+    }
+
+    private class InheritedFromServicesArgumentList : FromServicesArgumentList
+    {
+        public override IServiceProvider Service { get; set; } = null!;
     }
 
     private struct ArgumentListStruct
