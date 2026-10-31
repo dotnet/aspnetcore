@@ -15,13 +15,15 @@ namespace Microsoft.AspNetCore.SignalR;
 internal sealed class StreamTracker
 {
     private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals(nameof(BuildStream)));
-    private readonly object[] _streamConverterArgs;
+    // Factories only depend on the item type, which comes from hub method signatures, so the cache is bounded and shared.
+    private static readonly ConcurrentDictionary<Type, Func<int, IStreamConverter>> _converterFactories = new();
+    private readonly int _streamBufferCapacity;
     private readonly ConcurrentDictionary<string, (long Owner, IStreamConverter Converter)> _lookup = new();
     private long _nextStreamOwner;
 
     public StreamTracker(int streamBufferCapacity)
     {
-        _streamConverterArgs = new object[] { streamBufferCapacity };
+        _streamBufferCapacity = streamBufferCapacity;
     }
 
     public long GetNextStreamOwner()
@@ -32,21 +34,26 @@ internal sealed class StreamTracker
     /// <summary>
     /// Creates a new stream and returns the ChannelReader for it as an object.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
-        Justification = "BuildStream doesn't have trimming annotations.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
-        Justification = "HubMethodDescriptor checks for ValueType streaming item types when PublishAot=true. Developers will get an exception in this situation before publishing.")]
     public object AddStream(string streamId, Type itemType, Type targetType, long streamOwner)
     {
         Debug.Assert(RuntimeFeature.IsDynamicCodeSupported || !itemType.IsValueType, "HubMethodDescriptor ensures itemType is not a ValueType when PublishAot=true.");
 
-        var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs)!;
+        var newConverter = _converterFactories.GetOrAdd(itemType, CreateConverterFactory)(_streamBufferCapacity);
         if (!_lookup.TryAdd(streamId, (streamOwner, newConverter)))
         {
             throw new HubException($"Stream ID '{streamId}' is already in use.");
         }
 
         return newConverter.GetReaderAsObject(targetType);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
+        Justification = "BuildStream doesn't have trimming annotations.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "HubMethodDescriptor checks for ValueType streaming item types when PublishAot=true. Developers will get an exception in this situation before publishing.")]
+    private static Func<int, IStreamConverter> CreateConverterFactory(Type itemType)
+    {
+        return _buildConverterMethod.MakeGenericMethod(itemType).CreateDelegate<Func<int, IStreamConverter>>();
     }
 
     private bool TryGetRegistration(string streamId, out (long Owner, IStreamConverter Converter) registration)
