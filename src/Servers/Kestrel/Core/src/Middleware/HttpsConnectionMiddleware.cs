@@ -424,10 +424,6 @@ internal sealed class HttpsConnectionMiddleware
         }
 
         var certificate2 = ConvertToX509Certificate2(certificate);
-        if (certificate2 == null)
-        {
-            return false;
-        }
 
         if (clientCertificateValidation != null)
         {
