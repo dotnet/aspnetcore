@@ -18,6 +18,10 @@ internal class BufferedTextWriter : TextWriter
     private TextChunkListBuilder? _previousOutput;
     private Task _currentFlushAsyncTask = Task.CompletedTask;
 
+    // Private scratch space for formatting ints (int.MaxValue has 10 digits). It is only used
+    // transiently inside Write(int); the formatted chars are copied into the output before returning.
+    private char[]? _intFormatBuffer;
+
     public BufferedTextWriter(TextWriter underlying)
     {
         _underlying = underlying;
@@ -56,10 +60,9 @@ internal class BufferedTextWriter : TextWriter
     {
         // Non-negative ints format as ASCII digits in every culture, so they can be copied eagerly.
         // Negative ints keep the deferred path so the culture's NegativeSign is resolved at flush time, as before.
-        Span<char> buffer = stackalloc char[10];
-        if (value >= 0 && value.TryFormat(buffer, out var charsWritten, provider: CultureInfo.InvariantCulture))
+        if (value >= 0 && value.TryFormat(_intFormatBuffer ??= new char[10], out var charsWritten, provider: CultureInfo.InvariantCulture))
         {
-            _currentOutput.Add(buffer.Slice(0, charsWritten));
+            _currentOutput.Add(_intFormatBuffer.AsSpan(0, charsWritten));
         }
         else
         {
