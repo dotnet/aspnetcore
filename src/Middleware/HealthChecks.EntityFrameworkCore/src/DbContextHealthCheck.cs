@@ -8,9 +8,24 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 internal sealed class DbContextHealthCheck<TContext> : IHealthCheck where TContext : DbContext
 {
-    private static readonly Func<TContext, CancellationToken, Task<bool>> DefaultTestQuery = (dbContext, cancellationToken) =>
+    private static readonly Func<TContext, CancellationToken, Task<bool>> DefaultTestQuery = async (dbContext, cancellationToken) =>
     {
-        return dbContext.Database.CanConnectAsync(cancellationToken);
+        try
+        {
+            return await dbContext.Database.CanConnectAsync(cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            // every exception returned by `CanConnectAsync` indicates cancellation, but we have to wrap every
+            // non-OperationCanceledException to make the check health message properly propagate, independent of the
+            // test query being used
+            if (exception is not OperationCanceledException)
+            {
+                throw new OperationCanceledException(null, exception, cancellationToken);
+            }
+
+            throw;
+        }
     };
 
     private readonly TContext _dbContext;
@@ -41,7 +56,7 @@ internal sealed class DbContextHealthCheck<TContext> : IHealthCheck where TConte
 
             return new HealthCheckResult(context.Registration.FailureStatus);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             return HealthCheckResult.Unhealthy(exception.Message, exception);
         }
