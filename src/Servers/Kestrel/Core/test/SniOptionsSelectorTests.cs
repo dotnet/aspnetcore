@@ -232,9 +232,9 @@ public class SniOptionsSelectorTests
 
         /*
          * Chain test certs were created using smallstep cli: https://github.com/smallstep/cli
-         * root_ca(pwd: testroot) -> 
-         * intermediate_ca 1(pwd: inter) -> 
-         * intermediate_ca 2(pwd: inter) -> 
+         * root_ca(pwd: testroot) ->
+         * intermediate_ca 1(pwd: inter) ->
+         * intermediate_ca 2(pwd: inter) ->
          * leaf.com(pwd: leaf) (bundled)
          */
         var fullChain = fullChainDictionary[aSubdomainOptions.ServerCertificate];
@@ -329,6 +329,137 @@ public class SniOptionsSelectorTests
              fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
              logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
         Assert.Equal("An item with the same key has already been added. Key: .EXAMPLE.org (Parameter 'key')", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("secure.xn--mnchen-3ya.example", "*.xn--mnchen-3ya.example")]
+    [InlineData("SECURE.XN--MNCHEN-3YA.EXAMPLE", "*.XN--MNCHEN-3YA.EXAMPLE")]
+    [InlineData("secure.münchen.example", "*.münchen.example")]
+    public void IdnServerNameMatchesALabelAndUnicodeConfiguration(string exactName, string wildcardPrefixName)
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    exactName,
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "Exact"
+                        }
+                    }
+                },
+                {
+                    wildcardPrefixName,
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "WildcardPrefix"
+                        }
+                    }
+                },
+                {
+                    "*",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "WildcardOnly"
+                        }
+                    }
+                }
+            };
+
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (exactOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "secure.münchen.example");
+        Assert.Equal("Exact", pathDictionary[exactOptions.ServerCertificate]);
+
+        var (wildcardPrefixOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "other.münchen.example");
+        Assert.Equal("WildcardPrefix", pathDictionary[wildcardPrefixOptions.ServerCertificate]);
+
+        var (wildcardOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "secure.example");
+        Assert.Equal("WildcardOnly", pathDictionary[wildcardOptions.ServerCertificate]);
+    }
+
+    [Theory]
+    [InlineData("secure.xn--mnchen-3ya.example", "secure.münchen.example")]
+    [InlineData("*.xn--mnchen-3ya.example", "*.münchen.example")]
+    public void EquivalentALabelAndUnicodeServerNamesThrowsArgumentException(string aLabelName, string unicodeName)
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    aLabelName,
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "a"
+                        }
+                    }
+                },
+                {
+                    unicodeName,
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "b"
+                        }
+                    }
+                }
+            };
+
+        Assert.Throws<ArgumentException>(() => new SniOptionsSelector(
+             "TestEndpointName",
+             sniDictionary,
+             new MockCertificateConfigLoader(),
+             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+             logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
+    }
+
+    [Fact]
+    public void InvalidALabelServerNameIsMatchedVerbatim()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    "xn--0.example",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "Exact"
+                        }
+                    }
+                }
+            };
+
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "xn--0.example");
+        Assert.Equal("Exact", pathDictionary[options.ServerCertificate]);
     }
 
     [Fact]

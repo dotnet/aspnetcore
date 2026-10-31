@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -18,6 +19,8 @@ internal sealed class SniOptionsSelector
 {
     private const string WildcardHost = "*";
     private const string WildcardPrefix = "*.";
+
+    private static readonly IdnMapping s_idnMapping = new IdnMapping { AllowUnassigned = true };
 
     private readonly string _endpointName;
     private readonly ILogger<HttpsConnectionMiddleware> _logger;
@@ -103,13 +106,25 @@ internal sealed class SniOptionsSelector
             }
             else if (name.StartsWith(WildcardPrefix, StringComparison.Ordinal))
             {
-                // Only slice off 1 character, the `*`. We want to match the leading `.` also.
-                _wildcardPrefixOptions.Add(name.Substring(1), sniOptions);
+                // Canonicalize what follows the `*.`, but keep the leading `.` in the suffix. We want to match that also.
+                _wildcardPrefixOptions.Add("." + CanonicalizeServerName(name.Substring(WildcardPrefix.Length)), sniOptions);
             }
             else
             {
-                _exactNameOptions.Add(name, sniOptions);
+                _exactNameOptions.Add(CanonicalizeServerName(name), sniOptions);
             }
+        }
+    }
+
+    private static string CanonicalizeServerName(string name)
+    {
+        try
+        {
+            return s_idnMapping.GetUnicode(name);
+        }
+        catch (ArgumentException)
+        {
+            return name;
         }
     }
 
