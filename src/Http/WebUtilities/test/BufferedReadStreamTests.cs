@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Text;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -130,15 +131,36 @@ public class BufferedReadStreamTests
     public async Task ReadLineAsync_CrLfSplitAcrossBuffers_Succeeds()
     {
         // "abc\r" fills the first buffer and "\n" arrives in the next one.
-        var stream = MakeStream("abc\r\nnext\r\n", bufferSize: 4);
+        var stream = MakeStream("abc\r\nnext\r\n", bufferSize: 4, new ExactSizeArrayPool());
 
         Assert.Equal("abc", await stream.ReadLineAsync(lengthLimit: 100, CancellationToken.None));
         Assert.Equal("next", await stream.ReadLineAsync(lengthLimit: 100, CancellationToken.None));
         Assert.Equal("", await stream.ReadLineAsync(lengthLimit: 100, CancellationToken.None));
+
+        stream = MakeStream("abc\r\nnext\r\n", bufferSize: 4, new ExactSizeArrayPool());
+
+        Assert.Equal("abc", stream.ReadLine(lengthLimit: 100));
+        Assert.Equal("next", stream.ReadLine(lengthLimit: 100));
+        Assert.Equal("", stream.ReadLine(lengthLimit: 100));
     }
 
     private static BufferedReadStream MakeStream(string text, int bufferSize)
     {
         return new BufferedReadStream(new MemoryStream(Encoding.UTF8.GetBytes(text)), bufferSize);
+    }
+
+    private static BufferedReadStream MakeStream(string text, int bufferSize, ArrayPool<byte> bytePool)
+    {
+        return new BufferedReadStream(new MemoryStream(Encoding.UTF8.GetBytes(text)), bufferSize, bytePool);
+    }
+
+    // ArrayPool<byte>.Shared can return larger arrays than requested, which would buffer the whole input at once.
+    private sealed class ExactSizeArrayPool : ArrayPool<byte>
+    {
+        public override byte[] Rent(int minimumLength) => new byte[minimumLength];
+
+        public override void Return(byte[] array, bool clearArray = false)
+        {
+        }
     }
 }
