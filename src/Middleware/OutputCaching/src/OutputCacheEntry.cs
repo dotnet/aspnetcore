@@ -87,7 +87,7 @@ internal sealed class OutputCacheEntry : IDisposable
             var index = 0;
             if (count != 0)
             {
-                var arr = ArrayPool<(string, StringValues)>.Shared.Rent(count);
+                var arr = new (string, StringValues)[count];
                 foreach (var header in headers)
                 {
                     if (OutputCacheEntryFormatter.ShouldStoreHeader(header.Key))
@@ -95,15 +95,7 @@ internal sealed class OutputCacheEntry : IDisposable
                         arr[index++] = (header.Key, header.Value);
                     }
                 }
-                if (index == 0) // only ignored headers
-                {
-                    ArrayPool<(string, StringValues)>.Shared.Return(arr);
-                    Headers = default;
-                }
-                else
-                {
-                    Headers = new(arr, 0, index);
-                }
+                Headers = index == 0 ? default : new(arr, 0, index);
             }
         }
         return this;
