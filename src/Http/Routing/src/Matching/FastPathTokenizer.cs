@@ -1,6 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 namespace Microsoft.AspNetCore.Routing.Matching;
 
 // Low level implementation of our path tokenization algorithm. Alternative
@@ -15,27 +20,58 @@ internal static class FastPathTokenizer
     public static int Tokenize(string path, Span<PathSegment> segments)
     {
         // This can happen in test scenarios.
-        if (string.IsNullOrEmpty(path))
+        if (string.IsNullOrEmpty(path) || segments.IsEmpty)
         {
             return 0;
         }
 
-        int count = 0;
-        int start = 1; // Paths always start with a leading /
-        int end;
-        var span = path.AsSpan(start);
-        while ((end = span.IndexOf('/')) >= 0 && count < segments.Length)
+        var count = 0;
+        var start = 1; // Paths always start with a leading /
+        var i = 1;
+
+        // Paths usually consist of several short segments. Rather than searching for each slash separately,
+        // compare a vector of characters at a time and enumerate the slashes found in it.
+        if (Vector128.IsHardwareAccelerated)
         {
-            segments[count++] = new PathSegment(start, end);
-            start += end + 1; // resume search after the current character
-            span = path.AsSpan(start);
+            ref var pathRef = ref Unsafe.As<char, ushort>(ref MemoryMarshal.GetReference(path.AsSpan()));
+            var slash = Vector128.Create((ushort)'/');
+            var lastVectorStart = path.Length - Vector128<ushort>.Count;
+            for (; i <= lastVectorStart; i += Vector128<ushort>.Count)
+            {
+                var mask = Vector128.Equals(Vector128.LoadUnsafe(ref pathRef, (nuint)i), slash).ExtractMostSignificantBits();
+                while (mask != 0)
+                {
+                    var end = i + BitOperations.TrailingZeroCount(mask);
+                    segments[count++] = new PathSegment(start, end - start);
+                    if (count == segments.Length)
+                    {
+                        return count;
+                    }
+
+                    start = end + 1; // resume after the current character
+                    mask &= mask - 1;
+                }
+            }
+        }
+
+        for (; i < path.Length; i++)
+        {
+            if (path[i] == '/')
+            {
+                segments[count++] = new PathSegment(start, i - start);
+                if (count == segments.Length)
+                {
+                    return count;
+                }
+
+                start = i + 1; // resume after the current character
+            }
         }
 
         // Residue
-        var length = span.Length;
-        if (length > 0 && count < segments.Length)
+        if (start < path.Length)
         {
-            segments[count++] = new PathSegment(start, length);
+            segments[count++] = new PathSegment(start, path.Length - start);
         }
 
         return count;
