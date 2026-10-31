@@ -1139,6 +1139,81 @@ public class StaticAssetsIntegrationTests
         Assert.Equal(5, res2.Content.Headers.ContentLength);
     }
 
+    [Fact]
+    public async Task ResponseHeadersAreConsistentAcrossStatusCodes()
+    {
+        var client = await CreateClient();
+        var expectedETag = $"\"{GetEtag("Hello, World!")}\"";
+        const string expectedLastModified = "Fri, 03 Mar 2023 00:00:00 GMT";
+
+        var get = await client.GetAsync("http://localhost/sample.txt");
+        AssertHeaders(get, HttpStatusCode.OK);
+
+        var head = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, "http://localhost/sample.txt"));
+        AssertHeaders(head, HttpStatusCode.OK);
+
+        var notModifiedRequest = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        notModifiedRequest.Headers.TryAddWithoutValidation("If-None-Match", expectedETag);
+        var notModified = await client.SendAsync(notModifiedRequest);
+        AssertHeaders(notModified, HttpStatusCode.NotModified);
+
+        var rangeRequest = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        rangeRequest.Headers.Range = new RangeHeaderValue(0, 4);
+        var range = await client.SendAsync(rangeRequest);
+        AssertHeaders(range, HttpStatusCode.PartialContent);
+        Assert.Equal("bytes 0-4/13", Assert.Single(range.Content.Headers.GetValues("Content-Range")));
+
+        var unsatisfiableRequest = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        unsatisfiableRequest.Headers.Range = new RangeHeaderValue(100, 200);
+        var unsatisfiable = await client.SendAsync(unsatisfiableRequest);
+        Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, unsatisfiable.StatusCode);
+        Assert.Equal("bytes */13", Assert.Single(unsatisfiable.Content.Headers.GetValues("Content-Range")));
+        Assert.False(unsatisfiable.Headers.Contains("ETag"));
+        Assert.False(unsatisfiable.Content.Headers.Contains("Last-Modified"));
+
+        void AssertHeaders(HttpResponseMessage response, HttpStatusCode statusCode)
+        {
+            Assert.Equal(statusCode, response.StatusCode);
+            Assert.Equal(expectedETag, Assert.Single(response.Headers.GetValues("ETag")));
+            Assert.Equal(expectedLastModified, Assert.Single(response.Content.Headers.GetValues("Last-Modified")));
+            Assert.Contains("bytes", response.Headers.AcceptRanges);
+        }
+    }
+
+    [Theory]
+    [InlineData("{0}", HttpStatusCode.NotModified)]
+    [InlineData("W/{0}", HttpStatusCode.NotModified)]
+    [InlineData(" {0} ", HttpStatusCode.NotModified)]
+    [InlineData("\"other\", {0}", HttpStatusCode.NotModified)]
+    [InlineData("\"other\"", HttpStatusCode.OK)]
+    [InlineData("W/\"other\"", HttpStatusCode.OK)]
+    public async Task IfNoneMatchVariantsAreEvaluated(string ifNoneMatchFormat, HttpStatusCode expectedStatusCode)
+    {
+        var client = await CreateClient();
+        var etag = $"\"{GetEtag("Hello, World!")}\"";
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        request.Headers.TryAddWithoutValidation("If-None-Match", string.Format(CultureInfo.InvariantCulture, ifNoneMatchFormat, etag));
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(expectedStatusCode, response.StatusCode);
+        Assert.Equal(etag, Assert.Single(response.Headers.GetValues("ETag")));
+    }
+
+    [Fact]
+    public async Task IfMatchFailureTakesPrecedenceOverMatchingIfNoneMatch()
+    {
+        var client = await CreateClient();
+        var etag = $"\"{GetEtag("Hello, World!")}\"";
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        request.Headers.TryAddWithoutValidation("If-None-Match", etag);
+        request.Headers.TryAddWithoutValidation("If-Match", "\"other\"");
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.PreconditionFailed, response.StatusCode);
+    }
+
     public static IEnumerable<object[]> SupportedMethods => new[]
     {
             new [] { HttpMethod.Get },
