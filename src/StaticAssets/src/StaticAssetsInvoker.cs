@@ -27,6 +27,10 @@ internal class StaticAssetsInvoker
     private readonly DateTimeOffset _lastModified;
     private readonly List<StaticAssetResponseHeader> _remainingHeaders;
 
+    // The ETag and Last-Modified values are fixed for a given asset, so format them once.
+    private readonly string _etagHeaderValue;
+    private readonly string _lastModifiedHeaderValue;
+
     private IFileInfo? _fileInfo;
 
     public StaticAssetsInvoker(StaticAssetDescriptor resource, IFileProvider fileProvider, ILogger<StaticAssetsInvoker> logger)
@@ -75,6 +79,9 @@ internal class StaticAssetsInvoker
         {
             throw new InvalidOperationException("The ETag header is required.");
         }
+
+        _etagHeaderValue = _etag.ToString();
+        _lastModifiedHeaderValue = HeaderUtilities.FormatDate(_lastModified);
     }
 
     public string Route => _resource.Route;
@@ -97,12 +104,12 @@ internal class StaticAssetsInvoker
                 context.Response.ContentType = _contentType;
             }
 
-            var responseHeaders = context.ResponseHeaders;
-            responseHeaders.LastModified = _lastModified;
-            responseHeaders.ETag = _etag;
-            responseHeaders.Headers.AcceptRanges = "bytes";
+            var responseHeaders = context.Response.Headers;
+            responseHeaders.LastModified = _lastModifiedHeaderValue;
+            responseHeaders.ETag = _etagHeaderValue;
+            responseHeaders.AcceptRanges = "bytes";
 
-            foreach (var header in _remainingHeaders ?? [])
+            foreach (var header in _remainingHeaders)
             {
                 responseHeaders.Append(header.Name, header.Value);
             }
@@ -129,6 +136,7 @@ internal class StaticAssetsInvoker
         var requestContext = new StaticAssetInvocationContext(
             context,
             _etag,
+            _etagHeaderValue,
             _lastModified,
             _length,
             _logger);
@@ -254,6 +262,7 @@ internal class StaticAssetsInvoker
         private readonly HttpContext _context = null!;
         private readonly HttpRequest _request = null!;
         private readonly EntityTagHeaderValue _etag;
+        private readonly string _etagHeaderValue;
         private readonly DateTimeOffset _lastModified;
         private readonly long _length;
         private readonly ILogger _logger;
@@ -262,16 +271,17 @@ internal class StaticAssetsInvoker
         public StaticAssetInvocationContext(
             HttpContext context,
             EntityTagHeaderValue entityTag,
+            string etagHeaderValue,
             DateTimeOffset lastModified,
             long length,
             ILogger logger)
         {
             _context = context;
             _request = context.Request;
-            ResponseHeaders = context.Response.GetTypedHeaders();
             _requestHeaders = _request.GetTypedHeaders();
             Response = context.Response;
             _etag = entityTag;
+            _etagHeaderValue = etagHeaderValue;
             _lastModified = lastModified;
             _length = length;
             _logger = logger;
@@ -279,7 +289,8 @@ internal class StaticAssetsInvoker
 
         public CancellationToken CancellationToken => _context.RequestAborted;
 
-        public ResponseHeaders ResponseHeaders { get; }
+        // Only needed when sending Content-Range, so avoid allocating it for every request.
+        public ResponseHeaders ResponseHeaders => Response.GetTypedHeaders();
 
         public HttpResponse Response { get; }
 
@@ -317,6 +328,14 @@ internal class StaticAssetsInvoker
 
             // 14.26 If-None-Match
             var ifNoneMatchResult = PreconditionState.Unspecified;
+
+            // Fast path for the common revalidation request that echoes back the exact ETag we sent.
+            var rawIfNoneMatch = _request.Headers.IfNoneMatch;
+            if (rawIfNoneMatch.Count == 1 && string.Equals(rawIfNoneMatch[0], _etagHeaderValue, StringComparison.Ordinal))
+            {
+                return (ifMatchResult, PreconditionState.NotModified);
+            }
+
             var ifNoneMatch = requestHeaders.IfNoneMatch;
             if (ifNoneMatch?.Count > 0)
             {
