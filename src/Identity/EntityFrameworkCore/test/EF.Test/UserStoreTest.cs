@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,6 +32,20 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         { }
     }
 
+    private sealed class CollationDbContext(DbContextOptions<CollationDbContext> options) : IdentityDbContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<IdentityUserLogin<string>>(b =>
+            {
+                b.Property(l => l.LoginProvider).UseCollation("IdentityTestCollation");
+                b.Property(l => l.ProviderKey).UseCollation("IdentityTestCollation");
+            });
+        }
+    }
+
     [ConditionalFact]
     public void CanCreateUserUsingEF()
     {
@@ -51,6 +66,40 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         return db;
     }
 
+    private static CollationDbContext CreateCollationContext(SqliteConnection connection)
+    {
+        connection.Open();
+        connection.CreateCollation(
+            "IdentityTestCollation",
+            (left, right) => string.Compare(left?.TrimEnd(), right?.TrimEnd(), StringComparison.OrdinalIgnoreCase));
+
+        var context = new CollationDbContext(
+            new DbContextOptionsBuilder<CollationDbContext>()
+                .UseSqlite(connection)
+                .Options);
+        context.Database.EnsureCreated();
+
+        return context;
+    }
+
+    private static IUserLoginStore<IdentityUser> CreateLoginStore(CollationDbContext context, bool userOnlyStore)
+        => userOnlyStore
+            ? new UserOnlyStore<IdentityUser, CollationDbContext>(context)
+            : new UserStore<IdentityUser, IdentityRole, CollationDbContext>(context);
+
+    private static async Task<IdentityUser> AddUserLoginAsync(
+        CollationDbContext context,
+        IUserLoginStore<IdentityUser> store)
+    {
+        var user = new IdentityUser { UserName = Guid.NewGuid().ToString() };
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+        await store.AddLoginAsync(user, new UserLoginInfo("LoginProvider", "ProviderKey", "DisplayName"), default);
+        await context.SaveChangesAsync();
+
+        return user;
+    }
+
     protected override object CreateTestContext()
     {
         return CreateContext();
@@ -64,6 +113,110 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     protected override void AddRoleStore(IServiceCollection services, object context = null)
     {
         services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, UserStoreTestDbContext>((UserStoreTestDbContext)context));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FindByLoginAsyncReturnsExactOrdinalMatch(bool userOnlyStore)
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await using var context = CreateCollationContext(connection);
+        var store = CreateLoginStore(context, userOnlyStore);
+        var user = await AddUserLoginAsync(context, store);
+
+        Assert.Same(user, await store.FindByLoginAsync("LoginProvider", "ProviderKey", default));
+    }
+
+    [Theory]
+    [InlineData("LoginProvider", "ProviderKey", true)]
+    [InlineData("loginprovider", "ProviderKey", false)]
+    [InlineData("LoginProvider", "providerkey", false)]
+    public async Task FindByLoginAsyncMatchesInMemoryStore(
+        string loginProvider,
+        string providerKey,
+        bool expected)
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await using var context = CreateCollationContext(connection);
+        var efStore = CreateLoginStore(context, userOnlyStore: false);
+        await AddUserLoginAsync(context, efStore);
+
+        var inMemoryStore = new InMemory.InMemoryUserStore<PocoUser>();
+        var inMemoryUser = new PocoUser();
+        await inMemoryStore.AddLoginAsync(
+            inMemoryUser,
+            new UserLoginInfo("LoginProvider", "ProviderKey", "DisplayName"));
+
+        Assert.Equal(
+            expected,
+            await efStore.FindByLoginAsync(loginProvider, providerKey, default) is not null);
+        Assert.Equal(
+            expected,
+            await inMemoryStore.FindByLoginAsync(loginProvider, providerKey) is not null);
+    }
+
+    [Theory]
+    [InlineData(false, "loginprovider", "ProviderKey")]
+    [InlineData(false, "LoginProvider", "providerkey")]
+    [InlineData(false, "LoginProvider", "ProviderKey ")]
+    [InlineData(true, "loginprovider", "ProviderKey")]
+    [InlineData(true, "LoginProvider", "providerkey")]
+    [InlineData(true, "LoginProvider", "ProviderKey ")]
+    public async Task FindByLoginAsyncRejectsNonOrdinalDatabaseMatch(
+        bool userOnlyStore,
+        string loginProvider,
+        string providerKey)
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await using var context = CreateCollationContext(connection);
+        var store = CreateLoginStore(context, userOnlyStore);
+        await AddUserLoginAsync(context, store);
+
+        Assert.NotNull(await context.UserLogins.SingleOrDefaultAsync(
+            login => login.LoginProvider == loginProvider && login.ProviderKey == providerKey));
+        Assert.Null(await store.FindByLoginAsync(loginProvider, providerKey, default));
+    }
+
+    [Theory]
+    [InlineData(false, "loginprovider", "ProviderKey")]
+    [InlineData(false, "LoginProvider", "providerkey")]
+    [InlineData(false, "LoginProvider", "ProviderKey ")]
+    [InlineData(true, "loginprovider", "ProviderKey")]
+    [InlineData(true, "LoginProvider", "providerkey")]
+    [InlineData(true, "LoginProvider", "ProviderKey ")]
+    public async Task RemoveLoginAsyncRejectsNonOrdinalDatabaseMatch(
+        bool userOnlyStore,
+        string loginProvider,
+        string providerKey)
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await using var context = CreateCollationContext(connection);
+        var store = CreateLoginStore(context, userOnlyStore);
+        var user = await AddUserLoginAsync(context, store);
+
+        Assert.NotNull(await context.UserLogins.SingleOrDefaultAsync(
+            login => login.LoginProvider == loginProvider && login.ProviderKey == providerKey));
+        await store.RemoveLoginAsync(user, loginProvider, providerKey, default);
+        await context.SaveChangesAsync();
+
+        Assert.Single(context.UserLogins);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RemoveLoginAsyncRemovesExactOrdinalMatch(bool userOnlyStore)
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await using var context = CreateCollationContext(connection);
+        var store = CreateLoginStore(context, userOnlyStore);
+        var user = await AddUserLoginAsync(context, store);
+
+        await store.RemoveLoginAsync(user, "LoginProvider", "ProviderKey", default);
+        await context.SaveChangesAsync();
+
+        Assert.Empty(context.UserLogins);
     }
 
     [Fact]
