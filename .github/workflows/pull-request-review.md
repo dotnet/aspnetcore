@@ -51,18 +51,24 @@ skills:
 
 network:
   allowed:
+    # gh-aw's baseline OS package and certificate-revocation endpoints.
     - defaults
-    - containers
+    # Repository SDK bootstrap and approved package feeds.
+    - "*.vsblob.vsassets.io"
+    - "builds.dotnet.microsoft.com"
+    - "ci.dot.net"
     - "data.nuget.org"
-    - dotnet
-    - "dotnetcli.azureedge.net"
-    - "globalcdn.nuget.org"
-    - github
-    - java
-    - node
+    - "oneocsp.microsoft.com"
+    - "pkgs.dev.azure.com"
+    - "www.microsoft.com"
+    # The checked-in Gradle wrapper redirects its distribution download through GitHub.
+    - "downloads.gradle-dn.com"
+    - "github.com"
+    - "release-assets.githubusercontent.com"
+    - "services.gradle.org"
+    # Playwright's Chromium-for-Testing downloads redirect here.
+    - "storage.googleapis.com"
     - playwright
-    - powershell
-    - python
 
 tools:
   bash: [":*"]
@@ -74,10 +80,103 @@ tools:
 
 # Do not expose inherited telemetry credentials to a process reading untrusted pull request text.
 env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   OTEL_EXPORTER_OTLP_ENDPOINT: ""
   OTEL_EXPORTER_OTLP_HEADERS: ""
   GH_AW_OTLP_ENDPOINTS: "[]"
   GH_AW_OTLP_IF_MISSING: ignore
+
+post-steps:
+  - name: Verify restricted review workers
+    if: always()
+    run: |
+      set -euo pipefail
+      node - <<'NODE'
+      const fs = require('fs');
+
+      const sessionPath = process.env.REVIEW_WORKER_SESSION_PATH || '/tmp/gh-aw/agent-session.jsonl';
+      const manifestPath = process.env.REVIEW_BUNDLE_MANIFEST_PATH || '/tmp/gh-aw/review-bundle/manifest.json';
+      const expectedAgentName = 'review-guide-worker';
+      const allowedTools = new Set(['glob', 'grep', 'read_file', 'rg', 'search', 'skill', 'view']);
+
+      if (!fs.existsSync(sessionPath)) {
+        throw new Error(`Copilot session transcript is missing: ${sessionPath}`);
+      }
+
+      const events = fs.readFileSync(sessionPath, 'utf8')
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .map((line, index) => {
+          try {
+            return JSON.parse(line);
+          } catch (error) {
+            throw new Error(`Invalid Copilot session event at line ${index + 1}: ${error.message}`);
+          }
+        });
+
+      const subagents = new Map();
+      const violations = [];
+      let workersRequired = false;
+
+      if (fs.existsSync(manifestPath)) {
+        try {
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          workersRequired = manifest.ready === true &&
+            Array.isArray(manifest.guides) &&
+            manifest.guides.length > 0;
+        } catch {
+          // A malformed bundle is reported through the coordinator's BLOCKED path.
+        }
+      }
+
+      for (const event of events) {
+        if (event.type !== 'subagent.started') {
+          continue;
+        }
+
+        const agentName = event.data?.agentName;
+        if (!event.agentId) {
+          violations.push('A subagent started without an agent ID.');
+          continue;
+        }
+
+        subagents.set(event.agentId, agentName);
+        if (agentName !== expectedAgentName) {
+          violations.push(`Unexpected subagent '${agentName ?? '<unknown>'}' (${event.agentId}).`);
+        }
+      }
+
+      if (workersRequired && subagents.size === 0) {
+        violations.push('No per-guide review worker was recorded.');
+      }
+
+      for (const event of events) {
+        if (event.type !== 'tool.execution_start') {
+          continue;
+        }
+
+        if (!event.agentId) {
+          if (event.data?.parentToolCallId) {
+            violations.push(`Subagent tool '${event.data?.toolName ?? '<unknown>'}' is missing an agent ID.`);
+          }
+          continue;
+        }
+
+        const agentName = subagents.get(event.agentId);
+        const toolName = event.data?.toolName;
+        if (!agentName) {
+          violations.push(`Tool '${toolName ?? '<unknown>'}' was used by an unregistered subagent (${event.agentId}).`);
+        } else if (!allowedTools.has(toolName)) {
+          violations.push(`Subagent '${agentName}' used disallowed tool '${toolName ?? '<unknown>'}'.`);
+        }
+      }
+
+      if (violations.length > 0) {
+        throw new Error(`Restricted review worker verification failed:\n- ${violations.join('\n- ')}`);
+      }
+
+      console.log(`Verified ${subagents.size} restricted review worker(s).`);
+      NODE
 
 safe-outputs:
   # Use the built-in token, not an ambient PAT. Configurable reporting stays disabled.
@@ -435,8 +534,10 @@ installation during coordinator validation after worker collection.
 Apply the skill's review contract unchanged. It owns worker configuration and dispatch,
 exact assignments and native reads, independent candidate validation, severity,
 changed-line anchors, feedback disposition, and structured result semantics. Do not
-replace those rules with a second review policy in this adapter. Workers are contractually source-only and must not receive coordinator-only inputs, the
-validation worktree, or coordinator execution output.
+replace those rules with a second review policy in this adapter. Every guide worker must
+use the native `review-guide-worker` profile, whose explicit tool list exposes only
+reading, searching, and skill loading. Workers are source-only and must not receive
+coordinator-only inputs, the validation worktree, or coordinator execution output.
 Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.
 
 No live GitHub tool is available to the agent;
@@ -521,3 +622,14 @@ Review outputs publish advisory comments directly to the triggering pull request
 To return to preview-only operation, set `safe-outputs.staged: true` and recompile the workflow.
 The adapter formats an already validated result; safe outputs cannot prove worker independence
 or completeness on their own.
+
+## agent: `review-guide-worker`
+---
+description: Reviews one routed ASP.NET Core guide using only frozen source and assigned guidance
+tools: ["read", "search", "skill"]
+---
+Your first native tool call must be `skill(skill="review-pull-request")`. Follow the
+per-guide assignment and the loaded skill's `PATH: per-guide-worker` contract exactly.
+Read only the assigned frozen bundle paths and source roots. Return candidates to the
+coordinator; do not aggregate guides or publish. Shell execution, file mutation, safe
+outputs, web access, and further agent delegation are unavailable by design.

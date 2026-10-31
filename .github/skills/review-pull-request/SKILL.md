@@ -139,8 +139,10 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 
 ## Review and independent validation
 
-Launch exactly one fresh reviewer worker per routed guide as a full-capability
-`general-purpose` agent, never an explore, fast, or other lightweight agent. Select the
+Launch exactly one fresh reviewer worker per routed guide as the native
+`review-guide-worker` custom agent, never a built-in `general-purpose`, explore, fast,
+or other agent. Its native profile must expose only `read`, `search`, and `skill`; a
+missing profile or any additional worker tool makes that guide `incomplete`. Select the
 caller-supplied worker model, or `gpt-5.6-sol` when the caller omitted it; pass that model
 explicitly and independently to every worker, never inheriting the coordinator or
 session model. Pass the caller-supplied reasoning effort explicitly and independently

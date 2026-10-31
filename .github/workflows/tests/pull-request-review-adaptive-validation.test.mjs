@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../../..');
@@ -15,9 +17,26 @@ const retargetDiagnostic =
 assert.match(workflowSource, /bash:\s*\[":\*"\]/);
 assert.match(workflowSource, /^\s+edit:\s*$/m);
 assert.match(workflowSource, /memory:\s*8g/);
-assert.match(workflowSource, /- dotnet/);
+assert.doesNotMatch(workflowSource, /^\s+- (?:containers|dotnet|github|java|node|powershell|python)\s*$/m);
+assert.match(workflowSource, /- "builds\.dotnet\.microsoft\.com"/);
+assert.match(workflowSource, /- "ci\.dot\.net"/);
+assert.match(workflowSource, /- "pkgs\.dev\.azure\.com"/);
+assert.match(workflowSource, /- "\*\.vsblob\.vsassets\.io"/);
 assert.match(workflowSource, /- "data\.nuget\.org"/);
+assert.match(workflowSource, /- "oneocsp\.microsoft\.com"/);
+assert.match(workflowSource, /- "release-assets\.githubusercontent\.com"/);
+assert.match(workflowSource, /- "storage\.googleapis\.com"/);
+assert.match(workflowSource, /- "www\.microsoft\.com"/);
 assert.match(workflowSource, /- playwright/);
+assert.match(workflowSource, /DOTNET_CLI_TELEMETRY_OPTOUT:\s*"1"/);
+assert.match(workflowSource, /name: Verify restricted review workers/);
+assert.match(workflowSource, /expectedAgentName = 'review-guide-worker'/);
+assert.match(workflowSource, /allowedTools = new Set\(\['glob', 'grep', 'read_file', 'rg', 'search', 'skill', 'view'\]\)/);
+assert.match(workflowSource, /workersRequired = manifest\.ready === true/);
+assert.match(workflowSource, /if \(workersRequired && subagents\.size === 0\)/);
+assert.match(workflowSource, /if \(event\.data\?\.parentToolCallId\)/);
+assert.match(workflowSource, /## agent: `review-guide-worker`/);
+assert.match(workflowSource, /tools: \["read", "search", "skill"\]/);
 assert.match(workflowSource, /worktree=\/tmp\/gh-aw\/review-worktree/);
 assert.match(workflowSource, /update-ref refs\/review\/head "\$REVIEW_HEAD"/);
 assert.match(workflowSource, /refs\/review\/merge-base:refs\/remotes\/review\/merge-base/);
@@ -34,6 +53,15 @@ assert.match(workflowLock, /--allow-tool shell/);
 assert.match(workflowLock, /--allow-tool write/);
 assert.match(workflowLock, /--memory-limit 8g/);
 assert.match(workflowLock, /GH_AW_TOOL_TIMEOUT: "?1800"?/);
+assert.match(workflowLock, /Restore inline sub-agents from activation artifact/);
+assert.match(workflowLock, /Verify restricted review workers/);
+assert.match(workflowLock, /builds\.dotnet\.microsoft\.com/);
+assert.match(workflowLock, /pkgs\.dev\.azure\.com/);
+assert.match(workflowLock, /release-assets\.githubusercontent\.com/);
+assert.match(workflowLock, /storage\.googleapis\.com/);
+assert.doesNotMatch(workflowLock, /api\.nuget\.org/);
+assert.doesNotMatch(workflowLock, /registry\.npmjs\.org/);
+assert.doesNotMatch(workflowLock, /pypi\.org/);
 assert.match(workflowLock, /worktree=\/tmp\/gh-aw\/review-worktree/);
 assert.match(workflowLock, /refs\/review\/head:refs\/remotes\/review\/head/);
 assert.match(workflowLock, /status --porcelain\)\\"; then\\n\s+:\\nelse/);
@@ -44,5 +72,79 @@ assert.doesNotMatch(workflowLock, /The PR head moved or closed after review; saf
 assert.match(skill, /write temporary\s+tests or repros/);
 assert.match(skill, /Temporary validation edits are diagnostic only/);
 assert.match(skill, /Workers remain source-only/);
+assert.match(skill, /`review-guide-worker` custom agent/);
+assert.doesNotMatch(skill, /full-capability\s+`general-purpose` agent/);
+
+const verifierMatch = workflowSource.match(
+  /name: Verify restricted review workers[\s\S]*?node - <<'NODE'\r?\n([\s\S]*?)\r?\n      NODE/);
+assert.ok(verifierMatch, 'The restricted-worker verifier script must be extractable.');
+
+const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'review-worker-verifier-'));
+try {
+  const verifierPath = path.join(tempRoot, 'verify.cjs');
+  fs.writeFileSync(verifierPath, verifierMatch[1]);
+
+  const runVerifier = (events, manifest) => {
+    const sessionPath = path.join(tempRoot, 'agent-session.jsonl');
+    const manifestPath = path.join(tempRoot, 'manifest.json');
+    fs.writeFileSync(sessionPath, events.map(event => JSON.stringify(event)).join('\n'));
+    if (manifest === undefined) {
+      fs.rmSync(manifestPath, { force: true });
+    } else {
+      fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    }
+
+    return spawnSync(process.execPath, [verifierPath], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        REVIEW_WORKER_SESSION_PATH: sessionPath,
+        REVIEW_BUNDLE_MANIFEST_PATH: manifestPath,
+      },
+    });
+  };
+
+  const workerStarted = {
+    type: 'subagent.started',
+    agentId: 'worker-1',
+    data: { agentName: 'review-guide-worker' },
+  };
+  const workerTool = toolName => ({
+    type: 'tool.execution_start',
+    agentId: 'worker-1',
+    data: { toolName },
+  });
+  const readyManifest = { ready: true, guides: [{}] };
+
+  assert.equal(runVerifier([workerStarted, workerTool('skill'), workerTool('view')], readyManifest).status, 0);
+  assert.equal(runVerifier([], { ready: true, guides: [] }).status, 0);
+  assert.equal(runVerifier([], undefined).status, 0);
+
+  const missingWorker = runVerifier([], readyManifest);
+  assert.notEqual(missingWorker.status, 0);
+  assert.match(missingWorker.stderr, /No per-guide review worker was recorded/);
+
+  const wrongWorker = runVerifier([
+    { ...workerStarted, data: { agentName: 'general-purpose' } },
+  ], readyManifest);
+  assert.notEqual(wrongWorker.status, 0);
+  assert.match(wrongWorker.stderr, /Unexpected subagent 'general-purpose'/);
+
+  const disallowedTool = runVerifier([workerStarted, workerTool('bash')], readyManifest);
+  assert.notEqual(disallowedTool.status, 0);
+  assert.match(disallowedTool.stderr, /used disallowed tool 'bash'/);
+
+  const unattributedWorkerTool = runVerifier([
+    workerStarted,
+    {
+      type: 'tool.execution_start',
+      data: { toolName: 'bash', parentToolCallId: 'worker-1' },
+    },
+  ], readyManifest);
+  assert.notEqual(unattributedWorkerTool.status, 0);
+  assert.match(unattributedWorkerTool.stderr, /is missing an agent ID/);
+} finally {
+  fs.rmSync(tempRoot, { recursive: true, force: true });
+}
 
 console.log('Validated adaptive in-sandbox pull request review capabilities.');
