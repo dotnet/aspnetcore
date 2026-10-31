@@ -113,6 +113,9 @@ internal sealed class HttpLoggingMiddleware
         var request = context.Request;
         if (logContext.IsAnyEnabled(HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.RequestQuery))
         {
+            // Size the parameter list up front to avoid repeated growth while adding properties and headers.
+            EnsureRequestParameterCapacity(logContext, loggingFields, request, options.CombineLogs);
+
             if (loggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
             {
                 logContext.AddParameter(nameof(request.Protocol), request.Protocol);
@@ -336,6 +339,9 @@ internal sealed class HttpLoggingMiddleware
         var loggingFields = logContext.LoggingFields;
         var response = logContext.HttpContext.Response;
 
+        // Size the parameter list up front to avoid repeated growth while adding the status code and headers.
+        EnsureParameterCapacity(logContext, CountResponseParameters(loggingFields, response.Headers, options.CombineLogs));
+
         if (loggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
         {
             logContext.AddParameter(nameof(response.StatusCode), response.StatusCode);
@@ -350,6 +356,85 @@ internal sealed class HttpLoggingMiddleware
         {
             var httpResponseLog = new HttpLog(logContext.InternalParameters, "Response");
             logger.ResponseLog(httpResponseLog);
+        }
+    }
+
+    private static void EnsureRequestParameterCapacity(HttpLoggingInterceptorContext logContext, HttpLoggingFields loggingFields, HttpRequest request, bool combineLogs)
+    {
+        var count = 0;
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+        {
+            count++;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestMethod))
+        {
+            count++;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestScheme))
+        {
+            count++;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestPath))
+        {
+            // PathBase and Path.
+            count += 2;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestQuery))
+        {
+            count++;
+        }
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+        {
+            count += request.Headers.Count;
+        }
+        if (combineLogs)
+        {
+            // The response parameters are added to the same list, reserve the ones known up front.
+            count += CountResponseParameters(loggingFields, headers: null, combineLogs: true);
+        }
+
+        EnsureParameterCapacity(logContext, count);
+    }
+
+    private static int CountResponseParameters(HttpLoggingFields loggingFields, IHeaderDictionary? headers, bool combineLogs)
+    {
+        var count = 0;
+        if (loggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
+        {
+            count++;
+        }
+        if (headers is not null && loggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+        {
+            count += headers.Count;
+        }
+        if (combineLogs)
+        {
+            // Combined logs append the bodies and duration after the response headers.
+            if (loggingFields.HasFlag(HttpLoggingFields.RequestBody))
+            {
+                // RequestBody and RequestBodyStatus.
+                count += 2;
+            }
+            if (loggingFields.HasFlag(HttpLoggingFields.ResponseBody))
+            {
+                count++;
+            }
+            if (loggingFields.HasFlag(HttpLoggingFields.Duration))
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // Sizes the list exactly rather than doubling, the parameter counts are known up front.
+    private static void EnsureParameterCapacity(HttpLoggingInterceptorContext logContext, int additionalCount)
+    {
+        var parameters = logContext.InternalParameters;
+        var required = parameters.Count + additionalCount;
+        if (required > parameters.Capacity)
+        {
+            parameters.Capacity = required;
         }
     }
 
