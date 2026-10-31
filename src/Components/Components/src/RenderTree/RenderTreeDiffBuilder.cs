@@ -332,14 +332,9 @@ internal static class RenderTreeDiffBuilder
         {
             ref var frame = ref oldTree[oldStartIndex];
             var key = KeyValue(ref frame);
-            if (key != null)
+            if (key != null && !result.TryAdd(key, new KeyedItemInfo(oldStartIndex, -1)))
             {
-                if (result.ContainsKey(key))
-                {
-                    ThrowExceptionForDuplicateKey(key, frame);
-                }
-
-                result[key] = new KeyedItemInfo(oldStartIndex, -1);
+                ThrowExceptionForDuplicateKey(key, frame);
             }
 
             oldStartIndex = NextSiblingIndex(frame, oldStartIndex);
