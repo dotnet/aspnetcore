@@ -763,7 +763,10 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         Hub hub)
     {
         // If there is no authorization metadata we don't need to run auth
-        if (descriptor.AuthorizationMetadata.Count == 0)
+        if (!descriptor.AuthorizationMetadata.Any(metadata =>
+            metadata is IAuthorizeData ||
+            metadata is AuthorizationPolicy ||
+            metadata is IAuthorizationRequirementData))
         {
             return TaskCache.True;
         }
