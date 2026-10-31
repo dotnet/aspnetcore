@@ -1,0 +1,55 @@
+﻿@page "/forms/default-form-bound-dictionary-parameter-errors"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form with dictionary bound parameter</h2>
+
+<EditForm Enhance Model="Model" method="POST" OnValidSubmit="DisplayCustomer" FormName="someform">
+    <ValidationSummary />
+    <div>
+        <label for="Model.Name">
+            Name:
+            <InputCheckbox @bind-Value="@(Model["Name"])" />
+        </label>
+        <ValidationMessage data-name="Name" For="@(() => Model["Name"])" />
+    </div>
+    <div>
+        <label for="Model.Email">
+            Email:
+            <InputCheckbox @bind-Value="@(Model["Email"])" />
+        </label>
+        <ValidationMessage data-email="Email" For="@(() => Model["Email"])" />
+    </div>
+    <div>
+        <label for="Model.IsPreferred">
+            Preferred:
+            <InputCheckbox @bind-Value="@(Model["IsPreferred"])" />
+        </label>
+        <ValidationMessage data-preferred="IsPreferred" For="@(() => Model["IsPreferred"])" />
+    </div>
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_shouldDisplayCustomer)
+{
+    <p id="name">Customer: @Model["Name"]</p>
+    <p id="email">Email: @Model["Email"]</p>
+    <p id="preferred">Preferred: @Model["IsPreferred"]</p>
+}
+
+@code {
+
+    bool _shouldDisplayCustomer = false;
+
+    public void DisplayCustomer() => _shouldDisplayCustomer = true;
+
+    [SupplyParameterFromForm] public Dictionary<string, bool> Model { get; set; }
+
+    [CascadingParameter] public FormMappingContext Context { get; set; }
+
+    protected override void OnInitialized() => Model ??= new Dictionary<string, bool>()
+    {
+        ["Name"] = true,
+        ["Email"] = true,
+        ["IsPreferred"] = true,
+    };
+}

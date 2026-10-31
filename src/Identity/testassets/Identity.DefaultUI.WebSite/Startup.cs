@@ -1,0 +1,14 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
+namespace Identity.DefaultUI.WebSite;
+
+public class Startup : StartupBase<IdentityUser, IdentityDbContext>
+{
+    public Startup(IConfiguration configuration) : base(configuration)
+    {
+    }
+}

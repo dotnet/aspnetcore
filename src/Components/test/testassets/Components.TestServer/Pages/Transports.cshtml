@@ -1,0 +1,79 @@
+@page
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transports Tests</title>
+    <base href="~/" />
+
+    <link href="style.css" rel="stylesheet" />
+</head>
+<body>
+
+<root><component type="typeof(BasicTestApp.Index)" render-mode="Server" /></root>
+
+<div id="blazor-error-ui">
+    An unhandled exception has occurred. See browser dev tools for details.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<button id="startBlazorServerBtn" onclick="startBlazorServer()">Start Normally</button>
+<button id="startWithLongPollingBtn" onclick="startWithLongPolling()">Start with Long Polling</button>
+<button id="startWithWebSocketsBtn" onclick="startWithWebSockets()">Start with Web Sockets</button>
+<button id="startAndRejectWebSocketConnectionBtn" onclick="startAndRejectWebSocketConnection()">Start with WebSockets and Reject Connection</button>
+
+<script src="_framework/blazor.server.js" autostart="false"></script>
+<script src="js/jsRootComponentInitializers.js"></script>
+<script>
+    console.log('Blazor server-side');
+    function startBlazorServer() {
+        Blazor.start({
+            logLevel: 1, // LogLevel.Debug
+            configureSignalR: builder => {
+                builder.configureLogging("debug") // LogLevel.Debug
+            }
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__start__script__executed__'] = true;
+        });
+    }
+    function startWithLongPolling() {
+        Blazor.start({
+            logLevel: 1, // LogLevel.Debug
+            configureSignalR: builder => {
+                builder.configureLogging("debug") // LogLevel.Debug
+                    .withUrl('_blazor', 4) // Long Polling (4)
+            }
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__start__script__executed__'] = true;
+        });
+    }
+    function startWithWebSockets() {
+        Blazor.start({
+            logLevel: 1, // LogLevel.Debug
+            configureSignalR: builder => {
+                builder.configureLogging("debug") // LogLevel.Debug
+                    .withUrl('_blazor', 1) // Web Sockets (1)
+            }
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__start__script__executed__'] = true;
+        });
+    }
+    function WebSocketNotAllowed() { throw new Error("Don't allow Websockets."); }
+    function startAndRejectWebSocketConnection() {
+        Blazor.start({
+            logLevel: 1, // LogLevel.Debug
+            configureSignalR: builder => {
+                builder.configureLogging("debug") // LogLevel.Debug
+                    .withUrl('_blazor', {
+                        WebSocket: WebSocketNotAllowed
+                    })
+            }
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__start__script__executed__'] = true;
+        });
+    }
+</script>
+</body>
+</html>

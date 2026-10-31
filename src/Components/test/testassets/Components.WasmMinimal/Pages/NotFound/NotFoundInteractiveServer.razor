@@ -1,0 +1,17 @@
+﻿@page "/render-not-found-server"
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Web;
+@inject NavigationManager NavigationManager
+
+<p id="test-info">Any content</p>
+@if(RendererInfo.IsInteractive)
+{
+    <button id="trigger-not-found" @onclick="@TriggerNotFound">Trigger not found button</button>
+}
+
+@code{
+    private void TriggerNotFound()
+    {
+        NavigationManager.NotFound();
+    }
+}

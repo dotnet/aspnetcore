@@ -1,0 +1,33 @@
+﻿<h3>Property injection</h3>
+
+<p>
+    Value of keyed service 1: <span id="keyed-service-value-1">@KeyedService1.Value</span>
+</p>
+
+<p>
+    Value of keyed service 2: <span id="keyed-service-value-2">@KeyedService2.Value</span>
+</p>
+
+<button id="invalid-service-key" type="button" @onclick="@(() => _renderInvalidServiceKeyComponent = true)">Render component with invalid service key</button>
+<button id="invalid-keyed-service-type" type="button" @onclick="@(() => _renderInvalidKeyedServiceTypeComponent = true)">Render component with invalid keyed service type</button>
+
+@if (_renderInvalidServiceKeyComponent)
+{
+    <InvalidServiceKey />
+}
+
+@if (_renderInvalidKeyedServiceTypeComponent)
+{
+    <InvalidKeyedServiceType />
+}
+
+@code {
+    private bool _renderInvalidServiceKeyComponent;
+    private bool _renderInvalidKeyedServiceTypeComponent;
+
+    [Inject(Key = "keyed-service-1")]
+    public TestKeyedService KeyedService1 { get; set; }
+
+    [Inject(Key = TestServiceKey.ServiceB)]
+    public TestKeyedService KeyedService2 { get; init; }
+}

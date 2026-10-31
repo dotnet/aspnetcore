@@ -1,0 +1,4 @@
+[*.{cs,vb}]
+
+# CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = warning

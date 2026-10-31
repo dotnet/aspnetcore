@@ -1,0 +1,4 @@
+﻿@page "/PageRequiringRole"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "TestRole")]
+<div id="auth-success">Welcome to PageRequiringRole!</div>

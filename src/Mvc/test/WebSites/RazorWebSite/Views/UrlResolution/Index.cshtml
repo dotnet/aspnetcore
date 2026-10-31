@@ -1,0 +1,46 @@
+﻿@model Person
+
+@{
+    var dynamicUrl = "~/SomeUrl";
+}
+
+@functions {
+    public Task DoSomething()
+    {
+        return Task.FromResult(true);
+    }
+}
+
+<html manifest="~/Person">
+<head>
+    <base href="~/A+Really(Crazy),Url.Is:This/@Model.Name/Detail" target="_blank">
+</head>
+<body>
+    <dl itemscope itemid="~/Url"></dl>
+    ﻿<a href="~/Person">Person</a>
+    <area href="~/Person/@Model.Name" alt="Url stuff" >
+    <link href="~/Person/@Model.Name/CSS" rel="stylesheet">
+    <video poster=@dynamicUrl src='@dynamicUrl/@("video")' />
+    <audio src="@(dynamicUrl)">
+        <source src="~/Person" srcset="~/Person">
+        <track src="~/email@(dynamicUrl)">
+    </audio>
+    <embed src="~/email@dyanmicUrl">
+    <iframe src=@(dynamicUrl) />
+    <img src="~/@Model.Name" srcset="~/@Model.Name">
+    <script src="~/Person/@Model.Name/JS"></script>
+    <input src="~//Person" itemscope itemid="~/Person" formaction=@dynamicUrl>
+    <button formaction="~/\Person" />
+    <form action="~/~Person" />
+    <blockquote cite="~/Person" />
+    <del cite="~/Person" />
+    <ins cite="~/Person" />
+    <q cite="~/Person" />
+    <menu>
+        <menuitem icon=~/Person />
+    </menu>
+    <object data="~/Person" archive="~/Person/@Model.Name" data="~/Person" archive="~/Person/@Model.Name" />
+    <object archive="@if(Model.Name != null) { <text>~/Person/@Model.Name</text> } else { await DoSomething(); <text>~/Person</text>  } " />
+    <applet archive="~/A+Really(Crazy),Url.Is:This/@Model.Name/Detail" />
+</body>
+</html>

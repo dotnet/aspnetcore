@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor 页面",
+  "description": "带或不带页面模型的 Razor 页面",
+  "symbols/namespace/description": "生成的代码的命名空间",
+  "symbols/no-pagemodel/description": "创建不带 PageModel 的页面",
+  "symbols/no-pagemodel/displayName": "排除 PageModel",
+  "postActions/openInEditor/description": "在编辑器中打开 Index.cshtml"
+}

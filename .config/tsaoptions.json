@@ -1,0 +1,13 @@
+{
+  "areaPath": "DevDiv\\ASP.NET Core\\Policy Violations",
+  "codebaseName": "AspNetCore",
+  "instanceUrl": "https://devdiv.visualstudio.com/",
+  "iterationPath": "DevDiv",
+  "notificationAliases": [
+    "aspnetcore-build@microsoft.com"
+  ],
+  "projectName": "DEVDIV",
+  "repositoryName": "AspNetCore",
+  "template": "TFSDEVDIV",
+  "serviceTreeId": "4db45fa9-fb0f-43ce-b523-ad1da773dfbc"
+}

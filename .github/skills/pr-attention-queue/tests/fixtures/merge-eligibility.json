@@ -1,0 +1,95 @@
+[
+  {
+    "number": 62861,
+    "evidence": {
+      "observedAt": "2026-09-16T14:45:02Z",
+      "review": "https://github.com/dotnet/aspnetcore/pull/62861#pullrequestreview-5084104833",
+      "thread": "https://github.com/dotnet/aspnetcore/pull/62861#discussion_r3909351368"
+    },
+    "title": "Fix RequestDelegateFactory to handle nullable types correctly in empty request body scenarios",
+    "author": { "login": "opuzakov" },
+    "createdAt": "2025-07-22T14:34:19Z",
+    "updatedAt": "2026-09-01T23:29:10Z",
+    "headRefOid": "b941c3e642dbdef8180c1c318f92ba85b2dffd0f",
+    "labels": [{ "name": "area-minimal" }, { "name": "community-contribution" }],
+    "files": [{ "path": "src/Http/Http.Extensions/src/RequestDelegateFactory.cs" }],
+    "reviews": [
+      { "author": { "login": "Youssef1313" }, "state": "APPROVED", "submittedAt": "2026-09-01T15:13:22Z", "commit": { "oid": "b941c3e642dbdef8180c1c318f92ba85b2dffd0f" }, "bodyText": "" },
+      { "author": { "login": "cincuranet" }, "state": "APPROVED", "submittedAt": "2026-09-01T16:52:15Z", "commit": { "oid": "b941c3e642dbdef8180c1c318f92ba85b2dffd0f" }, "bodyText": "" },
+      { "author": { "login": "BrennanConroy" }, "state": "APPROVED", "submittedAt": "2026-09-01T23:26:51Z", "commit": { "oid": "b941c3e642dbdef8180c1c318f92ba85b2dffd0f" }, "bodyText": "" },
+      { "author": { "login": "halter73" }, "state": "COMMENTED", "submittedAt": "2026-09-01T23:29:10Z", "commit": { "oid": "b941c3e642dbdef8180c1c318f92ba85b2dffd0f" }, "bodyText": "For [FromBody] int? bodyValue = 42, RDF now supplies 42 for an empty body while TryResolveBodyAsync<T> returns null and the generated delegate passes it directly. Can we update RDG to match?" }
+    ],
+    "comments": [
+      { "author": { "login": "opuzakov" }, "createdAt": "2026-09-01T15:07:47Z", "bodyText": "Thanks for the review. I've made all the suggested changes.", "authorAssociation": "NONE" }
+    ],
+    "requests": [{ "login": "captainsafia", "requestedAt": "2025-07-22T14:34:21Z" }],
+    "threads": [
+      { "isResolved": false, "isOutdated": true },
+      { "isResolved": true, "isOutdated": true },
+      { "isResolved": true, "isOutdated": true },
+      { "isResolved": false, "isOutdated": false }
+    ]
+  },
+  {
+    "number": 65785,
+    "evidence": {
+      "observedAt": "2026-09-16T14:45:02Z",
+      "thread": "https://github.com/dotnet/aspnetcore/pull/65785#discussion_r3825049724",
+      "disposition": "Discussion concerns broader removal of OCE catches; no explicit hold on this PR is established."
+    },
+    "title": "forward CancellationToken in StreamOutputFormatter",
+    "author": { "login": "mus65" },
+    "createdAt": "2026-03-15T10:27:52Z",
+    "updatedAt": "2026-08-20T20:20:08Z",
+    "headRefOid": "5f1653c4a7ec457562a1da6f6ad7bfdaa3a2f3d5",
+    "labels": [{ "name": "area-mvc" }, { "name": "community-contribution" }],
+    "files": [{ "path": "src/Mvc/Mvc.Core/src/Formatters/StreamOutputFormatter.cs" }],
+    "reviews": [
+      { "author": { "login": "Youssef1313" }, "state": "APPROVED", "submittedAt": "2026-08-19T16:51:36Z", "commit": { "oid": "5f1653c4a7ec457562a1da6f6ad7bfdaa3a2f3d5" }, "bodyText": "" },
+      { "author": { "login": "BrennanConroy" }, "state": "COMMENTED", "submittedAt": "2026-08-19T18:14:15Z", "commit": { "oid": "5f1653c4a7ec457562a1da6f6ad7bfdaa3a2f3d5" }, "bodyText": "" },
+      { "author": { "login": "mus65" }, "state": "COMMENTED", "submittedAt": "2026-08-19T19:23:27Z", "commit": { "oid": "5f1653c4a7ec457562a1da6f6ad7bfdaa3a2f3d5" }, "bodyText": "" },
+      { "author": { "login": "DeagleGross" }, "state": "COMMENTED", "submittedAt": "2026-08-20T14:16:03Z", "commit": { "oid": "5f1653c4a7ec457562a1da6f6ad7bfdaa3a2f3d5" }, "bodyText": "" },
+      { "author": { "login": "BrennanConroy" }, "state": "COMMENTED", "submittedAt": "2026-08-20T20:20:07Z", "commit": { "oid": "5f1653c4a7ec457562a1da6f6ad7bfdaa3a2f3d5" }, "bodyText": "" }
+    ],
+    "comments": [
+      { "author": { "login": "mus65" }, "createdAt": "2026-05-07T18:31:31Z", "bodyText": "/azp run", "authorAssociation": "NONE" },
+      { "author": { "login": "azure-pipelines" }, "createdAt": "2026-05-07T18:31:40Z", "bodyText": "Commenter does not have sufficient privileges", "authorAssociation": "NONE" }
+    ],
+    "requests": [
+      { "login": "cincuranet", "requestedAt": "2026-08-19T13:33:56Z" },
+      { "login": "rokonec", "requestedAt": "2026-08-19T13:33:57Z" }
+    ],
+    "threads": [
+      { "isResolved": true, "isOutdated": false },
+      { "isResolved": false, "isOutdated": false }
+    ]
+  },
+  {
+    "number": 67695,
+    "evidence": {
+      "observedAt": "2026-09-16T14:45:02Z",
+      "pullRequest": "https://github.com/dotnet/aspnetcore/pull/67695",
+      "disposition": "Same reviewer approved the current head after the author's response to prior top-level feedback; both prior threads resolved."
+    },
+    "title": "Improve Render Output Invalid Exception Message to Clarify Common Control Flow Causes",
+    "author": { "login": "Yuvan111" },
+    "createdAt": "2026-07-09T09:15:32Z",
+    "updatedAt": "2026-09-07T06:23:04Z",
+    "headRefOid": "43e2e406679655a4390fd491247e8bbc65798cb3",
+    "labels": [{ "name": "area-blazor" }],
+    "files": [{ "path": "src/Components/Components/src/Rendering/RenderTreeBuilder.cs" }],
+    "reviews": [
+      { "author": { "login": "Yuvan111" }, "state": "COMMENTED", "submittedAt": "2026-08-07T04:44:44Z", "commit": { "oid": "bfd198bdbce44282e2f108bc04e331400c82e0c0" }, "bodyText": "" },
+      { "author": { "login": "PureWeen" }, "state": "APPROVED", "submittedAt": "2026-08-27T17:15:26Z", "commit": { "oid": "43e2e406679655a4390fd491247e8bbc65798cb3" }, "bodyText": "" }
+    ],
+    "comments": [
+      { "author": { "login": "PureWeen" }, "createdAt": "2026-08-25T17:18:13Z", "bodyText": "Review result: I do not think the diagnostic and regression test are ready to merge at the current head. Please construct the invalid sequence directly with a RenderTreeBuilder.", "authorAssociation": "MEMBER" },
+      { "author": { "login": "Yuvan111" }, "createdAt": "2026-08-27T07:36:54Z", "bodyText": "Thanks for the review. I've addressed the diagnostic wording and regression test feedback.", "authorAssociation": "MEMBER" }
+    ],
+    "requests": [{ "name": "aspnet-blazor-eng", "requestedAt": "2026-07-09T09:15:33Z" }],
+    "threads": [
+      { "isResolved": true, "isOutdated": true },
+      { "isResolved": true, "isOutdated": true }
+    ]
+  }
+]

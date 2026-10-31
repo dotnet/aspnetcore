@@ -1,0 +1,34 @@
+﻿@page
+@using ComponentsApp.App
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width">
+    <title>Razor Components</title>
+    <base href="~/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-icons/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+    <component type="typeof(App)" render-mode="Server" />
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script src="js/jsRootComponentInitializers.js"></script>
+    <script>
+        Blazor.start({
+            configureSignalR: function (builder) {
+                builder.configureLogging(2); // LogLevel.Information
+            },
+            logLevel: 2, // LogLevel.Information
+            reconnectionOptions: {
+                maxRetries: 3,
+                retryIntervalMilliseconds: 2000,
+            }
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__started__'] = true;
+        });
+    </script>
+</body>
+</html>

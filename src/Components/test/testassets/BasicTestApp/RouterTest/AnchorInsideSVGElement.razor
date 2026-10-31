@@ -1,0 +1,28 @@
+﻿@page "/SVGNavigation"
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Routing
+
+<svg width="400px" height="30px" data-enhance-nav="true">
+    <a href="SVGNavigation" id="svg-link">
+        <text x="15" y="15" font-size="15">SVG data-enhance-nav</text>
+    </a>
+</svg>
+
+<br />
+
+<p>LocationChanged: <span id="location-changed-count">@_locationChangedCount</span></p>
+
+@code {
+    private int _locationChangedCount = 0;
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    {
+        _locationChangedCount++;
+        StateHasChanged();
+    }
+}

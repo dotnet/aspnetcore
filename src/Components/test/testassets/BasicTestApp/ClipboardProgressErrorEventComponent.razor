@@ -1,0 +1,32 @@
+<div>
+    <p>
+        Output: <span id="output">@message</span>
+    </p>
+
+    <input id="clipboard-target" type="text" value="test"
+        @oncopy="OnClipboard" @oncut="OnClipboard" @onpaste="OnClipboard" />
+
+    <div id="progress-target"
+        @onprogress="OnProgress" @onloadstart="OnProgress" @onloadend="OnProgress" />
+
+    <div id="error-target" @onerror="OnError" />
+</div>
+
+@code {
+    string message = string.Empty;
+
+    void OnClipboard(ClipboardEventArgs e)
+    {
+        message += $"{e.Type},";
+    }
+
+    void OnProgress(ProgressEventArgs e)
+    {
+        message += $"{e.Type},";
+    }
+
+    void OnError(ErrorEventArgs e)
+    {
+        message += $"{e.Type},";
+    }
+}

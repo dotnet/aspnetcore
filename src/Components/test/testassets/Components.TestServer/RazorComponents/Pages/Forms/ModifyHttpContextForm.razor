@@ -1,0 +1,42 @@
+﻿@page "/forms/modify-http-context/{OperationId}"
+@attribute [StreamRendering]
+@inject AsyncOperationService AsyncOperation
+@inject NavigationManager Navigation
+@* This is not the recommended way to access the HttpContext in Blazor, this is just for test purposes *@
+@inject IHttpContextAccessor Accessor
+@using Components.TestServer.Services;
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Mvc;
+
+<h2>Event handler sets cookie during form POST</h2>
+
+<EditForm Enhance EditContext="_editContext" method="POST" OnValidSubmit="HandleSubmit" FormName="someform">
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitting)
+{
+    <p id="progress">Form submitting!</p>
+}
+else if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code {
+    bool _submitted = false;
+    bool _submitting = false;
+    EditContext _editContext = new EditContext(new object());
+    [Parameter] public string? OperationId { get; set; }
+
+    public async Task HandleSubmit()
+    {
+        _submitting = true;
+        // The response can be accessed before any async work happens.
+        // We might want to provide APIs to control when streaming rendering starts.
+        Accessor.HttpContext.Response.Cookies.Append("operation", OperationId);
+        await AsyncOperation.Start(OperationId);
+        _submitting = false;
+        _submitted = true;
+    }
+}

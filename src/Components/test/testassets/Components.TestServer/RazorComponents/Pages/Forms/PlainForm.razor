@@ -1,0 +1,81 @@
+﻿@page "/forms/plain-form"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Plain form</h2>
+
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="my-form">
+    <AntiforgeryToken />
+
+    <p id="StringViaExplicitPropertyName">
+        StringViaExplicitPropertyName:
+        <input name="StringViaExplicitPropertyName" @bind="StringViaExplicitPropertyName" />
+    </p>
+
+    <p id="StringViaOverriddenName">
+        StringViaOverriddenName:
+        <input name="overridden-name" @bind="StringViaOverriddenName" />
+    </p>
+
+    <p id="StringViaOverriddenNameUnmatched">
+        StringViaOverriddenNameUnmatched (should lose value on submit):
+        <input name="StringViaOverriddenNameUnmatched" @bind="StringViaOverriddenNameUnmatched" />
+    </p>
+
+    <p id="StringViaExpression">
+        StringViaExpression:
+        <InputText @bind-Value="StringViaExpression" />
+    </p>
+
+    <p id="StringViaExpressionWithHandler">
+        StringViaExpressionWithHandler:
+        <InputText @bind-Value="StringViaExpressionWithHandler" />
+    </p>
+
+    <p id="StringViaExpressionWithUnmatchedHandler">
+        StringViaExpressionWithUnmatchedHandler (should lose value on submit):
+        <InputText @bind-Value="StringViaExpressionWithUnmatchedHandler" />
+    </p>
+
+    <fieldset>
+        <legend>Complex object</legend>
+        <p id="PersonName">
+            Complex property via explicit name:
+            <input name="Person.Name" value="@Person.Name" />
+        </p>
+        <p id="PersonAge">
+            Complex property via expression:
+            <InputNumber @bind-Value="@Person.Age" />
+        </p>
+    </fieldset>
+
+    <input id="send" type="submit" value="Send" />
+</form>
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+
+    [SupplyParameterFromForm] public string StringViaExplicitPropertyName { get; set; }
+
+    [SupplyParameterFromForm(Name = "overridden-name")] public string StringViaOverriddenName { get; set; }
+
+    [SupplyParameterFromForm(Name = "overridden-name-unmatched")] public string StringViaOverriddenNameUnmatched { get; set; }
+
+    [SupplyParameterFromForm] public string StringViaExpression { get; set; }
+
+    [SupplyParameterFromForm(FormName = "my-form")] public string StringViaExpressionWithHandler { get; set; }
+
+    [SupplyParameterFromForm(FormName = "unmatched-handler")] public string StringViaExpressionWithUnmatchedHandler { get; set; }
+
+    [SupplyParameterFromForm] public MyComplexObject Person { get; set; } = new();
+
+    public class MyComplexObject
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+}

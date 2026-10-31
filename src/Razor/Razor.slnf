@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.slnx",
+    "projects": [
+      "src\\Razor\\Razor.Runtime\\src\\Microsoft.AspNetCore.Razor.Runtime.csproj",
+      "src\\Razor\\Razor.Runtime\\test\\Microsoft.AspNetCore.Razor.Runtime.Test.csproj",
+      "src\\Razor\\Razor\\src\\Microsoft.AspNetCore.Razor.csproj",
+      "src\\Razor\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.csproj"
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<!-- The render changes when the component is resumed because it runs in a separate circuit -->
+@if (RendererInfo.IsInteractive)
+{
+    <p>Interactive <span id="render-mode-interactive">@RendererInfo.IsInteractive</span></p>
+}
+<p>Current render GUID: <span id="persistent-counter-render">@Guid.NewGuid().ToString()</span></p>
+
+
+<p>Current count: <span id="persistent-counter-count">@State.Count</span></p>
+<p>Non-persisted counter: <span id="non-persisted-counter">@NonPersistedCounter</span></p>
+
+<button id="increment-persistent-counter-count" @onclick="IncrementCount">Click me</button>
+<button id="increment-non-persisted-counter" @onclick="IncrementNonPersistedCount">Increment non-persisted</button>
+
+@code {
+
+    [PersistentState]
+    public CounterState State { get; set; }
+
+    [PersistentState(RestoreBehavior = RestoreBehavior.SkipLastSnapshot)]
+    public int NonPersistedCounter { get; set; }
+
+    public class CounterState
+    {
+        public int Count { get; set; } = 0;
+    }
+
+    protected override void OnInitialized()
+    {
+        // State is preserved across disconnections
+        State ??= new CounterState();
+
+        // Initialize non-persisted counter to 5 during SSR (before interactivity)
+        if (!RendererInfo.IsInteractive)
+        {
+            NonPersistedCounter = 5;
+        }
+    }
+
+    private void IncrementCount()
+    {
+        State.Count = State.Count + 1;
+    }
+
+    private void IncrementNonPersistedCount()
+    {
+        NonPersistedCounter = NonPersistedCounter + 1;
+    }
+}

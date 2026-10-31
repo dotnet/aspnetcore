@@ -1,0 +1,9 @@
+﻿@typeparam TValue
+
+<input id="@Id" type="text" value="@Value" @onchange="@(EventCallback.Factory.CreateBinder<TValue>(this, _ => ValueChanged.InvokeAsync(_), Value))" />
+
+@code {
+    [Parameter] public string Id { get; set; }
+    [Parameter] public TValue Value { get; set; }
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+}

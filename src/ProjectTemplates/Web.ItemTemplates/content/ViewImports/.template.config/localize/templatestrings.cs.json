@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC ViewImports",
+  "description": "Stránka importu zobrazení MVC",
+  "symbols/namespace/description": "obor názvů pro vygenerovaný kód",
+  "postActions/openInEditor/description": "Otevře soubor _ViewImports.cshtml v editoru."
+}

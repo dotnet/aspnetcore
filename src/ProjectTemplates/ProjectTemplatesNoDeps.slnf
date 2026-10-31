@@ -1,0 +1,16 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.slnx",
+    "projects": [
+      "src\\ProjectTemplates\\Web.Client.ItemTemplates\\Microsoft.DotNet.Web.Client.ItemTemplates.csproj",
+      "src\\ProjectTemplates\\Web.ItemTemplates\\Microsoft.DotNet.Web.ItemTemplates.csproj",
+      "src\\ProjectTemplates\\Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
+      "src\\ProjectTemplates\\test\\Templates.Blazor.Tests\\Templates.Blazor.Tests.csproj",
+      "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Tests\\Templates.Blazor.WebAssembly.Tests.csproj",
+      "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Auth.Tests\\Templates.Blazor.WebAssembly.Auth.Tests.csproj",
+      "src\\ProjectTemplates\\test\\Templates.Mvc.Tests\\Templates.Mvc.Tests.csproj",
+      "src\\ProjectTemplates\\test\\Templates.Tests\\Templates.Tests.csproj",
+      "src\\Shared\\BrowserTesting\\src\\Microsoft.AspNetCore.BrowserTesting.csproj"
+    ]
+  }
+}

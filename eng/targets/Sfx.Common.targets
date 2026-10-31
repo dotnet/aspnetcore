@@ -1,0 +1,48 @@
+<Project>
+  <Import Project="$(RepoRoot)eng\targets\ResolveReferences.targets" />
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <!-- Mibc data to use when exact architecture match is available -->
+    <MIBCPackageDef Include="optimization.windows_nt-x86.mibc.runtime" Version="$(optimizationwindows_ntx86MIBCRuntimeVersion)" MibcArchitecture="windows/x86"/>
+    <MIBCPackageDef Include="optimization.windows_nt-x64.mibc.runtime" Version="$(optimizationwindows_ntx64MIBCRuntimeVersion)" MibcArchitecture="windows/x64"/>
+    <MIBCPackageDef Include="optimization.windows_nt-arm64.mibc.runtime" Version="$(optimizationwindows_ntarm64MIBCRuntimeVersion)" MibcArchitecture="windows/arm64"/>
+    <MIBCPackageDef Include="optimization.linux-x64.mibc.runtime" Version="$(optimizationlinuxx64MIBCRuntimeVersion)" MibcArchitecture="linux/x64"/>
+    <MIBCPackageDef Include="optimization.linux-arm64.mibc.runtime" Version="$(optimizationlinuxarm64MIBCRuntimeVersion)" MibcArchitecture="linux/arm64"/>
+
+    <!-- Mibc data to use when exact architecture match not available -->
+    <MIBCPackageDef Include="optimization.windows_nt-x64.mibc.runtime" Version="$(optimizationwindows_ntx64MIBCRuntimeVersion)" MibcArchitecture="windows"/>
+    <MIBCPackageDef Include="optimization.linux-x64.mibc.runtime" Version="$(optimizationlinuxx64MIBCRuntimeVersion)" MibcArchitecture="linux"/>
+    <MIBCPackageDef Include="optimization.linux-x64.mibc.runtime" Version="$(optimizationlinuxx64MIBCRuntimeVersion)" MibcArchitecture="osx"/>
+
+    <MIBCPackage Include="@(MIBCPackageDef->HasMetadata('MibcArchitecture')->WithMetadataValue('MibcArchitecture','$(TargetOS)/$(TargetArchitecture)'))" />
+    <MIBCPackage Include="@(MIBCPackageDef->HasMetadata('MibcArchitecture')->WithMetadataValue('MibcArchitecture','$(TargetOS)'))" Condition="'@(MIBCPackage)' == ''" />
+
+    <!-- Fallback in case no os specific data is available-->
+    <MIBCPackage Include="optimization.linux-x64.mibc.runtime" Version="$(optimizationlinuxx64MIBCRuntimeVersion)" Condition="'@(MIBCPackage)' == ''" />
+
+    <PackageDownload Include="@(MIBCPackage)" Version="[%(Version)]" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <GetSharedFrameworkFilesForReadyToRunDependsOn>$(GetSharedFrameworkFilesForReadyToRunDependsOn);_AddOptimizationDataForReadyToRun</GetSharedFrameworkFilesForReadyToRunDependsOn>
+  </PropertyGroup>
+
+  <!-- IBC data packages don't follow NuGet conventions.  -->
+  <Target Name="_AddOptimizationDataForReadyToRun">
+    <ItemGroup>
+      <MIBCPackage>
+        <PackagePath>$(NuGetPackageRoot)%(MIBCPackage.Identity)/%(MIBCPackage.Version)</PackagePath>
+      </MIBCPackage>
+      <PublishReadyToRunPgoFiles Include="%(MIBCPackage.PackagePath)/**/*.mibc" />
+    </ItemGroup>
+  </Target>
+
+  <!-- We need to reference the live RID graph to get a graph with any additionally supported RIDs for this build. -->
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsVersion)]" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)')">
+    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
+  </PropertyGroup>
+</Project>

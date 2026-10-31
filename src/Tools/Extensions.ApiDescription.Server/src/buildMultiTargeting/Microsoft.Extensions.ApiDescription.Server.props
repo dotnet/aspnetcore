@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <Import Project="../build/Microsoft.Extensions.ApiDescription.Server.props" />
+</Project>

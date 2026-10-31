@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Todo List: a SPA sample demonstrating Azure AD and ADAL JS</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css">
+</head>
+
+<body ng-app="todoApp" ng-controller="homeCtrl" role="document">
+
+
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target=".navbar-collapse">
+
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#/Home">ADAL JS Sample</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li ng-class="{ active: isActive('/Home') }"><a href="#/Home">Home</a></li>
+                    <li ng-class="{ active: isActive('/TodoList') }"><a href="#/TodoList">Todo List</a></li>
+                    <li ng-class="{ active: isActive('/UserData') }"><a href="#/UserData"
+                            ng-show="userInfo.isAuthenticated">User</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a class="btn btn-link" ng-show="userInfo.isAuthenticated" ng-click="logout()">Logout</a></li>
+                    <li><a class="btn btn-link" ng-hide="userInfo.isAuthenticated" ng-click="login()">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <br />
+    <div class="container" role="main">
+        <div class="row">
+            <div class="col-xs-10 col-xs-offset-1" style="background-color:azure">
+                <div class="page-header">
+                    <h1>Todo List</h1>
+                </div>
+                <p>This sample demonstrates how to take advantage of ADAL JS for adding Azure AD authentication to your
+                    AngularJS apps.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-10 col-xs-offset-1">
+                <div ng-view class="panel-body">
+
+                </div>
+            </div>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js"></script>
+        <script src="https://code.angularjs.org/1.2.25/angular-route.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.0/js/adal.min.js"></script>
+        <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.0/js/adal-angular.min.js"></script>
+        <script src="App/Scripts/app.js"></script>
+        <script src="App/Scripts/homeCtrl.js"></script>
+        <script src="App/Scripts/userDataCtrl.js"></script>
+        <script src="App/Scripts/todoListCtrl.js"></script>
+        <script src="App/Scripts/todoListSvc.js"></script>
+    </div>
+</body>
+
+</html>

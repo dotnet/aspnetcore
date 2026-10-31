@@ -1,0 +1,39 @@
+﻿@using TestContentPackage.Initializers
+<h3>Streaming request</h3>
+
+@if (_streaming)
+{
+    @* Note this test is not about streaming, but only validate that initializers can be read from
+       the page whether the app is streaming or not. So we don't need to use a side channel to finish
+       streaming. Yielding within OnInitializedAsync is enough. *@
+    <p>Streaming...</p>
+}
+else
+{
+    if (Wasm)
+    {
+        <div>
+            <WasmComponent />
+        </div>
+    }
+    if (Server)
+    {
+        <div>
+            <ServerComponent />
+        </div>
+    }
+}
+
+@code {
+    private bool _streaming = true;
+
+    [SupplyParameterFromQuery] public bool Wasm { get; set; }
+
+    [SupplyParameterFromQuery] public bool Server { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _streaming = false;
+    }
+}

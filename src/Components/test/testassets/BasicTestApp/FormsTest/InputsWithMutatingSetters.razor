@@ -1,0 +1,90 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@this">
+    <InputText id="inputtext-with-mutating-setter" @bind-Value="@StringWithMutatingSetter" />
+    <InputTextArea id="inputtextarea-with-mutating-setter" @bind-Value="@StringWithMutatingSetter" />
+    <InputCheckbox id="inputcheckbox-with-mutating-setter" @bind-Value="@BoolWithMutatingSetter" />
+    <InputDate id="inputdate-with-mutating-setter" @bind-Value="@DateTimeWithMutatingSetter" />
+    <InputNumber id="inputnumber-with-mutating-setter" @bind-Value="@IntWithMutatingSetter" />
+    <InputRadioGroup @bind-Value="@DayOfWeekWithMutatingSetter">
+        <InputRadio Value="@DayOfWeek.Monday" id="inputradiogroup-with-mutating-setter-monday" />
+        <InputRadio Value="@DayOfWeek.Tuesday" id="inputradiogroup-with-mutating-setter-tuesday" />
+        <InputRadio Value="@DayOfWeek.Wednesday" id="inputradiogroup-with-mutating-setter-wednesday" />
+    </InputRadioGroup>
+    <InputSelect id="inputselect-with-mutating-setter" @bind-Value="@DayOfWeekWithMutatingSetter">
+        <option value="@DayOfWeek.Monday">Monday</option>
+        <option value="@DayOfWeek.Tuesday">Tuesday</option>
+        <option value="@DayOfWeek.Wednesday">Wednesday</option>
+    </InputSelect>
+    <InputSelect id="inputselectmultiple-with-mutating-setter" @bind-Value="@DayOfWeekArrayWithMutatingSetter">
+        <option value="@DayOfWeek.Monday">Monday</option>
+        <option value="@DayOfWeek.Tuesday">Tuesday</option>
+        <option value="@DayOfWeek.Wednesday">Wednesday</option>
+    </InputSelect>
+
+    <InputWithCustomValueParser id="input-with-custom-parser" @bind-Value="@basicStringValue" />
+    <ValidationMessage For="@(() => basicStringValue)" />
+</EditForm>
+
+@code
+{
+    string basicStringValue;
+
+    string stringWithMutatingSetter;
+    string StringWithMutatingSetter
+    {
+        get => stringWithMutatingSetter;
+        set
+        {
+            stringWithMutatingSetter = value == "24h" ? "24:00:00" : value;
+        }
+    }
+
+    bool BoolWithMutatingSetter
+    {
+        get => false;
+        set { } // In effect, we mutate any incoming 'true' to 'false'
+    }
+
+    DateTime dateTimeWithMutatingSetter;
+    DateTime DateTimeWithMutatingSetter
+    {
+        get => dateTimeWithMutatingSetter;
+        set
+        {
+            dateTimeWithMutatingSetter = value.Year == 2000 ? new DateTime(2222, 2, 2) : value;
+        }
+    }
+
+    int intWithMutatingSetter;
+    int IntWithMutatingSetter
+    {
+        get => intWithMutatingSetter;
+        set
+        {
+            intWithMutatingSetter = value == 123 ? 100 : value;
+        }
+    }
+
+    DayOfWeek dayOfWeekWithMutatingSetter;
+    DayOfWeek DayOfWeekWithMutatingSetter
+    {
+        get => dayOfWeekWithMutatingSetter;
+        set
+        {
+            dayOfWeekWithMutatingSetter = value == DayOfWeek.Tuesday ? DayOfWeek.Monday : value;
+        }
+    }
+
+    DayOfWeek[] dayOfWeekArrayWithMutatingSetter = Array.Empty<DayOfWeek>();
+    DayOfWeek[] DayOfWeekArrayWithMutatingSetter
+    {
+        get => dayOfWeekArrayWithMutatingSetter;
+        set
+        {
+            dayOfWeekArrayWithMutatingSetter = value.Contains(DayOfWeek.Tuesday)
+                ? new[] { DayOfWeek.Monday, DayOfWeek.Wednesday }
+                : value;
+        }
+    }
+}

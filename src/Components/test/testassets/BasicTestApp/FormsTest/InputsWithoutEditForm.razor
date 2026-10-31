@@ -1,0 +1,33 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<p class="cities">
+    Select some cities:<br>
+    <InputSelect @bind-Value="_selectedCities" id="selected-cities-input-select">
+        <option value="@City.SanFrancisco">San Francisco</option>
+        <option value="@City.Tokyo">Tokyo</option>
+        <option value="@City.London">London</option>
+        <option value="@City.Madrid">Madrid</option>
+    </InputSelect>
+</p>
+<p class="airlines">
+    Select an airline:<br>
+    <InputRadioGroup @bind-Value="_selectedAirline" id="selected-airline-input-radio-group">
+        <InputRadio Value="Airline.BestAirline" />BestAirline<br>
+        <InputRadio Value="Airline.CoolAirline" />CoolAirline<br>
+        <InputRadio Value="Airline.NoNameAirline" />NoNameAirline<br>
+        <InputRadio Value="Airline.Unknown" />Unknown<br>
+    </InputRadioGroup>
+</p>
+
+<p>
+    Selected cities: <span id="selected-cities-text">@string.Join(", ", _selectedCities)</span><br>
+    Selected airline: <span id="selected-airline-text">@_selectedAirline</span>
+</p>
+
+@code {
+    enum City { SanFrancisco, Tokyo, London, Madrid }
+    enum Airline { BestAirline, CoolAirline, NoNameAirline, Unknown }
+
+    private City[] _selectedCities = new[] { City.SanFrancisco };
+    private Airline _selectedAirline = Airline.Unknown;
+}

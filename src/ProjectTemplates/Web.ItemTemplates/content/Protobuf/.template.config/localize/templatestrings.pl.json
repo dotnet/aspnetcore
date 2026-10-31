@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Plik buforu protokołu",
+  "description": "Plik buforu protokołu służący do opisywania komunikatów i usług na potrzeby systemu gRPC.",
+  "symbols/namespace/description": "przestrzeń nazw wygenerowanego kodu.",
+  "postActions/openInEditor/description": "Otwiera plik protobuf.proto w edytorze"
+}

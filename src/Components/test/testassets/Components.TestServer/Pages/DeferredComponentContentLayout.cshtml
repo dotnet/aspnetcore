@@ -1,0 +1,44 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+
+<!DOCTYPE html>
+<html>
+<head>
+    <base href="~/" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    @RenderBody()
+
+    @*
+        So that E2E tests can make assertions about both the prerendered and
+        interactive states, we only load the .js file when told to.
+    *@
+    <hr />
+
+    <button id="load-boot-script" onclick="start()">Load boot script</button>
+
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+
+    <script>
+        // Used by InteropOnInitializationComponent
+        function setElementValue(element, newValue) {
+            element.value = newValue;
+            return element.value;
+        }
+
+        function start() {
+            Blazor.start({
+                logLevel: 1 // LogLevel.Debug
+            }).then(function () {
+                window['__aspnetcore__testing__blazor__started__'] = true;
+            });
+        }
+    </script>
+
+    <svg id="svg-for-title-prerendering-test" viewBox="0 0 20 10" xmlns="http://www.w3.org/2000/svg" style="width: 1px; height: 1px;">
+        <rect x="11" y="1" width="8" height="8">
+            <title>This element is used to test that PageTitle prerendering doesn't interfere with non-head title elements.</title>
+        </rect>
+    </svg>
+</body>
+</html>

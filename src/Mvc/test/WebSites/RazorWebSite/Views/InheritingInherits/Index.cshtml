@@ -1,0 +1,3 @@
+﻿@model Person
+<h1>@Model.Name</h1>
+@await Component.InvokeAsync("InheritingViewComponent", Model.Address)

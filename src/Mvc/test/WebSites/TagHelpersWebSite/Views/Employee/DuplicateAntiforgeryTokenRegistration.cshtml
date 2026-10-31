@@ -1,0 +1,11 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+<html>
+<body>
+    @*Form tag helper already registers antiforgery token. The Html helper call should be no-op*@
+    <form asp-antiforgery="true" asp-action="DuplicateAntiforgeryTokenRegistration">@Html.AntiForgeryToken()</form>
+</body>
+</html>
+

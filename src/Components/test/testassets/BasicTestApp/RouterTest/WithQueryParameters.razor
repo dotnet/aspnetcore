@@ -1,0 +1,41 @@
+﻿@page "/WithQueryParameters/{firstName}/{OptionalLastName?}"
+<strong id="test-info">Hello @FirstName @OptionalLastName.</strong>
+<p>IntValue: <strong id="value-QueryInt">@IntValue</strong></p>
+<p>NullableDateTimeValue: <strong id="value-NullableDateTimeValue">@NullableDateTimeValue?.ToString("hh:mm:ss on yyyy-MM-dd")</strong></p>
+<p>NullableDateOnlyValue: <strong id="value-NullableDateOnlyValue">@NullableDateOnlyValue?.ToString("yyyy-MM-dd")</strong></p>
+<p>NullableTimeOnlyValue: <strong id="value-NullableTimeOnlyValue">@NullableTimeOnlyValue?.ToString("hh:mm:ss")</strong></p>
+<p>StringValue: <strong id="value-StringValue">@StringValue</strong></p>
+<p>LongValues: <strong id="value-LongValues">@LongValues.Length values (@string.Join(", ", LongValues.Select(x => x.ToString()).ToArray()))</strong></p>
+
+<NestedQueryParameters />
+
+<p>Instance ID: <strong id="instance-id">@instanceId</strong></p>
+
+<p>
+    Links:
+    <a href="WithQueryParameters/@FirstName?intvalue=123">With IntValue</a> |
+    <a href="WithQueryParameters/@FirstName?l=50&l=100&l=-20&intvalue=123">With IntValue and LongValues</a> |
+    <a href="WithQueryGuidParameter?l=8b7ae9ee-de22-4dd0-8fa1-b31e66abcc79">Another page with GuidValue</a> |
+    <a href="WithQueryGuidParameter?stringvalue=A">Another page with StringValue</a> |
+</p>
+
+@code
+{
+    private string instanceId = Guid.NewGuid().ToString();
+
+    [Parameter] public string FirstName { get; set; }
+
+    [Parameter] public string OptionalLastName { get ; set; }
+
+    [SupplyParameterFromQuery] public int IntValue { get ; set; }
+
+    [SupplyParameterFromQuery] public DateTime? NullableDateTimeValue { get ; set; }
+
+    [SupplyParameterFromQuery] public DateOnly? NullableDateOnlyValue { get ; set; }
+
+    [SupplyParameterFromQuery] public TimeOnly? NullableTimeOnlyValue { get ; set; }
+
+    [SupplyParameterFromQuery] public string StringValue { get ; set; }
+
+    [SupplyParameterFromQuery(Name = "l")] public long[] LongValues { get ; set; }
+}

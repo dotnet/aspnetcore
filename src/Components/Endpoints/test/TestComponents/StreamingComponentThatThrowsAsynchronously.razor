@@ -1,0 +1,9 @@
+﻿@attribute [StreamRendering]
+Some output
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        throw new InvalidTimeZoneException("Test message with <b>markup</b>");
+    }
+}

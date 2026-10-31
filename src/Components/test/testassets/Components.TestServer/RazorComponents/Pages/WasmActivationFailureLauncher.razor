@@ -1,0 +1,15 @@
+@page "/wasm-activation-failure-launcher"
+@using Microsoft.AspNetCore.Components.Web
+
+<h1 id="wasm-activation-launcher">WebAssembly activation failure launcher</h1>
+
+<p>
+    This page boots the WebAssembly runtime by rendering an interactive component.
+    Once it reports WebAssembly interactivity, an enhanced navigation to
+    <code>/wasm-activation-failure</code> activates a component that throws during
+    activation via <code>OnUpdateRootComponents</code> (the runtime update path).
+</p>
+
+<TestContentPackage.Counter @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: false))" IncrementAmount="1" IdSuffix="launcher" />
+
+<a id="go-to-activation-failure" href="wasm-activation-failure">Go to activation failure</a>

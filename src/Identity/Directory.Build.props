@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IdentityTestSharedSourceRoot>$(MSBuildThisFileDirectory)test\Shared\</IdentityTestSharedSourceRoot>
+  </PropertyGroup>
+
+</Project>

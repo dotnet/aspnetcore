@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework Condition="'$(FileBasedProgram)' == 'true'">$(BundledNETCoreAppTargetFramework)</TargetFramework>
+    <NoWarn>$(NoWarn);IL2026;IL3050;NU1507</NoWarn>
+    <PublishAot>false</PublishAot>
+    <PublishTrimmed>false</PublishTrimmed>
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+</Project>

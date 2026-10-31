@@ -1,0 +1,48 @@
+﻿@page "/nav/scroll-to-hash"
+@attribute [StreamRendering]
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Page for scrolling to hash</PageTitle>
+
+<h1>Scroll to hash</h1>
+
+<p>If you scroll down a long way, you'll find more content. We add it asynchronously via streaming rendering.</p>
+
+<p>
+    <a id="scroll-anchor" href="nav/scroll-to-hash#some-content">Scroll via anchor</a>
+    <div id="uri-on-page-load" style="display: none" data-value="@uriOnPageLoad"></div>
+</p>
+
+<div data-enhance-nav="false" id="anchor">
+    <a id="scroll-anchor" href="nav/scroll-to-hash#some-content">Scroll via anchor</a>
+    <div id="uri-on-page-load" style="display: none" data-value="@uriOnPageLoad"></div>
+    <p id="text">Text</p>
+</div>
+
+<div data-enhance-nav="false" id="navlink">
+    <NavLink id="scroll-anchor" href="nav/scroll-to-hash#some-content">Scroll via NavLink</NavLink>
+    <div id="uri-on-page-load" style="display: none" data-value="@uriOnPageLoad"></div>
+    <p id="text">Text</p>
+</div>
+
+<div style="height: 2000px; border: 2px dashed red;">spacer</div>
+
+@if (showContent)
+{
+    <h2 id="some-content">Some content</h2>
+
+    <p>This is the content.</p>
+}
+
+@code {
+    bool showContent;
+    string uriOnPageLoad;
+
+    protected override async Task OnInitializedAsync()
+    {
+        uriOnPageLoad = NavigationManager.Uri;
+        await Task.Delay(1000);
+        showContent = true;
+    }
+}

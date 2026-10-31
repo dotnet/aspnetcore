@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Protokollpufferdatei",
+  "description": "Eine Protokollpufferdatei zum Beschreiben von Nachrichten und Diensten für gRPC.",
+  "symbols/namespace/description": "Namespace für den generierten Code",
+  "postActions/openInEditor/description": "Öffnet protobuf.proto im Editor"
+}

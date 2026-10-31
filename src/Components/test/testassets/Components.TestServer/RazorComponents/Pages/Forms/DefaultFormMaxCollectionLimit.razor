@@ -1,0 +1,25 @@
+﻿@page "/forms/default-form-max-collection-limit"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form hitting max collection limit</h2>
+
+<EditForm Enhance Model="Values" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform">
+    <ValidationSummary />
+    @for (int i = 0; i < Values.Length; i++)
+    {
+        var index = i;
+        <CustomNumberInput @bind-Value="Values[index]" />
+    }
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <p id="pass">Hello @Values</p>
+}
+
+@code {
+    bool _submitted = false;
+
+    [SupplyParameterFromForm] public int[] Values { get; set; } = new int[101];
+}

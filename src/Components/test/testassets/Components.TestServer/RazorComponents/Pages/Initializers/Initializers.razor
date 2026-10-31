@@ -1,0 +1,21 @@
+﻿@page "/initializers"
+@using TestContentPackage.Initializers
+<h3>JS initializers in Blazor web</h3>
+
+<p>
+    This page demonstrates the use of JS initializers in Blazor Web. Initializers run callbacks for when the app starts running as well as when it starts web assembly or interactive server runtimes. Interactive server supports wiring up events for the circuit creation and disposal. Classic initializers are not supported by default (and will emit a warning on the console) but can be enabled through the Blazor web options.
+</p>
+
+@if (Streaming)
+{
+    <InitializersStreamingRequest />
+}else
+{
+    <InitializersNonStreamingRequest />
+}
+
+@code{
+    [SupplyParameterFromQuery] public bool Streaming { get; set; }
+}
+
+<div id="initializers-content"></div>

@@ -1,0 +1,21 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <!-- There is no build output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- There are no symbols. -->
+    <IncludeSymbols>false</IncludeSymbols>
+    <!-- Manually control dependencies -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- The only build output of a pkgproj is the project -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RunPackageAnalysis>false</RunPackageAnalysis>
+
+  </PropertyGroup>
+
+  <Target Name="CopyFilesToOutputDirectory" />
+  <Target Name="CoreCompile" />
+  <Target Name="CreateManifestResourceNames" />
+</Project>

@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Microsoft ASP.NET Core 模組"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Microsoft ASP.NET Core 模組 V2"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="ASP.NET Core IIS 執行階段"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="將 ASP.NET Core 應用程式的支援新增至 IIS。"/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="適用於 IIS Express 的 Microsoft ASP.NET Core 模組"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="適用於 IIS Express 的 Microsoft ASP.NET Core 模組 V2"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="未安裝 IIS Express 8.0 或更新版本。"/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="此電腦上有不相容的產品 [CONFLICTING_PRODUCT_NAME]。無法繼續安裝 [ProductName]。若要安裝此產品，請使用控制面板 上的新增/移除程式來移除 [CONFLICTING_PRODUCT_NAME]。"/>
+  <String Id="AdminRequired" Overridable="yes" Value="需要系統管理員權限才能安裝 [ProductName]。"/>
+  <String Id="IIS7Only" Overridable="yes" Value="需要 IIS 版本 7.0 才能使用 [ProductName]。"/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="需要 IIS 版本 7.0 或更新版本才能安裝 [ProductName]。"/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="需要 IIS 版本 7.5 或更新版本才能安裝 [ProductName]。"/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="需要 IIS 版本 7 或 7.5 才能安裝 [ProductName]。"/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="需要 IIS 版本 8.0 或更新版本才能安裝 [ProductName]。"/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="在此電腦上發現 [ProductName] 的技術預覽版。"/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="在此電腦上發現較新版本的 [ProductName]。"/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="安裝程式無法繼續，因為此電腦已安裝另一個 [ProductName] 執行個體。請先解除安裝，然後再重新啟動此安裝。"/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="必須安裝 IIS 7.0 CoreWebEngine 和 W3SVC 功能，以使用 [ProductName]。"/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="必須安裝 IIS 管理控制台，以使用 [ProductName]。"/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="安裝 [ProductName] 之前，請先停止 Windows 處理序啟用服務 (WAS) 和 Web Management Service (WMSvc)。[ProductName] 安裝完成後，請重新啟動這些服務。"/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="需要 IIS Metabase 才能安裝 [ProductName]。"/>
+  <String Id="LaunchCondition_32BIT" Value="64 位元版本的 [ProductName] 無法安裝在 32 位元版本的 Microsoft Windows 上。"/>
+  <String Id="LaunchCondition_64BIT" Value="32 位元版本的 [ProductName] 無法安裝在 64 位元版本的 Microsoft Windows 上。"/>
+  <String Id="NetFX2OrGreaterRequired" Value="需要 Microsoft .NET Framework 版本 2.0 或更新版本才能安裝 [ProductName]。"/>
+  <String Id="NetFX35OrGreaterRequired" Value="需要 Microsoft .NET Framework 版本 3.5 或更新版本才能安裝 [ProductName]。請使用伺服器管理員中的新增功能來安裝 Microsoft .NET 版本 3.5。"/>
+  <String Id="NetFX4OrGreaterRequired" Value="需要 Microsoft .NET Framework 版本 4.0 或更新版本才能安裝 [ProductName]。"/>
+  <String Id="NetFX20SP1IsRequired" Value="在安裝 [ProductName] 之前，請先安裝 Microsoft .NET Framework 版本 2.0 Service Pack 1 (或更新的 Service Pack)。"/>
+  <String Id="WindowsUpdateEnabled" Value="Windows Update (wuauserv) 服務無法停用，此服務是安裝 [ProductName] 的必要條件。"/>
+  <String Id="GetFromOSforWin7" Value="PowerShell 嵌入式管理單元是 Windows 作業系統的一部分。請透過「程式和功能」或「伺服器管理員」安裝。"/>
+  <String Id="WebPI3OrGreaterRequired" Value="安裝 [ProductName] 需要 Microsoft Web Platform Installer 版本 3.0 或更新版本。"/>
+
+  <String Id="Error30001" Overridable="yes" Value="安裝程式無法偵測共用設定。"/>
+  <String Id="Error30002" Overridable="yes" Value="IIS 已啟用共用設定。使用共用設定時不支援安裝 [ProductName]。安裝此功能之前，請先停用共用設定。"/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="安裝 [ProductName] 之前，請先停止 World Wide Web Publishing 服務 (W3SVC)。安裝完成後，請重新啟動該服務。"/>
+  <String Id="IISPowershellConsole" Value="IIS PowerShell 管理主控台"/>
+  <String Id="IISPowershellSnapin" Value="IIS PowerShell 嵌入式管理單元"/>
+  <String Id="PowerShellRequired" Value="IIS PowerShell 嵌入式管理單元需要安裝 PowerShell v1.0 或 v2.0"/>
+  <String Id="WasAndConfigRequired" Value="IIS PowerShell 嵌入式管理單元需要安裝 WAS 和設定"/>
+  <String Id="TestBogusString" Overridable="yes" Value="這是一個虛假的字串。"/>
+
+</WixLocalization>

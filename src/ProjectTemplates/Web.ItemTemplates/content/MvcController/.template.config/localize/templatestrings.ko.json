@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC 컨트롤러",
+  "description": "읽기/쓰기 동작이 포함 또는 포함되지 않은 MVC 컨트롤러",
+  "symbols/namespace/description": "생성된 코드의 네임스페이스",
+  "symbols/actions/description": "읽기/쓰기 작업이 포함된 컨트롤러 만들기",
+  "symbols/actions/displayName": "읽기/쓰기 작업 추가",
+  "postActions/openInEditor/description": "편집기에서 생성된 컨트롤러를 엽니다."
+}

@@ -1,0 +1,161 @@
+{
+  "pullRequests": [
+    {
+      "number": 101,
+      "title": "Improve Blazor focus behavior",
+      "url": "https://github.com/dotnet/aspnetcore/pull/101",
+      "author": {
+        "login": "community-blazor",
+        "is_bot": false
+      },
+      "isDraft": false,
+      "labels": [
+        {
+          "name": "area-blazor"
+        },
+        {
+          "name": "community-contribution"
+        }
+      ],
+      "createdAt": "2026-09-05T12:00:00Z",
+      "updatedAt": "2026-09-09T12:00:00Z",
+      "headRefOid": "1011011011011011011011011011011011011011",
+      "headRefName": "community-blazor-focus",
+      "baseRefName": "main",
+      "isCrossRepository": false,
+      "files": [
+        {
+          "path": "src/Components/Focus/Focus.razor"
+        }
+      ],
+      "additions": 12,
+      "deletions": 2,
+      "changedFiles": 1,
+      "milestone": null,
+      "assignees": []
+    },
+    {
+      "number": 102,
+      "title": "Add a Blazor sample for navigation",
+      "url": "https://github.com/dotnet/aspnetcore/pull/102",
+      "author": {
+        "login": "community-blazor-old",
+        "is_bot": false
+      },
+      "isDraft": false,
+      "labels": [
+        {
+          "name": "area-blazor"
+        },
+        {
+          "name": "community-contribution"
+        }
+      ],
+      "createdAt": "2026-07-01T12:00:00Z",
+      "updatedAt": "2026-07-10T12:00:00Z",
+      "headRefOid": "1021021021021021021021021021021021021021",
+      "headRefName": "community-blazor-sample",
+      "baseRefName": "main",
+      "isCrossRepository": false,
+      "files": [
+        {
+          "path": "src/Components/Samples/Navigation.razor"
+        }
+      ],
+      "additions": 8,
+      "deletions": 1,
+      "changedFiles": 1,
+      "milestone": null,
+      "assignees": []
+    },
+    {
+      "number": 201,
+      "title": "Improve identity token validation",
+      "url": "https://github.com/dotnet/aspnetcore/pull/201",
+      "author": {
+        "login": "community-identity",
+        "is_bot": false
+      },
+      "isDraft": false,
+      "labels": [
+        {
+          "name": "area-identity"
+        }
+      ],
+      "createdAt": "2026-09-05T12:00:00Z",
+      "updatedAt": "2026-09-09T12:00:00Z",
+      "headRefOid": "2012012012012012012012012012012012012012",
+      "headRefName": "community-identity-validation",
+      "baseRefName": "main",
+      "isCrossRepository": false,
+      "files": [
+        {
+          "path": "src/Identity/Validation/TokenValidator.cs"
+        }
+      ],
+      "additions": 20,
+      "deletions": 3,
+      "changedFiles": 1,
+      "milestone": null,
+      "assignees": []
+    },
+    {
+      "number": 202,
+      "title": "Fix identity cookie documentation",
+      "url": "https://github.com/dotnet/aspnetcore/pull/202",
+      "author": {
+        "login": "community-identity-old",
+        "is_bot": false
+      },
+      "isDraft": false,
+      "labels": [],
+      "createdAt": "2026-07-01T12:00:00Z",
+      "updatedAt": "2026-07-10T12:00:00Z",
+      "headRefOid": "2022022022022022022022022022022022022022",
+      "headRefName": "community-identity-docs",
+      "baseRefName": "main",
+      "isCrossRepository": false,
+      "files": [
+        {
+          "path": "src/Identity/Docs/Cookies.md"
+        }
+      ],
+      "additions": 6,
+      "deletions": 1,
+      "changedFiles": 1,
+      "milestone": null,
+      "assignees": []
+    },
+    {
+      "number": 203,
+      "title": "Improve HTTP diagnostics",
+      "url": "https://github.com/dotnet/aspnetcore/pull/203",
+      "author": {
+        "login": "community-http",
+        "is_bot": false
+      },
+      "isDraft": false,
+      "labels": [
+        {
+          "name": "area-http"
+        }
+      ],
+      "createdAt": "2026-09-05T12:00:00Z",
+      "updatedAt": "2026-09-09T12:00:00Z",
+      "headRefOid": "2032032032032032032032032032032032032032",
+      "headRefName": "community-http-diagnostics",
+      "baseRefName": "main",
+      "isCrossRepository": false,
+      "files": [
+        {
+          "path": "src/Http/Diagnostics/Diagnostics.cs"
+        }
+      ],
+      "additions": 4,
+      "deletions": 1,
+      "changedFiles": 1,
+      "milestone": null,
+      "assignees": []
+    }
+  ]
+}

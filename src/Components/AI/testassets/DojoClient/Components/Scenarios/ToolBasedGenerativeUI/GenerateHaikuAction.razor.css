@@ -1,0 +1,15 @@
+.haiku-action {
+    display: grid;
+    gap: 0.5rem;
+}
+
+::deep .haiku-card {
+    min-height: 18rem;
+}
+
+.haiku-action-status {
+    color: #495057;
+    display: block;
+    font-size: 0.875rem;
+    margin: 0.5rem 1rem;
+}

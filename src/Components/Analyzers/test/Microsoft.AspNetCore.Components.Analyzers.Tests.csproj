@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <BaseOutputPath />
+    <NoWarn>$(NoWarn);IDE0055;IDE0161</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- This is set to a ProjectReference because analyzers cannot be referenced via Reference.  -->
+    <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Analyzers\src\Microsoft.AspNetCore.Components.Analyzers.csproj" />
+
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestFiles\**\*.*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

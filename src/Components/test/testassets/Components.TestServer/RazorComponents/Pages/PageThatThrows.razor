@@ -1,0 +1,11 @@
+﻿@page "/Throws"
+
+<PageTitle>Page that throws</PageTitle>
+
+<p>This page throws during OnInitialize to showcase error handling via UseExceptionHandler.</p>
+
+@code
+{
+    protected override void OnInitialized() =>
+        throw new InvalidOperationException("This page throws on purpose.");
+}

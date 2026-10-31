@@ -1,0 +1,21 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.slnx",
+    "projects": [
+      "src\\Identity\\Core\\src\\Microsoft.AspNetCore.Identity.csproj",
+      "src\\Identity\\EntityFrameworkCore\\src\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj",
+      "src\\Identity\\EntityFrameworkCore\\test\\EF.InMemory.Test\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj",
+      "src\\Identity\\EntityFrameworkCore\\test\\EF.Test\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj",
+      "src\\Identity\\Extensions.Core\\src\\Microsoft.Extensions.Identity.Core.csproj",
+      "src\\Identity\\Extensions.Stores\\src\\Microsoft.Extensions.Identity.Stores.csproj",
+      "src\\Identity\\Specification.Tests\\src\\Microsoft.AspNetCore.Identity.Specification.Tests.csproj",
+      "src\\Identity\\UI\\src\\Microsoft.AspNetCore.Identity.UI.csproj",
+      "src\\Identity\\samples\\IdentitySample.DefaultUI\\IdentitySample.DefaultUI.csproj",
+      "src\\Identity\\samples\\IdentitySample.Mvc\\IdentitySample.Mvc.csproj",
+      "src\\Identity\\test\\Identity.FunctionalTests\\Microsoft.AspNetCore.Identity.FunctionalTests.csproj",
+      "src\\Identity\\test\\Identity.Test\\Microsoft.AspNetCore.Identity.Test.csproj",
+      "src\\Identity\\test\\InMemory.Test\\Microsoft.AspNetCore.Identity.InMemory.Test.csproj",
+      "src\\Identity\\testassets\\Identity.DefaultUI.WebSite\\Identity.DefaultUI.WebSite.csproj"
+    ]
+  }
+}

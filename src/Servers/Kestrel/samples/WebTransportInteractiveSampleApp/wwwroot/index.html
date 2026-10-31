@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>WebTransport Test Page</title>
+</head>
+<body>
+    <script src="certificate.js"></script>
+
+    <div id="panel">
+        <h1 id="title">WebTransport Test Page</h1>
+        <h3 id="stateLabel">Ready to connect...</h3>
+        <div>
+            <label for="connectionUrl">WebTransport Server URL:</label>
+            <input id="connectionUrl" value="https://127.0.0.1:5002" disabled />
+            <p>Due to the need to synchronize certificates, you cannot modify the url at this time.</p>
+            <button id="connectButton" type="submit" onclick="connect()">Connect</button>
+        </div>
+
+        <div id="communicationPanel" hidden>
+            <div>
+                <button id="closeStream" type="submit" onclick="closeActiveStream()">Close active stream</button>
+                <button id="closeConnection" type="submit" onclick="closeConnection()">Close connection</button>
+                <button id="createBidirectionalStream" type="submit" onclick="createStream('bidirectional')">Create bidirectional stream</button>
+                <button id="createUnidirectionalStream" type="submit" onclick="createStream('output unidirectional')">Create unidirectional stream</button>
+            </div>
+            <h2>Open Streams</h2>
+            <div id="streamsList">
+                <p id="noStreams">Empty</p>
+            </div>
+
+            <div>
+                <h2>Send Message</h2>
+                <textarea id="messageInput" name="text" rows="12" cols="50"></textarea>
+                <button id="sendMessageButton" type="submit" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="communicationLogPanel">
+        <h2 style="text-align: center;">Communication Log</h2>
+        <table style="overflow: auto; max-height: 1000px;">
+            <thead>
+                <tr>
+                    <td>Timestamp</td>
+                    <td>From</td>
+                    <td>To</td>
+                    <td>Data</td>
+                </tr>
+            </thead>
+            <tbody id="commsLog">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let connectionUrl = document.getElementById("connectionUrl");
+        let messageInput = document.getElementById("messageInput");
+        let stateLabel = document.getElementById("stateLabel");
+        let commsLog = document.getElementById("commsLog");
+        let streamsList = document.getElementById("streamsList");
+        let communicationPanel = document.getElementById("communicationPanel");
+        let noStreamsText = document.getElementById("noStreams");
+
+        let session;
+        let connected = false;
+        let openStreams = [];
+
+        async function connect() {
+            if (connected) {
+                alert("Already connected!");
+                return;
+            }
+
+            communicationPanel.hidden = true;
+            stateLabel.innerHTML = "Ready to connect...";
+
+            session = new WebTransport(connectionUrl.value, {
+                serverCertificateHashes: [
+                    {
+                        algorithm: "sha-256",
+                        value: Uint8Array.from(atob(CERTIFICATE), c => c.charCodeAt(0))
+                    }
+                ]
+            });
+            stateLabel.innerHTML = "Connecting...";
+
+            await session.ready;
+
+            startListeningForIncomingStreams();
+
+            setConnection(true);
+        }
+
+        async function closeConnection() {
+            if (!connected) {
+                alert("Not connected!");
+                return;
+            }
+
+            for (let i = 0; i < openStreams.length; i++) {
+                await closeStream(i);
+            }
+
+            await session.close();
+
+            setConnection(false);
+
+            openStreams = [];
+            updateOpenStreamsList();
+        }
+
+        function setConnection(state) {
+            connected = state;
+            communicationPanel.hidden = !state;
+
+            let msg = state ? "Connected!" : "Disconnected!";
+            stateLabel.innerHTML = msg;
+            addToCommsLog("Client", "Server", msg);
+        }
+
+        function updateOpenStreamsList() {
+            streamsList.innerHTML = "";
+            for (let i = 0; i < openStreams.length; i++) {
+                streamsList.innerHTML += '<div>' +
+                    `<input type="radio" name = "streams" value = "${i}" id = "${i}" >` +
+                    `<label for="${i}">${i}  -  ${openStreams[i].type}</label>` +
+                    '</div >';
+            }
+
+            noStreamsText.hidden = openStreams.length > 0;
+        }
+
+        async function closeActiveStream() {
+            let streamIndex = getActiveStreamIndex();
+            await closeStream(streamIndex);
+        }
+
+        async function closeStream(index) {
+            let stream = openStreams[index].stream;
+            if (!stream) {
+                return;
+            }
+
+            // close the writable part of a stream if it exists
+            if (stream.writable) {
+                await stream.writable.close();
+            }
+
+            // close the readable part of a stream if it exists
+            if (stream.cancelReaderAndClose) {
+                await stream.cancelReaderAndClose();
+            }
+
+            // close the stream if it can be closed manually
+            if (stream.close) {
+                await stream.close();
+            }
+
+            // remove from the list of open streams
+            openStreams.splice(index, 1);
+
+            updateOpenStreamsList();
+        }
+
+        async function startListeningForIncomingStreams() {
+            try {
+                let streamReader = session.incomingUnidirectionalStreams.getReader();
+                let stream = await streamReader.read();
+                if (stream.value && confirm("New incoming stream. Would you like to accept it?")) {
+                    startListeningForIncomingData(stream.value, openStreams.length, "input unidirectional");
+                    // we don't add to the stream list here as the only stream type that we can receive is
+                    // input. As we can't send data over these streams, there is no point in showing them to the user
+                }
+            } catch {
+                alert("Failed to accept incoming stream");
+            }
+        }
+
+        async function startListeningForIncomingData(stream, streamId, type) {
+            let reader = isBidirectional(type) ? stream.readable.getReader() : stream.getReader();
+
+            // define a function that we can use to abort the reading on this stream
+            var closed = false;
+            stream.cancelReaderAndClose = () => {
+                console.log(reader);
+                reader.cancel();
+                reader.releaseLock();
+                closed = true;
+            }
+
+            // read loop for the stream
+            try {
+                while (true) {
+                    let data = await reader.read();
+                    let msgOut = "";
+                    data.value.forEach(x => msgOut += String.fromCharCode(x));
+                    addToCommsLog("Server", "Client", `RECEIVED FROM STREAM ${streamId}: ${msgOut}`);
+                }
+            } catch {
+                alert(`Stream ${streamId} ${closed ? "was closed" : "failed to read"}. Ending reading from it.`);
+            }
+        }
+
+        async function createStream(type) {
+            if (!connected) {
+                return;
+            }
+            let stream;
+            switch (type) {
+                case 'output unidirectional':
+                    stream = await session.createUnidirectionalStream();
+                    break;
+                case 'bidirectional':
+                    stream = await session.createBidirectionalStream();
+                    startListeningForIncomingData(stream, openStreams.length, "bidirectional");
+                    break;
+                default:
+                    alert("Unknown stream type");
+                    return;
+            }
+
+            addStream(stream, type);
+        }
+
+        function addStream(stream, type) {
+            openStreams.push({ stream: stream, type: type });
+
+            updateOpenStreamsList();
+
+            addToCommsLog("Client", "Server", `CREATING ${type} STREAM WITH ID ${openStreams.length}`);
+        }
+
+        async function sendMessage() {
+            if (!connected) {
+                return;
+            }
+
+            let activeStreamIndex = getActiveStreamIndex();
+
+            if (activeStreamIndex == -1) {
+                alert((openStreams.length > 0) ? "Please select a stream first" : "Please create a stream first");
+            }
+
+            let activeStreamObj = openStreams[activeStreamIndex];
+            let activeStream = activeStreamObj.stream;
+            let activeStreamType = activeStreamObj.type;
+
+            let writer = isBidirectional(activeStreamType) ? activeStream.writable.getWriter() : activeStream.getWriter();
+
+            let msg = messageInput.value.split("").map(x => (x).charCodeAt(0));
+            await writer.write(new Uint8Array(msg));
+
+            writer.releaseLock();
+
+            addToCommsLog("Client", "Server", `SENDING OVER STREAM ${activeStreamIndex}: ${messageInput.value}`);
+        }
+
+        function isBidirectional(type) {
+            return type === "bidirectional";
+        }
+
+        function getActiveStream() {
+            let index = getActiveStreamIndex();
+            return (index === -1) ? null : openStreams[index].stream;
+        }
+
+        function getActiveStreamIndex() {
+            let allStreams = document.getElementsByName("streams");
+
+            for (let i = 0; i < allStreams.length; i++) {
+                if (allStreams[i].checked) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function addToCommsLog(from, to, data) {
+            commsLog.innerHTML += '<tr>' +
+                `<td>${getTimestamp()}</td>` +
+                `<td>${from}</td>` +
+                `<td>${to}</td>` +
+                `<td>${data}</td>`
+            '</tr>';
+        }
+
+        function getTimestamp() {
+            let now = new Date();
+            return `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`;
+        }
+    </script>
+</body>
+</html>
+<style>
+    html,
+    body {
+        background-color: #459eda;
+        padding: 0;
+        margin: 0;
+        height: 100%;
+    }
+
+    body {
+        display: flex;
+        flex-direction: row;
+    }
+
+    #panel {
+        background-color: white;
+        padding: 12px;
+        margin: 0;
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+        border-right: #0d6cad 5px solid;
+        max-width: 400px;
+        min-width: 200px;
+        flex: 1;
+        min-height: 1200px;
+        overflow: auto;
+    }
+
+    #panel > * {
+        text-align: center;
+    }
+
+    #communicationLogPanel {
+        padding: 24px;
+        flex: 1;
+    }
+
+    #communicationLogPanel > * {
+        color: white;
+        width: 100%;
+    }
+
+    #connectButton {
+        background-color: #2e64a7;
+    }
+
+    #messageInput {
+        max-width: 100%;
+    }
+
+    #streamsList {
+        max-height: 400px;
+        overflow: auto;
+    }
+
+    input {
+        padding: 6px;
+        margin-bottom: 8px;
+        margin-right: 0;
+    }
+
+    button {
+        background-color: #459eda;
+        border-radius: 5px;
+        border: 0;
+        text-align: center;
+        color: white;
+        padding: 8px;
+        margin: 4px;
+        width: 100%;
+    }
+</style>

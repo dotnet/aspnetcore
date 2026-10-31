@@ -1,0 +1,68 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+
+<div>
+    <input id="filter-input" type="text" @bind="filter" />
+    <button id="apply-filter-reset-pagination-btn" @onclick="ApplyFilterResetPagination">Apply Filter</button>
+    <button id="apply-filter-refresh-data-btn" @onclick="ApplyFilterRefreshData">Apply Filter</button>
+</div>
+
+<div class="grid">
+    <QuickGrid ItemsProvider="itemsProvider" Pagination="@pagination" @ref="gridRef">
+        <PropertyColumn Property="@(c => c.Id)" />
+        <PropertyColumn Property="@(c => c.Name)" />
+    </QuickGrid>
+</div>
+<Paginator State="@pagination" />
+
+<p id="items-provider-calls">@itemsProviderCalls</p>
+
+@code {
+    PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+    int itemsProviderCalls = 0;
+    GridItemsProvider<Item> itemsProvider = default!;
+    QuickGrid<Item> gridRef;
+    string filter = string.Empty;
+
+    private readonly List<Item> allItems = Enumerable.Range(1, 25)
+        .Select(i => new Item { Id = i, Name = $"Item {i}" })
+        .ToList();
+
+    protected override void OnInitialized()
+    {
+        itemsProvider = async request =>
+        {
+            await Task.CompletedTask;
+
+            Interlocked.Increment(ref itemsProviderCalls);
+            StateHasChanged();
+
+            var filteredItems = string.IsNullOrEmpty(filter)
+                ? allItems
+                : allItems.Where(i => i.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            var totalCount = filteredItems.Count;
+            var pagedItems = filteredItems
+                .Skip(request.StartIndex)
+                .Take(request.Count ?? 5)
+                .ToList();
+
+            return GridItemsProviderResult.From(pagedItems, totalCount);
+        };
+    }
+
+    protected async Task ApplyFilterResetPagination()
+    {
+        await pagination.SetCurrentPageIndexAsync(0);
+    }
+
+    protected async Task ApplyFilterRefreshData()
+    {
+        await gridRef.RefreshDataAsync();
+    }
+
+    class Item
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+}

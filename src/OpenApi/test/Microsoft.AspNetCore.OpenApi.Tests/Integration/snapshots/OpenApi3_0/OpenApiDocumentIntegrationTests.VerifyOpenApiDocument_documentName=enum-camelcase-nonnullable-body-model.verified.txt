@@ -1,0 +1,65 @@
+﻿{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Sample | enum-camelcase-nonnullable-body-model",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/enums/camelcase/nonnullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CamelCaseNonNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseNonNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CamelCaseNonNullableModel": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/CamelCaseStatus"
+          }
+        }
+      },
+      "CamelCaseStatus": {
+        "enum": [
+          "active",
+          "inactive",
+          "pending"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

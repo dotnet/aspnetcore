@@ -1,0 +1,21 @@
+@page "/server-counter"
+@rendermode InteractiveServer
+
+<PageTitle>Server Counter</PageTitle>
+
+<h1>Server Counter</h1>
+
+<p>This counter uses <strong>InteractiveServer</strong> render mode (SignalR).</p>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

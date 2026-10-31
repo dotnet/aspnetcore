@@ -1,0 +1,7 @@
+﻿@page "/WithOptionalParameters/{age:int?}"
+<div id="test-info">Your age is @Age.</div>
+
+@code
+{
+    [Parameter] public int? Age { get; set; }
+}

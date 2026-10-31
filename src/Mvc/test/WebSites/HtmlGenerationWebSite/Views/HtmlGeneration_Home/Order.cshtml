@@ -1,0 +1,120 @@
+﻿@model HtmlGenerationWebSite.Models.Order
+
+@{
+    ViewBag.Title = "Order Page";
+}
+
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.FormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.LabelTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.ValidationMessageTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.ValidationSummaryTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.RenderAtEndOfFormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <form asp-controller="HtmlGeneration_Order" asp-action="Submit" asp-antiforgery=" true">
+        <div>
+            <label asp-for="Shipping" class="order"></label>
+            <input asp-for="Shipping" type="text" asp-format="Your shipping method is {0}" size="50" />
+        </div>
+        <div>
+            <label asp-for="ShippingDateTime" class="order"></label>
+            <input asp-for="ShippingDateTime" type="datetime-local" />
+        </div>
+        <div>
+            <label asp-for="Products" class="order"></label>
+            @{ var @object = "multiple"; }
+            <select asp-for="@Model.Products" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)" multiple="@(@object)"></select>
+        </div>
+        <div>
+            @if (Model.ProductDetails.Count > 0)
+            {
+                <table>
+                    <tr>
+                        <th>
+                            <label asp-for="ProductDetails.FirstOrDefault().Number"></label>
+                        </th>
+                        <th>
+                            <label asp-for="ProductDetails.FirstOrDefault().ProductName"></label>
+                        </th>
+                    </tr>
+                    @for (var i = 0; i < Model.ProductDetails.Count; i++)
+                    {
+                    <tr>
+                        <td>
+                            <input asp-for="ProductDetails[i].Number" />
+                            <span asp-validation-for="ProductDetails[i].Number" class="text-danger" style=""></span>
+                        </td>
+                        <td>
+                            <input asp-for="ProductDetails[i].ProductName" />
+                            <span asp-validation-for="ProductDetails[i].ProductName" class="text-danger" style=""></span>
+                        </td>
+                    </tr>
+                    }
+                </table>
+            }
+        </div>
+        <div>
+            <label asp-for="SubstituteProducts" class="order"></label>
+            @* Use same select list as Products. Selection when Products is non-null is not used here. *@
+            <select asp-for="SubstituteProducts" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)"></select>
+        </div>
+        <div>
+            <label asp-for="OrderDate" class="order"></label>
+            <input asp-for="OrderDate" type="datetime" asp-format="{0:yyyy/MM/dd HH:mm:ss}" />
+        </div>
+        <div>
+            <label asp-for="NeedSpecialHandle" class="order"></label>
+            <input asp-for="NeedSpecialHandle" type="checkbox" />
+        </div>
+        <div>
+            <label asp-for="PaymentMethod" class="order"></label>
+            <select asp-for="PaymentMethod">
+                <option value="Credit">Credit</option>
+                <option value="Check">Check</option>
+            </select>
+            <select>
+                <option value="Check">Check</option>
+            </select>
+        </div>
+        <div>
+            <label asp-for="Customer.Number" class="order"></label>
+            <input asp-for="Customer.Number" type="number" class="form-control" />
+            <span asp-validation-for="Customer.Number"></span>
+        </div>
+        <div>
+            <label asp-for="Customer.Name" class="order"></label>
+            <input asp-for="Customer.Name" type="text" />
+        </div>
+        <div>
+            <label asp-for="Customer.Email" class="order"></label>
+            <input asp-for="Customer.Email" type="email" />
+            <span asp-validation-for="Customer.Email"></span>
+        </div>
+        <div>
+            <label asp-for="Customer.PhoneNumber" class="order"></label>
+            <input asp-for="Customer.PhoneNumber" type="tel" />
+        </div>
+        <div>
+            <label asp-for="Customer.Password" class="order"></label>
+            <input asp-for="Customer.Password" type="password" class="form-control" />
+            <span asp-validation-for="Customer.Password"></span>
+        </div>
+        <div>
+            <label asp-for="Customer.Gender" class="order"></label>
+            @Html.EditorFor(model => model.Customer.Gender)
+            <span asp-validation-for="Customer.Gender"></span>
+        </div>
+        <div asp-validation-summary="All" class="order"></div>
+        <input type="hidden" asp-for="Customer.Key" />
+        <input type="submit" />
+    </form>
+</body>
+</html>

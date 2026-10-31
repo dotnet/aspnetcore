@@ -1,0 +1,5 @@
+﻿<?xml version="1.0"?>
+<configuration>
+  <add name="KeyName1" />
+  <add name="KeyName2" />
+</configuration>

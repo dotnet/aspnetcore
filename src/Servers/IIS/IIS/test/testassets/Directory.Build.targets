@@ -1,0 +1,48 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <!-- Work around until we get a new WebSdk -->
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+
+    <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">true</HasTestAssetProfile>
+    <TestAssetOutputName>$(MSBuildProjectName)</TestAssetOutputName>
+  </PropertyGroup>
+
+  <Target Name="PreventProjectReferencesFromBuilding" BeforeTargets="BeforeResolveReferences" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
+    <PropertyGroup>
+      <BuildProjectReferences Condition="'$(HasTestAssetProfile)' == 'true'">false</BuildProjectReferences>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'true'">
+      <PublishDir>$(PublishDir)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'true'">
+      <IsPublishable>false</IsPublishable>
+      <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PublishTestsAsset" DependsOnTargets="Publish" Returns="@(PublishedTestAsset)">
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+
+    <ItemGroup>
+      <PublishedTestAsset Include="$(TestAssetOutputName)-$(TestAssetProfile)" Path="$(PublishAbsoluteDir)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="PublishTestsAssets" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'" Returns="@(PublishedTestAsset)">
+    <!-- Platform;PlatformTarget removal is to fix builds inside VS. -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PublishTestsAsset"
+             RemoveProperties="Platform;PlatformTarget"
+             Properties="PublishDir=$(PublishDir);TestAssetProfile=%(TestAssetPublishProfile.Identity);%(TestAssetPublishProfile.Properties)">
+      <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
+    </MSBuild>
+  </Target>
+</Project>

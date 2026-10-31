@@ -1,0 +1,25 @@
+﻿@using Microsoft.AspNetCore.Components.Forms;
+@using static Components.TestServer.RazorComponents.Pages.Forms.DefaultFormBoundComplexTypeParameterMultipleComponents;
+@inherits Editor<Address>
+
+<div>
+    <label>
+        Street:
+        <InputText @bind-Value="Value.Street" />
+    </label>
+    <ValidationMessage For="() => Value.Street" />
+</div>
+<div>
+    <label>
+        City:
+        <InputText @bind-Value="Value.City" />
+    </label>
+    <ValidationMessage For="() => Value.City" />
+</div>
+<div>
+    <label>
+        Area Code:
+        <CustomNumberInput @bind-Value="Value.AreaCode" />
+    </label>
+    <ValidationMessage For="() => Value.AreaCode" />
+</div>

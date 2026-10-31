@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "noEmitOnError": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "target": "es2019",
+        "lib": ["es2019", "dom"],
+        "strict": true,
+        "declaration": true,
+        "declarationMap": true,
+        "rootDir": "../src/JSInterop",
+        "outDir": "dist/src",
+        "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+        "module": "ESNext",
+        "skipLibCheck": true,
+        "composite": true
+    },
+    "include": [
+        "../src/JSInterop/**/*.ts"
+    ],
+    "exclude": [
+        "./dist/**"
+    ]
+}

@@ -1,0 +1,10 @@
+﻿{
+  "Test": {
+    "Redis": {
+      // You can setup a local Redis server easily with Docker by running
+      // docker run --rm -it -p 6379:6379 redis
+      // Then uncomment this config below
+      // "Server": "localhost:6379,127.0.0.1:6379"
+    }
+  }
+}
