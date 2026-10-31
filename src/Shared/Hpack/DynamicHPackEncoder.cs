@@ -111,6 +111,12 @@ internal sealed class DynamicHPackEncoder
             return staticTableIndex;
         }
 
+        if (_headerTableSize == 0)
+        {
+            // Avoid hashing the name when the dynamic table is empty.
+            return -1;
+        }
+
         return CalculateDynamicTableIndex(name, name.GetHashCode());
     }
 
