@@ -1,4 +1,6 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Http.HttpContext.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
+virtual Microsoft.AspNetCore.Http.HttpContext.Endpoint.set -> void
 Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
 Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.IsAllowed.get -> bool
 static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Allowed() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!
