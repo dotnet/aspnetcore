@@ -60,10 +60,10 @@ public class Http3ConnectionSetupBenchmark
 
         await http3.InitializeConnectionAsync(static context => Task.CompletedTask);
 
-        // Client control, QPACK encoder and QPACK decoder streams.
-        http3.OutboundControlStream = await http3.CreateControlStream(id: 0);
-        await http3.CreateControlStream(id: 2);
-        await http3.CreateControlStream(id: 3);
+        // Client control, QPACK encoder and QPACK decoder streams on distinct client-initiated unidirectional stream IDs.
+        http3.OutboundControlStream = await http3.CreateControlStream(id: 0, streamId: 2);
+        await http3.CreateControlStream(id: 2, streamId: 6);
+        await http3.CreateControlStream(id: 3, streamId: 10);
 
         _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
         var stream = await http3.CreateRequestStream(_requestHeadersEnumerator, _headerHandler, endStream: true);
