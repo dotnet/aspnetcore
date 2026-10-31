@@ -85,6 +85,13 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         static bool IsRouteParameter(RouteUsageModel routeUsage, IParameterSymbol handlerDelegateParameter)
         {
+            // The usage context has no method (and a default ResolvedParameters) when the handler
+            // couldn't be resolved from the argument, e.g. a delegate creation or a lambda under a cast.
+            if (routeUsage.UsageContext.MethodSymbol is null)
+            {
+                return false;
+            }
+
             // This gets the ParameterSymbol (concept from RouteEmbeddedLanguage) regardless of whether it is in
             // the route pattern or not. If it is and it has a custom [FromRoute(Name = "blah")] attribute then
             // RouteParameterName and we'll be able to find it by looking it up in the route pattern (thus confirming
