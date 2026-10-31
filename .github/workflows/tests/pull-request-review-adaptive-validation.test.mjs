@@ -48,10 +48,16 @@ assert.match(workflowSource, /expectedAgentName = 'review-guide-worker'/);
 assert.match(workflowSource, /allowedTools = new Set\(\['glob', 'grep', 'read_file', 'rg', 'search', 'skill', 'view'\]\)/);
 assert.match(workflowSource, /REVIEW_EXPECTED_WORKER_COUNT: \$\{\{ steps\.prepare_review_bundle\.outputs\.expected_worker_count \}\}/);
 assert.match(workflowSource, /const expectedWorkerCount = Number\(expectedWorkerCountValue\)/);
+assert.match(workflowSource, /event\.data\.toolName\.startsWith\('safeoutputs-'\)/);
+assert.match(workflowSource, /event\.type === 'tool\.execution_complete'/);
+assert.match(workflowSource, /const validStoppedOutput = hasValidStoppedOutput\(\)/);
+assert.match(workflowSource, /const missingWorkersAllowed = validStoppedOutput && subagents\.size < expectedWorkerCount/);
 assert.match(workflowSource, /id: prepare_review_bundle/);
 assert.match(workflowSource, /printf 'expected_worker_count=%s\\n' "\$expected_worker_count" >> "\$GITHUB_OUTPUT"/);
 assert.match(workflowSource, /Ready review manifest has no routed guides/);
-assert.match(workflowSource, /if \(subagents\.size !== expectedWorkerCount\)/);
+assert.match(
+  workflowSource,
+  /if \(subagents\.size !== expectedWorkerCount && !missingWorkersAllowed\)/);
 assert.match(workflowSource, /if \(event\.data\?\.parentToolCallId\)/);
 assert.match(workflowSource, /## agent: `review-guide-worker`/);
 assert.match(workflowSource, /tools: \["read", "search", "skill"\]/);
@@ -137,6 +143,22 @@ try {
     ...workerStarted,
     agentId: 'worker-2',
   };
+  const safeOutputCall = (toolCallId, toolName, arguments_, success = true) => [
+    {
+      type: 'tool.execution_start',
+      data: { toolCallId, toolName, arguments: arguments_ },
+    },
+    {
+      type: 'tool.execution_complete',
+      data: { toolCallId, success },
+    },
+  ];
+  const stopped = (status = 'BLOCKED', reason = 'The review could not complete.') => [
+    ...safeOutputCall('incomplete', 'safeoutputs-report_incomplete', { reason }),
+    ...safeOutputCall('comment', 'safeoutputs-add_comment', {
+      body: `Review not published (${status}): ${reason}\n\nNo partial findings were published.`,
+    }),
+  ];
   assert.equal(runVerifier([workerStarted, workerTool('skill'), workerTool('view')], '1').status, 0);
   assert.equal(runVerifier([], '0').status, 0);
   assert.equal(runVerifier([workerStarted, secondWorkerStarted], '2').status, 0);
@@ -153,13 +175,127 @@ try {
   assert.notEqual(missingSecondWorker.status, 0);
   assert.match(missingSecondWorker.stderr, /Expected 2 per-guide review worker\(s\), but recorded 1/);
 
+  assert.equal(runVerifier(stopped(), '1').status, 0);
+  assert.equal(runVerifier([workerStarted, ...stopped('INCOMPLETE')], '2').status, 0);
+
+  const stoppedWithExcessWorker = runVerifier(
+    [workerStarted, secondWorkerStarted, ...stopped()],
+    '1');
+  assert.notEqual(stoppedWithExcessWorker.status, 0);
+  assert.match(stoppedWithExcessWorker.stderr, /Expected 1 per-guide review worker\(s\), but recorded 2/);
+
+  const missingWorkerWithNoop = runVerifier(
+    safeOutputCall('noop', 'safeoutputs-noop', { message: 'No findings.' }),
+    '1');
+  assert.notEqual(missingWorkerWithNoop.status, 0);
+  assert.match(missingWorkerWithNoop.stderr, /Expected 1 per-guide review worker\(s\), but recorded 0/);
+
+  const missingWorkerWithMalformedStoppedOutput = runVerifier([
+    ...safeOutputCall('incomplete', 'safeoutputs-report_incomplete', { reason: 'Reason' }),
+    ...safeOutputCall('comment', 'safeoutputs-add_comment', {
+      body: 'Review not published (BLOCKED): Different reason',
+    }),
+  ], '1');
+  assert.notEqual(missingWorkerWithMalformedStoppedOutput.status, 0);
+  assert.match(
+    missingWorkerWithMalformedStoppedOutput.stderr,
+    /Expected 1 per-guide review worker\(s\), but recorded 0/);
+
+  const missingWorkerWithFailedStoppedOutput = runVerifier([
+    ...safeOutputCall(
+      'incomplete',
+      'safeoutputs-report_incomplete',
+      { reason: 'The review could not complete.' },
+      false),
+    ...safeOutputCall('comment', 'safeoutputs-add_comment', {
+      body: 'Review not published (BLOCKED): The review could not complete.\n\nNo partial findings were published.',
+    }),
+  ], '1');
+  assert.notEqual(missingWorkerWithFailedStoppedOutput.status, 0);
+  assert.match(
+    missingWorkerWithFailedStoppedOutput.stderr,
+    /Expected 1 per-guide review worker\(s\), but recorded 0/);
+
+  const missingWorkerWithAdditionalSafeOutput = runVerifier([
+    ...stopped(),
+    ...safeOutputCall('extra', 'safeoutputs-noop', { message: 'No findings.' }),
+  ], '1');
+  assert.notEqual(missingWorkerWithAdditionalSafeOutput.status, 0);
+  assert.match(
+    missingWorkerWithAdditionalSafeOutput.stderr,
+    /Expected 1 per-guide review worker\(s\), but recorded 0/);
+
+  const missingWorkerWithMissingCallIds = runVerifier([
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolName: 'safeoutputs-report_incomplete',
+        arguments: { reason: 'The review could not complete.' },
+      },
+    },
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolName: 'safeoutputs-add_comment',
+        arguments: {
+          body: 'Review not published (BLOCKED): The review could not complete.\n\nNo partial findings were published.',
+        },
+      },
+    },
+    { type: 'tool.execution_complete', data: { success: true } },
+  ], '1');
+  assert.notEqual(missingWorkerWithMissingCallIds.status, 0);
+  assert.match(
+    missingWorkerWithMissingCallIds.stderr,
+    /Expected 1 per-guide review worker\(s\), but recorded 0/);
+
+  const missingWorkerWithDuplicateCallIds = runVerifier([
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolCallId: 'duplicate',
+        toolName: 'safeoutputs-report_incomplete',
+        arguments: { reason: 'The review could not complete.' },
+      },
+    },
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolCallId: 'duplicate',
+        toolName: 'safeoutputs-add_comment',
+        arguments: {
+          body: 'Review not published (BLOCKED): The review could not complete.\n\nNo partial findings were published.',
+        },
+      },
+    },
+    {
+      type: 'tool.execution_complete',
+      data: { toolCallId: 'duplicate', success: true },
+    },
+  ], '1');
+  assert.notEqual(missingWorkerWithDuplicateCallIds.status, 0);
+  assert.match(
+    missingWorkerWithDuplicateCallIds.stderr,
+    /Expected 1 per-guide review worker\(s\), but recorded 0/);
+
+  const missingWorkerWithScopedCompletion = stopped();
+  missingWorkerWithScopedCompletion[1].data.parentToolCallId = 'worker-1';
+  const scopedCompletionResult = runVerifier(missingWorkerWithScopedCompletion, '1');
+  assert.notEqual(scopedCompletionResult.status, 0);
+  assert.match(
+    scopedCompletionResult.stderr,
+    /Expected 1 per-guide review worker\(s\), but recorded 0/);
+
   const wrongWorker = runVerifier([
     { ...workerStarted, data: { agentName: 'general-purpose' } },
+    ...stopped(),
   ], '1');
   assert.notEqual(wrongWorker.status, 0);
   assert.match(wrongWorker.stderr, /Unexpected subagent 'general-purpose'/);
 
-  const disallowedTool = runVerifier([workerStarted, workerTool('bash')], '1');
+  const disallowedTool = runVerifier(
+    [workerStarted, workerTool('bash'), ...stopped()],
+    '1');
   assert.notEqual(disallowedTool.status, 0);
   assert.match(disallowedTool.stderr, /used disallowed tool 'bash'/);
 

@@ -143,6 +143,56 @@ post-steps:
       const subagents = new Map();
       const violations = [];
       const expectedWorkerCount = Number(expectedWorkerCountValue);
+      const hasValidStoppedOutput = () => {
+        const safeOutputStarts = events.filter(event =>
+          event.type === 'tool.execution_start' && !event.agentId &&
+          !event.data?.parentToolCallId &&
+          typeof event.data?.toolName === 'string' &&
+          event.data.toolName.startsWith('safeoutputs-'));
+        if (safeOutputStarts.length !== 2) {
+          return false;
+        }
+        const safeOutputCallIds = safeOutputStarts.map(event => event.data?.toolCallId);
+        if (safeOutputCallIds.some(toolCallId =>
+            typeof toolCallId !== 'string' || toolCallId.length === 0) ||
+            new Set(safeOutputCallIds).size !== safeOutputCallIds.length) {
+          return false;
+        }
+        const matchingCompletions = events.filter(event =>
+          event.type === 'tool.execution_complete' && !event.agentId &&
+          !event.data?.parentToolCallId &&
+          safeOutputCallIds.includes(event.data?.toolCallId));
+        if (matchingCompletions.length !== safeOutputCallIds.length ||
+            new Set(matchingCompletions.map(event => event.data.toolCallId)).size !==
+              safeOutputCallIds.length ||
+            matchingCompletions.some(event => event.data?.success !== true)) {
+          return false;
+        }
+        const statusComments = safeOutputStarts.filter(event =>
+          event.data.toolName === 'safeoutputs-add_comment');
+        const incompleteCalls = safeOutputStarts.filter(event =>
+          [
+            'safeoutputs-report_incomplete',
+            'safeoutputs-missing_data',
+            'safeoutputs-missing_tool',
+          ].includes(event.data.toolName));
+        const incompleteReason = incompleteCalls.length === 1 &&
+          typeof incompleteCalls[0].data?.arguments?.reason === 'string'
+          ? incompleteCalls[0].data.arguments.reason
+          : null;
+        if (incompleteReason === null || incompleteReason.length < 1 ||
+            incompleteReason.length > 240 || /[\r\n]/.test(incompleteReason)) {
+          return false;
+        }
+        const statusBody = statusComments.length === 1 &&
+          typeof statusComments[0].data?.arguments?.body === 'string'
+          ? statusComments[0].data.arguments.body
+          : null;
+        return ['BLOCKED', 'INCOMPLETE'].some(status =>
+          statusBody ===
+            `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`);
+      };
+      const validStoppedOutput = hasValidStoppedOutput();
 
       for (const event of events) {
         if (event.type !== 'subagent.started') {
@@ -161,7 +211,8 @@ post-steps:
         }
       }
 
-      if (subagents.size !== expectedWorkerCount) {
+      const missingWorkersAllowed = validStoppedOutput && subagents.size < expectedWorkerCount;
+      if (subagents.size !== expectedWorkerCount && !missingWorkersAllowed) {
         violations.push(
           `Expected ${expectedWorkerCount} per-guide review worker(s), but recorded ${subagents.size}.`);
       }
@@ -191,7 +242,9 @@ post-steps:
         throw new Error(`Restricted review worker verification failed:\n- ${violations.join('\n- ')}`);
       }
 
-      console.log(`Verified ${subagents.size} restricted review worker(s).`);
+      console.log(
+        `Verified ${subagents.size} restricted review worker(s)` +
+        `${missingWorkersAllowed ? ' with a status-only stopped result' : ''}.`);
       NODE
 
 safe-outputs:
