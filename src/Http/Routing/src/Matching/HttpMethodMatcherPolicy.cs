@@ -301,17 +301,17 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
 
         static List<Endpoint>? FindEdge(List<KeyValuePair<EdgeKey, List<Endpoint>>> edges, EdgeKey key)
         {
-            var span = CollectionsMarshal.AsSpan(edges);
-            for (var i = 0; i < span.Length; i++)
+            for (var i = 0; i < edges.Count; i++)
             {
                 // Same key equality as the Dictionary<EdgeKey, ...> previously used here: keys match when both
                 // GetHashCode (ordinal) and Equals (case-insensitive) agree. An ordinal match satisfies both.
-                var edgeKey = span[i].Key;
+                var edge = edges[i];
+                var edgeKey = edge.Key;
                 if (edgeKey.IsCorsPreflightRequest == key.IsCorsPreflightRequest &&
                     (string.Equals(edgeKey.HttpMethod, key.HttpMethod, StringComparison.Ordinal) ||
                      (edgeKey.Equals(key) && edgeKey.GetHashCode() == key.GetHashCode())))
                 {
-                    return span[i].Value;
+                    return edge.Value;
                 }
             }
 
