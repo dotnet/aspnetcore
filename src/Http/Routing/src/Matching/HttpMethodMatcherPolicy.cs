@@ -23,6 +23,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
 
     // Used in tests
     internal const string AnyMethod = "*";
+    private static readonly string[] AnyMethodArray = [AnyMethod];
 
     /// <summary>
     /// For framework use only.
@@ -172,7 +173,11 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         // For now we're just building up the set of keys. We don't add any endpoints
         // to lists now because we don't want ordering problems.
         var allHttpMethods = new List<string>();
-        var edges = new Dictionary<EdgeKey, List<Endpoint>>();
+
+        // The number of distinct edges is small (HTTP methods x CORS), so a list with a linear search is
+        // cheaper than a dictionary here. This method is called for many nodes when building the DFA.
+        // The list also preserves insertion order.
+        var edges = new List<KeyValuePair<EdgeKey, List<Endpoint>>>();
         for (var i = 0; i < endpoints.Count; i++)
         {
             var endpoint = endpoints[i];
@@ -183,7 +188,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
             // a state that represents any HTTP method that doesn't have a match.
             if (httpMethods.Count == 0)
             {
-                httpMethods = new[] { AnyMethod, };
+                httpMethods = AnyMethodArray;
             }
 
             for (var j = 0; j < httpMethods.Count; j++)
@@ -192,9 +197,9 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
                 // so we model it as both.
                 var httpMethod = httpMethods[j];
                 var key = new EdgeKey(httpMethod, acceptCorsPreFlight);
-                if (!edges.ContainsKey(key))
+                if (FindEdge(edges, key) is null)
                 {
-                    edges.Add(key, new List<Endpoint>());
+                    edges.Add(new(key, new List<Endpoint>()));
                 }
 
                 // An endpoint that allows CORS requests will match both CORS and non-CORS
@@ -202,9 +207,9 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
                 if (acceptCorsPreFlight)
                 {
                     key = new EdgeKey(httpMethod, false);
-                    if (!edges.ContainsKey(key))
+                    if (FindEdge(edges, key) is null)
                     {
-                        edges.Add(key, new List<Endpoint>());
+                        edges.Add(new(key, new List<Endpoint>()));
                     }
                 }
 
@@ -248,14 +253,14 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
                     var httpMethod = httpMethods[j];
                     var key = new EdgeKey(httpMethod, acceptCorsPreFlight);
 
-                    edges[key].Add(endpoint);
+                    FindEdge(edges, key)!.Add(endpoint);
 
                     // An endpoint that allows CORS requests will match both CORS and non-CORS
                     // so we model it as both.
                     if (acceptCorsPreFlight)
                     {
                         key = new EdgeKey(httpMethod, false);
-                        edges[key].Add(endpoint);
+                        FindEdge(edges, key)!.Add(endpoint);
                     }
                 }
             }
@@ -278,22 +283,40 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         // We don't bother returning a 405 when the CORS preflight method doesn't exist.
         // The developer calling the API will see it as a CORS error, which is fine because
         // there isn't an endpoint to check for a CORS policy.
-        if (!edges.TryGetValue(new EdgeKey(AnyMethod, false), out _))
+        if (FindEdge(edges, new EdgeKey(AnyMethod, false)) is null)
         {
             // Methods sorted for testability.
             var endpoint = CreateRejectionEndpoint(allHttpMethods);
             var matches = new List<Endpoint>() { endpoint, };
-            edges[new EdgeKey(AnyMethod, false)] = matches;
+            edges.Add(new(new EdgeKey(AnyMethod, false), matches));
         }
 
         var policyNodeEdges = new PolicyNodeEdge[edges.Count];
-        var index = 0;
-        foreach (var kvp in edges)
+        for (var i = 0; i < edges.Count; i++)
         {
-            policyNodeEdges[index++] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            policyNodeEdges[i] = new PolicyNodeEdge(edges[i].Key, edges[i].Value);
         }
 
         return policyNodeEdges;
+
+        static List<Endpoint>? FindEdge(List<KeyValuePair<EdgeKey, List<Endpoint>>> edges, EdgeKey key)
+        {
+            for (var i = 0; i < edges.Count; i++)
+            {
+                // Same key equality as the Dictionary<EdgeKey, ...> previously used here: keys match when both
+                // GetHashCode (ordinal) and Equals (case-insensitive) agree. An ordinal match satisfies both.
+                var edge = edges[i];
+                var edgeKey = edge.Key;
+                if (edgeKey.IsCorsPreflightRequest == key.IsCorsPreflightRequest &&
+                    (string.Equals(edgeKey.HttpMethod, key.HttpMethod, StringComparison.Ordinal) ||
+                     (edgeKey.Equals(key) && edgeKey.GetHashCode() == key.GetHashCode())))
+                {
+                    return edge.Value;
+                }
+            }
+
+            return null;
+        }
 
         static (IReadOnlyList<string> httpMethods, bool acceptCorsPreflight) GetHttpMethods(Endpoint e)
         {

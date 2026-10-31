@@ -219,6 +219,51 @@ public class HttpMethodMatcherPolicyTest
     }
 
     [Fact]
+    public void GetEdges_CustomMethodsDifferingInCase_CreateSeparateEdgesInInsertionOrder()
+    {
+        // Arrange
+        var endpoints = new[]
+        {
+                CreateEndpoint("/", new HttpMethodMetadata(new[] { "MERGE", })),
+                CreateEndpoint("/", new HttpMethodMetadata(new[] { "merge", })),
+                CreateEndpoint("/", new HttpMethodMetadata(new[] { "GET", "MERGE", })),
+            };
+
+        var policy = CreatePolicy();
+
+        // Act
+        var edges = policy.GetEdges(endpoints);
+
+        // Assert
+        Assert.Collection(
+            edges,
+            e =>
+            {
+                var key = Assert.IsType<EdgeKey>(e.State);
+                Assert.Equal("MERGE", key.HttpMethod);
+                Assert.Equal(new[] { endpoints[0], endpoints[2], }, e.Endpoints.ToArray());
+            },
+            e =>
+            {
+                var key = Assert.IsType<EdgeKey>(e.State);
+                Assert.Equal("merge", key.HttpMethod);
+                Assert.Equal(new[] { endpoints[1], }, e.Endpoints.ToArray());
+            },
+            e =>
+            {
+                var key = Assert.IsType<EdgeKey>(e.State);
+                Assert.Equal("GET", key.HttpMethod);
+                Assert.Equal(new[] { endpoints[2], }, e.Endpoints.ToArray());
+            },
+            e =>
+            {
+                var key = Assert.IsType<EdgeKey>(e.State);
+                Assert.Equal(AnyMethod, key.HttpMethod);
+                Assert.False(key.IsCorsPreflightRequest);
+            });
+    }
+
+    [Fact]
     public void GetEdges_GroupsByHttpMethod_Cors()
     {
         // Arrange
