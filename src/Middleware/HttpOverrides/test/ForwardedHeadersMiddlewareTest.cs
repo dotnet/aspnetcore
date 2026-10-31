@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpOverrides;
 
@@ -1751,5 +1753,132 @@ public class ForwardedHeadersMiddlewareTests
         });
 
         Assert.Equal(expectedforwardedPrefix, context.Request.Headers["X-Forwarded-Prefix"].ToString());
+    }
+
+    private static ForwardedHeadersMiddleware CreateMiddleware(ForwardedHeadersOptions options, TestSink sink = null)
+        => new ForwardedHeadersMiddleware(_ => Task.CompletedTask, new TestLoggerFactory(sink ?? new TestSink(), enabled: true), Options.Create(options));
+
+    private static DefaultHttpContext CreateContext(string remoteIp, int remotePort)
+    {
+        var context = new DefaultHttpContext();
+        context.Connection.RemoteIpAddress = remoteIp is null ? null : IPAddress.Parse(remoteIp);
+        context.Connection.RemotePort = remotePort;
+        context.Request.Scheme = "http";
+        context.Request.Host = new HostString("internal");
+        return context;
+    }
+
+    [Theory]
+    [InlineData("10.0.0.1")]
+    [InlineData(null)]
+    public void NoForwardedHeadersLeavesRequestUnchanged(string remoteIp)
+    {
+        var middleware = CreateMiddleware(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.All });
+        var context = CreateContext(remoteIp, 99);
+        context.Request.Headers["Other"] = "value";
+
+        middleware.ApplyForwarders(context);
+
+        Assert.Equal(remoteIp, context.Connection.RemoteIpAddress?.ToString());
+        Assert.Equal(99, context.Connection.RemotePort);
+        Assert.Equal("http", context.Request.Scheme);
+        Assert.Equal("internal", context.Request.Host.Value);
+        Assert.Equal(new[] { "Host", "Other" }, context.Request.Headers.Keys.Order(StringComparer.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(65536, false)]
+    [InlineData(-1, true)]
+    [InlineData(65536, true)]
+    public void InvalidRemotePortThrows(int remotePort, bool withForwardedHeaders)
+    {
+        var middleware = CreateMiddleware(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto });
+        var context = CreateContext("10.0.0.1", remotePort);
+        if (withForwardedHeaders)
+        {
+            context.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+        }
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => middleware.ApplyForwarders(context));
+    }
+
+    [Fact]
+    public void ProtoOnlyStillRecordsOriginalForAndConsumesForwardedFor()
+    {
+        var options = new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto };
+        options.KnownProxies.Add(IPAddress.Parse("10.0.0.1"));
+        var middleware = CreateMiddleware(options);
+        var context = CreateContext("10.0.0.1", 99);
+        context.Request.Headers["X-Forwarded-Proto"] = "https";
+
+        middleware.ApplyForwarders(context);
+
+        Assert.Equal("https", context.Request.Scheme);
+        Assert.Equal("http", context.Request.Headers["X-Original-Proto"]);
+        Assert.Equal("10.0.0.1:99", context.Request.Headers["X-Original-For"]);
+        Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-For"));
+        Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-Proto"));
+        Assert.Equal("10.0.0.1", context.Connection.RemoteIpAddress.ToString());
+        Assert.Equal(99, context.Connection.RemotePort);
+    }
+
+    [Theory]
+    [InlineData("10.0.0.9", "Unknown proxy: 10.0.0.1:99", "10.0.0.1", 99, "11.111.111.11:5000, 12.0.0.1:6000, 10.0.0.2:7000")]
+    [InlineData("10.0.0.1", "Unknown proxy: 10.0.0.2:7000", "10.0.0.2", 7000, "11.111.111.11:5000,12.0.0.1:6000")]
+    [InlineData("10.0.0.1,10.0.0.2", "Unknown proxy: 12.0.0.1:6000", "12.0.0.1", 6000, "11.111.111.11:5000")]
+    [InlineData("10.0.0.1,10.0.0.2,12.0.0.1", null, "11.111.111.11", 5000, null)]
+    public void KnownProxiesStopAtUnknownPeerAndLogCurrentEndpoint(string knownProxies, string expectedLog, string expectedIp, int expectedPort, string expectedForwardedFor)
+    {
+        var options = new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor, ForwardLimit = null };
+        foreach (var proxy in knownProxies.Split(','))
+        {
+            options.KnownProxies.Add(IPAddress.Parse(proxy));
+        }
+        var sink = new TestSink();
+        var middleware = CreateMiddleware(options, sink);
+        var context = CreateContext("10.0.0.1", 99);
+        context.Request.Headers["X-Forwarded-For"] = "11.111.111.11:5000, 12.0.0.1:6000, 10.0.0.2:7000";
+
+        middleware.ApplyForwarders(context);
+
+        var unknownProxyLogs = sink.Writes.Where(w => w.Message.StartsWith("Unknown proxy", StringComparison.Ordinal)).Select(w => w.Message);
+        Assert.Equal(expectedLog is null ? Array.Empty<string>() : new[] { expectedLog }, unknownProxyLogs);
+        Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
+        Assert.Equal(expectedPort, context.Connection.RemotePort);
+        if (expectedForwardedFor is null)
+        {
+            Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-For"));
+        }
+        else
+        {
+            Assert.Equal(expectedForwardedFor, context.Request.Headers["X-Forwarded-For"]);
+        }
+        if (expectedIp == "10.0.0.1")
+        {
+            Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+        }
+        else
+        {
+            Assert.Equal("10.0.0.1:99", context.Request.Headers["X-Original-For"]);
+        }
+    }
+
+    [Fact]
+    public void NoRemoteAddressWithKnownProxiesAppliesNothing()
+    {
+        var sink = new TestSink();
+        var middleware = CreateMiddleware(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto }, sink);
+        var context = CreateContext(null, 0);
+        context.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+        context.Request.Headers["X-Forwarded-Proto"] = "https";
+
+        middleware.ApplyForwarders(context);
+
+        Assert.Null(context.Connection.RemoteIpAddress);
+        Assert.Equal("http", context.Request.Scheme);
+        Assert.Equal("11.111.111.11", context.Request.Headers["X-Forwarded-For"]);
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+        Assert.Contains(sink.Writes, w => w.Message == "Unknown proxy: no remote IP address available.");
     }
 }
