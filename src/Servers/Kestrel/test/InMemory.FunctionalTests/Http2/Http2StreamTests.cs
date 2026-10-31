@@ -466,6 +466,11 @@ public class Http2StreamTests : Http2TestBase
     [InlineData("/a/b/c/../d", "/a/b/d")] // Navigation processed
     [InlineData("/a/b/c/../../../../d", "/d")] // Navigation escape prevented
     [InlineData("/a/b/c/.%2E/d", "/a/b/d")] // Decode before navigation processing
+    [InlineData("/a/b/c", "/a/b/c")]
+    [InlineData("/a/.b", "/a/.b")] // Not a dot segment
+    [InlineData("/a/b?q=1", "/a/b")]
+    [InlineData("/a/./b?q=1", "/a/b")] // Navigation processed with query
+    [InlineData("/a%5E?q=1", "/a^")] // Decoded with query
     public async Task HEADERS_Received_Path_DecodedAndNormalized(string input, string expected)
     {
         await InitializeConnectionAsync(context =>
@@ -863,6 +868,7 @@ public class Http2StreamTests : Http2TestBase
     [InlineData("/a\u0161")]
     [InlineData("/\u0161a")]
     [InlineData("/a\u0161a")]
+    [InlineData("/a\u0161?q=1")]
     public async Task HEADERS_Received_CharacterLargerThanByte_Reset(string path)
     {
         var pathBytes = Encoding.UTF8.GetBytes(path);
