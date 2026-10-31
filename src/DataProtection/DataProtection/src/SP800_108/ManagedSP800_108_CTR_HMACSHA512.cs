@@ -118,6 +118,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 
             // Copy label and context to prfInput since they're stable over all iterations
             label.CopyTo(prfInput.Slice(sizeof(uint)));
+            prfInput[sizeof(uint) + label.Length] = 0x00; // the buffer may be rented, so don't rely on it being zeroed
             contextHeader.CopyTo(prfInput.Slice(sizeof(uint) + label.Length + 1));
             contextData.CopyTo(prfInput.Slice(sizeof(uint) + label.Length + 1 + contextHeader.Length));
 
