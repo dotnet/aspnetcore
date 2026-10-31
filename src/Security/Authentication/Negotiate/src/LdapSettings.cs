@@ -42,6 +42,10 @@ public class LdapSettings
     /// This option indicates whether nested groups should be ignored when
     /// resolving Roles. The default is false.
     /// </summary>
+    /// <remarks>
+    /// When nested groups are resolved, at most 32 levels of nesting below each directly held group are followed.
+    /// Groups nested deeper than that are not added as role claims, and a warning is logged.
+    /// </remarks>
     public bool IgnoreNestedGroups { get; set; }
 
     /// <summary>

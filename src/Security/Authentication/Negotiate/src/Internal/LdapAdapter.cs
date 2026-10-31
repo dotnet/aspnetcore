@@ -27,6 +27,11 @@ internal static partial class LdapAdapter
     private static readonly bool AllowNonSecurityEnabledGroupClaims =
         AppContext.TryGetSwitch(AllowNonSecurityEnabledGroupClaimsSwitch, out var allow) && allow;
 
+    // Bounds the recursion in GetGroups so directory data cannot decide how much stack is used.
+    // Real directories nest far shallower than this.
+    // internal for testing
+    internal const int MaxNestedGroupDepth = 32;
+
     [GeneratedRegex(@"(?<![^\\]\\),")]
     internal static partial Regex DistinguishedNameSeparatorRegex { get; }
 
@@ -113,16 +118,7 @@ internal static partial class LdapAdapter
 
             var memberof = userFound.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
 
-            foreach (var group in memberof)
-            {
-                // Example distinguished name: CN=TestGroup,DC=KERB,DC=local
-                var groupDN = $"{Encoding.UTF8.GetString((byte[])group)}";
-                var groupCN = DistinguishedNameSeparatorRegex.Split(groupDN)[0].Substring("CN=".Length);
-
-                // Resolved via GetGroups even when nesting is disabled, so the security-enabled
-                // check applies to directly held groups too.
-                GetGroups(settings.LdapConnection, identity, distinguishedName, groupDN, groupCN, logger, retrievedClaims, new HashSet<string>(), AllowNonSecurityEnabledGroupClaims, !settings.IgnoreNestedGroups);
-            }
+            GetGroupClaims(settings.LdapConnection, identity, distinguishedName, memberof, logger, retrievedClaims, !settings.IgnoreNestedGroups);
 
             var entrySize = user.Length * 2; //Approximate the size of stored key in memory cache.
             foreach (var claim in retrievedClaims)
@@ -144,7 +140,31 @@ internal static partial class LdapAdapter
         }
     }
 
-    private static void GetGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupDN, string groupCN, ILogger logger, IList<string> retrievedClaims, HashSet<string> processedGroups, bool allowNonSecurityEnabledGroupClaims, bool resolveNestedGroups)
+    // internal for testing
+    internal static void GetGroupClaims(LdapConnection connection, ClaimsIdentity identity, string distinguishedName, DirectoryAttribute memberof, ILogger logger, IList<string> retrievedClaims, bool resolveNestedGroups)
+    {
+        var nestedGroupsTruncated = false;
+
+        foreach (var group in memberof)
+        {
+            // Example distinguished name: CN=TestGroup,DC=KERB,DC=local
+            var groupDN = $"{Encoding.UTF8.GetString((byte[])group)}";
+            var groupCN = DistinguishedNameSeparatorRegex.Split(groupDN)[0].Substring("CN=".Length);
+
+            // Resolved via GetGroups even when nesting is disabled, so the security-enabled
+            // check applies to directly held groups too.
+            nestedGroupsTruncated |= GetGroups(connection, identity, distinguishedName, groupDN, groupCN, logger, retrievedClaims, new HashSet<string>(), AllowNonSecurityEnabledGroupClaims, resolveNestedGroups, depth: 0);
+        }
+
+        // Logged once per resolution rather than once per truncated branch.
+        if (nestedGroupsTruncated)
+        {
+            logger.LogWarning("Nested group resolution for '{User}' stopped at the maximum nesting depth of {MaxNestedGroupDepth}; groups nested deeper were not added as role claims.", identity.Name, MaxNestedGroupDepth);
+        }
+    }
+
+    // Returns true when traversal stopped at MaxNestedGroupDepth and left parent groups unresolved.
+    private static bool GetGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupDN, string groupCN, ILogger logger, IList<string> retrievedClaims, HashSet<string> processedGroups, bool allowNonSecurityEnabledGroupClaims, bool resolveNestedGroups, int depth)
     {
         // Look up the group entry by its distinguished name using base scope:
         // a base-scope read against the DN is the only LDAP operation that
@@ -159,7 +179,7 @@ internal static partial class LdapAdapter
         {
             // Stale memberOf reference: group no longer exists. Stop traversal of this branch.
             logger.LogDebug("Stale memberOf reference: group with distinguished name '{GroupDN}' no longer exists; stopping traversal.", groupDN);
-            return;
+            return false;
         }
 
         if (searchResponse.Entries.Count > 0)
@@ -180,7 +200,7 @@ internal static partial class LdapAdapter
 
             if (!resolveNestedGroups)
             {
-                return;
+                return false;
             }
 
             processedGroups.Add(groupDN);
@@ -188,6 +208,8 @@ internal static partial class LdapAdapter
             var memberof = group.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
             if (memberof != null)
             {
+                var truncated = false;
+
                 foreach (var member in memberof)
                 {
                     var nestedGroupDN = $"{Encoding.UTF8.GetString((byte[])member)}";
@@ -196,13 +218,23 @@ internal static partial class LdapAdapter
                     if (processedGroups.Contains(nestedGroupDN))
                     {
                         // We need to keep track of already processed groups because circular references are possible with AD groups
-                        return;
+                        return truncated;
                     }
 
-                    GetGroups(connection, principal, distinguishedName, nestedGroupDN, nestedGroupCN, logger, retrievedClaims, processedGroups, allowNonSecurityEnabledGroupClaims, resolveNestedGroups);
+                    if (depth >= MaxNestedGroupDepth)
+                    {
+                        // Keep the claims collected so far, but do not descend any further.
+                        return true;
+                    }
+
+                    truncated |= GetGroups(connection, principal, distinguishedName, nestedGroupDN, nestedGroupCN, logger, retrievedClaims, processedGroups, allowNonSecurityEnabledGroupClaims, resolveNestedGroups, depth + 1);
                 }
+
+                return truncated;
             }
         }
+
+        return false;
     }
 
     /// <summary>
