@@ -329,8 +329,19 @@ internal static class JsonNodeSchemaExtensions
         {
             if (parameterInfo.HasDefaultValue)
             {
-                schema.ApplyDefaultValue(parameterInfo.DefaultValue, jsonTypeInfo);
+                var defaultValue = parameterInfo.DefaultValue;
+
+                // ParameterInfo.DefaultValue returns the underlying integral value for Nullable<TEnum> parameters,
+                // so convert it back to the enum type before serializing it.
+                if (defaultValue is not null
+                    && Nullable.GetUnderlyingType(parameterInfo.ParameterType) is { IsEnum: true } enumType)
+                {
+                    defaultValue = Enum.ToObject(enumType, defaultValue);
+                }
+
+                schema.ApplyDefaultValue(defaultValue, jsonTypeInfo);
             }
+
             else if (parameterInfo.GetCustomAttributes<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
             {
                 schema.ApplyDefaultValue(defaultValueAttribute.Value, jsonTypeInfo);
