@@ -36,8 +36,14 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
 
     public void AttachRuntimePatching(EndpointBuilder builder)
     {
+        // When MapStaticAssets is called more than once for the same manifest, this convention is added after
+        // a runtime fallback endpoint was attached to the builder, so it can also run for that fallback endpoint.
+        if (builder.Metadata.OfType<StaticAssetDescriptor>().SingleOrDefault() is not { } asset)
+        {
+            return;
+        }
+
         var original = builder.RequestDelegate!;
-        var asset = builder.Metadata.OfType<StaticAssetDescriptor>().Single();
         if (asset.HasContentEncoding())
         {
             var originalETag = GetDescriptorOriginalResourceProperty(asset);
@@ -328,6 +334,9 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
 
             // Limit matching to supported methods.
             fallback.Add(b => b.Metadata.Add(new HttpMethodMetadata(["GET", "HEAD"])));
+
+            // Forward conventions added by the app (for example, RequireAuthorization) to the fallback endpoint.
+            builder.AttachFallback(fallback);
         }
     }
 

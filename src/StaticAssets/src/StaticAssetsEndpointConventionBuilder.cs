@@ -15,6 +15,7 @@ public sealed class StaticAssetsEndpointConventionBuilder : IEndpointConventionB
     private readonly List<StaticAssetDescriptor> _descriptors;
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
+    private IEndpointConventionBuilder[] _fallbacks = [];
 
     internal StaticAssetsEndpointConventionBuilder(object lck, bool isBuildManifest, List<StaticAssetDescriptor> descriptors, List<Action<EndpointBuilder>> conventions, List<Action<EndpointBuilder>> finallyConventions)
     {
@@ -29,13 +30,30 @@ public sealed class StaticAssetsEndpointConventionBuilder : IEndpointConventionB
 
     internal bool IsBuildManifest => _isBuildManifest;
 
+    // Conventions added after this call are also applied to the runtime fallback endpoint,
+    // so that it is configured the same way as the endpoints from the manifest.
+    internal void AttachFallback(IEndpointConventionBuilder fallback)
+    {
+        lock (_lck)
+        {
+            _fallbacks = [.. _fallbacks, fallback];
+        }
+    }
+
     /// <inheritdoc/>
     public void Add(Action<EndpointBuilder> convention)
     {
         ArgumentNullException.ThrowIfNull(convention);
+        IEndpointConventionBuilder[] fallbacks;
         lock (_lck)
         {
             _conventions.Add(convention);
+            fallbacks = _fallbacks;
+        }
+
+        foreach (var fallback in fallbacks)
+        {
+            fallback.Add(convention);
         }
     }
 
@@ -43,9 +61,16 @@ public sealed class StaticAssetsEndpointConventionBuilder : IEndpointConventionB
     public void Finally(Action<EndpointBuilder> convention)
     {
         ArgumentNullException.ThrowIfNull(convention);
+        IEndpointConventionBuilder[] fallbacks;
         lock (_lck)
         {
             _finallyConventions.Add(convention);
+            fallbacks = _fallbacks;
+        }
+
+        foreach (var fallback in fallbacks)
+        {
+            fallback.Finally(convention);
         }
     }
 }
