@@ -27,6 +27,24 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <returns>The serialized representation of <paramref name="ticket"/>.</returns>
     public virtual byte[] Serialize(AuthenticationTicket ticket)
     {
+        // Fast path: when the serializer has not been subclassed, none of the virtual Write* methods can have been
+        // overridden, so write the (identical) payload directly into a buffer without MemoryStream/BinaryWriter.
+        if (GetType() == typeof(TicketSerializer))
+        {
+            ArgumentNullException.ThrowIfNull(ticket);
+
+            var payloadWriter = new BinaryPayloadWriter(initialCapacity: 1024);
+            try
+            {
+                WriteTicket(ref payloadWriter, ticket);
+                return payloadWriter.ToArray();
+            }
+            finally
+            {
+                payloadWriter.Dispose();
+            }
+        }
+
         using (var memory = new MemoryStream())
         {
             using (var writer = new BinaryWriter(memory))
@@ -259,6 +277,100 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         }
 
         return claim;
+    }
+
+    private static void WriteTicket(ref BinaryPayloadWriter writer, AuthenticationTicket ticket)
+    {
+        writer.WriteInt32(FormatVersion);
+        writer.WriteString(ticket.AuthenticationScheme);
+
+        // Write the number of identities contained in the principal. The count is patched in after enumerating
+        // so the identities are only enumerated once.
+        var countPosition = writer.Position;
+        writer.WriteInt32(0);
+        var count = 0;
+        foreach (var identity in ticket.Principal.Identities)
+        {
+            WriteIdentity(ref writer, identity);
+            count++;
+        }
+        writer.PatchInt32(countPosition, count);
+
+        PropertiesSerializer.Write(ref writer, ticket.Properties);
+    }
+
+    private static void WriteIdentity(ref BinaryPayloadWriter writer, ClaimsIdentity identity)
+    {
+        ArgumentNullException.ThrowIfNull(identity);
+
+        writer.WriteString(identity.AuthenticationType ?? string.Empty);
+        WriteWithDefault(ref writer, identity.NameClaimType, ClaimsIdentity.DefaultNameClaimType);
+        WriteWithDefault(ref writer, identity.RoleClaimType, ClaimsIdentity.DefaultRoleClaimType);
+
+        // Write the number of claims contained in the identity.
+        var countPosition = writer.Position;
+        writer.WriteInt32(0);
+        var count = 0;
+        foreach (var claim in identity.Claims)
+        {
+            WriteClaim(ref writer, claim);
+            count++;
+        }
+        writer.PatchInt32(countPosition, count);
+
+        var bootstrap = identity.BootstrapContext as string;
+        if (!string.IsNullOrEmpty(bootstrap))
+        {
+            writer.WriteBoolean(true);
+            writer.WriteString(bootstrap);
+        }
+        else
+        {
+            writer.WriteBoolean(false);
+        }
+
+        if (identity.Actor != null)
+        {
+            writer.WriteBoolean(true);
+            WriteIdentity(ref writer, identity.Actor);
+        }
+        else
+        {
+            writer.WriteBoolean(false);
+        }
+    }
+
+    private static void WriteClaim(ref BinaryPayloadWriter writer, Claim claim)
+    {
+        ArgumentNullException.ThrowIfNull(claim);
+
+        WriteWithDefault(ref writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
+        writer.WriteString(claim.Value);
+        WriteWithDefault(ref writer, claim.ValueType, ClaimValueTypes.String);
+        WriteWithDefault(ref writer, claim.Issuer, ClaimsIdentity.DefaultIssuer);
+        WriteWithDefault(ref writer, claim.OriginalIssuer, claim.Issuer);
+
+        // Write the number of properties contained in the claim.
+        var properties = claim.Properties;
+        writer.WriteInt32(properties.Count);
+
+        foreach (var property in properties)
+        {
+            writer.WriteString(property.Key ?? string.Empty);
+            writer.WriteString(property.Value ?? string.Empty);
+        }
+    }
+
+    private static void WriteWithDefault(ref BinaryPayloadWriter writer, string value, string defaultValue)
+    {
+        if (string.Equals(value, defaultValue, StringComparison.Ordinal))
+        {
+            writer.WriteString(DefaultStringPlaceholder);
+        }
+        else
+        {
+            writer.WriteString(value);
+        }
     }
 
     private static void WriteWithDefault(BinaryWriter writer, string value, string defaultValue)

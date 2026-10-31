@@ -18,6 +18,24 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     /// <inheritdoc />
     public virtual byte[] Serialize(AuthenticationProperties model)
     {
+        // Fast path: when the serializer has not been subclassed, Write cannot have been overridden, so write the
+        // (identical) payload directly into a buffer without MemoryStream/BinaryWriter.
+        if (GetType() == typeof(PropertiesSerializer))
+        {
+            ArgumentNullException.ThrowIfNull(model, "properties");
+
+            var payloadWriter = new BinaryPayloadWriter(initialCapacity: 256);
+            try
+            {
+                Write(ref payloadWriter, model);
+                return payloadWriter.ToArray();
+            }
+            finally
+            {
+                payloadWriter.Dispose();
+            }
+        }
+
         using (var memory = new MemoryStream())
         {
             using (var writer = new BinaryWriter(memory))
@@ -58,6 +76,20 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     }
 
     /// <inheritdoc />
+    internal static void Write(ref BinaryPayloadWriter writer, AuthenticationProperties properties)
+    {
+        ArgumentNullException.ThrowIfNull(properties);
+
+        writer.WriteInt32(FormatVersion);
+        writer.WriteInt32(properties.Items.Count);
+
+        foreach (var item in properties.Items)
+        {
+            writer.WriteString(item.Key ?? string.Empty);
+            writer.WriteString(item.Value ?? string.Empty);
+        }
+    }
+
     public virtual AuthenticationProperties? Read(BinaryReader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);
