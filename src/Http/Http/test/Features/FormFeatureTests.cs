@@ -176,6 +176,11 @@ InvalidContentDispositionValue +
         MultipartFormFile +
         MultipartFormEnd;
 
+    private const string MultipartFormWithFiles =
+        MultipartFormFile +
+        MultipartFormFile +
+        MultipartFormEnd;
+
     private const string MultipartFormWithFieldAndFile =
         MultipartFormField +
         MultipartFormFile +
@@ -308,6 +313,38 @@ InvalidContentDispositionValue +
             Assert.True(body.CanSeek);
             var content = reader.ReadToEnd();
             Assert.Equal("<html><body>Hello World</body></html>", content);
+        }
+
+        await responseFeature.CompleteAsync();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReadFormAsync_MultipartWithFiles_ReturnsParsedFormCollection(bool bufferRequest)
+    {
+        var formContent = Encoding.UTF8.GetBytes(MultipartFormWithFiles);
+        var context = new DefaultHttpContext();
+        var responseFeature = new FakeResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(responseFeature);
+        context.Request.ContentType = MultipartContentType;
+        context.Request.Body = new NonSeekableReadStream(formContent);
+
+        IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
+        context.Features.Set<IFormFeature>(formFeature);
+
+        var formCollection = await context.Request.ReadFormAsync();
+
+        Assert.NotNull(formCollection);
+        Assert.NotNull(formCollection.Files);
+        Assert.Equal(2, formCollection.Files.Count);
+
+        Stream[] streams = [formCollection.Files[0].OpenReadStream(), formCollection.Files[1].OpenReadStream()];
+        foreach (var stream in streams.Reverse())
+        {
+            using var reader = new StreamReader(stream);
+            Assert.True(stream.CanSeek);
+            await reader.ReadToEndAsync();
         }
 
         await responseFeature.CompleteAsync();
