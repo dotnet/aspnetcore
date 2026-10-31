@@ -24,6 +24,10 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
     private readonly INodeBuilderPolicy[] _nodeBuilders;
     private readonly EndpointComparer _comparer;
 
+    // Reused by ApplyPolicies, which is called for every node in the DFA.
+    private List<DfaNode> _policyWork;
+    private List<DfaNode> _policyNextWork;
+
     // These collections are reused when building candidates
     private readonly Dictionary<string, int> _assignments;
     private readonly List<KeyValuePair<string, object>> _slots;
@@ -886,24 +890,16 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         node.Matches.Sort(_comparer);
 
         // Start with the current node as the root.
-        var work = new List<DfaNode>() { node, };
-        List<DfaNode> previousWork = null;
+        var work = _policyWork ??= new List<DfaNode>();
+        var nextWork = _policyNextWork ??= new List<DfaNode>();
+        work.Clear();
+        work.Add(node);
         for (var i = 0; i < _nodeBuilders.Length; i++)
         {
             var nodeBuilder = _nodeBuilders[i];
 
-            // Build a list of each
-            List<DfaNode> nextWork;
-            if (previousWork == null)
-            {
-                nextWork = new List<DfaNode>();
-            }
-            else
-            {
-                // Reuse previous collection for the next collection
-                previousWork.Clear();
-                nextWork = previousWork;
-            }
+            // Reuse the previous collection for the next collection
+            nextWork.Clear();
 
             for (var j = 0; j < work.Count; j++)
             {
@@ -945,9 +941,12 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 parent.Matches?.Clear();
             }
 
-            previousWork = work;
-            work = nextWork;
+            (work, nextWork) = (nextWork, work);
         }
+
+        // Don't hold on to nodes after we're done.
+        work.Clear();
+        nextWork.Clear();
     }
 
     private static (INodeBuilderPolicy[] nodeBuilderPolicies, IEndpointComparerPolicy[] endpointComparerPolicies, IEndpointSelectorPolicy[] endpointSelectorPolicies) ExtractPolicies(IEnumerable<MatcherPolicy> policies)
