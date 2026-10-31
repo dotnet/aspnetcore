@@ -149,9 +149,23 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
             // REVIEW: This will deadlock if the application creates the host but never calls start. This is mitigated by the cancellationToken
             // but it's rarely a valid token for Start
-            using var reg2 = _host.Services.GetRequiredService<IHostApplicationLifetime>().ApplicationStarted.UnsafeRegister(_ => _hostStartedTcs.TrySetResult(), null);
+            using var reg2 = RegisterApplicationStarted();
 
             await _hostStartedTcs.Task.ConfigureAwait(false);
+        }
+
+        private CancellationTokenRegistration RegisterApplicationStarted()
+        {
+            try
+            {
+                return _host.Services.GetRequiredService<IHostApplicationLifetime>().ApplicationStarted.UnsafeRegister(_ => _hostStartedTcs.TrySetResult(), null);
+            }
+            catch (ObjectDisposedException)
+            {
+                // The application disposed the host, for example because it failed to start. Its entry point is exiting,
+                // so EntryPointCompleted will complete _hostStartedTcs with the application's exception or result.
+                return default;
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken = default) => _host.StopAsync(cancellationToken);
