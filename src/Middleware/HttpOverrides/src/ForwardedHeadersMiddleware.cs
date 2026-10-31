@@ -180,51 +180,56 @@ public class ForwardedHeadersMiddleware
             entryCount = _options.ForwardLimit.Value;
         }
 
-        // Group the data together.
-        var sets = new SetOfForwarders[entryCount];
-        for (int i = 0; i < sets.Length; i++)
+        var connection = context.Connection;
+        var originalRemoteIpAddress = connection.RemoteIpAddress;
+        var originalRemotePort = connection.RemotePort;
+        if (originalRemoteIpAddress != null && (uint)originalRemotePort > IPEndPoint.MaxPort)
         {
-            // They get processed in reverse order, right to left.
-            var set = new SetOfForwarders();
-            if (checkFor && i < forwardedFor!.Length)
-            {
-                set.IpAndPortText = forwardedFor[forwardedFor.Length - i - 1];
-            }
-            if (checkProto && i < forwardedProto!.Length)
-            {
-                set.Scheme = forwardedProto[forwardedProto.Length - i - 1];
-            }
-            if (checkHost && i < forwardedHost!.Length)
-            {
-                set.Host = forwardedHost[forwardedHost.Length - i - 1];
-            }
-            if (checkPrefix && i < forwardedPrefix!.Length)
-            {
-                set.Prefix = forwardedPrefix[forwardedPrefix.Length - i - 1];
-            }
-            sets[i] = set;
+            // Preserve the exception previously thrown when capturing the initial remote endpoint.
+            _ = new IPEndPoint(originalRemoteIpAddress, originalRemotePort);
         }
 
-        // Gather initial values
-        var connection = context.Connection;
-        var currentValues = new SetOfForwarders()
+        if (entryCount == 0)
         {
-            RemoteIpAndPort = connection.RemoteIpAddress != null ? new IPEndPoint(connection.RemoteIpAddress, connection.RemotePort) : null,
-            // Host and Scheme initial values are never inspected, no need to set them here.
-        };
+            return;
+        }
+
+        // Track the current remote address. The last successfully parsed X-Forwarded-For endpoint is kept
+        // separately so no endpoint needs to be allocated for the connection's own address.
+        var currentRemoteIpAddress = originalRemoteIpAddress;
+        IPEndPoint? forwardedRemoteIpAndPort = null;
+        var currentValues = new SetOfForwarders();
 
         var checkKnownIps = _options.KnownIPNetworks.Count > 0 || _options.KnownProxies.Count > 0;
         bool applyChanges = false;
         int entriesConsumed = 0;
 
-        for (; entriesConsumed < sets.Length; entriesConsumed++)
+        for (; entriesConsumed < entryCount; entriesConsumed++)
         {
-            var set = sets[entriesConsumed];
+            // They get processed in reverse order, right to left.
+            var set = new SetOfForwarders();
+            if (checkFor && entriesConsumed < forwardedFor!.Length)
+            {
+                set.IpAndPortText = forwardedFor[forwardedFor.Length - entriesConsumed - 1];
+            }
+            if (checkProto && entriesConsumed < forwardedProto!.Length)
+            {
+                set.Scheme = forwardedProto[forwardedProto.Length - entriesConsumed - 1];
+            }
+            if (checkHost && entriesConsumed < forwardedHost!.Length)
+            {
+                set.Host = forwardedHost[forwardedHost.Length - entriesConsumed - 1];
+            }
+            if (checkPrefix && entriesConsumed < forwardedPrefix!.Length)
+            {
+                set.Prefix = forwardedPrefix[forwardedPrefix.Length - entriesConsumed - 1];
+            }
+
             if (checkKnownIps)
             {
                 // When trusted-proxy enforcement (KnownProxies/KnownNetworks) is configured, forwarders are
                 // only applied when the immediate peer can be attested as a known proxy.
-                if (currentValues.RemoteIpAndPort is null)
+                if (currentRemoteIpAddress is null)
                 {
                     // A request that arrives without a peer IP (e.g. over a Unix socket or named pipe) cannot
                     // be attested as a known proxy, so fail closed and stop applying forwarders rather than
@@ -236,12 +241,12 @@ public class ForwardedHeadersMiddleware
                     break;
                 }
 
-                if (!CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+                if (!CheckKnownAddress(currentRemoteIpAddress))
                 {
                     // Stop at the first unknown remote IP, but still apply changes processed so far.
                     if (_logger.IsEnabled(LogLevel.Debug))
                     {
-                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", forwardedRemoteIpAndPort ?? new IPEndPoint(currentRemoteIpAddress, originalRemotePort));
                     }
                     break;
                 }
@@ -249,12 +254,12 @@ public class ForwardedHeadersMiddleware
 
             if (checkFor)
             {
-                if (IPEndPoint.TryParse(set.IpAndPortText, out var parsedEndPoint))
+                if (IPEndPoint.TryParse(set.IpAndPortText.AsSpan(), out var parsedEndPoint))
                 {
                     applyChanges = true;
-                    set.RemoteIpAndPort = parsedEndPoint;
                     currentValues.IpAndPortText = set.IpAndPortText;
-                    currentValues.RemoteIpAndPort = set.RemoteIpAndPort;
+                    forwardedRemoteIpAndPort = parsedEndPoint;
+                    currentRemoteIpAddress = parsedEndPoint.Address;
                 }
                 else if (!string.IsNullOrEmpty(set.IpAndPortText))
                 {
@@ -318,12 +323,12 @@ public class ForwardedHeadersMiddleware
 
         if (applyChanges)
         {
-            if (checkFor && currentValues.RemoteIpAndPort != null)
+            if (checkFor && currentRemoteIpAddress != null)
             {
-                if (connection.RemoteIpAddress != null)
+                if (originalRemoteIpAddress != null)
                 {
                     // Save the original
-                    requestHeaders[_options.OriginalForHeaderName] = new IPEndPoint(connection.RemoteIpAddress, connection.RemotePort).ToString();
+                    requestHeaders[_options.OriginalForHeaderName] = new IPEndPoint(originalRemoteIpAddress, originalRemotePort).ToString();
                 }
                 if (forwardedFor!.Length > entriesConsumed)
                 {
@@ -336,8 +341,8 @@ public class ForwardedHeadersMiddleware
                     // All values were consumed
                     requestHeaders.Remove(_options.ForwardedForHeaderName);
                 }
-                connection.RemoteIpAddress = currentValues.RemoteIpAndPort.Address;
-                connection.RemotePort = currentValues.RemoteIpAndPort.Port;
+                connection.RemoteIpAddress = currentRemoteIpAddress;
+                connection.RemotePort = forwardedRemoteIpAndPort?.Port ?? originalRemotePort;
             }
 
             if (checkProto && currentValues.Scheme != null)
@@ -427,11 +432,10 @@ public class ForwardedHeadersMiddleware
 
     private struct SetOfForwarders
     {
-        public string IpAndPortText;
-        public IPEndPoint? RemoteIpAndPort;
-        public string Host;
-        public string Scheme;
-        public string Prefix;
+        public string? IpAndPortText;
+        public string? Host;
+        public string? Scheme;
+        public string? Prefix;
     }
 
     // Empty was checked for by the caller
