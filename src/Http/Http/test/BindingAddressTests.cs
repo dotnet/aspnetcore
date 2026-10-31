@@ -30,6 +30,24 @@ public class BindingAddressTests
         Assert.Throws<FormatException>(() => BindingAddress.Parse(url));
     }
 
+    [Theory]
+    [InlineData("http://localhost:NOTAPORT")]
+    [InlineData("http://localhost:NOTAPORT/")]
+    [InlineData("http://localhost:NOTAPORT/random/url")]
+    [InlineData("https://localhost:NOTAPORT")]
+    [InlineData("https://localhost:NOTAPORT/")]
+    [InlineData("https://localhost:NOTAPORT/random/url")]
+    [InlineData("http://www.example.com:NOTAPORT")]
+    [InlineData("http://www.example.com:NOTAPORT/")]
+    [InlineData("http://www.example.com:NOTAPORT/foo?bar=baz")]
+    [InlineData("https://www.example.com:NOTAPORT")]
+    [InlineData("https://www.example.com:NOTAPORT/")]
+    [InlineData("https://www.example.com:NOTAPORT/foo?bar=baz")]
+    public void FromUriThrowsForUrlsWithInvalidPortNumbers(string url)
+    {
+        Assert.Throws<FormatException>(() => BindingAddress.Parse(url));
+    }
+
     [ConditionalTheory]
     [InlineData("http://unix:/")]
     [InlineData("http://unix:/c")]
@@ -52,11 +70,6 @@ public class BindingAddressTests
     [InlineData("http://www.example.com:5000", "http", "www.example.com", 5000, "", null)]
     [InlineData("https://www.example.com:5000", "https", "www.example.com", 5000, "", null)]
     [InlineData("http://www.example.com:5000/", "http", "www.example.com", 5000, "", "http://www.example.com:5000")]
-    [InlineData("http://www.example.com:NOTAPORT", "http", "www.example.com:NOTAPORT", 80, "", "http://www.example.com:notaport:80")]
-    [InlineData("https://www.example.com:NOTAPORT", "https", "www.example.com:NOTAPORT", 443, "", "https://www.example.com:notaport:443")]
-    [InlineData("http://www.example.com:NOTAPORT/", "http", "www.example.com:NOTAPORT", 80, "", "http://www.example.com:notaport:80")]
-    [InlineData("http://foo:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "foo:", 80, "/tmp/kestrel-test.sock:5000/doesn't/matter", "http://foo::80/tmp/kestrel-test.sock:5000/doesn't/matter")]
-    [InlineData("http://unix:foo/tmp/kestrel-test.sock", "http", "unix:foo", 80, "/tmp/kestrel-test.sock", "http://unix:foo:80/tmp/kestrel-test.sock")]
     [InlineData("http://unix:5000/tmp/kestrel-test.sock", "http", "unix", 5000, "/tmp/kestrel-test.sock", "http://unix:5000/tmp/kestrel-test.sock")]
     public void UrlsAreParsedCorrectly(string url, string scheme, string host, int port, string pathBase, string toString)
     {
