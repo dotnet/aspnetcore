@@ -12,36 +12,44 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// Limits the rate of requests allowed in the application, based on limits set by a user-provided <see cref="PartitionedRateLimiter{TResource}"/>.
 /// </summary>
-internal sealed partial class RateLimitingMiddleware
+internal sealed partial class RateLimitingMiddleware : IMiddleware, IDisposable
 {
-    private readonly RequestDelegate _next;
-    private readonly Func<OnRejectedContext, CancellationToken, ValueTask>? _defaultOnRejected;
+    private Func<OnRejectedContext, CancellationToken, ValueTask>? _defaultOnRejected;
     private readonly ILogger _logger;
     private readonly RateLimitingMetrics _metrics;
-    private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
-    private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
-    private readonly int _rejectionStatusCode;
-    private readonly Dictionary<string, DefaultRateLimiterPolicy> _policyMap;
+    private readonly IServiceProvider _serviceProvider;
+    private PartitionedRateLimiter<HttpContext>? _globalLimiter;
+    private PartitionedRateLimiter<HttpContext> _endpointLimiter = null!;
+    private int _rejectionStatusCode;
+    private Dictionary<string, DefaultRateLimiterPolicy> _policyMap = null!;
     private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType("__defaultPolicy", new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
 
     /// <summary>
     /// Creates a new <see cref="RateLimitingMiddleware"/>.
     /// </summary>
-    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
     /// <param name="logger">The <see cref="ILogger"/> used for logging.</param>
     /// <param name="options">The options for the middleware.</param>
     /// <param name="serviceProvider">The service provider.</param>
     /// <param name="metrics">The rate limiting metrics.</param>
-    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options, IServiceProvider serviceProvider, RateLimitingMetrics metrics)
+    public RateLimitingMiddleware(ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options, IServiceProvider serviceProvider, RateLimitingMetrics metrics)
     {
-        ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(metrics);
 
-        _next = next;
         _logger = logger;
         _metrics = metrics;
+        _serviceProvider = serviceProvider;
+
+        Initialize(options);
+    }
+
+    /// <summary>
+    /// Initialize or re-initialize the rate limiter with new options. Enables overriding the options from UseRateLimiter(...)
+    /// </summary>
+    /// <param name="options"></param>
+    internal void Initialize(IOptions<RateLimiterOptions> options)
+    {
         _defaultOnRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.RejectionStatusCode;
         _policyMap = new Dictionary<string, DefaultRateLimiterPolicy>(options.Value.PolicyMap);
@@ -49,11 +57,18 @@ internal sealed partial class RateLimitingMiddleware
         // Activate policies passed to AddPolicy<TPartitionKey, TPolicy>
         foreach (var unactivatedPolicy in options.Value.UnactivatedPolicyMap)
         {
-            _policyMap.Add(unactivatedPolicy.Key, unactivatedPolicy.Value(serviceProvider));
+            _policyMap.Add(unactivatedPolicy.Key, unactivatedPolicy.Value(_serviceProvider));
         }
 
         _globalLimiter = options.Value.GlobalLimiter;
+
+        _endpointLimiter?.Dispose();
         _endpointLimiter = CreateEndpointLimiter();
+    }
+
+    public void Dispose()
+    {
+        _endpointLimiter?.Dispose();
     }
 
     // TODO - EventSource?
@@ -61,26 +76,29 @@ internal sealed partial class RateLimitingMiddleware
     /// Invokes the logic of the middleware.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
+    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
     /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
-    public Task Invoke(HttpContext context)
+    public Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
+        ArgumentNullException.ThrowIfNull(next);
+
         var endpoint = context.GetEndpoint();
         // If this endpoint has a DisableRateLimitingAttribute, don't apply any rate limits.
         if (endpoint?.Metadata.GetMetadata<DisableRateLimitingAttribute>() is not null)
         {
-            return _next(context);
+            return next(context);
         }
         var enableRateLimitingAttribute = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>();
         // If this endpoint has no EnableRateLimitingAttribute & there's no global limiter, don't apply any rate limits.
         if (enableRateLimitingAttribute is null && _globalLimiter is null)
         {
-            return _next(context);
+            return next(context);
         }
 
-        return InvokeInternal(context, enableRateLimitingAttribute);
+        return InvokeInternal(context, next, enableRateLimitingAttribute);
     }
 
-    private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute)
+    private async Task InvokeInternal(HttpContext context, RequestDelegate next, EnableRateLimitingAttribute? enableRateLimitingAttribute)
     {
         var policyName = enableRateLimitingAttribute?.PolicyName;
 
@@ -100,7 +118,7 @@ internal sealed partial class RateLimitingMiddleware
             {
 
                 _metrics.LeaseStart(metricsContext);
-                await _next(context);
+                await next(context);
             }
             finally
             {
@@ -233,7 +251,7 @@ internal sealed partial class RateLimitingMiddleware
         {
             endpointLease?.Dispose();
             globalLease?.Dispose();
-            // Don't throw if the request was canceled - instead log. 
+            // Don't throw if the request was canceled - instead log.
             if (ex is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
             {
                 RateLimiterLog.RequestCanceled(_logger);

@@ -45,6 +45,7 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
 
         // These should not get used
         var services = new ServiceCollection();
+        services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
         services.AddRateLimiter(options =>
         {
             options.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
@@ -57,7 +58,10 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
         // Act
         appBuilder.UseRateLimiter(options);
         var app = appBuilder.Build();
-        var context = new DefaultHttpContext();
+        var context = new DefaultHttpContext()
+        {
+            RequestServices = serviceProvider,
+        };
         app.Invoke(context);
         Assert.Equal(429, context.Response.StatusCode);
     }
@@ -66,6 +70,7 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
     public async Task UseRateLimiter_DoNotThrowWithoutOptions()
     {
         var services = new ServiceCollection();
+        services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
         services.AddRateLimiter();
         services.AddLogging();
         var serviceProvider = services.BuildServiceProvider();
@@ -74,7 +79,11 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
         // Act
         appBuilder.UseRateLimiter();
         var app = appBuilder.Build();
-        var context = new DefaultHttpContext();
+        var context = new DefaultHttpContext()
+        {
+            RequestServices = serviceProvider,
+        };
+
         var exception = await Record.ExceptionAsync(() => app.Invoke(context));
 
         // Assert
