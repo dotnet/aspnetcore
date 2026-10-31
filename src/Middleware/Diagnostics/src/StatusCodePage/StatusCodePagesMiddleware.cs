@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Options;
 
@@ -48,13 +49,26 @@ public class StatusCodePagesMiddleware
             statusCodeFeature.Enabled = false;
         }
 
-        // Attach pathFormat to HttpContext.Items early in the pipeline
-        context.Items[nameof(StatusCodePagesOptions)] = _options.PathFormat;
+        // Attach pathFormat to HttpContext.Items early in the pipeline. A null value reads the same as a missing entry,
+        // so when there is no pathFormat and nothing has used Items yet, skip the write to avoid allocating Items.
+        var pathFormat = _options.PathFormat;
+        var setPathFormat = pathFormat is not null || !IsItemsUnallocated(context);
+        if (setPathFormat)
+        {
+            context.Items[nameof(StatusCodePagesOptions)] = pathFormat;
+        }
 
         await _next(context);
 
         // Remove pathFormat from HttpContext.Items after handler execution
-        context.Items.Remove(nameof(StatusCodePagesOptions));
+        if (setPathFormat)
+        {
+            context.Items.Remove(nameof(StatusCodePagesOptions));
+        }
+        else
+        {
+            context.Features.Get<IItemsFeature>()?.Items.Remove(nameof(StatusCodePagesOptions));
+        }
 
         if (!statusCodeFeature.Enabled)
         {
@@ -82,6 +96,10 @@ public class StatusCodePagesMiddleware
         var statusCodeContext = new StatusCodeContext(context, _options, _next);
         await _options.HandleAsync(statusCodeContext);
     }
+
+    // DefaultHttpContext creates its IItemsFeature on first access to Items.
+    private static bool IsItemsUnallocated(HttpContext context)
+        => context.GetType() == typeof(DefaultHttpContext) && context.Features.Get<IItemsFeature>() is null;
 
     private static bool HasSkipStatusCodePagesMetadata(Endpoint? endpoint)
     {
