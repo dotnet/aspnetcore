@@ -37,14 +37,27 @@ Set-StrictMode -Version 3
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $criteriaCommit = '4f556f73a610b386e5ec29355a300e493d30c4c5'
-$reviewSkillBlob = 'b11fe9fe79b5d848687ba1c93362f4aaf22bfe53'
-$nativeReviewSkillBodyBytes = 18527
-$nativeReviewSkillBodyHash = '3a38f1385e455e104ebec8bffe280b6b90f6ef08f43131d4fe559c61d3ce1225'
+$baselineReviewSkillBlob = 'b11fe9fe79b5d848687ba1c93362f4aaf22bfe53'
+$baselineNativeReviewSkillBodyBytes = 18527
+$baselineNativeReviewSkillBodyHash = '3a38f1385e455e104ebec8bffe280b6b90f6ef08f43131d4fe559c61d3ce1225'
+$treatmentReviewSkillBlob = 'a8c9856cd260ad22938a2e1bfe638294abe635f3'
+$treatmentNativeReviewSkillBodyBytes = 19704
+$treatmentNativeReviewSkillBodyHash = 'f6f5c4106bfcc93c71f2bb99ba04b66098cef923f2d8c115d6fe186e0aa6ef14'
+$treatmentReferenceBlob = 'f9fa346b2001a5cb551748a369c7fd78d8ca22a7'
+$treatmentReferenceBytes = 2321
+$treatmentReferenceHash = 'b0d17d576f8d6d5854f3c0bfb81fb65ae0ceea648cd9bff9a117b530c37ce08c'
+$treatmentRubricHash = '9315527697ebb40bc9073d2639128301a6308faf011fd798e72c243f14be109d'
+$treatmentReferenceNormalizedBytes = 2285
+$treatmentReferenceNormalizedHash = 'a81c8f5ea560a3247b91f1362839e580bdf58601c9a046e37f4233f370307f21'
+$treatmentRubricNormalizedHash = '057d3a6ae9001f16eafa421a51274c19a4de4393cec8b236747d86e8006612f8'
 $expectedEvalName = 'review-pull-request-capability-development'
 $expectedModel = 'gpt-5.6-sol'
 $expectedJudge = 'gemini-4-argon'
-$expectedSpecSha256 = 'da7b65d26bad45dad7cef210e2513279cac3d39f2c32253bae14428050f29138'
-$measuredSpecSha256 = '25441cb5bb031d6b2eb85de322906fddd58ebd83df98ea99bb4f3aefc1736da4'
+$expectedSpecSha256 = 'a233bf722ee41628ca6a1c4f7aca10c4d38f223309b26fe47235ecce9e4e1467'
+$packagedTreatmentSpecSha256 = '7ae60e45840bee76546f113ef6550696f42d17e56c0b44f448791c8bde961396'
+$measuredSpecSha256 = '1f20439b7579ff1b403570cec81592ea9b3c82afe50b06b6d3048ee1cbcdda9f'
+$baselineComparisonSpecSha256 = 'eeac867b74835283dd82ae94a4e7ea77ed0c50a613f3dc2a55b96b7227e89e32'
+$treatmentComparisonSpecSha256 = '60e6ce10db6a97dca3206f7f7ac8cd2c134f8b16269362f4d733322ea838052e'
 $expectedPromptSha256 = '2ddc25b8b9224ec179498e821056dbed58cbf8fe2cf6d67abe0aef0d45a3aec3'
 $cases = [ordered]@{
     'pr-70106' = @{
@@ -103,6 +116,24 @@ function Get-TextSha256 {
     return [Convert]::ToHexString(
         [Security.Cryptography.SHA256]::HashData($bytes)
     ).ToLowerInvariant()
+}
+
+function Get-NormalizedText {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    return (Get-Content $Path -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+}
+
+function Get-NativeSkillBody {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $text = Get-NormalizedText $Path
+    return [regex]::Replace(
+        $text,
+        '\A---\n.*?\n---\n+',
+        '',
+        [Text.RegularExpressions.RegexOptions]::Singleline
+    )
 }
 
 function Test-NumericValue {
@@ -301,9 +332,45 @@ function Assert-OutputReceipt {
 }
 
 $skillPath = Join-Path $repoRoot '.github/skills/review-pull-request/SKILL.md'
-Assert-Condition ((Get-GitBlob $skillPath -ApplyAttributes) -eq $reviewSkillBlob) (
-    "The current reviewer criteria source is not frozen blob $reviewSkillBlob."
+Assert-Condition ((Get-GitBlob $skillPath -ApplyAttributes) -eq $baselineReviewSkillBlob) (
+    "The default reviewer criteria source is not frozen blob $baselineReviewSkillBlob."
 )
+$baselineNativeBody = Get-NativeSkillBody $skillPath
+Assert-Condition (
+    [Text.Encoding]::UTF8.GetByteCount($baselineNativeBody) -eq
+        $baselineNativeReviewSkillBodyBytes -and
+    (Get-TextSha256 $baselineNativeBody) -eq $baselineNativeReviewSkillBodyHash
+) 'The default reviewer native body does not match its frozen baseline identity.'
+
+$treatmentRoot = Join-Path (
+    $PSScriptRoot
+) 'treatments/claim-validation/review-pull-request'
+$treatmentSkillPath = Join-Path $treatmentRoot 'SKILL.md'
+$treatmentNativeBody = Get-NativeSkillBody $treatmentSkillPath
+Assert-Condition (
+    (Get-GitBlob $treatmentSkillPath -ApplyAttributes) -eq $treatmentReviewSkillBlob -and
+    [Text.Encoding]::UTF8.GetByteCount($treatmentNativeBody) -eq
+        $treatmentNativeReviewSkillBodyBytes -and
+    (Get-TextSha256 $treatmentNativeBody) -eq $treatmentNativeReviewSkillBodyHash
+) 'The opt-in claim-validation treatment skill does not match its measured identity.'
+
+$treatmentReferencePath = Join-Path $treatmentRoot 'references/claim-validation.md'
+$treatmentReferenceText = Get-NormalizedText $treatmentReferencePath
+Assert-Condition (
+    (Get-GitBlob $treatmentReferencePath -ApplyAttributes) -eq $treatmentReferenceBlob -and
+    [Text.Encoding]::UTF8.GetByteCount($treatmentReferenceText) -eq
+        $treatmentReferenceNormalizedBytes -and
+    (Get-TextSha256 $treatmentReferenceText) -eq $treatmentReferenceNormalizedHash
+) (
+    'The claim-validation treatment reference does not match its frozen identity.'
+)
+$packagedTreatmentSpecPath = Join-Path (
+    $PSScriptRoot
+) 'reviewer-capability-treatment.vally.yaml'
+Assert-Condition (
+    (Get-TextSha256 (Get-NormalizedText $packagedTreatmentSpecPath)) -eq
+        $packagedTreatmentSpecSha256
+) 'The opt-in claim-validation treatment spec does not match its packaged identity.'
 
 $caseDirectories = @(
     Get-ChildItem (Join-Path $FixtureRoot 'cases') -Directory |
@@ -386,7 +453,7 @@ foreach ($caseName in $cases.Keys) {
     Assert-Condition ($manifest.reviewCapability.partition -eq 'development') (
         "$caseName must remain a development case."
     )
-    Assert-Condition ($manifest.reviewCapability.skill.gitBlob -eq $reviewSkillBlob) (
+    Assert-Condition (    $manifest.reviewCapability.skill.gitBlob -eq $baselineReviewSkillBlob) (
         "$caseName has the wrong reviewer criteria blob."
     )
     Assert-Condition ($manifest.reviewCapability.guidanceCommit -eq $criteriaCommit) (
@@ -571,17 +638,38 @@ foreach ($caseName in $cases.Keys) {
 
 $labels = Get-Content $LabelsPath -Raw | ConvertFrom-Json -Depth 100
 Assert-Condition (
-    $labels.revision -eq 3 -and
+    $labels.revision -eq 4 -and
+    $labels.priorPrunedRevision.revision -eq 3 -and
+    $labels.priorPrunedRevision.gitCommit -eq 'ebac3e30f5551a676ea7c309c2891c3f82f2777d' -and
+    $labels.priorPrunedRevision.gitBlob -eq '85769d8d5a614feb7416d4e0f5ca92e74d7afe0f' -and
+    $labels.priorPrunedRevision.sha256 -eq 'b4fbecb94860b7f2c8bc64e1be2cacb6d5b0688799acc4ba928b1e6cf106e319' -and
     $labels.priorMeasuredRevision.revision -eq 2 -and
     $labels.priorMeasuredRevision.gitCommit -eq 'b34fe32c517ec4e1d8ce8cd0e3085b610a98b3b6' -and
     $labels.priorMeasuredRevision.gitBlob -eq '99b92613a8608f88e3438d91b3115274cadbf149' -and
     $labels.priorMeasuredRevision.sourceSha256 -eq '044c19252892b0cae2c34d171093baa3dd66bea7e7178cd8a8cf9995f1a58cce' -and
     $labels.priorMeasuredRevision.runArtifactSha256 -eq 'b0b998084069ad68c5d65322ec2e8e24385c316a619a4448e614ed00801e813c' -and
-    $labels.priorMeasuredRevision.runId -eq '3cf0bd32-d93e-41ca-8650-547caafe9379'
+    $labels.priorMeasuredRevision.runId -eq '3cf0bd32-d93e-41ca-8650-547caafe9379' -and
+    $labels.treatment.name -eq 'claim-triggered-source-validation' -and
+    $labels.treatment.reviewSkillGitBlob -eq $treatmentReviewSkillBlob -and
+    $labels.treatment.reviewSkillNormalizedUtf8Bytes -eq $treatmentNativeReviewSkillBodyBytes -and
+    $labels.treatment.reviewSkillNormalizedSha256 -eq $treatmentNativeReviewSkillBodyHash -and
+    $labels.treatment.referenceGitBlob -eq $treatmentReferenceBlob -and
+    $labels.treatment.referenceUtf8Bytes -eq $treatmentReferenceBytes -and
+    $labels.treatment.referenceSha256 -eq $treatmentReferenceHash -and
+    $labels.treatment.rubricSha256 -eq $treatmentRubricHash
 ) 'The pruned labels no longer identify the measured revision-2 label artifact.'
 Assert-Condition (
+    (
+        Get-TextSha256 (
+            Get-NormalizedText (
+                Join-Path $PSScriptRoot 'reviewer-capability-rubric.md'
+            )
+        )
+    ) -eq $treatmentRubricNormalizedHash
+) 'The treatment rubric no longer matches its frozen identity.'
+Assert-Condition (
     $labels.criteria.defaultBranchCommit -eq $criteriaCommit -and
-    $labels.criteria.reviewSkillGitBlob -eq $reviewSkillBlob
+    $labels.criteria.reviewSkillGitBlob -eq $baselineReviewSkillBlob
 ) 'The label file has the wrong frozen criteria identities.'
 $labelCases = @($labels.cases)
 Assert-Condition ($labelCases.Count -eq $cases.Count) 'The label file has the wrong case count.'
@@ -708,8 +796,16 @@ foreach ($control in $controls) {
 }
 
 $specText = Get-Content $SpecPath -Raw
-$specSha256 = Get-Sha256 $SpecPath
-Assert-Condition ($specSha256 -in @($expectedSpecSha256, $measuredSpecSha256)) (
+$specSha256 = Get-TextSha256 (
+    $specText.Replace("`r`n", "`n").Replace("`r", "`n")
+)
+Assert-Condition ($specSha256 -in @(
+    $expectedSpecSha256,
+    $packagedTreatmentSpecSha256,
+    $measuredSpecSha256,
+    $baselineComparisonSpecSha256,
+    $treatmentComparisonSpecSha256
+)) (
     'The specialized Vally spec no longer matches its frozen launch identity.'
 )
 $expectedStimulusCount = if ($specSha256 -eq $measuredSpecSha256) { 3 } else { 2 }
@@ -942,21 +1038,38 @@ if ($ResultsDirectory) {
             $expectedPromptSha256
     ) 'The subject attempt is not bound to the frozen trusted caller prompt.'
     $launchSkills = @($trajectory.stimulus.environment.skills)
+    $expectedLaunchSkill = switch ($specSha256) {
+        $baselineComparisonSpecSha256 {
+            'skills/baseline/review-pull-request'
+            break
+        }
+        $treatmentComparisonSpecSha256 {
+            'skills/treatment/review-pull-request'
+            break
+        }
+        $packagedTreatmentSpecSha256 {
+            'treatments/claim-validation/review-pull-request'
+            break
+        }
+        default {
+            '../../../.github/skills/review-pull-request'
+        }
+    }
     Assert-Condition (
         $launchSkills.Count -eq 1 -and
         ([string]$launchSkills[0]).Replace('\', '/') -eq
-            '../../../.github/skills/review-pull-request'
+            $expectedLaunchSkill
     ) 'The subject attempt has the wrong staged native skill.'
-    $expectedLaunchFiles = if ($cases[$caseName].UseCommonOverlay) {
-        @(
+    $expectedLaunchFiles = @(
+        if ($cases[$caseName].UseCommonOverlay) {
             'fixtures/reviewer-capability/common/guidance|review/bundle/guidance',
             'fixtures/reviewer-capability/common/required|review/bundle/required',
             "fixtures/reviewer-capability/cases/$caseName/bundle|review/bundle"
-        )
-    } else {
-        @("fixtures/reviewer-capability/cases/$caseName/bundle|review/bundle")
-    }
-    if ($specSha256 -eq $expectedSpecSha256) {
+        } else {
+            "fixtures/reviewer-capability/cases/$caseName/bundle|review/bundle"
+        }
+    )
+    if ($specSha256 -ne $measuredSpecSha256) {
         $expectedLaunchFiles += (
             "fixtures/reviewer-capability/cases/$caseName/projection-map.json|" +
             'review/bundle/projection-map.json'
@@ -1095,10 +1208,34 @@ if ($ResultsDirectory) {
         Replace("`r`n", "`n").
         Replace("`r", "`n")
     $nativeBodyBytes = [Text.Encoding]::UTF8.GetBytes($nativeBody)
+    $usesBaselineSkill = $specSha256 -in @(
+        $expectedSpecSha256,
+        $measuredSpecSha256,
+        $baselineComparisonSpecSha256
+    )
+    $expectedNativeSkillBlob = if ($usesBaselineSkill) {
+        $baselineReviewSkillBlob
+    } else {
+        $treatmentReviewSkillBlob
+    }
+    $expectedNativeSkillBytes = if ($usesBaselineSkill) {
+        $baselineNativeReviewSkillBodyBytes
+    } else {
+        $treatmentNativeReviewSkillBodyBytes
+    }
+    $expectedNativeSkillHash = if ($usesBaselineSkill) {
+        $baselineNativeReviewSkillBodyHash
+    } else {
+        $treatmentNativeReviewSkillBodyHash
+    }
     Assert-Condition (
-        $nativeBodyBytes.Length -eq $nativeReviewSkillBodyBytes -and
-        (Get-TextSha256 $nativeBody) -eq $nativeReviewSkillBodyHash
-    ) "The native activation body does not match frozen skill blob $reviewSkillBlob."
+        $nativeBodyBytes.Length -eq $expectedNativeSkillBytes -and
+        (Get-TextSha256 $nativeBody) -eq $expectedNativeSkillHash
+    ) (
+        "The native activation body does not match frozen skill blob " +
+        "$expectedNativeSkillBlob (actual bytes $($nativeBodyBytes.Length), " +
+        "SHA-256 $(Get-TextSha256 $nativeBody))."
+    )
     $activationPath = ([string]$skillActivations[0].data.path).Replace('\', '/')
     Assert-Condition (
         $activationPath.EndsWith(
@@ -1178,6 +1315,132 @@ if ($ResultsDirectory) {
         Assert-Condition ($completeReads.Count -gt 0) (
             "The subject has no complete successful read of '$($reference.path)'."
         )
+    }
+
+    if ($specSha256 -in @(
+        $packagedTreatmentSpecSha256,
+        $treatmentComparisonSpecSha256
+    )) {
+        Assert-Condition (
+            [string]$trajectory.output -match
+                '(?im)^\s*VALIDATION:\s*claim-triggered(?:\s|\(|$)'
+        ) 'The treatment output omits the claim-triggered validation receipt.'
+        $ledgerMessages = @(
+            $events |
+                Where-Object {
+                    $_.type -eq 'assistant_message' -and
+                    -not [string]::IsNullOrWhiteSpace([string]$_.data.content) -and
+                    [string]$_.data.content -match
+                        '(?s)^\s*CANDIDATE_LEDGER:?(?:\s|\r|\n|$)'
+                }
+        )
+        Assert-Condition ($ledgerMessages.Count -eq 1) (
+            'The treatment trajectory does not retain one pre-validation candidate ledger.'
+        )
+        $ledger = ([string]$ledgerMessages[0].data.content).Trim()
+        $emptyLedger = $ledger -match '^CANDIDATE_LEDGER:?\s+none$'
+        if (-not $emptyLedger) {
+            $ledgerLines = @(
+                $ledger -split "`r?`n" |
+                    ForEach-Object { $_.Trim().Replace('`', '') } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+            )
+            $bulletLedger = (
+                $ledgerLines.Count -gt 1 -and
+                $ledgerLines[0] -match '^CANDIDATE_LEDGER:?$' -and
+                @(
+                    $ledgerLines |
+                        Select-Object -Skip 1 |
+                        Where-Object {
+                            $_ -notmatch
+                                '^- C[0-9]+ \| [A-Za-z0-9][A-Za-z0-9 /_-]* \| [^|:\r\n]+:[0-9]+$'
+                        }
+                ).Count -eq 0
+            )
+            $tableLedger = (
+                $ledgerLines.Count -gt 3 -and
+                $ledgerLines[0] -match '^CANDIDATE_LEDGER:?$' -and
+                $ledgerLines[1] -ceq '| ID | Claim type | File:line |' -and
+                $ledgerLines[2] -match '^\|[-: ]+\|[-: ]+\|[-: ]+\|$' -and
+                @(
+                    $ledgerLines |
+                        Select-Object -Skip 3 |
+                        Where-Object {
+                            $_ -notmatch
+                                '^\| C[0-9]+ \| [A-Za-z0-9][A-Za-z0-9 /_-]* \| [^|:\r\n]+:[0-9]+ \|$'
+                        }
+                ).Count -eq 0
+            )
+            Assert-Condition (
+                $bulletLedger -or $tableLedger
+            ) 'The pre-validation candidate ledger contains more than ID, claim type, and file:line.'
+        }
+
+        $expectedTreatmentReferencePath = (
+            (Split-Path $activationPath -Parent).Replace('\', '/').TrimEnd('/') +
+            '/references/claim-validation.md'
+        )
+        $treatmentReads = @()
+        foreach ($read in @(
+            $toolCalls |
+                Where-Object {
+                    $_.data.toolName -in @('view', 'read_file') -and
+                    $_.data.arguments -and
+                    ([string]$_.data.arguments.path).Replace('\', '/').Equals(
+                        $expectedTreatmentReferencePath,
+                        [StringComparison]::OrdinalIgnoreCase
+                    )
+                }
+        )) {
+            $readResult = @(
+                $events |
+                    Where-Object {
+                        $_.type -eq 'tool_result' -and
+                        $_.data.toolCallId -eq $read.data.toolCallId
+                    }
+            )
+            if ($readResult.Count -ne 1 -or $readResult[0].data.success -ne $true) {
+                continue
+            }
+            $contentProperty = $readResult[0].data.result.PSObject.Properties['content']
+            if (-not $contentProperty -or $null -eq $contentProperty.Value) {
+                continue
+            }
+            $content = ([string]$contentProperty.Value).
+                Replace("`r`n", "`n").
+                Replace("`r", "`n")
+            $bytes = [Text.Encoding]::UTF8.GetBytes($content)
+            if ($bytes.Length -eq $treatmentReferenceNormalizedBytes -and
+                (Get-TextSha256 $content) -eq $treatmentReferenceNormalizedHash) {
+                $treatmentReads += [pscustomobject]@{
+                    Call = $read
+                    Result = $readResult[0]
+                }
+            }
+        }
+        if ($emptyLedger) {
+            Assert-Condition (
+                $treatmentReads.Count -eq 0 -and
+                [string]$trajectory.output -match
+                    '(?im)^\s*VALIDATION:\s*claim-triggered\s+\(0 candidates\)\s*$' -and
+                [string]$trajectory.output -match
+                    '(?im)^\s*NEW_FINDINGS:\s*none\s*$' -and
+                [string]$trajectory.output -match
+                    '(?im)^\s*UNRESOLVED:\s*none\s*$' -and
+                [string]$trajectory.output -match
+                    '(?im)^\s*DISCARDED:\s*none\s*$'
+            ) 'A no-candidate treatment must skip the reference and retain the zero-candidate receipt.'
+        } else {
+            Assert-Condition ($treatmentReads.Count -eq 1) (
+                'The subject has no single complete successful read of the claim-validation reference.'
+            )
+            Assert-Condition (
+                [Array]::IndexOf($events, $ledgerMessages[0]) -lt
+                    [Array]::IndexOf($events, $treatmentReads[0].Call) -and
+                [Array]::IndexOf($events, $treatmentReads[0].Call) -lt
+                    [Array]::IndexOf($events, $treatmentReads[0].Result)
+            ) 'The installed claim-validation reference was not read after the candidate ledger.'
+        }
     }
 
     $prohibitedTools = @(

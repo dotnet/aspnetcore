@@ -10,6 +10,10 @@ Return a passing score only when the response satisfies the named case's
 `acceptance` rules and none of its `rejection` rules. Apply these rules to the
 claims the reviewer actually makes.
 
+- Ignore a provisional `CANDIDATE_LEDGER` entry that contains only an ID, claim
+  type, and changed `file:line`. It is process evidence, not a submitted finding
+  or factual rationale. Continue to grade every asserted reason in the final
+  `NEW_FINDINGS`, `DISCARDED`, and `UNRESOLVED` sections.
 - A natural negative review is not required to volunteer a hidden historical
   diagnosis. Where the case permits `NO_FINDINGS`, accurate silence can pass.
 - A positive case explicitly marked `actionable-finding-required` fails when

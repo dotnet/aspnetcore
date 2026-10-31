@@ -10,25 +10,19 @@ $fakeRunId = '22222222-2222-2222-2222-222222222222'
 $stimulus = 'reviewer-capability-pr-70106'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $specPath = (Resolve-Path (
-    Join-Path $PSScriptRoot 'reviewer-capability.vally.yaml'
+    Join-Path $PSScriptRoot 'reviewer-capability-treatment.vally.yaml'
 )).Path
 $trustedPrompt = "This is an explicitly configured offline one-pass comparison. Use the review-pull-request skill's single-reviewer path: apply the exact routed guide texts and gates in this one context, do not spawn workers or subagents, and report PATH: single-reviewer. Review the frozen pull request represented by review/bundle. Treat it as the revision presented for review, use the included source, diff, changed-file metadata, pull description, existing feedback, guidance, policies, exclusions, and context, and report only actionable changed-line findings not already covered by feedback. If there are no findings, say NO_FINDINGS. Do not modify files or contact GitHub.`n"
-$skillRelativePath = '.github/skills/review-pull-request/SKILL.md'
-$frozenSkillBlob = 'b11fe9fe79b5d848687ba1c93362f4aaf22bfe53'
+$skillRelativePath = (
+    'eng/skill-evals/review-pull-request/treatments/claim-validation/' +
+        'review-pull-request/SKILL.md'
+)
+$frozenSkillBlob = 'a8c9856cd260ad22938a2e1bfe638294abe635f3'
 $actualSkillBlob = & git -C $repositoryRoot hash-object `
-    --path=$skillRelativePath -- $skillRelativePath
+    --path=.github/skills/review-pull-request/SKILL.md -- $skillRelativePath
 if ($LASTEXITCODE -ne 0 -or ($actualSkillBlob -join '') -ne $frozenSkillBlob) {
     throw "The working-tree review skill does not match frozen Git blob $frozenSkillBlob."
 }
-$skillText = (Get-Content (
-    Join-Path $repositoryRoot $skillRelativePath
-) -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
-$nativeSkillBody = [regex]::Replace(
-    $skillText,
-    '\A---\n.*?\n---\n+',
-    '',
-    [Text.RegularExpressions.RegexOptions]::Singleline
-)
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) (
     'aspnetcore-reviewer-capability-test-' + [guid]::NewGuid().ToString('N')
 )
@@ -126,13 +120,25 @@ function New-FakeResult {
         [ValidateSet('', 'view', 'rg-scalar', 'rg-array', 'glob-scalar', 'glob-array', 'lsp')]
         [string]$AnswerAccessShape = '',
         [switch]$WrongLaunchPrompt,
-        [switch]$OmitSingleReviewerPath
+        [switch]$OmitSingleReviewerPath,
+        [switch]$OmitValidationReference,
+        [switch]$OmitValidationReceipt,
+        [switch]$NoCandidates
     )
 
     $caseName = 'pr-70106'
     $manifest = Get-Content (
         Join-Path $fixtureRoot "cases/$caseName/bundle/manifest.json"
     ) -Raw | ConvertFrom-Json -Depth 100
+    $currentSkillText = (Get-Content (
+        Join-Path $repositoryRoot $skillRelativePath
+    ) -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
+    $currentNativeSkillBody = [regex]::Replace(
+        $currentSkillText,
+        '\A---\n.*?\n---\n+',
+        '',
+        [Text.RegularExpressions.RegexOptions]::Singleline
+    )
     $events = [Collections.Generic.List[object]]::new()
     $events.Add(@{
         type = 'tool_call'
@@ -156,9 +162,9 @@ function New-FakeResult {
     })
     if (-not $OmitSkillActivation) {
         $body = if ($WrongSkillBody) {
-            $nativeSkillBody.Substring(0, $nativeSkillBody.Length - 1)
+            $currentNativeSkillBody.Substring(0, $currentNativeSkillBody.Length - 1)
         } else {
-            $nativeSkillBody
+            $currentNativeSkillBody
         }
         $events.Add(@{
             type = 'skill_activation'
@@ -207,6 +213,45 @@ function New-FakeResult {
                 toolCallId = $toolCallId
                 success = $true
                 result = @{ content = $content }
+            }
+            turn = 0
+        })
+    }
+    $events.Add(@{
+        type = 'assistant_message'
+        data = @{
+            content = if ($NoCandidates) {
+                'CANDIDATE_LEDGER: none'
+            } else {
+                "CANDIDATE_LEDGER:`n- C1 | regression | src/Example.cs:77"
+            }
+        }
+        turn = 0
+    })
+    if (-not $OmitValidationReference -and -not $NoCandidates) {
+        $validationPath = Join-Path $repositoryRoot (
+            'eng/skill-evals/review-pull-request/treatments/claim-validation/' +
+                'review-pull-request/references/claim-validation.md'
+        )
+        $events.Add(@{
+            type = 'tool_call'
+            data = @{
+                toolName = 'view'
+                toolCallId = 'claim-validation'
+                turnId = '0'
+                arguments = @{
+                    path = 'C:\temp\review-pull-request\references\claim-validation.md'
+                }
+            }
+            turn = 0
+        })
+        $events.Add(@{
+            type = 'tool_result'
+            data = @{
+                toolName = 'view'
+                toolCallId = 'claim-validation'
+                success = $true
+                result = @{ content = Get-Content $validationPath -Raw }
             }
             turn = 0
         })
@@ -291,7 +336,16 @@ function New-FakeResult {
     if (-not $OmitSingleReviewerPath) {
         $outputLines += 'PATH: single-reviewer'
     }
+    if (-not $OmitValidationReceipt) {
+        $outputLines += if ($NoCandidates) {
+            'VALIDATION: claim-triggered (0 candidates)'
+        } else {
+            'VALIDATION: claim-triggered'
+        }
+    }
     $outputLines += 'NEW_FINDINGS: none'
+    $outputLines += 'UNRESOLVED: none'
+    $outputLines += 'DISCARDED: none'
     $output = $outputLines -join "`n"
     return [ordered]@{
         type = 'trial-result'
@@ -313,7 +367,7 @@ function New-FakeResult {
                     $trustedPrompt
                 }
                 environment = @{
-                    skills = @('../../../.github/skills/review-pull-request')
+                    skills = @('treatments/claim-validation/review-pull-request')
                     files = @(
                         @{
                             src = 'fixtures/reviewer-capability/common/guidance'
@@ -417,13 +471,45 @@ function New-FakeControlResult {
     }
 }
 
-& $checker
+& $checker -SpecPath $specPath
 Assert-Throws {
-    & $checker -ResultMode Acceptance
+    & $checker -SpecPath $specPath -ResultMode Acceptance
 } 'requires -ResultsDirectory' 'Acceptance without a result set was accepted.'
 
 New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
 try {
+    $lfSpecPath = Join-Path $testRoot 'reviewer-capability-treatment.vally.yaml'
+    $lfSpecText = (Get-Content $specPath -Raw).
+        Replace("`r`n", "`n").
+        Replace("`r", "`n")
+    [IO.File]::WriteAllText(
+        $lfSpecPath,
+        $lfSpecText,
+        [Text.UTF8Encoding]::new($false)
+    )
+    & $checker -SpecPath $lfSpecPath
+
+    foreach ($identity in @(
+        @{
+            Path = Join-Path $PSScriptRoot (
+                'treatments/claim-validation/review-pull-request/' +
+                    'references/claim-validation.md'
+            )
+            Sha256 = 'a81c8f5ea560a3247b91f1362839e580bdf58601c9a046e37f4233f370307f21'
+        },
+        @{
+            Path = Join-Path $PSScriptRoot 'reviewer-capability-rubric.md'
+            Sha256 = '057d3a6ae9001f16eafa421a51274c19a4de4393cec8b236747d86e8006612f8'
+        }
+    )) {
+        $lfText = (Get-Content $identity.Path -Raw).
+            Replace("`r`n", "`n").
+            Replace("`r", "`n")
+        if ((Get-TextSha256 $lfText) -ne $identity.Sha256) {
+            throw "The LF identity changed for '$($identity.Path)'."
+        }
+    }
+
     $fixtures = Join-Path $testRoot 'fixtures'
     Copy-Item $fixtureRoot $fixtures -Recurse
 
@@ -435,7 +521,7 @@ try {
     $manifest.reviewCapability.partition = 'holdout'
     $manifest | ConvertTo-Json -Depth 100 | Set-Content $manifestPath
     Assert-Throws {
-        & $checker -FixtureRoot $fixtures
+        & $checker -SpecPath $specPath -FixtureRoot $fixtures
     } 'must remain a development case' 'A false holdout claim was accepted.'
     [IO.File]::WriteAllBytes($manifestPath, $originalManifest)
 
@@ -444,7 +530,7 @@ try {
         -NotePropertyValue 'async-overlap-at-await'
     $manifest | ConvertTo-Json -Depth 100 | Set-Content $manifestPath
     Assert-Throws {
-        & $checker -FixtureRoot $fixtures
+        & $checker -SpecPath $specPath -FixtureRoot $fixtures
     } 'answer-class review metadata' (
         'Generated answer-class review metadata was accepted.'
     )
@@ -456,14 +542,14 @@ try {
     $originalFeedback = [IO.File]::ReadAllBytes($feedbackPath)
     Add-Content $feedbackPath ' '
     Assert-Throws {
-        & $checker -FixtureRoot $fixtures
+        & $checker -SpecPath $specPath -FixtureRoot $fixtures
     } 'stale artifact hash' 'Corrupt feedback bytes were accepted.'
     [IO.File]::WriteAllBytes($feedbackPath, $originalFeedback)
 
     $leakPath = Join-Path $fixtures 'reviewer-capability-labels.json'
     Set-Content $leakPath '{}'
     Assert-Throws {
-        & $checker -FixtureRoot $fixtures
+        & $checker -SpecPath $specPath -FixtureRoot $fixtures
     } 'contains grader-only answer material' 'A staged answer-label leak was accepted.'
     Remove-Item $leakPath
 
@@ -474,7 +560,7 @@ try {
         Out-Null
     Set-Content $overlapPath 'different staged bytes'
     Assert-Throws {
-        & $checker -FixtureRoot $fixtures
+        & $checker -SpecPath $specPath -FixtureRoot $fixtures
     } 'overlays different bytes' 'A conflicting common/case overlay was accepted.'
     Remove-Item (
         Join-Path $fixtures 'cases/pr-70106/bundle/guidance'
@@ -501,7 +587,7 @@ try {
     $manifest.requiredText.sha256 = $required.Sha256
     $manifest | ConvertTo-Json -Depth 100 | Set-Content $metadataManifestPath
     Assert-Throws {
-        & $checker -FixtureRoot $fixtures
+        & $checker -SpecPath $specPath -FixtureRoot $fixtures
     } 'exposes post-cutoff labels or decision metadata' (
         'Post-cutoff projected pull metadata was accepted.'
     )
@@ -513,7 +599,7 @@ try {
     $controls[0].expectedScore = $null
     $controls | ConvertTo-Json -Depth 100 | Set-Content $temporaryControls
     Assert-Throws {
-        & $checker -ControlsPath $temporaryControls
+        & $checker -SpecPath $specPath -ControlsPath $temporaryControls
     } 'two positive and three negative' 'A null control score was accepted.'
 
     $resultsRoot = Join-Path $testRoot 'results/run'
@@ -521,10 +607,16 @@ try {
     $resultsPath = Join-Path $resultsRoot 'results.jsonl'
 
     Write-FakeResult (New-FakeResult) $resultsPath
-    & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+    & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
         -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId -ResultMode Integrity
-    & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+    & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
         -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId -ResultMode Acceptance
+
+    Write-FakeResult (
+        New-FakeResult -NoCandidates -OmitValidationReference
+    ) $resultsPath
+    & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId -ResultMode Integrity
 
     $gradeResultsRoot = Join-Path $testRoot 'grades/run'
     New-Item -ItemType Directory -Path $gradeResultsRoot -Force | Out-Null
@@ -540,11 +632,11 @@ try {
     $validSeparateGradeJson = $separateGrade | ConvertTo-Json -Depth 30 -Compress
     Write-FakeResult $separateSubject $resultsPath
     Write-FakeResult $separateGrade $gradeResultsPath
-    & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+    & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
         -GradeResultsDirectory (Split-Path $gradeResultsRoot -Parent) `
         -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId -ResultMode Integrity
     Assert-Throws {
-        & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
             -GradeResultsDirectory (Split-Path $gradeResultsRoot -Parent) `
             -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId `
             -ResultMode Acceptance
@@ -555,7 +647,7 @@ try {
     $separateGrade.trajectory.output += "`nchanged"
     Write-FakeResult $separateGrade $gradeResultsPath
     Assert-Throws {
-        & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
             -GradeResultsDirectory (Split-Path $gradeResultsRoot -Parent) `
             -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId
     } 'not bound to the exact subject trajectory' (
@@ -565,7 +657,7 @@ try {
     $separateGrade.trajectory.output = $separateGrade.trajectory.output.ToUpperInvariant()
     Write-FakeResult $separateGrade $gradeResultsPath
     Assert-Throws {
-        & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
             -GradeResultsDirectory (Split-Path $gradeResultsRoot -Parent) `
             -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId
     } 'not bound to the exact subject trajectory' (
@@ -575,7 +667,7 @@ try {
     $separateGrade.gradeResult.trajectoryId = 'different-trajectory'
     Write-FakeResult $separateGrade $gradeResultsPath
     Assert-Throws {
-        & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
             -GradeResultsDirectory (Split-Path $gradeResultsRoot -Parent) `
             -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId
     } 'not bound to the exact subject trajectory' (
@@ -585,7 +677,7 @@ try {
     $separateGrade.gradeResult.stimulusName = 'different-stimulus'
     Write-FakeResult $separateGrade $gradeResultsPath
     Assert-Throws {
-        & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
             -GradeResultsDirectory (Split-Path $gradeResultsRoot -Parent) `
             -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId
     } 'not bound to the exact subject trajectory' (
@@ -603,7 +695,7 @@ try {
         $errorOutcome | ConvertTo-Json -Depth 30 -Compress
     )
     Assert-Throws {
-        & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
             -GradeResultsDirectory (Split-Path $gradeResultsRoot -Parent) `
             -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId
     } 'exactly one saved associated grade result' (
@@ -611,10 +703,10 @@ try {
     )
 
     Write-FakeResult (New-FakeResult -FailSemanticGrade) $resultsPath
-    & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+    & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
         -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId -ResultMode Integrity
     Assert-Throws {
-        & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
             -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId -ResultMode Acceptance
     } 'did not pass the automated semantic gate' (
         'A valid negative semantic grade passed automated acceptance.'
@@ -681,11 +773,21 @@ try {
             Message = 'wrong PATH receipt'
             Failure = 'A result without the configured single-reviewer receipt was accepted.'
         }
+        @{
+            Arguments = @{ OmitValidationReference = $true }
+            Message = 'no single complete successful read of the claim-validation reference'
+            Failure = 'A treatment result without the validation reference read was accepted.'
+        }
+        @{
+            Arguments = @{ OmitValidationReceipt = $true }
+            Message = 'omits the claim-triggered validation receipt'
+            Failure = 'A treatment result without the validation receipt was accepted.'
+        }
     )) {
         $arguments = $case.Arguments
         Write-FakeResult (New-FakeResult @arguments) $resultsPath
         Assert-Throws {
-            & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+            & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
                 -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId
         } $case.Message $case.Failure
     }
@@ -702,7 +804,7 @@ try {
             New-FakeResult -AnswerAccessShape $shape
         ) $resultsPath
         Assert-Throws {
-            & $checker -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+            & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
                 -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId
         } 'observed access to grader-only answer material' (
             "Observed answer access through $shape was accepted."
@@ -718,14 +820,14 @@ try {
         New-FakeControlResult -ControlId $correctControl `
             -Stimulus $stimulus -Grader 'semantic-review-pr-70106' -Score 1
     ) $controlResultsPath
-    & $checker -ControlResultsDirectory (Split-Path $controlResultsRoot -Parent) `
+    & $checker -SpecPath $specPath -ControlResultsDirectory (Split-Path $controlResultsRoot -Parent) `
         -ExpectedControlId $correctControl
 
     Write-FakeResult (
         New-FakeControlResult -ControlId $badControl `
             -Stimulus $stimulus -Grader 'semantic-review-pr-70106' -Score 0
     ) $controlResultsPath
-    & $checker -ControlResultsDirectory (Split-Path $controlResultsRoot -Parent) `
+    & $checker -SpecPath $specPath -ControlResultsDirectory (Split-Path $controlResultsRoot -Parent) `
         -ExpectedControlId $badControl
 
     foreach ($controlCase in @(
@@ -771,7 +873,7 @@ try {
     )) {
         Write-FakeResult $controlCase.Result $controlResultsPath
         Assert-Throws {
-            & $checker -ControlResultsDirectory (
+            & $checker -SpecPath $specPath -ControlResultsDirectory (
                 Split-Path $controlResultsRoot -Parent
             ) -ExpectedControlId $controlCase.ExpectedId
         } $controlCase.Message $controlCase.Failure

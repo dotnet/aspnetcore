@@ -141,6 +141,53 @@ file-read events were not retained. Its binary 0 is supported by the frozen
 label and manual source adjudication, not independent ground truth supplied by
 the judge.
 
+## Claim-triggered validation experiment
+
+A later bounded comparison tested one process candidate: after initial
+candidate generation, expose only candidate ID, claim type, and changed
+`file:line`; then read an instruction-owned validation reference from the
+native installed skill and adjudicate producer/support, exact schedule,
+base-to-head causality, material effect, and any applicable incomplete-fix or
+new-feature obligation. The reference distinguishes `UNRESOLVED`,
+`DISCARDED`, and `N/A`, and explicitly rejects blanket concurrency and
+pre-existing-state vetoes.
+
+The comparison froze the current two-case projections, ordinary caller prompt,
+labels, rubric, GPT-5.6 subject, Gemini judge, Vally 0.19.0, Copilot CLI 1.0.80,
+and Copilot SDK 1.0.15 before all four attempts. The baseline used reviewer
+skill blob `b11fe9fe79b5d848687ba1c93362f4aaf22bfe53`; the treatment used
+`a8c9856cd260ad22938a2e1bfe638294abe635f3` plus reference blob
+`f9fa346b2001a5cb551748a369c7fd78d8ca22a7`. Each arm ran each case once with
+one worker and no retries, followed by exactly one associated grade.
+
+| Arm | Case | Run | Integrity | Score | Observed outcome |
+|---|---|---|---|---|---|
+| baseline | #70106 | `80264656-7637-4e1d-b354-d7fbf48e22e4` | pass | 0 | The unsupported actionable P2 recurred. |
+| baseline | #57972 | `88337c83-1a44-4be3-ac7b-51eb2869b3ff` | pass | 0 | The required `_operationTransformerContextCache` finding was missed; unlisted findings require manual adjudication. |
+| treatment | #70106 | `2431eec9-973a-4f8f-ade6-fe399ec11a2d` | fail | 0 | The installed reference was read with exact bytes after the ledger, but the provisional ledger included reasoning and the unsupported actionable P2 persisted. |
+| treatment | #57972 | `909c0edd-0f97-490d-8ee0-4f86cbae1cb9` | pass | 0 | The phase executed, but the required positive was still missed; an unlisted cache-factory finding requires manual adjudication. |
+
+The treatment reference read was delivered from the activated skill installation
+with exact path, byte hash, and event ordering in both treatment runs. That
+receipt proves phase delivery only, not semantic validation. Both arms scored 0
+on both cases, so this experiment shows no attributable repair. The treatment
+also failed its own minimal-ledger contract on #70106. No attempt was retried,
+no controls or other model families were run, and no guide or label was retuned
+after observing the results. Accounting closed at four reviewer CLI attempts and
+four actual reviewer calls, plus four associated-grade CLI attempts and four
+actual judge calls, with zero execution errors. That authorized comparison
+budget is exhausted; no additional paid run is part of this draft.
+
+This is exposed-two-case, one-trial-per-cell development evidence. It does not
+establish a treatment effect, general reviewer improvement, or hosted
+coordinator/worker arbitration behavior. The failed process candidate remains
+in this draft only as the opt-in eval-local
+`treatments/claim-validation/review-pull-request/SKILL.md` and reference,
+exercised by
+`reviewer-capability-treatment.vally.yaml`. The live default reviewer skill is
+the unchanged baseline. This preserves the exact measured proposal and negative
+result without silently promoting it as a fix.
+
 ## Revision rules
 
 - Revise a source label only when new primary evidence contradicts it; retain

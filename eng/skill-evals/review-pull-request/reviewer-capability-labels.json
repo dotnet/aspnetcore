@@ -1,5 +1,11 @@
 {
-  "revision": 3,
+  "revision": 4,
+  "priorPrunedRevision": {
+    "revision": 3,
+    "gitCommit": "ebac3e30f5551a676ea7c309c2891c3f82f2777d",
+    "gitBlob": "85769d8d5a614feb7416d4e0f5ca92e74d7afe0f",
+    "sha256": "b4fbecb94860b7f2c8bc64e1be2cacb6d5b0688799acc4ba928b1e6cf106e319"
+  },
   "priorMeasuredRevision": {
     "revision": 2,
     "gitCommit": "b34fe32c517ec4e1d8ce8cd0e3085b610a98b3b6",
@@ -7,6 +13,16 @@
     "sourceSha256": "044c19252892b0cae2c34d171093baa3dd66bea7e7178cd8a8cf9995f1a58cce",
     "runArtifactSha256": "b0b998084069ad68c5d65322ec2e8e24385c316a619a4448e614ed00801e813c",
     "runId": "3cf0bd32-d93e-41ca-8650-547caafe9379"
+  },
+  "treatment": {
+    "name": "claim-triggered-source-validation",
+    "reviewSkillGitBlob": "a8c9856cd260ad22938a2e1bfe638294abe635f3",
+    "reviewSkillNormalizedUtf8Bytes": 19704,
+    "reviewSkillNormalizedSha256": "f6f5c4106bfcc93c71f2bb99ba04b66098cef923f2d8c115d6fe186e0aa6ef14",
+    "referenceGitBlob": "f9fa346b2001a5cb551748a369c7fd78d8ca22a7",
+    "referenceUtf8Bytes": 2321,
+    "referenceSha256": "b0d17d576f8d6d5854f3c0bfb81fb65ae0ceea648cd9bff9a117b530c37ce08c",
+    "rubricSha256": "9315527697ebb40bc9073d2639128301a6308faf011fd798e72c243f14be109d"
   },
   "criteria": {
     "repository": "dotnet/aspnetcore",

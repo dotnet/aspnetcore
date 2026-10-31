@@ -38,8 +38,20 @@ Run its model-free integrity and schema checks with:
   -Eval eng/skill-evals/review-pull-request/reviewer-capability.vally.yaml
 ./eng/skill-evals/run.ps1 Validate `
   -Eval eng/skill-evals/review-pull-request/reviewer-capability.vally.yaml
+./eng/skill-evals/run.ps1 Lint `
+  -Eval eng/skill-evals/review-pull-request/reviewer-capability-treatment.vally.yaml
+./eng/skill-evals/run.ps1 Validate `
+  -Eval eng/skill-evals/review-pull-request/reviewer-capability-treatment.vally.yaml
 ./eng/skill-evals/run.ps1 Test
 ```
+
+The current draft also includes an experimental claim-triggered validation
+phase as an opt-in eval-local treatment; the default reviewer skill remains
+unchanged. Its frozen two-case, one-trial-per-cell baseline/treatment comparison
+scored 0 in all four cells, so it is retained as a failed process candidate
+rather than a demonstrated fix. See
+`review-pull-request/reviewer-capability-development.md` for exact run IDs,
+integrity outcomes, and claim boundaries.
 
 The suite's derivative trajectories are judge-development controls, not subject
 attempts. They must be graded through the same configured prompt-grader path,

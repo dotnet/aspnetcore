@@ -1,0 +1,118 @@
+version: 2
+name: review-pull-request-capability-development
+description: >
+  Trusted one-context, single-reviewer development cases over frozen ASP.NET
+  Core pull-request source projections. This is not a hosted review replay or
+  a coordinator/per-guide-worker fidelity test.
+defaults:
+  trials: 1
+  timeout: 15m
+  model: gpt-5.6-sol
+  constraints:
+    max_turns: 25
+    max_duration: 12m
+stimuli:
+  - name: reviewer-capability-pr-70106
+    tags:
+      case: pr-70106
+    prompt: >
+      This is an explicitly configured offline one-pass comparison. Use the
+      review-pull-request skill's single-reviewer path: apply the exact routed
+      guide texts and gates in this one context, do not spawn workers or
+      subagents, and report PATH: single-reviewer. Review the frozen pull
+      request represented by review/bundle. Treat it as the revision presented
+      for review, use the included source, diff, changed-file metadata, pull
+      description, existing feedback, guidance, policies, exclusions, and
+      context, and report only actionable changed-line findings not already
+      covered by feedback. If there are no findings, say NO_FINDINGS. Do not
+      modify files or contact GitHub.
+    rubric:
+      - Grade the pr-70106 case.
+    agent_environment:
+      skills:
+        - treatments/claim-validation/review-pull-request
+      files:
+        - src: fixtures/reviewer-capability/common/guidance
+          dest: review/bundle/guidance
+        - src: fixtures/reviewer-capability/common/required
+          dest: review/bundle/required
+        - src: fixtures/reviewer-capability/cases/pr-70106/bundle
+          dest: review/bundle
+        - src: fixtures/reviewer-capability/cases/pr-70106/projection-map.json
+          dest: review/bundle/projection-map.json
+    grading_environment:
+      files:
+        - src: reviewer-capability-labels.json
+          dest: .reviewer-eval/labels.json
+        - src: reviewer-capability-rubric.md
+          dest: .reviewer-eval/rubric.md
+    graders:
+      - type: prompt
+        name: semantic-review-pr-70106
+        config:
+          model: gemini-4-argon
+          reasoning_effort: medium
+          scoring: binary
+          threshold: 1
+          evidence:
+            - trajectory
+            - repo
+          prompt: >
+            Evaluate the review outcome for the named stimulus using the
+            source-backed case label in .reviewer-eval/labels.json and the
+            adjudication rules in .reviewer-eval/rubric.md. Judge the claims
+            the reviewer actually made. Do not award semantic credit for
+            process receipts, formatting, or tool usage. A plausible finding
+            outside the label key requires manual source adjudication: return
+            a binary failure and include MANUAL_ADJUDICATION_REQUIRED in the
+            rationale, even when a required finding is also present.
+  - name: reviewer-capability-pr-57972
+    tags:
+      case: pr-57972
+    prompt: >
+      This is an explicitly configured offline one-pass comparison. Use the
+      review-pull-request skill's single-reviewer path: apply the exact routed
+      guide texts and gates in this one context, do not spawn workers or
+      subagents, and report PATH: single-reviewer. Review the frozen pull
+      request represented by review/bundle. Treat it as the revision presented
+      for review, use the included source, diff, changed-file metadata, pull
+      description, existing feedback, guidance, policies, exclusions, and
+      context, and report only actionable changed-line findings not already
+      covered by feedback. If there are no findings, say NO_FINDINGS. Do not
+      modify files or contact GitHub.
+    rubric:
+      - Grade the pr-57972 case.
+    agent_environment:
+      skills:
+        - treatments/claim-validation/review-pull-request
+      files:
+        - src: fixtures/reviewer-capability/cases/pr-57972/bundle
+          dest: review/bundle
+        - src: fixtures/reviewer-capability/cases/pr-57972/projection-map.json
+          dest: review/bundle/projection-map.json
+    grading_environment:
+      files:
+        - src: reviewer-capability-labels.json
+          dest: .reviewer-eval/labels.json
+        - src: reviewer-capability-rubric.md
+          dest: .reviewer-eval/rubric.md
+    graders:
+      - type: prompt
+        name: semantic-review-pr-57972
+        config:
+          model: gemini-4-argon
+          reasoning_effort: medium
+          scoring: binary
+          threshold: 1
+          evidence:
+            - trajectory
+            - repo
+          prompt: >
+            Evaluate the review outcome for the named stimulus using the
+            source-backed case label in .reviewer-eval/labels.json and the
+            adjudication rules in .reviewer-eval/rubric.md. Judge the claims
+            the reviewer actually made. Do not award semantic credit for
+            process receipts, formatting, or tool usage. A plausible finding
+            outside the label key requires manual source adjudication: return
+            a binary failure and include MANUAL_ADJUDICATION_REQUIRED in the
+            rationale, even when a required finding is also present.
