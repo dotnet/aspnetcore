@@ -112,7 +112,7 @@ internal abstract class MessagePackHubProtocolWorker
         var invocationId = ReadInvocationId(ref reader);
         ThrowIfNullOrEmpty(invocationId, "invocation ID for StreamInvocation message");
 
-        var target = ReadString(ref reader, binder, "target");
+        var target = ReadString(ref reader, "target");
         ThrowIfNullOrEmpty(target, "target for StreamInvocation message");
 
         object?[] arguments;
