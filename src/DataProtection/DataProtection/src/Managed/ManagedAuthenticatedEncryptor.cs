@@ -6,8 +6,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
@@ -331,7 +329,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
             var written = writer.WrittenSpan;
             CryptoUtil.Assert(written.Length == outputSize, "bytesWritten == size");
-            CryptoUtil.Assert(Unsafe.AreSame(ref MemoryMarshal.GetReference(written), ref MemoryMarshal.GetReference(outputSpan)), "Payload must be written to the output buffer.");
+            CryptoUtil.Assert(written.Overlaps(outputSpan, out var elementOffset) && elementOffset == 0, "Payload must be written to the output buffer.");
         }
         finally
         {

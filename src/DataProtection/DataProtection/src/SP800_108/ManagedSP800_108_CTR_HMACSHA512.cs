@@ -97,11 +97,11 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 
 #if NET10_0_OR_GREATER
         // The label (AAD) contains the purpose strings, which commonly push the input past 128 bytes
-        // (e.g. application discriminator + cookie authentication purposes), so use a larger stack buffer.
-        byte[]? prfInputArray = null;
-        Span<byte> prfInput = prfInputLength <= 512
-            ? stackalloc byte[512].Slice(0, prfInputLength)
-            : (prfInputArray = new byte[prfInputLength]);
+        // (e.g. application discriminator + cookie authentication purposes), so rent instead of allocating.
+        byte[]? rentedPrfInput = null;
+        Span<byte> prfInput = prfInputLength <= 128
+            ? stackalloc byte[128].Slice(0, prfInputLength)
+            : (rentedPrfInput = ArrayPool<byte>.Shared.Rent(prfInputLength)).AsSpan(0, prfInputLength);
 #else
         var prfInputArray = new byte[prfInputLength];
         var prfInput = prfInputArray.AsSpan();
@@ -132,7 +132,9 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 #if NET10_0_OR_GREATER
                 if (prf is not null)
                 {
-                    var prfOutputArray = prf.ComputeHash(prfInputArray ?? prfInput.ToArray());
+                    var prfOutputArray = rentedPrfInput is not null
+                        ? prf.ComputeHash(rentedPrfInput, 0, prfInputLength)
+                        : prf.ComputeHash(prfInput.ToArray());
                     prfOutputArray.CopyTo(prfOutput);
                 }
                 else
@@ -174,6 +176,13 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         finally
         {
             prfInput.Clear();
+#if NET10_0_OR_GREATER
+            if (rentedPrfInput is not null)
+            {
+                // Contains key derivation input, so clear it before returning it to the pool.
+                ArrayPool<byte>.Shared.Return(rentedPrfInput, clearArray: true);
+            }
+#endif
         }
     }
 }
