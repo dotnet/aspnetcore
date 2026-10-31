@@ -446,7 +446,7 @@ internal sealed class OutputCacheMiddleware
                 {
                     _logger.ResponseCached();
 
-                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.Tags, context.CachedResponseValidFor,
+                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.TagsOrNull, context.CachedResponseValidFor,
                         _store, _logger, context.HttpContext.RequestAborted);
 
                     return true;

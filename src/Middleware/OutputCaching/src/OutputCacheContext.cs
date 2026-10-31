@@ -55,7 +55,12 @@ public sealed class OutputCacheContext
     /// <summary>
     /// Gets the tags of the cached response.
     /// </summary>
-    public HashSet<string> Tags { get; } = new();
+    public HashSet<string> Tags => _tags ??= new();
+
+    // Created on first access so requests without tags don't allocate a set.
+    private HashSet<string>? _tags;
+
+    internal HashSet<string>? TagsOrNull => _tags;
 
     /// <summary>
     /// Gets or sets the amount of time the response should be cached for.
