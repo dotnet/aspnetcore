@@ -21,7 +21,12 @@ public class ComponentState : IAsyncDisposable
     private bool _hasCascadingParameters;
     private bool _hasCompletedInitialParameterSupply;
     private bool _hasSingleDeliveryCascadingParameters;
-    private RenderTreeBuilder _nextRenderTree;
+    // Created on demand when the component renders for a second time. Until then, the first render
+    // is written directly into CurrentRenderTree and diffed against an empty tree. Many components
+    // (e.g., all components during static SSR) only ever render once, so this avoids allocating a
+    // second RenderTreeBuilder for them.
+    private RenderTreeBuilder? _nextRenderTree;
+    private bool _hasRendered;
     private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
     private bool _componentWasDisposed;
     private readonly string? _componentTypeName;
@@ -44,7 +49,6 @@ public class ComponentState : IAsyncDisposable
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         _cascadingParameters = CascadingParameterState.FindCascadingParameters(this, out _hasSingleDeliveryCascadingParameters);
         CurrentRenderTree = new RenderTreeBuilder();
-        _nextRenderTree = new RenderTreeBuilder();
 
         _renderer.RegisterComponentState(component, ComponentId, this);
 
@@ -112,32 +116,58 @@ public class ComponentState : IAsyncDisposable
             return;
         }
 
-        _nextRenderTree.Clear();
+        var isFirstRender = !_hasRendered;
+        var renderTree = isFirstRender ? CurrentRenderTree : (_nextRenderTree ??= new RenderTreeBuilder());
+        renderTree.Clear();
 
         try
         {
-            renderFragment(_nextRenderTree);
+            renderFragment(renderTree);
         }
         catch (Exception ex)
         {
             // If an exception occurs in the render fragment delegate, we won't process the diff in any way, so child components,
             // event handlers, etc., will all be left untouched as if this component didn't re-render at all. The Renderer will
             // then forcibly clear the descendant subtree by rendering an empty fragment for this component.
+            if (isFirstRender)
+            {
+                // CurrentRenderTree must keep representing the (empty) output from before this render
+                CurrentRenderTree.Clear();
+            }
+
             renderFragmentException = ex;
             return;
         }
 
         // We don't want to make errors from this be recoverable, because there's no legitimate reason for them to happen
-        _nextRenderTree.AssertTreeIsValid(Component);
+        try
+        {
+            renderTree.AssertTreeIsValid(Component);
+        }
+        catch when (isFirstRender)
+        {
+            CurrentRenderTree.Clear();
+            throw;
+        }
 
-        // Swap the old and new tree builders
-        (CurrentRenderTree, _nextRenderTree) = (_nextRenderTree, CurrentRenderTree);
+        ArrayRange<RenderTreeFrame> oldTree;
+        if (isFirstRender)
+        {
+            _hasRendered = true;
+            oldTree = new ArrayRange<RenderTreeFrame>(Array.Empty<RenderTreeFrame>(), 0);
+        }
+        else
+        {
+            // Swap the old and new tree builders
+            (CurrentRenderTree, _nextRenderTree) = (renderTree, CurrentRenderTree);
+            oldTree = _nextRenderTree.GetFrames();
+        }
 
         var diff = RenderTreeDiffBuilder.ComputeDiff(
             _renderer,
             batchBuilder,
             ComponentId,
-            _nextRenderTree.GetFrames(),
+            oldTree,
             CurrentRenderTree.GetFrames());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
@@ -354,7 +384,7 @@ public class ComponentState : IAsyncDisposable
 
     private void DisposeBuffers()
     {
-        ((IDisposable)_nextRenderTree).Dispose();
+        ((IDisposable?)_nextRenderTree)?.Dispose();
         ((IDisposable)CurrentRenderTree).Dispose();
         _latestDirectParametersSnapshot?.Dispose();
     }
