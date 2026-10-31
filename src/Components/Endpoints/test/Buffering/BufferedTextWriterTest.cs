@@ -159,7 +159,7 @@ public class BufferedTextWriterTest
         writer.Write('z');
         await writer.FlushAsync();
 
-        Assert.Equal("<a>" + longString + "-123" + int.MinValue.ToString(writer.FormatProvider) + "z", underlying.ToString());
+        Assert.Equal("<a>" + longString + (-123).ToString(writer.FormatProvider) + int.MinValue.ToString(writer.FormatProvider) + "z", underlying.ToString());
     }
 
     private class SlowFlushingTextWriter : StringWriter
