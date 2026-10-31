@@ -46,12 +46,27 @@ public class RolesAuthorizationRequirement : AuthorizationHandler<RolesAuthoriza
         {
             var found = false;
 
-            foreach (var role in requirement.AllowedRoles)
+            if (requirement.AllowedRoles is string[] allowedRoles)
             {
-                if (context.User.IsInRole(role))
+                // Avoid allocating an enumerator for the common array case.
+                foreach (var role in allowedRoles)
                 {
-                    found = true;
-                    break;
+                    if (context.User.IsInRole(role))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var role in requirement.AllowedRoles)
+                {
+                    if (context.User.IsInRole(role))
+                    {
+                        found = true;
+                        break;
+                    }
                 }
             }
 

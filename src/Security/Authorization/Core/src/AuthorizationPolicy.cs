@@ -217,8 +217,9 @@ public class AuthorizationPolicy
                 var rolesSplit = authorizeDatum.Roles?.Split(',');
                 if (rolesSplit?.Length > 0)
                 {
-                    var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim());
-                    policyBuilder.RequireRole(trimmedRolesSplit);
+                    // Materialize the trimmed roles once. The combined policy is typically cached per endpoint, so a lazy
+                    // query here would be re-evaluated (and re-trim/allocate role names) on every authorization check.
+                    policyBuilder.RequireRole(TrimRoles(rolesSplit));
                     useDefaultPolicy = false;
                 }
 
@@ -282,5 +283,34 @@ public class AuthorizationPolicy
         }
 
         return combinedPolicy;
+    }
+
+    private static string[] TrimRoles(string[] rolesSplit)
+    {
+        var count = 0;
+        foreach (var role in rolesSplit)
+        {
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                count++;
+            }
+        }
+
+        if (count == 0)
+        {
+            return Array.Empty<string>();
+        }
+
+        var trimmedRoles = new string[count];
+        var index = 0;
+        foreach (var role in rolesSplit)
+        {
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                trimmedRoles[index++] = role.Trim();
+            }
+        }
+
+        return trimmedRoles;
     }
 }

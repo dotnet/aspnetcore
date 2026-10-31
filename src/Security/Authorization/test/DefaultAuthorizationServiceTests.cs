@@ -435,6 +435,25 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
+    [Theory]
+    [InlineData("Users", true)]
+    [InlineData("Admin", true)]
+    [InlineData("Other", false)]
+    public async Task RolePolicyWithNonArrayRolesCanRequireOneOfManyRoles(string userRole, bool expected)
+    {
+        // Arrange
+        var policy = new AuthorizationPolicyBuilder("AuthType").RequireRole(new List<string> { "Admin", "Users" });
+        var authorizationService = BuildAuthorizationService();
+        var user = new ClaimsPrincipal(
+            new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.Role, userRole) }, "AuthType"));
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, policy.Build());
+
+        // Assert
+        Assert.Equal(expected, allowed.Succeeded);
+    }
+
     [Fact]
     public async Task RolePolicyCanBlockWrongRole()
     {
