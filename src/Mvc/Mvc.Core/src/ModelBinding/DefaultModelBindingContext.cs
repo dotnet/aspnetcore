@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
@@ -305,8 +304,9 @@ public class DefaultModelBindingContext : ModelBindingContext
     /// <inheritdoc />
     protected override void ExitNestedScope()
     {
-        Debug.Assert(_stack is not null);
-        _state = _stack.Pop();
+        // NestedScope can be constructed and disposed without EnterNestedScope having been called. Popping an
+        // empty stack preserves the InvalidOperationException thrown in that case.
+        _state = (_stack ??= new Stack<State>(1)).Pop();
     }
 
     private static IValueProvider FilterValueProvider(IValueProvider valueProvider, BindingSource? bindingSource)
