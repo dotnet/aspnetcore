@@ -307,6 +307,21 @@ public class TagBuilder : IHtmlContent
         // Perf: Avoid allocating enumerator for `attributes` if possible
         if (attributes != null && attributes.Count > 0)
         {
+            // Perf: Use the struct enumerator rather than boxing one through IDictionary. Use an exact type check so
+            // that derived types which re-implement the enumeration interfaces keep using them.
+            if (attributes.GetType() == typeof(Dictionary<string, object>))
+            {
+                var dictionary = (Dictionary<string, object>)(object)attributes;
+                foreach (var entry in dictionary)
+                {
+                    var key = Convert.ToString(entry.Key, CultureInfo.InvariantCulture)!;
+                    var value = Convert.ToString(entry.Value, CultureInfo.InvariantCulture);
+                    MergeAttribute(key, value, replaceExisting);
+                }
+
+                return;
+            }
+
             foreach (var entry in attributes)
             {
                 var key = Convert.ToString(entry.Key, CultureInfo.InvariantCulture)!;

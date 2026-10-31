@@ -281,6 +281,24 @@ public class InputTagHelper : TagHelper
     /// <returns>An &lt;input&gt; element's "type" attribute value.</returns>
     protected string GetInputType(ModelExplorer modelExplorer, out string inputTypeHint)
     {
+        // Perf: Check the hints that most commonly match without allocating the GetInputTypeHints iterators.
+        // These are checked in the same order GetInputTypeHints returns them.
+        var metadata = modelExplorer.Metadata;
+        if (TryGetDefaultInputType(metadata.TemplateHint, out var hintInputType) ||
+            TryGetDefaultInputType(metadata.DataTypeName, out hintInputType))
+        {
+            inputTypeHint = hintInputType.Key;
+            return hintInputType.Value;
+        }
+
+        var fieldType = GetInputTypeHintFieldType(modelExplorer);
+        if (typeof(IEnumerable<IFormFile>) != fieldType &&
+            TryGetDefaultInputType(fieldType.Name, out hintInputType))
+        {
+            inputTypeHint = hintInputType.Key;
+            return hintInputType.Value;
+        }
+
         foreach (var hint in GetInputTypeHints(modelExplorer))
         {
             if (_defaultInputTypes.TryGetValue(hint, out var inputType))
@@ -520,6 +538,31 @@ public class InputTagHelper : TagHelper
         return format;
     }
 
+    private static bool TryGetDefaultInputType(string hint, out KeyValuePair<string, string> hintInputType)
+    {
+        if (!string.IsNullOrEmpty(hint) && _defaultInputTypes.TryGetValue(hint, out var inputType))
+        {
+            hintInputType = new(hint, inputType);
+            return true;
+        }
+
+        hintInputType = default;
+        return false;
+    }
+
+    private static Type GetInputTypeHintFieldType(ModelExplorer modelExplorer)
+    {
+        // In most cases, we don't want to search for Nullable<T>. We want to search for T, which should handle
+        // both T and Nullable<T>. However we special-case bool? to avoid turning an <input/> into a <select/>.
+        var fieldType = modelExplorer.ModelType;
+        if (typeof(bool?) != fieldType)
+        {
+            fieldType = modelExplorer.Metadata.UnderlyingOrModelType;
+        }
+
+        return fieldType;
+    }
+
     // A variant of TemplateRenderer.GetViewNames(). Main change relates to bool? handling.
     private static IEnumerable<string> GetInputTypeHints(ModelExplorer modelExplorer)
     {
@@ -533,14 +576,7 @@ public class InputTagHelper : TagHelper
             yield return modelExplorer.Metadata.DataTypeName;
         }
 
-        // In most cases, we don't want to search for Nullable<T>. We want to search for T, which should handle
-        // both T and Nullable<T>. However we special-case bool? to avoid turning an <input/> into a <select/>.
-        var fieldType = modelExplorer.ModelType;
-        if (typeof(bool?) != fieldType)
-        {
-            fieldType = modelExplorer.Metadata.UnderlyingOrModelType;
-        }
-
+        var fieldType = GetInputTypeHintFieldType(modelExplorer);
         foreach (var typeName in TemplateRenderer.GetTypeNames(modelExplorer.Metadata, fieldType))
         {
             yield return typeName;
