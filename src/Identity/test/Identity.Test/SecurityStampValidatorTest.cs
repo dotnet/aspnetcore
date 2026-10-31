@@ -437,10 +437,12 @@ public class SecurityStampTest
         var twoFactorValidator = new TwoFactorSecurityStampValidator<PocoUser>(options, signInManager.Object, loggerFactory2);
 
         Assert.Same(validator1.Logger, validator2.Logger);
+        Assert.Equal(1, loggerFactory1.CreateLoggerCallCount);
         Assert.Equal("Microsoft.AspNetCore.Identity.SecurityStampValidator", ((CategoryLogger)validator1.Logger).Category);
         Assert.NotSame(validator1.Logger, validator3.Logger);
         Assert.Equal("Microsoft.AspNetCore.Identity.SecurityStampValidator", ((CategoryLogger)validator3.Logger).Category);
         Assert.Equal("Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator", ((CategoryLogger)twoFactorValidator.Logger).Category);
+        Assert.Equal(2, loggerFactory2.CreateLoggerCallCount);
         Assert.Throws<ArgumentNullException>("factory", () => new SecurityStampValidator<PocoUser>(options, signInManager.Object, null));
     }
 
@@ -450,8 +452,11 @@ public class SecurityStampTest
 
         public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
 
+        public int CreateLoggerCallCount { get; private set; }
+
         public ILogger CreateLogger(string categoryName)
         {
+            CreateLoggerCallCount++;
             if (!_loggers.TryGetValue(categoryName, out var logger))
             {
                 logger = new CategoryLogger(categoryName);
