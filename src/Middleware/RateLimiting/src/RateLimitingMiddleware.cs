@@ -230,6 +230,8 @@ internal sealed partial class RateLimitingMiddleware
 
                 if (!useEndpointLimiter)
                 {
+                    // The skipped no-op endpoint AcquireAsync would still have observed cancellation.
+                    cancellationToken.ThrowIfCancellationRequested();
                     return new LeaseContext() { Lease = globalLease };
                 }
             }

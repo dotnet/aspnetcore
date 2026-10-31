@@ -762,6 +762,68 @@ public class RateLimitingMiddlewareTests
         Assert.True(finalLease.IsAcquired);
     }
 
+    [Fact]
+    public async Task GlobalOnly_NoEndpointPolicy_RequestAbortedWhileQueued_ReleasesGlobalLeaseAndSkipsNext()
+    {
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RateLimitingMiddleware>,
+            TestSink.EnableWithTypeName<RateLimitingMiddleware>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        using var requestAborted = new CancellationTokenSource();
+        var globalLimiter = new CancelOnAcquireLimiter(requestAborted);
+        var options = CreateOptionsAccessor();
+        options.Value.GlobalLimiter = globalLimiter;
+
+        var nextInvoked = false;
+        var middleware = new RateLimitingMiddleware(c =>
+            {
+                nextInvoked = true;
+                return Task.CompletedTask;
+            },
+            loggerFactory.CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>(),
+            new RateLimitingMetrics(new TestMeterFactory()));
+
+        var context = new DefaultHttpContext { RequestAborted = requestAborted.Token };
+        await middleware.Invoke(context);
+
+        Assert.False(nextInvoked);
+        Assert.True(globalLimiter.LeaseDisposed);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        var message = Assert.Single(sink.Writes);
+        Assert.Equal("The request was canceled.", message.State.ToString());
+    }
+
+    // Fails the synchronous attempt, then grants the queued request while the request is being aborted.
+    private sealed class CancelOnAcquireLimiter(CancellationTokenSource requestAborted) : PartitionedRateLimiter<HttpContext>
+    {
+        public bool LeaseDisposed { get; private set; }
+
+        public override RateLimiterStatistics GetStatistics(HttpContext resource) => null;
+
+        protected override RateLimitLease AttemptAcquireCore(HttpContext resource, int permitCount) => new TestRateLimitLease(false, null);
+
+        protected override ValueTask<RateLimitLease> AcquireAsyncCore(HttpContext resource, int permitCount, CancellationToken cancellationToken)
+        {
+            requestAborted.Cancel();
+            return new ValueTask<RateLimitLease>(new CallbackLease(() => LeaseDisposed = true));
+        }
+    }
+
+    private sealed class CallbackLease(Action onDispose) : RateLimitLease
+    {
+        public override bool IsAcquired => true;
+        public override IEnumerable<string> MetadataNames => [];
+        public override bool TryGetMetadata(string metadataName, out object metadata)
+        {
+            metadata = null;
+            return false;
+        }
+        protected override void Dispose(bool disposing) => onDispose();
+    }
+
     private Endpoint CreateEndpointWithRateLimitPolicy(string policy)
     {
         var testConventionBuilder = new TestEndpointConventionBuilder();
