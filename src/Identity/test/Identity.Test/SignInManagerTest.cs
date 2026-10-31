@@ -1782,6 +1782,29 @@ public class SignInManagerTest
     }
 
     [Fact]
+    public async Task MultipleSignInManagersWithSameMeterFactory_RecordMetrics()
+    {
+        // Setup
+        var testMeterFactory = new TestMeterFactory();
+        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutsCounterName);
+
+        var manager = MockHelpers.TestUserManager<PocoUser>(meterFactory: testMeterFactory);
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        auth.Setup(a => a.SignOutAsync(context, It.IsAny<string>(), It.IsAny<AuthenticationProperties>())).Returns(Task.FromResult(0));
+        var helper1 = SetupSignInManager(manager, context, null, manager.Options);
+        var helper2 = SetupSignInManager(manager, context, null, manager.Options);
+
+        // Act
+        await helper1.SignOutAsync();
+        await helper2.SignOutAsync();
+
+        // Assert
+        Assert.Equal(2, signOutUserPrincipal.GetMeasurementSnapshot().Count);
+        Assert.Single(testMeterFactory.Meters);
+    }
+
+    [Fact]
     public async Task SignOutCallsContextResponseSignOut_Failure()
     {
         // Setup

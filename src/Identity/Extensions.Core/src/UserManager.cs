@@ -87,7 +87,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         Logger = logger;
         ServiceProvider = services;
         // UserManagerMetrics created from constructor because of difficulties registering internal type.        
-        _metrics = services?.GetService<IMeterFactory>() is { } factory ? new UserManagerMetrics(factory) : null;
+        _metrics = services?.GetService<IMeterFactory>() is { } factory ? UserManagerMetrics.GetOrCreate(factory) : null;
 
         if (userValidators != null)
         {

@@ -151,6 +151,53 @@ public class UserManagerTest
     }
 
     [Fact]
+    public async Task MultipleUserManagersWithSameMeterFactory_RecordMetrics()
+    {
+        // Setup
+        var testMeterFactory = new TestMeterFactory();
+        using var deleteUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteDurationName);
+
+        var store = new Mock<IUserStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo" };
+        store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success);
+        var userManager1 = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
+        var userManager2 = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
+
+        // Act
+        await userManager1.DeleteAsync(user);
+        await userManager2.DeleteAsync(user);
+
+        // Assert
+        Assert.Equal(2, deleteUser.GetMeasurementSnapshot().Count);
+        Assert.Single(testMeterFactory.Meters);
+    }
+
+    [Fact]
+    public async Task UserManagersWithDifferentMeterFactories_RecordMetricsToOwnFactory()
+    {
+        // Setup
+        var testMeterFactory1 = new TestMeterFactory();
+        var testMeterFactory2 = new TestMeterFactory();
+        using var deleteUser1 = new MetricCollector<double>(testMeterFactory1, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteDurationName);
+        using var deleteUser2 = new MetricCollector<double>(testMeterFactory2, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteDurationName);
+
+        var store = new Mock<IUserStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo" };
+        store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success);
+        var userManager1 = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory1);
+        var userManager2 = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory2);
+
+        // Act
+        await userManager1.DeleteAsync(user);
+        await userManager2.DeleteAsync(user);
+        await userManager2.DeleteAsync(user);
+
+        // Assert
+        Assert.Single(deleteUser1.GetMeasurementSnapshot());
+        Assert.Equal(2, deleteUser2.GetMeasurementSnapshot().Count);
+    }
+
+    [Fact]
     public async Task DeleteCallsStore_Failure()
     {
         // Setup
