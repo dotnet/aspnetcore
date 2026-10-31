@@ -103,6 +103,23 @@ public class ObjectVisitorTest
         }
     }
 
+    [Theory]
+    [MemberData(nameof(ReturnsExpandoAdapterData))]
+    public void Visit_ValidPathToKell_ReturnsExpandoAdapter(object targetObject, string path, object expectedTargetObject)
+    {
+        // Arrange
+        var visitor = new ObjectVisitor(new ParsedPath(path), JsonSerializerOptions.Default);
+
+        // Act
+        var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
+
+        // Assert
+        Assert.True(visitStatus);
+        Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+        Assert.Same(expectedTargetObject, targetObject);
+        Assert.IsType<ExpandoObjectAdapter>(adapter);
+    }
+
     public static IEnumerable<object[]> ReturnsPocoAdapterData
     {
         get
