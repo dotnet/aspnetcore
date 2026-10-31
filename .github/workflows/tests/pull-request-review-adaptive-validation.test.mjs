@@ -17,7 +17,9 @@ const localWorkerProfile = fs.readFileSync(
   path.join(repositoryRoot, '.github/agents/review-guide-worker.agent.md'), 'utf8');
 const retargetDiagnostic =
   'The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.';
-const normalizeProfile = value => value.replaceAll('\r\n', '\n').trimEnd();
+const normalizeLineEndings = value => value.replaceAll('\r\n', '\n');
+const normalizeProfile = value => normalizeLineEndings(value).trimEnd();
+const normalizeVerifier = value => normalizeLineEndings(value).replace(/^ {6}/gm, '');
 const inlineWorkerProfile = workflowSource.match(
   /## agent: `review-guide-worker`\r?\n([\s\S]+)$/);
 
@@ -126,7 +128,12 @@ assert.ok(lockVerifierStep, 'The compiled restricted-worker verifier step must b
 const lockVerifierRun = JSON.parse(lockVerifierStep[1]);
 const lockVerifierMatch = lockVerifierRun.match(/node - <<'NODE'\n([\s\S]*?)\nNODE$/);
 assert.ok(lockVerifierMatch, 'The compiled restricted-worker verifier script must be extractable.');
-const sourceVerifier = verifierMatch[1].replace(/^ {6}/gm, '');
+const sourceVerifier = normalizeVerifier(verifierMatch[1]);
+assert.equal(
+  normalizeVerifier(
+    normalizeLineEndings(verifierMatch[1]).replaceAll('\n', '\r\n')),
+  sourceVerifier,
+  'The workflow source verifier must be stable in a CRLF checkout.');
 assert.equal(
   lockVerifierMatch[1],
   sourceVerifier,
