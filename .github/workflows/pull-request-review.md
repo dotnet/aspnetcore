@@ -140,9 +140,17 @@ post-steps:
           }
         });
 
-      const subagents = new Map();
       const violations = [];
       const expectedWorkerCount = Number(expectedWorkerCountValue);
+      const toolInput = event => event.data?.arguments ?? event.data?.input;
+      const resultContent = event => event.data?.result?.content ?? event.result?.content;
+      const eventAliases = event =>
+        [event.agentId, event.data?.agentId, event.data?.toolCallId]
+          .filter(value => typeof value === 'string' && value.length > 0);
+      const isTopLevelToolStart = event =>
+        event.type === 'tool.execution_start' &&
+        !event.agentId &&
+        !event.data?.parentToolCallId;
       const hasValidStoppedOutput = () => {
         const safeOutputStarts = events.filter(event =>
           event.type === 'tool.execution_start' && !event.agentId &&
@@ -193,28 +201,115 @@ post-steps:
             `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`);
       };
       const validStoppedOutput = hasValidStoppedOutput();
+      const workers = new Map();
+      const workerAliases = new Map();
+      const taskStartsById = new Map();
+      const taskStartsByName = new Map();
 
-      for (const event of events) {
+      const registerAlias = (worker, alias) => {
+        if (typeof alias !== 'string' || alias.length === 0) {
+          return;
+        }
+        const existingWorker = workerAliases.get(alias);
+        if (existingWorker && existingWorker !== worker) {
+          violations.push(`Worker alias '${alias}' identifies more than one task.`);
+          return;
+        }
+        worker.aliases.add(alias);
+        workerAliases.set(alias, worker);
+      };
+
+      const resolveWorker = aliases => {
+        const matches = new Set(
+          aliases.map(alias => workerAliases.get(alias)).filter(Boolean));
+        return matches.size === 1 ? [...matches][0] : null;
+      };
+
+      events.forEach((event, index) => {
+        if (!isTopLevelToolStart(event) || event.data?.toolName !== 'task') {
+          return;
+        }
+
+        const input = toolInput(event);
+        const toolCallId = event.data?.toolCallId;
+        const name = input?.name;
+        if (!input || typeof input !== 'object' ||
+            typeof toolCallId !== 'string' || toolCallId.length === 0 ||
+            input.agent_type !== expectedAgentName ||
+            typeof name !== 'string' || name.length === 0 ||
+            input.mode !== 'background') {
+          violations.push(
+            `Invalid top-level review worker task '${name ?? '<unknown>'}'.`);
+          return;
+        }
+
+        const taskStart = { index, name, toolCallId };
+        if (taskStartsById.has(toolCallId)) {
+          violations.push(`Review worker task ID '${toolCallId}' is not unique.`);
+        } else {
+          taskStartsById.set(toolCallId, taskStart);
+        }
+        if (taskStartsByName.has(name)) {
+          violations.push(`Review worker task name '${name}' is not unique.`);
+        } else {
+          taskStartsByName.set(name, taskStart);
+        }
+      });
+
+      if (taskStartsById.size > expectedWorkerCount) {
+        violations.push(
+          `Expected at most ${expectedWorkerCount} review worker task start(s), but recorded ${taskStartsById.size}.`);
+      }
+
+      events.forEach((event, index) => {
         if (event.type !== 'subagent.started') {
-          continue;
+          return;
         }
 
         const agentName = event.data?.agentName;
-        if (!event.agentId) {
-          violations.push('A subagent started without an agent ID.');
-          continue;
-        }
-
-        subagents.set(event.agentId, agentName);
         if (agentName !== expectedAgentName) {
           violations.push(`Unexpected subagent '${agentName ?? '<unknown>'}' (${event.agentId}).`);
         }
-      }
+        if (typeof event.agentId !== 'string' || event.agentId.length === 0 ||
+            typeof event.data?.toolCallId !== 'string' ||
+            event.data.toolCallId.length === 0) {
+          violations.push('A subagent started without its required agent and tool call IDs.');
+          return;
+        }
 
-      const missingWorkersAllowed = validStoppedOutput && subagents.size < expectedWorkerCount;
-      if (subagents.size !== expectedWorkerCount && !missingWorkersAllowed) {
+        const matchingTasks = new Set(
+          eventAliases(event).map(alias => taskStartsById.get(alias)).filter(Boolean));
+        if (matchingTasks.size !== 1) {
+          violations.push(
+            `Subagent '${event.agentId}' started as an unregistered worker.`);
+          return;
+        }
+
+        const taskStart = [...matchingTasks][0];
+        let worker = workers.get(event.agentId);
+        if (!worker) {
+          worker = {
+            aliases: new Set(),
+            collections: [],
+            name: taskStart.name,
+            startedIndex: index,
+            taskStart,
+          };
+          workers.set(event.agentId, worker);
+        } else if (worker.taskStart !== taskStart) {
+          violations.push(`Worker agent ID '${event.agentId}' identifies more than one task.`);
+          return;
+        }
+
+        for (const alias of [...eventAliases(event), taskStart.name]) {
+          registerAlias(worker, alias);
+        }
+      });
+
+      const missingWorkersAllowed = validStoppedOutput && workers.size < expectedWorkerCount;
+      if (workers.size !== expectedWorkerCount && !missingWorkersAllowed) {
         violations.push(
-          `Expected ${expectedWorkerCount} per-guide review worker(s), but recorded ${subagents.size}.`);
+          `Expected ${expectedWorkerCount} per-guide review worker(s), but recorded ${workers.size}.`);
       }
 
       for (const event of events) {
@@ -222,6 +317,9 @@ post-steps:
           continue;
         }
 
+        if (!event.agentId && !event.data?.parentToolCallId) {
+          continue;
+        }
         if (!event.agentId) {
           if (event.data?.parentToolCallId) {
             violations.push(`Subagent tool '${event.data?.toolName ?? '<unknown>'}' is missing an agent ID.`);
@@ -229,12 +327,98 @@ post-steps:
           continue;
         }
 
-        const agentName = subagents.get(event.agentId);
+        const worker = resolveWorker([event.agentId]);
         const toolName = event.data?.toolName;
-        if (!agentName) {
+        if (!worker) {
           violations.push(`Tool '${toolName ?? '<unknown>'}' was used by an unregistered subagent (${event.agentId}).`);
         } else if (!allowedTools.has(toolName)) {
-          violations.push(`Subagent '${agentName}' used disallowed tool '${toolName ?? '<unknown>'}'.`);
+          violations.push(`Subagent '${expectedAgentName}' used disallowed tool '${toolName ?? '<unknown>'}'.`);
+        }
+      }
+
+      if (!validStoppedOutput) {
+        const firstPublicationIndex = events.findIndex(event =>
+          isTopLevelToolStart(event) &&
+          typeof event.data?.toolName === 'string' &&
+          event.data.toolName.startsWith('safeoutputs-'));
+        if (expectedWorkerCount === 0) {
+          violations.push(
+            'A review with no expected workers must publish a valid status-only stopped result.');
+        }
+        if (firstPublicationIndex < 0) {
+          violations.push('No publication safe-output call was recorded.');
+        }
+
+        events.forEach((event, startIndex) => {
+          if (!isTopLevelToolStart(event) ||
+              event.data?.toolName !== 'read_agent') {
+            return;
+          }
+
+          const input = toolInput(event);
+          const target = input?.agent_id;
+          const worker = typeof target === 'string'
+            ? resolveWorker([target])
+            : null;
+          if (!worker) {
+            violations.push(
+              `read_agent targeted unknown worker '${target ?? '<missing>'}'.`);
+            return;
+          }
+          if (input.wait !== true) {
+            violations.push(
+              `read_agent for '${worker.name}' must use wait: true.`);
+          }
+          const sinceTurn = input.since_turn;
+          if (sinceTurn !== undefined &&
+              (!Number.isInteger(sinceTurn) || sinceTurn < 0)) {
+            violations.push(
+              `read_agent for '${worker.name}' has an invalid since_turn.`);
+          }
+          const isInitialCollection = sinceTurn === undefined || sinceTurn === 0;
+
+          const toolCallId = event.data?.toolCallId;
+          const completions = events
+            .map((candidate, index) => ({ event: candidate, index }))
+            .filter(({ event: candidate }) =>
+              candidate.type === 'tool.execution_complete' &&
+              !candidate.agentId &&
+              !candidate.data?.parentToolCallId &&
+              candidate.data?.toolCallId === toolCallId);
+          if (typeof toolCallId !== 'string' || toolCallId.length === 0 ||
+              completions.length !== 1 ||
+              completions[0].index <= startIndex ||
+              completions[0].event.data?.success !== true) {
+            violations.push(
+              `read_agent for '${worker.name}' did not complete successfully.`);
+            return;
+          }
+
+          const completion = completions[0];
+          if (completion.index <= worker.startedIndex) {
+            violations.push(
+              `read_agent for '${worker.name}' completed before the worker started.`);
+          }
+          if (firstPublicationIndex >= 0 && completion.index >= firstPublicationIndex) {
+            violations.push(
+              `read_agent for '${worker.name}' did not complete before publication.`);
+          }
+
+          const content = resultContent(completion.event);
+          if (
+            isInitialCollection &&
+            typeof content === 'string' &&
+            content.trim().length > 0 &&
+            /^[ \t]*PATH:[ \t]*per-guide-worker[ \t]*$/m.test(content)) {
+            worker.collections.push(completion);
+          }
+        });
+
+        for (const worker of workers.values()) {
+          if (worker.collections.length === 0) {
+            violations.push(
+              `Review worker '${worker.name}' was not collected before publication with since_turn absent or 0 and PATH: per-guide-worker.`);
+          }
         }
       }
 
@@ -243,7 +427,7 @@ post-steps:
       }
 
       console.log(
-        `Verified ${subagents.size} restricted review worker(s)` +
+        `Verified ${workers.size} restricted review worker(s)` +
         `${missingWorkersAllowed ? ' with a status-only stopped result' : ''}.`);
       NODE
 

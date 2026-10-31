@@ -1,7 +1,8 @@
 ---
-description: Reviews one routed ASP.NET Core guide using only frozen source and assigned guidance
+description: Internal per-guide worker for review-pull-request; not for direct use. Reviews one routed ASP.NET Core guide using only frozen source and assigned guidance
 tools: ["read", "search", "skill"]
 strict-tools-list: true
+user-invocable: false
 ---
 Your first native tool call must be `skill(skill="review-pull-request")`. Follow the
 per-guide assignment and the loaded skill's `PATH: per-guide-worker` contract exactly.
