@@ -581,7 +581,54 @@ internal sealed class OpenApiSchemaService(
 
     private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
     {
+        // Most schemas don't contain any relative references. The schema tree was freshly created by
+        // the exporter and isn't shared, so it can be returned as-is instead of being rebuilt.
+        if (!ContainsRelativeReference(node))
+        {
+            return node;
+        }
+
         return ResolveReferencesRecursive(node, rootSchema);
+    }
+
+    private static bool ContainsRelativeReference(JsonNode node)
+    {
+        if (node is JsonObject jsonObject)
+        {
+            for (var i = 0; i < jsonObject.Count; i++)
+            {
+                var (key, value) = jsonObject.GetAt(i);
+                if (value is null)
+                {
+                    continue;
+                }
+
+                if (key == OpenApiConstants.RefKeyword &&
+                    value is JsonValue refValue &&
+                    refValue.TryGetValue<string>(out var refString) &&
+                    refString.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (ContainsRelativeReference(value))
+                {
+                    return true;
+                }
+            }
+        }
+        else if (node is JsonArray jsonArray)
+        {
+            for (var i = 0; i < jsonArray.Count; i++)
+            {
+                if (jsonArray[i] is { } item && ContainsRelativeReference(item))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static JsonNode ResolveReferencesRecursive(JsonNode node, JsonNode rootSchema)
