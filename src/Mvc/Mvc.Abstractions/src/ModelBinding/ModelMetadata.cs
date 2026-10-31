@@ -690,9 +690,10 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
             }
         }
 
-        _recordTypeConstructorDetailsCalculated = true;
+        // Set the flag last so a concurrent caller that sees it set doesn't return null mappings.
         _parameterMapping = parameterMapping;
         _boundConstructorPropertyMapping = propertyMapping;
+        _recordTypeConstructorDetailsCalculated = true;
     }
 
     /// <summary>
