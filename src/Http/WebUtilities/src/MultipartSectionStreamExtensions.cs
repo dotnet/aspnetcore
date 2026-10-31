@@ -47,7 +47,10 @@ public static class MultipartSectionStreamExtensions
             streamEncoding = Encoding.UTF8;
         }
 
-        if (streamEncoding.CodePage != Encoding.UTF8.CodePage)
+        // The pooled buffer below is only handed to MultipartReaderStream, which copies already buffered data into
+        // it and never passes it on, so it can't be observed after it is returned. Other section bodies may be
+        // arbitrary streams, so they keep using StreamReader.
+        if (streamEncoding.CodePage != Encoding.UTF8.CodePage || section.Body is not MultipartReaderStream)
         {
             return await ReadToEndAsync(section.Body, streamEncoding, cancellationToken);
         }

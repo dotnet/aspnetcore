@@ -87,11 +87,9 @@ public class MultipartSectionStreamExtensionsTests
         {
             foreach (var readSizes in new int[]?[] { null, [1], [1, 1024], [2, 1024], [3, 1024], [1, 2, 4096] })
             {
-                // The result must match what StreamReader produces when reading the same stream, including
-                // its read-size dependent byte order mark detection.
-                var expected = ReadWithStreamReader(CreateBody(bytes, readSizes), Encoding.UTF8);
-
-                Assert.Equal(expected, await ReadAsStringAsync(bytes, contentType, readSizes));
+                // ReadAsStringAsync verifies the result matches what StreamReader produces when reading the same
+                // stream, including its read-size dependent byte order mark detection.
+                await ReadAsStringAsync(bytes, contentType, readSizes);
             }
         }
     }
@@ -147,15 +145,50 @@ public class MultipartSectionStreamExtensionsTests
         Assert.Equal("text default", await section.ReadAsStringAsync(cts.Token));
     }
 
+    // Reads the bytes as a section created by MultipartReader, which uses the UTF-8 fast path, and as a section
+    // with a caller-provided body, which uses StreamReader. Both must match StreamReader reading identical streams.
     private static async Task<string> ReadAsStringAsync(byte[] bytes, string? contentType, int[]? readSizes)
     {
-        var section = new MultipartSection
+        var encoding = GetEncoding(contentType);
+
+        var section = await ReadMultipartSectionAsync(bytes, contentType, readSizes);
+        var result = await section.ReadAsStringAsync(CancellationToken.None);
+        var expectedSection = await ReadMultipartSectionAsync(bytes, contentType, readSizes);
+        Assert.Equal(ReadWithStreamReader(expectedSection.Body, encoding), result);
+
+        var userSection = new MultipartSection
         {
             Body = CreateBody(bytes, readSizes),
             Headers = contentType is null ? new() : new() { ["Content-Type"] = new StringValues(contentType) },
         };
+        var userResult = await userSection.ReadAsStringAsync(CancellationToken.None);
+        Assert.Equal(ReadWithStreamReader(CreateBody(bytes, readSizes), encoding), userResult);
 
-        return await section.ReadAsStringAsync(CancellationToken.None);
+        return result;
+    }
+
+    private static async Task<MultipartSection> ReadMultipartSectionAsync(byte[] bytes, string? contentType, int[]? readSizes)
+    {
+        const string Boundary = "9051914041544843365972754266";
+        var header = "--" + Boundary + "\r\n" +
+            "Content-Disposition: form-data; name=\"text\"\r\n" +
+            (contentType is null ? "" : "Content-Type: " + contentType + "\r\n") +
+            "\r\n";
+        var body = Encoding.ASCII.GetBytes(header)
+            .Concat(bytes)
+            .Concat(Encoding.ASCII.GetBytes("\r\n--" + Boundary + "--\r\n"))
+            .ToArray();
+
+        var reader = new MultipartReader(Boundary, CreateBody(body, readSizes));
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        return section;
+    }
+
+    private static Encoding GetEncoding(string? contentType)
+    {
+        var encoding = contentType is null ? null : Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Parse(contentType).Encoding;
+        return encoding ?? Encoding.UTF8;
     }
 
     private static Stream CreateBody(byte[] bytes, int[]? readSizes)
