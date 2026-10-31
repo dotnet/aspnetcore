@@ -90,7 +90,7 @@ internal sealed partial class RateLimitingMiddleware
         // the requests queued counter won't go into a negative value.
         var metricsContext = _metrics.CreateContext(policyName);
 
-        using var leaseContext = await TryAcquireAsync(context, metricsContext);
+        using var leaseContext = await TryAcquireAsync(context, metricsContext, useEndpointLimiter: enableRateLimitingAttribute is not null);
 
         if (leaseContext.Lease?.IsAcquired == true)
         {
@@ -148,15 +148,15 @@ internal sealed partial class RateLimitingMiddleware
         }
     }
 
-    private async ValueTask<LeaseContext> TryAcquireAsync(HttpContext context, MetricsContext metricsContext)
+    private async ValueTask<LeaseContext> TryAcquireAsync(HttpContext context, MetricsContext metricsContext, bool useEndpointLimiter)
     {
-        var leaseContext = CombinedAcquire(context);
+        var leaseContext = CombinedAcquire(context, useEndpointLimiter);
         if (leaseContext.Lease?.IsAcquired == true)
         {
             return leaseContext;
         }
 
-        var waitTask = CombinedWaitAsync(context, context.RequestAborted);
+        var waitTask = CombinedWaitAsync(context, useEndpointLimiter, context.RequestAborted);
         // If the task returns immediately then the request wasn't queued.
         if (waitTask.IsCompleted)
         {
@@ -176,7 +176,8 @@ internal sealed partial class RateLimitingMiddleware
         }
     }
 
-    private LeaseContext CombinedAcquire(HttpContext context)
+    // Without an EnableRateLimitingAttribute the endpoint limiter always hands out a no-op lease, so it can be skipped.
+    private LeaseContext CombinedAcquire(HttpContext context, bool useEndpointLimiter)
     {
         RateLimitLease? globalLease = null;
         RateLimitLease? endpointLease = null;
@@ -189,6 +190,11 @@ internal sealed partial class RateLimitingMiddleware
                 if (!globalLease.IsAcquired)
                 {
                     return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.GlobalLimiter, Lease = globalLease };
+                }
+
+                if (!useEndpointLimiter)
+                {
+                    return new LeaseContext() { Lease = globalLease };
                 }
             }
             endpointLease = _endpointLimiter.AttemptAcquire(context);
@@ -207,7 +213,7 @@ internal sealed partial class RateLimitingMiddleware
         return globalLease is null ? new LeaseContext() { Lease = endpointLease } : new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease) };
     }
 
-    private async ValueTask<LeaseContext> CombinedWaitAsync(HttpContext context, CancellationToken cancellationToken)
+    private async ValueTask<LeaseContext> CombinedWaitAsync(HttpContext context, bool useEndpointLimiter, CancellationToken cancellationToken)
     {
         RateLimitLease? globalLease = null;
         RateLimitLease? endpointLease = null;
@@ -220,6 +226,13 @@ internal sealed partial class RateLimitingMiddleware
                 if (!globalLease.IsAcquired)
                 {
                     return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.GlobalLimiter, Lease = globalLease };
+                }
+
+                if (!useEndpointLimiter)
+                {
+                    // The skipped no-op endpoint AcquireAsync would still have observed cancellation.
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return new LeaseContext() { Lease = globalLease };
                 }
             }
             endpointLease = await _endpointLimiter.AcquireAsync(context, cancellationToken: cancellationToken);
