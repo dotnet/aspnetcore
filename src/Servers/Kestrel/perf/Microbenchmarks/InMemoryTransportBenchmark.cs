@@ -120,7 +120,11 @@ public class InMemoryTransportBenchmark
             var connections = new InMemoryConnection[_connectionsPerEndPoint];
             for (var i = 0; i < _connectionsPerEndPoint; i++)
             {
-                connections[i] = new InMemoryConnection();
+                connections[i] = new InMemoryConnection
+                {
+                    LocalEndPoint = endpoint,
+                    RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, 50000 + i)
+                };
             }
 
             _connections.Add(endpoint, connections);
