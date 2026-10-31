@@ -113,8 +113,9 @@ internal sealed partial class DfaMatcher : Matcher
         // Candidates are sorted by score. With the default selector, once a valid candidate has been found,
         // candidates with a higher (worse) score can never be selected, so we can skip computing their
         // route values and constraints. Candidates with the same score are still processed so that
-        // ambiguities are reported. When debug logging is enabled, every candidate is processed so
-        // that it gets logged.
+        // ambiguities are reported, and once an ambiguity is found every candidate is processed so that
+        // the exception message is unchanged. When debug logging is enabled, every candidate is processed
+        // so that it gets logged.
         var canSkipLowerPriority = useFastPath && !log;
         var foundScore = -1;
 
@@ -190,9 +191,18 @@ internal sealed partial class DfaMatcher : Matcher
                 }
             }
 
-            if (isMatch && foundScore < 0)
+            if (isMatch)
             {
-                foundScore = candidate.Score;
+                if (foundScore < 0)
+                {
+                    foundScore = candidate.Score;
+                }
+                else if (candidate.Score == foundScore)
+                {
+                    // This is an ambiguous match. The exception message lists every valid candidate,
+                    // including lower-priority ones, so process all of them to keep the message unchanged.
+                    canSkipLowerPriority = false;
+                }
             }
 
             if (log)

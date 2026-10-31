@@ -713,6 +713,32 @@ public class DfaMatcherTest
     }
 
     [Fact]
+    public async Task MatchAsync_MultipleMatchesWithSameScore_LowerPriorityValidCandidate_IncludedInAmbiguousMatchMessage()
+    {
+        // Arrange
+        var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/{p}", 0),
+                CreateEndpoint("/{q}", 0),
+                CreateEndpoint("/{r}", 1),
+            });
+
+        var matcher = CreateDfaMatcher(endpointDataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = "/One";
+
+        // Act
+        var ex = await Assert.ThrowsAsync<AmbiguousMatchException>(() => matcher.MatchAsync(httpContext));
+
+        // Assert
+        Assert.Equal(
+            "The request matched multiple endpoints. Matches: " + Environment.NewLine + Environment.NewLine +
+            "/{p}" + Environment.NewLine + "/{q}" + Environment.NewLine + "/{r}",
+            ex.Message);
+    }
+
+    [Fact]
     public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled()
     {
         // Arrange
