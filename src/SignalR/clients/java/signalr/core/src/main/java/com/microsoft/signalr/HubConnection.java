@@ -799,21 +799,19 @@ public class HubConnection implements AutoCloseable {
             connectionState.addInvocation(irq);
 
             AtomicInteger subscriptionCount = new AtomicInteger();
-            ReplaySubject<T> subject = ReplaySubject.create();
             Subject<Object> pendingCall = irq.getPendingCall();
-            pendingCall.subscribe(result -> {
-                        subject.onNext(Utils.<T>cast(returnClass, result));
-                    }, error -> subject.onError(error),
-                    () -> subject.onComplete());
 
-            Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
+            Observable<T> observable = pendingCall
+                    .map(item -> Utils.<T>cast(returnClass, item))
+                    .doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
+
             sendInvocationMessage(method, args, invocationId, true);
             return observable.doOnDispose(() -> {
                 if (subscriptionCount.decrementAndGet() == 0) {
                     CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, invocationId);
                     sendHubMessageWithLock(cancelInvocationMessage);
                     connectionState.tryRemoveInvocation(invocationId);
-                    subject.onComplete();
+                    pendingCall.onComplete();
                 }
             });
         } finally {
