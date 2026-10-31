@@ -88,6 +88,62 @@ public abstract class OutputCacheMiddlewareTests
         public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation) => ValueTask.CompletedTask;
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task Invoke_StoresResponseWithPolicyTags(int tagCount)
+    {
+        var tags = Enumerable.Range(1, tagCount).Select(i => "tag" + i).ToArray();
+        var store = new TagsCapturingOutputCacheStore();
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build =>
+        {
+            build.Cache();
+            if (tags.Length > 0)
+            {
+                build.Tag(tags);
+            }
+        });
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: store, next: c => c.Response.WriteAsync("Hello"));
+        var context = TestUtils.CreateTestContext(cache: store, options: options);
+        context.HttpContext.Request.Method = "GET";
+        context.HttpContext.Request.Path = "/";
+
+        await middleware.Invoke(context.HttpContext);
+
+        Assert.NotNull(store.StoredTags);
+        Assert.Equal(tags, store.StoredTags);
+    }
+
+    [Fact]
+    public void Tags_IsCreatedOnceAndReturnsSameInstance()
+    {
+        var context = TestUtils.CreateTestContext();
+
+        var tags = context.Tags;
+        tags.Add("tag");
+
+        Assert.Same(tags, context.Tags);
+        Assert.Equal(new[] { "tag" }, context.Tags);
+    }
+
+    private sealed class TagsCapturingOutputCacheStore : IOutputCacheStore
+    {
+        public string[] StoredTags { get; private set; }
+
+        public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken) => ValueTask.CompletedTask;
+
+        public ValueTask<byte[]> GetAsync(string key, CancellationToken cancellationToken) => ValueTask.FromResult<byte[]>(null);
+
+        public ValueTask SetAsync(string key, byte[] value, string[] tags, TimeSpan validFor, CancellationToken cancellationToken)
+        {
+            StoredTags = tags;
+            return ValueTask.CompletedTask;
+        }
+    }
+
     [Fact]
     public async Task TryServeFromCacheAsync_OnlyIfCached_Serves504()
     {
