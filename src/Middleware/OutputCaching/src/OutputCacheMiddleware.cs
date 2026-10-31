@@ -105,9 +105,9 @@ internal sealed class OutputCacheMiddleware
         bool hasException = false;
         try
         {
-            foreach (var policy in policies)
+            for (var i = 0; i < policies.Count; i++)
             {
-                await policy.CacheRequestAsync(context, httpContext.RequestAborted);
+                await policies[i].CacheRequestAsync(context, httpContext.RequestAborted);
             }
 
             // Should we attempt any caching logic?
@@ -174,9 +174,9 @@ internal sealed class OutputCacheMiddleware
                             await _next(httpContext);
 
                             // The next middleware might change the policy
-                            foreach (var policy in policies)
+                            for (var i = 0; i < policies.Count; i++)
                             {
-                                await policy.ServeResponseAsync(context, httpContext.RequestAborted);
+                                await policies[i].ServeResponseAsync(context, httpContext.RequestAborted);
                             }
 
                             // If there was no response body, check the response headers now. We can cache things like redirects.
@@ -223,40 +223,42 @@ internal sealed class OutputCacheMiddleware
     internal bool TryGetRequestPolicies(HttpContext httpContext, out IReadOnlyList<IOutputCachePolicy> policies)
     {
         policies = Array.Empty<IOutputCachePolicy>();
-        List<IOutputCachePolicy>? result = null;
 
         var basePolicies = _policyProvider.GetBasePolicies();
-        if (basePolicies.Count > 0)
-        {
-            result = new();
-            result.AddRange(basePolicies);
-        }
+        var basePoliciesCount = basePolicies.Count;
 
         var metadata = httpContext.GetEndpoint()?.Metadata;
 
         var policy = metadata?.GetMetadata<IOutputCachePolicy>();
 
-        if (policy != null)
+        var attribute = metadata?.GetMetadata<OutputCacheAttribute>();
+
+        var count = basePoliciesCount + (policy != null ? 1 : 0) + (attribute != null ? 1 : 0);
+        if (count == 0)
         {
-            result ??= new();
-            result.Add(policy);
+            return false;
         }
 
-        var attribute = metadata?.GetMetadata<OutputCacheAttribute>();
+        // Allocate the exact number of policies
+        var result = new IOutputCachePolicy[count];
+        var index = 0;
+        for (var i = 0; i < basePoliciesCount; i++)
+        {
+            result[index++] = basePolicies[i];
+        }
+
+        if (policy != null)
+        {
+            result[index++] = policy;
+        }
 
         if (attribute != null)
         {
-            result ??= new();
-            result.Add(attribute.BuildPolicy());
+            result[index++] = attribute.BuildPolicy();
         }
 
-        if (result != null)
-        {
-            policies = result;
-            return true;
-        }
-
-        return false;
+        policies = result;
+        return true;
     }
 
     internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry, IReadOnlyList<IOutputCachePolicy> policies)
@@ -271,9 +273,9 @@ internal sealed class OutputCacheMiddleware
         var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
-        foreach (var policy in policies)
+        for (var i = 0; i < policies.Count; i++)
         {
-            await policy.ServeFromCacheAsync(context, context.HttpContext.RequestAborted);
+            await policies[i].ServeFromCacheAsync(context, context.HttpContext.RequestAborted);
         }
 
         context.IsCacheEntryFresh = true;
