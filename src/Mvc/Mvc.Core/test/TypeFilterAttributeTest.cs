@@ -80,6 +80,27 @@ public class TypeFilterAttributeTest
         Assert.Same(uri, testFilter.Uri);
     }
 
+    [Fact]
+    public void TypeFilterAttribute_Generic_PreservesAllowMultipleAcrossInheritance()
+    {
+        // Arrange & Act
+        var attributes = typeof(GenericTypeFilterDerivedClass).GetCustomAttributes(typeof(TypeFilterAttribute), inherit: true)
+            .Cast<TypeFilterAttribute>()
+            .ToArray();
+
+        // Assert - all three attributes from the inheritance hierarchy should be present
+        Assert.Equal(3, attributes.Length);
+    }
+
+    [TypeFilter<TestFilter>]
+    private class GenericTypeFilterBaseClass;
+
+    [TypeFilter<TestFilter>]
+    private class GenericTypeFilterMiddleClass : GenericTypeFilterBaseClass;
+
+    [TypeFilter<TestFilter>]
+    private class GenericTypeFilterDerivedClass : GenericTypeFilterMiddleClass;
+
     public class TestFilter : IFilterMetadata
     {
         public TestFilter(string value, Uri uri)
