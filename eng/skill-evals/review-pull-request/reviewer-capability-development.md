@@ -162,21 +162,23 @@ one worker and no retries, followed by exactly one associated grade.
 
 | Arm | Case | Run | Integrity | Score | Observed outcome |
 |---|---|---|---|---|---|
-| baseline | #70106 | `80264656-7637-4e1d-b354-d7fbf48e22e4` | pass | 0 | The unsupported actionable P2 recurred. |
-| baseline | #57972 | `88337c83-1a44-4be3-ac7b-51eb2869b3ff` | pass | 0 | The required `_operationTransformerContextCache` finding was missed; unlisted findings require manual adjudication. |
-| treatment | #70106 | `2431eec9-973a-4f8f-ade6-fe399ec11a2d` | fail | 0 | The installed reference was read with exact bytes after the ledger, but the provisional ledger included reasoning and the unsupported actionable P2 persisted. |
-| treatment | #57972 | `909c0edd-0f97-490d-8ee0-4f86cbae1cb9` | pass | 0 | The phase executed, but the required positive was still missed; an unlisted cache-factory finding requires manual adjudication. |
+| baseline | #70106 | `80264656-7637-4e1d-b354-d7fbf48e22e4` | pass | 0 | A different unsupported concurrency claim targeted line 69 CTS replacement between concurrent requests and the displaced token remaining uncanceled; it was not the original line-77 event-after-check schedule. |
+| baseline | #57972 | `88337c83-1a44-4be3-ac7b-51eb2869b3ff` | pass | 0 | The required `_operationTransformerContextCache` finding was missed; novel `OpenApiSchemaStore` claims require manual adjudication. |
+| treatment | #70106 | `2431eec9-973a-4f8f-ade6-fe399ec11a2d` | fail | 0 | The installed reference was read with exact bytes after the ledger, but the provisional ledger included reasoning and the original line-77 check-to-commit demand persisted even though the output recognized old/head equivalence. |
+| treatment | #57972 | `909c0edd-0f97-490d-8ee0-4f86cbae1cb9` | pass | 0 | The phase executed, but the required positive was still missed; a novel `OpenApiSchemaStore` cache-factory claim requires manual adjudication. |
 
 The treatment reference read was delivered from the activated skill installation
 with exact path, byte hash, and event ordering in both treatment runs. That
 receipt proves phase delivery only, not semantic validation. Both arms scored 0
 on both cases, so this experiment shows no attributable repair. The treatment
-also failed its own minimal-ledger contract on #70106. No attempt was retried,
-no controls or other model families were run, and no guide or label was retuned
-after observing the results. Accounting closed at four reviewer CLI attempts and
-four actual reviewer calls, plus four associated-grade CLI attempts and four
-actual judge calls, with zero execution errors. That authorized comparison
-budget is exhausted; no additional paid run is part of this draft.
+also failed its own minimal-ledger contract on #70106. Because both #57972 arms
+missed the required finding, the two score-0 results do not demonstrate a
+treatment-caused recall regression. No attempt was retried, no controls or
+other model families were run, and no guide or label was retuned after
+observing the results. Accounting closed at four reviewer CLI attempts and four
+actual reviewer calls, plus four associated-grade CLI attempts and four actual
+judge calls, with zero execution errors. That authorized comparison budget is
+exhausted; no additional paid run is part of this draft.
 
 This is exposed-two-case, one-trial-per-cell development evidence. It does not
 establish a treatment effect, general reviewer improvement, or hosted

@@ -14,7 +14,10 @@ reviewer skill and not a demonstrated fix.
   baseline suite.
 
 The one-trial-per-cell comparison scored 0 for baseline and treatment on both
-cases. Treatment #70106 retained the unsupported actionable P2 and violated the
-minimal pre-read ledger contract. Treatment #57972 executed the phase but still
-missed the required positive. Do not infer a repair or broader reviewer
+cases. Baseline #70106 produced a distinct unsupported line-69 CTS concurrency
+claim, while treatment #70106 repeated the original line-77 check-to-commit
+demand and violated the minimal pre-read ledger contract. Both #57972 arms
+missed the required positive and produced novel `OpenApiSchemaStore` claims
+that remain pending manual adjudication. The paired zeros do not demonstrate a
+treatment-caused recall regression. Do not infer a repair or broader reviewer
 improvement from this candidate.
