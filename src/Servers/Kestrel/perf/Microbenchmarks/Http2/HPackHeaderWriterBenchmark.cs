@@ -16,6 +16,8 @@ public class HPackHeaderWriterBenchmark
     private DynamicHPackEncoder _hpackEncoder;
     private HttpResponseHeaders _knownResponseHeaders;
     private HttpResponseHeaders _unknownResponseHeaders;
+    private HttpResponseHeaders[] _changingResponseHeaders;
+    private int _changingIndex;
     private byte[] _buffer;
 
     [GlobalSetup]
@@ -46,6 +48,21 @@ public class HPackHeaderWriterBenchmark
         {
             _unknownResponseHeaders.Append("Unknown" + i, "Value" + i);
         }
+
+        // Unique values per response so the dynamic table misses and evicts on every header.
+        _changingResponseHeaders = new HttpResponseHeaders[256];
+        for (var i = 0; i < _changingResponseHeaders.Length; i++)
+        {
+            var headers = new HttpResponseHeaders();
+            var changingHeaders = (IHeaderDictionary)headers;
+            changingHeaders.ETag = "\"etag-" + i + "\"";
+            changingHeaders.Date = "Date-" + i;
+            for (var j = 0; j < 4; j++)
+            {
+                headers.Append("x-custom-" + j, "value-" + i + "-" + j);
+            }
+            _changingResponseHeaders[i] = headers;
+        }
     }
 
     [Benchmark]
@@ -75,6 +92,14 @@ public class HPackHeaderWriterBenchmark
     {
         _knownResponseHeaders.EncodingSelector = _ => Encoding.UTF8;
         _http2HeadersEnumerator.Initialize(_unknownResponseHeaders);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
+    }
+
+    [Benchmark]
+    public void BeginEncodeHeaders_ChangingValues()
+    {
+        var headers = _changingResponseHeaders[_changingIndex++ & (_changingResponseHeaders.Length - 1)];
+        _http2HeadersEnumerator.Initialize(headers);
         HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
     }
 }

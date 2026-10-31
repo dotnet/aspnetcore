@@ -3,6 +3,7 @@
 
 #nullable enable
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace System.Net.Http.HPack;
@@ -15,6 +16,9 @@ internal sealed class DynamicHPackEncoder
     internal readonly EncoderHeaderEntry Head;
 
     private readonly bool _allowDynamicCompression;
+    // Indexed by HPACK static table index (1-based). Shared across encoders; entries are immutable so reads and writes are atomic.
+    private static readonly NameHash?[] s_staticNameHashes = new NameHash?[H2StaticTable.Count + 1];
+
     private readonly EncoderHeaderEntry[] _headerBuckets;
     private readonly byte _hashMask;
     private uint _headerTableSize;
@@ -111,13 +115,21 @@ internal sealed class DynamicHPackEncoder
             return staticTableIndex;
         }
 
-        return CalculateDynamicTableIndex(name);
+        if (_headerTableSize == 0)
+        {
+            // Avoid hashing the name when the dynamic table is empty.
+            return -1;
+        }
+
+        return CalculateDynamicTableIndex(name, name.GetHashCode());
     }
 
     private bool EncodeDynamicHeader(Span<byte> buffer, int staticTableIndex, string name, string value,
         int headerLength, Encoding? valueEncoding, out int bytesWritten)
     {
-        EncoderHeaderEntry? headerField = GetEntry(name, value);
+        // Compute the name hash once and reuse it for the lookup, index resolution and insertion.
+        int hash = staticTableIndex > 0 ? GetStaticNameHash(staticTableIndex, name) : name.GetHashCode();
+        EncoderHeaderEntry? headerField = GetEntry(hash, name, value);
         if (headerField != null)
         {
             // Already exists in dynamic table. Write index.
@@ -128,7 +140,7 @@ internal sealed class DynamicHPackEncoder
         {
             // Doesn't exist in dynamic table. Add new entry to dynamic table.
 
-            int index = ResolveDynamicTableIndex(staticTableIndex, name);
+            int index = staticTableIndex != -1 ? staticTableIndex : CalculateDynamicTableIndex(name, hash);
             bool success = index == -1
                 ? HPackEncoder.EncodeLiteralHeaderFieldIndexingNewName(name, value, valueEncoding, buffer, out bytesWritten)
                 : HPackEncoder.EncodeLiteralHeaderFieldIndexing(index, value, valueEncoding, buffer, out bytesWritten);
@@ -137,7 +149,7 @@ internal sealed class DynamicHPackEncoder
             {
                 uint headerSize = (uint)headerLength;
                 EnsureCapacity(headerSize);
-                AddHeaderEntry(name, value, headerSize);
+                AddHeaderEntry(hash, name, value, headerSize);
             }
 
             return success;
@@ -162,13 +174,41 @@ internal sealed class DynamicHPackEncoder
         }
     }
 
-    private EncoderHeaderEntry? GetEntry(string name, string value)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int GetStaticNameHash(int staticTableIndex, string name)
+    {
+        // Headers with a static table index almost always use the same name string instance (e.g. a HeaderNames constant),
+        // so cache the hash for that instance. The cached hash is only used for the exact same string reference, so it
+        // is always equal to name.GetHashCode().
+        NameHash?[] cache = s_staticNameHashes;
+        if ((uint)staticTableIndex < (uint)cache.Length)
+        {
+            NameHash? cached = cache[staticTableIndex];
+            if (cached != null && ReferenceEquals(cached.Name, name))
+            {
+                return cached.Hash;
+            }
+
+            int hash = name.GetHashCode();
+            cache[staticTableIndex] = new NameHash(name, hash);
+            return hash;
+        }
+
+        return name.GetHashCode();
+    }
+
+    private sealed class NameHash(string name, int hash)
+    {
+        public readonly string Name = name;
+        public readonly int Hash = hash;
+    }
+
+    private EncoderHeaderEntry? GetEntry(int hash, string name, string value)
     {
         if (_headerTableSize == 0)
         {
             return null;
         }
-        int hash = name.GetHashCode();
         int bucketIndex = CalculateBucketIndex(hash);
         for (EncoderHeaderEntry? e = _headerBuckets[bucketIndex]; e != null; e = e.Next)
         {
@@ -184,13 +224,12 @@ internal sealed class DynamicHPackEncoder
         return null;
     }
 
-    private int CalculateDynamicTableIndex(string name)
+    private int CalculateDynamicTableIndex(string name, int hash)
     {
         if (_headerTableSize == 0)
         {
             return -1;
         }
-        int hash = name.GetHashCode();
         int bucketIndex = CalculateBucketIndex(hash);
         for (EncoderHeaderEntry? e = _headerBuckets[bucketIndex]; e != null; e = e.Next)
         {
@@ -207,12 +246,11 @@ internal sealed class DynamicHPackEncoder
         return index == -1 ? -1 : index - Head.Before!.Index + 1 + H2StaticTable.Count;
     }
 
-    private void AddHeaderEntry(string name, string value, uint headerSize)
+    private void AddHeaderEntry(int hash, string name, string value, uint headerSize)
     {
         Debug.Assert(headerSize <= _maxHeaderTableSize, "Header is bigger than dynamic table size.");
         Debug.Assert(headerSize <= _maxHeaderTableSize - _headerTableSize, "Not enough room in dynamic table.");
 
-        int hash = name.GetHashCode();
         int bucketIndex = CalculateBucketIndex(hash);
         EncoderHeaderEntry? oldEntry = _headerBuckets[bucketIndex];
         // Attempt to reuse removed entry
