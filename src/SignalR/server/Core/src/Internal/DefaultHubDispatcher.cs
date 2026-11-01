@@ -50,6 +50,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         _enableDetailedErrors = enableDetailedErrors;
         _logger = logger;
         _hubLifetimeManager = lifetimeManager;
+        // Other containers can supply registrations that are not part of the IServiceCollection (or vary them per scope),
+        // so the collection cannot prove which IHubActivator<THub> they will produce. Only consider the fast path when the
+        // scopes come from Microsoft.Extensions.DependencyInjection, whose registrations are exactly the collection it was
+        // built from and are the same for every scope.
+        _hubActivatorKind = IsMicrosoftDependencyInjection(serviceScopeFactory) ? HubActivatorKind.Unknown : HubActivatorKind.Custom;
         DiscoverHubMethods(disableImplicitFromServiceParameters);
 
         var count = hubFilters?.Count ?? 0;
@@ -108,6 +113,9 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
         return hubActivator;
     }
+
+    private static bool IsMicrosoftDependencyInjection(IServiceScopeFactory serviceScopeFactory)
+        => string.Equals(serviceScopeFactory.GetType().Assembly.GetName().Name, "Microsoft.Extensions.DependencyInjection", StringComparison.Ordinal);
 
     private enum HubActivatorKind : byte
     {
