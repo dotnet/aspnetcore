@@ -8,8 +8,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 /// <summary>
 /// An <see cref="IViewLocationExpander"/> for PageView.
 /// </summary>
-public class PageViewLocationExpander : IViewLocationExpander
+public class PageViewLocationExpander : IViewLocationExpander, IViewLocationExpanderWithoutValues
 {
+    // A derived type could re-implement IViewLocationExpander.PopulateValues, so only trust the exact type.
+    bool IViewLocationExpanderWithoutValues.DoesNotPopulateValues => GetType() == typeof(PageViewLocationExpander);
+
     /// <inheritdoc/>
     public IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context, IEnumerable<string> viewLocations)
     {

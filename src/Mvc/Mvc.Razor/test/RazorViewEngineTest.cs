@@ -63,6 +63,97 @@ public class RazorViewEngineTest
             expectedMessage);
     }
 
+    [Fact]
+    public void FindView_DoesNotPopulateValues_WhenExpandersDoNotProvideValues()
+    {
+        // Arrange
+        var page = Mock.Of<IRazorPage>();
+        var pageFactory = new Mock<IRazorPageFactoryProvider>();
+        pageFactory
+            .Setup(p => p.CreateFactory("/Views/bar/MyView.cshtml"))
+            .Returns(GetPageFactoryResult(() => page));
+        var expander = new ValuelessViewLocationExpander(doesNotPopulateValues: true);
+        var viewEngine = CreateViewEngine(pageFactory.Object, expanders: new[] { expander });
+        var context = GetActionContext(_controllerTestContext);
+
+        // Act
+        var result1 = viewEngine.FindView(context, "MyView", isMainPage: true);
+        var result2 = viewEngine.FindView(context, "MyView", isMainPage: true);
+
+        // Assert
+        Assert.True(result1.Success);
+        Assert.True(result2.Success);
+        Assert.Same(page, Assert.IsType<RazorView>(result2.View).RazorPage);
+        Assert.Equal(0, expander.PopulateValuesCount);
+        // The second lookup is served from the cache.
+        var expandContext = Assert.Single(expander.ExpandContexts);
+        Assert.NotNull(expandContext.Values);
+        Assert.Empty(expandContext.Values);
+        Assert.Equal("MyView", expandContext.ViewName);
+        Assert.Equal("bar", expandContext.ControllerName);
+        Assert.True(expandContext.IsMainPage);
+    }
+
+    [Fact]
+    public void FindView_PopulatesValues_WhenAnyExpanderMayProvideValues()
+    {
+        // Arrange
+        var pageFactory = new Mock<IRazorPageFactoryProvider>();
+        pageFactory
+            .Setup(p => p.CreateFactory("/Views/bar/MyView.cshtml"))
+            .Returns(GetPageFactoryResult(() => Mock.Of<IRazorPage>()));
+        var valuelessExpander = new ValuelessViewLocationExpander(doesNotPopulateValues: true);
+        var expander = new ValuelessViewLocationExpander(doesNotPopulateValues: false);
+        var viewEngine = CreateViewEngine(pageFactory.Object, expanders: new IViewLocationExpander[] { valuelessExpander, expander });
+        var context = GetActionContext(_controllerTestContext);
+
+        // Act
+        expander.Value = "a";
+        viewEngine.FindView(context, "MyView", isMainPage: true);
+        viewEngine.FindView(context, "MyView", isMainPage: true);
+        expander.Value = "b";
+        var result = viewEngine.FindView(context, "MyView", isMainPage: true);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(3, expander.PopulateValuesCount);
+        Assert.Equal(3, valuelessExpander.PopulateValuesCount);
+        // Different values result in a different cache entry.
+        Assert.Equal(2, expander.ExpandContexts.Count);
+        Assert.Equal("b", expander.ExpandContexts[1].Values["key"]);
+    }
+
+    private sealed class ValuelessViewLocationExpander : IViewLocationExpander, IViewLocationExpanderWithoutValues
+    {
+        public ValuelessViewLocationExpander(bool doesNotPopulateValues)
+        {
+            DoesNotPopulateValues = doesNotPopulateValues;
+        }
+
+        public bool DoesNotPopulateValues { get; }
+
+        public string Value { get; set; }
+
+        public int PopulateValuesCount { get; private set; }
+
+        public List<ViewLocationExpanderContext> ExpandContexts { get; } = new();
+
+        public IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context, IEnumerable<string> viewLocations)
+        {
+            ExpandContexts.Add(context);
+            return viewLocations;
+        }
+
+        public void PopulateValues(ViewLocationExpanderContext context)
+        {
+            PopulateValuesCount++;
+            if (Value != null)
+            {
+                context.Values["key"] = Value;
+            }
+        }
+    }
+
     [Theory]
     [MemberData(nameof(AbsoluteViewPathData))]
     public void FindView_IsMainPage_WithFullPath_ReturnsNotFound(string viewName)

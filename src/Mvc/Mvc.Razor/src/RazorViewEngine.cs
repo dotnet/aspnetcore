@@ -227,22 +227,16 @@ public partial class RazorViewEngine : IRazorViewEngine
             razorPageName = GetNormalizedRouteValue(actionContext, PageKey);
         }
 
-        var expanderContext = new ViewLocationExpanderContext(
-            actionContext,
-            pageName,
-            controllerName,
-            areaName,
-            razorPageName,
-            isMainPage);
-        Dictionary<string, string?>? expanderValues = null;
-
         var expanders = _options.ViewLocationExpanders;
         // Read interface .Count once rather than per iteration
         var expandersCount = expanders.Count;
-        if (expandersCount > 0)
+
+        ViewLocationExpanderContext? expanderContext = null;
+        Dictionary<string, string?>? expanderValues = null;
+        if (RequiresPopulateValues(expanders, expandersCount))
         {
-            expanderValues = new Dictionary<string, string?>(StringComparer.Ordinal);
-            expanderContext.Values = expanderValues;
+            expanderContext = CreateExpanderContext(actionContext, pageName, controllerName, areaName, razorPageName, isMainPage, expandersCount);
+            expanderValues = (Dictionary<string, string?>)expanderContext.Values;
 
             // Perf: Avoid allocations
             for (var i = 0; i < expandersCount; i++)
@@ -252,16 +246,17 @@ public partial class RazorViewEngine : IRazorViewEngine
         }
 
         var cacheKey = new ViewLocationCacheKey(
-            expanderContext.ViewName,
-            expanderContext.ControllerName,
-            expanderContext.AreaName,
-            expanderContext.PageName,
-            expanderContext.IsMainPage,
+            pageName,
+            controllerName,
+            areaName,
+            razorPageName,
+            isMainPage,
             expanderValues);
 
         if (!ViewLookupCache.TryGetValue<ViewLocationCacheResult>(cacheKey, out var cacheResult) || cacheResult is null)
         {
             Log.ViewLookupCacheMiss(_logger, cacheKey.ViewName, cacheKey.ControllerName);
+            expanderContext ??= CreateExpanderContext(actionContext, pageName, controllerName, areaName, razorPageName, isMainPage, expandersCount);
             cacheResult = OnCacheMiss(expanderContext, cacheKey);
         }
         else
@@ -332,6 +327,46 @@ public partial class RazorViewEngine : IRazorViewEngine
             // and use those search paths. This is what we did in 1.0.0 without giving much thought to it.
             return _options.ViewLocationFormats;
         }
+    }
+
+    private static ViewLocationExpanderContext CreateExpanderContext(
+        ActionContext actionContext,
+        string pageName,
+        string? controllerName,
+        string? areaName,
+        string? razorPageName,
+        bool isMainPage,
+        int expandersCount)
+    {
+        var expanderContext = new ViewLocationExpanderContext(
+            actionContext,
+            pageName,
+            controllerName,
+            areaName,
+            razorPageName,
+            isMainPage);
+
+        if (expandersCount > 0)
+        {
+            expanderContext.Values = new Dictionary<string, string?>(StringComparer.Ordinal);
+        }
+
+        return expanderContext;
+    }
+
+    // Expander values are part of the cache key, so they must be populated before the cache lookup unless no expander
+    // contributes values. In that case the expander context is only needed on a cache miss.
+    private static bool RequiresPopulateValues(IList<IViewLocationExpander> expanders, int expandersCount)
+    {
+        for (var i = 0; i < expandersCount; i++)
+        {
+            if (expanders[i] is not IViewLocationExpanderWithoutValues { DoesNotPopulateValues: true })
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private ViewLocationCacheResult OnCacheMiss(

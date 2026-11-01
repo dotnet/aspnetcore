@@ -198,6 +198,22 @@ public class PageViewLocationExpanderTest
         Assert.Equal(expected, actual.ToArray());
     }
 
+    [Fact]
+    public void DoesNotPopulateValues_TrueOnlyForExactType()
+    {
+        // Arrange & Act & Assert
+        Assert.True(((IViewLocationExpanderWithoutValues)new PageViewLocationExpander()).DoesNotPopulateValues);
+        Assert.False(((IViewLocationExpanderWithoutValues)new DerivedPageViewLocationExpander()).DoesNotPopulateValues);
+    }
+
+    private sealed class DerivedPageViewLocationExpander : PageViewLocationExpander, IViewLocationExpander
+    {
+        void IViewLocationExpander.PopulateValues(ViewLocationExpanderContext context)
+        {
+            context.Values["key"] = "value";
+        }
+    }
+
     private ViewLocationExpanderContext CreateContext(string viewName = "_LoginPartial.cshtml", string pageName = null)
     {
         var actionContext = new ActionContext
