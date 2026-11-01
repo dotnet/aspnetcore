@@ -23,6 +23,28 @@ const normalizeVerifier = value => normalizeLineEndings(value).replace(/^ {6}/gm
 const inlineWorkerProfile = workflowSource.match(
   /## agent: `review-guide-worker`\r?\n([\s\S]+)$/);
 
+const assertCompiledRateLimitRoles = compiledWorkflow => {
+  const rateLimitEnvironment = compiledWorkflow.match(
+    /- name: Check user rate limit\r?\n(?: {8}[^\r\n]*\r?\n)*        env:\r?\n((?: {10}[^\r\n]*\r?\n)+)        with:/);
+  assert.ok(rateLimitEnvironment, 'The compiled rate-limit environment must be extractable.');
+  assert.match(
+    rateLimitEnvironment[1],
+    /^ {10}GH_AW_RATE_LIMIT_IGNORED_ROLES: "read"\r?$/m,
+    'Rate limiting must not fall back to exempting eligible reviewer roles.');
+};
+assertCompiledRateLimitRoles(workflowLock);
+for (const [name, replacement] of [
+  ['MissingIgnoredRoles', ''],
+  ['EmptyIgnoredRoles', '          GH_AW_RATE_LIMIT_IGNORED_ROLES: ""\n'],
+  ['DefaultExemptReviewerRoles', '          GH_AW_RATE_LIMIT_IGNORED_ROLES: "admin,maintain,write"\n'],
+]) {
+  assert.throws(
+    () => assertCompiledRateLimitRoles(workflowLock.replace(
+      /^ {10}GH_AW_RATE_LIMIT_IGNORED_ROLES:[^\r\n]*\r?\n/m, replacement)),
+    /Rate limiting must not fall back/,
+    name);
+}
+
 assert.ok(inlineWorkerProfile, 'The hosted review-guide-worker profile must be extractable.');
 assert.doesNotMatch(inlineWorkerProfile[1], /user-invocable|strict-tools-list/);
 assert.doesNotMatch(localWorkerProfile, /disable-model-invocation/);
@@ -40,7 +62,8 @@ assert.equal(
 assert.match(workflowSource, /bash:\s*\[":\*"\]/);
 assert.match(workflowSource, /^\s+edit:\s*$/m);
 assert.match(workflowSource, /memory:\s*8g/);
-assert.match(workflowSource, /user-rate-limit:\r?\n  max-runs-per-window: 10\r?\n  window: 30\r?\n  ignored-roles: \[\]/);
+assert.match(workflowSource, /  roles: \[admin, maintainer, write\]/);
+assert.match(workflowSource, /user-rate-limit:\r?\n  max-runs-per-window: 10\r?\n  window: 30\r?\n  ignored-roles: \[read\]/);
 assert.doesNotMatch(workflowSource, /^\s+- (?:containers|defaults|dotnet|github|java|node|powershell|python)\s*$/m);
 assert.match(workflowSource, /- "builds\.dotnet\.microsoft\.com"/);
 assert.match(workflowSource, /- "ci\.dot\.net"/);
