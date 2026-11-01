@@ -37,8 +37,8 @@ max-turns: 200
 max-ai-credits: 1500
 
 user-rate-limit:
-  max-runs-per-window: 5
-  window: 60
+  max-runs-per-window: 10
+  window: 30
   ignored-roles: []
 
 checkout: false

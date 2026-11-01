@@ -40,6 +40,7 @@ assert.equal(
 assert.match(workflowSource, /bash:\s*\[":\*"\]/);
 assert.match(workflowSource, /^\s+edit:\s*$/m);
 assert.match(workflowSource, /memory:\s*8g/);
+assert.match(workflowSource, /user-rate-limit:\r?\n  max-runs-per-window: 10\r?\n  window: 30\r?\n  ignored-roles: \[\]/);
 assert.doesNotMatch(workflowSource, /^\s+- (?:containers|defaults|dotnet|github|java|node|powershell|python)\s*$/m);
 assert.match(workflowSource, /- "builds\.dotnet\.microsoft\.com"/);
 assert.match(workflowSource, /- "ci\.dot\.net"/);
@@ -95,6 +96,8 @@ assert.match(workflowLock, /--allow-tool shell/);
 assert.match(workflowLock, /--allow-tool write/);
 assert.match(workflowLock, /--memory-limit 8g/);
 assert.match(workflowLock, /GH_AW_TOOL_TIMEOUT: "?1800"?/);
+assert.match(workflowLock, /GH_AW_RATE_LIMIT_MAX: "10"/);
+assert.match(workflowLock, /GH_AW_RATE_LIMIT_WINDOW: "30"/);
 assert.match(workflowLock, /Restore inline sub-agents from activation artifact/);
 assert.match(workflowLock, /Verify restricted review workers/);
 assert.match(workflowLock, /builds\.dotnet\.microsoft\.com/);
