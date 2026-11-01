@@ -181,6 +181,72 @@ public class PrefixContainerTest
     }
 
     [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(9)]
+    [InlineData(16)]
+    public void ContainsPrefix_MatchesExpected_ForSmallAndLargeCollections(int fillerCount)
+    {
+        // Arrange
+        // Small collections are searched without sorting and large ones with a binary search; both must agree.
+        var keys = new List<string> { "Zeta", "productId", "product[0]", "Order.Lines[2].Sku", null, "[key]", "ab" };
+        for (var i = 0; i < fillerCount; i++)
+        {
+            keys.Insert(i % keys.Count, "filler" + i);
+        }
+
+        var container = new PrefixContainer(keys);
+
+        // Act & Assert
+        Assert.True(container.ContainsPrefix(""));
+        Assert.True(container.ContainsPrefix("zeta"));
+        Assert.True(container.ContainsPrefix("ZETA"));
+        Assert.True(container.ContainsPrefix("productid"));
+        Assert.True(container.ContainsPrefix("product"));
+        Assert.True(container.ContainsPrefix("PRODUCT[0]"));
+        Assert.True(container.ContainsPrefix("order"));
+        Assert.True(container.ContainsPrefix("order.lines"));
+        Assert.True(container.ContainsPrefix("Order.Lines[2]"));
+        Assert.True(container.ContainsPrefix("order.lines[2].sku"));
+        Assert.True(container.ContainsPrefix("[key]"));
+        Assert.Equal(fillerCount > 0, container.ContainsPrefix("filler0"));
+
+        Assert.False(container.ContainsPrefix("Zet"));
+        Assert.False(container.ContainsPrefix("prod"));
+        Assert.False(container.ContainsPrefix("Order.Line"));
+        Assert.False(container.ContainsPrefix("Order.Lines[2].Sk"));
+        Assert.False(container.ContainsPrefix("a"));
+        Assert.False(container.ContainsPrefix("abc"));
+        Assert.False(container.ContainsPrefix("[ke"));
+        Assert.False(container.ContainsPrefix("filler"));
+        Assert.False(container.ContainsPrefix("missing"));
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(20)]
+    public void ContainsPrefix_UsesSnapshotOfValues(int count)
+    {
+        // Arrange
+        var keys = new List<string>();
+        for (var i = 0; i < count; i++)
+        {
+            keys.Add("key" + i);
+        }
+
+        var container = new PrefixContainer(keys);
+
+        // Act
+        keys.Clear();
+        keys.Add("other");
+
+        // Assert
+        Assert.True(container.ContainsPrefix("key0"));
+        Assert.False(container.ContainsPrefix("other"));
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("foo")]
     public void GetKeysFromPrefix_ReturnsEmptySequenceWhenContainerIsEmpty(string prefix)

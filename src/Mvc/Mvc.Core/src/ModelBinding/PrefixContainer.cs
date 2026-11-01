@@ -14,6 +14,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// </summary>
 public class PrefixContainer
 {
+    // At or below this size, values are left unsorted and searched linearly; that is cheaper than sorting them up front.
+    private const int LinearSearchThreshold = 8;
+
     private readonly ICollection<string> _originalValues;
     private readonly string[] _sortedValues;
 
@@ -35,7 +38,11 @@ public class PrefixContainer
         {
             _sortedValues = new string[_originalValues.Count];
             _originalValues.CopyTo(_sortedValues, 0);
-            Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
+
+            if (_sortedValues.Length > LinearSearchThreshold)
+            {
+                Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
+            }
         }
     }
 
@@ -58,7 +65,36 @@ public class PrefixContainer
             return true; // Empty prefix matches all elements.
         }
 
+        if (_sortedValues.Length <= LinearSearchThreshold)
+        {
+            return ContainsPrefixUnsorted(prefix);
+        }
+
         return BinarySearch(prefix) > -1;
+    }
+
+    private bool ContainsPrefixUnsorted(string prefix)
+    {
+        foreach (var candidate in _sortedValues)
+        {
+            if (candidate is not null && candidate.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                if (candidate.Length == prefix.Length)
+                {
+                    // Exact match
+                    return true;
+                }
+
+                var c = candidate[prefix.Length];
+                if (c == '.' || c == '[')
+                {
+                    // Match, followed by delimiter
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
