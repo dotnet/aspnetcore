@@ -6,6 +6,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 public class ValidationStateDictionaryTest
 {
     [Fact]
+    public void EmptyDictionary_ReadOperations_WithoutBackingDictionary()
+    {
+        // Arrange
+        // Only members that do not create the backing dictionary are used here.
+        var dictionary = new ValidationStateDictionary();
+        var model = new object();
+
+        // Act & Assert
+        Assert.True(dictionary.Count == 0);
+        Assert.False(dictionary.ContainsKey(model));
+        Assert.False(dictionary.TryGetValue(model, out var entry));
+        Assert.Null(entry);
+        Assert.Null(dictionary[model]);
+        dictionary.Clear();
+        Assert.True(dictionary.Count == 0);
+        Assert.False(dictionary.ContainsKey(model));
+    }
+
+    [Fact]
     public void EmptyDictionary_ReadOperations()
     {
         // Arrange
@@ -14,15 +33,12 @@ public class ValidationStateDictionaryTest
 
         // Act & Assert
         Assert.Empty(dictionary);
-        Assert.True(dictionary.Count == 0);
         Assert.False(dictionary.IsReadOnly);
-        Assert.False(dictionary.ContainsKey(model));
-        Assert.False(dictionary.TryGetValue(model, out var entry));
-        Assert.Null(entry);
-        Assert.Null(dictionary[model]);
         Assert.False(dictionary.Remove(model));
         Assert.Empty(dictionary.Keys);
         Assert.Empty(dictionary.Values);
+        Assert.False(dictionary.ContainsKey(model));
+        Assert.Null(dictionary[model]);
         dictionary.Clear();
         Assert.True(dictionary.Count == 0);
     }
@@ -34,6 +50,7 @@ public class ValidationStateDictionaryTest
         var dictionary = new ValidationStateDictionary();
 
         // Act & Assert
+        // Before any entry is added, the backing dictionary does not exist yet.
         Assert.Throws<ArgumentNullException>("key", () => dictionary.ContainsKey(null));
         Assert.Throws<ArgumentNullException>("key", () => dictionary.TryGetValue(null, out _));
         Assert.Throws<ArgumentNullException>("key", () => dictionary[null]);
