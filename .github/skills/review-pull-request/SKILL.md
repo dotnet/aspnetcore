@@ -234,6 +234,37 @@ remain source-only without reporting `INCOMPLETE`. Workers remain source-only. A
 source-only review remains valid; tests and CI claims are supporting evidence, and only
 an eligible recorded local repro is execution proof.
 
+After all coordinator source adjudication and optional validation, if the provisional
+`NEW_FINDINGS` set is nonempty, launch exactly one fresh
+`review-candidate-verifier` custom agent for the PR, once. This is a coordinator-owned
+post-gate verifier, not a routed guide worker; it does not change the
+one-worker-per-guide count or any per-guide worker invariant. Use the same explicitly
+selected model and reasoning effort as the guide workers. Give it the trusted bundle
+root; the role-to-root mapping for the frozen `source/<sha>` roots; the exact diff and
+changed-file references; every provisional finding; the exact assigned base-tip or
+primary-repository contract paths; and, when validation was used, the immutable
+source-bound validation artifacts and their paths, not an assertion that tests passed.
+It may read and search only those assigned frozen inputs, must verify only the supplied
+findings, and must not perform a fresh review.
+
+Require exactly one verifier result for every assigned candidate and no extra or
+duplicate result. Map each result independently: `KEEP` remains in `NEW_FINDINGS`;
+`DOWNGRADE`, or `DROP` because a required link is unestablished, moves the candidate to
+`UNRESOLVED` with the exact `missingEvidence`; `DROP` because frozen source contradicts
+a required link moves it to `DISCARDED` with the exact source reason. Proven
+pre-existing same behavior on the candidate's exact input sequence is `DISCARDED` with
+the compared old/new source reason. This is an intentional adaptation of the verifier
+contract for skill output. External behavior that remains unestablished is
+`UNRESOLVED`.
+
+On `KEEP`, accept a verifier-corrected changed-line anchor or faithful repro when the
+core claim and effect are fully proven; an inaccurate submitted anchor or repro alone
+is not grounds to discard it. Before returning, check any corrected anchor against the
+RIGHT side of the frozen diff and any corrected repro against the verifier's cited
+frozen proof. A failed, missing, malformed, extra, or duplicate verifier result, or a
+correction that fails those checks, makes the review `INCOMPLETE`. Never retry,
+substitute another agent, or complete the verifier's work in the coordinator.
+
 ## Return result; never publish
 
 The first line is always `STATUS: FINDINGS`, `STATUS: NO_FINDINGS`,
