@@ -132,7 +132,7 @@ internal sealed partial class RequestQueue
     }
 
     /// <summary>
-    /// True if this instace created the queue instead of attaching to an existing one.
+    /// True if this instance created the queue instead of attaching to an existing one.
     /// </summary>
     internal bool Created { get; }
 

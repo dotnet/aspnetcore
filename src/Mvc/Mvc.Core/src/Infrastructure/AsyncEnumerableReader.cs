@@ -48,7 +48,7 @@ internal sealed class AsyncEnumerableReader
     /// </summary>
     /// <param name="type">The type to read.</param>
     /// <param name="reader">A delegate that when awaited reads the <see cref="IAsyncEnumerable{T}"/>.</param>
-    /// <returns><see langword="true" /> when <paramref name="type"/> is an instance of <see cref="IAsyncEnumerable{T}"/>, othwerise <see langword="false"/>.</returns>
+    /// <returns><see langword="true" /> when <paramref name="type"/> is an instance of <see cref="IAsyncEnumerable{T}"/>, otherwise <see langword="false"/>.</returns>
     public bool TryGetReader(Type type, [NotNullWhen(true)] out Func<object, CancellationToken, Task<ICollection>>? reader)
     {
         if (!_asyncEnumerableConverters.TryGetValue(type, out reader))

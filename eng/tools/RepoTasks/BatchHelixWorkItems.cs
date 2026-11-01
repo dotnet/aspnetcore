@@ -155,6 +155,7 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                 var queueName = firstItem.GetMetadata("QueueName");
                 var arch = firstItem.GetMetadata("TestingArchitecture");
                 var quarantined = firstItem.GetMetadata("RunQuarantined");
+                var testFilter = firstItem.GetMetadata("TestFilter");
 
                 foreach (var workItem in chunk)
                 {
@@ -162,6 +163,7 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                     ValidateMetadataConsistency(workItem, firstItem, "QueueName");
                     ValidateMetadataConsistency(workItem, firstItem, "TestingArchitecture");
                     ValidateMetadataConsistency(workItem, firstItem, "RunQuarantined");
+                    ValidateMetadataConsistency(workItem, firstItem, "TestFilter");
                     ValidateMetadataConsistency(workItem, firstItem, "Timeout");
                 }
 
@@ -182,7 +184,7 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                 }
 
                 var script = IsWindowsQueue ? "call runtests.cmd" : "./runtests.sh";
-                var command = $"{script} @targets.txt {runtimeVersion} {queueName} {arch} {quarantined} {timeoutStr} false";
+                var command = $"{script} @targets.txt {runtimeVersion} {queueName} {arch} {quarantined} {timeoutStr} false \"{testFilter}\"";
 
                 // Copy metadata from the first item, then override batch-specific values.
                 foreach (System.Collections.DictionaryEntry metadataEntry in firstItem.CloneCustomMetadata())

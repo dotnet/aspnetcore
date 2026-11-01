@@ -92,7 +92,7 @@ public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
     }
 
     /// <summary>
-    /// Creates a rule string tied to the current Windows user and which is transferrable
+    /// Creates a rule string tied to the current Windows user and which is transferable
     /// across machines (backed up in AD).
     /// </summary>
     internal static string GetDefaultProtectionDescriptorString()

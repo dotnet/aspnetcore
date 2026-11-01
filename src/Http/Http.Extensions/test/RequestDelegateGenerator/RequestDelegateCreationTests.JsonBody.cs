@@ -111,6 +111,32 @@ app.MapPost("/", postTodoWithDefault){withFilter}
     }
 
     [Fact]
+    public async Task MapAction_ExplicitBodyParam_SharedDelegateSignature_PreservesEmptyBodyBehavior()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/66912.
+        // Two endpoints that share the same delegate signature (Todo) => IResult but differ only
+        // in their binding attribute ([FromBody] required vs [FromBody(EmptyBodyBehavior = Allow)])
+        // must each get their own interceptor. Otherwise the second endpoint's EmptyBodyBehavior is
+        // silently dropped and it incorrectly returns 400 for an empty body.
+        var source = """
+app.MapPost("/required", ([FromBody] Todo todo) => TypedResults.Ok(todo));
+app.MapPost("/allow-empty", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo));
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(2, endpoints.Length);
+
+        var requiredHttpContext = CreateHttpContextWithEmptyJsonBody();
+        await endpoints[0].RequestDelegate(requiredHttpContext);
+        await VerifyResponseBodyAsync(requiredHttpContext, string.Empty, expectedStatusCode: 400);
+
+        var allowEmptyHttpContext = CreateHttpContextWithEmptyJsonBody();
+        await endpoints[1].RequestDelegate(allowEmptyHttpContext);
+        await VerifyResponseBodyAsync(allowEmptyHttpContext, string.Empty, expectedStatusCode: 200);
+    }
+
+    [Fact]
     public async Task MapAction_ExplicitBodyParam_ComplexReturn_Snapshot()
     {
         var expectedBody = """{"id":0,"name":"Test Item","isComplete":false}""";

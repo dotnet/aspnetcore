@@ -16,6 +16,7 @@ public abstract class ProtectedBrowserStorage
     private readonly string _storeName;
     private readonly IJSRuntime _jsRuntime;
     private readonly IDataProtectionProvider _dataProtectionProvider;
+    private readonly JsonSerializerOptions _serializerOptions;
     private readonly ConcurrentDictionary<string, IDataProtector> _cachedDataProtectorsByPurpose
         = new ConcurrentDictionary<string, IDataProtector>(StringComparer.Ordinal);
 
@@ -26,6 +27,15 @@ public abstract class ProtectedBrowserStorage
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
     private protected ProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
+        : this(storeName, jsRuntime, dataProtectionProvider, JsonSerializerOptionsProvider.Options)
+    {
+    }
+
+    internal ProtectedBrowserStorage(
+        string storeName,
+        IJSRuntime jsRuntime,
+        IDataProtectionProvider dataProtectionProvider,
+        JsonSerializerOptions serializerOptions)
     {
         // Performing data protection on the client would give users a false sense of security, so we'll prevent this.
         if (OperatingSystem.IsBrowser())
@@ -38,6 +48,7 @@ public abstract class ProtectedBrowserStorage
         _storeName = storeName;
         _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         _dataProtectionProvider = dataProtectionProvider ?? throw new ArgumentNullException(nameof(dataProtectionProvider));
+        _serializerOptions = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
     }
 
     /// <summary>
@@ -122,7 +133,8 @@ public abstract class ProtectedBrowserStorage
 
     private string Protect(string purpose, object value)
     {
-        var json = JsonSerializer.Serialize(value, options: JsonSerializerOptionsProvider.Options);
+        var typeInfo = _serializerOptions.GetTypeInfo(value?.GetType() ?? typeof(object));
+        var json = JsonSerializer.Serialize(value, typeInfo);
         var protector = GetOrCreateCachedProtector(purpose);
 
         return protector.Protect(json);
@@ -133,7 +145,8 @@ public abstract class ProtectedBrowserStorage
         var protector = GetOrCreateCachedProtector(purpose);
         var json = protector.Unprotect(protectedJson);
 
-        return JsonSerializer.Deserialize<TValue>(json, options: JsonSerializerOptionsProvider.Options)!;
+        var typeInfo = _serializerOptions.GetTypeInfo(typeof(TValue));
+        return (TValue)JsonSerializer.Deserialize(json, typeInfo)!;
     }
 
     private ValueTask SetProtectedJsonAsync(string key, string protectedJson)

@@ -45,6 +45,7 @@ public static class IdentityBuilderExtensions
         builder.Services.AddScoped(typeof(ISecurityStampValidator), typeof(SecurityStampValidator<>).MakeGenericType(builder.UserType));
         builder.Services.AddScoped(typeof(ITwoFactorSecurityStampValidator), typeof(TwoFactorSecurityStampValidator<>).MakeGenericType(builder.UserType));
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<IdentityPasskeyOptions>, PostConfigureIdentityPasskeyOptions>());
     }
 
     /// <summary>
@@ -117,6 +118,22 @@ public static class IdentityBuilderExtensions
         private TimeProvider? TimeProvider { get; }
 
         public void PostConfigure(string? name, SecurityStampValidatorOptions options)
+        {
+            options.TimeProvider ??= TimeProvider;
+        }
+    }
+
+    // Set TimeProvider from DI on all options instances, if not already set by tests.
+    private sealed class PostConfigureIdentityPasskeyOptions : IPostConfigureOptions<IdentityPasskeyOptions>
+    {
+        public PostConfigureIdentityPasskeyOptions(TimeProvider? timeProvider = null)
+        {
+            TimeProvider = timeProvider;
+        }
+
+        private TimeProvider? TimeProvider { get; }
+
+        public void PostConfigure(string? name, IdentityPasskeyOptions options)
         {
             options.TimeProvider ??= TimeProvider;
         }

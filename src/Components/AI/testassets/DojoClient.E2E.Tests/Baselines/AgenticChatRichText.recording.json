@@ -1,0 +1,23 @@
+{
+  "calls": [
+    {
+      "prompt": "Show a formatted Blazor overview",
+      "frames": [
+        {
+          "name": "structure",
+          "chunks": [
+            "## Blazor components\n\n",
+            "Blazor renders **interactive UI** with `C#`.\n\n"
+          ]
+        },
+        {
+          "name": "complete",
+          "chunks": [
+            "- [Server rendering](https://learn.microsoft.com/aspnet/core/blazor/)\n",
+            "- WebAssembly rendering"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -63,7 +63,7 @@ internal sealed class DefaultCombinedLease : RateLimitLease
 
         // Dispose endpoint lease first, then global lease (reverse order of when they were acquired)
         // Avoids issues where dispose might unblock a queued acquire and then the acquire fails when acquiring the next limiter.
-        // When disposing in reverse order there wont be any issues of unblocking an acquire that affects acquires on limiters in the chain after it
+        // When disposing in reverse order there won't be any issues of unblocking an acquire that affects acquires on limiters in the chain after it
         try
         {
             _endpointLease.Dispose();

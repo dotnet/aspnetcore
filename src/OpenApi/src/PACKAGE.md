@@ -38,6 +38,28 @@ app.Run();
 
 For more information on configuring and using Microsoft.AspNetCore.OpenApi, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/openapi).
 
+## Build-time Document Generation
+
+Microsoft.AspNetCore.OpenApi supports generating OpenAPI documents at build time via the `Microsoft.Extensions.ApiDescription.Server` package. When you run `dotnet build`, the document generation tool runs automatically.
+
+### Viewing Build-time Generation Output
+
+By default, the .NET 8+ Terminal Logger suppresses the document generation tool output. To see the full generation logs, including messages like `Generating document named 'v1'`, use one of the following approaches:
+
+* **Increase Terminal Logger verbosity**: Pass `-tlp:v=d` (detailed) to your build command:
+
+  ```sh
+  dotnet build -tlp:v=d
+  ```
+
+* **Disable the Terminal Logger**: Pass `--tl:off` to fall back to the classic logger, which shows all tool output:
+
+  ```sh
+  dotnet build --tl:off
+  ```
+
+This is particularly useful when debugging OpenAPI document generation issues.
+
 ## Main Types
 
 <!-- The main types provided in this library -->

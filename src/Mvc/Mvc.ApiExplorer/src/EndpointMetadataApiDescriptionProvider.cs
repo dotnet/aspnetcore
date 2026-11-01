@@ -135,7 +135,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         if (acceptsMetadata is not null)
         {
             // Add a default body parameter if there was no explicitly defined parameter associated with
-            // either the body or a form and the user explicity defined some metadata describing the
+            // either the body or a form and the user explicitly defined some metadata describing the
             // content types the endpoint consumes (such as Accepts<TRequest>(...) or [Consumes(...)]).
             if (!hasBodyOrFormFileParameter)
             {

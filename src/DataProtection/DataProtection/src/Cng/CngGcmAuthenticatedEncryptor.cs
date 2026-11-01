@@ -53,6 +53,16 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         _symmetricAlgorithmHandle = symmetricAlgorithmHandle;
         _symmetricAlgorithmSubkeyLengthInBytes = symmetricAlgorithmKeySizeInBytes;
         _contextHeader = CreateContextHeader();
+
+        try
+        {
+            this.PerformSelfTest();
+        }
+        catch
+        {
+            _sp800_108_ctr_hmac_provider.Dispose();
+            throw;
+        }
     }
 
     public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : IBufferWriter<byte>

@@ -434,6 +434,7 @@ export type BrowserConfigurationOptions = {
     reconnectionMaxRetries?: number;
     reconnectionRetryIntervalMilliseconds?: number;
     reconnectionDialogId?: string;
+    [libraryExtensionKey: string]: unknown;
   };
   ssr?: {
     disableDomPreservation?: boolean;

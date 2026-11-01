@@ -34,6 +34,14 @@ public class ServerStartup
         services.AddSingleton<ResourceRequestLog>();
         services.AddTransient<BasicTestApp.FormsTest.ValidationComponentDI.SaladChef>();
 
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        services.AddValidation(options =>
+            options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
+#pragma warning restore ASP0029
+
+        // Interactive host registers the gate so the async validation E2E tests control settling deterministically.
+        services.AddSingleton<BasicTestApp.FormsTest.AsyncValidationGate>();
+
         var circuitContextAccessor = new TestCircuitContextAccessor();
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
         services.AddSingleton(circuitContextAccessor);

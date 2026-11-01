@@ -23,7 +23,7 @@ internal enum HeaderWriteResult : byte
 }
 
 // This file is used by Kestrel to write response headers and tests to write request headers.
-// To avoid adding test code to Kestrel this file is shared. Test specifc code is excluded from Kestrel by ifdefs.
+// To avoid adding test code to Kestrel this file is shared. Test specific code is excluded from Kestrel by ifdefs.
 internal static class HPackHeaderWriter
 {
     /// <summary>

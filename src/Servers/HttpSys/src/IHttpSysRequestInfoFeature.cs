@@ -14,7 +14,7 @@ public interface IHttpSysRequestInfoFeature
 {
     /// <summary>
     /// A collection of the HTTP_REQUEST_INFO for the current request. The integer represents the identifying
-    /// HTTP_REQUEST_INFO_TYPE enum value. The Memory is opaque bytes that need to be interperted in the format
+    /// HTTP_REQUEST_INFO_TYPE enum value. The Memory is opaque bytes that need to be interpreted in the format
     /// specified by the enum value.
     /// </summary>
     public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo { get; }

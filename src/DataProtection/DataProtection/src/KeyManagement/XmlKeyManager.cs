@@ -456,7 +456,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                 {
                     if (massRevocationDate < mostRecentMassRevocationDate)
                     {
-                        // Delete superceded mass revocation elements
+                        // Delete superseded mass revocation elements
                         deletableElementsArray[i].DeletionOrder = deletionOrderMassRevocation;
                     }
                 }

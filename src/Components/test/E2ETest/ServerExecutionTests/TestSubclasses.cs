@@ -102,7 +102,6 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void CanRenderHtmlTable()
         => base.CanRenderHtmlTable();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66120")]
     public override void CancelsOutdatedRefreshes_Async()
         => base.CancelsOutdatedRefreshes_Async();
 
@@ -113,9 +112,11 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
         => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66970")]
     public override void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
         => base.AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(variableHeight, useItemsProvider);
+
+    public override void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
+        => base.QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(anchorMode, useItemsProvider);
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

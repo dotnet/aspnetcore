@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -125,7 +124,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66693")]
     public void DataAnnotationsWorkForForms(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -663,22 +661,24 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             {
                 Browser.Click(preferredCriteria);
             }
-            // Set the value for preferred ti 'invalid' to trigger a binding error
+            // Set the value for preferred to 'invalid' to trigger a binding error
             ((IJavaScriptExecutor)Browser).ExecuteScript($"arguments[0].setAttribute('value', 'invalid{i}')", preferred);
         }
 
         Browser.Click(By.Id("send"));
 
-        Browser.Exists(By.CssSelector("[data-index='0']")).Text.Contains("The value 'invalid0' is not valid for 'IsPreferred'.");
-        Browser.Exists(By.CssSelector("[data-index='1']")).Text.Contains("The value 'invalid1' is not valid for 'IsPreferred'.");
+        Browser.Contains(
+            "The value 'invalid0' is not valid for 'IsPreferred'.",
+            () => Browser.FindElement(By.CssSelector("[data-index='0']")).Text);
+        Browser.Contains(
+            "The value 'invalid1' is not valid for 'IsPreferred'.",
+            () => Browser.FindElement(By.CssSelector("[data-index='1']")).Text);
 
         Browser.Equal(2, () => Browser.FindElements(By.CssSelector("li.validation-message")).Count());
 
         if (!suppressEnhancedNavigation)
         {
-            // Verify the same form element is still in the page
-            // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetDomAttribute("action"));
+            Browser.True(() => !string.IsNullOrEmpty(Browser.FindElement(By.CssSelector("form")).GetDomAttribute("action")));
         }
     }
 

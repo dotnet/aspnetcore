@@ -79,7 +79,7 @@ internal sealed class SaveTempDataFilter : IResourceFilter, IResultFilter
     {
         // If there is an unhandled exception, we would like to avoid setting tempdata as
         // the end user is going to see an error page anyway and also it helps us in avoiding
-        // accessing resources like Session too late in the request lifecyle where SessionFeature might
+        // accessing resources like Session too late in the request lifecycle where SessionFeature might
         // not be available.
         if (!context.HttpContext.Response.HasStarted && context.Exception != null)
         {

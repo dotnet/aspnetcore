@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
@@ -88,13 +89,16 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     /// <inheritdoc />
     public override Task<bool> HandleRequestAsync()
     {
+        // Both paths below are, like the sign-in callback, cross-site requests owned by this handler, and
+        // HandleRemoteSignOutAsync reads a form_post body, so they need the same antiforgery verdict handling
+        // that RemoteAuthenticationHandler applies to CallbackPath.
         if (Options.RemoteSignOutPath.HasValue && Options.RemoteSignOutPath == Request.Path)
         {
-            return HandleRemoteSignOutAsync();
+            return RemoteAuthenticationAntiforgery.HandleWithoutAntiforgeryVerdictAsync(Context, HandleRemoteSignOutAsync);
         }
         else if (Options.SignedOutCallbackPath.HasValue && Options.SignedOutCallbackPath == Request.Path)
         {
-            return HandleSignOutCallbackAsync();
+            return RemoteAuthenticationAntiforgery.HandleWithoutAntiforgeryVerdictAsync(Context, HandleSignOutCallbackAsync);
         }
 
         return base.HandleRequestAsync();
@@ -841,6 +845,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
                 // no need to validate signature when token is received using "code flow" as per spec
                 // [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
+                // codeql[SM04387] - By design: in code flow the ID token is fetched from the token endpoint over the TLS back-channel, so OIDC Core 1.0 does not require signature validation.
                 validationParameters.RequireSignedTokens = false;
 
                 // At least a cursory validation is required on the new IdToken, even if we've already validated the one from the authorization response.
@@ -1162,6 +1167,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         var cookieOptions = Options.NonceCookie.Build(Context, TimeProvider.GetUtcNow());
 
+        // codeql[SM02373] - The nonce cookie is Secure by default because NonceCookie.SecurePolicy defaults to CookieSecurePolicy.Always.
         Response.Cookies.Append(
             Options.NonceCookie.Name + Options.StringDataFormat.Protect(nonce),
             NonceProperty,

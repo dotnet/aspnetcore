@@ -82,7 +82,7 @@ public sealed class InteractiveRequestOptions
         [UnconditionalSuppressMessage(
             "Trimming",
             "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-            Justification = "The types this method deserializes are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out as part of 'TryAddAdditionalParameter'.")]
+            Justification = "The types this method deserializes are annotated with 'DynamicallyAccessedMembers' to prevent them from being linked out as part of 'TryAddAdditionalParameter'.")]
         static TValue Deserialize(JsonElement element) => element.Deserialize<TValue>()!;
     }
 

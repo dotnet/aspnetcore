@@ -102,7 +102,7 @@ ScheduleMakeShortcutElevatedCA(
             goto exit;
         }
 
-        // Only run if the comonent is installing or reinstalling
+        // Only run if the component is installing or reinstalling
         if ( MsiUtilIsInstalling( installStateCurrent, installStateAction ) ||
             MsiUtilIsReInstalling( installStateCurrent, installStateAction ) )
         {

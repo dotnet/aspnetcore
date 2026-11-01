@@ -1,0 +1,9 @@
+#nullable enable
+Microsoft.AspNetCore.Components.AutoPauseBrowserOptions
+Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.AutoPauseBrowserOptions() -> void
+Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.Enabled.get -> bool
+Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.Enabled.set -> void
+Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.HiddenDelay.get -> System.TimeSpan
+Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.HiddenDelay.set -> void
+Microsoft.AspNetCore.Components.AutoPauseBrowserOptionsExtensions
+static Microsoft.AspNetCore.Components.AutoPauseBrowserOptionsExtensions.AddAutoPause(this Microsoft.AspNetCore.Components.BrowserOptions! options, System.Action<Microsoft.AspNetCore.Components.AutoPauseBrowserOptions!>? configure = null) -> Microsoft.AspNetCore.Components.BrowserOptions!

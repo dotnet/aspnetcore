@@ -1246,4 +1246,39 @@ public class DefaultAuthorizationServiceTests
 
         // Assert
     }
+
+    [Fact]
+    public async Task Authorize_ShouldLogFailureReasonsWhenFailedCallWithReasons()
+    {
+        // Arrange
+
+        static void Assertion(LogLevel level, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        {
+            Assert.Equal(LogLevel.Information, level);
+            Assert.Equal(2, eventId.Id);
+            Assert.Equal("UserAuthorizationFailed", eventId.Name);
+            var message = formatter(state, exception);
+
+            Assert.Equal("Authorization failed. Fail() was explicitly called. Authorization failed due to:" + Environment.NewLine + "1" + Environment.NewLine + "3", message);
+        }
+
+        var authorizationService = BuildAuthorizationService(services =>
+        {
+            services.AddSingleton<IAuthorizationHandler>(new ReasonableFailHandler("1"));
+            services.AddSingleton<IAuthorizationHandler>(new ReasonableFailHandler("3"));
+            services.AddSingleton<ILogger<DefaultAuthorizationService>>(new DefaultAuthorizationServiceTestLogger(Assertion));
+            services.AddAuthorization(options => options.AddPolicy("Log", p =>
+            {
+                p.Requirements.Add(new LogRequirement());
+                p.Requirements.Add(new LogRequirement());
+            }));
+        });
+
+        var user = new ClaimsPrincipal();
+
+        // Act
+        var result = await authorizationService.AuthorizeAsync(user, "Log");
+
+        // Assert
+    }
 }

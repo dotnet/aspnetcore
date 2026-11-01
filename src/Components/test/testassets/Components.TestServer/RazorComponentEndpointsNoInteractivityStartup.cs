@@ -27,15 +27,22 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
+        TestFeatureSwitches.SetUrlBasedQuickGridNavigationAndSorting(true);
 
-        var builder = services.AddRazorComponents(options =>
+        services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         });
+
+        if (Configuration.GetValue<bool>("UseHybridCacheViewStore"))
+        {
+            services.AddHybridCache();
+        }
+
         services.AddHttpContextAccessor();
+        services.AddAuthorizationCore();
         services.AddCascadingAuthenticationState();
 
         if (Configuration.GetValue<bool>("UseSession"))

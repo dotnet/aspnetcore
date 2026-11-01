@@ -32,7 +32,7 @@ public:
     static
     void
     AppendArguments(
-        const std::wstring          &arugments,
+        const std::wstring          &applicationArguments,
         const std::filesystem::path &applicationPhysicalPath,
         std::vector<std::wstring>   &arguments,
         bool                        expandDllPaths = false

@@ -1016,7 +1016,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <summary>
     /// Generate an id.
     /// </summary>
-    /// <param name="expression">The expresion.</param>
+    /// <param name="expression">The expression.</param>
     /// <returns>The id.</returns>
     protected virtual string GenerateId(string expression)
     {
@@ -1029,7 +1029,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// Generate a label.
     /// </summary>
     /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
-    /// <param name="expression">The expresion.</param>
+    /// <param name="expression">The expression.</param>
     /// <param name="labelText">The label text.</param>
     /// <param name="htmlAttributes">
     /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
@@ -1111,7 +1111,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     }
 
     /// <summary>
-    /// Geneate a name.
+    /// Generate a name.
     /// </summary>
     /// <param name="expression">The expression.</param>
     /// <returns>The name.</returns>

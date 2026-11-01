@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+<input id="data">
+<script>
+    document.getElementById('data').value = 'iframe-state-42';
+    parent.postMessage({ type: 'iframeReady' }, '*');
+    window.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'getState') {
+            e.source.postMessage({ type: 'stateResponse', value: document.getElementById('data').value }, '*');
+        }
+    });
+</script>
+</body>
+</html>

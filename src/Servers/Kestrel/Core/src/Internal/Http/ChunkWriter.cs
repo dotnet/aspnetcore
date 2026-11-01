@@ -22,7 +22,7 @@ internal static class ChunkWriter
 
         count = (total >> 2) + 3;
 
-        // This must be explicity typed as ReadOnlySpan<byte>
+        // This must be explicitly typed as ReadOnlySpan<byte>
         // It then becomes a non-allocating mapping to the data section of the assembly.
         // For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         ReadOnlySpan<byte> hex = "0123456789abcdef"u8;

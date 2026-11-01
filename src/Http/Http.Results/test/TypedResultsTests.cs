@@ -1108,6 +1108,19 @@ public partial class TypedResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
+    [Fact]
+    public void Problem_WithDuplicateExtensionKeys_UsesLastValue()
+    {
+        // Arrange
+        var extensions = new List<KeyValuePair<string, object>> { new("test", "value1"), new("test", "value2") };
+
+        // Act
+        var result = TypedResults.Problem(extensions: extensions);
+
+        // Assert
+        Assert.Equal("value2", result.ProblemDetails.Extensions["test"]);
+    }
+
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
@@ -1141,7 +1154,7 @@ public partial class TypedResultsTests
         Assert.Null(result.ProblemDetails.Instance);
         Assert.Equal("application/problem+json", result.ContentType);
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
-        Assert.Equal("An error occurred while processing your request.", result.ProblemDetails.Title);
+        Assert.Equal("Internal Server Error", result.ProblemDetails.Title);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", result.ProblemDetails.Type);
         Assert.Empty(result.ProblemDetails.Extensions);
     }
@@ -1234,6 +1247,20 @@ public partial class TypedResultsTests
         Assert.Equal(type, result.ProblemDetails.Type);
         Assert.Equal("application/problem+json", result.ContentType);
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void ValidationProblem_WithDuplicateExtensionKeys_UsesLastValue()
+    {
+        // Arrange
+        var errors = new List<KeyValuePair<string, string[]>> { new("testField", new[] { "test error" }) };
+        var extensions = new List<KeyValuePair<string, object>> { new("test", "value1"), new("test", "value2") };
+
+        // Act
+        var result = TypedResults.ValidationProblem(errors, extensions: extensions);
+
+        // Assert
+        Assert.Equal("value2", result.ProblemDetails.Extensions["test"]);
     }
 
     [Fact]
