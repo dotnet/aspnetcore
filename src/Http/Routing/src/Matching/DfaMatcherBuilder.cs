@@ -880,8 +880,11 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
 
     private static bool IsCacheable(RoutePatternParameterPolicyReference reference, IParameterPolicy parameterPolicy)
     {
-        if (parameterPolicy is OptionalRouteConstraint optionalRouteConstraint)
+        // Only unwrap the exact OptionalRouteConstraint type, which is stateless. A subclass could
+        // reimplement IRouteConstraint and hold state, so it must be judged on its own.
+        if (parameterPolicy.GetType() == typeof(OptionalRouteConstraint))
         {
+            var optionalRouteConstraint = (OptionalRouteConstraint)parameterPolicy;
             parameterPolicy = optionalRouteConstraint.InnerConstraint;
         }
 

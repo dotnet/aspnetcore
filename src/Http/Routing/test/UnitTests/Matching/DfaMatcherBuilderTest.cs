@@ -3566,6 +3566,61 @@ public class DfaMatcherBuilderTest
         Assert.NotSame(constraint1.Value, constraint2.Value);
     }
 
+    [Fact]
+    public void Build_EndpointInMultipleStates_FactoryReturnsOptionalRouteConstraintSubclass_DoesNotShareConstraints()
+    {
+        // Arrange
+        var constraint = new StatefulRouteConstraint();
+        var literal = CreateEndpoint("/x/a");
+        var parameter = CreateEndpoint("/x/{p?}", constraints: new { p = constraint });
+
+        var builder = new DfaMatcherBuilder(
+            NullLoggerFactory.Instance,
+            new OptionalSubclassParameterPolicyFactory(),
+            Mock.Of<EndpointSelector>(),
+            Array.Empty<MatcherPolicy>());
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(parameter);
+
+        // Act
+        var matcher = Assert.IsType<DfaMatcher>(builder.Build());
+
+        // Assert
+        var fromLiteralState = Assert.Single(FindCandidates(matcher, "/x/a"), c => ReferenceEquals(c.Endpoint, parameter));
+        var fromParameterState = Assert.Single(FindCandidates(matcher, "/x/b"), c => ReferenceEquals(c.Endpoint, parameter));
+
+        Assert.NotSame(fromParameterState.Constraints, fromLiteralState.Constraints);
+        var constraint1 = Assert.IsType<StatefulOptionalRouteConstraint>(Assert.Single(fromLiteralState.Constraints).Value);
+        var constraint2 = Assert.IsType<StatefulOptionalRouteConstraint>(Assert.Single(fromParameterState.Constraints).Value);
+        Assert.NotSame(constraint1, constraint2);
+        Assert.Same(constraint, constraint1.InnerConstraint);
+        Assert.Same(constraint, constraint2.InnerConstraint);
+    }
+
+    private class OptionalSubclassParameterPolicyFactory : ParameterPolicyFactory
+    {
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText) => throw new NotSupportedException();
+
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, IParameterPolicy parameterPolicy)
+            => new StatefulOptionalRouteConstraint((IRouteConstraint)parameterPolicy);
+    }
+
+    private class StatefulOptionalRouteConstraint : OptionalRouteConstraint, IRouteConstraint
+    {
+        public StatefulOptionalRouteConstraint(IRouteConstraint innerConstraint)
+            : base(innerConstraint)
+        {
+        }
+
+        public int Count { get; private set; }
+
+        bool IRouteConstraint.Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+        {
+            Count++;
+            return Count == 1;
+        }
+    }
+
     private class NewInstanceParameterPolicyFactory : ParameterPolicyFactory
     {
         private readonly ParameterPolicyFactory _inner;
