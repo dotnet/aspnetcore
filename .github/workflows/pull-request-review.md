@@ -291,7 +291,9 @@ post-steps:
           worker = {
             aliases: new Set(),
             collections: [],
+            latestClarificationIndex: -1,
             name: taskStart.name,
+            reads: [],
             startedIndex: index,
             taskStart,
           };
@@ -349,7 +351,62 @@ post-steps:
           violations.push('No publication safe-output call was recorded.');
         }
 
+        const successfulCompletion = (event, startIndex) => {
+          const toolCallId = event.data?.toolCallId;
+          const completions = events
+            .map((candidate, index) => ({ event: candidate, index }))
+            .filter(({ event: candidate }) =>
+              candidate.type === 'tool.execution_complete' &&
+              !candidate.agentId &&
+              !candidate.data?.parentToolCallId &&
+              candidate.data?.toolCallId === toolCallId);
+          if (typeof toolCallId !== 'string' || toolCallId.length === 0 ||
+              completions.length !== 1 ||
+              completions[0].index <= startIndex ||
+              completions[0].event.data?.success !== true) {
+            return null;
+          }
+          return completions[0];
+        };
+
         events.forEach((event, startIndex) => {
+          if (isTopLevelToolStart(event) &&
+              event.data?.toolName === 'write_agent') {
+            const input = toolInput(event);
+            const targetIds = typeof input?.agent_id === 'string' &&
+              input.agent_ids === undefined && input.scope === undefined
+              ? [input.agent_id]
+              : Array.isArray(input?.agent_ids) &&
+                input.agent_id === undefined && input.scope === undefined
+                ? input.agent_ids
+                : [];
+            const targets = targetIds.map(target =>
+              typeof target === 'string' ? resolveWorker([target]) : null);
+            if (targets.length === 0 || targets.some(worker => !worker)) {
+              violations.push(
+                'write_agent must use explicit known worker targets (agent_id or agent_ids).');
+              return;
+            }
+
+            const completion = successfulCompletion(event, startIndex);
+            if (!completion) {
+              violations.push('write_agent did not complete successfully.');
+              return;
+            }
+            if (firstPublicationIndex >= 0 && completion.index >= firstPublicationIndex) {
+              violations.push('write_agent did not complete before publication.');
+            }
+            for (const worker of new Set(targets)) {
+              if (startIndex <= worker.startedIndex) {
+                violations.push(
+                  `write_agent for '${worker.name}' started before the worker started.`);
+              }
+              worker.latestClarificationIndex = Math.max(
+                worker.latestClarificationIndex, completion.index);
+            }
+            return;
+          }
+
           if (!isTopLevelToolStart(event) ||
               event.data?.toolName !== 'read_agent') {
             return;
@@ -377,24 +434,13 @@ post-steps:
           }
           const isInitialCollection = sinceTurn === undefined || sinceTurn === 0;
 
-          const toolCallId = event.data?.toolCallId;
-          const completions = events
-            .map((candidate, index) => ({ event: candidate, index }))
-            .filter(({ event: candidate }) =>
-              candidate.type === 'tool.execution_complete' &&
-              !candidate.agentId &&
-              !candidate.data?.parentToolCallId &&
-              candidate.data?.toolCallId === toolCallId);
-          if (typeof toolCallId !== 'string' || toolCallId.length === 0 ||
-              completions.length !== 1 ||
-              completions[0].index <= startIndex ||
-              completions[0].event.data?.success !== true) {
+          const completion = successfulCompletion(event, startIndex);
+          if (!completion) {
             violations.push(
               `read_agent for '${worker.name}' did not complete successfully.`);
             return;
           }
 
-          const completion = completions[0];
           if (completion.index <= worker.startedIndex) {
             violations.push(
               `read_agent for '${worker.name}' completed before the worker started.`);
@@ -405,6 +451,9 @@ post-steps:
           }
 
           const content = resultContent(completion.event);
+          if (typeof content === 'string' && content.trim().length > 0) {
+            worker.reads.push({ startIndex, completionIndex: completion.index });
+          }
           if (
             isInitialCollection &&
             typeof content === 'string' &&
@@ -418,6 +467,11 @@ post-steps:
           if (worker.collections.length === 0) {
             violations.push(
               `Review worker '${worker.name}' was not collected before publication with since_turn absent or 0 and PATH: per-guide-worker.`);
+          }
+          if (worker.latestClarificationIndex >= 0 &&
+              !worker.reads.some(read => read.startIndex > worker.latestClarificationIndex)) {
+            violations.push(
+              `Review worker '${worker.name}' received a write_agent follow-up that was not collected before publication.`);
           }
         }
       }
@@ -804,6 +858,8 @@ use the native `review-guide-worker` profile, whose explicit tool list exposes o
 reading, searching, and skill loading. Workers are source-only and must not receive
 coordinator-only inputs, the validation worktree, or coordinator execution output.
 Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.
+Address `write_agent` clarifications with explicit `agent_id` or `agent_ids`, not `scope`,
+so the transcript verifier can attribute each required follow-up collection.
 
 No live GitHub tool is available to the agent;
 the trusted safe-output dependency checks the live head after agent completion.

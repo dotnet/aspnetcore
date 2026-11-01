@@ -231,6 +231,22 @@ try {
       result: { content },
     },
   });
+  const writeStarted = (toolCallId, target, inputOnly = false) => ({
+    type: 'tool.execution_start',
+    data: {
+      toolCallId,
+      toolName: 'write_agent',
+      ...toolArguments({ ...target, message: 'Clarify the disputed evidence.' }, inputOnly),
+    },
+  });
+  const writeCompleted = (toolCallId, success = true) => ({
+    type: 'tool.execution_complete',
+    data: { toolCallId, success, result: { content: 'Message delivered.' } },
+  });
+  const clarification = (toolCallId, target = { agent_id: 'guide-one' }) => [
+    writeStarted(toolCallId, target),
+    writeCompleted(toolCallId),
+  ];
   const safeOutputCall = (toolCallId, toolName, arguments_, success = true) => [
     {
       type: 'tool.execution_start',
@@ -666,6 +682,261 @@ try {
   ], '2');
   assert.notEqual(oneMissingCollection.status, 0);
   assert.match(oneMissingCollection.stderr, /guide-two.*was not collected/);
+
+  const initialReport = hostedWorker('task-one', 'guide-one');
+  const secondInitialReport = hostedWorker('task-two', 'guide-two');
+  const followUpReport = [
+    readStarted('follow-up', 'guide-one', { sinceTurn: 1 }),
+    readCompleted('follow-up', 'Clarification evidence without a repeated path marker.'),
+  ];
+  const missingFollowUp = /write_agent follow-up that was not collected before publication/;
+  const unsuccessfulWrite = /write_agent.*did not complete successfully/;
+  const invalidWriteTarget = /write_agent.*explicit known worker targets/;
+  const rejectedClarifications = [
+    {
+      name: 'UncollectedClarification',
+      events: [...initialReport, ...clarification('write-one'), ...publication()],
+      diagnostic: missingFollowUp,
+    },
+    {
+      name: 'StaleInFlightRead',
+      events: [
+        ...initialReport, followUpReport[0], ...clarification('write-one'),
+        followUpReport[1], ...publication(),
+      ],
+      diagnostic: missingFollowUp,
+    },
+    {
+      name: 'UncollectedSecondClarification',
+      events: [
+        ...initialReport, ...clarification('write-one'), ...followUpReport,
+        ...clarification('write-two'), ...publication(),
+      ],
+      diagnostic: missingFollowUp,
+    },
+    {
+      name: 'OverlappingWriteCompletesAfterReadStarts',
+      events: [
+        ...initialReport, writeStarted('write-one', { agent_id: 'guide-one' }),
+        ...clarification('write-two'), followUpReport[0], writeCompleted('write-one'),
+        followUpReport[1], ...publication(),
+      ],
+      diagnostic: missingFollowUp,
+    },
+    {
+      name: 'WrongWorkerFollowUp',
+      events: [
+        ...initialReport, ...secondInitialReport, ...clarification('write-one'),
+        readStarted('follow-up', 'guide-two'), readCompleted('follow-up'), ...publication(),
+      ],
+      workerCount: '2',
+      diagnostic: missingFollowUp,
+    },
+    {
+      name: 'OnePluralRecipientUncollected',
+      events: [
+        ...initialReport, ...secondInitialReport,
+        ...clarification('write-one', { agent_ids: ['guide-one', 'task-two'] }),
+        ...followUpReport, ...publication(),
+      ],
+      workerCount: '2',
+      diagnostic: /guide-two.*write_agent follow-up that was not collected/,
+    },
+    {
+      name: 'EmptyFollowUpReport',
+      events: [
+        ...initialReport, ...clarification('write-one'), followUpReport[0],
+        readCompleted('follow-up', ' \n\t'), ...publication(),
+      ],
+      diagnostic: missingFollowUp,
+    },
+    {
+      name: 'MissingFollowUpContent',
+      events: [
+        ...initialReport, ...clarification('write-one'), followUpReport[0],
+        { type: 'tool.execution_complete', data: { toolCallId: 'follow-up', success: true } },
+        ...publication(),
+      ],
+      diagnostic: missingFollowUp,
+    },
+    {
+      name: 'NonWaitingFollowUp',
+      events: [
+        ...initialReport, ...clarification('write-one'),
+        readStarted('follow-up', 'guide-one', { wait: false }), followUpReport[1],
+        ...publication(),
+      ],
+      diagnostic: /wait: true/,
+    },
+    {
+      name: 'InvalidFollowUpCursor',
+      events: [
+        ...initialReport, ...clarification('write-one'),
+        readStarted('follow-up', 'guide-one', { sinceTurn: -1 }), followUpReport[1],
+        ...publication(),
+      ],
+      diagnostic: /invalid since_turn/,
+    },
+    {
+      name: 'FailedFollowUpRead',
+      events: [
+        ...initialReport, ...clarification('write-one'), followUpReport[0],
+        readCompleted('follow-up', 'Report unavailable.', false), ...publication(),
+      ],
+      diagnostic: /read_agent.*did not complete successfully/,
+    },
+    {
+      name: 'UncompletedFollowUpRead',
+      events: [
+        ...initialReport, ...clarification('write-one'), followUpReport[0], ...publication(),
+      ],
+      diagnostic: /read_agent.*did not complete successfully/,
+    },
+    {
+      name: 'FollowUpReadAfterPublication',
+      events: [
+        ...initialReport, ...clarification('write-one'), ...publication(), ...followUpReport,
+      ],
+      diagnostic: /read_agent.*did not complete before publication/,
+    },
+    {
+      name: 'FailedClarificationSend',
+      events: [
+        ...initialReport, writeStarted('write-one', { agent_id: 'guide-one' }),
+        writeCompleted('write-one', false), ...followUpReport, ...publication(),
+      ],
+      diagnostic: unsuccessfulWrite,
+    },
+    {
+      name: 'UncompletedClarificationSend',
+      events: [
+        ...initialReport, writeStarted('write-one', { agent_id: 'guide-one' }),
+        ...followUpReport, ...publication(),
+      ],
+      diagnostic: unsuccessfulWrite,
+    },
+    {
+      name: 'DuplicateClarificationCompletion',
+      events: [
+        ...initialReport, ...clarification('write-one'), writeCompleted('write-one'),
+        ...followUpReport, ...publication(),
+      ],
+      diagnostic: unsuccessfulWrite,
+    },
+    {
+      name: 'ClarificationCompletionBeforeStart',
+      events: [
+        ...initialReport, writeCompleted('write-one'),
+        writeStarted('write-one', { agent_id: 'guide-one' }),
+        ...followUpReport, ...publication(),
+      ],
+      diagnostic: unsuccessfulWrite,
+    },
+    {
+      name: 'ClarificationBeforeWorkerStart',
+      events: [
+        writeStarted('write-one', { agent_id: 'guide-one' }), ...initialReport,
+        writeCompleted('write-one'), ...followUpReport, ...publication(),
+      ],
+      diagnostic: /write_agent.*before the worker started/,
+    },
+    {
+      name: 'ClarificationAfterPublication',
+      events: [
+        ...initialReport, ...publication(), ...clarification('write-one'), ...followUpReport,
+      ],
+      diagnostic: /write_agent.*did not complete before publication/,
+    },
+    ...[
+      ['UnknownClarificationTarget', { agent_id: 'unknown' }],
+      ['UnknownPluralClarificationTarget', { agent_ids: ['guide-one', 'unknown'] }],
+      ['EmptyPluralClarificationTarget', { agent_ids: [] }],
+      ['MissingClarificationTarget', {}],
+      ['ConflictingClarificationTargets', { agent_id: 'guide-one', agent_ids: ['guide-one'] }],
+      ['ScopedChildrenClarification', { scope: 'children' }],
+      ['ScopedSiblingsClarification', { scope: 'siblings' }],
+      ['ConflictingScopeClarification', { agent_id: 'guide-one', scope: 'children' }],
+    ].map(([name, target]) => ({
+      name,
+      events: [
+        ...initialReport, ...clarification('write-one', target), ...followUpReport,
+        ...publication(),
+      ],
+      diagnostic: invalidWriteTarget,
+    })),
+  ];
+  for (const { name, events, diagnostic, workerCount = '1' } of rejectedClarifications) {
+    const result = runVerifier(events, workerCount);
+    assert.notEqual(result.status, 0, name);
+    assert.match(result.stderr, diagnostic, name);
+  }
+
+  const acceptedClarifications = [
+    ...[undefined, 0, 1].map(sinceTurn => ({
+      name: sinceTurn === undefined ? 'FullFollowUpRead' : `FollowUpReadFromTurn${sinceTurn}`,
+      events: [
+        ...initialReport, ...clarification('write-one'),
+        readStarted('follow-up', 'guide-one', { sinceTurn }), followUpReport[1],
+        ...publication(),
+      ],
+    })),
+    {
+      name: 'CoalescedClarifications',
+      events: [
+        ...initialReport, ...clarification('write-one'), ...clarification('write-two'),
+        ...followUpReport, ...publication(),
+      ],
+    },
+    {
+      name: 'SequentialCollectedClarifications',
+      events: [
+        ...initialReport, ...clarification('write-one'), ...followUpReport,
+        ...clarification('write-two'), readStarted('second-follow-up', 'task-one'),
+        readCompleted('second-follow-up'), ...publication(),
+      ],
+    },
+    {
+      name: 'PluralRecipientsCollected',
+      events: [
+        ...initialReport, ...secondInitialReport,
+        ...clarification('write-one', { agent_ids: ['guide-one', 'task-two'] }),
+        ...followUpReport, readStarted('second-follow-up', 'guide-two'),
+        readCompleted('second-follow-up', 'Second worker clarification.'), ...publication(),
+      ],
+      workerCount: '2',
+    },
+    {
+      name: 'WorkerIdAndInputOnlyClarification',
+      events: [
+        ...initialReport, writeStarted('write-one', { agent_id: 'task-one' }, true),
+        writeCompleted('write-one'), ...followUpReport, ...publication(),
+      ],
+    },
+    {
+      name: 'StoppedAfterUnreturnedClarification',
+      events: [...initialReport, ...clarification('write-one'), ...stopped('INCOMPLETE')],
+    },
+    {
+      name: 'StoppedAfterFailedClarification',
+      events: [
+        ...initialReport, writeStarted('write-one', { agent_id: 'guide-one' }),
+        writeCompleted('write-one', false), ...stopped('INCOMPLETE'),
+      ],
+    },
+    {
+      name: 'StoppedAfterUncompletedClarification',
+      events: [
+        ...initialReport, writeStarted('write-one', { agent_id: 'guide-one' }),
+        ...stopped('INCOMPLETE'),
+      ],
+    },
+  ];
+  for (const { name, events, workerCount = '1' } of acceptedClarifications) {
+    const result = runVerifier(events, workerCount);
+    assert.equal(result.status, 0, `${name}: ${result.stderr}`);
+  }
+  console.log(
+    `Validated ${rejectedClarifications.length + acceptedClarifications.length} clarification collection cases.`);
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }
