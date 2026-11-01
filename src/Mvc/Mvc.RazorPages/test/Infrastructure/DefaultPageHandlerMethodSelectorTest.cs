@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.InternalTesting;
@@ -620,13 +621,13 @@ public class DefaultPageHandlerMethodSelectorTest
         // Arrange
         var descriptor1 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(Post)),
+            MethodInfo = GetHandlerMethod(nameof(Post)),
             HttpMethod = "POST",
         };
 
         var descriptor2 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(PostAsync)),
+            MethodInfo = GetHandlerMethod(nameof(PostAsync)),
             HttpMethod = "POST",
         };
 
@@ -672,14 +673,14 @@ public class DefaultPageHandlerMethodSelectorTest
         // Arrange
         var descriptor1 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(Post)),
+            MethodInfo = GetHandlerMethod(nameof(Post)),
             HttpMethod = "POST",
             Name = "Add",
         };
 
         var descriptor2 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(PostAsync)),
+            MethodInfo = GetHandlerMethod(nameof(PostAsync)),
             HttpMethod = "POST",
             Name = "Add",
         };
@@ -762,13 +763,13 @@ public class DefaultPageHandlerMethodSelectorTest
         // Arrange
         var unnamed1 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(Post)),
+            MethodInfo = GetHandlerMethod(nameof(Post)),
             HttpMethod = "POST",
         };
 
         var unnamed2 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(PostAsync)),
+            MethodInfo = GetHandlerMethod(nameof(PostAsync)),
             HttpMethod = "POST",
         };
 
@@ -818,13 +819,13 @@ public class DefaultPageHandlerMethodSelectorTest
         // Arrange
         var descriptor1 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(Post)),
+            MethodInfo = GetHandlerMethod(nameof(Post)),
             HttpMethod = "GET",
         };
 
         var descriptor2 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(PostAsync)),
+            MethodInfo = GetHandlerMethod(nameof(PostAsync)),
             HttpMethod = "GET",
         };
 
@@ -864,6 +865,13 @@ public class DefaultPageHandlerMethodSelectorTest
 
     protected void PostAsync()
     {
+    }
+
+    private static MethodInfo GetHandlerMethod(string name)
+    {
+        var method = typeof(DefaultPageHandlerMethodSelectorTest).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+        return method;
     }
 
     private static DefaultPageHandlerMethodSelector CreateSelector()
