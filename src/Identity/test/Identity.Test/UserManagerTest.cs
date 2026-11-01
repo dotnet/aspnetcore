@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
@@ -60,6 +62,52 @@ public class UserManagerTest
     {
         public CustomRoleManager() : base(new Mock<IRoleStore<PocoRole>>().Object, null, null, null, null)
         { }
+    }
+
+    [Fact]
+    public void ConstructorCopiesValidatorsInOrderAndCollectionsAreAvailableToVirtualMembers()
+    {
+        var userValidators = new[] { new Mock<IUserValidator<PocoUser>>().Object, new Mock<IUserValidator<PocoUser>>().Object };
+        var passwordValidators = new[] { new Mock<IPasswordValidator<PocoUser>>().Object };
+
+        var manager = new ValidatorObservingUserManager(userValidators, passwordValidators);
+
+        Assert.Equal(0, manager.UserValidatorCountInLoggerSetter);
+        Assert.Equal(0, manager.PasswordValidatorCountInLoggerSetter);
+        Assert.Equal(userValidators, manager.UserValidators);
+        Assert.Equal(passwordValidators, manager.PasswordValidators);
+
+        // The collections remain mutable.
+        var extra = new Mock<IUserValidator<PocoUser>>().Object;
+        manager.UserValidators.Add(extra);
+        Assert.Equal(3, manager.UserValidators.Count);
+        Assert.Same(extra, manager.UserValidators[2]);
+
+        var empty = new ValidatorObservingUserManager(null, null);
+        Assert.Empty(empty.UserValidators);
+        Assert.Empty(empty.PasswordValidators);
+    }
+
+    private sealed class ValidatorObservingUserManager : UserManager<PocoUser>
+    {
+        public ValidatorObservingUserManager(IEnumerable<IUserValidator<PocoUser>> userValidators, IEnumerable<IPasswordValidator<PocoUser>> passwordValidators)
+            : base(new Mock<IUserStore<PocoUser>>().Object, null, null, userValidators, passwordValidators, null, null, null, NullLogger<UserManager<PocoUser>>.Instance)
+        { }
+
+        public int UserValidatorCountInLoggerSetter { get; private set; } = -1;
+
+        public int PasswordValidatorCountInLoggerSetter { get; private set; } = -1;
+
+        public override ILogger Logger
+        {
+            get => base.Logger;
+            set
+            {
+                UserValidatorCountInLoggerSetter = UserValidators.Count;
+                PasswordValidatorCountInLoggerSetter = PasswordValidators.Count;
+                base.Logger = value;
+            }
+        }
     }
 
     [Fact]
