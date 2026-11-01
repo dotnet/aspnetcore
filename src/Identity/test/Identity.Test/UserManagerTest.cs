@@ -155,13 +155,17 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
+        var countingMeterFactory = new CountingMeterFactory(testMeterFactory);
         using var deleteUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteDurationName);
 
         var store = new Mock<IUserStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
         store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success);
-        var userManager1 = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
-        var userManager2 = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
+        var userManager1 = MockHelpers.TestUserManager(store.Object, meterFactory: countingMeterFactory);
+        var userManager2 = MockHelpers.TestUserManager(store.Object, meterFactory: countingMeterFactory);
+
+        // Metrics (meter and instruments) are created once per factory and shared by both managers.
+        Assert.Equal(1, countingMeterFactory.CreateCount);
 
         // Act
         await userManager1.DeleteAsync(user);
