@@ -65,13 +65,12 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
 
         var timestep = Convert.ToInt64(unixTimestamp / 30);
         // Allow codes from 90s in each direction (we could make this configurable?)
+#if NET6_0_OR_GREATER
+        return Rfc6238AuthenticationService.ValidateCodeInWindow(keyBytes, code, timestep, modifier: null);
+#else
         for (int i = -2; i <= 2; i++)
         {
-#if NET6_0_OR_GREATER
-            var expectedCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)(timestep + i), modifierBytes: null);
-#else
             var expectedCode = Rfc6238AuthenticationService.ComputeTotp(hash, (ulong)(timestep + i), modifierBytes: null);
-#endif
             if (expectedCode == code)
             {
                 return true;
@@ -79,5 +78,6 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
         }
 
         return false;
+#endif
     }
 }

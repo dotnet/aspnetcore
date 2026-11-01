@@ -141,27 +141,7 @@ internal static class Rfc6238AuthenticationService
         var currentTimeStep = GetCurrentTimeStepNumber();
 
 #if NET6_0_OR_GREATER
-        // Encode the modifier once and reuse the buffer for every timestep in the window.
-        var input = modifier is not null ? CreateTotpInput(modifier) : null;
-        for (var i = -2; i <= 2; i++)
-        {
-            var timestep = (ulong)((long)currentTimeStep + i);
-            int computedTotp;
-            if (input is null)
-            {
-                computedTotp = ComputeTotp(securityToken, timestep, modifierBytes: null);
-            }
-            else
-            {
-                BinaryPrimitives.WriteUInt64BigEndian(input, timestep);
-                computedTotp = ComputeTotp(securityToken, input);
-            }
-
-            if (computedTotp == code)
-            {
-                return true;
-            }
-        }
+        return ValidateCodeInWindow(securityToken, code, (long)currentTimeStep, modifier);
 #else
         using (var hashAlgorithm = new HMACSHA1(securityToken))
         {
@@ -175,13 +155,44 @@ internal static class Rfc6238AuthenticationService
                 }
             }
         }
-#endif
 
         // No match
         return false;
+#endif
     }
 
 #if NET6_0_OR_GREATER
+    // Checks the code against the timesteps in [currentTimeStep - 2, currentTimeStep + 2]. The modifier is encoded
+    // once and a single HMAC instance is reused for the whole window, so the key is only set up once.
+    internal static bool ValidateCodeInWindow(byte[] key, int code, long currentTimeStep, string? modifier)
+    {
+        var input = modifier is not null ? CreateTotpInput(modifier) : new byte[sizeof(long)];
+        var hash = new byte[HMACSHA1.HashSizeInBytes];
+        try
+        {
+            using var hmac = IncrementalHash.CreateHMAC(HashAlgorithmName.SHA1, key);
+            for (var i = -2; i <= 2; i++)
+            {
+                BinaryPrimitives.WriteUInt64BigEndian(input, (ulong)(currentTimeStep + i));
+                hmac.AppendData(input);
+                var res = hmac.TryGetHashAndReset(hash, out var written);
+                Debug.Assert(res);
+                Debug.Assert(written == hash.Length);
+                if (GetCode(hash) == code)
+                {
+                    return true;
+                }
+            }
+
+            // No match
+            return false;
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(hash);
+        }
+    }
+
     // Returns a buffer laid out as [8-byte timestep][UTF-8 modifier]; callers write the timestep before hashing.
     private static byte[] CreateTotpInput(string modifier)
     {
