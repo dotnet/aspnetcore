@@ -36,13 +36,6 @@ timeout-minutes: 120
 max-turns: 200
 max-ai-credits: 1500
 
-# v0.92.0 omits an empty ignored-role list; its runtime then exempts admin/maintain/write.
-# read cannot invoke this workflow, so this explicit list limits every eligible caller.
-user-rate-limit:
-  max-runs-per-window: 10
-  window: 30
-  ignored-roles: [read]
-
 checkout: false
 sandbox:
   agent:
