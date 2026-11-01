@@ -190,10 +190,10 @@ exercised by
 the unchanged baseline. This preserves the exact measured proposal and negative
 result without silently promoting it as a fix.
 
-## Claim-neutral evidence-scout candidate
+## Claim-neutral evidence-scout comparison
 
-A second opt-in process candidate is implemented but not yet measured. It is a
-different mechanism from the failed same-context validation phase:
+A second opt-in process candidate tested a different mechanism from the failed
+same-context validation phase:
 
 1. a fresh evidence-scout execution reads every file in the frozen projected
    head, merge-base, and base-tip source sets plus the routed guidance and
@@ -227,18 +227,48 @@ independence, or review quality. The treatment also requires one forced
 complete `view` per identity-receipted input so raw-byte receipts are
 deterministic; the unchanged baseline has no added tool-use constraint.
 
-The preregistered comparison has four cells: fresh baseline and treatment for
-#70106 and #57972. Baselines use one reviewer execution each. Treatments use
-one scout and one fresh ordinary reviewer each. Only the ordinary review is
-graded, for at most six GPT-5.6 reviewer executions and four Gemini grades.
-There are no retries; any malformed scout, execution error, integrity failure,
-or missing join consumes that cell. The two unused authorized reviewer slots
-are not retry capacity. Baseline cells require valid provenance and joins but
-may score 0. Both treatment cases must pass their unchanged semantic gates and
-mechanism Integrity; otherwise this candidate is not a repair and remains
-disabled. Even two treatment passes would be exploratory evidence on two
-exposed development cases, not support for default adoption or population
-quality.
+The preregistered comparison froze plan SHA-256
+`8d21136fdac1953c5b09b1290a63f09ff9a188616781361b3bd7c3e0ec527dc0`,
+candidate-patch SHA-256
+`1c4b25b6005342ca76c9152e2e12330609d132ea3af66cdc6581551d5bc57088`,
+and candidate tree `783d4564e9e27b95647d0b4ddf5b3f614a828b1e`.
+Commit `897fa4efabf3ed9388233d19b320cf4dc876d990` published that exact
+tree before execution. Baselines used one reviewer execution each. Treatments
+used one scout and, only after a valid scout, one fresh ordinary reviewer. Only
+ordinary reviews were graded. The cap was six planned GPT-5.6 reviewer
+executions within eight authorized slots and four Gemini grades, with one
+worker, zero retries, and no recovery use of the two reserved slots.
+
+The pinned npm and platform packages were `1.0.80`, while the exact common
+Copilot binary reported `1.0.105`; its SHA-256 was
+`4f590f1f60f3f2bd4cf731cddf50360672d3c97d93150bd05ffa496d65e326f8`.
+Both arms used that same binary. This is a fresh paired comparison, not a
+controlled comparison with earlier runs identified only by package labels.
+
+| Stage | Case | Run | Integrity | Score | Observed outcome |
+|---|---|---|---|---:|---|
+| baseline | #70106 | `d7baf99f-23e1-4526-bee6-caccb66630bf` | pass | 0 | Reported an actionable P2 race in concurrent line-69 CTS replacement, not the original line-77 schedule. The grade classified this distinct candidate `MANUAL_ADJUDICATION_REQUIRED`; it remains pending rather than a source-proven false positive. |
+| baseline | #57972 | `bd427ddc-78ed-4df7-810c-31d8b52f26a3` | pass | 0 | Missed the required `_operationTransformerContextCache` finding. Two `OpenApiSchemaStore` findings remain pending manual source adjudication. |
+| scout | #70106 | `5500d779-3b38-419d-9efb-b5050179d670` | pass | N/A | Produced a valid 27-item, four-file projected evidence inventory with exact source-bound citations. |
+| finalizer | #70106 | `52d41550-8ee2-493e-a780-8a17f6f1b204` | fail | 1 | Returned semantically correct restraint with `NO_FINDINGS`, but read `review/bundle/required/pull/body.source` only after the installed reference and staged inventory. This violates the frozen core-input-before-inventory protocol, so the treatment cell remains red despite its semantic score. |
+| scout | #57972 | `bde60a8f-e65d-4949-a3b4-80e4ec0008e0` | fail | N/A | Returned six coverage rows with no evidence links and only two duplicate `pull_scope_statement` entries for the same body span, so the intended resource inventory was not demonstrated. Its excerpt matched lines 1-15, but `E001-C01` used raw-file SHA-256 `dc669f96760d58998daaf886f01ab472abb06c4738b99f2f8266e1dde2f892c9` instead of required LF-joined excerpt SHA-256 `f53fd9a2ed9d6e60c2387d0ec202bbe5efbe3d8c539afdc384f01c7554d0db74`. |
+| finalizer | #57972 | `64632659-10ab-4e83-9c9d-bc453be8be4e` | skipped | N/A | Not launched because its scout failed the preregistered exact-byte gate; no grade was launched. |
+
+The #70106 finalizer returned `NO_FINDINGS` and received judge score 1; that is
+the saved semantic outcome, not proof that it understood the unsupported
+residual schedule. The candidate still failed because the preregistered
+mechanism required both semantic and protocol Integrity. Conversely, the late
+read does not show that evidence scouting can never help. The #57972 finalizer
+never ran, so this comparison provides no treatment result for required-positive
+recall and cannot show a treatment-caused recall regression.
+
+Accounting closed at five reviewer executions and three grades, with zero
+retries, controls, variants, or platform execution errors. The malformed
+#57972 scout consumed its execution and skipped only its dependent finalizer
+and grade. Three authorized reviewer slots were unused: the skipped dependent
+finalizer and the two slots reserved as unavailable rather than retry capacity.
+Because neither treatment case passed both unchanged semantic and Integrity
+gates, this candidate is not a demonstrated repair and remains disabled.
 
 Implementation paths:
 
@@ -247,8 +277,25 @@ Implementation paths:
 - `check_evidence_scout.ps1`
 - `test_check_evidence_scout.ps1`
 
-No target or grader execution has been launched for this candidate. Its live
-default reviewer remains unchanged.
+A post-freeze verifier repair changed only
+`check_reviewer_capability.ps1`. In the #57972 single-overlay path, PowerShell
+unrolled one expected launch-file entry to a scalar, so appending the required
+projection-map entry concatenated strings and falsely rejected the saved
+bundle. Commit `545c4dc4d00a87533c608f42a18e7a988ff19794` typed that value as
+`string[]` and made the count comparison scalar-safe. The frozen checker was
+blob `0c81ed499b5b18e2bd8a4b5e5e73276904822775`; repaired validation used
+blob `77b47397ac7d4bdd9bf066a7cbf5d10aefca422b`. The original freeze plan,
+candidate patch, subject outputs, grades, prompts, skills, fixtures, labels,
+rubric, discovery extraction, generated finalizer input, and acceptance rules
+remain unchanged. The repair occurred after both baseline executions and
+before the treatment executions; it only reads saved artifacts and was used to
+revalidate both baselines without rerunning either model. The existing checker
+self-test now exercises the #57972 one-overlay source bundle plus projection
+map: the frozen checker fails that focused case on scalar `Count`, while the
+repaired checker passes it.
+
+The live default reviewer remains unchanged at blob
+`b11fe9fe79b5d848687ba1c93362f4aaf22bfe53`.
 
 ## Revision rules
 

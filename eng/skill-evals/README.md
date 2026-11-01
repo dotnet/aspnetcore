@@ -59,15 +59,22 @@ rather than a demonstrated fix. See
 `review-pull-request/reviewer-capability-development.md` for exact run IDs,
 integrity outcomes, and claim boundaries.
 
-A separate unmeasured opt-in candidate uses a fresh claim-neutral evidence
-scout followed by a fresh ordinary reviewer. The scout inventories exact source
+A separate measured opt-in candidate uses a fresh claim-neutral evidence scout
+followed by a fresh ordinary reviewer. The scout inventories exact source
 locations across the existing frozen projection without emitting findings,
 severity, fixes, dispositions, or obligation judgments. A deterministic gate
 binds the exact inventory bytes to a generated one-case finalizer spec; the
 ordinary reviewer treats the inventory as untrusted leads, verifies cited
-source, and returns the normal review. This changes treatment compute and
-context, so any later result is attributable only to the two-execution
-evidence-augmentation pipeline. The live default reviewer, cases, labels,
+source, and returns the normal review. The bounded comparison consumed five
+reviewer executions and three grades with no retries. The #70106 finalizer
+returned `NO_FINDINGS` and received judge score 1, but failed the frozen
+read-order protocol; that score is not proof of latent understanding. The
+#57972 scout failed exact citation-hash binding without demonstrating the
+intended resource inventory, so its dependent finalizer and grade were not
+run. The mechanism is not a demonstrated repair and remains
+opt-in/default-disabled. This changes treatment compute and context, so the
+result applies only to this two-execution evidence-augmentation pipeline on
+the exposed development cases. The live default reviewer, cases, labels,
 rubric, and historical results remain unchanged. See
 `review-pull-request/reviewer-capability-development.md`.
 

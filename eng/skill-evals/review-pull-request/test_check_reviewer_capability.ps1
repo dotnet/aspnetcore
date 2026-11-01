@@ -1,9 +1,15 @@
 #requires -Version 7.0
 
+param([string]$CheckerPath)
+
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
 
-$checker = Join-Path $PSScriptRoot 'check_reviewer_capability.ps1'
+$checker = if ($CheckerPath) {
+    (Resolve-Path $CheckerPath).Path
+} else {
+    Join-Path $PSScriptRoot 'check_reviewer_capability.ps1'
+}
 $fixtureRoot = Join-Path $PSScriptRoot 'fixtures/reviewer-capability'
 $controlsPath = Join-Path $PSScriptRoot 'reviewer-capability-controls.json'
 $fakeRunId = '22222222-2222-2222-2222-222222222222'
@@ -123,10 +129,13 @@ function New-FakeResult {
         [switch]$OmitSingleReviewerPath,
         [switch]$OmitValidationReference,
         [switch]$OmitValidationReceipt,
-        [switch]$NoCandidates
+        [switch]$NoCandidates,
+        [ValidateSet('pr-70106', 'pr-57972')]
+        [string]$CaseName = 'pr-70106'
     )
 
-    $caseName = 'pr-70106'
+    $caseName = $CaseName
+    $caseStimulus = "reviewer-capability-$caseName"
     $manifest = Get-Content (
         Join-Path $fixtureRoot "cases/$caseName/bundle/manifest.json"
     ) -Raw | ConvertFrom-Json -Depth 100
@@ -328,10 +337,10 @@ function New-FakeResult {
     }
     $outputLines = @(
         'STATUS: NO_FINDINGS',
-        'PR: 70106',
-        'HEAD_SHA: 2edf3761692afe15475075eb2fc0088566162045',
-        'MERGE_BASE_SHA: 10bc886bfa321718276619d1077cc14eaf48456f',
-        'BASE_TIP_SHA: 4f556f73a610b386e5ec29355a300e493d30c4c5'
+        "PR: $($manifest.target.pr)",
+        "HEAD_SHA: $($manifest.target.head)",
+        "MERGE_BASE_SHA: $($manifest.target.mergeBase)",
+        "BASE_TIP_SHA: $($manifest.target.baseTip)"
     )
     if (-not $OmitSingleReviewerPath) {
         $outputLines += 'PATH: single-reviewer'
@@ -351,16 +360,16 @@ function New-FakeResult {
         type = 'trial-result'
         runId = $fakeRunId
         evalFilePath = $specPath
-        itemId = "$specPath::main::gpt-5.6-sol::$stimulus::trial-0"
+        itemId = "$specPath::main::gpt-5.6-sol::$caseStimulus::trial-0"
         evalName = 'review-pull-request-capability-development'
         variant = 'main'
-        stimulus = $stimulus
+        stimulus = $caseStimulus
         model = 'gpt-5.6-sol'
         status = 'success'
         trajectory = [ordered]@{
             id = 'fake-subject-trajectory'
             stimulus = @{
-                name = $stimulus
+                name = $caseStimulus
                 prompt = if ($WrongLaunchPrompt) {
                     'wrong prompt'
                 } else {
@@ -369,20 +378,22 @@ function New-FakeResult {
                 environment = @{
                     skills = @('treatments/claim-validation/review-pull-request')
                     files = @(
+                        if ($caseName -eq 'pr-70106') {
+                            @{
+                                src = 'fixtures/reviewer-capability/common/guidance'
+                                dest = 'review/bundle/guidance'
+                            }
+                            @{
+                                src = 'fixtures/reviewer-capability/common/required'
+                                dest = 'review/bundle/required'
+                            }
+                        }
                         @{
-                            src = 'fixtures/reviewer-capability/common/guidance'
-                            dest = 'review/bundle/guidance'
-                        },
-                        @{
-                            src = 'fixtures/reviewer-capability/common/required'
-                            dest = 'review/bundle/required'
-                        },
-                        @{
-                            src = 'fixtures/reviewer-capability/cases/pr-70106/bundle'
+                            src = "fixtures/reviewer-capability/cases/$caseName/bundle"
                             dest = 'review/bundle'
-                        },
+                        }
                         @{
-                            src = 'fixtures/reviewer-capability/cases/pr-70106/projection-map.json'
+                            src = "fixtures/reviewer-capability/cases/$caseName/projection-map.json"
                             dest = 'review/bundle/projection-map.json'
                         }
                     )
@@ -392,7 +403,7 @@ function New-FakeResult {
             events = @($events)
         }
         gradeResult = [ordered]@{
-            stimulusName = $stimulus
+            stimulusName = $caseStimulus
             trajectoryId = 'fake-subject-trajectory'
             passed = $aggregatePassed
             score = $semanticScore
@@ -411,7 +422,7 @@ function New-FakeResult {
             } else {
                 @(
                 @{
-                    name = 'semantic-review-pr-70106'
+                    name = "semantic-review-$caseName"
                     kind = 'llm'
                     passed = $semanticPassed
                     score = $detailScore
@@ -611,6 +622,14 @@ try {
         -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId -ResultMode Integrity
     & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
         -ExpectedStimulus $stimulus -ExpectedRunId $fakeRunId -ResultMode Acceptance
+
+    $singleOverlayStimulus = 'reviewer-capability-pr-57972'
+    Write-FakeResult (
+        New-FakeResult -CaseName 'pr-57972'
+    ) $resultsPath
+    & $checker -SpecPath $specPath -ResultsDirectory (Split-Path $resultsRoot -Parent) `
+        -ExpectedStimulus $singleOverlayStimulus -ExpectedRunId $fakeRunId `
+        -ResultMode Integrity
 
     Write-FakeResult (
         New-FakeResult -NoCandidates -OmitValidationReference
