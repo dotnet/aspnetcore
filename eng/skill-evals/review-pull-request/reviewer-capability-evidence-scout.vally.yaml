@@ -1,0 +1,56 @@
+version: 2
+name: review-pull-request-evidence-scout-development
+description: >
+  Opt-in claim-neutral evidence discovery over the same frozen ASP.NET Core
+  pull-request source projections used by the reviewer capability cases. This
+  phase inventories source evidence and is never a semantic review or grader.
+defaults:
+  trials: 1
+  timeout: 15m
+  model: gpt-5.6-sol
+  constraints:
+    max_turns: 35
+    max_duration: 12m
+stimuli:
+  - name: reviewer-evidence-scout-pr-70106
+    tags:
+      case: pr-70106
+      phase: evidence-scout
+    prompt: >
+      This is an explicitly configured offline evidence-scout phase. Use the
+      review-pull-request skill's claim-neutral evidence-scout path: inspect
+      the complete frozen projection under review/bundle, do not perform a pull
+      request review, do not form defect conclusions, and do not spawn workers
+      or subagents. Produce only the exact JSON evidence inventory required by
+      the installed skill. Do not modify files or contact GitHub.
+    agent_environment:
+      skills:
+        - treatments/evidence-scout/discovery/review-pull-request
+      files:
+        - src: fixtures/reviewer-capability/common/guidance
+          dest: review/bundle/guidance
+        - src: fixtures/reviewer-capability/common/required
+          dest: review/bundle/required
+        - src: fixtures/reviewer-capability/cases/pr-70106/bundle
+          dest: review/bundle
+        - src: fixtures/reviewer-capability/cases/pr-70106/projection-map.json
+          dest: review/bundle/projection-map.json
+  - name: reviewer-evidence-scout-pr-57972
+    tags:
+      case: pr-57972
+      phase: evidence-scout
+    prompt: >
+      This is an explicitly configured offline evidence-scout phase. Use the
+      review-pull-request skill's claim-neutral evidence-scout path: inspect
+      the complete frozen projection under review/bundle, do not perform a pull
+      request review, do not form defect conclusions, and do not spawn workers
+      or subagents. Produce only the exact JSON evidence inventory required by
+      the installed skill. Do not modify files or contact GitHub.
+    agent_environment:
+      skills:
+        - treatments/evidence-scout/discovery/review-pull-request
+      files:
+        - src: fixtures/reviewer-capability/cases/pr-57972/bundle
+          dest: review/bundle
+        - src: fixtures/reviewer-capability/cases/pr-57972/projection-map.json
+          dest: review/bundle/projection-map.json

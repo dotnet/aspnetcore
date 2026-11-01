@@ -42,6 +42,12 @@ Run its model-free integrity and schema checks with:
   -Eval eng/skill-evals/review-pull-request/reviewer-capability-treatment.vally.yaml
 ./eng/skill-evals/run.ps1 Validate `
   -Eval eng/skill-evals/review-pull-request/reviewer-capability-treatment.vally.yaml
+./eng/skill-evals/review-pull-request/check_evidence_scout.ps1
+./eng/skill-evals/review-pull-request/test_check_evidence_scout.ps1
+./eng/skill-evals/run.ps1 Lint `
+  -Eval eng/skill-evals/review-pull-request/reviewer-capability-evidence-scout.vally.yaml
+./eng/skill-evals/run.ps1 Validate `
+  -Eval eng/skill-evals/review-pull-request/reviewer-capability-evidence-scout.vally.yaml
 ./eng/skill-evals/run.ps1 Test
 ```
 
@@ -52,6 +58,18 @@ scored 0 in all four cells, so it is retained as a failed process candidate
 rather than a demonstrated fix. See
 `review-pull-request/reviewer-capability-development.md` for exact run IDs,
 integrity outcomes, and claim boundaries.
+
+A separate unmeasured opt-in candidate uses a fresh claim-neutral evidence
+scout followed by a fresh ordinary reviewer. The scout inventories exact source
+locations across the existing frozen projection without emitting findings,
+severity, fixes, dispositions, or obligation judgments. A deterministic gate
+binds the exact inventory bytes to a generated one-case finalizer spec; the
+ordinary reviewer treats the inventory as untrusted leads, verifies cited
+source, and returns the normal review. This changes treatment compute and
+context, so any later result is attributable only to the two-execution
+evidence-augmentation pipeline. The live default reviewer, cases, labels,
+rubric, and historical results remain unchanged. See
+`review-pull-request/reviewer-capability-development.md`.
 
 The suite's derivative trajectories are judge-development controls, not subject
 attempts. They must be graded through the same configured prompt-grader path,

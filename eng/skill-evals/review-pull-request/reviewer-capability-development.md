@@ -190,6 +190,66 @@ exercised by
 the unchanged baseline. This preserves the exact measured proposal and negative
 result without silently promoting it as a fix.
 
+## Claim-neutral evidence-scout candidate
+
+A second opt-in process candidate is implemented but not yet measured. It is a
+different mechanism from the failed same-context validation phase:
+
+1. a fresh evidence-scout execution reads every file in the frozen projected
+   head, merge-base, and base-tip source sets plus the routed guidance and
+   review inputs;
+2. it returns only a strict JSON inventory of symmetrically enumerated source
+   observations and exact source citations; and
+3. a fresh ordinary reviewer receives only the validated inventory, verifies
+   cited source itself, and produces the sole semantically graded review.
+
+The scout schema has no defect, severity, actionability, repair, disposition,
+support, schedule, or obligation fields. Model-authored fields are closed
+categories, exact source tokens, paths, line ranges, and citation IDs. Exact
+source and pull excerpts are validated byte-for-byte and are not rejected when
+the original text itself contains judgment words. Coverage is enforced against
+the trusted finite set of every file in the frozen projected head source set,
+not a list declared by the scout. This proves projected-file coverage only; it
+does not prove that unprojected repository source was exhaustively retrieved or
+that the inventory is semantically neutral or useful.
+
+The generated finalizer spec stages the exact validated inventory outside
+`review/bundle`. Its native `review-pull-request` skill is byte-identical to the
+frozen default except for one allowlisted section authorizing an
+instruction-owned evidence-scout reference. The ordinary caller prompt, frozen
+source and guidance, labels, rubric, GPT-5.6 subject identity, and Gemini judge
+identity remain unchanged. The checker binds the discovery output bytes and
+hash to the generated finalizer spec, verifies native skill activation and
+input reads, rejects configured or observed answer-key access, and requires the
+finalizer to re-read cited source after consuming the scout. These receipts
+prove contract execution and artifact delivery, not truth, secrecy,
+independence, or review quality. The treatment also requires one forced
+complete `view` per identity-receipted input so raw-byte receipts are
+deterministic; the unchanged baseline has no added tool-use constraint.
+
+The preregistered comparison has four cells: fresh baseline and treatment for
+#70106 and #57972. Baselines use one reviewer execution each. Treatments use
+one scout and one fresh ordinary reviewer each. Only the ordinary review is
+graded, for at most six GPT-5.6 reviewer executions and four Gemini grades.
+There are no retries; any malformed scout, execution error, integrity failure,
+or missing join consumes that cell. The two unused authorized reviewer slots
+are not retry capacity. Baseline cells require valid provenance and joins but
+may score 0. Both treatment cases must pass their unchanged semantic gates and
+mechanism Integrity; otherwise this candidate is not a repair and remains
+disabled. Even two treatment passes would be exploratory evidence on two
+exposed development cases, not support for default adoption or population
+quality.
+
+Implementation paths:
+
+- `reviewer-capability-evidence-scout.vally.yaml`
+- `treatments/evidence-scout/`
+- `check_evidence_scout.ps1`
+- `test_check_evidence_scout.ps1`
+
+No target or grader execution has been launched for this candidate. Its live
+default reviewer remains unchanged.
+
 ## Revision rules
 
 - Revise a source label only when new primary evidence contradicts it; retain

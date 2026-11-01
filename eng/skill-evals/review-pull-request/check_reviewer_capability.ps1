@@ -16,6 +16,8 @@ param(
 
     [string]$ExpectedEvalFilePath,
 
+    [string]$EvidenceScoutBindingPath,
+
     [string]$ResultsDirectory,
 
     [string]$GradeResultsDirectory,
@@ -50,6 +52,10 @@ $treatmentRubricHash = '9315527697ebb40bc9073d2639128301a6308faf011fd798e72c243f
 $treatmentReferenceNormalizedBytes = 2285
 $treatmentReferenceNormalizedHash = 'a81c8f5ea560a3247b91f1362839e580bdf58601c9a046e37f4233f370307f21'
 $treatmentRubricNormalizedHash = '057d3a6ae9001f16eafa421a51274c19a4de4393cec8b236747d86e8006612f8'
+$evidenceScoutFinalizerNativeSkillBodyBytes = 19472
+$evidenceScoutFinalizerNativeSkillBodyHash = '877a559484b11ac85e39a36d666742227a3c4a873cedace0880a24b87d482a30'
+$evidenceScoutReferenceNormalizedBytes = 1654
+$evidenceScoutReferenceNormalizedHash = 'b30830c8f710c422d447c3861dab09e5a191b5acb64b95d8138f51bd53f4cc44'
 $expectedEvalName = 'review-pull-request-capability-development'
 $expectedModel = 'gpt-5.6-sol'
 $expectedJudge = 'gemini-4-argon'
@@ -296,6 +302,102 @@ function Get-EventTime {
         "A $Category feedback item omits its timestamp."
     )
     return [DateTimeOffset]$value
+}
+
+function Get-CompleteReadReceipts {
+    param(
+        [Parameter(Mandatory = $true)]$Events,
+        [Parameter(Mandatory = $true)][string]$ExpectedPathSuffix,
+        [Parameter(Mandatory = $true)][string]$ExpectedFile,
+        [switch]$RequireForcedView
+    )
+
+    $suffix = $ExpectedPathSuffix.Replace('\', '/').ToLowerInvariant()
+    $expectedText = Get-Content $ExpectedFile -Raw
+    $expectedBytes = [Text.Encoding]::UTF8.GetByteCount($expectedText)
+    $expectedHash = Get-TextSha256 $expectedText
+    $receipts = [Collections.Generic.List[object]]::new()
+    foreach ($read in @(
+        $Events |
+            Where-Object {
+                $_.type -eq 'tool_call' -and
+                $_.data.toolName -in @('view', 'read_file') -and
+                $_.data.arguments -and
+                $_.data.arguments.PSObject.Properties['path'] -and
+                (
+                    -not $RequireForcedView -or
+                    (
+                        $_.data.toolName -eq 'view' -and
+                        $_.data.arguments.PSObject.Properties['forceReadLargeFiles'] -and
+                        $_.data.arguments.forceReadLargeFiles -eq $true
+                    )
+                ) -and
+                ([string]$_.data.arguments.path).
+                    Replace('\', '/').
+                    ToLowerInvariant().
+                    EndsWith($suffix, [StringComparison]::Ordinal)
+            }
+    )) {
+        $result = @(
+            $Events |
+                Where-Object {
+                    $_.type -eq 'tool_result' -and
+                    $_.data.toolCallId -eq $read.data.toolCallId
+                }
+        )
+        if ($result.Count -ne 1 -or $result[0].data.success -ne $true) {
+            continue
+        }
+        $contentProperty = $result[0].data.result.PSObject.Properties['content']
+        if (-not $contentProperty -or $null -eq $contentProperty.Value) {
+            continue
+        }
+        $content = [string]$contentProperty.Value
+        if ([Text.Encoding]::UTF8.GetByteCount($content) -eq $expectedBytes -and
+            (Get-TextSha256 $content) -eq $expectedHash) {
+            $receipts.Add([pscustomobject]@{
+                Call = $read
+                Result = $result[0]
+                CallIndex = [Array]::IndexOf($Events, $read)
+                ResultIndex = [Array]::IndexOf($Events, $result[0])
+            })
+        }
+    }
+    return @($receipts)
+}
+
+function Resolve-ProjectedSourceFile {
+    param(
+        [Parameter(Mandatory = $true)][string]$Root,
+        [Parameter(Mandatory = $true)][string]$RelativePath,
+        [Parameter(Mandatory = $true)][string]$Description
+    )
+
+    Assert-Condition (
+        -not [string]::IsNullOrWhiteSpace($RelativePath) -and
+        -not [IO.Path]::IsPathRooted($RelativePath) -and
+        -not $RelativePath.Contains('\') -and
+        -not $RelativePath.StartsWith('/', [StringComparison]::Ordinal) -and
+        -not @(
+            $RelativePath.Split('/') |
+                Where-Object { $_ -in @('', '.', '..') }
+        )
+    ) "$Description is not a canonical projected path."
+    $fullRoot = [IO.Path]::GetFullPath($Root)
+    $fullPath = [IO.Path]::GetFullPath(
+        (Join-Path $fullRoot "$RelativePath.source")
+    )
+    Assert-Condition (
+        $fullPath.StartsWith(
+            $fullRoot.TrimEnd(
+                [IO.Path]::DirectorySeparatorChar,
+                [IO.Path]::AltDirectorySeparatorChar
+            ) + [IO.Path]::DirectorySeparatorChar,
+            [StringComparison]::OrdinalIgnoreCase
+        ) -and
+        (Test-Path $fullPath -PathType Leaf)
+    ) "$Description does not name a frozen projected file."
+    return $fullPath
 }
 
 function Assert-OutputReceipt {
@@ -795,20 +897,50 @@ foreach ($control in $controls) {
     ) $cases[[string]$control.case] $control.id
 }
 
+$evidenceScoutBinding = $null
+if ($EvidenceScoutBindingPath) {
+    Assert-Condition (Test-Path $EvidenceScoutBindingPath -PathType Leaf) (
+        "Missing evidence-scout binding '$EvidenceScoutBindingPath'."
+    )
+    $evidenceScoutBinding = Get-Content $EvidenceScoutBindingPath -Raw |
+        ConvertFrom-Json -Depth 100
+    Assert-Condition (
+        $evidenceScoutBinding.schemaVersion -eq 1 -and
+        $evidenceScoutBinding.case -in @($cases.Keys) -and
+        (Test-Path ([string]$evidenceScoutBinding.inventoryPath) -PathType Leaf) -and
+        (Test-Path ([string]$evidenceScoutBinding.finalizerSpecPath) -PathType Leaf) -and
+        ((Get-Sha256 ([string]$evidenceScoutBinding.inventoryPath)) -eq
+            [string]$evidenceScoutBinding.inventorySha256) -and
+        ((Get-Sha256 ([string]$evidenceScoutBinding.finalizerSpecPath)) -eq
+            [string]$evidenceScoutBinding.finalizerSpecSha256)
+    ) 'The evidence-scout binding is missing or does not match its staged artifacts.'
+    Assert-Condition (
+        [IO.Path]::GetFullPath($SpecPath) -eq
+        [IO.Path]::GetFullPath([string]$evidenceScoutBinding.finalizerSpecPath)
+    ) 'The evidence-scout binding does not identify the selected finalizer spec.'
+}
+
 $specText = Get-Content $SpecPath -Raw
 $specSha256 = Get-TextSha256 (
     $specText.Replace("`r`n", "`n").Replace("`r", "`n")
 )
-Assert-Condition ($specSha256 -in @(
-    $expectedSpecSha256,
-    $packagedTreatmentSpecSha256,
-    $measuredSpecSha256,
-    $baselineComparisonSpecSha256,
-    $treatmentComparisonSpecSha256
-)) (
+$knownSpec = $specSha256 -in @(
+        $expectedSpecSha256,
+        $packagedTreatmentSpecSha256,
+        $measuredSpecSha256,
+        $baselineComparisonSpecSha256,
+        $treatmentComparisonSpecSha256
+    )
+Assert-Condition ($knownSpec -or $null -ne $evidenceScoutBinding) (
     'The specialized Vally spec no longer matches its frozen launch identity.'
 )
-$expectedStimulusCount = if ($specSha256 -eq $measuredSpecSha256) { 3 } else { 2 }
+$expectedStimulusCount = if ($null -ne $evidenceScoutBinding) {
+    1
+} elseif ($specSha256 -eq $measuredSpecSha256) {
+    3
+} else {
+    2
+}
 Assert-Condition ($specText.Contains("name: $expectedEvalName")) (
     'The specialized Vally spec has the wrong eval identity.'
 )
@@ -831,7 +963,12 @@ Assert-Condition ($specText.Contains('grading_environment:') -and
 Assert-Condition (-not $specText.Contains('candidate-calibration')) (
     'The natural-review spec reuses supplied-candidate calibration inputs.'
 )
-foreach ($caseName in @($cases.Keys | Where-Object { $cases[$_].Pilot })) {
+$specCaseNames = if ($null -ne $evidenceScoutBinding) {
+    @([string]$evidenceScoutBinding.case)
+} else {
+    @($cases.Keys | Where-Object { $cases[$_].Pilot })
+}
+foreach ($caseName in $specCaseNames) {
     Assert-Condition ($specText.Contains("name: $($cases[$caseName].Stimulus)")) (
         "The specialized Vally spec omits $caseName."
     )
@@ -1038,38 +1175,70 @@ if ($ResultsDirectory) {
             $expectedPromptSha256
     ) 'The subject attempt is not bound to the frozen trusted caller prompt.'
     $launchSkills = @($trajectory.stimulus.environment.skills)
-    $expectedLaunchSkill = switch ($specSha256) {
-        $baselineComparisonSpecSha256 {
-            'skills/baseline/review-pull-request'
-            break
+    $expectedLaunchSkill = if ($null -ne $evidenceScoutBinding) {
+        [string]$evidenceScoutBinding.finalizerSkillPath
+    } else {
+        switch ($specSha256) {
+            $baselineComparisonSpecSha256 {
+                'skills/baseline/review-pull-request'
+                break
+            }
+            $treatmentComparisonSpecSha256 {
+                'skills/treatment/review-pull-request'
+                break
+            }
+            $packagedTreatmentSpecSha256 {
+                'treatments/claim-validation/review-pull-request'
+                break
+            }
+            default {
+                '../../../.github/skills/review-pull-request'
+            }
         }
-        $treatmentComparisonSpecSha256 {
-            'skills/treatment/review-pull-request'
-            break
-        }
-        $packagedTreatmentSpecSha256 {
-            'treatments/claim-validation/review-pull-request'
-            break
-        }
-        default {
-            '../../../.github/skills/review-pull-request'
-        }
+    }
+    $launchSkillMatches = if ($null -ne $evidenceScoutBinding) {
+        [IO.Path]::GetFullPath([string]$launchSkills[0]) -eq
+            [IO.Path]::GetFullPath($expectedLaunchSkill)
+    } else {
+        ([string]$launchSkills[0]).Replace('\', '/') -eq
+            $expectedLaunchSkill
     }
     Assert-Condition (
         $launchSkills.Count -eq 1 -and
-        ([string]$launchSkills[0]).Replace('\', '/') -eq
-            $expectedLaunchSkill
+        $launchSkillMatches
     ) 'The subject attempt has the wrong staged native skill.'
-    $expectedLaunchFiles = @(
-        if ($cases[$caseName].UseCommonOverlay) {
-            'fixtures/reviewer-capability/common/guidance|review/bundle/guidance',
-            'fixtures/reviewer-capability/common/required|review/bundle/required',
-            "fixtures/reviewer-capability/cases/$caseName/bundle|review/bundle"
-        } else {
-            "fixtures/reviewer-capability/cases/$caseName/bundle|review/bundle"
-        }
-    )
-    if ($specSha256 -ne $measuredSpecSha256) {
+    $expectedLaunchFiles = if ($null -ne $evidenceScoutBinding) {
+        @(
+            if ($cases[$caseName].UseCommonOverlay) {
+                (
+                    Join-Path $FixtureRoot 'common/guidance'
+                ) + '|review/bundle/guidance'
+                (
+                    Join-Path $FixtureRoot 'common/required'
+                ) + '|review/bundle/required'
+            }
+            (
+                Join-Path $FixtureRoot "cases/$caseName/bundle"
+            ) + '|review/bundle'
+            (
+                Join-Path $FixtureRoot "cases/$caseName/projection-map.json"
+            ) + '|review/bundle/projection-map.json'
+            (
+                [string]$evidenceScoutBinding.inventoryPath
+            ) + '|.reviewer-eval-input/evidence-inventory.json'
+        )
+    } else {
+        @(
+            if ($cases[$caseName].UseCommonOverlay) {
+                'fixtures/reviewer-capability/common/guidance|review/bundle/guidance',
+                'fixtures/reviewer-capability/common/required|review/bundle/required',
+                "fixtures/reviewer-capability/cases/$caseName/bundle|review/bundle"
+            } else {
+                "fixtures/reviewer-capability/cases/$caseName/bundle|review/bundle"
+            }
+        )
+    }
+    if ($null -eq $evidenceScoutBinding -and $specSha256 -ne $measuredSpecSha256) {
         $expectedLaunchFiles += (
             "fixtures/reviewer-capability/cases/$caseName/projection-map.json|" +
             'review/bundle/projection-map.json'
@@ -1088,7 +1257,11 @@ if ($ResultsDirectory) {
     Assert-Condition (
         $actualLaunchFiles.Count -eq $expectedLaunchFiles.Count -and
         ($actualLaunchFiles -join "`n") -eq
-            (($expectedLaunchFiles | Sort-Object) -join "`n")
+            ((@(
+                $expectedLaunchFiles |
+                    ForEach-Object { $_.Replace('\', '/') } |
+                    Sort-Object
+            )) -join "`n")
     ) 'The subject attempt has the wrong staged source bundle.'
     Assert-Condition (-not [string]::IsNullOrWhiteSpace([string]$trajectory.output)) (
         'The subject output is empty.'
@@ -1208,22 +1381,29 @@ if ($ResultsDirectory) {
         Replace("`r`n", "`n").
         Replace("`r", "`n")
     $nativeBodyBytes = [Text.Encoding]::UTF8.GetBytes($nativeBody)
-    $usesBaselineSkill = $specSha256 -in @(
-        $expectedSpecSha256,
-        $measuredSpecSha256,
-        $baselineComparisonSpecSha256
-    )
-    $expectedNativeSkillBlob = if ($usesBaselineSkill) {
+    $usesBaselineSkill = $null -eq $evidenceScoutBinding -and
+        $specSha256 -in @(
+            $expectedSpecSha256,
+            $measuredSpecSha256,
+            $baselineComparisonSpecSha256
+        )
+    $expectedNativeSkillBlob = if ($null -ne $evidenceScoutBinding) {
+        [string]$evidenceScoutBinding.finalizerSkillSha256
+    } elseif ($usesBaselineSkill) {
         $baselineReviewSkillBlob
     } else {
         $treatmentReviewSkillBlob
     }
-    $expectedNativeSkillBytes = if ($usesBaselineSkill) {
+    $expectedNativeSkillBytes = if ($null -ne $evidenceScoutBinding) {
+        $evidenceScoutFinalizerNativeSkillBodyBytes
+    } elseif ($usesBaselineSkill) {
         $baselineNativeReviewSkillBodyBytes
     } else {
         $treatmentNativeReviewSkillBodyBytes
     }
-    $expectedNativeSkillHash = if ($usesBaselineSkill) {
+    $expectedNativeSkillHash = if ($null -ne $evidenceScoutBinding) {
+        $evidenceScoutFinalizerNativeSkillBodyHash
+    } elseif ($usesBaselineSkill) {
         $baselineNativeReviewSkillBodyHash
     } else {
         $treatmentNativeReviewSkillBodyHash
@@ -1315,6 +1495,157 @@ if ($ResultsDirectory) {
         Assert-Condition ($completeReads.Count -gt 0) (
             "The subject has no complete successful read of '$($reference.path)'."
         )
+    }
+
+    if ($null -ne $evidenceScoutBinding) {
+        Assert-Condition (
+            [string]$evidenceScoutBinding.case -eq $caseName
+        ) 'The evidence-scout binding targets a different frozen case.'
+        $bundleRoot = Join-Path $FixtureRoot "cases/$caseName/bundle"
+        $pull = Get-Content (Join-Path $bundleRoot 'pull.json') -Raw |
+            ConvertFrom-Json -Depth 100
+        $coreReads = [Collections.Generic.List[int]]::new()
+        foreach ($relative in @(
+            'manifest.json',
+            'pull.json',
+            'diff.patch',
+            'files.json',
+            [string]$pull.body.path
+        )) {
+            $path = Join-Path $bundleRoot $relative
+            $receipts = Get-CompleteReadReceipts $events (
+                "/review/bundle/$relative"
+            ) $path -RequireForcedView
+            Assert-Condition ($receipts.Count -gt 0) (
+                "The evidence-scout finalizer did not completely read '$relative'."
+            )
+            foreach ($receipt in $receipts) {
+                $coreReads.Add([int]$receipt.ResultIndex)
+            }
+        }
+        foreach ($reference in $guideReferences) {
+            $relative = [string]$reference.path
+            $path = Join-Path $bundleRoot $relative
+            if (-not (Test-Path $path -PathType Leaf)) {
+                $path = Join-Path (
+                    Join-Path $FixtureRoot 'common/guidance'
+                ) $relative.Substring('guidance/'.Length)
+            }
+            $receipts = Get-CompleteReadReceipts $events (
+                "/review/bundle/$relative"
+            ) $path -RequireForcedView
+            Assert-Condition ($receipts.Count -gt 0) (
+                "The evidence-scout finalizer did not completely read '$relative'."
+            )
+            foreach ($receipt in $receipts) {
+                $coreReads.Add([int]$receipt.ResultIndex)
+            }
+        }
+
+        $referencePath = Join-Path (
+            $PSScriptRoot
+        ) 'treatments/evidence-scout/finalizer/review-pull-request/references/evidence-scout.md'
+        $expectedReferencePath = (
+            (Split-Path $activationPath -Parent).Replace('\', '/').TrimEnd('/') +
+            '/references/evidence-scout.md'
+        )
+        $referenceReads = @()
+        foreach ($read in @(
+            $toolCalls |
+                Where-Object {
+                    $_.data.toolName -in @('view', 'read_file') -and
+                    $_.data.arguments -and
+                    $_.data.toolName -eq 'view' -and
+                    $_.data.arguments.PSObject.Properties['forceReadLargeFiles'] -and
+                    $_.data.arguments.forceReadLargeFiles -eq $true -and
+                    ([string]$_.data.arguments.path).Replace('\', '/').Equals(
+                        $expectedReferencePath,
+                        [StringComparison]::OrdinalIgnoreCase
+                    )
+                }
+        )) {
+            $readResult = @(
+                $events |
+                    Where-Object {
+                        $_.type -eq 'tool_result' -and
+                        $_.data.toolCallId -eq $read.data.toolCallId
+                    }
+            )
+            if ($readResult.Count -ne 1 -or $readResult[0].data.success -ne $true) {
+                continue
+            }
+            $contentProperty = $readResult[0].data.result.PSObject.Properties['content']
+            if (-not $contentProperty -or $null -eq $contentProperty.Value) {
+                continue
+            }
+            $content = ([string]$contentProperty.Value).
+                Replace("`r`n", "`n").
+                Replace("`r", "`n")
+            if ([Text.Encoding]::UTF8.GetByteCount($content) -eq
+                    $evidenceScoutReferenceNormalizedBytes -and
+                (Get-TextSha256 $content) -eq
+                    $evidenceScoutReferenceNormalizedHash) {
+                $referenceReads += [pscustomobject]@{
+                    Call = $read
+                    Result = $readResult[0]
+                    CallIndex = [Array]::IndexOf($events, $read)
+                    ResultIndex = [Array]::IndexOf($events, $readResult[0])
+                }
+            }
+        }
+        Assert-Condition ($referenceReads.Count -eq 1) (
+            'The evidence-scout finalizer must read its installed reference exactly once.'
+        )
+        $inventoryReads = Get-CompleteReadReceipts $events (
+            '/.reviewer-eval-input/evidence-inventory.json'
+        ) ([string]$evidenceScoutBinding.inventoryPath) -RequireForcedView
+        Assert-Condition ($inventoryReads.Count -eq 1) (
+            'The evidence-scout finalizer must read its staged inventory exactly once.'
+        )
+        $latestCoreRead = ($coreReads | Measure-Object -Maximum).Maximum
+        Assert-Condition (
+            $latestCoreRead -lt $referenceReads[0].CallIndex -and
+            $referenceReads[0].ResultIndex -lt $inventoryReads[0].CallIndex
+        ) (
+            'The evidence-scout finalizer did not read core inputs, reference, ' +
+            'and inventory in the frozen order.'
+        )
+
+        $inventory = Get-Content (
+            [string]$evidenceScoutBinding.inventoryPath
+        ) -Raw | ConvertFrom-Json -Depth 100
+        $citedSources = @(
+            $inventory.evidence.citations |
+                Where-Object role -ne 'pull' |
+                ForEach-Object {
+                    [pscustomobject]@{
+                        Role = [string]$_.role
+                        Path = [string]$_.path
+                    }
+                } |
+                Sort-Object Role, Path -Unique
+        )
+        foreach ($source in $citedSources) {
+            $role = [string]$source.Role
+            $path = [string]$source.Path
+            $sourceRoot = Join-Path $bundleRoot $manifest.sources.$role.root
+            $sourceFile = Resolve-ProjectedSourceFile $sourceRoot $path (
+                "The bound inventory citation '$role`:$path'"
+            )
+            $receipts = Get-CompleteReadReceipts $events (
+                "/review/bundle/$($manifest.sources.$role.root)/$path.source"
+            ) $sourceFile -RequireForcedView
+            $verified = @(
+                $receipts |
+                    Where-Object {
+                        $_.CallIndex -gt $inventoryReads[0].ResultIndex
+                    }
+            ).Count -gt 0
+            Assert-Condition $verified (
+                "The evidence-scout finalizer did not verify cited source '$role`:$path' " +
+                'after reading the inventory.'
+            )
+        }
     }
 
     if ($specSha256 -in @(
