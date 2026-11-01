@@ -179,8 +179,15 @@ internal sealed class Http2FrameWriter
         {
             // We need to handle the case where aborts can be scheduled while this loop is running and might be on the way to complete
             // the reader.
-            while (_channel.Reader.TryRead(out var producer) && !producer.CompletedResponse)
+            while (_channel.Reader.TryRead(out var producer))
             {
+                // The producer can also be scheduled after its final write was observed, e.g. by a racing stream window update.
+                // Unschedule it so it can be scheduled again if its stream is pooled and reused.
+                if (producer.TryUnscheduleCompletedResponse())
+                {
+                    continue;
+                }
+
                 try
                 {
                     var reader = producer.PipeReader;
