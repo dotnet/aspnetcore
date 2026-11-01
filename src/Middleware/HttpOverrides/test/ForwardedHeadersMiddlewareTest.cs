@@ -1803,6 +1803,24 @@ public class ForwardedHeadersMiddlewareTests
         Assert.Throws<ArgumentOutOfRangeException>(() => middleware.ApplyForwarders(context));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NegativeForwardLimitThrows(bool withForwardedHeaders)
+    {
+        var middleware = CreateMiddleware(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor, ForwardLimit = -1 });
+        var context = CreateContext("10.0.0.1", 99);
+        if (withForwardedHeaders)
+        {
+            context.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+        }
+
+        Assert.Throws<OverflowException>(() => middleware.ApplyForwarders(context));
+        Assert.Equal("10.0.0.1", context.Connection.RemoteIpAddress.ToString());
+        Assert.Equal(99, context.Connection.RemotePort);
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+    }
+
     [Fact]
     public void ProtoOnlyStillRecordsOriginalForAndConsumesForwardedFor()
     {

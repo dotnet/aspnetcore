@@ -180,6 +180,12 @@ public class ForwardedHeadersMiddleware
             entryCount = _options.ForwardLimit.Value;
         }
 
+        if (entryCount < 0)
+        {
+            // Preserve the exception previously thrown when allocating the per-request forwarder array.
+            throw new OverflowException();
+        }
+
         var connection = context.Connection;
         var originalRemoteIpAddress = connection.RemoteIpAddress;
         var originalRemotePort = connection.RemotePort;
