@@ -230,9 +230,12 @@ export class HubConnectionBuilder {
         return this;
     }
 
-    /** Enables and configures automatic authentication refresh for the {@link @microsoft/signalr.HubConnection}. */
+    /** Enables and configures automatic authentication refresh for the {@link @microsoft/signalr.HubConnection}.
+     *
+     * Options from multiple calls are merged. Values from later calls take precedence.
+     */
     public withAuthenticationRefresh(options: IAuthenticationRefreshOptions = {}): HubConnectionBuilder {
-        this._authenticationRefreshOptions = options;
+        this._authenticationRefreshOptions = { ...this._authenticationRefreshOptions, ...options };
 
         return this;
     }

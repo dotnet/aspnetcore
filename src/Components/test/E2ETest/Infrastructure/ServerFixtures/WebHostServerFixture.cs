@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TestServer;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
@@ -13,6 +14,11 @@ public abstract class WebHostServerFixture : ServerFixture, IAsyncDisposable, IA
 {
     protected override string StartAndGetRootUri()
     {
+        // Servers are hosted in the test process, so a server that overrides a process-global feature
+        // switch would otherwise leak that value into every server started after it.
+        TestFeatureSwitches.ResetHotReloadSupported();
+        TestFeatureSwitches.ResetUrlBasedQuickGridNavigationAndSorting();
+
         Host = CreateWebHost();
         RunInBackgroundThread(Host.Start);
         return Host.Services.GetRequiredService<IServer>().Features

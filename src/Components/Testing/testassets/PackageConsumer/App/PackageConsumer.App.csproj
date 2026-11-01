@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(PackageConsumerTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath Condition="'$(E2ECompileTestHarness)' == 'true'">$(BaseIntermediateOutputPath)generated-nativeaot</CompilerGeneratedFilesOutputPath>
+    <CompilerGeneratedFilesOutputPath Condition="'$(E2ECompileTestHarness)' != 'true'">$(BaseIntermediateOutputPath)generated-normal</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifiers>$(PackageConsumerRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Testing.NativeAot"
+                      Version="$(PackageConsumerVersion)"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

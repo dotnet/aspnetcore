@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -112,13 +111,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// the grid can detect whether items were prepended or appended.
     /// </summary>
     [Parameter]
-    [Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
 
     /// <summary>
     /// Gets or sets a comparer used during virtualization to detect whether items were prepended or appended
-    /// between data loads. The comparer determines whether the first loaded item changed between loads, which
-    /// indicates items were inserted above the current viewport, so the grid can keep the viewport anchored.
+    /// between data loads. When provider windows overlap, the comparer determines whether a previously rendered
+    /// item changed at the same global index, which indicates items were inserted above the current viewport,
+    /// so the grid can keep the viewport anchored.
     ///
     /// Provide a comparer that compares items by a stable unique identifier (for example, a primary key).
     /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
@@ -129,7 +128,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// This only has an effect when <see cref="Virtualize"/> is <see langword="true"/>.
     /// </summary>
     [Parameter]
-    [Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public IEqualityComparer<TGridItem>? ItemComparer
     {
         get => _itemComparer;
@@ -297,8 +295,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         return (_columns.Count > 0 && mustRefreshData) ? RefreshDataCoreAsync() : Task.CompletedTask;
     }
 
-    // Splats the experimental members onto Virtualize from one place, keeping the pragma out of the .razor markup.
-#pragma warning disable ASP0030
     private void BuildVirtualizeAttributes()
     {
         var attributes = new Dictionary<string, object>
@@ -309,7 +305,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
         _virtualizeAttributes = attributes;
     }
-#pragma warning restore ASP0030
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -454,6 +449,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         await InvokeAsync(StateHasChanged);
     }
 
+    internal bool IsColumnOptionsVisible(ColumnBase<TGridItem> column) => _displayOptionsForColumn == column;
+
     /// <summary>
     /// Displays the <see cref="ColumnBase{TGridItem}.ColumnOptions"/> UI for the specified column, closing any other column
     /// options UI that was previously displayed.
@@ -560,7 +557,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
         // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
         // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
-        await Task.Delay(100);
+        await Task.Delay(100, request.CancellationToken);
         if (request.CancellationToken.IsCancellationRequested)
         {
             return default;
@@ -586,9 +583,16 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // the current viewport. In the case where you're also paginating then it means what's conceptually on the current page.
             // TODO: This currently assumes we always want to expand the last page to have ItemsPerPage rows, but the experience might
             //       be better if we let the last page only be as big as its number of actual rows.
+            var previousAriaBodyRowCount = _ariaBodyRowCount;
             _ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
 
             Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount);
+
+            if (_ariaBodyRowCount != previousAriaBodyRowCount)
+            {
+                // Virtualize rerenders its rows, but the table's row count belongs to this grid.
+                StateHasChanged();
+            }
 
             // We're supplying the row index along with each row's data because we need it for aria-rowindex, and we have to account for
             // the virtualized start index. It might be more performant just to have some _latestQueryRowStartIndex field, but we'd have

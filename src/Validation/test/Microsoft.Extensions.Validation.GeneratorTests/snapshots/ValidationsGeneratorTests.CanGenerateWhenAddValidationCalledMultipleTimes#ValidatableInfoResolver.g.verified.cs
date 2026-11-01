@@ -33,7 +33,9 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
+            global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null,
+            bool isUnionValue = false,
+            global::System.Func<object, bool>? skipValidation = null) : base(containingType, propertyType, name, displayNameInfo, isUnionValue, skipValidation)
         {
             ContainingType = containingType;
         }
@@ -326,6 +328,52 @@ namespace Microsoft.Extensions.Validation.Generated
                 => context.ValidationOptions.LocalizerProvider(type, factory)
                     ?? throw new global::System.InvalidOperationException(
                         $"The ValidationOptions.LocalizerProvider delegate returned null for type '{type.FullName}'. The delegate must return a non-null IStringLocalizer instance.");
+
+        public static string? FindLocalizedTemplate(
+            global::Microsoft.Extensions.Localization.IStringLocalizer localizer,
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
+            string? memberName,
+            global::System.Type declaringType)
+        {
+            if (!string.IsNullOrEmpty(attribute.ErrorMessage))
+            {
+                var explicitMatch = localizer[attribute.ErrorMessage!];
+                if (!explicitMatch.ResourceNotFound)
+                {
+                    return explicitMatch.Value;
+                }
+            }
+
+            var attributeName = attribute.GetType().Name;
+            var typeName = GetKeySegment(declaringType);
+
+            if (memberName is not null)
+            {
+                var memberMatch = localizer[$"{typeName}_{memberName}_{attributeName}_Error"];
+                if (!memberMatch.ResourceNotFound)
+                {
+                    return memberMatch.Value;
+                }
+            }
+
+            var typeMatch = localizer[$"{typeName}_{attributeName}_Error"];
+            if (!typeMatch.ResourceNotFound)
+            {
+                return typeMatch.Value;
+            }
+
+            var globalMatch = localizer[$"{attributeName}_Error"];
+
+            return globalMatch.ResourceNotFound ? null : globalMatch.Value;
+        }
+
+        private static string GetKeySegment(global::System.Type type)
+        {
+            var name = (global::System.Nullable.GetUnderlyingType(type) ?? type).Name;
+            var arityIndex = name.IndexOf('`');
+
+            return arityIndex < 0 ? name : name[..arityIndex];
+        }
     }
 
 
@@ -400,7 +448,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
         private protected static string? ResolveAttributeErrorMessage(
             global::Microsoft.Extensions.Validation.ValidateContext context,
-            string memberName,
+            string? memberName,
             string displayName,
             global::System.Type declaringType,
             global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
@@ -416,52 +464,16 @@ namespace Microsoft.Extensions.Validation.Generated
                 return result.ErrorMessage;
             }
 
-            var lookupKey = !string.IsNullOrEmpty(attribute.ErrorMessage)
-                ? attribute.ErrorMessage
-                : context.ValidationOptions.MessageKeyProvider?.Invoke(new global::Microsoft.Extensions.Validation.ValidationMessageKeyContext
-                {
-                    ValidatorType = attribute.GetType(),
-                    MemberName = memberName,
-                    DeclaringType = declaringType,
-                });
-
-            if (string.IsNullOrEmpty(lookupKey))
-            {
-                return result.ErrorMessage;
-            }
-
             var localizer = LocalizationHelpers.CreateStringLocalizer(context, declaringType, localizerFactory);
 
-            var localizedTemplate = localizer[lookupKey!];
-            if (localizedTemplate.ResourceNotFound)
+            var localizedTemplate = LocalizationHelpers.FindLocalizedTemplate(localizer, attribute, memberName, declaringType);
+            if (localizedTemplate is null)
             {
                 return result.ErrorMessage;
             }
 
-            return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
+            return attribute.FormatMessage(localizedTemplate, displayName);
         }
-
-        // Keep in sync with DataAnnotationsLocalizer.FormatMessage in
-        // src/Components/Endpoints/src/Forms/DataAnnotationsLocalizer.cs, which mirrors this switch for the
-        // Blazor SSR client-validation payload.
-        private static string FormatErrorMessage(
-            global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
-            global::System.Globalization.CultureInfo culture,
-            string messageTemplate,
-            string displayName)
-            => attribute switch
-            {
-                global::Microsoft.Extensions.Validation.IValidationMessageFormatter selfFormatter => selfFormatter.FormatMessage(culture, messageTemplate, displayName),
-                global::System.ComponentModel.DataAnnotations.CompareAttribute a => string.Format(culture, messageTemplate, displayName, a.OtherPropertyDisplayName ?? a.OtherProperty),
-                global::System.ComponentModel.DataAnnotations.FileExtensionsAttribute a => string.Format(culture, messageTemplate, displayName, a.Extensions),
-                global::System.ComponentModel.DataAnnotations.LengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MinimumLength, a.MaximumLength),
-                global::System.ComponentModel.DataAnnotations.MaxLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
-                global::System.ComponentModel.DataAnnotations.MinLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
-                global::System.ComponentModel.DataAnnotations.RangeAttribute a => string.Format(culture, messageTemplate, displayName, a.Minimum, a.Maximum),
-                global::System.ComponentModel.DataAnnotations.RegularExpressionAttribute a => string.Format(culture, messageTemplate, displayName, a.Pattern),
-                global::System.ComponentModel.DataAnnotations.StringLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MaximumLength, a.MinimumLength),
-                _ => string.Format(culture, messageTemplate, displayName),
-            };
 
         private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
             global::Microsoft.Extensions.Validation.ValidateContext context,
@@ -1051,7 +1063,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 // If no member names are specified, then treat this as a top-level error
                 var errorMessage = ResolveAttributeErrorMessage(
                     context,
-                    memberName: Type.Name,
+                    memberName: null,
                     displayName,
                     declaringType: Type,
                     attribute,
@@ -1082,12 +1094,16 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type declaringType,
             global::System.Type propertyType,
             string name,
-            DisplayNameInfo? displayNameInfo = null)
+            DisplayNameInfo? displayNameInfo = null,
+            bool isUnionValue = false,
+            global::System.Func<object, bool>? skipValidation = null)
         {
             DeclaringType = declaringType;
             PropertyType = propertyType;
             Name = name;
             DisplayNameInfo = displayNameInfo;
+            IsUnionValue = isUnionValue;
+            SkipValidation = skipValidation;
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
@@ -1098,6 +1114,11 @@ namespace Microsoft.Extensions.Validation.Generated
         internal string Name { get; }
 
         internal DisplayNameInfo? DisplayNameInfo { get; }
+
+        // The synthesized union Value property is object-typed, so collection detection must use the active case type.
+        internal bool IsUnionValue { get; }
+
+        internal global::System.Func<object, bool>? SkipValidation { get; }
 
         private global::System.Reflection.PropertyInfo Property
             => DeclaringType.GetProperty(Name, global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly) ?? throw new global::System.InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
@@ -1139,6 +1160,11 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.ArgumentNullException.ThrowIfNull(containingObject);
 
             var propertyValue = Property.GetValue(containingObject);
+            if (propertyValue is not null && SkipValidation?.Invoke(propertyValue) is true)
+            {
+                return;
+            }
+
             var validationAttributes = GetValidationAttributes();
 
             // Calculate and save the current path
@@ -1182,8 +1208,14 @@ namespace Microsoft.Extensions.Validation.Generated
             try
             {
                 // Handle enumerable values
-                if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
+                if (IsEnumerable(IsUnionValue && propertyValue is not null ? propertyValue.GetType() : PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
                 {
+                    // Collection union cases can have validation of their own as well as validatable elements.
+                    if (IsUnionValue && validationOptions.TryGetValidatableTypeInfo(propertyValue.GetType(), out var collectionType))
+                    {
+                        await collectionType.ValidateAsync(propertyValue, context, cancellationToken);
+                    }
+
                     var index = 0;
                     var currentPrefix = context.CurrentValidationPath;
 
@@ -1239,6 +1271,11 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.ArgumentNullException.ThrowIfNull(containingObject);
 
             var propertyValue = Property.GetValue(containingObject);
+            if (propertyValue is not null && SkipValidation?.Invoke(propertyValue) is true)
+            {
+                return;
+            }
+
             var validationAttributes = GetValidationAttributes();
 
             // Calculate and save the current path
@@ -1282,8 +1319,14 @@ namespace Microsoft.Extensions.Validation.Generated
             try
             {
                 // Handle enumerable values
-                if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
+                if (IsEnumerable(IsUnionValue && propertyValue is not null ? propertyValue.GetType() : PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
                 {
+                    // Collection union cases can have validation of their own as well as validatable elements.
+                    if (IsUnionValue && validationOptions.TryGetValidatableTypeInfo(propertyValue.GetType(), out var collectionType))
+                    {
+                        collectionType.Validate(propertyValue, context);
+                    }
+
                     var index = 0;
                     var currentPrefix = context.CurrentValidationPath;
 

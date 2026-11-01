@@ -52,8 +52,19 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
             keyDerivationKey: new Secret(secret),
             symmetricAlgorithmFactory: GetSymmetricBlockCipherAlgorithmFactory(configuration),
             symmetricAlgorithmKeySizeInBytes: configuration.EncryptionAlgorithmKeySize / 8,
-            validationAlgorithmFactory: GetKeyedHashAlgorithmFactory(configuration));
+            validationAlgorithmFactory: GetKeyedHashAlgorithmFactory(configuration),
+            keyedValidationAlgorithmFactory: GetKeyedValidationAlgorithmFactory(configuration.ValidationAlgorithmType));
     }
+
+    private static Func<byte[], KeyedHashAlgorithm>? GetKeyedValidationAlgorithmFactory(Type algorithmType) => algorithmType switch
+    {
+        var type when type == typeof(HMACSHA256) => key => new HMACSHA256(key),
+        var type when type == typeof(HMACSHA512) => key => new HMACSHA512(key),
+        var type when type == typeof(HMACSHA384) => key => new HMACSHA384(key),
+        var type when type == typeof(HMACSHA1) => key => new HMACSHA1(key),
+        var type when type == typeof(HMACMD5) => key => new HMACMD5(key),
+        _ => null,
+    };
 
     private Func<KeyedHashAlgorithm> GetKeyedHashAlgorithmFactory(ManagedAuthenticatedEncryptorConfiguration configuration)
     {

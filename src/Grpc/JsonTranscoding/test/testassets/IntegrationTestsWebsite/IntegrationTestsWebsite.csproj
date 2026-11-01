@@ -7,7 +7,8 @@
   <ItemGroup>
     <Protobuf Include="Protos\greet.proto" GrpcServices="Server" />
 
-    <Reference Include="Grpc.AspNetCore" />
-    <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
+    <PackageReference Include="Grpc.AspNetCore" />
+
+    <ProjectReference Include="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
   </ItemGroup>
 </Project>

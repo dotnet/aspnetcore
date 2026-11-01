@@ -266,6 +266,26 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
+    [Theory]
+    [InlineData("1e-6", 1e-6)]
+    [InlineData("2E-06", 2E-06)]
+    [InlineData("3.5e10", 3.5e10)]
+    [InlineData("123+", 123d)]
+    [InlineData("123.45-", -123.45d)]
+    [InlineData("1,234", 1234d)]
+    [InlineData("-1,234.56", -1234.56d)]
+    public void TryConvertToDouble_HandlesSpecialFormats(string input, double expected)
+    {
+        var culture = input.Contains(',') ? CultureInfo.GetCultureInfo("en-US") : CultureInfo.InvariantCulture;
+        var result = BindConverter.TryConvertTo<double>(
+            input,
+            culture,
+            out var value);
+
+        Assert.True(result);
+        Assert.Equal(expected, value);
+    }
+
     [Fact]
     public void FormatValue_NullableEnum()
     {
@@ -296,6 +316,36 @@ public class BindConverterTest
 
         // Assert
         Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public void TryConvertToNullableDouble_AllowsEmptyValue(object input)
+    {
+        var result = BindConverter.TryConvertTo<double?>(
+            (string)input,
+            CultureInfo.InvariantCulture,
+            out var value);
+
+        Assert.True(result);
+        Assert.Null(value);
+    }
+
+    [Theory]
+    [InlineData("2E")]
+    [InlineData("2E-")]
+    [InlineData("e10")]
+    public void TryConvertToDouble_RejectsInvalidScientificNotation(
+        string input)
+    {
+        var result = BindConverter.TryConvertTo<double>(
+            input,
+            CultureInfo.InvariantCulture,
+            out var value);
+
+        Assert.False(result);
+        Assert.Equal(default, value);
     }
 
     [Fact]
@@ -366,6 +416,65 @@ public class BindConverterTest
 
         // Assert
         Assert.False(successfullyConverted);
+        Assert.Null(actual);
+    }
+
+    [Theory]
+    [InlineData("A")]
+    [InlineData("Q")]
+    public void ConvertToEnumDynamicCodeSafe_ParsesDefinedValues(string text)
+    {
+        var success = BindConverter.ConvertToEnumDynamicCodeSafe<SomeLetters>(
+            text,
+            CultureInfo.InvariantCulture,
+            out var actual);
+
+        Assert.True(success);
+        Assert.Equal(Enum.Parse<SomeLetters>(text), actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Z")]
+    [InlineData("42")]
+    public void ConvertToEnumDynamicCodeSafe_MatchesDynamicCodePath(string text)
+    {
+        var expectedSuccess = BindConverter.TryConvertTo<SomeLetters>(
+            text,
+            CultureInfo.InvariantCulture,
+            out var expected);
+        var actualSuccess = BindConverter.ConvertToEnumDynamicCodeSafe<SomeLetters>(
+            text,
+            CultureInfo.InvariantCulture,
+            out var actual);
+
+        Assert.Equal(expectedSuccess, actualSuccess);
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ConvertToNullableEnumDynamicCodeSafe_ParsesDefinedValue()
+    {
+        var success = BindConverter.ConvertToNullableEnumDynamicCodeSafe<SomeLetters?>(
+            "C",
+            CultureInfo.InvariantCulture,
+            out var actual);
+
+        Assert.True(success);
+        Assert.Equal(SomeLetters.C, actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Z")]
+    public void ConvertToNullableEnumDynamicCodeSafe_HandlesEmptyAndInvalidValues(string text)
+    {
+        var success = BindConverter.ConvertToNullableEnumDynamicCodeSafe<SomeLetters?>(
+            text,
+            CultureInfo.InvariantCulture,
+            out var actual);
+
+        Assert.Equal(text.Length == 0, success);
         Assert.Null(actual);
     }
 

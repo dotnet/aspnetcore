@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -353,7 +354,7 @@ public class MapConnectionHandlerTests
     }
 
     [Fact]
-    public void MapConnectionHandlerEndPointRoutingAppliesAuthenticationRefreshMetadataWhenEnabled()
+    public void MapConnectionHandlerEndPointRoutingAppliesAuthenticationRefreshAndAuthorizationMetadataWhenEnabled()
     {
         void ConfigureRoutes(IEndpointRouteBuilder endpoints)
         {
@@ -383,6 +384,7 @@ public class MapConnectionHandlerTests
                     var optionsMetaData = endpoint.Metadata.GetMetadata<HttpConnectionDispatcherOptions>();
                     Assert.NotNull(optionsMetaData);
                     Assert.True(optionsMetaData.EnableAuthenticationRefresh);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 },
                 endpoint =>
                 {
@@ -493,6 +495,33 @@ public class MapConnectionHandlerTests
                 Assert.Equal("/test", endpoint.DisplayName);
                 Assert.Single(endpoint.Metadata.GetOrderedMetadata<DisableRequestTimeoutAttribute>());
             });
+    }
+
+    [Fact]
+    public void MapConnectionHandlerUsesMetadataUniqueToEachEndpointGroup()
+    {
+        void ConfigureRoutes(IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapConnectionHandler<AuthConnectionHandler>("/a", options => options.EnableAuthenticationRefresh = true);
+            endpoints.MapConnectionHandler<AuthConnectionHandler>("/b", options => options.EnableAuthenticationRefresh = true);
+        }
+
+        using var host = BuildWebHost(ConfigureRoutes);
+        host.Start();
+
+        var endpoints = host.Services.GetRequiredService<EndpointDataSource>().Endpoints;
+        var groupA = endpoints.Where(endpoint => endpoint.DisplayName.StartsWith("/a", StringComparison.Ordinal)).ToArray();
+        var groupB = endpoints.Where(endpoint => endpoint.DisplayName.StartsWith("/b", StringComparison.Ordinal)).ToArray();
+
+        Assert.Equal(3, groupA.Length);
+        Assert.Equal(3, groupB.Length);
+
+        var metadataA = Assert.IsType<HttpConnectionEndpointMetadata>(groupA[0].Metadata.GetMetadata<HttpConnectionEndpointMetadata>());
+        var metadataB = Assert.IsType<HttpConnectionEndpointMetadata>(groupB[0].Metadata.GetMetadata<HttpConnectionEndpointMetadata>());
+
+        Assert.All(groupA, endpoint => Assert.Same(metadataA, endpoint.Metadata.GetMetadata<HttpConnectionEndpointMetadata>()));
+        Assert.All(groupB, endpoint => Assert.Same(metadataB, endpoint.Metadata.GetMetadata<HttpConnectionEndpointMetadata>()));
+        Assert.NotSame(metadataA, metadataB);
     }
 
     private class MyConnectionHandler : ConnectionHandler
