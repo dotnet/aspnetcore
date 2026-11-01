@@ -89,26 +89,15 @@ public class UserManager<TUser> : IDisposable where TUser : class
         // UserManagerMetrics created from constructor because of difficulties registering internal type.        
         _metrics = services?.GetService<IMeterFactory>() is { } factory ? new UserManagerMetrics(factory) : null;
 
-        if (userValidators != null)
-        {
-            foreach (var v in userValidators)
-            {
-                UserValidators.Add(v);
-            }
-        }
-        if (passwordValidators != null)
-        {
-            foreach (var v in passwordValidators)
-            {
-                PasswordValidators.Add(v);
-            }
-        }
+        UserValidators = userValidators != null ? new List<IUserValidator<TUser>>(userValidators) : new List<IUserValidator<TUser>>();
+        PasswordValidators = passwordValidators != null ? new List<IPasswordValidator<TUser>>(passwordValidators) : new List<IPasswordValidator<TUser>>();
 
         if (services != null)
         {
-            foreach (var providerName in Options.Tokens.ProviderMap.Keys)
+            foreach (var entry in Options.Tokens.ProviderMap)
             {
-                var description = Options.Tokens.ProviderMap[providerName];
+                var providerName = entry.Key;
+                var description = entry.Value;
 
                 var provider = description.ProviderInstance as IUserTwoFactorTokenProvider<TUser>;
                 if (provider == null && description.GetProviderType<IUserTwoFactorTokenProvider<TUser>>() is Type providerType)
@@ -158,12 +147,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <summary>
     /// The <see cref="IUserValidator{TUser}"/> used to validate users.
     /// </summary>
-    public IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
+    public IList<IUserValidator<TUser>> UserValidators { get; }
 
     /// <summary>
     /// The <see cref="IPasswordValidator{TUser}"/> used to validate passwords.
     /// </summary>
-    public IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
+    public IList<IPasswordValidator<TUser>> PasswordValidators { get; }
 
     /// <summary>
     /// The <see cref="ILookupNormalizer"/> used to normalize things like user and role names.
