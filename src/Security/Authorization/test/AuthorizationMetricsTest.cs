@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
@@ -226,6 +227,60 @@ public class AuthorizationMetricsTest
         Assert.Equal(1, measurement.Value);
         Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
         Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.result"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Authorize_WithoutPolicyName_MetricsListenerThrows_ExceptionSurfacesThroughTask(bool throwCanceled)
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var authorizationService = BuildAuthorizationService(meterFactory, services =>
+        {
+            services.AddSingleton<IAuthorizationHandler>(new AlwaysHandler(succeed: true));
+        });
+        var user = new ClaimsPrincipal(new ClaimsIdentity([]));
+
+        Exception listenerException = throwCanceled
+            ? new OperationCanceledException("Listener canceled")
+            : new InvalidOperationException("Listener failed");
+        var callbackCount = 0;
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, meterListener) =>
+        {
+            if (meterFactory.Meters.Contains(instrument.Meter) && instrument.Name == "aspnetcore.authorization.attempts")
+            {
+                meterListener.EnableMeasurementEvents(instrument);
+            }
+        };
+        listener.SetMeasurementEventCallback<long>((instrument, measurement, tags, state) =>
+        {
+            callbackCount++;
+            throw listenerException;
+        });
+        listener.Start();
+
+        // Act
+        Task<AuthorizationResult> authorizeTask = null;
+        var syncException = Record.Exception(() => { authorizeTask = authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement()); });
+
+        // Assert
+        Assert.Null(syncException);
+        Assert.NotNull(authorizeTask);
+        if (throwCanceled)
+        {
+            Assert.True(authorizeTask.IsCanceled);
+            var ex = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => authorizeTask);
+            Assert.Equal("Listener canceled", ex.Message);
+        }
+        else
+        {
+            Assert.True(authorizeTask.IsFaulted);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authorizeTask);
+            Assert.Same(listenerException, ex);
+        }
+        Assert.Equal(1, callbackCount);
     }
 
     private static IAuthorizationService BuildAuthorizationService(TestMeterFactory meterFactory, Action<IServiceCollection> setupServices = null)

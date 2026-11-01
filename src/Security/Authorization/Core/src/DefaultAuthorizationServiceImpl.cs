@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
@@ -28,11 +29,28 @@ internal sealed class DefaultAuthorizationServiceImpl(
         // Authorization handlers typically complete synchronously. Avoid allocating another task in that case.
         if (task.Status == TaskStatus.RanToCompletion)
         {
-            metrics.AuthorizeAttemptCompleted(user, policyName: null, task.Result, exception: null);
+            try
+            {
+                metrics.AuthorizeAttemptCompleted(user, policyName: null, task.Result, exception: null);
+            }
+            catch (Exception ex)
+            {
+                // Surface the exception through the returned task, as the async path does.
+                return FromException(ExceptionDispatchInfo.Capture(ex));
+            }
+
             return task;
         }
 
         return AwaitAuthorizeAsync(task, user);
+    }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators: used so the exception is propagated exactly as an async method would.
+    private static async Task<AuthorizationResult> FromException(ExceptionDispatchInfo exception)
+#pragma warning restore CS1998
+    {
+        exception.Throw();
+        return null!;
     }
 
     private async Task<AuthorizationResult> AwaitAuthorizeAsync(Task<AuthorizationResult> task, ClaimsPrincipal user)
