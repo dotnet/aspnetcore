@@ -8,9 +8,10 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 /// <summary>
-/// This is a container for prefix values. It normalizes all the values into dotted-form and then stores
-/// them in a sorted array. All queries for prefixes are also normalized to dotted-form, and searches
-/// for ContainsPrefix are done with a binary search.
+/// This is a container for prefix values. It normalizes all the values into dotted-form and stores them
+/// in an array. All queries for prefixes are also normalized to dotted-form. When the container holds
+/// 8 or fewer values, the array is left unsorted and ContainsPrefix uses a linear scan; for larger
+/// collections the array is sorted and ContainsPrefix uses a binary search.
 /// </summary>
 public class PrefixContainer
 {
