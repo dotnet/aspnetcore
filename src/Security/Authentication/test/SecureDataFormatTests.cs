@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
@@ -131,6 +132,58 @@ public class SecureDataFormatTests
         Assert.Null(spanFormat.Unprotect(protectedText));
         Assert.Null(arrayFormat.Unprotect(protectedText));
         Assert.Null(spanFormat.Unprotect(null));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(4096)]
+    [InlineData(100_000)]
+    public void SpanProtectorsUsingGetMemoryAreSupported(int length)
+    {
+        var protector = ServiceProvider.GetRequiredService<IDataProtectionProvider>().CreateProtector("test");
+        var memoryFormat = new SecureDataFormat<string>(new StringSerializer(), new MemoryWritingSpanDataProtector(protector));
+        var arrayFormat = new SecureDataFormat<string>(new StringSerializer(), new ArrayOnlyDataProtector(protector));
+
+        var input = new string('a', length) + "\u00e9\u4e2d";
+
+        Assert.Equal(input, memoryFormat.Unprotect(memoryFormat.Protect(input)));
+        Assert.Equal(input, arrayFormat.Unprotect(memoryFormat.Protect(input)));
+        Assert.Equal(input, memoryFormat.Unprotect(arrayFormat.Protect(input)));
+        Assert.Equal(input, memoryFormat.Unprotect(memoryFormat.Protect(input, "purpose1"), "purpose1"));
+        Assert.Null(memoryFormat.Unprotect(memoryFormat.Protect(input, "purpose1"), "purpose2"));
+    }
+
+    // Writes output through GetMemory in small chunks to exercise buffer growth.
+    private class MemoryWritingSpanDataProtector : ISpanDataProtector
+    {
+        private readonly IDataProtector _inner;
+
+        public MemoryWritingSpanDataProtector(IDataProtector inner) => _inner = inner;
+
+        public IDataProtector CreateProtector(string purpose) => new MemoryWritingSpanDataProtector(_inner.CreateProtector(purpose));
+
+        public byte[] Protect(byte[] plaintext) => _inner.Protect(plaintext);
+
+        public byte[] Unprotect(byte[] protectedData) => _inner.Unprotect(protectedData);
+
+        public void Protect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+            => Write(_inner.Protect(plaintext.ToArray()), ref destination);
+
+        public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+            => Write(_inner.Unprotect(protectedData.ToArray()), ref destination);
+
+        private static void Write<TWriter>(ReadOnlySpan<byte> data, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+        {
+            while (!data.IsEmpty)
+            {
+                var memory = destination.GetMemory(Math.Min(data.Length, 100));
+                var count = Math.Min(Math.Min(data.Length, memory.Length), 100);
+                data.Slice(0, count).CopyTo(memory.Span);
+                destination.Advance(count);
+                data = data.Slice(count);
+            }
+        }
     }
 
     private class ArrayOnlyDataProtector : IDataProtector

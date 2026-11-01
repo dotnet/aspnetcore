@@ -13,7 +13,6 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)RemoteAuthenticationAntiforgery.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
