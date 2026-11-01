@@ -21,12 +21,26 @@ internal sealed class DefaultAuthorizationServiceImpl(
     AuthorizationMetrics metrics)
     : DefaultAuthorizationService(policyProvider, handlers, logger, contextFactory, evaluator, options)
 {
-    public override async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
+    public override Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
+    {
+        var task = base.AuthorizeAsync(user, resource, requirements);
+
+        // Authorization handlers typically complete synchronously. Avoid allocating another task in that case.
+        if (task.Status == TaskStatus.RanToCompletion)
+        {
+            metrics.AuthorizeAttemptCompleted(user, policyName: null, task.Result, exception: null);
+            return task;
+        }
+
+        return AwaitAuthorizeAsync(task, user);
+    }
+
+    private async Task<AuthorizationResult> AwaitAuthorizeAsync(Task<AuthorizationResult> task, ClaimsPrincipal user)
     {
         AuthorizationResult result;
         try
         {
-            result = await base.AuthorizeAsync(user, resource, requirements).ConfigureAwait(false);
+            result = await task.ConfigureAwait(false);
         }
         catch (Exception ex)
         {

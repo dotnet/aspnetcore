@@ -169,6 +169,65 @@ public class AuthorizationMetricsTest
         Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.result"));
     }
 
+    [Theory]
+    [InlineData(true, "success")]
+    [InlineData(false, "failure")]
+    public async Task Authorize_WithoutPolicyName_AsyncHandler(bool succeed, string expectedResult)
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var authorizationService = BuildAuthorizationService(meterFactory, services =>
+        {
+            services.AddSingleton<IAuthorizationHandler>(new AsyncHandler(tcs.Task, succeed));
+        });
+        var user = new ClaimsPrincipal(new ClaimsIdentity([]));
+
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.attempts");
+
+        // Act
+        var authorizeTask = authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement());
+        Assert.False(authorizeTask.IsCompleted);
+        Assert.Empty(authorizedRequestsCollector.GetMeasurementSnapshot());
+        tcs.SetResult();
+        var result = await authorizeTask;
+
+        // Assert
+        Assert.Equal(succeed, result.Succeeded);
+        var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal(expectedResult, (string)measurement.Tags["aspnetcore.authorization.result"]);
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.policy"));
+    }
+
+    [Fact]
+    public async Task Authorize_WithoutPolicyName_ExceptionThrownInAsyncHandler()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var authorizationService = BuildAuthorizationService(meterFactory, services =>
+        {
+            services.AddSingleton<IAuthorizationHandler>(new AsyncHandler(tcs.Task, succeed: true));
+        });
+        var user = new ClaimsPrincipal(new ClaimsIdentity([]));
+
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.attempts");
+
+        // Act
+        var authorizeTask = authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement());
+        Assert.False(authorizeTask.IsCompleted);
+        tcs.SetException(new InvalidOperationException("An error occurred in the authorization handler"));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authorizeTask);
+
+        // Assert
+        Assert.Equal("An error occurred in the authorization handler", ex.Message);
+        var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.result"));
+    }
+
     private static IAuthorizationService BuildAuthorizationService(TestMeterFactory meterFactory, Action<IServiceCollection> setupServices = null)
     {
         var services = new ServiceCollection();
@@ -199,6 +258,19 @@ public class AuthorizationMetricsTest
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, TestRequirement requirement)
         {
             throw new InvalidOperationException("An error occurred in the authorization handler");
+        }
+    }
+
+    private sealed class AsyncHandler(Task pending, bool succeed) : AuthorizationHandler<TestRequirement>
+    {
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TestRequirement requirement)
+        {
+            await pending;
+
+            if (succeed)
+            {
+                context.Succeed(requirement);
+            }
         }
     }
 
