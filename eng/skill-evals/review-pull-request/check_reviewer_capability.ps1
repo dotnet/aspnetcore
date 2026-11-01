@@ -1207,7 +1207,7 @@ if ($ResultsDirectory) {
         $launchSkills.Count -eq 1 -and
         $launchSkillMatches
     ) 'The subject attempt has the wrong staged native skill.'
-    $expectedLaunchFiles = if ($null -ne $evidenceScoutBinding) {
+    [string[]]$expectedLaunchFiles = if ($null -ne $evidenceScoutBinding) {
         @(
             if ($cases[$caseName].UseCommonOverlay) {
                 (
@@ -1255,7 +1255,7 @@ if ($ResultsDirectory) {
             Sort-Object
     )
     Assert-Condition (
-        $actualLaunchFiles.Count -eq $expectedLaunchFiles.Count -and
+        @($actualLaunchFiles).Count -eq @($expectedLaunchFiles).Count -and
         ($actualLaunchFiles -join "`n") -eq
             ((@(
                 $expectedLaunchFiles |
