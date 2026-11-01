@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
 
@@ -48,27 +47,27 @@ public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : 
             errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordTooShort(options.RequiredLength));
         }
-        if (options.RequireNonAlphanumeric && password.All(IsLetterOrDigit))
+        if (options.RequireNonAlphanumeric && AllLetterOrDigit(password))
         {
             errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresNonAlphanumeric());
         }
-        if (options.RequireDigit && !password.Any(IsDigit))
+        if (options.RequireDigit && !ContainsDigit(password))
         {
             errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresDigit());
         }
-        if (options.RequireLowercase && !password.Any(IsLower))
+        if (options.RequireLowercase && !ContainsLower(password))
         {
             errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresLower());
         }
-        if (options.RequireUppercase && !password.Any(IsUpper))
+        if (options.RequireUppercase && !ContainsUpper(password))
         {
             errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresUpper());
         }
-        if (options.RequiredUniqueChars >= 1 && password.Distinct().Count() < options.RequiredUniqueChars)
+        if (options.RequiredUniqueChars >= 1 && !HasMinimumUniqueChars(password, options.RequiredUniqueChars))
         {
             errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresUniqueChars(options.RequiredUniqueChars));
@@ -77,6 +76,95 @@ public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : 
             Task.FromResult(errors?.Count > 0
                 ? IdentityResult.Failed(errors)
                 : IdentityResult.Success);
+    }
+
+    private bool AllLetterOrDigit(string password)
+    {
+        foreach (var c in password)
+        {
+            if (!IsLetterOrDigit(c))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private bool ContainsDigit(string password)
+    {
+        foreach (var c in password)
+        {
+            if (IsDigit(c))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool ContainsLower(string password)
+    {
+        foreach (var c in password)
+        {
+            if (IsLower(c))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool ContainsUpper(string password)
+    {
+        foreach (var c in password)
+        {
+            if (IsUpper(c))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Equivalent to password.Distinct().Count() >= requiredUniqueChars, without allocating for ASCII
+    // characters and stopping as soon as enough distinct characters have been seen.
+    private static bool HasMinimumUniqueChars(string password, int requiredUniqueChars)
+    {
+        if (password.Length < requiredUniqueChars)
+        {
+            return false;
+        }
+
+        ulong seenLow = 0; // chars 0-63
+        ulong seenHigh = 0; // chars 64-127
+        HashSet<char>? seenOther = null;
+        var uniqueChars = 0;
+        foreach (var c in password)
+        {
+            bool added;
+            if (c < 64)
+            {
+                var bit = 1UL << c;
+                added = (seenLow & bit) == 0;
+                seenLow |= bit;
+            }
+            else if (c < 128)
+            {
+                var bit = 1UL << (c - 64);
+                added = (seenHigh & bit) == 0;
+                seenHigh |= bit;
+            }
+            else
+            {
+                added = (seenOther ??= new HashSet<char>()).Add(c);
+            }
+
+            if (added && ++uniqueChars >= requiredUniqueChars)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>

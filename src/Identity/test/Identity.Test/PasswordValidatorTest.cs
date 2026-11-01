@@ -94,6 +94,9 @@ public class PasswordValidatorTest
     [InlineData("a", 2)]
     [InlineData("aaaaaaaaaaa", 2)]
     [InlineData("abcdabcdabcdabcdabcdabcdabcd", 5)]
+    [InlineData("?@?@?@", 3)]
+    [InlineData("\u007f\u0080\u007f\u0080", 3)]
+    [InlineData("\u00e9\u00e9\u00e8\u00e8", 3)]
     public async Task FailsWithoutRequiredUniqueCharsTests(string input, int uniqueChars)
     {
         var manager = MockHelpers.TestUserManager<PocoUser>();
@@ -115,6 +118,9 @@ public class PasswordValidatorTest
     [InlineData("!@#$%", 5)]
     [InlineData("a", 1)]
     [InlineData("this is a long password with many chars", 10)]
+    [InlineData("?@\u007f\u0080", 4)]
+    [InlineData("\u00e9\u00e8\u4e2d\ud83d\ude00", 5)]
+    [InlineData("a\u00e9a\u00e9b", 3)]
     public async Task SucceedsWithRequiredUniqueCharsTests(string input, int uniqueChars)
     {
         var manager = MockHelpers.TestUserManager<PocoUser>();
