@@ -369,6 +369,53 @@ public class AuthorizationMiddlewareTests
     }
 
     [Fact]
+    public async Task EndpointWithoutAuthorizationMetadata_WithCache_DelayedNullFallbackDoesNotReplaceCachedPolicy()
+    {
+        // Arrange
+        var delayedNullFallback = new TaskCompletionSource<AuthorizationPolicy>();
+        var fallbackPolicyTask = delayedNullFallback.Task;
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        var getFallbackPolicyCount = 0;
+        policyProvider.Setup(p => p.GetFallbackPolicyAsync()).Returns(() => fallbackPolicyTask)
+            .Callback(() => getFallbackPolicyCount++);
+        policyProvider.Setup(p => p.AllowsCachingPolicies).Returns(true);
+        var next = new TestRequestDelegate();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
+
+        var endpoint = CreateEndpoint(new object());
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, services, logger.Object);
+        var authenticationService = new TestAuthenticationService();
+
+        // Act
+        // The first request observes a null fallback policy, but the result is delayed.
+        var delayedRequest = middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint));
+        Assert.False(delayedRequest.IsCompleted);
+
+        // Meanwhile the fallback policy is set and a second request computes and caches it.
+        fallbackPolicyTask = Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+        await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint, authenticationService: authenticationService));
+        Assert.Equal(1, authenticationService.ChallengeCount);
+
+        // The delayed null result completes after the policy was cached.
+        delayedNullFallback.SetResult(null);
+        await delayedRequest;
+        Assert.Equal(1, next.CalledCount);
+
+        // The fallback policy reverts to null. The cached policy must still be used.
+        fallbackPolicyTask = Task.FromResult<AuthorizationPolicy>(null);
+        var fallbackPolicyCountBefore = getFallbackPolicyCount;
+        await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint, authenticationService: authenticationService));
+
+        // Assert
+        Assert.Equal(1, next.CalledCount);
+        Assert.Equal(2, authenticationService.ChallengeCount);
+        Assert.Equal(fallbackPolicyCountBefore, getFallbackPolicyCount);
+    }
+
+    [Fact]
     public async Task EndpointWithoutAuthorizationMetadata_WithCache_DoesNotAffectOtherEndpoints()
     {
         // Arrange

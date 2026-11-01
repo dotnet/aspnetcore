@@ -141,9 +141,17 @@ public class AuthorizationMiddleware
             // Cache the computed policy
             if (canCachePolicy)
             {
-                // A null policy means the endpoint has no authorization metadata and there is no fallback policy.
-                // Remember that the endpoint has no authorization metadata to avoid rescanning its metadata on every request.
-                _policyCache!.Store(endpoint!, policy ?? NoAuthorizationMetadataPolicy);
+                if (policy != null)
+                {
+                    _policyCache!.Store(endpoint!, policy);
+                }
+                else
+                {
+                    // A null policy means the endpoint has no authorization metadata and there is no fallback policy.
+                    // Remember that the endpoint has no authorization metadata to avoid rescanning its metadata on every request.
+                    // Only add the marker if nothing is cached yet so a policy cached by a concurrent request isn't replaced.
+                    _policyCache!.TryAdd(endpoint!, NoAuthorizationMetadataPolicy);
+                }
             }
         }
 
