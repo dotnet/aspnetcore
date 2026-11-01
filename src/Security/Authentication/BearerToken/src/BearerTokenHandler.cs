@@ -33,14 +33,26 @@ internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> opt
             return messageReceivedContext.Result;
         }
 
-        var token = messageReceivedContext.Token ?? GetBearerTokenOrNull();
+        AuthenticationTicket? ticket;
 
-        if (token is null)
+        if (messageReceivedContext.Token is { } token)
         {
-            return AuthenticateResult.NoResult();
+            ticket = Options.BearerTokenProtector.Unprotect(token);
         }
+        else
+        {
+            var authorization = Request.Headers.Authorization.ToString();
 
-        var ticket = Options.BearerTokenProtector.Unprotect(token);
+            if (!authorization.StartsWith("Bearer ", StringComparison.Ordinal))
+            {
+                return AuthenticateResult.NoResult();
+            }
+
+            // Avoid allocating a substring for the token when using the default protector.
+            ticket = Options.BearerTokenProtector is BearerTokenTicketDataFormat bearerTokenTicketDataFormat
+                ? bearerTokenTicketDataFormat.UnprotectSpan(authorization.AsSpan("Bearer ".Length))
+                : Options.BearerTokenProtector.Unprotect(authorization["Bearer ".Length..]);
+        }
 
         if (ticket?.Properties?.ExpiresUtc is not { } expiresUtc)
         {
@@ -90,15 +102,6 @@ internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> opt
 
     // No-op to avoid interfering with any mass sign-out logic.
     protected override Task HandleSignOutAsync(AuthenticationProperties? properties) => Task.CompletedTask;
-
-    private string? GetBearerTokenOrNull()
-    {
-        var authorization = Request.Headers.Authorization.ToString();
-
-        return authorization.StartsWith("Bearer ", StringComparison.Ordinal)
-            ? authorization["Bearer ".Length..]
-            : null;
-    }
 
     private AuthenticationTicket CreateBearerTicket(ClaimsPrincipal user, AuthenticationProperties properties)
         => new(user, properties, $"{Scheme.Name}:AccessToken");
