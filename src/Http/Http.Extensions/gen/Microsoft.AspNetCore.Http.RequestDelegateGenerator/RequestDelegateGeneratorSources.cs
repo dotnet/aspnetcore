@@ -144,6 +144,13 @@ internal static class RequestDelegateGeneratorSources
             object? formValue = null;
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
 
+            if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            {
+                logOrThrowExceptionHelper.InvalidAntiforgeryToken(parameterTypeName, parameterName, antiforgeryValidationFeature.Error!);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (false, null);
+            }
+
             if (feature?.CanHaveBody == true)
             {
                 if (!httpContext.Request.HasFormContentType)
@@ -366,6 +373,23 @@ internal static class RequestDelegateGeneratorSources
 
         private static readonly Action<ILogger, string, string, Exception?> _invalidFormRequestBody =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.InvalidFormRequestBodyEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, true)}});
+
+        public void InvalidAntiforgeryToken(string parameterTypeName, string parameterName, Exception exception)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidAntiforgeryTokenExceptionMessage, true)}}, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, exception);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _invalidAntiforgeryToken(_rdgLogger, parameterTypeName, parameterName, exception);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, Exception?> _invalidAntiforgeryToken =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidAntiforgeryTokenLogMessage, true)}});
     }
 """;
 
