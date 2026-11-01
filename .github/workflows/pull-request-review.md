@@ -343,7 +343,7 @@ post-steps:
             'A review with no expected workers must publish a valid status-only stopped result.');
         }
         if (firstPublicationIndex < 0) {
-          violations.push('No publication safe-output call was recorded.');
+          violations.push('No native safe-output publication call was recorded; CLI publication is not supported by this adapter.');
         }
 
         const successfulCompletion = (event, startIndex) => {
@@ -898,6 +898,14 @@ Do not write it or any other review state to a file, and do not
 write review state into the frozen bundle. File edits are permitted only in the validation
 worktree for temporary diagnostic tests or repros.
 All GitHub-visible output must go through this final adapter's configured safe-output tools.
+This adapter supports publication only through the native safe-output functions exposed
+to the agent; their transcript tool names begin with `safeoutputs-`.
+Do not publish through the `safeoutputs` CLI or any shell command, even if generic runtime
+instructions describe CLI publication as supported. This adapter-specific constraint takes
+precedence over generic transport advice.
+If a required native safe-output function is unavailable, do not fall back to CLI or shell publication.
+Preserve the complete structured result in the final assistant message, make no publication
+attempt, and allow the restricted-worker verifier to fail closed.
 
 ## Publish only after complete validation
 

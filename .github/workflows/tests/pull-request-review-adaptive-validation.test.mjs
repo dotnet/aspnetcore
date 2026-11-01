@@ -17,6 +17,8 @@ const localWorkerProfile = fs.readFileSync(
   path.join(repositoryRoot, '.github/agents/review-guide-worker.agent.md'), 'utf8');
 const retargetDiagnostic =
   'The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.';
+const nativePublicationDiagnostic =
+  'No native safe-output publication call was recorded; CLI publication is not supported by this adapter.';
 const normalizeLineEndings = value => value.replaceAll('\r\n', '\n');
 const normalizeProfile = value => normalizeLineEndings(value).trimEnd();
 const normalizeVerifier = value => normalizeLineEndings(value).replace(/^ {6}/gm, '');
@@ -61,6 +63,10 @@ assert.match(workflowSource, /const expectedWorkerCount = Number\(expectedWorker
 assert.match(workflowSource, /event\.data\.toolName\.startsWith\('safeoutputs-'\)/);
 assert.match(workflowSource, /event\.type === 'tool\.execution_complete'/);
 assert.match(workflowSource, /const validStoppedOutput = hasValidStoppedOutput\(\)/);
+assert.match(workflowSource, /This adapter supports publication only through the native safe-output functions/);
+assert.match(workflowSource, /Do not publish through the `safeoutputs` CLI or any shell command/);
+assert.match(workflowSource, /If a required native safe-output function is unavailable, do not fall back to CLI or shell publication/);
+assert.ok(workflowSource.includes(nativePublicationDiagnostic));
 assert.match(workflowSource, /const missingWorkersAllowed = validStoppedOutput && workers\.size < expectedWorkerCount/);
 assert.match(workflowSource, /event\.data\?\.toolName !== 'read_agent'/);
 assert.match(workflowSource, /input\.wait !== true/);
@@ -287,6 +293,47 @@ try {
     readStarted(`read-${id}`, id, { inputOnly: true }),
     readCompleted(`read-${id}`),
   ];
+
+  const publicationTransports = [
+    {
+      name: 'Findings',
+      events: [
+        ...safeOutputCall('finding', 'safeoutputs-create_pull_request_review_comment', {
+          path: 'example.cs', line: 1, body: 'A validated finding.',
+        }),
+        ...safeOutputCall('review', 'safeoutputs-submit_pull_request_review', {
+          event: 'COMMENT', body: 'One validated finding.',
+        }),
+      ],
+    },
+    { name: 'Noop', events: publication() },
+    { name: 'Stopped', events: stopped() },
+  ];
+  for (const { name, events } of publicationTransports) {
+    const nativeName = `Native${name}Accepted`;
+    const native = runVerifier([...hostedWorker(), ...events], '1');
+    assert.equal(native.status, 0, `${nativeName}: ${native.stderr}`);
+    console.log(`Validated ${nativeName}.`);
+
+    const cliName = `CliOnly${name}Rejected`;
+    const cliEvents = events.map(event => event.type === 'tool.execution_start'
+      ? {
+        ...event,
+        data: {
+          toolCallId: event.data.toolCallId,
+          toolName: 'shell',
+          arguments: {
+            command: `safeoutputs ${event.data.toolName.slice('safeoutputs-'.length)} '${JSON.stringify(event.data.arguments)}'`,
+          },
+        },
+      }
+      : event);
+    const cli = runVerifier([...hostedWorker(), ...cliEvents], '1');
+    assert.notEqual(cli.status, 0, cliName);
+    assert.ok(cli.stderr.includes(nativePublicationDiagnostic), `${cliName}: ${cli.stderr}`);
+    assert.doesNotMatch(cli.stderr, /Expected .*worker|was not collected/, cliName);
+    console.log(`Validated ${cliName}.`);
+  }
 
   assert.equal(runVerifier([
     ...hostedWorker('task-hosted', 'guide-hosted'),
