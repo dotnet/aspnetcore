@@ -4,15 +4,15 @@
   <PropertyGroup Condition=" $(IsTestProject) ">
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
     <_ImportComponentsTestingTargets>true</_ImportComponentsTestingTargets>
-    <_ImportComponentsTestingTargets Condition="'$(ExcludeFromBuild)' == 'true' or '$(SkipTestBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">false</_ImportComponentsTestingTargets>
+    <_ImportComponentsTestingTargets Condition="'$(ExcludeFromBuild)' == 'true' or '$(SkipTestBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true' or ('$(DotNetBuild)' == 'true' and '$(DotNetBuildTests)' != 'true')">false</_ImportComponentsTestingTargets>
     <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
     <NoWarn>$(NoWarn);NU1903</NoWarn>
   </PropertyGroup>
 
   <!-- Remove auto-added xUnit v2 test infra from CSharp.Common.props -->
   <ItemGroup Condition=" $(IsTestProject) ">
-    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
-    <Reference Remove="Moq" />
+    <ProjectReference Remove="$(RepoRoot)src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj" />
+    <PackageReference Remove="Moq" />
     <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
   </ItemGroup>
 

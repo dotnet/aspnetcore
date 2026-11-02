@@ -15,7 +15,7 @@
   <ItemGroup>
     <FrameworkReference Remove="Microsoft.AspNetCore.App" Condition="'$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true'" />
     <!-- Required because the Razor SDK will generate attributes -->
-    <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND
+    <ProjectReference Include="$(RepoRoot)src/Mvc/Mvc/src/Microsoft.AspNetCore.Mvc.csproj" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND
       '$(TargetFrameworkIdentifier)' == '$(NETCoreAppFrameworkIdentifier)' AND
       '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>

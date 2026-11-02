@@ -30,7 +30,6 @@ public class HubConnectionTestsCollection : ICollectionFixture<InProcessTestServ
 public partial class HubConnectionTests : FunctionalTestBase
 {
     private const string DefaultHubDispatcherLoggerName = "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher";
-    private const string LongPollingTransportLoggerName = "Microsoft.AspNetCore.Http.Connections.Client.Internal.LongPollingTransport";
 
     private HubConnection CreateHubConnection(
         string url,

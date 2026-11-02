@@ -1,0 +1,173 @@
+@using System.Text.Encodings.Web
+@using System.Text.RegularExpressions
+@implements IDisposable
+
+@if (!IsReadOnly)
+{
+    <textarea class="document-editor__input"
+              aria-label="Document editor"
+              placeholder="Write whatever you want here in Markdown format..."
+              value="@Document"
+              @oninput="UpdateDocumentAsync"></textarea>
+}
+else
+{
+    <div class="document-editor__surface"
+         role="textbox"
+         aria-label="Document editor"
+         aria-readonly="true"
+         aria-multiline="true"
+         tabindex="0">
+        <pre class="document-editor__diff">@((MarkupString)RenderDocument())</pre>
+    </div>
+}
+
+@code {
+    private AgentContext? _registeredContext;
+    private IDisposable? _statusChangedRegistration;
+
+    [CascadingParameter]
+    public AgentContext AgentContext { get; set; } = default!;
+
+    [Parameter]
+    public string Document { get; set; } = "";
+
+    [Parameter]
+    public string BaselineDocument { get; set; } = "";
+
+    [Parameter]
+    public bool IsReadOnly { get; set; }
+
+    [Parameter]
+    public bool ShowDiff { get; set; }
+
+    [Parameter]
+    public bool IsComplete { get; set; }
+
+    [Parameter]
+    public EventCallback<string> DocumentChanged { get; set; }
+
+    [Parameter]
+    public Action<ConversationStatus>? StatusChanged { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(_registeredContext, AgentContext))
+        {
+            _statusChangedRegistration?.Dispose();
+            _registeredContext = AgentContext;
+            _statusChangedRegistration = AgentContext.RegisterOnStatusChanged(OnStatusChanged);
+        }
+    }
+
+    private Task UpdateDocumentAsync(ChangeEventArgs args)
+        => DocumentChanged.InvokeAsync(args.Value?.ToString() ?? "");
+
+    private void OnStatusChanged(ConversationStatus status)
+    {
+        StatusChanged?.Invoke(status);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private string RenderDocument()
+    {
+        if (!ShowDiff)
+        {
+            return HtmlEncoder.Default.Encode(Document);
+        }
+
+        var oldText = BaselineDocument;
+        var oldTextToCompare = oldText.Length > Document.Length && !IsComplete
+            ? oldText[..Document.Length]
+            : oldText;
+        var parts = DiffWords(oldTextToCompare, Document);
+        if (oldText.Length > Document.Length && !IsComplete)
+        {
+            parts.Add(new DiffPart(oldText[Document.Length..], DiffKind.Unchanged));
+        }
+
+        return string.Concat(parts.Select(part =>
+        {
+            var encoded = HtmlEncoder.Default.Encode(part.Value);
+            return part.Kind switch
+            {
+                DiffKind.Added => $"<em>{encoded}</em>",
+                DiffKind.Removed => $"<s>{encoded}</s>",
+                _ => encoded,
+            };
+        }));
+    }
+
+    private static List<DiffPart> DiffWords(string oldText, string newText)
+    {
+        var oldTokens = Regex.Split(oldText, @"(\s+)").Where(value => value.Length > 0).ToArray();
+        var newTokens = Regex.Split(newText, @"(\s+)").Where(value => value.Length > 0).ToArray();
+        var lengths = new int[oldTokens.Length + 1, newTokens.Length + 1];
+
+        for (var oldIndex = oldTokens.Length - 1; oldIndex >= 0; oldIndex--)
+        {
+            for (var newIndex = newTokens.Length - 1; newIndex >= 0; newIndex--)
+            {
+                lengths[oldIndex, newIndex] = oldTokens[oldIndex] == newTokens[newIndex]
+                    ? lengths[oldIndex + 1, newIndex + 1] + 1
+                    : Math.Max(lengths[oldIndex + 1, newIndex], lengths[oldIndex, newIndex + 1]);
+            }
+        }
+
+        var parts = new List<DiffPart>();
+        var oldPosition = 0;
+        var newPosition = 0;
+        while (oldPosition < oldTokens.Length || newPosition < newTokens.Length)
+        {
+            if (oldPosition < oldTokens.Length &&
+                newPosition < newTokens.Length &&
+                oldTokens[oldPosition] == newTokens[newPosition])
+            {
+                AddPart(parts, oldTokens[oldPosition], DiffKind.Unchanged);
+                oldPosition++;
+                newPosition++;
+            }
+            else if (newPosition < newTokens.Length &&
+                (oldPosition == oldTokens.Length ||
+                    lengths[oldPosition, newPosition + 1] >=
+                    lengths[oldPosition + 1, newPosition]))
+            {
+                AddPart(parts, newTokens[newPosition], DiffKind.Added);
+                newPosition++;
+            }
+            else
+            {
+                AddPart(parts, oldTokens[oldPosition], DiffKind.Removed);
+                oldPosition++;
+            }
+        }
+
+        return parts;
+    }
+
+    private static void AddPart(List<DiffPart> parts, string value, DiffKind kind)
+    {
+        if (parts.Count > 0 && parts[^1].Kind == kind)
+        {
+            parts[^1] = parts[^1] with { Value = parts[^1].Value + value };
+        }
+        else
+        {
+            parts.Add(new DiffPart(value, kind));
+        }
+    }
+
+    public void Dispose()
+    {
+        _statusChangedRegistration?.Dispose();
+    }
+
+    private sealed record DiffPart(string Value, DiffKind Kind);
+
+    private enum DiffKind
+    {
+        Unchanged,
+        Added,
+        Removed,
+    }
+}

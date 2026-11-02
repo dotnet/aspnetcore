@@ -127,7 +127,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 Id = "BL0013",
                 Message = "'MyComponent' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 7, 15) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 18, 35) }
             });
     }
 
@@ -178,14 +178,14 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 Message = "'MyCustomProvider' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
 
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 7, 15) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 18, 32) }
             },
             new DiagnosticResult
             {
                 Id = "BL0013",
                 Message = "'ConsumerComponent' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 22, 15) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 33, 35) }
             });
     }
 
@@ -230,7 +230,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 Message = "'MyComponent' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
 
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 7, 15) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 22, 35) }
             });
     }
 
@@ -327,7 +327,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 Id = "BL0013",
                 Message = "'Consumer2Component' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 15) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 23, 35) }
             });
     }
 
@@ -407,7 +407,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 Id = "BL0013",
                 Message = "'Consumer2Component' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 19, 15) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 25, 35) }
             });
     }
 
@@ -491,7 +491,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 Id = "BL0013",
                 Message = "'Consumer2Component' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, 15) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 27, 35) }
             });
     }
 
@@ -586,7 +586,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 Id = "BL0013",
                 Message = "'Consumer2Component' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 30, 15) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 36, 35) }
             });
     }
 

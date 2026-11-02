@@ -320,28 +320,12 @@ public partial class HubConnectionTests
         }
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68149")]
     [Theory]
     [MemberData(nameof(TransportTypes))]
-    public async Task RefreshChangingUserIdentifierClosesConnection(HttpTransportType transportType)
+    public async Task RefreshChangingUserIdentifierIsRejectedWithoutRekeyingConnection(HttpTransportType transportType)
     {
-        // Changing the user identifier on refresh aborts the connection on the server. With Long Polling the
-        // client sends a best-effort DELETE to clean up the connection when it's disposed. That DELETE carries
-        // the refreshed token (which now maps to a different user) and races the server's teardown: if the
-        // connection hasn't been removed from the manager yet, the server rejects the DELETE with 403 and the
-        // transport logs ErrorSendingDeleteRequest. Once the connection has been removed the DELETE gets a 404
-        // and is treated as benign, so whether the error is logged depends purely on timing. The connection is
-        // already closed either way (the test asserts that below), so this teardown error is expected.
-        bool ExpectedErrors(WriteContext writeContext)
+        await using (var server = await StartServer<Startup>())
         {
-            return writeContext.LoggerName == LongPollingTransportLoggerName &&
-                   writeContext.EventId.Name == "ErrorSendingDeleteRequest";
-        }
-
-        await using (var server = await StartServer<Startup>(ExpectedErrors))
-        {
-            // The SignalR UserIdentifier is derived from the JWT NameIdentifier claim, so changing
-            // the user name on refresh changes the connection's UserIdentifier and should close it.
             var userName = "userA";
             async Task<string> AccessTokenProvider()
             {
@@ -361,12 +345,6 @@ public partial class HubConnectionTests
             try
             {
                 var received = Channel.CreateUnbounded<string>();
-                var closedTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
-                hubConnection.Closed += ex =>
-                {
-                    closedTcs.TrySetResult(ex);
-                    return Task.CompletedTask;
-                };
                 hubConnection.On<string>("Receive", message => received.Writer.TryWrite(message));
 
                 await hubConnection.StartAsync().DefaultTimeout();
@@ -377,21 +355,16 @@ public partial class HubConnectionTests
 
                 // Refresh with a token carrying a different NameIdentifier, changing the UserIdentifier.
                 userName = "userB";
-                var refreshTask = hubConnection.RefreshAuthenticationAsync();
+                var exception = await Assert.ThrowsAsync<HttpRequestException>(
+                    () => hubConnection.RefreshAuthenticationAsync()).DefaultTimeout();
+                Assert.Contains("403", exception.Message);
 
-                await closedTcs.Task.DefaultTimeout();
-                try
-                {
-                    await refreshTask.DefaultTimeout();
-                }
-                catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or OperationCanceledException)
-                {
-                    // The connection is expected to close when the refreshed principal maps to a different
-                    // SignalR UserIdentifier. Depending on timing, the manual refresh request can observe that
-                    // close before it completes.
-                }
-
-                Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
+                // The rejected principal is not published or rekeyed. Restore the token used by Long Polling
+                // requests and verify the connection is still routed under its original identifier.
+                userName = "userA";
+                Assert.Equal(HubConnectionState.Connected, hubConnection.State);
+                await hubConnection.InvokeAsync(nameof(AuthenticationRefreshHub.SendToUser), "userA", "after").DefaultTimeout();
+                Assert.Equal("after", await received.Reader.ReadAsync().AsTask().DefaultTimeout());
             }
             catch (Exception ex)
             {

@@ -9,7 +9,10 @@ namespace Microsoft.AspNetCore.ResponseCaching;
 public class ResponseCachingOptions
 {
     /// <summary>
-    /// The size limit for the response cache middleware in bytes. The default is set to 100 MB.
+    /// The size limit for the response cache middleware in bytes, including the estimated size of cached response data,
+    /// vary-by rules, and cache keys. The default is set to 100 MB.
+    /// This is an estimate of retained variable content, not a limit on total managed-heap or process memory.
+    /// It does not include object headers, cache structures, allocator overhead, or other runtime-dependent costs.
     /// When this limit is exceeded, no new responses will be cached until older entries are
     /// evicted.
     /// </summary>

@@ -39,6 +39,8 @@ public partial class HubConnectionContext
 
     private MessageBuffer? _messageBuffer;
     private StreamTracker? _streamTracker;
+    private ConcurrentDictionary<string, CancellationTokenSource>? _activeRequestCancellationSources;
+    private object? _activeRequestCancellationSourcesLock;
     private long _lastSendTick;
     private ReadOnlyMemory<byte> _cachedPingMessage;
     private bool _clientTimeoutActive;
@@ -53,7 +55,6 @@ public partial class HubConnectionContext
     private bool _useStatefulReconnect;
     private DefaultHubCallerContext? _hubCallerContext;
     private string? _userIdentifier;
-
     // IUserIdProvider.GetUserId receives the connection, not the candidate principal. During refresh this
     // lets that synchronous call see the pending principal before publishing the refreshed hub state, so we
     // can reject identifier changes without briefly exposing the new user to concurrent hub code.
@@ -223,6 +224,11 @@ public partial class HubConnectionContext
         PublishHubCallerContext(new DefaultHubCallerContext(this, user));
     }
 
+    internal void ApplyUser(ClaimsPrincipal user)
+    {
+        PublishHubCallerContext(new DefaultHubCallerContext(this, user));
+    }
+
     private sealed class UserIdProviderUserState
     {
         public UserIdProviderUserState(HubConnectionContext connection, ClaimsPrincipal user)
@@ -242,7 +248,21 @@ public partial class HubConnectionContext
     public virtual IHubProtocol Protocol { get; set; } = default!;
 
     // Used to cancel hub invocations and streaming methods
-    internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
+    internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources =>
+        LazyInitializer.EnsureInitialized(ref _activeRequestCancellationSources, ref _activeRequestCancellationSourcesLock,
+            static () => new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal));
+
+    internal bool TryGetActiveRequestCancellationSource(string invocationId, [NotNullWhen(true)] out CancellationTokenSource? cancellationSource)
+    {
+        var cancellationSources = Volatile.Read(ref _activeRequestCancellationSources);
+        if (cancellationSources is not null)
+        {
+            return cancellationSources.TryGetValue(invocationId, out cancellationSource);
+        }
+
+        cancellationSource = null;
+        return false;
+    }
 
     /// <summary>
     /// Write a <see cref="HubMessage"/> to the connection.

@@ -19,9 +19,9 @@ public class RichContentBlock : ContentBlock
     public string RawText => _cachedText ??= string.Concat(_segments);
 
     /// <summary>
-    /// Gets the paragraphs of <see cref="RawText"/>, split on blank lines.
+    /// Gets the structured representation of <see cref="RawText"/>.
     /// </summary>
-    public IReadOnlyList<string> Paragraphs { get; internal set; } = Array.Empty<string>();
+    public IReadOnlyList<RichTextNode> Content { get; internal set; } = Array.Empty<RichTextNode>();
 
     /// <summary>
     /// Appends a text fragment to this block.
@@ -29,7 +29,17 @@ public class RichContentBlock : ContentBlock
     /// <param name="text">The fragment to append.</param>
     public void AppendText(string text)
     {
+        ArgumentNullException.ThrowIfNull(text);
+
         _segments.Add(text);
         _cachedText = null;
+    }
+
+    internal void ReplaceContent(string text, IReadOnlyList<RichTextNode> content)
+    {
+        _segments.Clear();
+        _segments.Add(text);
+        _cachedText = text;
+        Content = content;
     }
 }

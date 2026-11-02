@@ -52,8 +52,20 @@ parameters:
   type: string
   default: https://helix.dot.net/
 
-# Helix API access token forwarded to the tool via the HELIX_ACCESSTOKEN environment variable.
+# Helix API access token forwarded via HELIX_ACCESSTOKEN. Not forwarded when
+# useEntraAuthentication is true.
 - name: helixAccessToken
+  type: string
+  default: ''
+
+# Use a refreshable Entra credential instead of a PAT or anonymous access.
+- name: useEntraAuthentication
+  type: boolean
+  default: false
+
+# Workload identity federation service connection name authorized for Helix. Required when
+# useEntraAuthentication is true.
+- name: azureSubscription
   type: string
   default: ''
 
@@ -61,6 +73,12 @@ parameters:
 - name: pollingIntervalSeconds
   type: number
   default: 30
+
+# Maximum number of work items whose results may be downloaded, parsed, and
+# uploaded concurrently.
+- name: testResultUploadParallelism
+  type: number
+  default: 48
 
 # When 'true' (the default), Helix work items that exit 0 but have failed AzDO test results
 # are treated as failed: they count toward the monitor's exit code and are resubmitted by a
@@ -76,13 +94,21 @@ parameters:
   type: boolean
   default: false
 
-# When true, test results are reported to Azure DevOps using the fully qualified test name
-# (Namespace.Type.Method) as the stable automatedTestName and the visible title is qualified as
-# well (--use-fully-qualified-test-name). Opt-in because it changes AzDO test identity and display;
-# primarily useful for frameworks like MSTest whose display name is only the method name.
+# When true (the default), test results are reported to Azure DevOps using the fully qualified test
+# name (Namespace.Type.Method) as the stable automatedTestName and the visible title is qualified as
+# well (--use-fully-qualified-test-name). Set to false to preserve framework-provided display names.
 - name: useFullyQualifiedTestName
   type: boolean
-  default: false
+  default: true
+
+# Controls per-test output attachments. Defaults to Failed.
+- name: testResultAttachmentMode
+  type: string
+  default: Failed
+  values:
+  - Failed
+  - All
+  - None
 
 # Advanced: optional pipeline artifact (produced earlier in this run) that contains the tool
 # nupkg. When set, the artifact is downloaded and the tool is installed from the nupkg into
@@ -109,6 +135,20 @@ jobs:
   displayName: Monitor Helix Jobs
   timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
   continueOnError: ${{ parameters.continueOnError }}
+  variables:
+    HELIX_MONITOR_BASE_URI: ${{ parameters.helixBaseUri }}
+    HELIX_MONITOR_USE_ENTRA_AUTHENTICATION: ${{ parameters.useEntraAuthentication }}
+    HELIX_MONITOR_POLLING_INTERVAL_SECONDS: ${{ parameters.pollingIntervalSeconds }}
+    HELIX_MONITOR_FAIL_ON_FAILED_TESTS: ${{ parameters.failWorkItemsWithFailedTests }}
+    HELIX_MONITOR_ALLOW_NO_HELIX_JOBS: ${{ parameters.allowNoHelixJobs }}
+    HELIX_MONITOR_USE_FULLY_QUALIFIED_TEST_NAME: ${{ parameters.useFullyQualifiedTestName }}
+    HELIX_MONITOR_TIMEOUT_IN_MINUTES: ${{ parameters.timeoutInMinutes }}
+    HELIX_MONITOR_TEST_RESULT_UPLOAD_PARALLELISM: ${{ parameters.testResultUploadParallelism }}
+    HELIX_MONITOR_ORGANIZATION: ${{ parameters.organization }}
+    HELIX_MONITOR_REPOSITORY: ${{ parameters.repository }}
+    HELIX_MONITOR_TEST_RESULT_ATTACHMENT_MODE: ${{ parameters.testResultAttachmentMode }}
+    HELIX_MONITOR_TOOL_NUPKG_ARTIFACT_NAME: ${{ parameters.toolNupkgArtifactName }}
+    HELIX_MONITOR_TOOL_COMMAND: ${{ parameters.toolCommand }}
   ${{ if ne(length(parameters.dependsOn), 0) }}:
     dependsOn: ${{ parameters.dependsOn }}
   ${{ if ne(parameters.condition, '') }}:
@@ -125,6 +165,10 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 1
+
+  - ${{ if and(eq(parameters.useEntraAuthentication, true), eq(parameters.azureSubscription, '')) }}:
+    - pwsh: throw "azureSubscription must be set when useEntraAuthentication is true."
+      displayName: Validate Helix Entra authentication
 
   - ${{ if ne(parameters.toolNupkgArtifactName, '') }}:
     - task: DownloadPipelineArtifact@2
@@ -194,64 +238,26 @@ jobs:
     - bash: ./eng/common/dotnet.sh tool restore
       displayName: Restore Helix Job Monitor
 
-  - bash: |
-      set -euo pipefail
+  - ${{ if eq(parameters.useEntraAuthentication, true) }}:
+    - task: AzureCLI@2
+      displayName: Monitor Helix Jobs
+      inputs:
+        azureSubscription: ${{ parameters.azureSubscription }}
+        keepAzSessionActive: true
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -euo pipefail
 
-      toolArgs=(
-        --helix-base-uri              '${{ parameters.helixBaseUri }}'
-        --polling-interval-seconds    '${{ parameters.pollingIntervalSeconds }}'
-        --fail-on-failed-tests        '${{ parameters.failWorkItemsWithFailedTests }}'
-        --allow-no-helix-jobs         '${{ parameters.allowNoHelixJobs }}'
-        --use-fully-qualified-test-name '${{ parameters.useFullyQualifiedTestName }}'
-        --max-wait-minutes            "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
-        --stage-name                  '$(System.StageName)'
-        --stage-attempt               '$(System.StageAttempt)'
-      )
+          # AzureCLI@2 replaces SYSTEM_ACCESSTOKEN with the service connection token.
+          export SYSTEM_ACCESSTOKEN="$HELIX_AZDO_ACCESSTOKEN"
+          bash "$BUILD_SOURCESDIRECTORY/eng/common/run-helix-job-monitor.sh"
+      env:
+        HELIX_AZDO_ACCESSTOKEN: $(System.AccessToken)
 
-      organization='${{ parameters.organization }}'
-      repository='${{ parameters.repository }}'
-
-      # Fall back to Azure DevOps-provided environment variables when the caller did not
-      # supply organization / repository explicitly. BUILD_REPOSITORY_NAME is typically
-      # 'owner/repo' for GitHub-backed builds and 'owner-repo' for internal builds.
-      if [ -z "$organization" ] || [ -z "$repository" ]; then
-        buildRepoName="${BUILD_REPOSITORY_NAME:-}"
-        if [ -n "$buildRepoName" ] && [[ "$buildRepoName" == */* ]]; then
-          repoOwner="${buildRepoName%%/*}"
-          repoName="${buildRepoName#*/}"
-        elif [ -n "$buildRepoName" ] && [[ "$buildRepoName" == *-* ]]; then
-          repoOwner="${buildRepoName%%-*}"
-          repoName="${buildRepoName#*-}"
-        fi
-
-        if [ -n "${repoOwner:-}" ] && [ -n "${repoName:-}" ]; then
-          if [ -z "$organization" ]; then organization="$repoOwner"; fi
-          if [ -z "$repository" ];   then repository="$repoName";   fi
-        fi
-      fi
-
-      if [ -n "$organization" ]; then toolArgs+=( --organization "$organization" ); fi
-      if [ -n "$repository" ];   then toolArgs+=( --repository   "$repository" );   fi
-
-      # Build.Reason and Build.SourceBranch are required to derive the Helix source filter
-      # the same way the Helix SDK submitter does (PR -> 'pr', internal -> 'official',
-      # otherwise -> 'ci'). Without these, manually-queued / scheduled / CI builds would
-      # be looked up under the wrong source prefix and find zero jobs.
-      toolArgs+=( --build-reason  "$(Build.Reason)" )
-      toolArgs+=( --source-branch "$(Build.SourceBranch)" )
-
-      if [ -n '${{ parameters.toolNupkgArtifactName }}' ]; then
-        # Tool was installed from a local nupkg; run the DLL via the repo-local dotnet.
-        export DOTNET_ROOT="$(Build.SourcesDirectory)/.dotnet"
-        ./eng/common/dotnet.sh exec "$(HelixJobMonitorDll)" "${toolArgs[@]}"
-      else
-        # Tool was restored from the local .config/dotnet-tools.json manifest; invoke it
-        # through the manifest from the repo root.
-        pushd "$BUILD_SOURCESDIRECTORY" > /dev/null
-        trap 'popd > /dev/null' EXIT
-        ./eng/common/dotnet.sh tool run '${{ parameters.toolCommand }}' -- "${toolArgs[@]}"
-      fi
-    displayName: Monitor Helix Jobs
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      HELIX_ACCESSTOKEN: ${{ parameters.helixAccessToken }}
+  - ${{ if eq(parameters.useEntraAuthentication, false) }}:
+    - bash: bash "$BUILD_SOURCESDIRECTORY/eng/common/run-helix-job-monitor.sh"
+      displayName: Monitor Helix Jobs
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        HELIX_ACCESSTOKEN: ${{ parameters.helixAccessToken }}

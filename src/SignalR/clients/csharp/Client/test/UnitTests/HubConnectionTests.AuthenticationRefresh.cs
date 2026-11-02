@@ -76,6 +76,26 @@ public partial class HubConnectionTests
         }
 
         [Fact]
+        public async Task RefreshAuthenticationAsyncThrowsObjectDisposedExceptionWhenDisposed()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthenticationRefreshFeature { NextTtl = TimeSpan.FromSeconds(3600) };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+                var hubConnection = BuildHubConnection(connection);
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+
+                await Assert.ThrowsAsync<ObjectDisposedException>(
+                    () => hubConnection.RefreshAuthenticationAsync()).DefaultTimeout();
+                Assert.Equal(0, feature.RefreshCallCount);
+            }
+        }
+
+        [Fact]
         public async Task RefreshAuthenticationAsyncThrowsWhenFeatureMissing()
         {
             using (StartVerifiableLog())
@@ -136,16 +156,13 @@ public partial class HubConnectionTests
                 AuthenticationRefreshedContext capturedContext = null;
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.EnableAutoRefresh = false;
-                        o.OnAuthenticationRefreshed = ctx =>
-                        {
-                            capturedContext = ctx;
-                            return Task.CompletedTask;
-                        };
-                    });
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
+                hubConnection.AuthenticationRefreshed += ctx =>
+                {
+                    capturedContext = ctx;
+                    return Task.CompletedTask;
+                };
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
@@ -154,6 +171,52 @@ public partial class HubConnectionTests
                     Assert.NotNull(capturedContext);
                     Assert.Same(hubConnection, capturedContext.HubConnection);
                     Assert.Equal(TimeSpan.FromSeconds(1800), capturedContext.NewTokenLifetime);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RefreshAuthenticationAsyncInvokesAuthenticationRefreshedCallbacksSerially()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthenticationRefreshFeature { NextTtl = TimeSpan.FromSeconds(1800) };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+                var firstCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var secondCallbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var secondCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
+                });
+                hubConnection.AuthenticationRefreshed += _ => firstCallback.Task;
+                hubConnection.AuthenticationRefreshed += _ =>
+                {
+                    secondCallbackStarted.SetResult();
+                    return secondCallback.Task;
+                };
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    var refreshTask = hubConnection.RefreshAuthenticationAsync();
+
+                    Assert.False(secondCallbackStarted.Task.IsCompleted);
+                    Assert.False(refreshTask.IsCompleted);
+
+                    firstCallback.SetResult();
+                    await secondCallbackStarted.Task.DefaultTimeout();
+                    Assert.False(refreshTask.IsCompleted);
+
+                    secondCallback.SetResult();
+                    Assert.Equal(TimeSpan.FromSeconds(1800), await refreshTask.DefaultTimeout());
                 }
                 finally
                 {
@@ -176,16 +239,13 @@ public partial class HubConnectionTests
                 AuthenticationRefreshFailedContext capturedContext = null;
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.EnableAutoRefresh = false;
-                        o.OnAuthenticationRefreshFailed = ctx =>
-                        {
-                            capturedContext = ctx;
-                            return Task.CompletedTask;
-                        };
-                    });
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
+                hubConnection.AuthenticationRefreshFailed += ctx =>
+                {
+                    capturedContext = ctx;
+                    return Task.CompletedTask;
+                };
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
@@ -197,6 +257,54 @@ public partial class HubConnectionTests
                     Assert.NotNull(capturedContext);
                     Assert.Same(thrown, capturedContext.Exception);
                     Assert.Same(hubConnection, capturedContext.HubConnection);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RefreshAuthenticationAsyncInvokesAuthenticationRefreshFailedCallbacksSerially()
+        {
+            using (StartVerifiableLog())
+            {
+                var thrown = new InvalidOperationException("refresh boom");
+                var feature = new FakeAuthenticationRefreshFeature { ExceptionToThrow = thrown };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+                var firstCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var secondCallbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var secondCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
+                });
+                hubConnection.AuthenticationRefreshFailed += _ => firstCallback.Task;
+                hubConnection.AuthenticationRefreshFailed += _ =>
+                {
+                    secondCallbackStarted.SetResult();
+                    return secondCallback.Task;
+                };
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    var refreshTask = hubConnection.RefreshAuthenticationAsync();
+
+                    Assert.False(secondCallbackStarted.Task.IsCompleted);
+                    Assert.False(refreshTask.IsCompleted);
+
+                    firstCallback.SetResult();
+                    await secondCallbackStarted.Task.DefaultTimeout();
+                    Assert.False(refreshTask.IsCompleted);
+
+                    secondCallback.SetResult();
+                    var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => refreshTask).DefaultTimeout();
+                    Assert.Same(thrown, exception);
                 }
                 finally
                 {
@@ -221,12 +329,9 @@ public partial class HubConnectionTests
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.EnableAutoRefresh = false;
-                        o.OnAuthenticationRefreshed = _ => throw new InvalidOperationException("callback boom");
-                    });
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
+                hubConnection.AuthenticationRefreshed += _ => throw new InvalidOperationException("callback boom");
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
@@ -259,12 +364,9 @@ public partial class HubConnectionTests
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.EnableAutoRefresh = false;
-                        o.OnAuthenticationRefreshFailed = _ => throw new InvalidOperationException("failed-callback boom");
-                    });
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
+                hubConnection.AuthenticationRefreshFailed += _ => throw new InvalidOperationException("failed-callback boom");
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
@@ -297,6 +399,55 @@ public partial class HubConnectionTests
                     await hubConnection.StartAsync().DefaultTimeout();
 
                     Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StartClampsLongLivedTokenRefreshToMaximumTimerDelay()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.FromSeconds(int.MaxValue) };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection);
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
+                    Assert.Equal(TimeSpan.FromMilliseconds(int.MaxValue), GetLastAuthenticationRefreshDelay(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StartSchedulesShortLivedTokenRefreshAtHalfLifetime()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.FromSeconds(10) };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection);
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.Equal(TimeSpan.FromSeconds(5), GetLastAuthenticationRefreshDelay(hubConnection));
                 }
                 finally
                 {
@@ -530,6 +681,121 @@ public partial class HubConnectionTests
         }
 
         [Fact]
+        public async Task StartSchedulesHalfTokenLifetimeWhenRefreshBeforeExpirationIsVeryLarge()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.FromHours(1) };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthenticationRefresh(o => o.RefreshBeforeExpiration = TimeSpan.MaxValue);
+                });
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.Equal(TimeSpan.FromMinutes(30), GetLastAuthenticationRefreshDelay(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ManualRefreshCompletionAfterConnectionCloseDoesNotRearmTimer()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new BlockingAuthenticationRefreshFeature
+                {
+                    InitialTokenLifetime = TimeSpan.FromHours(1),
+                };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+                var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                var hubConnection = BuildHubConnection(connection);
+                hubConnection.Closed += _ =>
+                {
+                    closed.TrySetResult();
+                    return Task.CompletedTask;
+                };
+
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+                    Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
+
+                    var refreshTask = hubConnection.RefreshAuthenticationAsync();
+                    await feature.RefreshStarted.Task.DefaultTimeout();
+
+                    connection.CompleteFromTransport();
+                    await closed.Task.DefaultTimeout();
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
+
+                    feature.RefreshCompletion.SetResult(TimeSpan.FromHours(2));
+                    await refreshTask.DefaultTimeout();
+
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TimerRefreshCompletionAfterStopDoesNotRearmTimer()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new BlockingAuthenticationRefreshFeature
+                {
+                    InitialTokenLifetime = TimeSpan.FromHours(1),
+                };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+                var refreshCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                var hubConnection = BuildHubConnection(connection);
+                hubConnection.AuthenticationRefreshed += _ =>
+                {
+                    refreshCompleted.TrySetResult();
+                    return Task.CompletedTask;
+                };
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+                    var timer = GetAuthenticationRefreshTimer(hubConnection);
+                    Assert.NotNull(timer);
+                    Assert.True(timer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan));
+                    await feature.RefreshStarted.Task.DefaultTimeout();
+
+                    await hubConnection.StopAsync().DefaultTimeout();
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
+
+                    feature.RefreshCompletion.SetResult(TimeSpan.FromHours(2));
+                    await refreshCompleted.Task.DefaultTimeout();
+
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
         public async Task DisposeDisposesAuthenticationRefreshTimer()
         {
             using (StartVerifiableLog())
@@ -596,6 +862,21 @@ public partial class HubConnectionTests
                     return Task.FromException<TimeSpan?>(ExceptionToThrow);
                 }
                 return Task.FromResult(NextTtl);
+            }
+        }
+
+        private sealed class BlockingAuthenticationRefreshFeature : IAuthenticationRefreshFeature
+        {
+            public TimeSpan? InitialTokenLifetime { get; set; }
+
+            public TaskCompletionSource RefreshStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public TaskCompletionSource<TimeSpan?> RefreshCompletion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public Task<TimeSpan?> RefreshAuthenticationAsync(CancellationToken cancellationToken = default)
+            {
+                RefreshStarted.TrySetResult();
+                return RefreshCompletion.Task;
             }
         }
     }
