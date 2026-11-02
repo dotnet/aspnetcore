@@ -259,6 +259,21 @@ followed by `dotnet msbuild eng/tools/GenerateFiles/GenerateFiles.csproj -target
 then retry the selected project command. This prepares repository build inputs; it is
 not evidence that any selected test executed.
 
+For managed-only Components tests, opt out of JavaScript and generated web assets only
+when neither is part of the disputed behavior. In a frozen tree that supports these
+switches, pass both `-p:BuildNodeJS=false` and `-p:IncludeComponentsWebAssets=false`
+to the selected-project build and test commands; the first switch alone does not
+remove the internal static-asset reference. Use `--msbuildMultiThreaded false` on
+constrained hosted runners. Verify `src/submodules/MessagePack-CSharp` is present at
+the frozen gitlink. Hosted preparation uses the trusted dependency helper for these
+pinned public sources without opening GitHub egress to target execution. In a native
+worktree with missing sources, run
+`node <installed-skill-dir>/scripts/prepare-validation-dependencies.mjs <worktree> <head>`
+from the trusted guidance copy, never target-owned tooling. After bootstrap, use
+`--test --no-restore --no-build` with a
+`TestRunnerAdditionalArguments="-class <fully-qualified-test-class>"` selector.
+Do not report browser, JavaScript, static-asset or package-content validation from this path.
+
 Temporary validation edits are diagnostic only. Do not commit, push, publish, or include
 them in a safe output. Record the files changed for validation and the before/after
 behavior they establish. The coordinator may leave those edits in the ephemeral hosted
