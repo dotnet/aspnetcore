@@ -54,6 +54,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <HelixTestShard Include="BlazorAndWebApi">
+      <TestFilter>FullyQualifiedName~Templates.Mvc.Test.BlazorTemplateTest|FullyQualifiedName~Templates.Mvc.Test.WebApiTemplateTest</TestFilter>
+    </HelixTestShard>
+    <HelixTestShard Include="MvcAndRazorPages">
+      <TestFilter>FullyQualifiedName~Templates.Mvc.Test.MvcTemplateTest|FullyQualifiedName~Templates.Mvc.Test.RazorPagesTemplateTest</TestFilter>
+    </HelixTestShard>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AngleSharp" />
 
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"

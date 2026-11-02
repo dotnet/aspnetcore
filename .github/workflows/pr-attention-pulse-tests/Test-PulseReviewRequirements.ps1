@@ -190,21 +190,34 @@ Invoke-Control "EffectiveModelVisibleBoundary" {
 
 Invoke-Control "SnapshotTrustedActionsBinding" {
     $agent = Get-CompiledJob "agent"
+    $safeOutputs = Get-CompiledJob "safe_outputs"
     foreach ($binding in @(
         @{ Name = "REPOSITORY"; Context = "repository"; Parameter = "Repository" },
         @{ Name = "SERVER_URL"; Context = "server_url"; Parameter = "ServerUrl" },
-        @{ Name = "RUN_ID"; Context = "run_id"; Parameter = "RunId" },
-        @{ Name = "RUN_ATTEMPT"; Context = "run_attempt"; Parameter = "RunAttempt" }))
+        @{ Name = "RUN_ID"; Context = "run_id"; Parameter = "RunId" }))
     {
         $environment = "PULSE_SNAPSHOT_$($binding.Name)"
         $assignment = $environment + ': ${{ github.' + $binding.Context + ' }}'
-        Assert-True ([regex]::Matches($agent, [regex]::Escape($assignment)).Count -eq 2) "Both preparation and validation must bind '$environment' from trusted Actions context."
+        Assert-True ([regex]::Matches($agent, [regex]::Escape($assignment)).Count -eq 1 -and
+            [regex]::Matches($safeOutputs, [regex]::Escape($assignment)).Count -eq 1) "Preparation and safe-output validation must each bind '$environment' from trusted Actions context."
         Assert-True ($agent.Contains("-$($binding.Parameter) `$env:$environment") -and
-            $agent.Contains("-Expected$($binding.Parameter) `$env:$environment")) "The renderer and private validator must both consume '$environment'."
+            $safeOutputs.Contains("-Expected$($binding.Parameter) `$env:$environment")) "The renderer and safe-output validator must consume their trusted '$environment' binding."
         Assert-True (-not $agentStep.Contains($environment)) "Snapshot preparation context must not be supplied to inference."
     }
+    $agentAttempt = 'PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}'
+    $safeOutputsAttempt = 'PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ needs.snapshot_binding.outputs.pulse_snapshot_run_attempt }}'
+    $snapshotBinding = Get-CompiledJob "snapshot_binding"
+    Assert-True ([regex]::Matches($agent, [regex]::Escape($agentAttempt)).Count -eq 1) "Snapshot preparation must bind the producer attempt from trusted Actions context."
+    Assert-True ($snapshotBinding.Contains("needs: agent") -and
+        $snapshotBinding.Contains('pulse_snapshot_run_attempt: ${{ steps.read_binding.outputs.run_attempt }}') -and
+        $snapshotBinding.Contains('"run_attempt=$attempt" | Out-File -FilePath $env:GITHUB_OUTPUT')) "A trusted intermediate job must preserve the frozen producer attempt as a job output."
+    Assert-True ([regex]::Matches($safeOutputs, [regex]::Escape($safeOutputsAttempt)).Count -eq 1 -and
+        -not $safeOutputs.Contains($agentAttempt)) "A failed-job publication retry must validate the frozen snapshot against the successful producer attempt, not the publication attempt."
+    Assert-True ($agent.Contains("-RunAttempt `$env:PULSE_SNAPSHOT_RUN_ATTEMPT") -and
+        $safeOutputs.Contains("-ExpectedRunAttempt `$env:PULSE_SNAPSHOT_RUN_ATTEMPT")) "The renderer and safe-output validator must consume the producer attempt binding."
+    Assert-True (-not $agentStep.Contains("PULSE_SNAPSHOT_RUN_ATTEMPT")) "Snapshot preparation context must not be supplied to inference."
     Assert-True ($agent.Contains('-SnapshotContextPath .pr-attention-pulse/pulse-snapshot-context.json') -and
-        $agent.Contains('pr-attention-pulse-validator/pulse-snapshot-context.json')) "Frozen identity must be staged once and then read from the private canonical directory."
+        $safeOutputs.Contains('pr-attention-pulse-validator/pulse-snapshot-context.json')) "Frozen identity must be staged once and then read from the validator artifact in the safe-output job."
     $renderer = Get-Content -LiteralPath (Join-Path $supportRoot "Render-PRAttentionPulse.ps1") -Raw
     Assert-True ([regex]::Matches($renderer, '\[datetime\]::UtcNow').Count -eq 1) "Snapshot generation must sample the UTC clock only once."
     $validator = Get-Content -LiteralPath (Join-Path $supportRoot "Validate-PRAttentionPulseOutput.ps1") -Raw
@@ -231,17 +244,22 @@ Invoke-Control "SnapshotPrivateContextBoundary" {
 
 Invoke-Control "SnapshotNonOverwritingEvidenceAndGates" {
     $upload = [regex]::Match($lock, "(?ms)^      - name: Upload validated Pulse publication evidence\r?\n.*?(?=^      - |\z)").Value
-    Assert-True ($upload.Contains("uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a")) "Evidence must retain the pinned uploader."
+    Assert-True ($upload.Contains("uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9")) "Evidence must retain the pinned uploader."
     Assert-True ($upload -match "(?m)^\s+name: pulse-publication-evidence\r?$" -and
-        $upload -match "(?m)^\s+retention-days: 7\r?$" -and
+        $upload.Contains("retention-days: `${{ vars.GH_AW_DEFAULT_ARTIFACT_RETENTION_DAYS || '7' }}") -and
         $upload -match "(?m)^\s+if-no-files-found: error\r?$") "The artifact name, retention and required-files policy must remain unchanged."
     Assert-True (-not ($upload -match "(?m)^\s*(?:overwrite|continue-on-error|if):")) "Upload must not overwrite evidence or run/succeed past an earlier failure."
     Assert-True ([regex]::Matches($upload, 'pr-attention-pulse-validator/pulse-(?:input\.json|body\.md)').Count -eq 2 -and
         -not $upload.Contains("pulse-snapshot-context.json")) "Only the exact private JSON/body pair may be exported."
     Assert-True ($lock.IndexOf("name: Validate the sole publication payload", [StringComparison]::Ordinal) -lt
         $lock.IndexOf("name: Upload validated Pulse publication evidence", [StringComparison]::Ordinal)) "Private validation must precede upload."
-    Assert-True ((Get-CompiledJob "safe_outputs").Contains("needs.agent.result == 'success'") -and
-        (Get-CompiledJob "safe_outputs").Contains("needs.detection.result == 'success'") -and
+    $safeOutputs = Get-CompiledJob "safe_outputs"
+    $validatorDownload = $safeOutputs.IndexOf("name: Download trusted Pulse publication validator", [StringComparison]::Ordinal)
+    $validator = $safeOutputs.IndexOf("name: Validate the sole publication payload", [StringComparison]::Ordinal)
+    $handler = $safeOutputs.IndexOf("name: Process Safe Outputs", [StringComparison]::Ordinal)
+    Assert-True ($validatorDownload -ge 0 -and $validator -gt $validatorDownload -and $handler -gt $validator) "The safe-output job must download and validate the trusted payload before processing it."
+    Assert-True ($safeOutputs.Contains("needs.agent.result == 'success'") -and
+        $safeOutputs.Contains("needs.detection.result == 'success'") -and
         (Get-CompiledJob "detection").Contains("needs.agent.result == 'success'")) "Publication and detection must require agent success, including evidence upload."
 }
 
