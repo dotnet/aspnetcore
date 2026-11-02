@@ -3,7 +3,7 @@
 @implements IDisposable
 @using Microsoft.AspNetCore.Components.QuickGrid
 
-<button id="refresh-from-timer" disabled="@refreshStarted" @onclick="StartTimerRefresh">Refresh from timer</button>
+<button id="refresh-from-timer" disabled="@(refreshStarted || !RendererInfo.IsInteractive)" @onclick="StartTimerRefresh">Refresh from timer</button>
 <p id="refresh-status">@refreshStatus</p>
 
 <div id="timer-grid">

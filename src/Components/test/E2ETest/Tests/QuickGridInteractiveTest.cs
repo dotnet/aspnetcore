@@ -53,6 +53,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     {
         Navigate($"{ServerPathBase}/quickgrid-timer-refresh");
 
+        Browser.True(() => Browser.FindElement(By.Id("refresh-from-timer")).Enabled);
         Browser.Equal("Ready", () => Browser.FindElement(By.Id("refresh-status")).Text);
         Browser.Equal("1", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Browser.Equal("First before refresh", () => Browser.FindElement(By.CssSelector("#timer-grid tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
