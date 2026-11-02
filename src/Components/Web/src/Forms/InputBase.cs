@@ -43,6 +43,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </example>
     /// <remarks>
     /// Assign a new instance when changing a mutable reference type so the change is detected.
+    /// Change detection uses <see cref="EqualityComparer{T}.Default"/>, so the new instance must not compare equal to the previous value.
     /// </remarks>
     [Parameter]
     public TValue? Value { get; set; }
