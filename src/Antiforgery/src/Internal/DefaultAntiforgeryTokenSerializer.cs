@@ -38,41 +38,39 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
                 : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(maxTokenDecodedSize));
             var tokenBytes = rent[..maxTokenDecodedSize];
 
-            try
+            var decodeStatus = Base64Url.DecodeFromChars(serializedToken, tokenBytes, out _, out var bytesWritten);
+            if (decodeStatus != OperationStatus.Done || bytesWritten == 0)
             {
-                Base64Url.DecodeFromChars(serializedToken, tokenBytes, out _, out var bytesWritten);
-                var tokenBytesDecoded = tokenBytes[..bytesWritten];
+                throw new FormatException("The serialized antiforgery token is not a valid Base64Url string.");
+            }
 
-                if (_perfCryptoSystem is not null)
+            var tokenBytesDecoded = tokenBytes[..bytesWritten];
+
+            if (_perfCryptoSystem is not null)
+            {
+                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
+                try
                 {
-                    var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
-                    try
-                    {
-                        _perfCryptoSystem.Unprotect(tokenBytesDecoded, ref protectBuffer);
-                        var token = Deserialize(protectBuffer.WrittenSpan);
-                        if (token is not null)
-                        {
-                            return token;
-                        }
-                    }
-                    finally
-                    {
-                        protectBuffer.Dispose();
-                    }
-                }
-                else
-                {
-                    var unprotectedBytes = _defaultCryptoSystem.Unprotect(tokenBytesDecoded.ToArray());
-                    var token = Deserialize(unprotectedBytes);
+                    _perfCryptoSystem.Unprotect(tokenBytesDecoded, ref protectBuffer);
+                    var token = Deserialize(protectBuffer.WrittenSpan);
                     if (token is not null)
                     {
                         return token;
                     }
                 }
+                finally
+                {
+                    protectBuffer.Dispose();
+                }
             }
-            catch (Exception ex) when (ex is not FormatException)
+            else
             {
-                throw new FormatException("The serialized antiforgery token is not a valid Base64Url string.", ex);
+                var unprotectedBytes = _defaultCryptoSystem.Unprotect(tokenBytesDecoded.ToArray());
+                var token = Deserialize(unprotectedBytes);
+                if (token is not null)
+                {
+                    return token;
+                }
             }
         }
         catch (Exception ex)

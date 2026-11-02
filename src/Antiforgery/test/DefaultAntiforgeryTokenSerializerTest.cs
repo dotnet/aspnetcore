@@ -89,22 +89,99 @@ public class DefaultAntiforgeryTokenSerializerTest
     }
 
     [Theory]
-    [InlineData("a=")] // Padded input
-    [InlineData("ab==")] // Padded input
-    [InlineData("abc=")] // Padded input
-    [InlineData("ab+d")] // Invalid Base64Url character '+'
-    [InlineData("ab/d")] // Invalid Base64Url character '/'
-    [InlineData("!")] // Invalid character
-    [InlineData("a b")] // Whitespace
-    [InlineData("")] // Empty string
-    public void Deserialize_InvalidBase64UrlInput_ThrowsAndWrapsFormatException(string serializedToken)
+    [InlineData(DataProtectorType.SpanDataProtector, "a=")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "a=")]
+    [InlineData(DataProtectorType.SpanDataProtector, "ab==")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "ab==")]
+    [InlineData(DataProtectorType.SpanDataProtector, "abcd=")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "abcd=")]
+    [InlineData(DataProtectorType.SpanDataProtector, "ab+d")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "ab+d")]
+    [InlineData(DataProtectorType.SpanDataProtector, "ab/d")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "ab/d")]
+    [InlineData(DataProtectorType.SpanDataProtector, "!")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "!")]
+    [InlineData(DataProtectorType.SpanDataProtector, "a b")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "a b")]
+    [InlineData(DataProtectorType.SpanDataProtector, "")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "")]
+    [InlineData(DataProtectorType.SpanDataProtector, "a")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "a")]
+    public void Deserialize_InvalidBase64UrlInput_ThrowsAndWrapsFormatException(DataProtectorType protectorType, string serializedToken)
     {
-        var dataProtector = CreateDataProtector(DataProtectorType.SpanDataProtector);
+        var unprotectCalled = false;
+        var dataProtector = CreateDataProtector(protectorType, () => unprotectCalled = true);
         var serializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
 
         var ex = Assert.Throws<AntiforgeryValidationException>(() => serializer.Deserialize(serializedToken));
         Assert.Equal("The antiforgery token could not be decrypted.", ex.Message);
-        Assert.IsAssignableFrom<FormatException>(ex.InnerException);
+        Assert.IsType<FormatException>(ex.InnerException);
+        Assert.False(unprotectCalled);
+    }
+
+    [Theory]
+    [InlineData(DataProtectorType.SpanDataProtector)]
+    [InlineData(DataProtectorType.DefaultDataProtector)]
+    public void Deserialize_ValidTokenWithInvalidBase64UrlSuffix_RejectsBeforeUnprotect(DataProtectorType protectorType)
+    {
+        var unprotectCalled = false;
+        var dataProtector = CreateDataProtector(protectorType, () => unprotectCalled = true);
+        var serializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
+        var token = new AntiforgeryToken()
+        {
+            SecurityToken = _securityToken,
+            IsCookieToken = false,
+            Username = "ab"
+        };
+        // Complete Base64Url blocks let the decoder write the entire token before the invalid suffix.
+        var serializedToken = serializer.Serialize(token) + "!";
+
+        var ex = Assert.Throws<AntiforgeryValidationException>(() => serializer.Deserialize(serializedToken));
+        Assert.Equal("The antiforgery token could not be decrypted.", ex.Message);
+        Assert.IsType<FormatException>(ex.InnerException);
+        Assert.False(unprotectCalled);
+    }
+
+    [Theory]
+    [InlineData(DataProtectorType.SpanDataProtector, "==")]
+    [InlineData(DataProtectorType.DefaultDataProtector, "==")]
+    [InlineData(DataProtectorType.SpanDataProtector, " ")]
+    [InlineData(DataProtectorType.DefaultDataProtector, " ")]
+    public void Deserialize_ValidTokenWithPaddingOrWhitespace_TokenRoundTripSuccessful(DataProtectorType protectorType, string suffix)
+    {
+        var dataProtector = CreateDataProtector(protectorType);
+        var serializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
+        var token = new AntiforgeryToken()
+        {
+            SecurityToken = _securityToken,
+            IsCookieToken = true
+        };
+        var serializedToken = serializer.Serialize(token) + suffix;
+
+        var deserializedToken = serializer.Deserialize(serializedToken);
+
+        AssertTokensEqual(token, deserializedToken);
+    }
+
+    [Theory]
+    [InlineData(DataProtectorType.SpanDataProtector)]
+    [InlineData(DataProtectorType.DefaultDataProtector)]
+    public void Deserialize_UnprotectThrows_PreservesInnerException(DataProtectorType protectorType)
+    {
+        var expectedException = new InvalidOperationException("Unprotect failed.");
+        var dataProtector = CreateDataProtector(protectorType, () => throw expectedException);
+        var serializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
+        var token = new AntiforgeryToken()
+        {
+            SecurityToken = _securityToken,
+            IsCookieToken = true
+        };
+        var serializedToken = serializer.Serialize(token);
+
+        var ex = Assert.Throws<AntiforgeryValidationException>(() => serializer.Deserialize(serializedToken));
+
+        Assert.Equal("The antiforgery token could not be decrypted.", ex.Message);
+        Assert.Same(expectedException, ex.InnerException);
     }
 
     [Theory]
@@ -201,12 +278,12 @@ public class DefaultAntiforgeryTokenSerializerTest
         dataProtector.Verify();
     }
 
-    private static Mock<IDataProtectionProvider> CreateDataProtector(DataProtectorType protectorType)
+    private static Mock<IDataProtectionProvider> CreateDataProtector(DataProtectorType protectorType, Action? onUnprotect = null)
     {
         IDataProtector dataProtector = protectorType switch
         {
-            DataProtectorType.SpanDataProtector => new TestSpanDataProtector(),
-            DataProtectorType.DefaultDataProtector => new TestDataProtector(),
+            DataProtectorType.SpanDataProtector => new TestSpanDataProtector(onUnprotect),
+            DataProtectorType.DefaultDataProtector => new TestDataProtector(onUnprotect),
             _ => throw new ArgumentOutOfRangeException(nameof(protectorType))
         };
 
@@ -232,7 +309,7 @@ public class DefaultAntiforgeryTokenSerializerTest
     /// A test data protector that implements <see cref="ISpanDataProtector"/>
     /// to exercise the optimized code path.
     /// </summary>
-    private sealed class TestSpanDataProtector : ISpanDataProtector
+    private sealed class TestSpanDataProtector(Action? onUnprotect) : ISpanDataProtector
     {
         public IDataProtector CreateProtector(string purpose) => this;
 
@@ -247,6 +324,7 @@ public class DefaultAntiforgeryTokenSerializerTest
         public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, ref TWriter destination)
             where TWriter : IBufferWriter<byte>, allows ref struct
         {
+            onUnprotect?.Invoke();
             var result = UnprotectImpl(protectedData.ToArray());
             var destinationSpan = destination.GetSpan(result.Length);
             result.CopyTo(destinationSpan);
@@ -255,7 +333,11 @@ public class DefaultAntiforgeryTokenSerializerTest
 
         public byte[] Protect(byte[] plaintext) => ProtectImpl(plaintext);
 
-        public byte[] Unprotect(byte[] protectedData) => UnprotectImpl(protectedData);
+        public byte[] Unprotect(byte[] protectedData)
+        {
+            onUnprotect?.Invoke();
+            return UnprotectImpl(protectedData);
+        }
 
         private static byte[] ProtectImpl(byte[] data)
         {
@@ -279,7 +361,7 @@ public class DefaultAntiforgeryTokenSerializerTest
     /// A test data protector that only implements <see cref="IDataProtector"/>
     /// (not <see cref="ISpanDataProtector"/>) to exercise the fallback code path.
     /// </summary>
-    private sealed class TestDataProtector : IDataProtector
+    private sealed class TestDataProtector(Action? onUnprotect) : IDataProtector
     {
         public IDataProtector CreateProtector(string purpose) => this;
 
@@ -292,6 +374,7 @@ public class DefaultAntiforgeryTokenSerializerTest
 
         public byte[] Unprotect(byte[] protectedData)
         {
+            onUnprotect?.Invoke();
             var salt = protectedData[protectedData.Length - 1];
             if (salt != _salt)
             {
