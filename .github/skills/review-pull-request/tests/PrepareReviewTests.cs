@@ -812,6 +812,142 @@ public class PrepareReviewTests
     }
 
     [Theory]
+    [InlineData("added", "rest")]
+    [InlineData("modified", "rest")]
+    [InlineData("removed", "rest")]
+    [InlineData("renamed", "rest")]
+    [InlineData("rename-only", "rest")]
+    [InlineData("added", "literal")]
+    [InlineData("modified", "payload")]
+    public async Task PreparesBinaryChangesWithoutChangingTheAuthoritativeDiff(string change, string format)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.ConfigureBinaryChange(change, format);
+        var diffText = Utf8NoBom.GetString(fixture.Diff);
+        if (format == "payload")
+        {
+            Assert.Contains("GIT binary patch", diffText);
+        }
+        else if (change != "rename-only")
+        {
+            Assert.Matches(@"(?m)^index [a-f0-9]{12}\.\.[a-f0-9]{12}(?: [0-7]{6})?\nBinary files ", diffText);
+            Assert.DoesNotContain("GIT binary patch", diffText);
+        }
+        if (change is "renamed" or "rename-only")
+        {
+            Assert.Contains("rename from src/Binary.bin\nrename to src/Renamed.bin", diffText);
+        }
+
+        var manifest = await fixture.PrepareAsync();
+
+        var head = fixture.Pull["head"]!["sha"]!.GetValue<string>();
+        Assert.Equal(head, manifest["target"]!["head"]!.GetValue<string>());
+        Assert.Equal(fixture.Git(fixture.Repository, "rev-parse", $"{head}^{{tree}}"),
+            fixture.Git(Path.Combine(fixture.Output, ".objects"), "write-tree"));
+        Assert.Equal(fixture.Diff, await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "diff.patch")));
+        Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(fixture.Diff)),
+            manifest["artifacts"]!["diff.patch"]!.GetValue<string>());
+        Assert.Equal("TEXT_HEAD\r\n", await fixture.SourceAsync(manifest, "head", "src/Control.txt"));
+        if (change != "added")
+        {
+            Assert.Equal(BinaryContents("BEFORE"), await fixture.SourceAsync(manifest, "mergeBase", "src/Binary.bin"));
+        }
+        var headPath = change is "renamed" or "rename-only" ? "src/Renamed.bin" : "src/Binary.bin";
+        if (change == "removed")
+        {
+            Assert.False(File.Exists(Path.Combine(fixture.Output,
+                manifest["sources"]!["head"]!["root"]!.GetValue<string>(), headPath + ".source")));
+        }
+        else
+        {
+            Assert.Equal(BinaryContents(change == "rename-only" ? "BEFORE" : "AFTER"),
+                await fixture.SourceAsync(manifest, "head", headPath));
+        }
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("missing-binary-section", "does not reconstruct the frozen head")]
+    [InlineData("wrong-binary-object", "does not reconstruct the frozen head")]
+    [InlineData("truncated-text-hunk", "corrupt patch")]
+    public async Task RejectsIncompleteOrTamperedRestBinaryDiff(string damage, string diagnostic)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.ConfigureBinaryChange("modified", "rest");
+        var diff = Utf8NoBom.GetString(fixture.Diff);
+        switch (damage)
+        {
+            case "missing-binary-section":
+                Assert.StartsWith("diff --git a/src/Binary.bin ", diff);
+                diff = diff[(diff.IndexOf("\ndiff --git ", StringComparison.Ordinal) + 1)..];
+                break;
+            case "wrong-binary-object":
+                var oldId = fixture.Git(fixture.Repository, "rev-parse", $"{fixture.MergeBase}:src/Binary.bin");
+                var newId = fixture.Git(fixture.Repository, "rev-parse",
+                    $"{fixture.Pull["head"]!["sha"]!.GetValue<string>()}:src/Binary.bin");
+                diff = diff.Replace($"..{newId[..12]}", $"..{oldId[..12]}", StringComparison.Ordinal);
+                break;
+            case "truncated-text-hunk":
+                diff = diff[..diff.LastIndexOf("+TEXT_HEAD", StringComparison.Ordinal)];
+                break;
+        }
+        fixture.Diff = Utf8NoBom.GetBytes(diff);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.PrepareAsync);
+
+        Assert.Contains(diagnostic, exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Theory]
+    [InlineData(false, "unknown")]
+    [InlineData(true, "ambiguous")]
+    public void RejectsUnknownOrAmbiguousBinaryObjectPrefixes(bool ambiguous, string diagnostic)
+    {
+        var knownIds = new HashSet<string>(StringComparer.Ordinal) { new('b', 40) };
+        if (ambiguous)
+        {
+            knownIds.Add(new('a', 40));
+            knownIds.Add(new string('a', 39) + "b");
+        }
+        var diff = Utf8NoBom.GetBytes(
+            "diff --git a/file.bin b/file.bin\nindex aaaa..bbbb 100644\nBinary files a/file.bin and b/file.bin differ\n");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PrepareReviewProgram.ExpandBinaryIndexLines(diff, knownIds));
+
+        Assert.Contains(diagnostic, exception.Message);
+    }
+
+    [Fact]
+    public void BinaryIndexExpansionPreservesOtherBytesAndFullIndexLines()
+    {
+        var oldId = new string('a', 40);
+        var newId = new string('b', 40);
+        var knownIds = new HashSet<string>(StringComparer.Ordinal) { oldId, newId };
+        var text = "diff --git a/text b/text\r\nindex aaaa..bbbb 100644\r\n--- a/text\r\n+++ b/text\r\n" +
+            "@@ -1 +1 @@\r\n-\u00ff\r\n+\u00fe\r\n";
+        var binary = "diff --git a/file.bin b/file.bin\r\nindex aaaa..bbbb\r\n" +
+            "Binary files a/file.bin and b/file.bin differ\r\n";
+        var expected = text + binary.Replace("aaaa..bbbb", $"{oldId}..{newId}", StringComparison.Ordinal);
+        Assert.Equal(Encoding.Latin1.GetBytes(expected), PrepareReviewProgram.ExpandBinaryIndexLines(
+            Encoding.Latin1.GetBytes(text + binary), knownIds));
+
+        foreach (var unchanged in new[]
+        {
+            text,
+            expected,
+            $"diff --git a/file.bin b/file.bin\nindex {oldId}..{newId} 100644\nGIT binary patch\nliteral 1\nA\n",
+        })
+        {
+            var bytes = Encoding.Latin1.GetBytes(unchanged);
+            Assert.Equal(bytes, PrepareReviewProgram.ExpandBinaryIndexLines(bytes, new HashSet<string>()));
+        }
+    }
+
+    private static string BinaryContents(string suffix) => "\0" + new string('b', 2048) + "\n" + suffix + "\n";
+
+    [Theory]
     [InlineData(false, "docs/CrossCuttingGuidance.md")]
     [InlineData(true, "docs/CrossCuttingGuidance.md", "docs/BlazorComponentsGuidance.md")]
     public async Task CurrentRoutingTablePreservesExistingGuideSelection(bool components, params string[] expected)
@@ -1868,6 +2004,61 @@ public class PrepareReviewTests
             if (parent is not null) arguments.AddRange(["-p", parent]);
             arguments.AddRange(["-m", "Fixture"]);
             return Git(Repository, arguments.ToArray());
+        }
+
+        public void ConfigureBinaryChange(string change, string format)
+        {
+            const string oldPath = "src/Binary.bin";
+            var newPath = change is "renamed" or "rename-only" ? "src/Renamed.bin" : oldPath;
+            var originalFiles = new Dictionary<string, object> { ["src/Control.txt"] = "TEXT_BASE\r\n" };
+            if (change != "added")
+            {
+                originalFiles[oldPath] = BinaryContents("BEFORE");
+            }
+            MergeBase = Commit(originalFiles);
+            BaseTip = MergeBase;
+            var headFiles = new Dictionary<string, object>(originalFiles) { ["src/Control.txt"] = "TEXT_HEAD\r\n" };
+            headFiles.Remove(oldPath);
+            if (change != "removed")
+            {
+                headFiles[newPath] = BinaryContents(change == "rename-only" ? "BEFORE" : "AFTER");
+            }
+            Head = Commit(headFiles, MergeBase);
+            Pull["head"]!["sha"] = Head;
+            Pull["changed_files"] = 2;
+            var binaryFile = new JsonObject
+            {
+                ["filename"] = change == "removed" ? oldPath : newPath,
+                ["status"] = change == "rename-only" ? "renamed" : change,
+                ["sha"] = Git(Repository, "rev-parse", $"{(change == "removed" ? MergeBase : Head)}:{newPath}"),
+                ["additions"] = 0,
+                ["deletions"] = 0,
+                ["changes"] = 0,
+            };
+            if (change is "renamed" or "rename-only")
+            {
+                binaryFile["previous_filename"] = oldPath;
+            }
+            Files = new JsonArray(binaryFile, new JsonObject
+            {
+                ["filename"] = "src/Control.txt",
+                ["status"] = "modified",
+                ["sha"] = Git(Repository, "rev-parse", $"{Head}:src/Control.txt"),
+                ["additions"] = 1,
+                ["deletions"] = 1,
+                ["changes"] = 2,
+            });
+            Diff = GitBytes(Repository, ["diff", "--no-ext-diff", "--no-textconv", "-M", "--abbrev=12",
+                .. (format == "payload" ? new[] { "--binary" } : Array.Empty<string>()), MergeBase, Head]);
+            if (format == "literal")
+            {
+                var id = binaryFile["sha"]!.GetValue<string>();
+                Diff = Utf8NoBom.GetBytes(
+                    $"diff --git a/{oldPath} b/{oldPath}\nnew file mode 100644\n" +
+                    $"index 000000000000..{id[..12]}\nBinary files /dev/null and b/{oldPath} differ\n" +
+                    Utf8NoBom.GetString(GitBytes(Repository, "diff", "--no-ext-diff", "--abbrev=12",
+                        MergeBase, Head, "--", "src/Control.txt")));
+            }
         }
 
         public Task<JsonObject> PrepareAsync() => PrepareAsync(Options);

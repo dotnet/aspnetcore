@@ -133,6 +133,28 @@ internal static partial class PrepareReviewProgram
 
     internal static string[] GitArguments(params string[] args) => ["-c", "core.longpaths=true", .. args];
 
+    internal static byte[] ExpandBinaryIndexLines(byte[] diff, IReadOnlySet<string> knownIds)
+    {
+        return Encoding.Latin1.GetBytes(BinaryIndexLine().Replace(Encoding.Latin1.GetString(diff), match =>
+            $"index {Expand(match.Groups[1].Value)}..{Expand(match.Groups[2].Value)}{match.Groups[3].Value}{match.Groups[4].Value}"));
+
+        string Expand(string prefix)
+        {
+            if (prefix.Length == 40)
+            {
+                return prefix;
+            }
+            if (prefix.All(character => character == '0'))
+            {
+                return new string('0', 40);
+            }
+            var matches = knownIds.Where(id => id.StartsWith(prefix, StringComparison.Ordinal)).Take(2).ToArray();
+            Require(matches.Length == 1,
+                $"The authoritative binary diff has an {(matches.Length == 0 ? "unknown" : "ambiguous")} object prefix: {prefix}");
+            return matches[0];
+        }
+    }
+
     private static byte[] Git(string directory, params string[] args) =>
         Run("git", GitArguments(["-C", directory, .. args]));
 
@@ -1499,7 +1521,13 @@ internal static partial class PrepareReviewProgram
             Objects(store, "read-tree", frozen.Identity["mergeBase"]!.GetValue<string>());
             if (diff.Length > 0)
             {
-                Objects(store, "apply", "--cached", "--binary", "--whitespace=nowarn", Path.Combine(output, "diff.patch"));
+                // REST omits binary payloads; resolve its prefixes against the frozen changed objects, not supplied bytes.
+                var knownIds = Utf8NoBom.GetString(Objects(store, "diff", "--raw", "--no-abbrev", "-z", "--no-renames",
+                    "--no-ext-diff", "--no-textconv", frozen.Identity["mergeBase"]!.GetValue<string>(), frozen.Identity["head"]!.GetValue<string>()))
+                    .Split('\0').Where((_, index) => index % 2 == 0)
+                    .SelectMany(entry => entry.Split(' ').Skip(2).Take(2)).ToHashSet(StringComparer.Ordinal);
+                Run("git", GitArguments(["--git-dir", store, "apply", "--cached", "--binary", "--whitespace=nowarn", "-"]),
+                    input: ExpandBinaryIndexLines(diff, knownIds));
             }
             Require(Utf8NoBom.GetString(Objects(store, "write-tree")).Trim()
                 == Utf8NoBom.GetString(Objects(store, "rev-parse", $"{frozen.Identity["head"]!.GetValue<string>()}^{{tree}}")).Trim(),
@@ -2214,6 +2242,8 @@ internal static partial class PrepareReviewProgram
         return true;
     }
 
+    [GeneratedRegex("^index ([a-f0-9]{4,40})\\.\\.([a-f0-9]{4,40})( [0-7]{6})?(\\r?\\n)(?=Binary files [^\\r\\n]* differ(?:\\r?\\n|$))", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
+    private static partial Regex BinaryIndexLine();
     [GeneratedRegex("^[a-f0-9]{40}$", RegexOptions.CultureInvariant)]
     private static partial Regex FullShaRegex();
     [GeneratedRegex("^[a-z0-9_.-]+/[a-z0-9_.-]+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
