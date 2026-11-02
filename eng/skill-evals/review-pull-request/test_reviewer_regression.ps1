@@ -85,6 +85,35 @@ None.
             throw 'Markdown-bold headings with optional colons did not pass.'
         }
 
+        $inlineDispositions70106 = @'
+STATUS: FINDINGS
+PR: 70106
+NEW_FINDINGS:
+1. Claim: [DISCARDED] V21 concurrent SendAsync calls can overwrite _lastToken.
+   file:line: src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs:69
+   severity: P2
+   confidence: discarded
+   Why discarded: Same await RequestAccessToken() interleaving existed at merge-base and WebAssembly handler has no concurrency contract.
+2. Claim: [DISCARDED] L69 concurrent SendAsync race on _lastToken.
+   file:line: src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs:69
+   severity: P2
+   confidence: discarded
+   Why discarded: Pre-existing behavior on single-threaded WebAssembly.
+EXISTING_FEEDBACK_COVERAGE: none
+UNRESOLVED: none
+DISCARDED:
+- V21 source-disproved candidate
+- V32 source-disproved candidate
+- V36 source-disproved candidate
+- L69 source-disproved candidate
+TEST_BOUNDARY: source-only
+LIMITATIONS: none
+'@
+        $grade = Invoke-TestGrade 70106 $inlineDispositions70106 $block
+        if (-not $grade.passed) {
+            throw "Inline [DISCARDED] entries in NEW_FINDINGS did not pass deterministic integrity: $($grade | ConvertTo-Json -Depth 20 -Compress)"
+        }
+
         $narrativeMentionArtifact = @'
 STATUS: FINDINGS
 NEW_FINDINGS:

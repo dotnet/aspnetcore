@@ -120,6 +120,51 @@ function Test-CandidateDispositionMention {
     return $false
 }
 
+function Split-NewFindingsByInlineDisposition {
+    param([string]$Text)
+
+    $publishedBlocks = [Collections.Generic.List[string]]::new()
+    $unresolvedBlocks = [Collections.Generic.List[string]]::new()
+    $discardedBlocks = [Collections.Generic.List[string]]::new()
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return [ordered]@{
+            published = ''
+            unresolved = ''
+            discarded = ''
+        }
+    }
+
+    $currentLines = [Collections.Generic.List[string]]::new()
+    $flushBlock = {
+        if ($currentLines.Count -eq 0) {
+            return
+        }
+        $blockText = $currentLines -join "`n"
+        $currentLines.Clear()
+        if ($blockText -match '(?im)(?:\[\s*DISCARDED\s*\]|\bconfidence\s*:\s*discarded\b|^[ \t]*(?:[-*+]|\d+[.)])?[ \t]*(?:\*\*|__)?DISCARDED\b)') {
+            $discardedBlocks.Add($blockText)
+        } elseif ($blockText -match '(?im)(?:\[\s*(?:UNRESOLVED|PLAUSIBLE)\s*\]|\bconfidence\s*:\s*(?:unresolved|plausible)\b|^[ \t]*(?:[-*+]|\d+[.)])?[ \t]*(?:\*\*|__)?(?:UNRESOLVED|PLAUSIBLE)\b)') {
+            $unresolvedBlocks.Add($blockText)
+        } else {
+            $publishedBlocks.Add($blockText)
+        }
+    }
+
+    foreach ($lineText in $Text -split '\r?\n') {
+        if ($lineText -match '^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+|#{1,6}[ \t]+)\S') {
+            & $flushBlock
+        }
+        $currentLines.Add($lineText)
+    }
+    & $flushBlock
+
+    return [ordered]@{
+        published = $publishedBlocks -join "`n"
+        unresolved = $unresolvedBlocks -join "`n"
+        discarded = $discardedBlocks -join "`n"
+    }
+}
+
 try {
     $graderInput = Get-Content $env:EVALUATE_GRADER_INPUT -Raw | ConvertFrom-Json -Depth 100
     $labels = Get-Content (Join-Path $env:EVALUATE_WORKSPACE '.reviewer-eval/labels.json') -Raw |
@@ -151,24 +196,35 @@ try {
     $questionSections = @($sections.Keys | Where-Object {
         $_ -match '(^|_)QUESTIONS?($|_)'
     })
+    $inlineSplit = if ($sections.ContainsKey('NEW_FINDINGS')) {
+        Split-NewFindingsByInlineDisposition $sections['NEW_FINDINGS']
+    } else {
+        [ordered]@{ published = ''; unresolved = ''; discarded = '' }
+    }
     $publishedText = @(
-        if ($sections.ContainsKey('NEW_FINDINGS')) {
-            $sections['NEW_FINDINGS']
+        if (-not [string]::IsNullOrWhiteSpace($inlineSplit.published)) {
+            $inlineSplit.published
         }
         foreach ($name in $questionSections) {
             $sections[$name]
         }
     ) -join "`n"
-    $unresolvedText = if ($sections.ContainsKey('UNRESOLVED')) {
-        $sections['UNRESOLVED']
-    } else {
-        ''
-    }
-    $discardedText = if ($sections.ContainsKey('DISCARDED')) {
-        $sections['DISCARDED']
-    } else {
-        ''
-    }
+    $unresolvedText = @(
+        if ($sections.ContainsKey('UNRESOLVED') -and -not [string]::IsNullOrWhiteSpace($sections['UNRESOLVED'])) {
+            $sections['UNRESOLVED']
+        }
+        if (-not [string]::IsNullOrWhiteSpace($inlineSplit.unresolved)) {
+            $inlineSplit.unresolved
+        }
+    ) -join "`n"
+    $discardedText = @(
+        if ($sections.ContainsKey('DISCARDED') -and -not [string]::IsNullOrWhiteSpace($sections['DISCARDED'])) {
+            $sections['DISCARDED']
+        }
+        if (-not [string]::IsNullOrWhiteSpace($inlineSplit.discarded)) {
+            $inlineSplit.discarded
+        }
+    ) -join "`n"
 
     $expectedByPullRequest = @{
         70106 = @('V21', 'V32', 'V36', 'L69')
