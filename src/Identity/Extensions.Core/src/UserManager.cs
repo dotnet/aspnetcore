@@ -2731,6 +2731,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ArgumentNullThrowHelper.ThrowIfNull(credentialId);
 
         await passkeyStore.RemovePasskeyAsync(user, credentialId, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
         return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 

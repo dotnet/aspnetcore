@@ -73,7 +73,7 @@ Invoke-Control "DetectorUsesSelectedPatPool" {
     Assert-True ($agentCredential.Count -eq 1 -and $detectorCredential.Count -eq 1) "Each inference job must bind exactly one provider credential."
     $selectedPat = $agentCredential[0].Groups[1].Value.Trim()
     Assert-True ($selectedPat.Contains("needs.pat_pool.outputs.pat_number") -and $selectedPat.Contains("secrets.COPILOT_PAT_")) "The main agent must retain the existing PAT-pool selector."
-    Assert-True ($detectorCredential[0].Groups[1].Value.Trim() -ceq $selectedPat) "The inline detector must use the main agent's selected PAT-pool expression, not the standalone COPILOT_GITHUB_TOKEN secret."
+    Assert-True ($detectorCredential[0].Groups[1].Value.Trim() -ceq $selectedPat) "The detector must use the main agent's selected PAT-pool expression, not the standalone COPILOT_GITHUB_TOKEN secret."
 }
 
 Invoke-Control "DetectorPoolDependencyAndEnvironment" {
@@ -86,12 +86,18 @@ Invoke-Control "DetectorPoolDependencyAndEnvironment" {
     }
 }
 
-Invoke-Control "InlineDetectorFailsClosed" {
+Invoke-Control "ExternalDetectorFailsClosed" {
     $detector = Get-CompiledJob "detection"
-    Assert-True ($workflow -match "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must remain enabled."
-    Assert-True ($detector.Contains("copilot_harness.cjs") -and $detector.Contains("parse_threat_detection_results.cjs")) "The generated detector must execute and parse inline detection."
+    Assert-True ($workflow -notmatch "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must be removed."
+    $installer = [regex]::Matches($detector, '(?m)^          bash "[^"\r\n]+/install_threat_detect_binary\.sh" v0\.5\.2 [^\r\n]+')
+    Assert-True ($installer.Count -eq 1) "The generated detector must install the fixed v0.5.2 release exactly once."
+    Assert-True ($installer[0].Value -cmatch ' --sha256-amd64 b4ecda6a8f1ee09913c40b58e5e9d3337d2173618d41b1bfdef9207e4e7959b9(?: |$)') "The detector installer must receive the reviewed v0.5.2 Linux amd64 digest."
+    Assert-True ($installer[0].Value -cmatch ' --sha256-arm64 f6260a0f9ad72bcb67c7af19c4ce262ca34e2c3d5ccbf912832a8bd277200904(?: |$)') "The detector installer must receive the reviewed v0.5.2 Linux arm64 digest."
+    Assert-True ($detector.Contains("steps.threat_detect_install.outcome == 'success'")) "Detection must require successful installation."
+    Assert-True ($detector.Contains("threat-detect --engine copilot --output /tmp/gh-aw/threat-detection/detection_result.json")) "The external detector must write the expected result file."
+    Assert-True ($detector.Contains('conclude_threat_detection.sh" /tmp/gh-aw/threat-detection/detection_result.json')) "The generated detector must conclude using the external result file."
     $continueOnError = [regex]::Matches($detector, '(?m)^          GH_AW_DETECTION_CONTINUE_ON_ERROR: "([^"]+)"\r?$')
-    Assert-True ($continueOnError.Count -eq 2) "Both detection setup and result parsing must declare failure handling."
+    Assert-True ($continueOnError.Count -eq 3) "Detection setup, execution, and conclusion must declare failure handling."
     foreach ($match in $continueOnError)
     {
         Assert-True ($match.Groups[1].Value -ceq "false") "Detection errors must not be accepted."
@@ -101,14 +107,14 @@ Invoke-Control "InlineDetectorFailsClosed" {
 
 Invoke-Control "DetectorModelPolicy" {
     $detector = Get-CompiledJob "detection"
-    Assert-True ($detector -match "(?m)^          COPILOT_MODEL: gpt-5\.6-sol\r?$") "Inline detection must retain the pinned model."
+    Assert-True ($detector -match "(?m)^          COPILOT_MODEL: gpt-5\.6-sol\r?$") "Detection must retain the pinned model."
     $config = [regex]::Match($detector, "printf '%s\\n' '(?<config>\{.+\})' >")
-    Assert-True $config.Success "The generated inline detector AWF configuration could not be read."
+    Assert-True $config.Success "The generated detector AWF configuration could not be read."
     $apiProxy = ($config.Groups["config"].Value | ConvertFrom-Json -Depth 50).apiProxy
-    Assert-True ($null -eq $apiProxy.PSObject.Properties["allowedModels"]) "The inline detector model is pinned by COPILOT_MODEL rather than a duplicated API proxy allowlist."
+    Assert-True ($null -eq $apiProxy.PSObject.Properties["allowedModels"]) "The detector model is pinned by COPILOT_MODEL rather than a duplicated API proxy allowlist."
     foreach ($name in @("allowedModels", "enableTokenSteering", "maxAiCredits", "modelFallback"))
     {
-        Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Inline detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
+        Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
     }
 }
 
@@ -184,21 +190,34 @@ Invoke-Control "EffectiveModelVisibleBoundary" {
 
 Invoke-Control "SnapshotTrustedActionsBinding" {
     $agent = Get-CompiledJob "agent"
+    $safeOutputs = Get-CompiledJob "safe_outputs"
     foreach ($binding in @(
         @{ Name = "REPOSITORY"; Context = "repository"; Parameter = "Repository" },
         @{ Name = "SERVER_URL"; Context = "server_url"; Parameter = "ServerUrl" },
-        @{ Name = "RUN_ID"; Context = "run_id"; Parameter = "RunId" },
-        @{ Name = "RUN_ATTEMPT"; Context = "run_attempt"; Parameter = "RunAttempt" }))
+        @{ Name = "RUN_ID"; Context = "run_id"; Parameter = "RunId" }))
     {
         $environment = "PULSE_SNAPSHOT_$($binding.Name)"
         $assignment = $environment + ': ${{ github.' + $binding.Context + ' }}'
-        Assert-True ([regex]::Matches($agent, [regex]::Escape($assignment)).Count -eq 2) "Both preparation and validation must bind '$environment' from trusted Actions context."
+        Assert-True ([regex]::Matches($agent, [regex]::Escape($assignment)).Count -eq 1 -and
+            [regex]::Matches($safeOutputs, [regex]::Escape($assignment)).Count -eq 1) "Preparation and safe-output validation must each bind '$environment' from trusted Actions context."
         Assert-True ($agent.Contains("-$($binding.Parameter) `$env:$environment") -and
-            $agent.Contains("-Expected$($binding.Parameter) `$env:$environment")) "The renderer and private validator must both consume '$environment'."
+            $safeOutputs.Contains("-Expected$($binding.Parameter) `$env:$environment")) "The renderer and safe-output validator must consume their trusted '$environment' binding."
         Assert-True (-not $agentStep.Contains($environment)) "Snapshot preparation context must not be supplied to inference."
     }
+    $agentAttempt = 'PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}'
+    $safeOutputsAttempt = 'PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ needs.snapshot_binding.outputs.pulse_snapshot_run_attempt }}'
+    $snapshotBinding = Get-CompiledJob "snapshot_binding"
+    Assert-True ([regex]::Matches($agent, [regex]::Escape($agentAttempt)).Count -eq 1) "Snapshot preparation must bind the producer attempt from trusted Actions context."
+    Assert-True ($snapshotBinding.Contains("needs: agent") -and
+        $snapshotBinding.Contains('pulse_snapshot_run_attempt: ${{ steps.read_binding.outputs.run_attempt }}') -and
+        $snapshotBinding.Contains('"run_attempt=$attempt" | Out-File -FilePath $env:GITHUB_OUTPUT')) "A trusted intermediate job must preserve the frozen producer attempt as a job output."
+    Assert-True ([regex]::Matches($safeOutputs, [regex]::Escape($safeOutputsAttempt)).Count -eq 1 -and
+        -not $safeOutputs.Contains($agentAttempt)) "A failed-job publication retry must validate the frozen snapshot against the successful producer attempt, not the publication attempt."
+    Assert-True ($agent.Contains("-RunAttempt `$env:PULSE_SNAPSHOT_RUN_ATTEMPT") -and
+        $safeOutputs.Contains("-ExpectedRunAttempt `$env:PULSE_SNAPSHOT_RUN_ATTEMPT")) "The renderer and safe-output validator must consume the producer attempt binding."
+    Assert-True (-not $agentStep.Contains("PULSE_SNAPSHOT_RUN_ATTEMPT")) "Snapshot preparation context must not be supplied to inference."
     Assert-True ($agent.Contains('-SnapshotContextPath .pr-attention-pulse/pulse-snapshot-context.json') -and
-        $agent.Contains('pr-attention-pulse-validator/pulse-snapshot-context.json')) "Frozen identity must be staged once and then read from the private canonical directory."
+        $safeOutputs.Contains('pr-attention-pulse-validator/pulse-snapshot-context.json')) "Frozen identity must be staged once and then read from the validator artifact in the safe-output job."
     $renderer = Get-Content -LiteralPath (Join-Path $supportRoot "Render-PRAttentionPulse.ps1") -Raw
     Assert-True ([regex]::Matches($renderer, '\[datetime\]::UtcNow').Count -eq 1) "Snapshot generation must sample the UTC clock only once."
     $validator = Get-Content -LiteralPath (Join-Path $supportRoot "Validate-PRAttentionPulseOutput.ps1") -Raw
@@ -225,17 +244,22 @@ Invoke-Control "SnapshotPrivateContextBoundary" {
 
 Invoke-Control "SnapshotNonOverwritingEvidenceAndGates" {
     $upload = [regex]::Match($lock, "(?ms)^      - name: Upload validated Pulse publication evidence\r?\n.*?(?=^      - |\z)").Value
-    Assert-True ($upload.Contains("uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a")) "Evidence must retain the pinned uploader."
+    Assert-True ($upload.Contains("uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9")) "Evidence must retain the pinned uploader."
     Assert-True ($upload -match "(?m)^\s+name: pulse-publication-evidence\r?$" -and
-        $upload -match "(?m)^\s+retention-days: 7\r?$" -and
+        $upload.Contains("retention-days: `${{ vars.GH_AW_DEFAULT_ARTIFACT_RETENTION_DAYS || '7' }}") -and
         $upload -match "(?m)^\s+if-no-files-found: error\r?$") "The artifact name, retention and required-files policy must remain unchanged."
     Assert-True (-not ($upload -match "(?m)^\s*(?:overwrite|continue-on-error|if):")) "Upload must not overwrite evidence or run/succeed past an earlier failure."
     Assert-True ([regex]::Matches($upload, 'pr-attention-pulse-validator/pulse-(?:input\.json|body\.md)').Count -eq 2 -and
         -not $upload.Contains("pulse-snapshot-context.json")) "Only the exact private JSON/body pair may be exported."
     Assert-True ($lock.IndexOf("name: Validate the sole publication payload", [StringComparison]::Ordinal) -lt
         $lock.IndexOf("name: Upload validated Pulse publication evidence", [StringComparison]::Ordinal)) "Private validation must precede upload."
-    Assert-True ((Get-CompiledJob "safe_outputs").Contains("needs.agent.result == 'success'") -and
-        (Get-CompiledJob "safe_outputs").Contains("needs.detection.result == 'success'") -and
+    $safeOutputs = Get-CompiledJob "safe_outputs"
+    $validatorDownload = $safeOutputs.IndexOf("name: Download trusted Pulse publication validator", [StringComparison]::Ordinal)
+    $validator = $safeOutputs.IndexOf("name: Validate the sole publication payload", [StringComparison]::Ordinal)
+    $handler = $safeOutputs.IndexOf("name: Process Safe Outputs", [StringComparison]::Ordinal)
+    Assert-True ($validatorDownload -ge 0 -and $validator -gt $validatorDownload -and $handler -gt $validator) "The safe-output job must download and validate the trusted payload before processing it."
+    Assert-True ($safeOutputs.Contains("needs.agent.result == 'success'") -and
+        $safeOutputs.Contains("needs.detection.result == 'success'") -and
         (Get-CompiledJob "detection").Contains("needs.agent.result == 'success'")) "Publication and detection must require agent success, including evidence upload."
 }
 
@@ -298,7 +322,7 @@ Invoke-Control "DeterministicClickableReferences" {
     Import-Module -Scope Local -Force $contractPath
     $pulse = Get-Content -LiteralPath $publishedFixturePath -Raw | ConvertFrom-Json -Depth 100
     $pulse | Add-Member -NotePropertyName scope -NotePropertyValue "repository-wide"
-    $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse -SnapshotContext (Get-FixtureSnapshotContext -Pulse $pulse)
+    $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse -Json (Get-FixtureSnapshotJson -Pulse $pulse) -SnapshotContext (Get-FixtureSnapshotContext -Pulse $pulse)
     $pulse = Resolve-PulseMergeArea -Area $pulse
     $expectedNumbers = @(
         foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))

@@ -21,8 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="Newtonsoft.Json" />
+    <PackageReference Include="Newtonsoft.Json" />
+
+    <ProjectReference Include="$(RepoRoot)src\SignalR\common\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

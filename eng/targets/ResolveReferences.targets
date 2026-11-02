@@ -1,105 +1,25 @@
 <!--
-  The targets in this file are used to implement custom <Reference> resolution.
-  For more details, see /docs/ReferenceResolution.md.
+  These targets preserve shared-framework reference boundaries, asset selection, and packaging.
+  For more details, see /docs/SharedFramework.md.
 
-  Properties which can be set by projects. If unset, these will be inferred.
-
-    * UseLatestPackageReferences = resolve `<Reference>` items to the latest version of PackageReferences in eng/Dependencies.props.
-    * UseProjectReferences = prefer project references to packages
-    * IsProjectReferenceProvider = when true, the assembly in this project should be available as a ProjectReferenceProvider (see below).
-
-  Items used by the resolution strategy:
-
-    * LatestPackageReference = a list of the latest versions of packages
-    * Reference = a list of the references which are needed for compilation or runtime
-    * ProjectReferenceProvider = a list which maps of assembly names to the project file that produces it
 -->
 <Project>
 
-  <PropertyGroup>
-    <EnableCustomReferenceResolution
-      Condition="'$(EnableCustomReferenceResolution)' == '' AND ('$(DotNetBuildSourceOnly)' != 'true' OR '$(ExcludeFromSourceOnlyBuild)' != 'true')">true</EnableCustomReferenceResolution>
-
-    <ResolveReferencesDependsOn>
-      ResolveCustomReferences;
-      $(ResolveReferencesDependsOn);
-    </ResolveReferencesDependsOn>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!--
-      Projects should use the latest package references when:
-        * preparing a new major or minor release i.e. a non-servicing builds
-        * when a project is a test or sample project
-        * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
-      That is, use latest package references unless this is a servicing build, the project is normally packable, and
-      the package is not included in this release. The "unless" cases are extremely unlikely because both
-      $(IsPackableInNonServicingBuild) and $(IsPackageInThisPatch) are either undefined or true.
-    -->
-    <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true' ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackableInNonServicingBuild)' != 'true' ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackageInThisPatch)' == 'true' ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
-
-    <!-- Projects should use project references in almost all cases. -->
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">true</UseProjectReferences>
-  </PropertyGroup>
-
-  <ItemDefinitionGroup>
-    <Reference>
-      <IsSharedSource />
-    </Reference>
-  </ItemDefinitionGroup>
-
-  <ItemGroup Condition="'$(EnableCustomReferenceResolution)' == 'true'">
-    <Reference Update="@(Reference)">
-      <IsSharedSource
-          Condition="'%(IsSharedSource)' == '' AND $([System.String]::new('%(Identity)').EndsWith('.Sources'))">true</IsSharedSource>
-    </Reference>
-
-    <!-- Packages which are implicitly defined by the .NET Core SDK. -->
-    <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
-    <!-- Capture a list of references which were set explicitly in the project. -->
-    <_AllowedExplicitPackageReference Include="@(PackageReference->WithMetadataValue('AllowExplicitReference', 'true'))" />
-    <_AllowedExplicitPackageReference Include="FSharp.Core" Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
-    <_ExplicitPackageReference Include="@(PackageReference)"
-        Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
-
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' OR '$(ExcludeFromSourceOnlyBuild)' != 'true'">
     <_CompilationOnlyReference Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))"
         Condition="'$(TargetFramework)' == 'netstandard2.0'" />
 
+    <_DeclaredReference Include="@(ProjectReference->'%(Filename)');@(PackageReference);@(Reference)" />
     <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
-        Include="@(Reference)"
+        Include="@(_DeclaredReference)"
         Exclude="
           @(AspNetCoreAppReference);
           @(AspNetCoreAppReferenceAndPackage);
           @(ExternalAspNetCoreAppReference);
           @(_CompilationOnlyReference);
-          @(Reference->WithMetadataValue('IsSharedSource', 'true'));
-          @(Reference->WithMetadataValue('PrivateAssets', 'All'))" />
-    <_OriginalReferences Include="@(Reference)" />
-  </ItemGroup>
-
-  <!--
-    Turn Reference items into a ProjectReference when UseProjectReferences is true. Order matters; this
-    comes before package resolution because projects should be used when possible instead of packages.
-    -->
-  <ItemGroup Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND '$(UseProjectReferences)' == 'true' ">
-    <!--
-      For the _CheckForReferenceBoundaries target, mark project reference providers that _should_ be referenced with
-      Reference items but weren't. General principle is to use only Reference items when referencing a provider.
-      This simplifies project moves and shortens files.
-    -->
-    <ProjectReferenceProvider Update="@(ProjectReference->'%(Filename)')" DirectUse="1" />
-
-    <!-- Find Reference items satisfied using project reference providers. -->
-    <Reference Update="@(ProjectReferenceProvider)" ProjectPath="%(ProjectReferenceProvider.ProjectPath)" />
-
-    <ProjectReference Include="@(Reference->Distinct()->'%(ProjectPath)')" />
-    <Reference Remove="@(Reference->HasMetadata('ProjectPath'))" />
+          @(_DeclaredReference->WithMetadataValue('IsImplicitlyDefined', 'true'));
+          @(_DeclaredReference->WithMetadataValue('ReferenceOutputAssembly', 'false'));
+          @(_DeclaredReference->WithMetadataValue('PrivateAssets', 'All'))" />
   </ItemGroup>
 
   <!-- For source projects, mark shared framework assemblies as non-transitive (privateassets=all) and non app-local (private=false). -->
@@ -128,7 +48,6 @@
   <!--
     This target helps ensure projects within the shared framework do not unintentionally add new references, and that
     assemblies outside the shared framework reference the framework as a whole instead of using individual assemblies.
-    In addition, enforce use of Reference items for projects reference providers.
   -->
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
     <!-- Dependency graph checks may include unexpected packages. Ignore this because it's not an error. -->
@@ -138,9 +57,6 @@
             @(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 "
         Text="Cannot reference &quot;%(Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
 
-    <Error
-        Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND '@(ProjectReferenceProvider->WithMetadataValue('DirectUse', '1')->Count())' != '0' "
-        Text="Cannot reference &quot;%(Identity)&quot; with a ProjectReference item; use a Reference item." />
   </Target>
 
   <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences;ProcessFrameworkReferences">
@@ -181,71 +97,14 @@
     </ItemGroup>
   </Target>
 
-  <!--
-    This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference
-    items for the SDK to resolve. This executes on NuGet restore and during DesignTimeBuild. It should not run in
-    outer, cross-targeting build.
-   -->
-  <Target Name="ResolveCustomReferences"
-      BeforeTargets="CheckForImplicitPackageReferenceOverrides;CollectPackageReferences;ResolvePackageAssets"
-      Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
+  <Target Name="ValidateReferenceMetadata"
+      BeforeTargets="CollectPackageReferences;ResolveReferences"
+      Condition="'$(TargetFramework)' != ''">
     <ItemGroup>
-      <!-- Ensure only content assets are consumed from .Sources packages. -->
-      <Reference>
-        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
-        <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
-      </Reference>
+      <!-- SDK-owned implicit references keep their versions; NuGet rejects central versions for these items. -->
+      <PackageVersion Remove="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     </ItemGroup>
 
-    <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version"
-        Condition=" '$(UseLatestPackageReferences)' == 'true' ">
-      <Output TaskParameter="JoinResult" ItemName="_LatestPackageReferenceWithVersion" />
-    </JoinItems>
-
-    <ItemGroup>
-      <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
-      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
-      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
-    </ItemGroup>
-
-    <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
-    <JoinItems Left="@(Reference->WithMetadataValue('PrivateAssets', 'All'))"
-        Right="@(LatestPackageReference)"
-        LeftMetadata="*"
-        RightMetadata="Version">
-      <Output TaskParameter="JoinResult" ItemName="_PrivatePackageReferenceWithVersion" />
-    </JoinItems>
-
-    <ItemGroup>
-      <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
-      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
-      <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
-
-      <!-- Free up memory for unnecessary items -->
-      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
-      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" />
-      <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
-    </ItemGroup>
-
-    <Error
-        Condition="'$(DisablePackageReferenceRestrictions)' != 'true' AND '@(_ExplicitPackageReference->Count())' != '0'"
-        Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead to replace the reference to @(_ExplicitPackageReference, ', '). See docs/ReferenceResolution.md for more details." />
-
-    <ItemGroup>
-      <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
-    </ItemGroup>
-
-    <Error
-        Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)') AND '$(DisablePackageReferenceRestrictions)' != 'true'"
-        Code="MSB3245"
-        Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update dependencies lists? See docs/ReferenceResolution.md for more details." />
-
-    <!--
-      At this point, most if not all @(Reference) items have been converted to @(PackageReference) or
-      @(ProjectReference) items. (Remaining .NET Framework @(Reference) items may exist but the SDK will hopefully
-      resolve them.) Check whether these items use the easily-confused %(Private) or %(PrivateAssets) metadata.
-      Because this metadata has different semantics, cannot convert one to the other.
-    -->
     <Warning
       Condition=" '@(PackageReference->HasMetadata('Private')->Count())' != '0' "
       Code="BUILD004"
@@ -272,8 +131,7 @@
       (('$(IsAspNetCoreApp)' == 'true' OR '$(UseAspNetCoreSharedRuntime)' == 'true') AND
       $(_CompileTfmUsingReferenceAssemblies))) ">
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
-        Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
-        IsImplicitlyDefined="true"
+        VersionOverride="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
         IncludeAssets="Compile"
         PrivateAssets="All"
         GeneratePathProperty="true" />
@@ -302,7 +160,7 @@
     </ItemGroup>
   </Target>
 
-  <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
+  <!-- These targets provide framework, shipping, trimming, and delayed-build inventories to eng/CodeGen.proj. -->
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
     <ItemGroup>
       <_TargetFramework Remove="@(_TargetFramework)" />
@@ -337,7 +195,7 @@
         <IsTrimmable>$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</IsTrimmable>
         <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
 
-        <!-- True if the project may be referenced using a @(Reference) item. -->
+        <!-- True if the project belongs in the generated reference inventories. -->
         <IsProjectReferenceProvider>$([MSBuild]::ValueOrDefault($(IsProjectReferenceProvider),'false'))</IsProjectReferenceProvider>
 
         <!-- True if project must be restored etc. after App.Ref and App.Runtime are fully built. -->
