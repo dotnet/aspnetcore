@@ -133,7 +133,7 @@ try
                 $combined = if ($scope -ceq "blazor") { New-CombinedPulse $pulse $other } else { New-CombinedPulse $other $pulse }
                 $body = Invoke-Renderer -Pulse $combined
                 Assert-True ([regex]::Matches($body, "(?m)^## Verify discussion before merge$").Count -eq 2) "Both scopes require explicit merge verification."
-                Assert-True ([regex]::Matches($body, "(?m)^<details>$").Count -eq 2 -and -not $body.Contains("<details open>")) "Both scopes remain collapsed."
+                Assert-True ([regex]::Matches($body, "(?m)^<details>$").Count -eq 4 -and -not $body.Contains("<details open>")) "Both scopes and the snapshot blocks remain collapsed."
                 Assert-True ($body.IndexOf("<strong>Blazor</strong>") -lt $body.IndexOf("<strong>Repository-wide</strong>")) "Scope order must remain exact."
                 Assert-True (-not ($body -match "\b[0-9]+d idle\b")) "Age remains days-open only."
                 $canonical = Invoke-PinnedOutputSanitizer -Content $body
@@ -460,7 +460,7 @@ try
         $bodyPath = Join-Path $tempRoot "producer-publication.txt"
         [IO.File]::WriteAllText($bodyPath, $body, [Text.UTF8Encoding]::new($false))
         & node (Join-Path $testRoot "Test-PulseIssueUpdate.cjs") $collectorJsRoot $lockPath $bodyPath
-        Assert-True ($LASTEXITCODE -eq 0) "The pinned publication handler must retain the combined producer body exactly."
+        Assert-True ($LASTEXITCODE -eq 0) "The pinned publication handler must preserve the combined producer body and append trusted provenance."
     }
 }
 finally

@@ -3,7 +3,8 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
-    <EventSourceSupport>false</EventSourceSupport>
+    <!-- dotnet-dev-certs routes diagnostics, including failure details, through EventSource. -->
+    <EventSourceSupport>true</EventSourceSupport>
     <MetricsSupport>false</MetricsSupport>
     <!-- Symbols are excluded from the SDK layout (not the package) by src/sdk; see DeleteSymbolsFromPublishDir. -->
     <CopyOutputSymbolsToPublishDirectory>true</CopyOutputSymbolsToPublishDirectory>

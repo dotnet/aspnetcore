@@ -115,13 +115,13 @@ try
         status = $status
         areas = @($blazor, $repositoryWide)
     }
-    $json = $result | ConvertTo-Json -Depth 30 -Compress
+    $json = $result | ConvertTo-Json -Depth 30 -Compress -EscapeHandling EscapeNonAscii
     if ([Text.Encoding]::UTF8.GetByteCount($json) -gt $MaxOutputBytes)
     {
         throw "The combined sanitized Pulse envelope exceeds the configured size limit."
     }
 
-    [IO.File]::WriteAllText($OutputPath, $json + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+    [IO.File]::WriteAllText($OutputPath, $json + "`n", [Text.UTF8Encoding]::new($false))
 }
 finally
 {

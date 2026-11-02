@@ -565,6 +565,25 @@ configuration:
           label: servicing-consider
     - if:
       - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - targetsBranch:
+          branch: release/11.0
+      - activitySenderHasPermission:
+          permission: Read
+      - not:
+          isActivitySender:
+            user: dotnet-maestro
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: dotnet-maestro-bot
+            issueAuthor: False
+      then:
+      - addLabel:
+          label: servicing-consider
+    - if:
+      - payloadType: Pull_Request
       - labelAdded:
           label: area-infrastructure
       - isAction:
@@ -611,8 +630,19 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.11
+          milestone: 10.0.14
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/11.0
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 11.0.0
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
@@ -622,7 +652,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.19
+          milestone: 9.0.22
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -633,7 +663,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.30
+          milestone: 8.0.33
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
@@ -740,7 +770,6 @@ configuration:
       description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure:
 onSuccess:
-
 
 
 
