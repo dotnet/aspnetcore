@@ -135,8 +135,11 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 
 Launch exactly one fresh reviewer worker per routed guide as the native
 `review-guide-worker` custom agent, never a built-in `general-purpose`, explore, fast,
-or other agent. Its native profile must expose only `read`, `search`, and `skill`; a
-missing profile or any additional worker tool makes that guide `incomplete`. Select the
+or other agent. Its native profile must expose only `read`, `search`, and `skill`
+(synthetic provider/runtime batching wrappers such as `multi_tool_use.parallel` that
+only batch those allowed tools and grant no shell, edit, network, or delegation
+capability do not count as additional tools); a missing profile or any additional
+worker capability tool makes that guide `incomplete`. Select the
 caller-supplied worker model, or `gpt-5.6-sol` when the caller omitted it; pass that model
 explicitly and independently to every worker, never inheriting the coordinator or
 session model. Pass the caller-supplied reasoning effort explicitly and independently
