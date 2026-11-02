@@ -35,7 +35,6 @@ internal sealed class HubMethodDescriptor
     public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<object> authorizationMetadata)
     {
         MethodExecutor = methodExecutor;
-        Name = methodExecutor.MethodInfo.Name;
 
         NonAsyncReturnType = (MethodExecutor.IsMethodAsync)
             ? MethodExecutor.AsyncResultType!
@@ -163,7 +162,7 @@ internal sealed class HubMethodDescriptor
 
     public List<(int, object?)>? KeyedServiceKeys { get; private set; }
 
-    public string Name { get; init; }
+    public required string Name { get; init; }
 
     public ObjectMethodExecutor MethodExecutor { get; }
 
