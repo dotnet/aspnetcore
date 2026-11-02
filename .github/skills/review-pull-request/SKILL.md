@@ -248,22 +248,31 @@ It may read and search only those assigned frozen inputs, must verify only the s
 findings, and must not perform a fresh review.
 
 Require exactly one verifier result for every assigned candidate and no extra or
-duplicate result. Map each result independently: `KEEP` remains in `NEW_FINDINGS`;
-`DOWNGRADE`, or `DROP` because a required link is unestablished, moves the candidate to
-`UNRESOLVED` with the exact `missingEvidence`; `DROP` because frozen source contradicts
-a required link moves it to `DISCARDED` with the exact source reason. Proven
-pre-existing same behavior on the candidate's exact input sequence is `DISCARDED` with
-the compared old/new source reason. This is an intentional adaptation of the verifier
+duplicate result. Require `decision`, `downgradeKind`, `dropBasis`,
+`contradictedLink`, every declared `links` field including `intent`, and the remaining
+verifier output fields to match the verifier schema. Map each result independently:
+`KEEP` remains in `NEW_FINDINGS` with `confidence: verified`; `DOWNGRADE` with
+`downgradeKind: intent` remains in `NEW_FINDINGS` with `confidence: question`, with its
+claim phrased as "is this behavior change on <input> intended?"; `DOWNGRADE` with
+`downgradeKind: external`, or `DROP` because a required link is unestablished, moves
+the candidate to `UNRESOLVED` with the exact `missingEvidence`; `DROP` because frozen
+source contradicts a required link moves it to `DISCARDED` with the exact source
+reason. Proven pre-existing same behavior on the candidate's exact input sequence is
+`DISCARDED` with the compared old/new source reason. As a deterministic safety net,
+when a contradicted `DROP` names `contradictedLink: contract` but its cited contract is
+head-side, keep the candidate in `NEW_FINDINGS` as an intent question with `confidence:
+question` instead of discarding it. This is an intentional adaptation of the verifier
 contract for skill output. External behavior that remains unestablished is
 `UNRESOLVED`.
 
-On `KEEP`, accept a verifier-corrected changed-line anchor or faithful repro when the
-core claim and effect are fully proven; an inaccurate submitted anchor or repro alone
-is not grounds to discard it. Before returning, check any corrected anchor against the
-RIGHT side of the frozen diff and any corrected repro against the verifier's cited
-frozen proof. A failed, missing, malformed, extra, or duplicate verifier result, or a
-correction that fails those checks, makes the review `INCOMPLETE`. Never retry,
-substitute another agent, or complete the verifier's work in the coordinator.
+For a `KEEP` or an intent question, accept a verifier-corrected changed-line anchor or
+faithful repro when the core claim and effect are fully proven; an inaccurate submitted
+anchor or repro alone is not grounds to discard it. Before returning, check any
+corrected anchor against the RIGHT side of the frozen diff and any corrected repro
+against the verifier's cited frozen proof. A failed, missing, malformed, extra,
+duplicate, or schema-invalid verifier result, or a correction that fails those checks,
+makes the review `INCOMPLETE`. Never retry, substitute another agent, or complete the
+verifier's work in the coordinator.
 
 ## Return result; never publish
 
@@ -273,15 +282,17 @@ The first line is always `STATUS: FINDINGS`, `STATUS: NO_FINDINGS`,
 `BASE_TIP_SHA`, `GUIDANCE_SOURCE` (immutable commit or explicitly dirty working tree),
 `GUIDES` (each routed guide and its status, completed in-scope checks, exclusions,
 and unresolved candidates), `UNCOVERED`, `PATH` (`per-guide` or `single-reviewer`),
-`NEW_FINDINGS` (zero to five, ordered by severity and confidence),
+`NEW_FINDINGS` (zero to five, ordered by severity and then confidence, with verified
+findings before questions at equal severity),
 `EXISTING_FEEDBACK_COVERAGE` (deduplicated true positives with the existing comment or
 review reference), `UNRESOLVED` (candidate and exact missing evidence), `DISCARDED`
 (claim and precise source reason), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
 `NEW_FINDINGS` entry contains only a one-line claim; `file:line`; severity (`P1` for
 broken/incorrect common usage or data loss, `P2` for incorrect behavior in a realistic
-narrower scenario, or `P3` for minor/edge or test/doc-only impact); a minimal repro using
-app/user code, CLI commands, or workflow inputs that reaches the affected behavior;
-what goes wrong in at most two lines; and a fix snippet when possible.
+narrower scenario, or `P3` for minor/edge or test/doc-only impact); confidence
+(`verified` or `question`); a minimal repro using app/user code, CLI commands, or
+workflow inputs that reaches the affected behavior; what goes wrong in at most two
+lines; and a fix snippet when possible.
 
 Return `BLOCKED` when a required bundle input is invalid, missing, unreadable,
 mismatched, malformed, empty, or truncated. Return `INCOMPLETE` when a routed worker

@@ -39,9 +39,9 @@ applicable:
   it is compatible or correct.
 
 Judge the core claim and effect. An inaccurate submitted line anchor or repro is not by
-itself grounds for `DROP` when every link is independently proven. For `KEEP`, return
-the corrected RIGHT-side changed-line anchor and a faithful corrected repro when either
-submitted value is inaccurate.
+itself grounds for `DROP` when every link is independently proven. For `KEEP` or an
+`intent` `DOWNGRADE`, return the corrected RIGHT-side changed-line anchor and a faithful
+corrected repro when either submitted value is inaccurate.
 
 Return `KEEP` only when every applicable link is established, `intent` is `n/a`, and
 source does not contradict the claim. Return `DOWNGRADE` with `downgradeKind:
@@ -61,7 +61,7 @@ Return exactly one result for every assigned candidate and no other candidate:
 `candidateId`, `decision` (`KEEP`, `DOWNGRADE`, or `DROP`), `downgradeKind` (`intent`,
 `external`, or `null`), `dropBasis` (`contradicted`, `unestablished`, or `null`),
 `contradictedLink` (`changedLine`, `trigger`, `overlap`, `oldVsNew`, `effect`,
-`contract`, or `null`), `links`, `missingEvidence` (the exact
+`contract`, or `null`), `links` (including `intent`), `missingEvidence` (the exact
 evidence needed for `DOWNGRADE` or unestablished `DROP`, otherwise `null`),
 `correctedChangedLine`, `correctedRepro`, `validationEvidence` (assigned immutable
 artifact paths and hashes actually used, otherwise `null`), and a concise `reason`.
