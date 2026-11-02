@@ -126,7 +126,6 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/70085")]
     public void TempDataPersistWithoutAccessing()
     {
         Navigate($"{ServerPathBase}/tempdata");
