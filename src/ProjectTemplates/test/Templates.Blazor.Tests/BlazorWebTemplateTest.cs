@@ -61,6 +61,21 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_WeatherDoesNotOverflowAtNarrowViewport(BrowserKind browserKind)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync(args: ["-int", "Server"]);
+        using var aspNetProcess = project.StartPublishedProjectAsync();
+        await AssertWeatherDoesNotOverflowAtNarrowViewportAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69095")]
     public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
