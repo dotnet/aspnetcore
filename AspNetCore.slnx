@@ -1299,6 +1299,7 @@
     <Build Solution="*|Any CPU" Project="false" />
     <Build Solution="*|arm64" Project="false" />
   </Project>
+  <Project Path="src/StaticAssets/perf/Microbenchmarks/Microsoft.AspNetCore.StaticAssets.Microbenchmarks.csproj" />
   <Project Path="src/StaticAssets/src/Microsoft.AspNetCore.StaticAssets.csproj" />
   <Project Path="src/StaticAssets/test/Microsoft.AspNetCore.StaticAssets.Tests.csproj" />
   <Project Path="src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj" />
