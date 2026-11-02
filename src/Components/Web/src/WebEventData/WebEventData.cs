@@ -78,6 +78,11 @@ internal sealed class WebEventData
             // deserialization are preserved when trimming. We deserialize using the JsonTypeInfo
             // returned by the options, which is the trim-safe API.
             var eventArgsType = renderer.GetEventArgsType(eventHandlerId);
+            if (eventArgsType == typeof(EventArgs))
+            {
+                return EventArgs.Empty;
+            }
+
             var eventArgsTypeInfo = jsonSerializerOptions.GetTypeInfo(eventArgsType);
             return (EventArgs)JsonSerializer.Deserialize(eventArgsJson.GetRawText(), eventArgsTypeInfo)!;
         }
