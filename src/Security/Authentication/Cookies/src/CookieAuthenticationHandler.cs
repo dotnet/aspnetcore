@@ -340,9 +340,14 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             // A sign-in that asks for rotation must not keep the session key that came in on the
             // request, otherwise a pre-existing cookie keeps resolving to the newly stored ticket.
             // See https://github.com/dotnet/aspnetcore/issues/47503.
+            string? rotatedSessionKey = null;
             if (_sessionKey != null && signInContext.Properties.RotateSessionKey == true)
             {
-                await Options.SessionStore.RemoveAsync(_sessionKey, Context, Context.RequestAborted);
+                // Keep the incoming key reserved until the new ticket has been stored.
+                // ITicketStore.StoreAsync only promises to return the key the ticket was stored
+                // under, not a key that has never been used, so a store that recycles released
+                // keys could hand the incoming key straight back if it were removed first.
+                rotatedSessionKey = _sessionKey;
                 _sessionKey = null;
             }
 
@@ -354,6 +359,13 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             else
             {
                 _sessionKey = await Options.SessionStore.StoreAsync(ticket, Context, Context.RequestAborted);
+            }
+
+            // Drop the old entry only once the new ticket is under a key of its own, so that a
+            // store which handed the incoming key back does not lose the ticket just stored.
+            if (rotatedSessionKey != null && !string.Equals(rotatedSessionKey, _sessionKey, StringComparison.Ordinal))
+            {
+                await Options.SessionStore.RemoveAsync(rotatedSessionKey, Context, Context.RequestAborted);
             }
 
             var principal = new ClaimsPrincipal(
