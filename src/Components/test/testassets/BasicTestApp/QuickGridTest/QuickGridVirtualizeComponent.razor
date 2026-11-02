@@ -11,7 +11,7 @@
 </div>
 
 @code {
-    [Parameter] public string TestConfiguration { get; set; }
+    [SupplyParameterFromQuery] public string TestConfiguration { get; set; }
 
     internal class Person
     {
