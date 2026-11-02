@@ -153,7 +153,7 @@ stimuli:
           model: gemini-4-argon
           reasoning_effort: medium
           scoring: binary
-          threshold: 0
+          threshold: 1
           evidence: [trajectory, repo]
           prompt: |
             Evaluate the final review artifact against the hidden labels in .reviewer-eval/labels.json.
@@ -223,7 +223,7 @@ stimuli:
           model: gemini-4-argon
           reasoning_effort: medium
           scoring: binary
-          threshold: 0
+          threshold: 1
           evidence: [trajectory, repo]
           prompt: |
             Evaluate the final review artifact against the hidden labels in .reviewer-eval/labels.json.

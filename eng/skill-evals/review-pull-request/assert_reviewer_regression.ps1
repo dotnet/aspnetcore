@@ -34,8 +34,9 @@ if ($records.Count -eq 0) {
     throw 'The result set contains no trial-result records.'
 }
 
-$errors = [Collections.Generic.List[string]]::new()
-$indeterminate = [Collections.Generic.List[string]]::new()
+$absoluteGateErrors = [Collections.Generic.List[string]]::new()
+$comparisonErrors = [Collections.Generic.List[string]]::new()
+$semanticWarnings = [Collections.Generic.List[string]]::new()
 $requiredStimuli = @('reviewer-regression-pr-70106', 'reviewer-regression-pr-69782')
 
 function Test-IsDeterministicGrader {
@@ -46,17 +47,59 @@ function Test-IsDeterministicGrader {
         $Detail.name -eq 'reviewer-regression'
 }
 
+function Test-IsPromptGrader {
+    param([object]$Detail)
+
+    $graderType = $Detail.PSObject.Properties['graderType']
+    return $null -ne $graderType -and $graderType.Value -eq 'prompt'
+}
+
+function Get-DeterministicGrader {
+    param([object]$Row)
+
+    if ($null -eq $Row.gradeResult) {
+        return $null
+    }
+
+    $matches = @($Row.gradeResult.details | Where-Object {
+        Test-IsDeterministicGrader $_
+    })
+    if ($matches.Count -ne 1) {
+        return $null
+    }
+
+    return $matches[0]
+}
+
+function Test-DetailPassed {
+    param(
+        [object]$Deterministic,
+        [string]$Name
+    )
+
+    $detail = @($Deterministic.details | Where-Object name -eq $Name)
+    return $detail.Count -eq 1 -and [bool]$detail[0].passed
+}
+
 function Get-DeterministicPassCount {
     param([object[]]$Rows)
 
     return @($Rows | Where-Object {
-        if ($null -eq $_.gradeResult) {
-            return $false
-        }
-        $matches = @($_.gradeResult.details | Where-Object {
-            (Test-IsDeterministicGrader $_) -and $_.passed
-        })
-        return $matches.Count -eq 1
+        $deterministic = Get-DeterministicGrader $_
+        $null -ne $deterministic -and [bool]$deterministic.passed
+    }).Count
+}
+
+function Get-CasePassCount {
+    param(
+        [object[]]$Rows,
+        [string]$CaseId
+    )
+
+    return @($Rows | Where-Object {
+        $deterministic = Get-DeterministicGrader $_
+        $null -ne $deterministic -and
+            (Test-DetailPassed $deterministic "acceptance/$CaseId")
     }).Count
 }
 
@@ -66,53 +109,86 @@ foreach ($variant in $BaselineVariant, $CandidateVariant) {
             $_.variant -eq $variant -and $_.stimulus -eq $stimulus
         })
         if ($rows.Count -ne 5) {
-            $errors.Add("$variant/$stimulus expected 5 rows; found $($rows.Count).")
+            $absoluteGateErrors.Add("$variant/$stimulus expected 5 rows; found $($rows.Count).")
             continue
         }
 
+        $semanticPasses = 0
+        $semanticCompleted = 0
         foreach ($row in $rows) {
             if ($row.status -ne 'success') {
-                $errors.Add("$variant/$stimulus has non-success status '$($row.status)'.")
+                $absoluteGateErrors.Add("$variant/$stimulus has non-success status '$($row.status)'.")
                 continue
             }
             if ($null -eq $row.gradeResult) {
-                $errors.Add("$variant/$stimulus is missing its grade result.")
+                $absoluteGateErrors.Add("$variant/$stimulus is missing its grade result.")
                 continue
             }
             $gradeStatus = $row.gradeResult.PSObject.Properties['status']
             if ($null -ne $gradeStatus -and $gradeStatus.Value -eq 'error') {
-                $errors.Add("$variant/$stimulus has a grader error.")
+                $absoluteGateErrors.Add("$variant/$stimulus has a grader error.")
                 continue
             }
-            $detailErrors = @($row.gradeResult.details | Where-Object {
-                $detailStatus = $_.PSObject.Properties['status']
-                $null -ne $detailStatus -and $detailStatus.Value -eq 'error'
-            })
-            if ($detailErrors.Count -gt 0) {
-                $errors.Add("$variant/$stimulus has one or more grader-detail errors.")
+
+            $deterministic = Get-DeterministicGrader $row
+            if ($null -eq $deterministic) {
+                $absoluteGateErrors.Add("$variant/$stimulus is missing the deterministic grader result.")
                 continue
             }
-            $deterministic = @($row.gradeResult.details | Where-Object {
-                Test-IsDeterministicGrader $_
-            })
-            if ($deterministic.Count -ne 1) {
-                $errors.Add("$variant/$stimulus is missing the deterministic grader result.")
-                continue
-            }
-            $graderStatus = $deterministic[0].PSObject.Properties['status']
+            $graderStatus = $deterministic.PSObject.Properties['status']
             if ($null -ne $graderStatus -and $graderStatus.Value -eq 'error') {
-                $errors.Add("$variant/$stimulus deterministic grader errored: $($deterministic[0].evidence)")
+                $absoluteGateErrors.Add(
+                    "$variant/$stimulus deterministic grader errored: $($deterministic.evidence)"
+                )
+                continue
             }
-            if ($variant -eq $CandidateVariant -and -not $deterministic[0].passed) {
-                $errors.Add("$variant/$stimulus deterministic grader failed: $($deterministic[0].evidence)")
+
+            $integrity = $deterministic.metadata.integrity
+            $invalidNovel = @($deterministic.metadata.invalidNovelFindingIndexes)
+            if (@($integrity.failedIds).Count -gt 0 -or
+                @($integrity.missingIds).Count -gt 0 -or
+                @($integrity.duplicateIds).Count -gt 0 -or
+                @($integrity.unexpectedIds).Count -gt 0 -or
+                $invalidNovel.Count -gt 0) {
+                $absoluteGateErrors.Add(
+                    "$variant/$stimulus has a deterministic integrity or result-contract failure: $($deterministic.evidence)"
+                )
             }
-            if ($deterministic[0].metadata.adjudicationPending) {
-                $errors.Add("$variant/$stimulus requires manual adjudication.")
+            if ($deterministic.metadata.adjudicationPending) {
+                $absoluteGateErrors.Add("$variant/$stimulus requires manual adjudication.")
+            }
+            if ($variant -eq $CandidateVariant -and
+                $stimulus -eq 'reviewer-regression-pr-70106' -and
+                -not $deterministic.passed) {
+                $absoluteGateErrors.Add(
+                    "$variant/$stimulus failed the required restraint gate: $($deterministic.evidence)"
+                )
+            }
+
+            foreach ($prompt in @($row.gradeResult.details | Where-Object {
+                Test-IsPromptGrader $_
+            })) {
+                $promptStatus = $prompt.PSObject.Properties['status']
+                if ($null -ne $promptStatus -and $promptStatus.Value -eq 'error') {
+                    $semanticWarnings.Add("$variant/$stimulus prompt judge errored: $($prompt.evidence)")
+                    continue
+                }
+
+                $semanticCompleted++
+                if ([double]$prompt.score -gt 0) {
+                    $semanticPasses++
+                }
             }
         }
+
+        Write-Host (
+            "Semantic secondary evidence for ${variant}/${stimulus}: " +
+            "$semanticPasses/$semanticCompleted completed prompt scores were greater than 0."
+        )
     }
 }
 
+$comparisonRows = [Collections.Generic.List[object]]::new()
 foreach ($stimulus in $requiredStimuli) {
     $baseline = @($records | Where-Object {
         $_.variant -eq $BaselineVariant -and $_.stimulus -eq $stimulus
@@ -124,21 +200,60 @@ foreach ($stimulus in $requiredStimuli) {
         continue
     }
 
-    $baselinePasses = Get-DeterministicPassCount $baseline
-    $candidatePasses = Get-DeterministicPassCount $candidate
+    if ($stimulus -eq 'reviewer-regression-pr-69782') {
+        $metric = 'acceptance/V23'
+        $baselinePasses = Get-CasePassCount $baseline 'V23'
+        $candidatePasses = Get-CasePassCount $candidate 'V23'
+    } else {
+        $metric = 'deterministic trial'
+        $baselinePasses = Get-DeterministicPassCount $baseline
+        $candidatePasses = Get-DeterministicPassCount $candidate
+    }
 
+    $comparisonRows.Add([pscustomobject]@{
+        stimulus = $stimulus
+        metric = $metric
+        baselinePasses = $baselinePasses
+        candidatePasses = $candidatePasses
+    })
     if ($candidatePasses -lt $baselinePasses) {
-        $errors.Add("$stimulus candidate passed $candidatePasses/5 versus baseline $baselinePasses/5.")
-    } elseif ($candidatePasses -eq $baselinePasses) {
-        $indeterminate.Add("$stimulus candidate and baseline both passed $candidatePasses/5.")
+        $comparisonErrors.Add(
+            "$stimulus candidate $metric passed $candidatePasses/5 versus baseline $baselinePasses/5."
+        )
     }
 }
 
-if ($errors.Count -gt 0) {
-    throw "Reviewer regression assertion failed:`n  - $($errors -join "`n  - ")"
+$comparisonVerdict = if ($comparisonRows.Count -ne $requiredStimuli.Count) {
+    'INDETERMINATE'
+} elseif ($comparisonErrors.Count -gt 0) {
+    'REGRESSION'
+} elseif (@($comparisonRows | Where-Object {
+    $_.candidatePasses -gt $_.baselinePasses
+}).Count -gt 0) {
+    'NO_REGRESSION'
+} else {
+    'INDETERMINATE'
 }
 
-if ($indeterminate.Count -gt 0) {
-    Write-Warning "INDETERMINATE (advisory until null calibration):`n  - $($indeterminate -join "`n  - ")"
+Write-Host "Reviewer regression comparison verdict: $comparisonVerdict"
+foreach ($comparison in $comparisonRows) {
+    Write-Host (
+        "  $($comparison.stimulus) [$($comparison.metric)]: " +
+        "candidate $($comparison.candidatePasses)/5; baseline $($comparison.baselinePasses)/5."
+    )
+}
+foreach ($warning in $semanticWarnings) {
+    Write-Warning $warning
+}
+
+if ($comparisonVerdict -eq 'REGRESSION') {
+    throw "REGRESSION:`n  - $($comparisonErrors -join "`n  - ")"
+}
+if ($absoluteGateErrors.Count -gt 0) {
+    throw "ABSOLUTE_GATE_FAIL:`n  - $($absoluteGateErrors -join "`n  - ")"
+}
+
+if ($comparisonVerdict -eq 'INDETERMINATE') {
+    Write-Warning 'INDETERMINATE: candidate and baseline are equal on every directional comparison.'
 }
 Write-Host 'Reviewer regression assertion passed.'

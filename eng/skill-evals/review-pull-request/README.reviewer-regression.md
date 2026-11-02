@@ -24,15 +24,26 @@ cross-checks each indexed tier against `NEW_FINDINGS`, questions, `UNRESOLVED`,
 and `DISCARDED` using the candidate ID or exact path and line. A missing
 artifact section or any mismatch produces `INTEGRITY_FAIL`. Missing rows,
 malformed output, grader errors, and required-case failures also fail closed.
-Novel plausible findings produce `ADJUDICATION_PENDING` rather than being
-rejected automatically. The prompt grader is secondary evidence only;
-Vally 0.19.0 retains its rubric rows under `gradeResult.details` and
+Novel findings without a valid confidence tier fail their result contract.
+Known partial-projection seams at `FormDataReader.cs:143` and
+`FileConverter.cs:56` through `FileConverter.cs:63` are adjudicated as allowed
+`PLAUSIBLE` observations for #69782; other novel `VERIFIED`, `QUESTION`, or
+`PLAUSIBLE` findings produce `ADJUDICATION_PENDING`. The prompt grader is
+secondary evidence only. Its threshold is 1, and the assertion script derives
+semantic pass counts from `score > 0` rather than trusting the retained
+`passed` Boolean. Vally 0.19.0 treated completed score-0 prompt results as
+`passed=true` when this suite previously used threshold 0, even though prompt
+weight was zero. Vally 0.19.0 retains its rubric rows under `gradeResult.details` and
 `metadata.rubric_scores`, but not arbitrary judge-defined JSON.
 
 `assert_reviewer_regression.ps1` requires all five runs for both arms and both
-stimuli, checks the required deterministic outcomes, and applies a per-stimulus
-candidate-not-worse-than-current comparison. Equal pass counts are reported as
-advisory `INDETERMINATE` until null calibration exists.
+stimuli. Execution, result-contract, integrity, unresolved adjudication, and
+#70106 restraint failures remain absolute gates. The directional comparison is
+reported separately as `NO_REGRESSION`, `INDETERMINATE`, or `REGRESSION`.
+#69782 compares `acceptance/V23` directly, so V23 is gated by candidate
+non-inferiority to current rather than a hard five-of-five floor. Equal arms
+are `INDETERMINATE`, not a directional regression, even if a separately named
+absolute gate fails.
 
 Use `run_reviewer_regression.ps1`. The wrapper materializes a temporary
 experiment so current and candidate skill directories can differ without

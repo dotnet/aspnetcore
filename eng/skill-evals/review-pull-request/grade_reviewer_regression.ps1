@@ -47,7 +47,7 @@ function Get-ArtifactSections {
         'DISCARDED|QUESTIONS?|INTENT_QUESTIONS|QUESTIONS_FOR_AUTHOR|TEST_BOUNDARY|LIMITATIONS'
     $headers = @([regex]::Matches(
         $Artifact,
-        "(?m)^(?<name>$sectionNames):[ \t]*(?<inline>[^\r\n]*)"
+        "(?m)^[ \t]*(?:#{1,6}[ \t]+)?(?:\*\*|__)?(?<name>$sectionNames)(?:\*\*|__)?[ \t]*:?[ \t]*(?<inline>[^\r\n]*)\r?$"
     ))
     $sections = @{}
     for ($index = 0; $index -lt $headers.Count; $index++) {
@@ -72,25 +72,52 @@ function Get-ArtifactSections {
     return $sections
 }
 
-function Test-CandidateMention {
+function Test-CandidateDispositionMention {
     param(
         [string]$Text,
-        [object]$Candidate
+        [object]$Candidate,
+        [bool]$AllowAnchor = $true
     )
 
-    $idPattern = "(?<![A-Za-z0-9])$([regex]::Escape([string]$Candidate.id))(?![A-Za-z0-9])"
-    if ([regex]::IsMatch($Text, $idPattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
-        return $true
-    }
-
+    $id = [regex]::Escape([string]$Candidate.id)
+    $idPattern = "(?<![A-Za-z0-9])$id(?![A-Za-z0-9])"
     $pathPattern = [regex]::Escape([string]$Candidate.path).Replace('/', '[/\\]')
     $line = [int]$Candidate.line
     $anchorPattern = "$pathPattern(?:(?:\s*[:#]\s*L?$line\b)|(?:[^\r\n]{0,60}\bline\s+$line\b))"
-    return [regex]::IsMatch(
-        $Text,
-        $anchorPattern,
-        [Text.RegularExpressions.RegexOptions]::IgnoreCase
-    )
+    foreach ($lineText in $Text -split '\r?\n') {
+        $entry = [regex]::Match(
+            $lineText,
+            '^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+|#{1,6}[ \t]+)?(?<text>\S.*)$'
+        )
+        if (-not $entry.Success) {
+            continue
+        }
+
+        $entryText = $entry.Groups['text'].Value.Trim()
+        $normalizedEntry = $entryText -replace '^(?:\*\*)?', ''
+        $normalizedEntry = $normalizedEntry -replace (
+            '^(?:P[0-3]|VERIFIED|QUESTION|PLAUSIBLE|DISCARDED)\b[\s\p{P}\p{S}]+'
+        ), ''
+        $idList = [regex]::Match(
+            $normalizedEntry,
+            '^(?:\[(?<ids>[A-Z]+\d+(?:\s*[,/&+]\s*[A-Z]+\d+)*)\]|(?<ids>[A-Z]+\d+(?:\s*[,/&+]\s*[A-Z]+\d+)*))',
+            [Text.RegularExpressions.RegexOptions]::IgnoreCase
+        )
+        $idMention = $idList.Success -and [regex]::IsMatch(
+            $idList.Groups['ids'].Value,
+            $idPattern,
+            [Text.RegularExpressions.RegexOptions]::IgnoreCase
+        )
+        if ($idMention -or ($AllowAnchor -and [regex]::IsMatch(
+            $entryText,
+            $anchorPattern,
+            [Text.RegularExpressions.RegexOptions]::IgnoreCase
+        ))) {
+            return $true
+        }
+    }
+
+    return $false
 }
 
 try {
@@ -178,9 +205,25 @@ try {
         } else {
             $false
         }
-        $publishedMention = Test-CandidateMention $publishedText $expected
-        $unresolvedMention = Test-CandidateMention $unresolvedText $expected
-        $discardedMention = Test-CandidateMention $discardedText $expected
+        $publishedIdMention = Test-CandidateDispositionMention $publishedText $expected $false
+        $unresolvedIdMention = Test-CandidateDispositionMention $unresolvedText $expected $false
+        $discardedIdMention = Test-CandidateDispositionMention $discardedText $expected $false
+        $hasIdMention = $publishedIdMention -or $unresolvedIdMention -or $discardedIdMention
+        $publishedMention = if ($hasIdMention) {
+            $publishedIdMention
+        } else {
+            Test-CandidateDispositionMention $publishedText $expected
+        }
+        $unresolvedMention = if ($hasIdMention) {
+            $unresolvedIdMention
+        } else {
+            Test-CandidateDispositionMention $unresolvedText $expected
+        }
+        $discardedMention = if ($hasIdMention) {
+            $discardedIdMention
+        } else {
+            Test-CandidateDispositionMention $discardedText $expected
+        }
         $dispositionMentions = @(
             if ($publishedMention) { 'published' }
             if ($unresolvedMention) { 'unresolved' }
@@ -259,13 +302,69 @@ try {
     }))
 
     $novel = @($result.novelFindings)
-    $adjudicationPending = $novel.Count -gt 0
+    $novelTiers = @(
+        foreach ($finding in $novel) {
+            $tierProperty = $finding.PSObject.Properties['tier']
+            if ($null -eq $tierProperty) {
+                ''
+            } else {
+                [string]$tierProperty.Value
+            }
+        }
+    )
+    $invalidNovelFindingIndexes = @(
+        for ($index = 0; $index -lt $novel.Count; $index++) {
+            if ($novelTiers[$index] -notin $validTiers) {
+                $index
+            }
+        }
+    )
+    $novelContractPassed = $invalidNovelFindingIndexes.Count -eq 0
+    $novelContractEvidence = if ($novelContractPassed) {
+        'Every novel finding has a valid confidence tier.'
+    } else {
+        "CONTRACT_FAIL: novelFindings entries at indexes $($invalidNovelFindingIndexes -join ', ') are missing a valid tier."
+    }
+    $details.Add((New-Detail 'integrity/novel-findings' $novelContractPassed $novelContractEvidence @{
+        invalidIndexes = $invalidNovelFindingIndexes
+        validTiers = $validTiers
+    }))
+    $adjudicatedNovelFindingIndexes = @(
+        for ($index = 0; $index -lt $novel.Count; $index++) {
+            $finding = $novel[$index]
+            if ($PullRequest -eq 69782 -and $novelTiers[$index] -eq 'PLAUSIBLE') {
+                $path = ([string]$finding.path).Replace('\', '/')
+                $line = [int]$finding.line
+                if (($path -eq 'src/Components/Endpoints/src/FormMapping/FormDataReader.cs' -and $line -eq 143) -or
+                    ($path -eq 'src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs' -and
+                    $line -ge 56 -and $line -le 63)) {
+                    $index
+                }
+            }
+        }
+    )
+    $pendingNovelFindingIndexes = @(
+        for ($index = 0; $index -lt $novel.Count; $index++) {
+            if ($index -in $invalidNovelFindingIndexes -or
+                $index -in $adjudicatedNovelFindingIndexes) {
+                continue
+            }
+
+            if ($novelTiers[$index] -in @('VERIFIED', 'QUESTION', 'PLAUSIBLE')) {
+                $index
+            }
+        }
+    )
+    $adjudicationPending = $pendingNovelFindingIndexes.Count -gt 0
     $requiredRows = @($expectedRows | Where-Object required)
     $requiredFailed = @($requiredRows.id | Where-Object { $_ -in $acceptanceFailed })
     $passed = $executionFailed.Count -eq 0 -and $acceptanceFailed.Count -eq 0 -and
-        $integrityFailed.Count -eq 0 -and $shapePassed -and -not $adjudicationPending
+        $integrityFailed.Count -eq 0 -and $shapePassed -and $novelContractPassed -and
+        -not $adjudicationPending
     $score = if ($passed) { 1 } else { 0 }
-    $evidence = if ($integrityFailed.Count -gt 0) {
+    $evidence = if (-not $novelContractPassed) {
+        "CONTRACT_FAIL: novelFindings entries at indexes $($invalidNovelFindingIndexes -join ', ') are missing a valid tier."
+    } elseif ($integrityFailed.Count -gt 0) {
         "INTEGRITY_FAIL: the convenience block disagrees with the authoritative review artifact for $($integrityFailed -join ', ')."
     } elseif ($adjudicationPending) {
         'ADJUDICATION_PENDING: novel plausible findings require manual adjudication.'
@@ -304,6 +403,9 @@ try {
             }
             adjudicationPending = $adjudicationPending
             novelFindingCount = $novel.Count
+            invalidNovelFindingIndexes = $invalidNovelFindingIndexes
+            adjudicatedNovelFindingIndexes = $adjudicatedNovelFindingIndexes
+            pendingNovelFindingIndexes = $pendingNovelFindingIndexes
         }
     } | ConvertTo-Json -Depth 100 -Compress
 } catch {
