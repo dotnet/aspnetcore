@@ -21,6 +21,8 @@
         @if (useItemsProvider)
         {
             <QuickGrid @ref="providerGrid" ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50"
+                       OverscanCount="@(keyboardNavigation ? 0 : 3)"
+                       OnRowClick="@(keyboardNavigation ? EventCallback.Factory.Create<Row>(this, ActivateRow) : default)"
                        InitialItemIndex="@initialItemIndex">
                 <TemplateColumn Title="Item" Class="qg-scroll-cell">
                     <div class="item" data-index="@context.Index" style="min-height: @(context.Height)px; line-height: @(context.Height)px;">Item @context.Index</div>
@@ -30,6 +32,7 @@
         else
         {
             <QuickGrid @ref="itemsGrid" Items="@rows.AsQueryable()" Virtualize="true" ItemSize="50"
+                       OnRowClick="@(keyboardNavigation ? EventCallback.Factory.Create<Row>(this, ActivateRow) : default)"
                        InitialItemIndex="@initialItemIndex">
                 <TemplateColumn Title="Item" Class="qg-scroll-cell">
                     <div class="item" data-index="@context.Index" style="min-height: @(context.Height)px; line-height: @(context.Height)px;">Item @context.Index</div>
@@ -76,6 +79,10 @@
 </div>
 
 <p id="status">@statusMessage</p>
+<label><input id="enable-row-navigation" type="checkbox" @bind="keyboardNavigation" /> Enable row keyboard navigation</label>
+<p id="provider-call-count">@providerCallCount</p>
+<p id="provider-start-index">@providerStartIndex</p>
+<p id="activated-row">@activatedRow</p>
 
 @code {
     private sealed class Row
@@ -89,6 +96,12 @@
     private bool useVariableHeight;
     private bool useItemsProvider;
     private bool useProviderDelay;
+    private bool keyboardNavigation;
+    private int providerCallCount;
+    private int providerStartIndex;
+    private int activatedRow = -1;
+
+    private void ActivateRow(Row row) => activatedRow = row.Index;
 
     private QuickGrid<Row> providerGrid = default!;
     private QuickGrid<Row> itemsGrid = default!;
@@ -147,6 +160,9 @@
         }
 
         var count = request.Count ?? rows.Count;
+        providerCallCount++;
+        providerStartIndex = request.StartIndex;
+        StateHasChanged();
         var result = rows.Skip(request.StartIndex).Take(count)
             .Select(r => new Row { Index = r.Index, Height = r.Height })
             .ToList();

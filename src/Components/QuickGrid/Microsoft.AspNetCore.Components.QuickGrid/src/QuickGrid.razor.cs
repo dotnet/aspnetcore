@@ -154,7 +154,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public Func<TGridItem, string?>? RowClass { get; set; }
 
     /// <summary>
-    /// Optional. A callback that is invoked when a row is clicked.
+    /// Optional. A callback that is invoked when a row is clicked or activated with Enter.
+    /// When supplied, the table is exposed as an interactive grid. Tab enters the grid at a data row,
+    /// arrow keys navigate rows and cells, and Enter activates the focused row.
+    /// Left and Right cycle through the cells and the whole row.
+    /// Leaving the grid resets keyboard entry to the first visible data row.
+    /// Enter or F2 in a cell accesses its controls; Escape returns to the cell.
+    /// This does not enable row selection.
     /// </summary>
     [Parameter] public EventCallback<TGridItem> OnRowClick { get; set; }
 
@@ -171,6 +177,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private ElementReference _tableReference;
     private Virtualize<(int, TGridItem)>? _virtualizeComponent;
     private int _ariaBodyRowCount;
+    private int _virtualizedDataRowCount;
     private ICollection<TGridItem> _currentNonVirtualizedViewItems = Array.Empty<TGridItem>();
 
     private IEqualityComparer<TGridItem>? _itemComparer;
@@ -325,6 +332,18 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         {
             _checkColumnOptionsPosition = false;
             _ = _jsModule?.InvokeVoidAsync("checkColumnOptionsPosition", _tableReference).AsTask();
+        }
+    }
+
+    private async Task NavigateToRowAsync()
+    {
+        if (OnRowClick.HasDelegate && _virtualizeComponent is not null && _jsModule is not null)
+        {
+            var rowIndex = await _jsModule.InvokeAsync<int?>("getPendingRowIndex", _tableReference);
+            if (rowIndex.HasValue)
+            {
+                await _virtualizeComponent.ScrollToItemAsync(rowIndex.Value);
+            }
         }
     }
 
@@ -581,7 +600,15 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // the current viewport. In the case where you're also paginating then it means what's conceptually on the current page.
             // TODO: This currently assumes we always want to expand the last page to have ItemsPerPage rows, but the experience might
             //       be better if we let the last page only be as big as its number of actual rows.
-            _ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
+            var ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
+            var dataRowCount = Pagination is null ? providerResult.TotalItemCount
+                : Math.Clamp(providerResult.TotalItemCount - Pagination.CurrentPageIndex * Pagination.ItemsPerPage, 0, Pagination.ItemsPerPage);
+            if (_ariaBodyRowCount != ariaBodyRowCount || _virtualizedDataRowCount != dataRowCount)
+            {
+                _ariaBodyRowCount = ariaBodyRowCount;
+                _virtualizedDataRowCount = dataRowCount;
+                StateHasChanged();
+            }
 
             Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount);
 

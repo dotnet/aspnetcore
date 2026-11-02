@@ -33,6 +33,8 @@
     }
 </div>
 
+<label><input id="prepend-row-on-click" type="checkbox" @bind="prependRowOnClick" /> Prepend a row when activated</label>
+
 @code {
     record Person(int PersonId, string FirstName, string LastName, DateOnly BirthDate);
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
@@ -40,11 +42,17 @@
     QuickGrid<Person> quickGridRef;
     Person clickedPerson;
     int clickCount;
+    bool prependRowOnClick;
 
     void HandleRowClick(Person person)
     {
         clickedPerson = person;
         clickCount++;
+        if (prependRowOnClick)
+        {
+            people = people.Prepend(new Person(0, "New", "Person", new DateOnly(2000, 1, 1))).AsQueryable();
+            prependRowOnClick = false;
+        }
     }
 
     int ComputeAge(DateOnly birthDate)

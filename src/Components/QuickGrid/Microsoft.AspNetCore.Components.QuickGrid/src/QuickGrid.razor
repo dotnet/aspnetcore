@@ -10,7 +10,7 @@
         @{ FinishCollectingColumns(); }
         <ColumnsCollectedNotifier TGridItem="TGridItem" />
 
-        <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="HideColumnOptionsAsync" @attributes="AdditionalAttributes" class="@GridClass()">
+        <table theme="@Theme" role="@(OnRowClick.HasDelegate ? "grid" : null)" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="HideColumnOptionsAsync" @onquickgridnavigate="NavigateToRowAsync" @attributes="AdditionalAttributes" data-row-navigation="@(OnRowClick.HasDelegate ? (Virtualize ? "virtualize" : "true") : null)" data-row-count="@(OnRowClick.HasDelegate && Virtualize ? _virtualizedDataRowCount : (int?)null)" class="@GridClass()">
             <thead>
                 <tr>
                     @_renderColumnHeaders
@@ -58,7 +58,7 @@
                 <tr>
                     @foreach (var col in _columns)
                     {
-                        <td class="@ColumnClass(col)" @key="@col"></td>
+                        <td role="@(OnRowClick.HasDelegate ? "gridcell" : null)" class="@ColumnClass(col)" @key="@col"></td>
                     }
                 </tr>
             }
@@ -79,7 +79,7 @@
             @onclick="@rowClick">
             @foreach (var col in _columns)
             {
-                <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
+                <td role="@(OnRowClick.HasDelegate ? "gridcell" : null)" class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
             }
         </tr>
     }
@@ -89,7 +89,7 @@
         <tr aria-rowindex="@(placeholderContext.Index + 1)" data-blazor-virtualize-reserved-height="@placeholderContext.Size.ToString(System.Globalization.CultureInfo.InvariantCulture)">
             @foreach (var col in _columns)
             {
-                <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
+                <td role="@(OnRowClick.HasDelegate ? "gridcell" : null)" class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
             }
         </tr>
     }
