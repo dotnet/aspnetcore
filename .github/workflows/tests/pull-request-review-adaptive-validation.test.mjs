@@ -1104,6 +1104,43 @@ try {
   assert.match(
     verifierWithoutDecision.stderr,
     /Candidate verifier 'candidate-verifier' was not collected/);
+
+  const runtimeIdleReadWorker = runVerifier([
+    taskStarted('call_task1', 'guide-one'),
+    workerStarted('call_task1', '23871449-d358-43e9-9d8f-6ce940dbb4ad'),
+    workerCompleted('call_task1', '23871449-d358-43e9-9d8f-6ce940dbb4ad'),
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolCallId: '192396e8-4f94-4f67-b926-2c8de862d775',
+        toolName: 'read_agent',
+        arguments: { agent_id: '23871449-d358-43e9-9d8f-6ce940dbb4ad', since_turn: 0 },
+      },
+    },
+    readCompleted(
+      '192396e8-4f94-4f67-b926-2c8de862d775',
+      'Agent is idle.\n\nPATH: per-guide-worker — docs/CrossCuttingGuidance.md only\nRESULT: complete'),
+    ...publication(),
+  ], '1');
+  assert.equal(runtimeIdleReadWorker.status, 0, runtimeIdleReadWorker.stderr);
+
+  const nonUuidMissingWaitRejected = runVerifier([
+    taskStarted('call_task1', 'guide-one'),
+    workerStarted('call_task1', '23871449-d358-43e9-9d8f-6ce940dbb4ad'),
+    workerCompleted('call_task1', '23871449-d358-43e9-9d8f-6ce940dbb4ad'),
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolCallId: 'call_model_omitted_wait',
+        toolName: 'read_agent',
+        arguments: { agent_id: '23871449-d358-43e9-9d8f-6ce940dbb4ad', since_turn: 0 },
+      },
+    },
+    readCompleted('call_model_omitted_wait'),
+    ...publication(),
+  ], '1');
+  assert.notEqual(nonUuidMissingWaitRejected.status, 0);
+  assert.match(nonUuidMissingWaitRejected.stderr, /wait: true/);
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }

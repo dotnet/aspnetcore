@@ -187,7 +187,7 @@ must read every assigned non-source file to EOF through native `view` or `read_f
 using `view_range` or the equivalent `read_file` offset and limit until the final line.
 It must not invoke `bash`, `shell`, or `powershell`, and may use native `rg`, `grep`, or
 `glob` only beneath its assigned frozen source roots. A worker labels its own report
-`PATH: per-guide-worker` and names only its assigned guide; only the coordinator labels
+with a standalone `PATH: per-guide-worker` line and names only its assigned guide; only the coordinator labels
 the combined result `PATH: per-guide`. Do not label a per-guide worker
 `single-reviewer` or claim that its own guide result completes the entire PR. If a
 worker fails or does not return, record that guide as incomplete rather than
@@ -249,9 +249,11 @@ uncertainty on `intent`, `overlap`, `oldVsNew`, or `contract` as reason to inclu
 candidate in the provisional verifier set rather than pre-filtering it to `UNRESOLVED`
 before verification. If that provisional `NEW_FINDINGS` set is nonempty, launch exactly
 one fresh `review-candidate-verifier` custom agent for the PR, once, using
-`mode: "background"`, wait for its completion notification, and collect its report with
-`read_agent` using `wait: true` (every `read_agent` call must pass `wait: true`; never
-issue a status-only `read_agent` or a `write_agent` follow-up to the verifier). This is a
+`mode: "background"`, stay in your turn, and collect its report with
+`read_agent` using `wait: true` (repeating on timeout if needed; every model-issued `read_agent` call must pass
+`wait: true`, while a runtime-synthesized `agent_idle` `read_agent` delivery after
+`subagent.completed` is also valid; never issue a status-only `read_agent` or a
+`write_agent` follow-up to the verifier). This is a
 coordinator-owned post-gate verifier, not a routed guide worker; it does not change the
 one-worker-per-guide count or any per-guide worker invariant. Use the same explicitly
 selected model and reasoning effort as the guide workers. Give it the trusted bundle
@@ -320,8 +322,7 @@ discarded items never displace verified findings or questions),
 review reference), `UNRESOLVED` (every unresolved candidate and exact missing evidence,
 including any surfaced inline), `DISCARDED`
 (every discarded candidate or worker-discarded routine negative topic check and its
-precise source reason, identifying any candidate surfaced inline), `TEST_BOUNDARY` (source-only or exact coordinator
-validation commands, results, temporary test files, and limitations), and `LIMITATIONS`. Each
+precise source reason, identifying any candidate surfaced inline), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
 `NEW_FINDINGS` entry contains a one-line claim (prefixed with `[UNRESOLVED] ` when
 `confidence` is `unresolved` or `[DISCARDED] ` when `confidence` is `discarded`); `file:line`; severity (`P1` for
 broken/incorrect common usage or data loss, `P2` for incorrect behavior in a realistic

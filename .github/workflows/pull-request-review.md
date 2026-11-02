@@ -422,7 +422,11 @@ post-steps:
               `read_agent targeted unknown worker '${target ?? '<missing>'}'.`);
             return;
           }
-          if (input.wait !== true) {
+          const isRuntimeIdleRead =
+            input.wait === undefined &&
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+              event.data?.toolCallId ?? '');
+          if (input.wait !== true && !isRuntimeIdleRead) {
             violations.push(
               `read_agent for '${worker.name}' must use wait: true.`);
           }
@@ -460,7 +464,7 @@ post-steps:
             content.trim().length > 0 &&
             (worker.isVerifier
               ? /"?decision"?\s*:\s*"?(?:KEEP|DOWNGRADE|DROP)\b/.test(content)
-              : /^[ \t]*PATH:[ \t]*per-guide-worker[ \t]*$/m.test(content))) {
+              : /^[ \t]*PATH:[ \t]*per-guide-worker\b/m.test(content))) {
             worker.collections.push(completion);
           }
         });
