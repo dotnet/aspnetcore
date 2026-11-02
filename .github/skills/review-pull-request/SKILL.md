@@ -246,33 +246,19 @@ tests or repros when doing so is the smallest faithful way to decide a material
 candidate. Use the smallest command that exercises the disputed producer and observable
 effect; do not run a repository-wide build or test suite merely for reassurance.
 
-For a clean managed-project validation on Linux, start from the validation worktree
-root with `./eng/build.sh -projects "$PWD/<selected-project.csproj>" -restore`, not
-`dotnet test --no-restore`. The repository wrapper bootstraps its pinned SDK and
-restores the build inputs before building the selected project graph. Pass an absolute
-project path: `eng/build.sh` resolves relative `-projects` paths under `eng/`, not the
-repository root. Before each later `dotnet` command, activate in that same shell with
-`source ./activate.sh && dotnet ...`.
-If generated `Directory.Build.props` or targets are still missing, activate the SDK,
-run `dotnet msbuild eng/tools/GenerateFiles/GenerateFiles.csproj -target:Restore`
-followed by `dotnet msbuild eng/tools/GenerateFiles/GenerateFiles.csproj -target:GenerateDirectoryBuildFiles`,
-then retry the selected project command. This prepares repository build inputs; it is
-not evidence that any selected test executed.
-
-For managed-only Components tests, opt out of JavaScript and generated web assets only
-when neither is part of the disputed behavior. In a frozen tree that supports these
-switches, pass both `-p:BuildNodeJS=false` and `-p:IncludeComponentsWebAssets=false`
-to the selected-project build and test commands; the first switch alone does not
-remove the internal static-asset reference. Use `--msbuildMultiThreaded false` on
-constrained hosted runners. Verify `src/submodules/MessagePack-CSharp` is present at
-the frozen gitlink. Hosted preparation uses the trusted dependency helper for these
-pinned public sources without opening GitHub egress to target execution. In a native
-worktree with missing sources, run
-`node <installed-skill-dir>/scripts/prepare-validation-dependencies.mjs <worktree> <head>`
-from the trusted guidance copy, never target-owned tooling. After bootstrap, use
-`--test --no-restore --no-build` with a
-`TestRunnerAdditionalArguments="-class <fully-qualified-test-class>"` selector.
-Do not report browser, JavaScript, static-asset or package-content validation from this path.
+To restore, build, and run targeted managed tests in the validation worktree, run
+`node <installed-skill-dir>/scripts/run-targeted-validation.mjs --worktree <worktree> --head <manifest.target.head> --project <project.csproj> --class <fully-qualified-test-class> [--method <fully-qualified-method>] [--managed-only]`
+from the trusted guidance copy, never target-owned tooling. The helper verifies the
+frozen worktree head and pinned `src/submodules/MessagePack-CSharp` gitlink (materializing
+missing sources when egress permits), resolves the project path, bootstraps the pinned
+SDK and generated `Directory.Build.*` inputs through `eng/build.*`, executes the
+selected xUnit classes or methods, and verifies from the xUnit XML receipt that the
+requested selectors executed. Pass `--managed-only` only when JavaScript and generated
+web assets are not part of the disputed behavior; do not report browser, JavaScript,
+static-asset, or package-content validation from a `--managed-only` run. For custom
+diagnostic `dotnet` commands after bootstrap, activate the pinned SDK in that same
+shell first (`source ./activate.sh && dotnet ...` on Linux/macOS or
+`. .\activate.ps1; dotnet ...` on Windows).
 
 Temporary validation edits are diagnostic only. Do not commit, push, publish, or include
 them in a safe output. Record the files changed for validation and the before/after

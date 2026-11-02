@@ -749,12 +749,16 @@ pre-agent-steps:
       set -euo pipefail
       [[ "${GITHUB_WORKFLOW_SHA:-}" =~ ^[a-f0-9]{40}$ ]]
       producer_dir="$(mktemp -d "${RUNNER_TEMP}/review-producer.XXXXXX")"
-      for filename in prepare-review.cs prepare-validation-dependencies.mjs Directory.Build.props Directory.Build.targets Directory.Packages.props; do
+      for filename in prepare-review.cs prepare-validation-dependencies.mjs run-targeted-validation.mjs Directory.Build.props Directory.Build.targets Directory.Packages.props; do
         gh api -H 'Accept: application/vnd.github.raw' \
           "repos/$REVIEW_REPO/contents/.github/skills/review-pull-request/scripts/$filename?ref=$GITHUB_WORKFLOW_SHA" \
           > "$producer_dir/$filename"
         test -s "$producer_dir/$filename"
       done
+      install -d .github/skills/review-pull-request/scripts
+      cp "$producer_dir/prepare-validation-dependencies.mjs" \
+        "$producer_dir/run-targeted-validation.mjs" \
+        .github/skills/review-pull-request/scripts/
       dotnet run "$producer_dir/prepare-review.cs" -- \
         --repo "$REVIEW_REPO" --pr "$REVIEW_PR" --head "$REVIEW_HEAD" \
         --base-tip "$REVIEW_BASE" --merge-base "$REVIEW_MERGE_BASE" --base-ref "$REVIEW_BASE_REF" \
@@ -791,8 +795,8 @@ pre-agent-steps:
         echo "::warning::The optional validation worktree could not be prepared; source review will continue."
         rm -rf -- "$worktree"
       fi
-      sudo chown -R root:root /tmp/gh-aw/review-bundle
-      sudo chmod -R a+rX,a-w /tmp/gh-aw/review-bundle
+      sudo chown -R root:root /tmp/gh-aw/review-bundle .github/skills/review-pull-request
+      sudo chmod -R a+rX,a-w /tmp/gh-aw/review-bundle .github/skills/review-pull-request
 
 # Keep reviewer inference credentials isolated through the shared PAT-pool convention.
 imports:
