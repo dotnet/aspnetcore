@@ -151,7 +151,10 @@ test('RejectsAlreadyMaterializedDependencyWhenDirtyOrWrongCommit', () => fixture
 test('PropagatesDependencyAcquisitionFailureAndLeavesDestinationCleanForRetry', () => fixture(f => {
   assert.throws(() => prepareValidationDependencies(f.worktree, f.head, {
     fetch: () => { throw new Error('fixture acquisition failed'); },
-  }), /fixture acquisition failed/);
+  }), error => error?.code === 'VALIDATION_DEPENDENCY_FETCH_FAILED' && /fixture acquisition failed/.test(error.message));
+  assert.throws(() => prepareValidationDependencies(f.worktree, f.head, {
+    allowFetch: false,
+  }), error => error?.code === 'VALIDATION_DEPENDENCY_FETCH_FAILED' && /network fetch is disabled/.test(error.message));
   assert.deepEqual(fs.readdirSync(path.join(f.worktree, modulePath)), []);
   assert.equal(f.git(f.worktree, 'rev-parse', 'HEAD'), f.head);
   const retried = prepareValidationDependencies(f.worktree, f.head, { fetch: f.fetch });
@@ -170,7 +173,8 @@ test('AdapterLoadsTheTrustedHelperAndRetainsSourceReviewOnPreparationFailure', (
     }
     assert.match(source, /for filename in prepare-review\.cs prepare-validation-dependencies\.mjs run-targeted-validation\.mjs/);
     assert.match(source, /cp "\$producer_dir\/prepare-validation-dependencies\.mjs"/);
-    assert.match(source, /node "\$producer_dir\/prepare-validation-dependencies\.mjs" "\$worktree" "\$REVIEW_HEAD" &&/);
+    assert.match(source, /\(node "\$producer_dir\/prepare-validation-dependencies\.mjs" "\$worktree" "\$REVIEW_HEAD" \|\| \{/);
+    assert.match(source, /Pinned validation dependencies could not be pre-populated; projects that do not require them may still validate\./);
     assert.match(source, /optional validation worktree could not be prepared; source review will continue/);
   }
 });
@@ -201,6 +205,11 @@ test('ParseValidationArgsValidatesRequiredFlagsAndSelectors', () => {
   assert.throws(() => parseValidationArgs([
     '--worktree', '/tmp/w', '--head', head, '--project', 'a.csproj', '--class', 'Foo`id`Bar',
   ]), /Invalid test selector/);
+  for (const invalidMethod of ['UnqualifiedFact', '.LeadingDot', 'TrailingDot.']) {
+    assert.throws(() => parseValidationArgs([
+      '--worktree', '/tmp/w', '--head', head, '--project', 'a.csproj', '--method', invalidMethod,
+    ]), /Invalid test selector|Invalid test method selector/);
+  }
   assert.throws(() => parseValidationArgs([
     '--worktree', '/tmp/w', '--head', head, '--project', 'a.csproj', '--class', 'Foo.Test', '--unknown',
   ]), /Unsupported argument/);
@@ -415,6 +424,15 @@ test('RunTargetedValidationFailsClosedWhenZeroTestsExecuteOrSelectorMissesOrStal
             `<test type="MyNamespace.MyTest" method="Fact2" name="MyNamespace.MyTest.Fact2" result="Skip" />` +
             `</collection></assembly></assemblies>\n`
         );
+      } else if (mode === 'missing-result-attribute') {
+        writeXunitXml(
+          f.worktree,
+          'Microsoft.AspNetCore.Components.Tests',
+          `<assemblies><assembly total="1" passed="1" failed="0" skipped="0">` +
+            `<collection>` +
+            `<test type="MyNamespace.MyTest" method="Fact1" name="MyNamespace.MyTest.Fact1" />` +
+            `</collection></assembly></assemblies>\n`
+        );
       }
     }
     return { status: 0, stdout: 'Exit 0 without matching tests\n', stderr: '' };
@@ -426,6 +444,7 @@ test('RunTargetedValidationFailsClosedWhenZeroTestsExecuteOrSelectorMissesOrStal
     'wrong-selector',
     'misleading-display-name',
     'skipped-requested-selector',
+    'missing-result-attribute',
   ]) {
     mode = currentMode;
     const receipt = runTargetedValidation({
@@ -441,6 +460,71 @@ test('RunTargetedValidationFailsClosedWhenZeroTestsExecuteOrSelectorMissesOrStal
     assert.equal(receipt.status, 'no_tests_executed', `Expected no_tests_executed for mode ${currentMode}`);
     assert.equal(receipt.exitCode, 2);
   }
+}));
+
+test('RunTargetedValidationCanonicalizesSymlinkedWorktreeParentAndContinuesWhenDependencyFetchFails', () => validationFixture(f => {
+  const aliasParent = path.join(f.root, 'alias-parent');
+  fs.symlinkSync(
+    path.dirname(f.worktree),
+    aliasParent,
+    process.platform === 'win32' ? 'junction' : 'dir'
+  );
+  const aliasedWorktree = path.join(aliasParent, path.basename(f.worktree));
+  const canonicalProject = fs.realpathSync(f.projectFull);
+  const aliasedProject = path.join(aliasedWorktree, f.projectRel);
+
+  const spawn = (program, args, options) => {
+    if (program === 'git') {
+      const stdout = execFileSync(program, args, { ...options, encoding: 'utf8' });
+      return { status: 0, stdout, stderr: '' };
+    }
+    if (args.includes('--test')) {
+      writeXunitXml(
+        f.worktree,
+        'Microsoft.AspNetCore.Components.Tests',
+        `<assemblies><assembly total="1" passed="1" failed="0" skipped="0">` +
+          `<collection><test type="MyNamespace.MyTest" name="MyNamespace.MyTest.Fact1" result="Pass" />` +
+          `</collection></assembly></assemblies>\n`
+      );
+    }
+    return { status: 0, stdout: 'ok\n', stderr: '' };
+  };
+
+  for (const projectInput of [f.projectRel, canonicalProject, aliasedProject]) {
+    const receipt = runTargetedValidation({
+      worktree: aliasedWorktree,
+      head: f.head,
+      project: projectInput,
+      classes: ['MyNamespace.MyTest'],
+      methods: [],
+      managedOnly: true,
+    }, {
+      platform: 'linux',
+      spawn,
+      prepareDependencies: () => {
+        const error = new Error('transient fetch failure');
+        error.code = 'VALIDATION_DEPENDENCY_FETCH_FAILED';
+        throw error;
+      },
+    });
+    assert.equal(receipt.status, 'passed');
+    assert.equal(receipt.worktree, fs.realpathSync(f.worktree));
+    assert.equal(receipt.phases[0].command[3], canonicalProject);
+    assert.ok(receipt.limitations.some(item => item.startsWith('dependency-unavailable:')));
+  }
+
+  assert.throws(() => runTargetedValidation({
+    worktree: aliasedWorktree,
+    head: f.head,
+    project: f.projectRel,
+    classes: ['MyNamespace.MyTest'],
+  }, {
+    platform: 'linux',
+    spawn,
+    prepareDependencies: () => {
+      throw new Error('Validation dependency path must not traverse a symlink.');
+    },
+  }), /must not traverse a symlink/);
 }));
 
 test('RunTargetedValidationRejectsProjectEscapeAndHeadMismatch', () => validationFixture(f => {

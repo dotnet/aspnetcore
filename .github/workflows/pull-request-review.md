@@ -788,7 +788,10 @@ pre-agent-steps:
             refs/review/base-tip:refs/remotes/review/base-tip &&
           git -C "$worktree" -c core.hooksPath=/dev/null checkout --quiet --detach refs/remotes/review/head &&
           test "$(git -C "$worktree" rev-parse HEAD)" = "$REVIEW_HEAD" &&
-          node "$producer_dir/prepare-validation-dependencies.mjs" "$worktree" "$REVIEW_HEAD" &&
+          (node "$producer_dir/prepare-validation-dependencies.mjs" "$worktree" "$REVIEW_HEAD" || {
+            echo "::warning::Pinned validation dependencies could not be pre-populated; projects that do not require them may still validate."
+            true
+          }) &&
           test -z "$(git -C "$worktree" status --porcelain)"; then
         :
       else

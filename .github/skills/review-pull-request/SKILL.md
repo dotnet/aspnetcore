@@ -247,8 +247,9 @@ candidate. Use the smallest command that exercises the disputed producer and obs
 effect; do not run a repository-wide build or test suite merely for reassurance.
 
 To restore, build, and run targeted managed tests in the validation worktree, run
-`node <installed-skill-dir>/scripts/run-targeted-validation.mjs --worktree <worktree> --head <manifest.target.head> --project <project.csproj> --class <fully-qualified-test-class> [--method <fully-qualified-method>] [--managed-only]`
-from the trusted guidance copy, never target-owned tooling. The helper verifies the
+`node <installed-skill-dir>/scripts/run-targeted-validation.mjs --worktree <worktree> --head <manifest.target.head> --project <project.csproj> [--class <fully-qualified-test-class>] [--method <fully-qualified-class.method>] [--managed-only]`
+(with at least one `--class` or `--method` selector) from the trusted guidance copy,
+never target-owned tooling. The helper verifies the
 frozen worktree head and pinned `src/submodules/MessagePack-CSharp` gitlink (materializing
 missing sources when egress permits), resolves the project path, bootstraps the pinned
 SDK and generated `Directory.Build.*` inputs through `eng/build.*`, executes the

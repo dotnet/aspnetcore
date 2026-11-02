@@ -18,7 +18,7 @@ export function prepareValidationDependencies(
   if (!worktreeStat?.isDirectory() || worktreeStat.isSymbolicLink()) {
     throw new Error('Validation worktree must be a non-symlink directory.');
   }
-  const resolvedWorktree = path.resolve(worktree);
+  const resolvedWorktree = fs.realpathSync(worktree);
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'review-dependencies-'));
   try {
     const hooks = path.join(scratch, 'disabled-hooks');
@@ -77,15 +77,24 @@ export function prepareValidationDependencies(
       throw new Error('Validation dependency destination must be empty or match the clean frozen gitlink.');
     }
     if (!allowFetch) {
-      throw new Error('Validation dependency is missing and network fetch is disabled.');
+      const error = new Error('Validation dependency is missing and network fetch is disabled.');
+      error.code = 'VALIDATION_DEPENDENCY_FETCH_FAILED';
+      throw error;
     }
     const staged = path.join(scratch, 'staged');
     fs.mkdirSync(staged);
     git('init', '--quiet', staged);
     // Ignore target-controlled .gitmodules URLs; acquire only this frozen public dependency.
-    fetch('git', [...prefix, '-C', staged, 'fetch', '--quiet', '--no-tags',
-      '--no-recurse-submodules', '--depth=1', repository, match[1]], options);
-    git('-C', staged, 'checkout', '--quiet', '--detach', 'FETCH_HEAD');
+    try {
+      fetch('git', [...prefix, '-C', staged, 'fetch', '--quiet', '--no-tags',
+        '--no-recurse-submodules', '--depth=1', repository, match[1]], options);
+      git('-C', staged, 'checkout', '--quiet', '--detach', 'FETCH_HEAD');
+    } catch (error) {
+      if (error && typeof error === 'object') {
+        error.code = 'VALIDATION_DEPENDENCY_FETCH_FAILED';
+      }
+      throw error;
+    }
     if (git('-C', staged, 'rev-parse', 'HEAD') !== match[1]) {
       throw new Error('Validation dependency head differs from the frozen gitlink.');
     }

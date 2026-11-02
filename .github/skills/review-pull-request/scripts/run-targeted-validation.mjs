@@ -57,7 +57,7 @@ export function parseValidationArgs(argv) {
   if (!worktree || !head || !project) {
     throw new Error(
       'Usage: run-targeted-validation.mjs --worktree WORKTREE --head FROZEN_HEAD --project PROJECT.csproj ' +
-      '[--class CLASS] [--method METHOD] [--managed-only]');
+      '[--class CLASS] [--method CLASS.METHOD] [--managed-only]');
   }
   if (!/^[a-f0-9]{40}$/.test(head)) {
     throw new Error('Expected a full frozen validation head.');
@@ -70,18 +70,33 @@ export function parseValidationArgs(argv) {
       throw new Error(`Invalid test selector: ${selector}`);
     }
   }
+  for (const method of methods) {
+    const separator = method.lastIndexOf('.');
+    if (separator <= 0 || separator === method.length - 1) {
+      throw new Error(`Invalid test method selector (expected Namespace.Class.Method): ${method}`);
+    }
+  }
   return { worktree, head, project, classes, methods, managedOnly };
 }
 
-function resolveContainedProject(resolvedWorktree, projectInput) {
+function isOutsideRoot(relative) {
+  return !relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative);
+}
+
+function resolveContainedProject(resolvedWorktree, projectInput, lexicalWorktree = resolvedWorktree) {
   if (typeof projectInput !== 'string' || projectInput.length === 0 || projectInput.includes('\0')) {
     throw new Error('Project path must be a non-empty path inside the validation worktree.');
   }
-  const candidate = path.isAbsolute(projectInput)
-    ? path.resolve(projectInput)
-    : path.resolve(resolvedWorktree, projectInput);
-  const relative = path.relative(resolvedWorktree, candidate);
-  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+  let relative;
+  if (path.isAbsolute(projectInput)) {
+    const resolvedInput = path.resolve(projectInput);
+    const fromCanonical = path.relative(resolvedWorktree, resolvedInput);
+    const fromLexical = path.relative(lexicalWorktree, resolvedInput);
+    relative = !isOutsideRoot(fromCanonical) ? fromCanonical : fromLexical;
+  } else {
+    relative = path.relative(resolvedWorktree, path.resolve(resolvedWorktree, projectInput));
+  }
+  if (isOutsideRoot(relative)) {
     throw new Error('Project path must stay within the validation worktree.');
   }
   const parts = relative.split(path.sep);
@@ -96,6 +111,7 @@ function resolveContainedProject(resolvedWorktree, projectInput) {
       throw new Error('Selected project path must not traverse a symlink.');
     }
   }
+  const candidate = path.join(resolvedWorktree, relative);
   if (!candidate.endsWith('.csproj') || !fs.statSync(candidate).isFile()) {
     throw new Error('Selected project path must be an existing .csproj file.');
   }
@@ -211,7 +227,7 @@ function parseXunitResultXml(xmlText) {
 
 function matchesRequestedSelectors(testEntries, classes, methods) {
   const executedEntries = testEntries.filter(
-    entry => entry.result !== 'Skip' && (entry.result === 'Pass' || entry.result === 'Fail' || entry.result === '')
+    entry => entry.result === 'Pass' || entry.result === 'Fail'
   );
   if (executedEntries.length === 0) {
     return false;
@@ -265,18 +281,28 @@ export function runTargetedValidation(
   if (!worktreeStat?.isDirectory() || worktreeStat.isSymbolicLink()) {
     throw new Error('Validation worktree must be a non-symlink directory.');
   }
-  const resolvedWorktree = path.resolve(options.worktree);
+  const lexicalWorktree = path.resolve(options.worktree);
+  const resolvedWorktree = fs.realpathSync(options.worktree);
   verifyWorktreeHead(resolvedWorktree, options.head, spawn);
 
   const { absoluteProject, relativeProject, projectBaseName } =
-    resolveContainedProject(resolvedWorktree, options.project);
-  const dependencies = prepareDependencies(resolvedWorktree, options.head);
+    resolveContainedProject(resolvedWorktree, options.project, lexicalWorktree);
+  const limitations = [];
+  let dependencies = [];
+  try {
+    dependencies = prepareDependencies(resolvedWorktree, options.head);
+  } catch (error) {
+    if (error?.code !== 'VALIDATION_DEPENDENCY_FETCH_FAILED') {
+      throw error;
+    }
+    limitations.push(
+      'dependency-unavailable: pinned validation dependency could not be fetched; projects requiring it may fail to build');
+  }
   const capabilities = detectTreeCapabilities(resolvedWorktree);
 
   const isWindows = platform === 'win32';
   const propertyPrefix = isWindows ? '/p:' : '-p:';
   const managedFlags = [];
-  const limitations = [];
   if (options.managedOnly) {
     managedFlags.push(`${propertyPrefix}BuildNodeJS=false`);
     if (capabilities.supportsIncludeComponentsWebAssets) {
