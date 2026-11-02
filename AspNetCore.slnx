@@ -567,6 +567,7 @@
     <Project Path="src/Middleware/HostFiltering/test/Microsoft.AspNetCore.HostFiltering.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Middleware/HttpLogging/">
+    <Project Path="src/Middleware/HttpLogging/perf/Microbenchmarks/Microsoft.AspNetCore.HttpLogging.Microbenchmarks.csproj" />
     <Project Path="src/Middleware/HttpLogging/samples/HttpLogging.Sample/HttpLogging.Sample.csproj" />
     <Project Path="src/Middleware/HttpLogging/samples/Logging.W3C.Sample/Logging.W3C.Sample.csproj" />
     <Project Path="src/Middleware/HttpLogging/src/Microsoft.AspNetCore.HttpLogging.csproj" />
