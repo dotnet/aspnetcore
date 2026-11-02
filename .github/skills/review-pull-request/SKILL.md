@@ -147,9 +147,12 @@ to every worker; when omitted, omit the effort setting and record
 `not supplied (runtime default)`. Use `mode: "background"` so the same worker can receive
 follow-ups through `write_agent`. After the `task` calls return, stay in your turn and
 collect each worker's actual report with `read_agent` using `wait: true` (repeating on
-timeout if needed) rather than ending your response to wait for a completion
-notification; after each same-worker clarification, collect its completed follow-up the
-same way before synthesis. Record each
+timeout if needed; every model-issued `read_agent` call must pass `wait: true`, while a
+runtime-synthesized `agent_idle` `read_agent` event with a bare-UUID `toolCallId` and
+`since_turn: 0` that delivers the completed `PATH: per-guide-worker` report after
+`subagent.completed` also satisfies collection; never issue a status-only `read_agent`)
+rather than ending your response to wait for a completion notification; after each
+same-worker clarification, collect its completed follow-up the same way before synthesis. Record each
 requested agent type, model, and effort plus any runtime-reported values; record missing
 runtime telemetry as `unknown`, which alone does not make a guide incomplete. A confirmed
 mismatch, runtime rejection, or inability to apply an explicitly requested setting makes
@@ -245,8 +248,11 @@ that were not already disproven by a direct same-path old/new check. Treat coord
 uncertainty on `intent`, `overlap`, `oldVsNew`, or `contract` as reason to include the
 candidate in the provisional verifier set rather than pre-filtering it to `UNRESOLVED`
 before verification. If that provisional `NEW_FINDINGS` set is nonempty, launch exactly
-one fresh `review-candidate-verifier` custom agent for the PR, once. This is a coordinator-owned
-post-gate verifier, not a routed guide worker; it does not change the
+one fresh `review-candidate-verifier` custom agent for the PR, once, using
+`mode: "background"`, wait for its completion notification, and collect its report with
+`read_agent` using `wait: true` (every `read_agent` call must pass `wait: true`; never
+issue a status-only `read_agent` or a `write_agent` follow-up to the verifier). This is a
+coordinator-owned post-gate verifier, not a routed guide worker; it does not change the
 one-worker-per-guide count or any per-guide worker invariant. Use the same explicitly
 selected model and reasoning effort as the guide workers. Give it the trusted bundle
 root; the role-to-root mapping for the frozen `source/<sha>` roots; the exact diff and
