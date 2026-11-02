@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
@@ -106,16 +107,25 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract validatable types discovered in union cases and add them to the top-level list.
         var hasValidatableUnionCases = false;
+        var skippedUnionCaseTypes = ImmutableArray<string>.Empty;
         if (typeSymbol.IsUnion)
         {
+            var skipValidationAttributeSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
             foreach (var unionCaseType in typeSymbol.UnionCaseTypes)
             {
+                if (unionCaseType.HasAttribute(skipValidationAttributeSymbol) || unionCaseType.UnwrapType().HasAttribute(skipValidationAttributeSymbol))
+                {
+                    // Discovery elsewhere can still produce metadata for a skipped case or its elements.
+                    skippedUnionCaseTypes = skippedUnionCaseTypes.Add(unionCaseType.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                    continue;
+                }
+
                 hasValidatableUnionCases |= TryExtractValidatableType(unionCaseType, wellKnownTypes, validatableTypes, visitedTypes);
             }
         }
 
         // Extract validatable types discovered in members of this type and add them to the top-level list.
-        ImmutableArray<ValidatableProperty> members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes, hasValidatableUnionCases);
+        ImmutableArray<ValidatableProperty> members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes, hasValidatableUnionCases, skippedUnionCaseTypes);
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
         var derivedTypes = typeSymbol.GetJsonDerivedTypes(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonDerivedTypeAttribute));
@@ -196,7 +206,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         WellKnownTypes wellKnownTypes,
         HashSet<ValidatableType> validatableTypes,
         List<ITypeSymbol> visitedTypes,
-        bool hasValidatableUnionCases)
+        bool hasValidatableUnionCases,
+        ImmutableArray<string> skippedUnionCaseTypes)
     {
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
@@ -339,7 +350,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 TypeFQN: member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 Name: member.Name,
                 DisplayName: memberLiteral,
-                HasResourceDisplayAttribute: memberHasResource));
+                HasResourceDisplayAttribute: memberHasResource,
+                IsUnionValue: IsUnionValueProperty(member),
+                SkippedUnionCaseTypes: IsUnionValueProperty(member) ? skippedUnionCaseTypes : []));
         }
 
         return [.. members];

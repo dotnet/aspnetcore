@@ -206,4 +206,28 @@ public class UnionsController : ControllerBase
 
     [HttpPost]
     public UnionEnvelope EchoEnvelope([FromBody] UnionEnvelope value) => value;
+
+    [HttpPost]
+    public bool ValidateAdmin(UnionAdmin value) => ModelState.IsValid;
+
+    [HttpPost]
+    public bool ValidateUser(ValidatedUser value) => ModelState.IsValid;
+
+    [HttpPost]
+    public bool ValidateUserEnvelope(ValidatedUserEnvelope value) => ModelState.IsValid;
+
+    [HttpPost]
+    public bool ValidateOptionalUserEnvelope(OptionalValidatedUserEnvelope value) => ModelState.IsValid;
+
+    [HttpPost]
+    public bool ValidateRequiredNullableUserEnvelope(RequiredNullableValidatedUserEnvelope value) => ModelState.IsValid;
+
+    [HttpPost]
+    public bool ValidateUsers(ValidatedUser[] value) => ModelState.IsValid;
+
+    [HttpPost]
+    public bool ValidateNestedUser(NestedValidatedUser value) => ModelState.IsValid;
+
+    [HttpPost]
+    public bool ValidateSuppressedUserEnvelope(SuppressedValidatedUserEnvelope value) => ModelState.IsValid;
 }

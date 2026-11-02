@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -215,21 +216,26 @@ def build_context(pr: dict[str, Any], files: list[dict[str, Any]]) -> dict[str, 
     }
 
 
-def github_api(endpoint: str) -> Any:
+def github_api(endpoint: str, token: str | None = None) -> Any:
     command = ["gh", "api", "--method", "GET"]
-    if "/files?" in endpoint:
+    paginated = "per_page=100" in endpoint
+    if paginated:
         command.extend(["--paginate", "--slurp"])
-    response = subprocess.run([*command, endpoint], capture_output=True, text=True, encoding="utf-8")
+    response = subprocess.run(
+        [*command, endpoint], capture_output=True, text=True, encoding="utf-8",
+        **({"env": {**os.environ, "GH_TOKEN": token}} if token else {}),
+    )
     if response.returncode:
-        if "/files?" not in endpoint and "HTTP 404" in response.stderr:
+        if not paginated and "HTTP 404" in response.stderr:
             return None
         raise RuntimeError(f"GitHub API read failed: {response.stderr.strip()}")
     payload = json.loads(response.stdout)
-    return [file for page in payload for file in page] if "/files?" in endpoint else payload
+    return [item for page in payload for item in page] if paginated else payload
 
 
 def prepare_context(
     repository: str, number: str, directory: Path, api: Callable[[str], Any] = github_api,
+    metadata_only: bool = False,
 ) -> dict[str, Any]:
     directory.mkdir(parents=True, exist_ok=True)
     pr = api(f"/repos/{repository}/pulls/{number}") if (
@@ -240,14 +246,23 @@ def prepare_context(
     write_json(directory / "existing-draft.json", {"found": False, "blocked": False})
     if gate["status"] != "eligible":
         return gate
+    write_json(directory / "source-pr.json", pr)
+    if metadata_only:
+        return gate
+    prepare_analysis(repository, number, directory, pr, api)
+    return gate
+
+
+def prepare_analysis(
+    repository: str, number: str, directory: Path, pr: dict[str, Any],
+    api: Callable[[str], Any] = github_api,
+) -> None:
     files = api(f"/repos/{repository}/pulls/{number}/files?per_page=100")
     if not isinstance(files, list) or any(not isinstance(file, dict) for file in files):
         raise ValueError("Changed-file metadata must be a JSON array of objects.")
-    write_json(directory / "source-pr.json", pr)
     write_json(directory / "pr.json", build_context(pr, files))
     write_json(directory / "files.json", files)
     write_json(directory / "signals.json", compute_signals(pr, files))
-    return gate
 
 
 def write_json(path: Path, payload: Any) -> None:
