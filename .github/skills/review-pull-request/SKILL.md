@@ -246,6 +246,19 @@ tests or repros when doing so is the smallest faithful way to decide a material
 candidate. Use the smallest command that exercises the disputed producer and observable
 effect; do not run a repository-wide build or test suite merely for reassurance.
 
+For a clean managed-project validation on Linux, start from the validation worktree
+root with `./eng/build.sh -projects "$PWD/<selected-project.csproj>" -restore`, not
+`dotnet test --no-restore`. The repository wrapper bootstraps its pinned SDK and
+restores the build inputs before building the selected project graph. Pass an absolute
+project path: `eng/build.sh` resolves relative `-projects` paths under `eng/`, not the
+repository root. Before each later `dotnet` command, activate in that same shell with
+`source ./activate.sh && dotnet ...`.
+If generated `Directory.Build.props` or targets are still missing, activate the SDK,
+run `dotnet msbuild eng/tools/GenerateFiles/GenerateFiles.csproj -target:Restore`
+followed by `dotnet msbuild eng/tools/GenerateFiles/GenerateFiles.csproj -target:GenerateDirectoryBuildFiles`,
+then retry the selected project command. This prepares repository build inputs; it is
+not evidence that any selected test executed.
+
 Temporary validation edits are diagnostic only. Do not commit, push, publish, or include
 them in a safe output. Record the files changed for validation and the before/after
 behavior they establish. The coordinator may leave those edits in the ephemeral hosted
