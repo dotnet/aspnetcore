@@ -9,7 +9,7 @@ const workflowLock = path.join(repositoryRoot, '.github/workflows/pull-request-r
 const stepName = 'Reject incomplete or partial publication sets';
 
 function extractScript(filename) {
-  const lines = fs.readFileSync(filename, 'utf8').split('\n');
+  const lines = fs.readFileSync(filename, 'utf8').split(/\r?\n/);
   const step = lines.findIndex(line => line.trim() === `- name: ${stepName}`);
   assert.notEqual(step, -1, `${filename} does not contain the publication preflight step.`);
   const marker = lines.findIndex((line, index) => index > step && line.trim() === 'script: |');
