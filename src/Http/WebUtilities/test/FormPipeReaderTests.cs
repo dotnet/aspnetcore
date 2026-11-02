@@ -216,6 +216,7 @@ public class FormPipeReaderTests
         var bytes = CreateBytes_NoDelimiter(10 * 1024);
         var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(bytes);
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
         var valueLengthLimit = 1024;
         var keyLengthLimit = 10;
         var formReader = new FormPipeReader(null!)
@@ -224,7 +225,7 @@ public class FormPipeReaderTests
             KeyLengthLimit = keyLengthLimit
         };
         var exception = Assert.Throws<InvalidDataException>(
-            () => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false));
+            () => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: false));
         // Make sure that FormPipeReader throws an exception after hitting KeyLengthLimit + ValueLengthLimit,
         // Rather than after reading the entire request.
         Assert.Equal(string.Format(
@@ -258,9 +259,10 @@ public class FormPipeReaderTests
         var readOnlySequence = new ReadOnlySequence<byte>(encoding.GetBytes("foo=bar&baz=boo"));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
         var formReader = new FormPipeReader(null!, encoding);
 
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         Assert.Equal(2, accumulator.KeyCount);
@@ -276,9 +278,10 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!, encoding);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         Assert.Equal(3, accumulator.KeyCount);
@@ -295,13 +298,21 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!, encoding);
         formReader.KeyLengthLimit = int.MaxValue;
         formReader.ValueLengthLimit = int.MaxValue;
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+        // The trailing "t=" has no delimiter yet, so it stays buffered and is scanned except for the
+        // trailing bytes a multi-byte '&' could have started in.
+        var delimiterOverlap = encoding.GetBytes("&").Length - 1;
+        Assert.Equal(readOnlySequence.Length - delimiterOverlap, scannedLength);
+
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
+        Assert.Equal(0L, scannedLength);
 
         Assert.Equal(3, accumulator.KeyCount);
         var dict = accumulator.GetResults();
@@ -317,9 +328,10 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!, encoding);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         Assert.Equal(3, accumulator.KeyCount);
@@ -336,13 +348,21 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!, encoding);
         formReader.KeyLengthLimit = int.MaxValue;
         formReader.ValueLengthLimit = int.MaxValue;
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+        // The trailing "t=" has no delimiter yet, so it stays buffered and is scanned except for the
+        // trailing bytes a multi-byte '&' could have started in.
+        var delimiterOverlap = encoding.GetBytes("&").Length - 1;
+        Assert.Equal(readOnlySequence.Length - delimiterOverlap, scannedLength);
+
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
+        Assert.Equal(0L, scannedLength);
 
         Assert.Equal(3, accumulator.KeyCount);
         var dict = accumulator.GetResults();
@@ -358,9 +378,10 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=bo" + new string('a', 128)));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!, encoding);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         Assert.Equal(2, accumulator.KeyCount);
@@ -376,9 +397,10 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(encoding.GetBytes("+++=+++&++++=++++&+="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!, encoding);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         Assert.Equal(3, accumulator.KeyCount);
@@ -395,9 +417,10 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("++%2B=+++%2B&++++=++++&+="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!, encoding);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         Assert.Equal(3, accumulator.KeyCount);
@@ -414,9 +437,10 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(encoding.GetBytes("\"%-.<>\\^_`{|}~=\"%-.<>\\^_`{|}~&\"%-.<>\\^_`{|}=wow"));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!, encoding);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         Assert.Equal(2, accumulator.KeyCount);
@@ -431,9 +455,10 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&"), Encoding.UTF8.GetBytes("baz=boo"));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!);
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         Assert.Equal(2, accumulator.KeyCount);
@@ -448,11 +473,12 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(Encoding.UTF8.GetBytes("foo=bar&baz=boo&t="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!);
         formReader.KeyLengthLimit = 2;
 
-        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true));
         Assert.Equal("Form key length limit 2 exceeded.", exception.Message);
     }
 
@@ -462,11 +488,12 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("fo=bar&ba"), Encoding.UTF8.GetBytes("z=boo&t="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!);
         formReader.KeyLengthLimit = 2;
 
-        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true));
         Assert.Equal("Form key length limit 2 exceeded.", exception.Message);
     }
 
@@ -476,11 +503,12 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&baz=boo&t="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!);
         formReader.ValueLengthLimit = 2;
 
-        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true));
         Assert.Equal("Form value length limit 2 exceeded.", exception.Message);
     }
 
@@ -490,11 +518,12 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&t="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!);
         formReader.ValueLengthLimit = 2;
 
-        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true));
         Assert.Equal("Form value length limit 2 exceeded.", exception.Message);
     }
 
@@ -504,11 +533,12 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&asdfasdfasd="));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!);
         formReader.KeyLengthLimit = 10;
 
-        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true));
         Assert.Equal("Form key length limit 10 exceeded.", exception.Message);
     }
 
@@ -518,11 +548,12 @@ public class FormPipeReaderTests
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&t=asdfasdfasd"));
 
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!);
         formReader.ValueLengthLimit = 10;
 
-        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+        var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true));
         Assert.Equal("Form value length limit 10 exceeded.", exception.Message);
     }
 
@@ -549,13 +580,14 @@ public class FormPipeReaderTests
     public void ParseFormWithIncompleteKeyWhenIsFinalBlockSucceeds(ReadOnlySequence<byte> readOnlySequence)
     {
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!)
         {
             KeyLengthLimit = 3
         };
 
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         IDictionary<string, StringValues> values = accumulator.GetResults();
@@ -570,13 +602,14 @@ public class FormPipeReaderTests
     public void ParseFormWithIncompleteValueWhenIsFinalBlockSucceeds(ReadOnlySequence<byte> readOnlySequence)
     {
         KeyValueAccumulator accumulator = default;
+        long scannedLength = 0;
 
         var formReader = new FormPipeReader(null!)
         {
             ValueLengthLimit = 3
         };
 
-        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+        formReader.ParseFormValues(ref readOnlySequence, ref accumulator, ref scannedLength, isFinalBlock: true);
         Assert.True(readOnlySequence.IsEmpty);
 
         IDictionary<string, StringValues> values = accumulator.GetResults();
@@ -594,6 +627,284 @@ public class FormPipeReaderTests
         var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe));
 
         Assert.Single(formCollection);
+    }
+
+    [Fact]
+    public void ParseFormValues_SingleSegment_IncrementalReads_ScansEachByteOnce()
+    {
+        var data = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
+        KeyValueAccumulator accumulator = default;
+        var formReader = new FormPipeReader(null!);
+        long scannedLength = 0;
+        var consumedOffset = 0;
+        long totalBytesScanned = 0;
+
+        // Simulate a PipeReader delivering a single byte per read
+        for (var i = 1; i <= data.Length; i++)
+        {
+            var buffer = new ReadOnlySequence<byte>(data, consumedOffset, i - consumedOffset);
+            var lengthBefore = (int)buffer.Length;
+
+            // Only the bytes that were not already scanned should be searched for '&'.
+            totalBytesScanned += lengthBefore - scannedLength;
+
+            formReader.ParseFormValues(ref buffer, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+            consumedOffset += lengthBefore - (int)buffer.Length;
+
+            // Everything still buffered has been scanned, so the next read resumes at its end.
+            Assert.Equal(buffer.Length, scannedLength);
+        }
+
+        Assert.Equal<long>(data.Length, totalBytesScanned);
+        Assert.Equal("foo=bar&".Length, consumedOffset);
+
+        var finalBuffer = new ReadOnlySequence<byte>(data, consumedOffset, data.Length - consumedOffset);
+        formReader.ParseFormValues(ref finalBuffer, ref accumulator, ref scannedLength, isFinalBlock: true);
+
+        Assert.True(finalBuffer.IsEmpty);
+        Assert.Equal(0L, scannedLength);
+
+        var dict = accumulator.GetResults();
+        Assert.Equal("bar", dict["foo"]);
+        Assert.Equal("boo", dict["baz"]);
+    }
+
+    [Fact]
+    public void ParseFormValues_MultiSegment_IncrementalReads_ScansEachByteOnce()
+    {
+        var data = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
+        KeyValueAccumulator accumulator = default;
+        var formReader = new FormPipeReader(null!);
+        long scannedLength = 0;
+        var consumedOffset = 0;
+        long totalBytesScanned = 0;
+
+        for (var i = 1; i <= data.Length; i++)
+        {
+            var buffer = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(data.AsSpan(consumedOffset, i - consumedOffset).ToArray());
+            var lengthBefore = (int)buffer.Length;
+
+            totalBytesScanned += lengthBefore - scannedLength;
+
+            formReader.ParseFormValues(ref buffer, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+            consumedOffset += lengthBefore - (int)buffer.Length;
+
+            Assert.Equal(buffer.Length, scannedLength);
+        }
+
+        Assert.Equal<long>(data.Length, totalBytesScanned);
+        Assert.Equal("foo=bar&".Length, consumedOffset);
+
+        var finalBuffer = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(data.AsSpan(consumedOffset).ToArray());
+        formReader.ParseFormValues(ref finalBuffer, ref accumulator, ref scannedLength, isFinalBlock: true);
+
+        Assert.True(finalBuffer.IsEmpty);
+        Assert.Equal(0L, scannedLength);
+
+        var dict = accumulator.GetResults();
+        Assert.Equal("bar", dict["foo"]);
+        Assert.Equal("boo", dict["baz"]);
+    }
+
+    [Fact]
+    public void ParseFormValues_SingleSegment_ResumedScanParsesWholeKeyValuePair()
+    {
+        KeyValueAccumulator accumulator = default;
+        var formReader = new FormPipeReader(null!);
+        long scannedLength = 0;
+
+        var partial = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("foo=ba"));
+        formReader.ParseFormValues(ref partial, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+        Assert.Equal(6L, scannedLength);
+        Assert.Equal(6, partial.Length);
+        Assert.Equal(0, accumulator.KeyCount);
+
+        // The delimiter arrives after the already scanned bytes; the key/value before it must still be parsed.
+        var complete = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("foo=bar&baz=boo"));
+        formReader.ParseFormValues(ref complete, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+        Assert.Equal(1, accumulator.KeyCount);
+        Assert.Equal("baz=boo".Length, complete.Length);
+        Assert.Equal(complete.Length, scannedLength);
+
+        formReader.ParseFormValues(ref complete, ref accumulator, ref scannedLength, isFinalBlock: true);
+
+        Assert.True(complete.IsEmpty);
+        var dict = accumulator.GetResults();
+        Assert.Equal("bar", dict["foo"]);
+        Assert.Equal("boo", dict["baz"]);
+    }
+
+    [Fact]
+    public void ParseFormValues_MultiSegment_ResumedScanParsesWholeKeyValuePair()
+    {
+        KeyValueAccumulator accumulator = default;
+        var formReader = new FormPipeReader(null!);
+        long scannedLength = 0;
+
+        var partial = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(Encoding.UTF8.GetBytes("foo=ba"));
+        formReader.ParseFormValues(ref partial, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+        Assert.Equal(6L, scannedLength);
+        Assert.Equal(6, partial.Length);
+        Assert.Equal(0, accumulator.KeyCount);
+
+        var complete = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(Encoding.UTF8.GetBytes("foo=bar&baz=boo"));
+        formReader.ParseFormValues(ref complete, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+        Assert.Equal(1, accumulator.KeyCount);
+        Assert.Equal("baz=boo".Length, complete.Length);
+        Assert.Equal(complete.Length, scannedLength);
+
+        formReader.ParseFormValues(ref complete, ref accumulator, ref scannedLength, isFinalBlock: true);
+
+        Assert.True(complete.IsEmpty);
+        var dict = accumulator.GetResults();
+        Assert.Equal("bar", dict["foo"]);
+        Assert.Equal("boo", dict["baz"]);
+    }
+
+    [Fact]
+    public void ParseFormValues_ResumedScanStillEnforcesLimits()
+    {
+        var data = CreateBytes_NoDelimiter(10 * 1024);
+        KeyValueAccumulator accumulator = default;
+        var valueLengthLimit = 1024;
+        var keyLengthLimit = 10;
+        var formReader = new FormPipeReader(null!)
+        {
+            ValueLengthLimit = valueLengthLimit,
+            KeyLengthLimit = keyLengthLimit
+        };
+        long scannedLength = 0;
+
+        var exception = Assert.Throws<InvalidDataException>(() =>
+        {
+            for (var i = 1; i <= data.Length; i++)
+            {
+                var buffer = new ReadOnlySequence<byte>(data, 0, i);
+                formReader.ParseFormValues(ref buffer, ref accumulator, ref scannedLength, isFinalBlock: false);
+            }
+        });
+
+        Assert.Equal(string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.FormPipeReader_KeyOrValueTooLarge,
+            keyLengthLimit,
+            valueLengthLimit), exception.Message);
+    }
+
+    [Fact]
+    public async Task ReadFormAsync_ReadsDataDeliveredOneByteAtATime()
+    {
+        var content = "foo=bar&baz=" + new string('a', 1024) + "&t=";
+        var formContent = Encoding.UTF8.GetBytes(content);
+        var bodyPipe = new Pipe();
+
+        var writeTask = Task.Run(async () =>
+        {
+            foreach (var b in formContent)
+            {
+                await bodyPipe.Writer.WriteAsync(new[] { b });
+            }
+            await bodyPipe.Writer.CompleteAsync();
+        });
+
+        var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe.Reader));
+        await writeTask;
+
+        Assert.Equal("bar", formCollection["foo"].ToString());
+        Assert.Equal(new string('a', 1024), formCollection["baz"].ToString());
+        Assert.Equal("", formCollection["t"].ToString());
+    }
+
+    [Theory]
+    [MemberData(nameof(Encodings))]
+    public void ParseFormValues_SingleSegment_IncrementalReads_DelimiterSplitAcrossReads(Encoding encoding)
+    {
+        // For UTF-16/UTF-32 the '&' delimiter spans multiple bytes, so a read can end part way through it.
+        var data = encoding.GetBytes("foo=bar&baz=boo&t=");
+        KeyValueAccumulator accumulator = default;
+        var formReader = new FormPipeReader(null!, encoding);
+        long scannedLength = 0;
+        var consumedOffset = 0;
+        long totalBytesScanned = 0;
+        var delimiterOverlap = encoding.GetBytes("&").Length - 1;
+
+        for (var i = 1; i <= data.Length; i++)
+        {
+            var buffer = new ReadOnlySequence<byte>(data, consumedOffset, i - consumedOffset);
+            var lengthBefore = (int)buffer.Length;
+
+            totalBytesScanned += lengthBefore - scannedLength;
+
+            formReader.ParseFormValues(ref buffer, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+            consumedOffset += lengthBefore - (int)buffer.Length;
+
+            // Never claim to have scanned more than what is still buffered.
+            Assert.InRange(scannedLength, 0, buffer.Length);
+        }
+
+        // Each byte is scanned once, plus at most the delimiter overlap re-scanned per read.
+        Assert.InRange<long>(totalBytesScanned, data.Length, data.Length * (1 + delimiterOverlap));
+
+        var finalBuffer = new ReadOnlySequence<byte>(data, consumedOffset, data.Length - consumedOffset);
+        formReader.ParseFormValues(ref finalBuffer, ref accumulator, ref scannedLength, isFinalBlock: true);
+
+        Assert.True(finalBuffer.IsEmpty);
+        Assert.Equal(0L, scannedLength);
+
+        Assert.Equal(3, accumulator.KeyCount);
+        var dict = accumulator.GetResults();
+        Assert.Equal("bar", dict["foo"]);
+        Assert.Equal("boo", dict["baz"]);
+        Assert.Equal("", dict["t"]);
+    }
+
+    [Theory]
+    [MemberData(nameof(Encodings))]
+    public void ParseFormValues_MultiSegment_IncrementalReads_DelimiterSplitAcrossReads(Encoding encoding)
+    {
+        var data = encoding.GetBytes("foo=bar&baz=boo&t=");
+        KeyValueAccumulator accumulator = default;
+        var formReader = new FormPipeReader(null!, encoding);
+        long scannedLength = 0;
+        var consumedOffset = 0;
+        long totalBytesScanned = 0;
+        var delimiterOverlap = encoding.GetBytes("&").Length - 1;
+
+        for (var i = 1; i <= data.Length; i++)
+        {
+            var buffer = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(data.AsSpan(consumedOffset, i - consumedOffset).ToArray());
+            var lengthBefore = (int)buffer.Length;
+
+            totalBytesScanned += lengthBefore - scannedLength;
+
+            formReader.ParseFormValues(ref buffer, ref accumulator, ref scannedLength, isFinalBlock: false);
+
+            consumedOffset += lengthBefore - (int)buffer.Length;
+
+            Assert.InRange(scannedLength, 0, buffer.Length);
+        }
+
+        // Each byte is scanned once, plus at most the delimiter overlap re-scanned per read.
+        Assert.InRange<long>(totalBytesScanned, data.Length, data.Length * (1 + delimiterOverlap));
+
+        var finalBuffer = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(data.AsSpan(consumedOffset).ToArray());
+        formReader.ParseFormValues(ref finalBuffer, ref accumulator, ref scannedLength, isFinalBlock: true);
+
+        Assert.True(finalBuffer.IsEmpty);
+        Assert.Equal(0L, scannedLength);
+
+        Assert.Equal(3, accumulator.KeyCount);
+        var dict = accumulator.GetResults();
+        Assert.Equal("bar", dict["foo"]);
+        Assert.Equal("boo", dict["baz"]);
+        Assert.Equal("", dict["t"]);
     }
 
     public static TheoryData<ReadOnlySequence<byte>> IncompleteFormKeys =>
