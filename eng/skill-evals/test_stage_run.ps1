@@ -68,6 +68,13 @@ try {
     Set-Content (Join-Path $candidateEval 'fixtures/input.txt') $candidateDataMarker
     Set-Content (Join-Path $candidateEval 'candidate-runner.ps1') $candidateControlMarker
 
+    # A dot-prefixed directory/file is treated as hidden by Get-ChildItem on every
+    # platform PowerShell runs on, even though POSIX "hidden" is only a naming
+    # convention; this reproduces a staged fixture shim like ".eval-gh/gh".
+    $hiddenFixtureDir = Join-Path $candidateEval 'fixtures/.eval-gh'
+    New-Item -ItemType Directory -Path $hiddenFixtureDir -Force | Out-Null
+    Set-Content (Join-Path $hiddenFixtureDir 'gh') $candidateDataMarker
+
     $unrelatedSkill = Join-Path $candidateRoot '.github/skills/unrelated'
     $unrelatedEval = Join-Path $candidateRoot 'eng/skill-evals/unrelated'
     New-Item -ItemType Directory -Path $unrelatedSkill, $unrelatedEval -Force |
@@ -96,6 +103,7 @@ try {
         'eng/skill-evals/skills-vs-baseline.experiment.yaml'
         'eng/skill-evals/widget/eval.vally.yaml'
         'eng/skill-evals/widget/fixtures/input.txt'
+        'eng/skill-evals/widget/fixtures/.eval-gh/gh'
     ) | Sort-Object
     Assert-True (
         @(Compare-Object $expectedFiles $stagedFiles).Count -eq 0
@@ -110,8 +118,22 @@ try {
         @($stagedContent | Select-String $trustedMarker).Count -eq 4
     ) 'The trusted runner, assertion, and experiments were not all staged.'
     Assert-True (
-        @($stagedContent | Select-String $candidateDataMarker).Count -eq 3
-    ) 'The selected candidate skill, eval, and fixture were not all staged.'
+        @($stagedContent | Select-String $candidateDataMarker).Count -eq 4
+    ) 'The selected candidate skill, eval, and fixtures (including hidden ones) were not all staged.'
+
+    if (-not $IsWindows) {
+        $stagedFixture = Join-Path $destination 'eng/skill-evals/widget/fixtures/input.txt'
+        $mode = (Get-Item $stagedFixture).UnixFileMode
+        Assert-True (
+            ($mode -band [IO.UnixFileMode]::UserExecute) -ne 0
+        ) 'Staged fixture files were not made executable.'
+
+        $stagedHiddenFixture = Join-Path $destination 'eng/skill-evals/widget/fixtures/.eval-gh/gh'
+        $hiddenMode = (Get-Item $stagedHiddenFixture -Force).UnixFileMode
+        Assert-True (
+            ($hiddenMode -band [IO.UnixFileMode]::UserExecute) -ne 0
+        ) 'Staged hidden fixture files were not made executable.'
+    }
 
     Assert-Throws {
         & $stageRun `
@@ -142,6 +164,131 @@ try {
                 -Destination (Join-Path $testRoot 'symlinked')
         } 'is a symlink or reparse point'
     }
+
+    function New-RestrictedCandidate {
+        param(
+            [string]$Name,
+            [string]$EvalSpec
+        )
+
+        $skillDir = Join-Path $candidateRoot ".github/skills/$Name"
+        $evalDir = Join-Path $candidateRoot "eng/skill-evals/$Name"
+        New-Item -ItemType Directory -Path $skillDir, $evalDir -Force | Out-Null
+        Set-Content (Join-Path $skillDir 'SKILL.md') $candidateDataMarker
+        Set-Content (Join-Path $evalDir 'eval.vally.yaml') $EvalSpec
+    }
+
+    New-RestrictedCandidate 'restricted-commands' @'
+stimuli:
+  - environment:
+      commands:
+        - chmod +x .eval-gh/gh
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-commands `
+            -Destination (Join-Path $testRoot 'restricted-commands')
+    } "forbidden 'environment.commands' field"
+
+    New-RestrictedCandidate 'restricted-mcp' @'
+stimuli:
+  - environment:
+      mcpServers:
+        example:
+          command: node
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-mcp `
+            -Destination (Join-Path $testRoot 'restricted-mcp')
+    } "forbidden 'environment.mcpServers' field"
+
+    New-RestrictedCandidate 'restricted-agent-environment' @'
+stimuli:
+  - agent_environment:
+      commands:
+        - chmod +x .eval-gh/gh
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-agent-environment `
+            -Destination (Join-Path $testRoot 'restricted-agent-environment')
+    } "forbidden 'agent_environment.commands' field"
+
+    New-RestrictedCandidate 'restricted-flow-mapping' @'
+stimuli:
+  - environment: { commands: ["chmod +x .eval-gh/gh"] }
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-flow-mapping `
+            -Destination (Join-Path $testRoot 'restricted-flow-mapping')
+    } "forbidden 'environment.commands' field"
+
+    New-RestrictedCandidate 'restricted-quoted-key' @'
+stimuli:
+  - environment:
+      "commands":
+        - chmod +x .eval-gh/gh
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-quoted-key `
+            -Destination (Join-Path $testRoot 'restricted-quoted-key')
+    } "forbidden 'environment.commands' field"
+
+    New-RestrictedCandidate 'restricted-executor' @'
+stimuli:
+  - executor:
+      name: copilot-sdk
+      config:
+        provider: https://example.invalid
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-executor `
+            -Destination (Join-Path $testRoot 'restricted-executor')
+    } "forbidden 'executor.config.provider'"
+
+    New-RestrictedCandidate 'allowed-executor' @'
+stimuli:
+  - executor: copilot-sdk
+    judge_provider: https://example.invalid
+'@
+    & $stageRun `
+        -TrustedRoot $trustedRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName allowed-executor `
+        -Destination (Join-Path $testRoot 'allowed-executor')
+
+    # A prompt mentioning "commands:"-looking lines is plain text, not YAML
+    # mapping keys; staging must not misread it as a forbidden field.
+    New-RestrictedCandidate 'allowed-prompt-text' @'
+stimuli:
+  - name: narrates-forbidden-field-names
+    prompt: |
+      List the available commands:
+        commands:
+          - not actually yaml
+      Also mention mcpServers: as a word, not a key.
+'@
+    & $stageRun `
+        -TrustedRoot $trustedRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName allowed-prompt-text `
+        -Destination (Join-Path $testRoot 'allowed-prompt-text')
 
     Write-Host 'Trusted skill-eval staging self-test passed.'
 } finally {

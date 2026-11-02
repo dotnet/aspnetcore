@@ -44,10 +44,6 @@ stimuli:
     tags:
       network: none
       phase: design
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - The proposed public surface has one sealed Storage projection type shared by localStorage and sessionStorage rather than separate LocalStorage and SessionStorage types.
       - Callers reach the family through synchronous LocalStorage and SessionStorage extension properties on Window, starting from IBrowserPlatform.Window.
@@ -59,6 +55,11 @@ stimuli:
       - Storage has no public DisposeAsync or IAsyncDisposable contract; its JavaScript reference is owned and disposed by the Window scope.
       - No source implementation is attempted before the proposal is agreed.
     graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: skill-invocation
         config:
           required:
@@ -101,10 +102,6 @@ stimuli:
     tags:
       network: none
       phase: design
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - The review replaces the two projection types with one sealed Storage type while preserving two distinct Window-owned instances.
       - The review replaces asynchronous GetLocalStorageAsync/GetSessionStorageAsync methods with synchronous LocalStorage and SessionStorage properties in an extension(Window window) block.
@@ -117,6 +114,11 @@ stimuli:
       - The corrected proposal includes RemoveItemAsync and ClearAsync rather than omitting Web IDL operations.
       - No source implementation is attempted before the corrected proposal is agreed.
     graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: skill-invocation
         config:
           required:
@@ -145,10 +147,6 @@ stimuli:
     tags:
       network: none
       phase: verification
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - Unit coverage proves IBrowserPlatform, Window, LocalStorage, and SessionStorage are stable within one scope, and that the two storage properties return distinct wrappers.
       - Unit coverage proves merely reading the LocalStorage or SessionStorage property does not acquire a JavaScript reference.
@@ -158,6 +156,11 @@ stimuli:
       - Unit coverage proves a canceled or failed acquisition is retried on the next operation rather than cached permanently.
       - The answer stays within forwarding and acquisition rather than substituting browser E2E for deterministic unit assertions.
     graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: skill-invocation
         config:
           required:
@@ -185,10 +188,6 @@ stimuli:
     tags:
       network: none
       phase: verification
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - The public-surface check proves Storage cannot be disposed through IAsyncDisposable, DisposeAsync, or await using by application code.
       - Unit coverage proves scope disposal releases an already acquired reference and later Storage calls throw ObjectDisposedException.
@@ -198,6 +197,11 @@ stimuli:
       - The still-pending acquisition is not treated as an available reference to dispose.
       - The answer stays within lifecycle behavior rather than replacing deterministic disposal assertions with browser E2E.
     graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: skill-invocation
         config:
           required:
@@ -223,10 +227,6 @@ stimuli:
     tags:
       network: none
       phase: verification
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - One shared browser scenario runs through the public API in both Interactive Server and WebAssembly.
       - The browser scenario performs set, get, and remove and observes the stored value followed by its absence, rather than merely checking that interop was invoked.
@@ -235,6 +235,11 @@ stimuli:
       - The release plan publishes a trimmed WebAssembly application and verifies that used Storage members still work while unused families and unused members are removable.
       - The answer keeps mocked forwarding and disposal assertions in unit tests rather than claiming browser coverage replaces them.
     graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: skill-invocation
         config:
           required:
@@ -246,5 +251,6 @@ stimuli:
 scoring:
   weights:
     skill-invocation: 0.3
+    tool-calls: 0
     prompt: 0.7
   threshold: 0.8

@@ -468,6 +468,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         await InvokeAsync(StateHasChanged);
     }
 
+    internal bool IsColumnOptionsVisible(ColumnBase<TGridItem> column) => _displayOptionsForColumn == column;
+
     /// <summary>
     /// Displays the <see cref="ColumnBase{TGridItem}.ColumnOptions"/> UI for the specified column, closing any other column
     /// options UI that was previously displayed.
@@ -600,17 +602,19 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // the current viewport. In the case where you're also paginating then it means what's conceptually on the current page.
             // TODO: This currently assumes we always want to expand the last page to have ItemsPerPage rows, but the experience might
             //       be better if we let the last page only be as big as its number of actual rows.
-            var ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
-            var dataRowCount = Pagination is null ? providerResult.TotalItemCount
+            var previousAriaBodyRowCount = _ariaBodyRowCount;
+            var previousVirtualizedDataRowCount = _virtualizedDataRowCount;
+            _ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
+            _virtualizedDataRowCount = Pagination is null ? providerResult.TotalItemCount
                 : Math.Clamp(providerResult.TotalItemCount - Pagination.CurrentPageIndex * Pagination.ItemsPerPage, 0, Pagination.ItemsPerPage);
-            if (_ariaBodyRowCount != ariaBodyRowCount || _virtualizedDataRowCount != dataRowCount)
-            {
-                _ariaBodyRowCount = ariaBodyRowCount;
-                _virtualizedDataRowCount = dataRowCount;
-                StateHasChanged();
-            }
 
             Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount);
+
+            if (_ariaBodyRowCount != previousAriaBodyRowCount || _virtualizedDataRowCount != previousVirtualizedDataRowCount)
+            {
+                // Virtualize rerenders its rows, but the table's row count belongs to this grid.
+                StateHasChanged();
+            }
 
             // We're supplying the row index along with each row's data because we need it for aria-rowindex, and we have to account for
             // the virtualized start index. It might be more performant just to have some _latestQueryRowStartIndex field, but we'd have
