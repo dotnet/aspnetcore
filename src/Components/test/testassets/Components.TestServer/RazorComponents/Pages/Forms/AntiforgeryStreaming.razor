@@ -1,6 +1,7 @@
 @page "/forms/antiforgery-streaming"
 @attribute [StreamRendering]
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Rendering
 @inject Components.TestServer.Services.AsyncOperationService Operations
 
 @if (Destination is not null)
@@ -14,6 +15,10 @@ else
     @if (!ready)
     {
         <p id="waiting">Waiting for release</p>
+        @if (InteractiveLoading)
+        {
+            <InteractiveLoadingComponent @rendermode="RenderMode.InteractiveServer" Id="@Id" />
+        }
     }
     else
     {
@@ -26,6 +31,14 @@ else
             </form>
         }
     }
+    @if (InteractiveLoading)
+    {
+        <p id="loading-initialized">@HttpContext.Items.ContainsKey("interactive-loading-initialized")</p>
+    }
+    @if (RetainInteractiveComponent)
+    {
+        <TestContentPackage.Counter @rendermode="RenderMode.InteractiveServer" IdSuffix="retained" IncrementAmount="1" />
+    }
     @if (submitted)
     {
         <p id="pass">Form submitted!</p>
@@ -36,6 +49,8 @@ else
     [SupplyParameterFromQuery] public string Destination { get; set; }
     [SupplyParameterFromQuery] public string Id { get; set; }
     [SupplyParameterFromQuery] public bool RenderForm { get; set; }
+    [SupplyParameterFromQuery] public bool InteractiveLoading { get; set; }
+    [SupplyParameterFromQuery] public bool RetainInteractiveComponent { get; set; }
     [CascadingParameter] private HttpContext HttpContext { get; set; }
 
     private bool ready;
@@ -46,9 +61,33 @@ else
         if (Destination is null && !HttpMethods.IsPost(HttpContext.Request.Method))
         {
             var operation = Operations.Start(Id);
-            Operations.Complete($"{Id}-started");
+            if (!InteractiveLoading)
+            {
+                Operations.Complete($"{Id}-started");
+            }
             await operation.WaitAsync(HttpContext.RequestAborted);
         }
         ready = true;
+    }
+
+    public sealed class InteractiveLoadingComponent : ComponentBase
+    {
+        [Parameter] public string Id { get; set; }
+        [CascadingParameter] private HttpContext HttpContext { get; set; }
+        [Inject] private Components.TestServer.Services.AsyncOperationService Operations { get; set; }
+
+        protected override void OnInitialized()
+        {
+            HttpContext.Items["interactive-loading-initialized"] = true;
+            Operations.Complete($"{Id}-started");
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "p");
+            builder.AddAttribute(1, "id", "interactive-loading");
+            builder.AddContent(2, "Interactive loading content");
+            builder.CloseElement();
+        }
     }
 }

@@ -19,8 +19,6 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    internal bool HasInteractiveComponents { get; private set; }
-
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
         if (_isHandlingErrors)
@@ -41,7 +39,6 @@ internal partial class EndpointHtmlRenderer
         else
         {
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
-            HasInteractiveComponents = true;
             return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
         }
     }

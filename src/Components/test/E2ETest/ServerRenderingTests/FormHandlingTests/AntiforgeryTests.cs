@@ -59,7 +59,16 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     public Task DirectNavigationStillStreamsAndPreservesExistingForm()
         => VerifyExistingFormAfterStreamingNavigation(crossSite: false);
 
-    private async Task VerifyExistingFormAfterStreamingNavigation(bool crossSite)
+    [Fact]
+    public Task RemovedInteractiveLoadingComponentDoesNotInvalidateExistingForm()
+        => VerifyExistingFormAfterStreamingNavigation(crossSite: true, interactiveLoading: true);
+
+    [Fact]
+    public Task RemovingLoadingComponentPreservesRemainingInteractiveRoot()
+        => VerifyExistingFormAfterStreamingNavigation(crossSite: true, interactiveLoading: true, retainInteractiveComponent: true);
+
+    private async Task VerifyExistingFormAfterStreamingNavigation(
+        bool crossSite, bool interactiveLoading = false, bool retainInteractiveComponent = false)
     {
         EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: true);
         Navigate($"{ServerPathBase}/forms/default-form");
@@ -70,7 +79,8 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         var operations = _serverFixture.Host.Services.GetRequiredService<AsyncOperationService>();
         var id = Guid.NewGuid().ToString("N");
         var started = operations.Start($"{id}-started");
-        var destination = new Uri(_serverFixture.RootUri, $"{ServerPathBase}/forms/antiforgery-streaming?id={id}");
+        var destination = new Uri(_serverFixture.RootUri,
+            $"{ServerPathBase}/forms/antiforgery-streaming?id={id}&interactiveLoading={interactiveLoading}&retainInteractiveComponent={retainInteractiveComponent}");
         Browser.SwitchTo().NewWindow(WindowType.Tab);
         var navigationWindow = Browser.CurrentWindowHandle;
         var streamingWindow = navigationWindow;
@@ -95,7 +105,20 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
             Browser.Equal("Released", () => Browser.Exists(By.Id("released")).Text);
             Browser.Equal(crossSite ? "cross-site" : "none", () => Browser.Exists(By.Id("fetch-site")).Text);
             Browser.Equal(crossSite ? "False" : "True", () => Browser.Exists(By.Id("received-cookie")).Text);
+            if (interactiveLoading)
+            {
+                Browser.Equal("True", () => Browser.Exists(By.Id("loading-initialized")).Text);
+                Browser.DoesNotExist(By.Id("interactive-loading"));
+            }
             var currentCookie = Browser.Manage().Cookies.GetCookieNamed(cookie.Name);
+            if (retainInteractiveComponent)
+            {
+                Assert.NotEqual(cookie.Value, currentCookie.Value);
+                Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-retained")).Text);
+                Browser.Exists(By.Id("increment-retained")).Click();
+                Browser.Equal("1", () => Browser.Exists(By.Id("count-retained")).Text);
+                return;
+            }
 
             Browser.SwitchTo().Window(formWindow);
             Assert.Equal(token, Browser.Exists(By.Name("__RequestVerificationToken")).GetDomProperty("value"));
