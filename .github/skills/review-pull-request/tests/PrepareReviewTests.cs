@@ -236,13 +236,13 @@ public class PrepareReviewTests
         AssertJsonEqual(RequiredTextReference("required/guides/0000/policies/0000.source",
             "## Required clause\n- First line.\n- Second line."), manifest["policies"]![0]!["body"]!);
         AssertJsonEqual(RequiredTextReference("required/coordinator/exclusions/0000-scope.source",
-            "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree"),
+            "Per-guide workers running PR code or tests, and coordinator validation that requires unavailable external CI, infrastructure, credentials, or services"),
             manifest["exclusions"]![0]!["scope"]!);
         Assert.Equal("## Required clause\n- First line.\n- Second line.",
             await fixture.RequiredTextAsync(manifest["policies"]![0]!["body"]!));
-        Assert.Contains("Running PR code",
+        Assert.Contains("Per-guide workers running PR code",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["scope"]!));
-        Assert.Contains("Workers, hosted runs",
+        Assert.Contains("Per-guide workers remain source-only",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["reason"]!));
         Assert.Contains("Do not review the excluded scope",
             await fixture.RequiredTextAsync(manifest["exclusions"]![1]!["body"]!));
@@ -528,6 +528,106 @@ public class PrepareReviewTests
         Assert.Equal(baseRef, manifest["target"]!["baseRef"]!.GetValue<string>());
         Assert.Equal(fixture.BaseTip, manifest["target"]!["baseTip"]!.GetValue<string>());
         Assert.Equal(fixture.MergeBase, manifest["target"]!["mergeBase"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task KeepsCallerFrozenBaseWhenTheBranchAdvances()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var baseTip = fixture.BaseTip;
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = baseTip,
+            MergeBase = fixture.MergeBase,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+        fixture.BaseTip = fixture.Commit(new() { ["src/Unchanged.cs"] = "ADVANCED_BRANCH\n" }, baseTip);
+
+        var manifest = await fixture.PrepareAsync(options);
+
+        Assert.Equal(baseTip, manifest["target"]!["baseTip"]!.GetValue<string>());
+        Assert.Equal(fixture.MergeBase, manifest["target"]!["mergeBase"]!.GetValue<string>());
+        Assert.Equal("BASE_TIP_DEPENDENCY\n", await fixture.SourceAsync(manifest, "baseTip", "src/Unchanged.cs"));
+        Assert.Equal(0, fixture.BranchRefCalls);
+    }
+
+    [Fact]
+    public async Task RejectsARetargetedPullRequestWithCallerFrozenBase()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = fixture.BaseTip,
+            MergeBase = fixture.MergeBase,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+        fixture.Pull["base"]!["ref"] = "release/different";
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Equal("The live PR base ref differs from the expected frozen base.", exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
+    public async Task RejectsADifferentCallerFrozenMergeBase()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = fixture.BaseTip,
+            MergeBase = fixture.BaseTip,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Equal("The comparison differs from the expected frozen merge base.", exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
+    public async Task AcceptsCallerFrozenBaseArgumentsAtTheCommandLine()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var exitCode = await PrepareReviewProgram.RunAsync([
+            "--repo", "owner/product", "--pr", "42", "--head", fixture.Head,
+            "--base-tip", fixture.BaseTip, "--merge-base", fixture.MergeBase,
+            "--base-ref", fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+            "--guidance-root", fixture.GuidanceRoot, "--output", fixture.Output,
+        ], fixture.CreateDependencies());
+
+        Assert.Equal(0, exitCode);
+        var manifest = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "manifest.json")))!;
+        Assert.Equal(fixture.BaseTip, manifest["target"]!["baseTip"]!.GetValue<string>());
+        Assert.Equal(fixture.MergeBase, manifest["target"]!["mergeBase"]!.GetValue<string>());
+        Assert.Equal(0, fixture.BranchRefCalls);
+    }
+
+    [Theory]
+    [InlineData("head")]
+    [InlineData("base-tip")]
+    [InlineData("merge-base")]
+    [InlineData("base-ref")]
+    public async Task RejectsIncompleteCallerFrozenBase(string missing)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = missing == "head" ? null : fixture.Head,
+            BaseTip = missing == "base-tip" ? null : fixture.BaseTip,
+            MergeBase = missing == "merge-base" ? null : fixture.MergeBase,
+            BaseRef = missing == "base-ref" ? null : fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Contains("A frozen base requires", exception.Message);
+        Assert.Equal(0, fixture.PullRequestCalls);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
     }
 
     [Fact]
@@ -907,6 +1007,16 @@ public class PrepareReviewTests
         Assert.Contains(
             "For a native local coordinator shell denial, do not propose `--allow-all-paths`.",
             skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Collect every required guide worker's actual result before running target code or editing the validation workspace.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains("optional detached-worktree validation described below", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Never run target code in the developer checkout or bundle",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "write temporary tests or repros when doing so is the smallest faithful way to decide a material candidate.",
+            skill, StringComparison.Ordinal);
         var workerContractStart = skill.IndexOf("PATH: per-guide-worker", StringComparison.Ordinal);
         Assert.True(workerContractStart >= 0);
         var workerContract = skill[workerContractStart..];
@@ -920,17 +1030,23 @@ public class PrepareReviewTests
         var workflow = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
             RepositoryRoot, ".github/workflows/pull-request-review.md"), Utf8NoBom), @"\s+", " ");
         Assert.Contains(
-            "Treat the assignment metadata as producer/checker-validated trust data; do not ask workers to recompute UTF-8 lengths or SHA-256 hashes.",
+            "Apply the skill's review contract unchanged. It owns worker configuration and dispatch, exact assignments and native reads, independent candidate validation, severity, changed-line anchors, feedback disposition, and structured result semantics.",
             workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "Workers must read each assigned non-source file to EOF through native `view` or `read_file` calls",
+            "Do not replace those rules with a second review policy in this adapter.",
             workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "They must page with `view_range` or the equivalent `read_file` offset and limit until the final line; a truncated read is a required-input failure, not completion.",
+            "Every guide worker must use the native `review-guide-worker` profile, whose explicit tool list exposes only reading, searching, and skill loading.",
             workflow, StringComparison.Ordinal);
-        Assert.Contains("must not invoke `bash`, `shell`, or `powershell`", workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "may use native `rg`, `grep`, or `glob` only beneath their assigned frozen source roots",
+            "Workers are source-only and must not receive coordinator-only inputs, the validation worktree, or coordinator execution output.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains("Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "Only after collecting every required guide worker's actual result, the coordinator may use the validation worktree at `/tmp/gh-aw/review-worktree` when it exists.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "Temporary edits are diagnostic only: never commit, push, publish, or include them in a safe output.",
             workflow, StringComparison.Ordinal);
     }
 
@@ -1576,12 +1692,12 @@ public class PrepareReviewTests
 
     private static async Task AssertExecutionExclusionAsync(JsonObject manifest, Fixture fixture)
     {
-        Assert.Equal("Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree",
+        Assert.Equal("Per-guide workers running PR code or tests, and coordinator validation that requires unavailable external CI, infrastructure, credentials, or services",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["scope"]!));
-        Assert.Equal("Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
-            "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
-            "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
-            "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.",
+        Assert.Equal("Per-guide workers remain source-only. After collecting every worker result, a hosted coordinator may use a caller-supplied worktree at manifest.target.head " +
+            "to run targeted restore, build, test, browser, or temporary-repro validation under SKILL.md's coordinator rules. Native local validation follows the skill's detached-worktree rules. " +
+            "Never execute target code in the frozen bundle or developer checkout; record exact commands and results, keep temporary edits diagnostic-only, and clean native-local scratch worktrees. " +
+            "If validation is unavailable, record the reason and continue without reporting INCOMPLETE.",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["reason"]!));
     }
 
@@ -1728,6 +1844,7 @@ public class PrepareReviewTests
         public bool FailFetch { get; set; }
         public bool FailApi { get; set; }
         public int PullRequestCalls { get; private set; }
+        public int BranchRefCalls { get; private set; }
         public Action<int>? BeforePullResponse { get; set; }
 
         public static Task<Fixture> CreateAsync(bool components = false)
@@ -1863,12 +1980,20 @@ public class PrepareReviewTests
             if (endpoint.Contains("/pulls/42/reviews?", StringComparison.Ordinal)) return Node(Reviews.DeepClone());
             if (endpoint.Contains("/pulls/42/comments?", StringComparison.Ordinal)) return Node(InlineComments.DeepClone());
             if (endpoint.Contains("/files?", StringComparison.Ordinal)) return Node(Files.DeepClone());
-            if (endpoint.Contains("/git/ref/heads/", StringComparison.Ordinal)) return Node(new JsonObject { ["object"] = new JsonObject { ["sha"] = BaseTip } });
-            if (endpoint.Contains("/compare/", StringComparison.Ordinal)) return Node(new JsonObject
+            if (endpoint.Contains("/git/ref/heads/", StringComparison.Ordinal))
             {
-                ["base_commit"] = new JsonObject { ["sha"] = BaseTip },
-                ["merge_base_commit"] = new JsonObject { ["sha"] = MergeBase },
-            });
+                BranchRefCalls++;
+                return Node(new JsonObject { ["object"] = new JsonObject { ["sha"] = BaseTip } });
+            }
+            if (endpoint.Contains("/compare/", StringComparison.Ordinal))
+            {
+                var comparisonBase = endpoint.Split("/compare/", StringSplitOptions.None)[1].Split("...", StringSplitOptions.None)[0];
+                return Node(new JsonObject
+                {
+                    ["base_commit"] = new JsonObject { ["sha"] = comparisonBase },
+                    ["merge_base_commit"] = new JsonObject { ["sha"] = MergeBase },
+                });
+            }
             if (endpoint.EndsWith("/pulls/42", StringComparison.Ordinal))
             {
                 PullRequestCalls++;
