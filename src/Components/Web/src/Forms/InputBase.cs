@@ -98,6 +98,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
             if (hasChanged)
             {
+                var parsingFailed = _parsingFailed;
                 ResetParsingState();
 
                 // If we don't do this, then when the user edits from A to B, we'd:
@@ -112,6 +113,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
                 _ = ValueChanged.InvokeAsync(Value);
                 EditContext?.NotifyFieldChanged(FieldIdentifier);
+
+                if (parsingFailed)
+                {
+                    _previousParsingAttemptFailed = false;
+                    EditContext?.NotifyValidationStateChanged();
+                }
             }
         }
     }
@@ -276,6 +283,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         if (_hasInitializedParameters && !EqualityComparer<TValue>.Default.Equals(Value, previousValue) && _parsingFailed)
         {
             ResetParsingState();
+            _previousParsingAttemptFailed = false;
             EditContext?.NotifyValidationStateChanged();
         }
 

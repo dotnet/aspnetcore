@@ -528,6 +528,45 @@ public class InputBaseTest
     }
 
     [Fact]
+    public async Task WritingToCurrentValueClearsParsingValidationMessagesAndNotifiesSubscribers()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = new EditContext(model),
+            Value = new DateTime(2000, 1, 1),
+            ValueExpression = () => model.DateProperty
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var fieldIdentifier = inputComponent.FieldIdentifier;
+        var validationStates = new List<string[]>();
+        rootComponent.EditContext.OnValidationStateChanged += (_, _) =>
+            validationStates.Add(rootComponent.EditContext.GetValidationMessages(fieldIdentifier).ToArray());
+
+        await inputComponent.SetCurrentValueAsStringAsync("02/30/2000");
+        Assert.Equal(new[] { "Bad date value" }, Assert.Single(validationStates));
+
+        await inputComponent.DispatchAsync(() => inputComponent.CurrentValue = new DateTime(2000, 1, 1));
+        Assert.Single(validationStates);
+        Assert.Equal("02/30/2000", inputComponent.CurrentValueAsString);
+        Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+
+        await inputComponent.DispatchAsync(() => inputComponent.CurrentValue = new DateTime(2020, 6, 15));
+
+        Assert.Equal(new DateTime(2020, 6, 15), inputComponent.CurrentValue);
+        Assert.Equal("2020/06/15", inputComponent.CurrentValueAsString);
+        Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.Collection(validationStates,
+            messages => Assert.Equal(new[] { "Bad date value" }, messages),
+            messages => Assert.Empty(messages));
+        Assert.DoesNotContain("invalid", inputComponent.CssClass);
+
+        await inputComponent.SetCurrentValueAsStringAsync("2021/06/15");
+        Assert.Equal(new DateTime(2021, 6, 15), inputComponent.CurrentValue);
+        Assert.Equal(2, validationStates.Count);
+    }
+
+    [Fact]
     public async Task SettingValueParameterToNewValueResetsParsingFailedState()
     {
         var model = new TestModel();
@@ -539,9 +578,12 @@ public class InputBaseTest
         };
         var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var numValidationStateChanges = 0;
+        rootComponent.EditContext.OnValidationStateChanged += (_, _) => numValidationStateChanges++;
 
         await inputComponent.SetCurrentValueAsStringAsync("02/30/2000"); // invalid date
         Assert.Single(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.Equal(1, numValidationStateChanges);
 
         rootComponent.Value = new DateTime(2020, 06, 15);
         rootComponent.TriggerRender();
@@ -550,6 +592,13 @@ public class InputBaseTest
         Assert.Equal(new DateTime(2020, 06, 15).ToString("yyyy/MM/dd", CultureInfo.InvariantCulture), inputComponent.CurrentValueAsString);
         Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
         Assert.DoesNotContain("invalid", inputComponent.CssClass);
+        Assert.Equal(2, numValidationStateChanges);
+
+        await inputComponent.SetCurrentValueAsStringAsync("2021/06/15");
+
+        Assert.Equal(new DateTime(2021, 6, 15), inputComponent.CurrentValue);
+        Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.Equal(2, numValidationStateChanges);
     }
 
     [Fact]
