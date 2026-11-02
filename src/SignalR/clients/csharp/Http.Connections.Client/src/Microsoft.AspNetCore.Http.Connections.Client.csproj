@@ -23,13 +23,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Connections.Common" />
-    <Reference Include="System.Net.ServerSentEvents" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <PackageReference Include="System.Net.ServerSentEvents" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+
+    <ProjectReference Include="$(RepoRoot)src\SignalR\common\Http.Connections.Common\src\Microsoft.AspNetCore.Http.Connections.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>

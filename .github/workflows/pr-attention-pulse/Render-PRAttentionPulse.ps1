@@ -19,6 +19,6 @@ Import-Module -Scope Local -Force (Join-Path $PSScriptRoot "PRAttentionPulseCont
 $snapshotInput = Read-PulseSnapshotInput -InputPath $InputPath
 $snapshot = New-PulseSnapshotContext -Repository $Repository -ServerUrl $ServerUrl -RunId $RunId `
     -RunAttempt $RunAttempt -GeneratedAt $GeneratedAt -InputSha256 $snapshotInput.Sha256
-$body = ConvertTo-PRAttentionPulseBody -Pulse $snapshotInput.Pulse -SnapshotContext $snapshot
+$body = ConvertTo-PRAttentionPulseBody -Pulse $snapshotInput.Pulse -SnapshotContext $snapshot -Json $snapshotInput.Json
 [IO.File]::WriteAllText($OutputPath, $body, [Text.UTF8Encoding]::new($false))
 [IO.File]::WriteAllText($SnapshotContextPath, ($snapshot | ConvertTo-Json -Compress), [Text.UTF8Encoding]::new($false))

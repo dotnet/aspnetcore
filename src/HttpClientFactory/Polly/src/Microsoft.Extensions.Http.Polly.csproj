@@ -24,9 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Http" />
-    <Reference Include="Polly.Extensions.Http" />
-    <Reference Include="Polly" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Polly.Extensions.Http" />
   </ItemGroup>
 
   <ItemGroup>

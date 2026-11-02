@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Data.SqlClient" />
-    <Reference Include="Azure.Identity" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>
