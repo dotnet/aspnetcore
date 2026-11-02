@@ -29,24 +29,39 @@ applicable:
   or `n/a` for a genuinely new path.
 - `effect`: the consumer-visible harm at the head.
 - `contract`: the applicable assigned base-tip or primary-repository contract, or
-  `n/a` when the claim does not depend on one.
+  `n/a` when the claim does not depend on one. Head production code is the change
+  under review and is never a contract. A head declaration may serve only when
+  `oldVsNew` is `n/a`.
+- `intent`: a PR-added or PR-changed head test that exercises the claimed exact input
+  and asserts the claimed consumer-visible effect, or `n/a`. A head test that covers a
+  different input, layer, or sibling case is not intent evidence and does not
+  contradict `effect` or `contract`. Intent proves the change is deliberate, not that
+  it is compatible or correct.
 
 Judge the core claim and effect. An inaccurate submitted line anchor or repro is not by
 itself grounds for `DROP` when every link is independently proven. For `KEEP`, return
 the corrected RIGHT-side changed-line anchor and a faithful corrected repro when either
 submitted value is inaccurate.
 
-Return `KEEP` only when every applicable link is established and source does not
-contradict the claim. Return `DOWNGRADE` only when all in-repository links hold and a
-required external behavior remains undecidable. Proven pre-existing same behavior on
-the exact input sequence is `DROP` with `dropBasis: "contradicted"` and the exact
-old/new source reason. Otherwise return `DROP`, with `dropBasis: "contradicted"` when
-frozen source disproves a link or `dropBasis: "unestablished"` when required evidence
-cannot be established. Plausibility is never evidence.
+Return `KEEP` only when every applicable link is established, `intent` is `n/a`, and
+source does not contradict the claim. Return `DOWNGRADE` with `downgradeKind:
+"intent"` when every other applicable link is established, `intent` is established,
+and no base-tip or primary-repository contract requires the head behavior on that exact
+input. Return `DOWNGRADE` with `downgradeKind: "external"` only when all in-repository
+links hold and a required external behavior remains undecidable. Proven pre-existing
+same behavior on the exact input sequence is `DROP` with `dropBasis: "contradicted"`,
+`contradictedLink: "oldVsNew"`, and the exact old/new source reason. A base-tip or
+primary-repository contract that requires the head behavior on that exact input is
+`DROP` with `dropBasis: "contradicted"` and `contradictedLink: "contract"`. Otherwise
+return `DROP`, with `dropBasis: "contradicted"` and the disproven `contradictedLink`
+when frozen source disproves a link, or `dropBasis: "unestablished"` when required
+evidence cannot be established. Plausibility is never evidence.
 
 Return exactly one result for every assigned candidate and no other candidate:
-`candidateId`, `decision` (`KEEP`, `DOWNGRADE`, or `DROP`), `dropBasis`
-(`contradicted`, `unestablished`, or `null`), `links`, `missingEvidence` (the exact
+`candidateId`, `decision` (`KEEP`, `DOWNGRADE`, or `DROP`), `downgradeKind` (`intent`,
+`external`, or `null`), `dropBasis` (`contradicted`, `unestablished`, or `null`),
+`contradictedLink` (`changedLine`, `trigger`, `overlap`, `oldVsNew`, `effect`,
+`contract`, or `null`), `links`, `missingEvidence` (the exact
 evidence needed for `DOWNGRADE` or unestablished `DROP`, otherwise `null`),
 `correctedChangedLine`, `correctedRepro`, `validationEvidence` (assigned immutable
 artifact paths and hashes actually used, otherwise `null`), and a concise `reason`.
