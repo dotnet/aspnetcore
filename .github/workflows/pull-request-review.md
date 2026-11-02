@@ -749,7 +749,7 @@ pre-agent-steps:
       set -euo pipefail
       [[ "${GITHUB_WORKFLOW_SHA:-}" =~ ^[a-f0-9]{40}$ ]]
       producer_dir="$(mktemp -d "${RUNNER_TEMP}/review-producer.XXXXXX")"
-      for filename in prepare-review.cs Directory.Build.props Directory.Build.targets Directory.Packages.props; do
+      for filename in prepare-review.cs prepare-validation-dependencies.mjs Directory.Build.props Directory.Build.targets Directory.Packages.props; do
         gh api -H 'Accept: application/vnd.github.raw' \
           "repos/$REVIEW_REPO/contents/.github/skills/review-pull-request/scripts/$filename?ref=$GITHUB_WORKFLOW_SHA" \
           > "$producer_dir/$filename"
@@ -784,6 +784,7 @@ pre-agent-steps:
             refs/review/base-tip:refs/remotes/review/base-tip &&
           git -C "$worktree" -c core.hooksPath=/dev/null checkout --quiet --detach refs/remotes/review/head &&
           test "$(git -C "$worktree" rev-parse HEAD)" = "$REVIEW_HEAD" &&
+          node "$producer_dir/prepare-validation-dependencies.mjs" "$worktree" "$REVIEW_HEAD" &&
           test -z "$(git -C "$worktree" status --porcelain)"; then
         :
       else
