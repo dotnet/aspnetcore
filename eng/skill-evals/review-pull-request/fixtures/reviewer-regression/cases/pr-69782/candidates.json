@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "pr": 69782,
+  "expectedCaseIds": [
+    "V23"
+  ],
+  "candidates": [
+    {
+      "id": "V23",
+      "pr": 69782,
+      "head": "a7214701f7e3fc0558ee201bcf8552069a803a55",
+      "mergeBase": "94416692e05da692feb0223a9790d5afb3f8b45c",
+      "path": "src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs",
+      "line": 56,
+      "severity": "P2",
+      "claim": "A form model with a constructor-parameter or `required` file-list member now fails to bind when no file is uploaded. A class whose only bound members are file lists now maps to null.",
+      "effect": "Before, `found=true` and the model bound with an empty list. Now `found=false`, so ReportMissingValues (FormDataParameterMetadata.Required => true; `required` members via FormDataMetadataFactory) raises \"Missing required value for constructor parameter 'Files'\". Minimal APIs return 400 (no ErrorHandler → FormDataMappingException → WasParamCheckFailure). Blazor shows a form-mapping error. For a class with only file properties, `localFoundValueVar` stays false and the handler receives null instead of an instance.",
+      "repro": "`record Upload(string Name, IReadOnlyList<IFormFile> Files);` `app.MapPost(\"/u\", ([FromForm] Upload u) => u.Name).DisableAntiforgery();` Then POST multipart with `Name=a` and no file selected (an empty file input sends filename=\"\", which FormFeature treats as a non-file field). The Blazor SSR equivalent is `[SupplyParameterFromForm]` with `IReadOnlyList<IBrowserFile>`."
+    }
+  ]
+}

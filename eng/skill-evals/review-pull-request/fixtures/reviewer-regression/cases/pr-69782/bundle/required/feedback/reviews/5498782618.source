@@ -1,0 +1,33 @@
+<!-- ccr-overview-v2 -->
+
+### 🟢 Approval recommended
+
+The implementation addresses the reported binding failures with consistent behavior and comprehensive regression coverage.
+
+**0 open findings**
+
+<details>
+<summary><strong>What changed in this PR</strong></summary>
+
+Fixes form mapping for file collections and dictionary keys containing closing brackets.
+
+**Changes:**
+- Corrects prefix-aware file discovery and root file-list binding.
+- Preserves embedded `]` characters in dictionary keys.
+- Adds focused unit and endpoint regression coverage.
+
+| File | Description |
+| ---- | ----------- |
+| `RequestDelegateFactoryTests.FormMapping.cs` | Adds endpoint-level regression tests. |
+| `RequestDelegateFactory.cs` | Applies root file-list parameter prefixes. |
+| `BrowserFileFromFormFileTests.cs` | Tests unmatched browser-file lists. |
+| `FormDataMapperTests.cs` | Covers file discovery and bracketed dictionary keys. |
+| `FormDataReader.cs` | Identifies structural closing brackets. |
+| `FileConverter.cs` | Makes file-list discovery prefix-aware. |
+</details>
+
+🧠 **Review effort:** Balanced
+
+---
+
+💡 <a href="/dotnet/aspnetcore/new/main?filename=.github/skills/code-review/SKILL.md" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Add a `code-review` agent skill</a> for context-aware, tailored reviews. <a href="https://docs.github.com/copilot/how-tos/use-copilot-agents/request-a-code-review/use-code-review?tool=webui#mcp-servers-and-agent-skills" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Learn more in the docs.</a>

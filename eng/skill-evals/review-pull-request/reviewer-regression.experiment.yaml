@@ -1,0 +1,19 @@
+name: review-pull-request current vs candidate
+
+evals:
+  - reviewer-regression.vally.yaml
+
+vary:
+  - /environment/skills
+
+baseline: current
+
+variants:
+  current:
+    environment:
+      skills:
+        - ../../../.github/skills/review-pull-request # current-skill
+  candidate:
+    environment:
+      skills:
+        - ../../../.github/skills/review-pull-request # candidate-skill

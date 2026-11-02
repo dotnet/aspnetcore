@@ -1,0 +1,10 @@
+{
+  "source": "Immutable Git-blob projection containing every changed file in each available head, merge-base, and base-tip role.",
+  "selectionRule": "Complete changed-file list only; selected without using expected labels.",
+  "diff": "Complete authoritative diff from frozen merge base to frozen review head.",
+  "changedFiles": "Complete changed-file metadata for the frozen comparison.",
+  "pull": "Frozen pull metadata produced by the repository review-bundle preparer.",
+  "feedback": "Feedback retained by the repository review-bundle preparer at projection time.",
+  "labels": "Not staged for the subject.",
+  "limitation": "Immutable changed-file projection for a supplied-candidate development regression. It is not a complete repository snapshot or a fresh-discovery evaluation."
+}

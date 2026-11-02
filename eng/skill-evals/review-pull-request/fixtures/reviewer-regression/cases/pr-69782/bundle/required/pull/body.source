@@ -1,0 +1,98 @@
+## Description
+
+### Bug Description
+
+- Collection items containing file-list properties could continue binding nonexistent items until the collection-size limit was reached.
+- Root `[FromForm] IReadOnlyList<IFormFile>` parameters did not respect the parameter name or an explicit `[FromForm(Name = "...")]` alias.
+- Dictionary keys containing `]` were truncated, preventing the submitted values from binding correctly.
+
+### Description of Code Changes
+
+- Report file lists as found only when uploaded files match the current form prefix.
+- Apply equivalent discovery behavior to `IReadOnlyList<IFormFile>` and `IReadOnlyList<IBrowserFile>`.
+- Use prefix-matching discovery for `IFormFileCollection` under indexed paths so unrelated uploads do not keep collection probing active.
+- Preserve the whole-request file collection returned for a bound `IFormFileCollection` property.
+- Push and pop the form parameter name or alias when mapping a root `IReadOnlyList<IFormFile>`.
+- Recognize structural closing brackets during dictionary-key discovery instead of truncating keys at the first `]`.
+- Add regression coverage for the reported scenarios and the reviewer's unrelated-upload case.
+
+### Areas Covered
+
+- File-list discovery and collection termination.
+- Collection items with and without matching attachments.
+- Unrelated uploads with and without matching model fields.
+- Root file-list parameter names and explicit aliases.
+- Exclusion of unnamed uploads from named root file lists.
+- Dictionary keys containing single or multiple embedded closing brackets.
+- Dictionary values containing nested dictionaries, complex objects, and collections.
+- Existing parser boundaries, malformed-key handling, and collection overflow detection.
+
+### Validation
+
+#### Endpoint Regression Tests
+
+- `SupportsFormFileListInCollectionItem`
+  - Covers a collection item with and without a matching upload.
+  - Verifies exactly one line binds, its label is preserved, and the attachment count is correct.
+
+- `SupportsFormFileCollectionInCollectionItem`
+  - Covers a collection item with and without a matching upload.
+  - Verifies exactly one line binds and the whole-request file collection remains available.
+
+- `SupportsRootFormFileList`
+  - Covers the parameter name `files` and the explicit alias `docs`.
+  - Verifies both matching files bind and an unnamed upload is excluded.
+
+- `SupportsDictionaryKeyContainingClosingBracket`
+  - Verifies HTTP 200 and the exact result `a=1, x]y=2`.
+
+Both rows were verified independently:
+
+- Without the indexed-prefix discovery fix: both failed with HTTP 400.
+- With the fix restored: both passed with HTTP 200 and the expected binding assertions.
+
+#### Form-Mapping Unit Tests
+
+- `Deserialize_Dictionary_KeyContainingClosingBracket`
+  - Covers keys `x]y`, `x]`, and `x]]y`.
+  - Verifies exact keys and values without mapping errors.
+
+- `Deserialize_Dictionary_KeyContainingClosingBracket_WithNestedDictionary`
+  - Covers ordinary and bracket-containing keys with nested dictionary values.
+
+- `Deserialize_Dictionary_KeyContainingClosingBracket_WithComplexValue`
+  - Covers ordinary and bracket-containing keys followed by a property path.
+
+- `Deserialize_Dictionary_KeyContainingClosingBracket_WithCollectionValue`
+  - Covers ordinary and bracket-containing keys followed by collection indexes.
+
+- `CanDeserialize_ComplexType_IReadOnlyListFormFileWithNoMatches_IsNotFound`
+  - Verifies an unrelated upload does not mark a named file list as found.
+
+- `TryRead_IBrowserFileList_WithNoMatchingFiles_IsNotFound`
+  - Verifies conversion succeeds with an empty browser-file list and `found = false`.
+
+Existing parser expectations were updated for embedded brackets while retaining coverage for structural boundaries and malformed inputs.
+
+#### Build and Test Results
+
+Recorded local validation:
+
+| Validation | Result |
+|---|---|
+| Focused endpoint regression run | 10 passed |
+| Components Endpoints test suite | 891 passed, 0 failed, 0 skipped |
+| Http.Extensions test suite | 2,302 passed, 0 failed, 0 skipped |
+| Both project builds | 0 warnings, 0 errors |
+
+### Output
+
+#### Before
+
+<img width="753" height="513" alt="69717-without-fix" src="https://github.com/user-attachments/assets/76dbc8fe-68dd-4e19-baec-56e2e8b05140" />
+
+#### After
+
+<img width="768" height="613" alt="69717-with-fix" src="https://github.com/user-attachments/assets/bd18ede4-7916-44ba-83e6-a96feb5b9717" />
+
+Fixes #69717

@@ -1,0 +1,7 @@
+### Cross-runtime design checkpoint
+
+Before editing behavior that crosses Components renderers, runtimes, or DI scopes:
+
+- Define the relevant behavior matrix: Server/WebAssembly/Auto, global/per-page interactivity, initial activation/enhanced navigation, prerendered/non-prerendered, and interactive `Router` present/absent. Mark intentionally excluded cells before implementation.
+- Map the producing owner, consuming owner, DI lifetime and scope, assembly boundary, initial restore ordering, value-update ordering, render-mode destinations, and stale-state clearing.
+- Request architecture review before product edits and final correctness review after targeted tests are green. Add another architecture review only when the implementation introduces a new boundary.

@@ -1,0 +1,33 @@
+{
+  "number": 69782,
+  "state": "open",
+  "title": "Fix form mapping for file lists and dictionary keys containing brackets",
+  "body": {
+    "path": "required/pull/body.source",
+    "utf8Bytes": 4421,
+    "sha256": "061c3ef9ba6de4b99f96cc1c04332c8e92c362eb5e8a76b5515d220c38308558"
+  },
+  "draft": false,
+  "author": {
+    "login": "MohamedHasan3644",
+    "id": 102596726,
+    "type": "User"
+  },
+  "labels": [
+    {
+      "name": "area-blazor"
+    },
+    {
+      "name": "community-contribution"
+    },
+    {
+      "name": "pending-ci-rerun"
+    },
+    {
+      "name": "area-networking"
+    }
+  ],
+  "milestone": null,
+  "createdAt": "2026-10-13T04:15:47Z",
+  "updatedAt": "2026-10-29T23:24:51Z"
+}

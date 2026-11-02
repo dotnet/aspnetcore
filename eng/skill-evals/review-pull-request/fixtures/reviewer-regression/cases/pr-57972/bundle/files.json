@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "src/OpenApi/src/Services/Schemas/OpenApiSchemaStore.cs",
+    "status": "modified",
+    "sha": "b41a6fc124ecdff7ef8f98a2f340d747bb4c66f2",
+    "additions": 5,
+    "deletions": 10,
+    "changes": 15
+  },
+  {
+    "filename": "src/OpenApi/src/Transformers/Implementations/OpenApiSchemaReferenceTransformer.cs",
+    "status": "modified",
+    "sha": "35a0da7ff7cfa419f06c57f277cb969e29139ab9",
+    "additions": 2,
+    "deletions": 1,
+    "changes": 3
+  },
+  {
+    "filename": "src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Integration/OpenApiDocumentConcurrentRequestTests.cs",
+    "status": "added",
+    "sha": "e3a5e55d40f540713ee8c85b18a5e8ac36389c45",
+    "additions": 32,
+    "deletions": 0,
+    "changes": 32
+  }
+]

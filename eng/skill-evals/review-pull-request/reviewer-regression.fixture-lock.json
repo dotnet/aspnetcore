@@ -1,0 +1,680 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 114,
+      "sha256": "f0b1e35c1336105cb0e77a8e7e81b1e8505c19937107073c05337903b2d8e151"
+    },
+    {
+      "path": "cases/pr-70106/bundle/required/feedback/reviews/5704801904.source",
+      "bytes": 1185,
+      "sha256": "0ef45a6fdc181f5bbc15565a7395d75d2f116363ae8acb5ed4f06da2635758fc"
+    },
+    {
+      "path": "cases/pr-70106/bundle/required/feedback/inline/4425483102.source",
+      "bytes": 17,
+      "sha256": "f39cc7ff9c1182ca6a08006ac958286e05aa607fe1e17dc5aa88d1af2ac0f9e0"
+    },
+    {
+      "path": "cases/pr-70106/bundle/required/feedback/comments/6543527153.source",
+      "bytes": 7,
+      "sha256": "0d38c8cdf5fee3444d9db3ef6b57fcd16eb80cc74963adf9bc998605169ecb0d"
+    },
+    {
+      "path": "cases/pr-70106/bundle/pull.json",
+      "bytes": 926,
+      "sha256": "dc001e6d9afe542d0a2081453a3224647ed2b26bffef1bc3cf8912cd4cb95628"
+    },
+    {
+      "path": "cases/pr-70106/bundle/manifest.json",
+      "bytes": 16270,
+      "sha256": "65ffeda9368abc145491561f8cb41ffec5a98002429f2ba67b2a51fb41066548"
+    },
+    {
+      "path": "cases/pr-70106/bundle/files.json",
+      "bytes": 532,
+      "sha256": "dfb47d9b05fe4c7be9aa07329f475600218643e69772bf6e56b1c7ce1337167a"
+    },
+    {
+      "path": "cases/pr-70106/bundle/feedback.json",
+      "bytes": 2303,
+      "sha256": "a798aa8f668e0b76dab4c35f9548bb79b58dc636c1effa5bf4c463eee0525733"
+    },
+    {
+      "path": "cases/pr-70106/bundle/diff.patch",
+      "bytes": 6712,
+      "sha256": "a7f6b9f9f397de49d2bf4b51e655aa3f6127a835345abc2e6ff96346346d61f9"
+    },
+    {
+      "path": "cases/pr-70106/projection-map.json",
+      "bytes": 797,
+      "sha256": "280a25565f77cabac32297979776d36be209c68f7ff34cc0be84455e4fd0122f"
+    },
+    {
+      "path": "cases/pr-70106/candidates.json",
+      "bytes": 4377,
+      "sha256": "3659e91313eadbdaa6d3a24c4e4a8fb32559dd261ac6a7cd84300f974fb37d67"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/a7214701f7e3fc0558ee201bcf8552069a803a55/src/Http/Http.Extensions/test/RequestDelegateFactoryTests.FormMapping.cs.source",
+      "bytes": 18757,
+      "sha256": "afa33a4a518ee47d1fe18a79035cc6d468bb3143ab3ef2d990e531b23a776c2f"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/a7214701f7e3fc0558ee201bcf8552069a803a55/src/Http/Http.Extensions/src/RequestDelegateFactory.cs.source",
+      "bytes": 154587,
+      "sha256": "628fd544bc718682cdbabe38546fb7120757f32d631a09f9609fbe5a6b031a7d"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/a7214701f7e3fc0558ee201bcf8552069a803a55/src/Components/Endpoints/test/FormMapping/BrowserFileFromFormFileTests.cs.source",
+      "bytes": 4949,
+      "sha256": "f38dd67538be2abd53426ab64978c78c798215e6c8513e6a7e2aaae413ca8fbc"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/a7214701f7e3fc0558ee201bcf8552069a803a55/src/Components/Endpoints/test/Binding/FormDataMapperTests.cs.source",
+      "bytes": 114797,
+      "sha256": "3137be69226340aa51e7280b1b553f0522077007d6198d7030bc4fc9bfb3f8eb"
+    },
+    {
+      "path": "cases/pr-70106/bundle/required/feedback/reviews/5714776887.source",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/a7214701f7e3fc0558ee201bcf8552069a803a55/src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs.source",
+      "bytes": 3107,
+      "sha256": "eee9a3d458857ae39354a2e8dfcd11b3292145ef32196b561b1f24e314fad306"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/94416692e05da692feb0223a9790d5afb3f8b45c/src/Http/Http.Extensions/test/RequestDelegateFactoryTests.FormMapping.cs.source",
+      "bytes": 12778,
+      "sha256": "30967927eab1dac3bd5934875cbc9e778c72b13feb938992e6879c5983f42d58"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/94416692e05da692feb0223a9790d5afb3f8b45c/src/Http/Http.Extensions/src/RequestDelegateFactory.cs.source",
+      "bytes": 153970,
+      "sha256": "395b4b6e704a9c7bc34e82d78c8ccefd1b0aa3726bda5a275c8d83e9e984360b"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/94416692e05da692feb0223a9790d5afb3f8b45c/src/Components/Endpoints/test/FormMapping/BrowserFileFromFormFileTests.cs.source",
+      "bytes": 4074,
+      "sha256": "44f6283900a31ea1c0deeb5b2481d8fe0b667895676c1cbcaf5920a463c2eef3"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/94416692e05da692feb0223a9790d5afb3f8b45c/src/Components/Endpoints/test/Binding/FormDataMapperTests.cs.source",
+      "bytes": 111153,
+      "sha256": "eebaa4d0e4d2e9112834568325364e5652a870f2b9797c5dd6c4aec112a49376"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/94416692e05da692feb0223a9790d5afb3f8b45c/src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs.source",
+      "bytes": 2842,
+      "sha256": "cb7b1cd9d6480e9c82755be693cf39cae76b34d986ecbe63752a83ceef864b61"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/94416692e05da692feb0223a9790d5afb3f8b45c/src/Components/Endpoints/src/FormMapping/FormDataReader.cs.source",
+      "bytes": 11165,
+      "sha256": "80570c84ff585828a171102d8c38f9ed610a60950218c4fd15c010ec9c2b8f22"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Http/Http.Extensions/test/RequestDelegateFactoryTests.FormMapping.cs.source",
+      "bytes": 12778,
+      "sha256": "30967927eab1dac3bd5934875cbc9e778c72b13feb938992e6879c5983f42d58"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Http/Http.Extensions/src/RequestDelegateFactory.cs.source",
+      "bytes": 153970,
+      "sha256": "395b4b6e704a9c7bc34e82d78c8ccefd1b0aa3726bda5a275c8d83e9e984360b"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Components/Endpoints/test/FormMapping/BrowserFileFromFormFileTests.cs.source",
+      "bytes": 4074,
+      "sha256": "44f6283900a31ea1c0deeb5b2481d8fe0b667895676c1cbcaf5920a463c2eef3"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Components/Endpoints/test/Binding/FormDataMapperTests.cs.source",
+      "bytes": 111153,
+      "sha256": "eebaa4d0e4d2e9112834568325364e5652a870f2b9797c5dd6c4aec112a49376"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs.source",
+      "bytes": 2842,
+      "sha256": "cb7b1cd9d6480e9c82755be693cf39cae76b34d986ecbe63752a83ceef864b61"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Components/Endpoints/src/FormMapping/FormDataReader.cs.source",
+      "bytes": 11165,
+      "sha256": "80570c84ff585828a171102d8c38f9ed610a60950218c4fd15c010ec9c2b8f22"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/pull/body.source",
+      "bytes": 4421,
+      "sha256": "061c3ef9ba6de4b99f96cc1c04332c8e92c362eb5e8a76b5515d220c38308558"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/policies/0005.source",
+      "bytes": 1353,
+      "sha256": "04d50d32d0150c20c39f8db0806cad2a749fd38f5e3d65b15331fe7a3d713a55"
+    },
+    {
+      "path": "cases/pr-69782/bundle/source/a7214701f7e3fc0558ee201bcf8552069a803a55/src/Components/Endpoints/src/FormMapping/FormDataReader.cs.source",
+      "bytes": 11819,
+      "sha256": "56c346fe6342848e99273075d95f7f105e36e03c67c681efdf34430fb24ba98a"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/policies/0004.source",
+      "bytes": 2462,
+      "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+    },
+    {
+      "path": "cases/pr-70106/bundle/required/pull/body.source",
+      "bytes": 339,
+      "sha256": "7cbee56cc371546b2a3774d9215400b9d79aa8451ce2c8a6be41bd1729a9ee99"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/10bc886bfa321718276619d1077cc14eaf48456f/src/Components/WebAssembly/WebAssembly.Authentication/test/AuthorizationMessageHandlerTests.cs.source",
+      "bytes": 8039,
+      "sha256": "96e6530be0d959fb67c68f520aa3fe8eecf587fb3362f1282dd2b064a635ed6c"
+    },
+    {
+      "path": "common/required/guides/0001/policies/0003.source",
+      "bytes": 331,
+      "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+    },
+    {
+      "path": "common/required/guides/0001/policies/0002.source",
+      "bytes": 4312,
+      "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+    },
+    {
+      "path": "common/required/guides/0001/policies/0001.source",
+      "bytes": 775,
+      "sha256": "cbde0f3a42294b27e27b1c3c788619307325b1e2471def99bfa20436adf03b8a"
+    },
+    {
+      "path": "common/required/guides/0001/policies/0000.source",
+      "bytes": 1024,
+      "sha256": "19dac0dd4fef4d184267ac3eda4109dbff0169ae6ed8109a41a13bf39b45de62"
+    },
+    {
+      "path": "common/required/guides/0001/exclusions/0001-body.source",
+      "bytes": 222,
+      "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+    },
+    {
+      "path": "common/required/guides/0001/exclusions/0000-scope.source",
+      "bytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+    },
+    {
+      "path": "common/required/guides/0001/exclusions/0000-reason.source",
+      "bytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+    },
+    {
+      "path": "common/required/guides/0000/policies/0005.source",
+      "bytes": 2462,
+      "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+    },
+    {
+      "path": "common/required/guides/0000/policies/0004.source",
+      "bytes": 331,
+      "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+    },
+    {
+      "path": "common/required/guides/0000/policies/0003.source",
+      "bytes": 4312,
+      "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+    },
+    {
+      "path": "common/required/guides/0000/policies/0002.source",
+      "bytes": 2761,
+      "sha256": "3571d4ec4a28efd5d543d232a29ffc56acceafc81d4a9c4bea2b6c3bd0c4ad64"
+    },
+    {
+      "path": "common/required/guides/0000/policies/0001.source",
+      "bytes": 3556,
+      "sha256": "dc7b08e53a011a1f69e68e1b6017f75855a3793136378ca2b39e371a9d5774a2"
+    },
+    {
+      "path": "common/required/guides/0000/policies/0000.source",
+      "bytes": 1338,
+      "sha256": "6baa6500bda6333fdbe2ec1c4b2e5c90d1ab63381b900e2775e938f7e659a563"
+    },
+    {
+      "path": "common/required/guides/0000/exclusions/0001-body.source",
+      "bytes": 222,
+      "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/10bc886bfa321718276619d1077cc14eaf48456f/src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs.source",
+      "bytes": 5938,
+      "sha256": "a460b8495df15b28db3f5a4c42d9f5f28034493ce43235865bb737101381e919"
+    },
+    {
+      "path": "common/required/guides/0000/exclusions/0000-scope.source",
+      "bytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+    },
+    {
+      "path": "common/required/coordinator/exclusions/0001-body.source",
+      "bytes": 222,
+      "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+    },
+    {
+      "path": "common/required/coordinator/exclusions/0000-scope.source",
+      "bytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+    },
+    {
+      "path": "common/required/coordinator/exclusions/0000-reason.source",
+      "bytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+    },
+    {
+      "path": "common/guidance/src/Components/ARCHITECTURE.md.source",
+      "bytes": 35448,
+      "sha256": "a9bd4d55bfc62d9204ce9b7e6aee31a7942847ffe442dc600721f57f3ffbeec9"
+    },
+    {
+      "path": "common/guidance/docs/CrossCuttingGuidance.md.source",
+      "bytes": 16272,
+      "sha256": "ec0305cc6ab012a4be6a0191587444790d51253b166e5243a7bf4c80b59c1160"
+    },
+    {
+      "path": "common/guidance/docs/BlazorComponentsGuidance.md.source",
+      "bytes": 15052,
+      "sha256": "307f3b546f0c36d499205e8f27be25f9a51eaf1105b45279bf3fa25fc65e1996"
+    },
+    {
+      "path": "common/guidance/.github/skills/review-pull-request/routing.md.source",
+      "bytes": 348,
+      "sha256": "27fabd59c32e592306ea0a6f9209e893778de37f52f8210fae5097eb07f52505"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs.source",
+      "bytes": 5938,
+      "sha256": "a460b8495df15b28db3f5a4c42d9f5f28034493ce43235865bb737101381e919"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Components/WebAssembly/WebAssembly/src/Rendering/WebAssemblyDispatcher.cs.source",
+      "bytes": 6382,
+      "sha256": "0f34624edd857cb2143e36bbab3104d256bdf3bbd21b0d5648e6305e8c9d4479"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/4f556f73a610b386e5ec29355a300e493d30c4c5/src/Components/WebAssembly/WebAssembly/src/Hosting/WebAssemblyHostBuilder.cs.source",
+      "bytes": 17683,
+      "sha256": "eda4f8810ade86b34150697383f5c7b6f2ee6fbcaf20f5f187f5aaa95385507c"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/2edf3761692afe15475075eb2fc0088566162045/src/Components/WebAssembly/WebAssembly.Authentication/test/AuthorizationMessageHandlerTests.cs.source",
+      "bytes": 10457,
+      "sha256": "279dbb8d9fd8d5ddabaa6bee42bd72d9c3fdc43966cf3a0a02dad1389b320680"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/2edf3761692afe15475075eb2fc0088566162045/src/Components/WebAssembly/WebAssembly.Authentication/src/Services/RemoteAuthenticationService.cs.source",
+      "bytes": 11670,
+      "sha256": "f497d961843b93db260bff4583245f2c0dbd5200f33efe31eea90d17d7625c64"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/2edf3761692afe15475075eb2fc0088566162045/src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs.source",
+      "bytes": 6464,
+      "sha256": "775f17f2657ac16738dbcf6eec2ac22512a276444e309fe305e72221e3092b3d"
+    },
+    {
+      "path": "cases/pr-70106/bundle/source/2edf3761692afe15475075eb2fc0088566162045/src/Components/Authorization/src/AuthenticationStateProvider.cs.source",
+      "bytes": 1745,
+      "sha256": "01e4a7627196c52ba177195596375e88f798eade84463e8a3655d93763974d9a"
+    },
+    {
+      "path": "common/required/guides/0000/exclusions/0000-reason.source",
+      "bytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+    },
+    {
+      "path": "common/required/guides/0001/policies/0004.source",
+      "bytes": 2462,
+      "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/policies/0003.source",
+      "bytes": 331,
+      "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/policies/0001.source",
+      "bytes": 775,
+      "sha256": "cbde0f3a42294b27e27b1c3c788619307325b1e2471def99bfa20436adf03b8a"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/542f2b9877da67e90cca6ce1b65aa9557fbb2aa8/src/OpenApi/src/Extensions/OpenApiServiceCollectionExtensions.cs.source",
+      "bytes": 4074,
+      "sha256": "3aa6a5a80e35d2bfe35f0c547c3d672c9e1ce5bcd68e2fe0de3f0ed0b9c9bc9e"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/542f2b9877da67e90cca6ce1b65aa9557fbb2aa8/src/OpenApi/src/Extensions/OpenApiEndpointRouteBuilderExtensions.cs.source",
+      "bytes": 3517,
+      "sha256": "d4fd945c8e7733ee0e6fd478879349d3058628ab13c9b8f90f301c8a8e1cde34"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/0a8373f036c151ae2773f4e5a1cb4aeccade6bce/src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Integration/OpenApiDocumentConcurrentRequestTests.cs.source",
+      "bytes": 939,
+      "sha256": "61f845d9b6d6d4b5ae03281a86584075a8627afb2d52bef0d03e6dac25ac2044"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/0a8373f036c151ae2773f4e5a1cb4aeccade6bce/src/OpenApi/src/Transformers/Implementations/OpenApiSchemaReferenceTransformer.cs.source",
+      "bytes": 6554,
+      "sha256": "975a2fecae77d1609ad0eb47ee95280ecd373ec3cd89ae3ef6f4179829bdc979"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/0a8373f036c151ae2773f4e5a1cb4aeccade6bce/src/OpenApi/src/Services/Schemas/OpenApiSchemaStore.cs.source",
+      "bytes": 8918,
+      "sha256": "8cda8670996ed52464f57ac7dc5f53f1c5658869f52b8385143b3fea5af3a804"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/0a8373f036c151ae2773f4e5a1cb4aeccade6bce/src/OpenApi/src/Services/OpenApiDocumentService.cs.source",
+      "bytes": 32614,
+      "sha256": "98e994c5ff54460a280fbded3addfe5aa0aee1d70cce998c904c6fd1f1e0a129"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/0a8373f036c151ae2773f4e5a1cb4aeccade6bce/src/OpenApi/src/Extensions/OpenApiServiceCollectionExtensions.cs.source",
+      "bytes": 4074,
+      "sha256": "3aa6a5a80e35d2bfe35f0c547c3d672c9e1ce5bcd68e2fe0de3f0ed0b9c9bc9e"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/0a8373f036c151ae2773f4e5a1cb4aeccade6bce/src/OpenApi/src/Extensions/OpenApiEndpointRouteBuilderExtensions.cs.source",
+      "bytes": 3517,
+      "sha256": "d4fd945c8e7733ee0e6fd478879349d3058628ab13c9b8f90f301c8a8e1cde34"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/pull/body.source",
+      "bytes": 1073,
+      "sha256": "dc669f96760d58998daaf886f01ab472abb06c4738b99f2f8266e1dde2f892c9"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/policies/0005.source",
+      "bytes": 2462,
+      "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/policies/0004.source",
+      "bytes": 331,
+      "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/policies/0003.source",
+      "bytes": 4312,
+      "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/policies/0002.source",
+      "bytes": 2761,
+      "sha256": "3571d4ec4a28efd5d543d232a29ffc56acceafc81d4a9c4bea2b6c3bd0c4ad64"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/policies/0001.source",
+      "bytes": 3556,
+      "sha256": "dc7b08e53a011a1f69e68e1b6017f75855a3793136378ca2b39e371a9d5774a2"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/542f2b9877da67e90cca6ce1b65aa9557fbb2aa8/src/OpenApi/src/Services/OpenApiDocumentService.cs.source",
+      "bytes": 32614,
+      "sha256": "98e994c5ff54460a280fbded3addfe5aa0aee1d70cce998c904c6fd1f1e0a129"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/policies/0000.source",
+      "bytes": 1338,
+      "sha256": "6baa6500bda6333fdbe2ec1c4b2e5c90d1ab63381b900e2775e938f7e659a563"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/exclusions/0000-scope.source",
+      "bytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/exclusions/0000-reason.source",
+      "bytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/feedback/comments/2362040565.source",
+      "bytes": 28,
+      "sha256": "4fdb2a1e0f9b025fe6928ca9cf4faa20d79db42acb566b26a2e7efc3814b84a7"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/coordinator/exclusions/0001-body.source",
+      "bytes": 222,
+      "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/coordinator/exclusions/0000-scope.source",
+      "bytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/coordinator/exclusions/0000-reason.source",
+      "bytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+    },
+    {
+      "path": "cases/pr-57972/bundle/guidance/docs/CrossCuttingGuidance.md.source",
+      "bytes": 16272,
+      "sha256": "ec0305cc6ab012a4be6a0191587444790d51253b166e5243a7bf4c80b59c1160"
+    },
+    {
+      "path": "cases/pr-57972/bundle/guidance/.github/skills/review-pull-request/routing.md.source",
+      "bytes": 348,
+      "sha256": "27fabd59c32e592306ea0a6f9209e893778de37f52f8210fae5097eb07f52505"
+    },
+    {
+      "path": "cases/pr-57972/bundle/pull.json",
+      "bytes": 1173,
+      "sha256": "297e23891a0f2ed7704290136cf68427b23fc2a9b38deb0c8dc49f939345a0a3"
+    },
+    {
+      "path": "cases/pr-57972/bundle/manifest.json",
+      "bytes": 10156,
+      "sha256": "10e5c6c4cb15a21d1e70981e6014cad7abb31a5ed6121f48f35478a1659e5313"
+    },
+    {
+      "path": "cases/pr-57972/bundle/files.json",
+      "bytes": 744,
+      "sha256": "350f6e52b632814858eb21a2cb9f9b539cd07d2f713cac7539fc419cd20f832c"
+    },
+    {
+      "path": "cases/pr-57972/bundle/feedback.json",
+      "bytes": 478,
+      "sha256": "313a2ed979648c576c2c0989aa2aed12d2eb59d0625e45a51b3c124ff469a065"
+    },
+    {
+      "path": "cases/pr-57972/bundle/diff.patch",
+      "bytes": 5255,
+      "sha256": "92ace8aa218d0ed97df897a1d696c0b9ce97b953a4bf87e99f5ebbb2da0c06e0"
+    },
+    {
+      "path": "cases/pr-57972/projection-map.json",
+      "bytes": 775,
+      "sha256": "1450a6aaa6d130a288e8adcf4c6dec60214a8c5ae0e14724abb1d776916774d3"
+    },
+    {
+      "path": "cases/pr-57972/bundle/required/guides/0000/exclusions/0001-body.source",
+      "bytes": 222,
+      "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/policies/0002.source",
+      "bytes": 4312,
+      "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/542f2b9877da67e90cca6ce1b65aa9557fbb2aa8/src/OpenApi/src/Services/Schemas/OpenApiSchemaStore.cs.source",
+      "bytes": 9011,
+      "sha256": "2b2d04f7ac94d396becc4070b6a48d2b9f5a59b39eae599b5b1804b3a786c345"
+    },
+    {
+      "path": "cases/pr-69782/candidates.json",
+      "bytes": 1556,
+      "sha256": "950ff25798f540ebdc608f86a4d8b17f4e9828cca205bdded6d7eef4f3c3ab8c"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/policies/0000.source",
+      "bytes": 1024,
+      "sha256": "19dac0dd4fef4d184267ac3eda4109dbff0169ae6ed8109a41a13bf39b45de62"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/exclusions/0001-body.source",
+      "bytes": 222,
+      "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/exclusions/0000-scope.source",
+      "bytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0001/exclusions/0000-reason.source",
+      "bytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/policies/0005.source",
+      "bytes": 2462,
+      "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/policies/0004.source",
+      "bytes": 331,
+      "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/policies/0003.source",
+      "bytes": 4312,
+      "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/policies/0002.source",
+      "bytes": 2761,
+      "sha256": "3571d4ec4a28efd5d543d232a29ffc56acceafc81d4a9c4bea2b6c3bd0c4ad64"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/policies/0001.source",
+      "bytes": 3556,
+      "sha256": "dc7b08e53a011a1f69e68e1b6017f75855a3793136378ca2b39e371a9d5774a2"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/policies/0000.source",
+      "bytes": 1338,
+      "sha256": "6baa6500bda6333fdbe2ec1c4b2e5c90d1ab63381b900e2775e938f7e659a563"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/exclusions/0001-body.source",
+      "bytes": 222,
+      "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/exclusions/0000-scope.source",
+      "bytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/guides/0000/exclusions/0000-reason.source",
+      "bytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/feedback/reviews/5498782618.source",
+      "bytes": 1586,
+      "sha256": "57dff365f1294a181988ef6c05828d8a92e872b3b67412c3553612866070a8c4"
+    },
+    {
+      "path": "cases/pr-57972/bundle/source/542f2b9877da67e90cca6ce1b65aa9557fbb2aa8/src/OpenApi/src/Transformers/Implementations/OpenApiSchemaReferenceTransformer.cs.source",
+      "bytes": 6507,
+      "sha256": "4c650c9aaa2eccd6a8552d7ad6c4a3bb9eb5126d24a238aa16434dbc4ccee219"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/feedback/comments/6510897418.source",
+      "bytes": 7,
+      "sha256": "0d38c8cdf5fee3444d9db3ef6b57fcd16eb80cc74963adf9bc998605169ecb0d"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/feedback/comments/6138106943.source",
+      "bytes": 226,
+      "sha256": "4f3636144d506e10d5282459429d3698d24fc358ecb330d5e79942701255f708"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/coordinator/exclusions/0001-body.source",
+      "bytes": 222,
+      "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/coordinator/exclusions/0000-scope.source",
+      "bytes": 203,
+      "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/coordinator/exclusions/0000-reason.source",
+      "bytes": 601,
+      "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+    },
+    {
+      "path": "cases/pr-69782/bundle/guidance/src/Components/ARCHITECTURE.md.source",
+      "bytes": 35448,
+      "sha256": "a9bd4d55bfc62d9204ce9b7e6aee31a7942847ffe442dc600721f57f3ffbeec9"
+    },
+    {
+      "path": "cases/pr-69782/bundle/guidance/docs/CrossCuttingGuidance.md.source",
+      "bytes": 16272,
+      "sha256": "ec0305cc6ab012a4be6a0191587444790d51253b166e5243a7bf4c80b59c1160"
+    },
+    {
+      "path": "cases/pr-69782/bundle/guidance/docs/BlazorComponentsGuidance.md.source",
+      "bytes": 15052,
+      "sha256": "307f3b546f0c36d499205e8f27be25f9a51eaf1105b45279bf3fa25fc65e1996"
+    },
+    {
+      "path": "cases/pr-69782/bundle/guidance/.github/skills/review-pull-request/routing.md.source",
+      "bytes": 348,
+      "sha256": "27fabd59c32e592306ea0a6f9209e893778de37f52f8210fae5097eb07f52505"
+    },
+    {
+      "path": "cases/pr-69782/bundle/pull.json",
+      "bytes": 700,
+      "sha256": "41fa3efb6cbcefe8491d3b44d2d428c4490985da0cbc5300be27a309f0473bd5"
+    },
+    {
+      "path": "cases/pr-69782/bundle/manifest.json",
+      "bytes": 16680,
+      "sha256": "9bb7f021666759d092dd23b0fd342cebc9ae59b7576daf62f227a7474ed95c50"
+    },
+    {
+      "path": "cases/pr-69782/bundle/files.json",
+      "bytes": 1405,
+      "sha256": "c5258b0eef589c2922385070762bd0d414ee9228939edf3eed6899be24352cb4"
+    },
+    {
+      "path": "cases/pr-69782/bundle/feedback.json",
+      "bytes": 1866,
+      "sha256": "a78112bfcf59d5896212e911f5cf5c4f7d85648d8561851dd9c2dfa2cd779968"
+    },
+    {
+      "path": "cases/pr-69782/bundle/diff.patch",
+      "bytes": 20374,
+      "sha256": "30f2b6e845ea9e91cfe539163959c96bd645c1eccb242720db12352e678daa02"
+    },
+    {
+      "path": "cases/pr-69782/projection-map.json",
+      "bytes": 804,
+      "sha256": "1ea58af25cc64911e9f039380807819d7897a2b870a5d55786c2e23a8135da50"
+    },
+    {
+      "path": "cases/pr-69782/bundle/required/feedback/comments/6324991167.source",
+      "bytes": 418,
+      "sha256": "301367fdd440fe67f8a843642a08529bf28a7da39fdd3e12efb5510763bebe94"
+    },
+    {
+      "path": "common/required/guides/0001/policies/0005.source",
+      "bytes": 1353,
+      "sha256": "04d50d32d0150c20c39f8db0806cad2a749fd38f5e3d65b15331fe7a3d713a55"
+    }
+  ]
+}

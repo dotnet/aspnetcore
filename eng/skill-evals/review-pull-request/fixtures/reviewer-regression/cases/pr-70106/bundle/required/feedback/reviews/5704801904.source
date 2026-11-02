@@ -1,0 +1,25 @@
+<!-- ccr-overview-v2 -->
+
+### 🟢 Approval recommended
+
+No active review issues block the change addressing stale access-token caching after authentication-state changes.
+
+**No open issues** 🎉
+
+<details>
+<summary><strong>What changed in this PR</strong></summary>
+
+Fixes an asynchronous race in Blazor WebAssembly’s `AuthorizationMessageHandler` that could cache a stale access token after the authentication state changes.
+
+**Changes:**
+- Prevents in-flight token requests from updating the cache after an authentication-state change.
+- Keeps each request’s authorization header separate from the shared cache.
+- Adds a regression test confirming that a subsequent request uses a fresh token.
+
+| File | Description |
+| ---- | ----------- |
+| src/​Components/​WebAssembly/​WebAssembly.Authentication/​test/​AuthorizationMessageHandlerTests.cs | Adds regression coverage for authentication changes during token retrieval. |
+| src/​Components/​WebAssembly/​WebAssembly.Authentication/​src/​Services/​AuthorizationMessageHandler.cs | Tracks authentication-state invalidation to prevent stale token caching. |
+</details>
+
+<sub>Review effort: Balanced</sub>

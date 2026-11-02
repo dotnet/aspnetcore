@@ -1,0 +1,18 @@
+[
+  {
+    "filename": "src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs",
+    "status": "modified",
+    "sha": "6e0874be24b21f552d8282af628b5b0e6b1faa09",
+    "additions": 17,
+    "deletions": 4,
+    "changes": 21
+  },
+  {
+    "filename": "src/Components/WebAssembly/WebAssembly.Authentication/test/AuthorizationMessageHandlerTests.cs",
+    "status": "modified",
+    "sha": "b4930efc93e180d06070080a82cf8a49d2ea1a63",
+    "additions": 54,
+    "deletions": 0,
+    "changes": 54
+  }
+]

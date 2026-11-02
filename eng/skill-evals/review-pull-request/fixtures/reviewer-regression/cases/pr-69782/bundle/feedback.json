@@ -1,0 +1,68 @@
+{
+  "comments": [
+    {
+      "id": 6138106943,
+      "author": {
+        "login": "dotnet-policy-service[bot]",
+        "id": 123482357,
+        "type": "Bot"
+      },
+      "body": {
+        "path": "required/feedback/comments/6138106943.source",
+        "utf8Bytes": 226,
+        "sha256": "4f3636144d506e10d5282459429d3698d24fc358ecb330d5e79942701255f708"
+      },
+      "createdAt": "2026-10-13T04:16:11Z",
+      "updatedAt": "2026-10-13T04:16:11Z"
+    },
+    {
+      "id": 6324991167,
+      "author": {
+        "login": "dotnet-policy-service[bot]",
+        "id": 123482357,
+        "type": "Bot"
+      },
+      "body": {
+        "path": "required/feedback/comments/6324991167.source",
+        "utf8Bytes": 418,
+        "sha256": "301367fdd440fe67f8a843642a08529bf28a7da39fdd3e12efb5510763bebe94"
+      },
+      "createdAt": "2026-10-21T19:44:57Z",
+      "updatedAt": "2026-10-21T19:44:57Z"
+    },
+    {
+      "id": 6510897418,
+      "author": {
+        "login": "PureWeen",
+        "id": 5375137,
+        "type": "User"
+      },
+      "body": {
+        "path": "required/feedback/comments/6510897418.source",
+        "utf8Bytes": 7,
+        "sha256": "0d38c8cdf5fee3444d9db3ef6b57fcd16eb80cc74963adf9bc998605169ecb0d"
+      },
+      "createdAt": "2026-10-29T23:24:51Z",
+      "updatedAt": "2026-10-29T23:24:51Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": 5498782618,
+      "author": {
+        "login": "copilot-pull-request-reviewer[bot]",
+        "id": 175728472,
+        "type": "Bot"
+      },
+      "body": {
+        "path": "required/feedback/reviews/5498782618.source",
+        "utf8Bytes": 1586,
+        "sha256": "57dff365f1294a181988ef6c05828d8a92e872b3b67412c3553612866070a8c4"
+      },
+      "state": "COMMENTED",
+      "submittedAt": "2026-10-13T04:20:34Z",
+      "commitId": "3be3629ee4492f0b6bc23c98e68f220fb19b5a66"
+    }
+  ],
+  "inline": []
+}

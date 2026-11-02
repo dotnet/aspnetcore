@@ -1,0 +1,28 @@
+{
+  "number": 70106,
+  "state": "OPEN",
+  "title": "Fix token handling in Blazor WebAssembly AuthorizationMessageHandler",
+  "body": {
+    "path": "required/pull/body.source",
+    "utf8Bytes": 339,
+    "sha256": "7cbee56cc371546b2a3774d9215400b9d79aa8451ce2c8a6be41bd1729a9ee99"
+  },
+  "draft": false,
+  "author": {
+    "login": "oroztocil",
+    "id": 79744616,
+    "type": "User"
+  },
+  "labels": [],
+  "milestone": null,
+  "createdAt": "2026-10-29T20:49:12Z",
+  "retrieval": {
+    "descriptionHistoricalAtCutoff": true,
+    "labelsHistoricalAtCutoff": false,
+    "note": "Exact latest PR body version before the feedback cutoff; labels and post-cutoff decision metadata omitted.",
+    "descriptionSnapshotEditedAt": "2026-10-29T20:54:51Z",
+    "descriptionSnapshotEditor": "oroztocil",
+    "descriptionSource": "GitHub GraphQL userContentEdits.diff",
+    "frozenReviewHead": "2edf3761692afe15475075eb2fc0088566162045"
+  }
+}

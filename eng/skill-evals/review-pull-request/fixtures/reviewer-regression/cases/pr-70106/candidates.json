@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "pr": 70106,
+  "expectedCaseIds": [
+    "V21",
+    "V32",
+    "V36",
+    "L69"
+  ],
+  "candidates": [
+    {
+      "id": "V21",
+      "pr": 70106,
+      "head": "2edf3761692afe15475075eb2fc0088566162045",
+      "mergeBase": "10bc886bfa321718276619d1077cc14eaf48456f",
+      "path": "src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs",
+      "line": 77,
+      "severity": "P2",
+      "claim": "Authentication-state changes can race after this cancellation check and still cache a stale token.",
+      "effect": "The callback clears and cancels the cache state, but lines 79–80 then repopulate it with the pre-change token. The next authorized request reuses that stale token.\nProtect an authentication-state generation and the cache commit with the same lock used by the callback, for example:\n```csharp\nlock (_sync)\n{\n    if (requestGeneration == _authenticationStateGeneration)\n    {\n        _lastToken = token;\n        _cachedHeader = header;\n    }\n}\n```",
+      "repro": "Minimal repro: use a custom `AuthenticationStateProvider` that completes `RequestAccessToken`, pauses the handler immediately after this check, raises `NotifyAuthenticationStateChanged` on another thread, then resumes the handler."
+    },
+    {
+      "id": "V32",
+      "pr": 70106,
+      "head": "2edf3761692afe15475075eb2fc0088566162045",
+      "mergeBase": "10bc886bfa321718276619d1077cc14eaf48456f",
+      "path": "src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs",
+      "line": 65,
+      "severity": "P2",
+      "claim": "P2 — The new early header snapshot can attach an obsolete token after a concurrent refresh completes.",
+      "effect": "request 1 sends expired/obsolete bearer token A even though the shared handler has already refreshed to B. Frozen merge-base/base-tip read `_cachedHeader` at attachment time and send B under the same completed-refresh ordering.",
+      "repro": "prime the handler with nearly-expired token A; start request 1 and pause it immediately after line 65; allow request 2 to refresh and fully commit token/header B; resume request 1. Request 1 observes valid `_lastToken` B and skips refresh, but line 92 attaches its earlier local snapshot A."
+    },
+    {
+      "id": "V36",
+      "pr": 70106,
+      "head": "2edf3761692afe15475075eb2fc0088566162045",
+      "mergeBase": "10bc886bfa321718276619d1077cc14eaf48456f",
+      "path": "src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs",
+      "line": 66,
+      "severity": "P2",
+      "claim": "P2: The early header snapshot can send the previous token after another request completes a refresh.",
+      "effect": "",
+      "repro": "share a configured handler and `HttpClient` between concurrent callers with a custom `IAccessTokenProvider`. Warm the token cache, let the token reach its refresh/expiry window, then overlap authorized requests while the provider supplies a fresh token. The failing sequence is:"
+    },
+    {
+      "id": "L69",
+      "pr": 70106,
+      "head": "2edf3761692afe15475075eb2fc0088566162045",
+      "mergeBase": "10bc886bfa321718276619d1077cc14eaf48456f",
+      "path": "src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs",
+      "line": 69,
+      "severity": "P2",
+      "claim": "Concurrent requests can use different invalidation tokens, allowing a stale result to remain cacheable.",
+      "effect": "Only the CTS still stored in `_authenticationStateChangedCts` is canceled. The other request sees an uncanceled token at line 77 and writes its stale token into `_lastToken` and `_cachedHeader`, defeating the fix.\nFix: synchronize CTS acquisition, authentication-state invalidation, and the cancellation-check/cache commit using the same lock, or use an equivalent atomic generation mechanism that makes the check and commit indivisible relative to invalidation.",
+      "repro": "Issue two concurrent authorized requests while the cache is empty. If both evaluate the unsynchronized `??=` before either assignment is visible, each can retain a different CTS token. Raise `AuthenticationStateChanged`, then complete the request whose CTS was overwritten with an old token."
+    }
+  ]
+}

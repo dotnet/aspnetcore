@@ -1,0 +1,3 @@
+Fixes an async race condition in `AuthorizationMessageHandler` that can cause storing a stale token (a benign bug but still a bug).
+
+The fix uses `CancellationTokenSource` as the standard pattern that we use for such operation supersessions. The CTS is not disposed because nothing is registered on the token so its `Dispose` is a no-op.

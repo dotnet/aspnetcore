@@ -1,0 +1,32 @@
+[
+  {
+    "id": "pr-70106-revision-qualified-restraint",
+    "case": "pr-70106",
+    "expectedScore": 1,
+    "reason": "The fixed event-during-await behavior is separated from unsupported residual race claims."
+  },
+  {
+    "id": "pr-70106-unsupported-p2-lock-demand",
+    "case": "pr-70106",
+    "expectedScore": 0,
+    "reason": "An unsupported conditional interleaving is promoted to an actionable lock demand."
+  },
+  {
+    "id": "pr-70106-invented-provider-contract",
+    "case": "pr-70106",
+    "expectedScore": 0,
+    "reason": "A disposition relies on a fabricated provider serialization contract; polarity does not excuse invented evidence."
+  },
+  {
+    "id": "pr-57972-correct-parallel-cache",
+    "case": "pr-57972",
+    "expectedScore": 1,
+    "reason": "The remaining shared Dictionary is traced through the supported keyed-singleton request path."
+  },
+  {
+    "id": "pr-57972-blanket-silence",
+    "case": "pr-57972",
+    "expectedScore": 0,
+    "reason": "A structurally complete silent review misses the supported parallel shared-cache defect."
+  }
+]

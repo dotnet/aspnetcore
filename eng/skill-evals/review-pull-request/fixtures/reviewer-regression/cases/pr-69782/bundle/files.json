@@ -1,0 +1,50 @@
+[
+  {
+    "filename": "src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs",
+    "status": "modified",
+    "sha": "1218cae3d76bff951a6711a966648ed08fc66b6b",
+    "additions": 7,
+    "deletions": 4,
+    "changes": 11
+  },
+  {
+    "filename": "src/Components/Endpoints/src/FormMapping/FormDataReader.cs",
+    "status": "modified",
+    "sha": "7826f796e22d81624c97d45006a54f51165d2413",
+    "additions": 19,
+    "deletions": 0,
+    "changes": 19
+  },
+  {
+    "filename": "src/Components/Endpoints/test/Binding/FormDataMapperTests.cs",
+    "status": "modified",
+    "sha": "1c8d7e66f14c3cb1264589608657ed6bdb7bbb30",
+    "additions": 108,
+    "deletions": 5,
+    "changes": 113
+  },
+  {
+    "filename": "src/Components/Endpoints/test/FormMapping/BrowserFileFromFormFileTests.cs",
+    "status": "modified",
+    "sha": "8c2681a922a834839a107b6c39ce286c18b4310c",
+    "additions": 19,
+    "deletions": 0,
+    "changes": 19
+  },
+  {
+    "filename": "src/Http/Http.Extensions/src/RequestDelegateFactory.cs",
+    "status": "modified",
+    "sha": "63797b419ed3b7f630013d75cdb3de43e45c4ab6",
+    "additions": 10,
+    "deletions": 1,
+    "changes": 11
+  },
+  {
+    "filename": "src/Http/Http.Extensions/test/RequestDelegateFactoryTests.FormMapping.cs",
+    "status": "modified",
+    "sha": "d411608dc28bc149c74b6778429245cc581891f3",
+    "additions": 167,
+    "deletions": 0,
+    "changes": 167
+  }
+]

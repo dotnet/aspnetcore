@@ -1,0 +1,133 @@
+diff --git a/src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs b/src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs
+index ea7057399eaa..6e0874be24b2 100644
+--- a/src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs
++++ b/src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs
+@@ -21,6 +21,7 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
+     private readonly AuthenticationStateChangedHandler? _authenticationStateChangedHandler;
+     private AccessToken? _lastToken;
+     private AuthenticationHeaderValue? _cachedHeader;
++    private CancellationTokenSource? _authenticationStateChangedCts;
+     private Uri[]? _authorizedUris;
+     private AccessTokenRequestOptions? _tokenOptions;
+ 
+@@ -39,7 +40,13 @@ public AuthorizationMessageHandler(
+         // Invalidate the cached _lastToken when the authentication state changes
+         if (_provider is AuthenticationStateProvider authStateProvider)
+         {
+-            _authenticationStateChangedHandler = _ => { _lastToken = null; };
++            _authenticationStateChangedHandler = _ =>
++            {
++                _lastToken = null;
++
++                _authenticationStateChangedCts?.Cancel();
++                _authenticationStateChangedCts = null;
++            };
+             authStateProvider.AuthenticationStateChanged += _authenticationStateChangedHandler;
+         }
+     }
+@@ -56,16 +63,22 @@ protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage
+ 
+         if (request.RequestUri != null && _authorizedUris.Any(uri => uri.IsBaseOf(request.RequestUri)))
+         {
++            var header = _cachedHeader;
+             if (_lastToken == null || now >= _lastToken.Expires.AddMinutes(-5))
+             {
++                var authenticationStateChangedToken = (_authenticationStateChangedCts ??= new()).Token;
+                 var tokenResult = _tokenOptions != null ?
+                     await _provider.RequestAccessToken(_tokenOptions) :
+                     await _provider.RequestAccessToken();
+ 
+                 if (tokenResult.TryGetToken(out var token))
+                 {
+-                    _lastToken = token;
+-                    _cachedHeader = new AuthenticationHeaderValue("Bearer", _lastToken.Value);
++                    header = new AuthenticationHeaderValue("Bearer", token.Value);
++                    if (!authenticationStateChangedToken.IsCancellationRequested)
++                    {
++                        _lastToken = token;
++                        _cachedHeader = header;
++                    }
+                 }
+                 else
+                 {
+@@ -76,7 +89,7 @@ await _provider.RequestAccessToken(_tokenOptions) :
+             // We don't try to handle 401s and retry the request with a new token automatically since that would mean we need to copy the request
+             // headers and buffer the body and we expect that the user instead handles the 401s. (Also, we can't really handle all 401s as we might
+             // not be able to provision a token without user interaction).
+-            request.Headers.Authorization = _cachedHeader;
++            request.Headers.Authorization = header;
+         }
+ 
+         return await base.SendAsync(request, cancellationToken);
+diff --git a/src/Components/WebAssembly/WebAssembly.Authentication/test/AuthorizationMessageHandlerTests.cs b/src/Components/WebAssembly/WebAssembly.Authentication/test/AuthorizationMessageHandlerTests.cs
+index a5133679aa93..b4930efc93e1 100644
+--- a/src/Components/WebAssembly/WebAssembly.Authentication/test/AuthorizationMessageHandlerTests.cs
++++ b/src/Components/WebAssembly/WebAssembly.Authentication/test/AuthorizationMessageHandlerTests.cs
+@@ -3,6 +3,8 @@
+ 
+ using System.Net;
+ using System.Net.Http;
++using System.Security.Claims;
++using Microsoft.AspNetCore.Components.Authorization;
+ using Moq;
+ 
+ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+@@ -192,6 +194,58 @@ public async Task UsesCustomScopesAndReturnUrlWhenProvided()
+         // Assert
+         Assert.Single(tokenProvider.Invocations);
+     }
++
++    [Fact]
++    public async Task DoesNotCacheToken_WhenAuthenticationStateChangesWhileTokenIsBeingRequested()
++    {
++        // Arrange
++        var staleTokenResult = new TaskCompletionSource<AccessTokenResult>();
++        var tokenProvider = new TestAccessTokenProvider(
++            staleTokenResult.Task,
++            Task.FromResult(CreateTokenResult("fresh")));
++
++        var handler = new AuthorizationMessageHandler(tokenProvider, Mock.Of<NavigationManager>());
++        handler.ConfigureHandler(new[] { "https://localhost:5001" });
++
++        var response = new HttpResponseMessage(HttpStatusCode.OK);
++        handler.InnerHandler = new TestMessageHandler(response);
++        var client = new HttpClient(handler);
++
++        // Act
++        var firstRequest = client.GetAsync("https://localhost:5001/weather");
++        tokenProvider.RaiseAuthenticationStateChanged();
++        staleTokenResult.SetResult(CreateTokenResult("stale"));
++        _ = await firstRequest;
++        var firstRequestToken = response.RequestMessage.Headers.Authorization.Parameter;
++
++        _ = await client.GetAsync("https://localhost:5001/weather");
++
++        // Assert
++        Assert.Equal("stale", firstRequestToken);
++        Assert.Equal("fresh", response.RequestMessage.Headers.Authorization.Parameter);
++    }
++
++    private static AccessTokenResult CreateTokenResult(string value) => new(
++        AccessTokenResultStatus.Success,
++        new AccessToken { Expires = DateTime.Now.AddHours(1), GrantedScopes = new[] { "All" }, Value = value },
++        null,
++        null);
++
++    private sealed class TestAccessTokenProvider : AuthenticationStateProvider, IAccessTokenProvider
++    {
++        private readonly Queue<Task<AccessTokenResult>> _results;
++
++        public TestAccessTokenProvider(params Task<AccessTokenResult>[] results) => _results = new(results);
++
++        public override Task<AuthenticationState> GetAuthenticationStateAsync()
++            => Task.FromResult(new AuthenticationState(new ClaimsPrincipal()));
++
++        public void RaiseAuthenticationStateChanged() => NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
++
++        public ValueTask<AccessTokenResult> RequestAccessToken() => new(_results.Dequeue());
++
++        public ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options) => RequestAccessToken();
++    }
+ }
+ 
+ internal class TestMessageHandler : HttpMessageHandler

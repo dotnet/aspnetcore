@@ -1,0 +1,439 @@
+{
+  "version": 2,
+  "ready": true,
+  "producer": "suite-local-focused-projection; canonical-producer-sha256=7271f87c19aa18cb35bed38675d07db9037d896cd1bf7c95b7ef1b7a2dc0e091",
+  "target": {
+    "hostname": "github.com",
+    "repository": "dotnet/aspnetcore",
+    "repositoryId": 17620347,
+    "pr": 70106,
+    "headRepository": "dotnet/aspnetcore",
+    "head": "2edf3761692afe15475075eb2fc0088566162045",
+    "baseRepository": "dotnet/aspnetcore",
+    "baseRef": "main",
+    "baseTip": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+    "mergeBase": "10bc886bfa321718276619d1077cc14eaf48456f"
+  },
+  "suffix": ".source",
+  "sources": {
+    "head": {
+      "root": "source/2edf3761692afe15475075eb2fc0088566162045",
+      "commit": "2edf3761692afe15475075eb2fc0088566162045",
+      "files": 4,
+      "sha256": "948be7d26273478ec623c06827e6a3f6b868de1b8722531a2432287779e56cbf",
+      "projection": "focused"
+    },
+    "mergeBase": {
+      "root": "source/10bc886bfa321718276619d1077cc14eaf48456f",
+      "commit": "10bc886bfa321718276619d1077cc14eaf48456f",
+      "files": 2,
+      "sha256": "bcb1c164b7248c025cae2645ea6eb6f5b2bc670615b3ab12c3faede8df9f71a4",
+      "projection": "focused"
+    },
+    "baseTip": {
+      "root": "source/4f556f73a610b386e5ec29355a300e493d30c4c5",
+      "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+      "files": 3,
+      "sha256": "e8ab2738a73d28c50c17d4bca7cafe09d26cfb075678de0aa16d0bff7f931b65",
+      "projection": "focused"
+    }
+  },
+  "guidance": {
+    "mode": "frozen-projection",
+    "repository": "dotnet/aspnetcore",
+    "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+    "root": "guidance",
+    "files": 4,
+    "sha256": "3a832d5e37ed7642b8916d9b81c83018774040b34ec4374d133c095b788a063b"
+  },
+  "routing": {
+    "path": ".github/skills/review-pull-request/routing.md",
+    "sha256": "27fabd59c32e592306ea0a6f9209e893778de37f52f8210fae5097eb07f52505"
+  },
+  "guides": [
+    {
+      "path": "docs/CrossCuttingGuidance.md",
+      "topics": [
+        "Cross-cutting scope and change shape",
+        "Public API surface, compatibility, and lifecycle",
+        "Nullability, validation, and correctness invariants",
+        "Async, cancellation, and background work",
+        "Performance, allocations, caching, and pooling",
+        "Resource lifetime, disposal, and I/O",
+        "Thread-safety, shared state, and lazy initialization",
+        "Options, configuration, and dependency injection",
+        "Diagnostics, logging, exceptions, and tool output",
+        "Trust boundaries, security, and sensitive data",
+        "Localization, text, paths, and cross-platform behavior",
+        "Analyzers, reflection, source generation, trimming, and AOT",
+        "Build, packaging, shared framework, and templates",
+        "Tests, determinism, and test utilities"
+      ],
+      "assignment": {
+        "files": [
+          {
+            "kind": "guide",
+            "path": "guidance/docs/CrossCuttingGuidance.md.source",
+            "utf8Bytes": 16272,
+            "sha256": "ec0305cc6ab012a4be6a0191587444790d51253b166e5243a7bf4c80b59c1160"
+          },
+          {
+            "kind": "diff",
+            "path": "diff.patch",
+            "utf8Bytes": 6712,
+            "sha256": "a7f6b9f9f397de49d2bf4b51e655aa3f6127a835345abc2e6ff96346346d61f9"
+          },
+          {
+            "kind": "changedFiles",
+            "path": "files.json",
+            "utf8Bytes": 532,
+            "sha256": "dfb47d9b05fe4c7be9aa07329f475600218643e69772bf6e56b1c7ce1337167a"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0000/policies/0000.source",
+            "utf8Bytes": 1338,
+            "sha256": "6baa6500bda6333fdbe2ec1c4b2e5c90d1ab63381b900e2775e938f7e659a563"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0000/policies/0001.source",
+            "utf8Bytes": 3556,
+            "sha256": "dc7b08e53a011a1f69e68e1b6017f75855a3793136378ca2b39e371a9d5774a2"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0000/policies/0002.source",
+            "utf8Bytes": 2761,
+            "sha256": "3571d4ec4a28efd5d543d232a29ffc56acceafc81d4a9c4bea2b6c3bd0c4ad64"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0000/policies/0003.source",
+            "utf8Bytes": 4312,
+            "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0000/policies/0004.source",
+            "utf8Bytes": 331,
+            "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0000/policies/0005.source",
+            "utf8Bytes": 2462,
+            "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0000-scope.source",
+            "utf8Bytes": 203,
+            "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0000-reason.source",
+            "utf8Bytes": 601,
+            "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0000/exclusions/0001-body.source",
+            "utf8Bytes": 222,
+            "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+          }
+        ],
+        "sourceRoles": [
+          "head",
+          "mergeBase",
+          "baseTip"
+        ]
+      }
+    },
+    {
+      "path": "docs/BlazorComponentsGuidance.md",
+      "topics": [
+        "Scope, layering, and public API shape",
+        "Render modes and hosting boundaries",
+        "Prerendering, static SSR, streaming, and state persistence",
+        "Lifecycle, async flow, and renderer synchronization",
+        "Parameters, cascading values, and binding",
+        "Rendering, diffing, DOM synchronization, sections, and virtualization",
+        "Events, callbacks, navigation, and enhanced navigation",
+        "JS interop, browser APIs, and serialization",
+        "Disposal, cancellation, circuits, and resource ownership",
+        "Forms, validation, antiforgery, and file handling",
+        "Security and trust boundaries",
+        "WebAssembly boot, static assets, and build packaging",
+        "Tests, diagnostics, and repo fit"
+      ],
+      "assignment": {
+        "files": [
+          {
+            "kind": "guide",
+            "path": "guidance/docs/BlazorComponentsGuidance.md.source",
+            "utf8Bytes": 15052,
+            "sha256": "307f3b546f0c36d499205e8f27be25f9a51eaf1105b45279bf3fa25fc65e1996"
+          },
+          {
+            "kind": "diff",
+            "path": "diff.patch",
+            "utf8Bytes": 6712,
+            "sha256": "a7f6b9f9f397de49d2bf4b51e655aa3f6127a835345abc2e6ff96346346d61f9"
+          },
+          {
+            "kind": "changedFiles",
+            "path": "files.json",
+            "utf8Bytes": 532,
+            "sha256": "dfb47d9b05fe4c7be9aa07329f475600218643e69772bf6e56b1c7ce1337167a"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0001/policies/0000.source",
+            "utf8Bytes": 1024,
+            "sha256": "19dac0dd4fef4d184267ac3eda4109dbff0169ae6ed8109a41a13bf39b45de62"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0001/policies/0001.source",
+            "utf8Bytes": 775,
+            "sha256": "cbde0f3a42294b27e27b1c3c788619307325b1e2471def99bfa20436adf03b8a"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0001/policies/0002.source",
+            "utf8Bytes": 4312,
+            "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0001/policies/0003.source",
+            "utf8Bytes": 331,
+            "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0001/policies/0004.source",
+            "utf8Bytes": 2462,
+            "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+          },
+          {
+            "kind": "policy",
+            "path": "required/guides/0001/policies/0005.source",
+            "utf8Bytes": 1353,
+            "sha256": "04d50d32d0150c20c39f8db0806cad2a749fd38f5e3d65b15331fe7a3d713a55"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0001/exclusions/0000-scope.source",
+            "utf8Bytes": 203,
+            "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0001/exclusions/0000-reason.source",
+            "utf8Bytes": 601,
+            "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+          },
+          {
+            "kind": "exclusion",
+            "path": "required/guides/0001/exclusions/0001-body.source",
+            "utf8Bytes": 222,
+            "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+          }
+        ],
+        "sourceRoles": [
+          "head",
+          "mergeBase",
+          "baseTip"
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "path": "CONTRIBUTING.md",
+      "anchor": "before-submitting-the-pull-request",
+      "guide": "docs/CrossCuttingGuidance.md",
+      "body": {
+        "path": "required/guides/0000/policies/0000.source",
+        "utf8Bytes": 1338,
+        "sha256": "6baa6500bda6333fdbe2ec1c4b2e5c90d1ab63381b900e2775e938f7e659a563"
+      }
+    },
+    {
+      "path": "docs/APIReviewProcess.md",
+      "anchor": "process",
+      "guide": "docs/CrossCuttingGuidance.md",
+      "body": {
+        "path": "required/guides/0000/policies/0001.source",
+        "utf8Bytes": 3556,
+        "sha256": "dc7b08e53a011a1f69e68e1b6017f75855a3793136378ca2b39e371a9d5774a2"
+      }
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "anchor": "formatting",
+      "guide": "docs/CrossCuttingGuidance.md",
+      "body": {
+        "path": "required/guides/0000/policies/0002.source",
+        "utf8Bytes": 2761,
+        "sha256": "3571d4ec4a28efd5d543d232a29ffc56acceafc81d4a9c4bea2b6c3bd0c4ad64"
+      }
+    },
+    {
+      "path": "docs/Trimming.md",
+      "anchor": "validate-trimming-behavior",
+      "guide": "docs/CrossCuttingGuidance.md",
+      "body": {
+        "path": "required/guides/0000/policies/0003.source",
+        "utf8Bytes": 4312,
+        "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+      }
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "anchor": "tests",
+      "guide": "docs/CrossCuttingGuidance.md",
+      "body": {
+        "path": "required/guides/0000/policies/0004.source",
+        "utf8Bytes": 331,
+        "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+      }
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "anchor": "running-tests",
+      "guide": "docs/CrossCuttingGuidance.md",
+      "body": {
+        "path": "required/guides/0000/policies/0005.source",
+        "utf8Bytes": 2462,
+        "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+      }
+    },
+    {
+      "path": "src/Components/AGENTS.md",
+      "anchor": "code-clarity-and-durable-knowledge",
+      "guide": "docs/BlazorComponentsGuidance.md",
+      "body": {
+        "path": "required/guides/0001/policies/0000.source",
+        "utf8Bytes": 1024,
+        "sha256": "19dac0dd4fef4d184267ac3eda4109dbff0169ae6ed8109a41a13bf39b45de62"
+      }
+    },
+    {
+      "path": "src/Components/AGENTS.md",
+      "anchor": "cross-runtime-design-checkpoint",
+      "guide": "docs/BlazorComponentsGuidance.md",
+      "body": {
+        "path": "required/guides/0001/policies/0001.source",
+        "utf8Bytes": 775,
+        "sha256": "cbde0f3a42294b27e27b1c3c788619307325b1e2471def99bfa20436adf03b8a"
+      }
+    },
+    {
+      "path": "docs/Trimming.md",
+      "anchor": "validate-trimming-behavior",
+      "guide": "docs/BlazorComponentsGuidance.md",
+      "body": {
+        "path": "required/guides/0001/policies/0002.source",
+        "utf8Bytes": 4312,
+        "sha256": "8311e2444d3de4549df0d45f1a85922a02061d347581342594e33916d848b1e0"
+      }
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "anchor": "tests",
+      "guide": "docs/BlazorComponentsGuidance.md",
+      "body": {
+        "path": "required/guides/0001/policies/0003.source",
+        "utf8Bytes": 331,
+        "sha256": "ed92f452d992d7bb80a49784c422a06cfdc1f7972409850af3ce268a31013dd8"
+      }
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "anchor": "running-tests",
+      "guide": "docs/BlazorComponentsGuidance.md",
+      "body": {
+        "path": "required/guides/0001/policies/0004.source",
+        "utf8Bytes": 2462,
+        "sha256": "ac66beabd662f45aa88d388a57adcc324cd35c8a1de47de050d1d585f46fab26"
+      }
+    },
+    {
+      "path": "src/Components/AGENTS.md",
+      "anchor": "creating-e2e-tests",
+      "guide": "docs/BlazorComponentsGuidance.md",
+      "body": {
+        "path": "required/guides/0001/policies/0005.source",
+        "utf8Bytes": 1353,
+        "sha256": "04d50d32d0150c20c39f8db0806cad2a749fd38f5e3d65b15331fe7a3d713a55"
+      }
+    }
+  ],
+  "context": [
+    {
+      "path": "src/Components/ARCHITECTURE.md",
+      "guide": "docs/BlazorComponentsGuidance.md",
+      "role": "context",
+      "sha256": "a9bd4d55bfc62d9204ce9b7e6aee31a7942847ffe442dc600721f57f3ffbeec9",
+      "status": "readable"
+    }
+  ],
+  "skippedLinks": [],
+  "exclusions": [
+    {
+      "scope": {
+        "path": "required/coordinator/exclusions/0000-scope.source",
+        "utf8Bytes": 203,
+        "sha256": "5ba3ced1764c4f5d48a873871e5b3178fcd39f0057a7011c6d9d8883f56d2d88"
+      },
+      "reason": {
+        "path": "required/coordinator/exclusions/0000-reason.source",
+        "utf8Bytes": 601,
+        "sha256": "e432df846708aebcd581eadc6aa5b8325e6faf16a2f699be8a43ff393d92d0c6"
+      }
+    },
+    {
+      "source": ".github/copilot-instructions.md#security-concerns-are-out-of-scope",
+      "body": {
+        "path": "required/coordinator/exclusions/0001-body.source",
+        "utf8Bytes": 222,
+        "sha256": "f668d715c0cd62ee389d6ed787ff3ef542beafaf2d754bfba1e0a829dc1eaf6d"
+      }
+    }
+  ],
+  "artifacts": {
+    "diff.patch": "a7f6b9f9f397de49d2bf4b51e655aa3f6127a835345abc2e6ff96346346d61f9",
+    "files.json": "dfb47d9b05fe4c7be9aa07329f475600218643e69772bf6e56b1c7ce1337167a",
+    "pull.json": "dc001e6d9afe542d0a2081453a3224647ed2b26bffef1bc3cf8912cd4cb95628",
+    "feedback.json": "a798aa8f668e0b76dab4c35f9548bb79b58dc636c1effa5bf4c463eee0525733"
+  },
+  "requiredText": {
+    "root": "required",
+    "files": 26,
+    "sha256": "fe90cf06abf36be6a4c2fe859763075de17bff4ee3f60027576551712fa50a26"
+  },
+  "limitations": "Focused immutable Git-blob source projection for one natural, one-context review. It is not a complete repository snapshot, historical hosted review replay, coordinator/worker execution, or demonstrated reviewer repair.",
+  "reviewCapability": {
+    "kind": "natural-review-source-projection",
+    "partition": "development",
+    "projectionMap": {
+      "path": "projection-map.json",
+      "utf8Bytes": 797,
+      "sha256": "280a25565f77cabac32297979776d36be209c68f7ff34cc0be84455e4fd0122f"
+    },
+    "skill": {
+      "path": ".github/skills/review-pull-request/SKILL.md",
+      "gitBlob": "b11fe9fe79b5d848687ba1c93362f4aaf22bfe53"
+    },
+    "guidanceCommit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+    "feedback": "historical-feedback-cutoff",
+    "feedbackCutoffUtc": "2026-10-31T12:50:58Z",
+    "coordinatorReplay": false,
+    "executionMode": "trusted-offline-single-reviewer",
+    "suiteRole": "primary"
+  }
+}

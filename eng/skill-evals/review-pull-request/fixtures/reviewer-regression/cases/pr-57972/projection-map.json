@@ -1,0 +1,9 @@
+{
+  "source": "Focused immutable ordinary-Git-blob projection containing every changed file plus case-specific producer, consumer, and contract paths.",
+  "diff": "Complete authoritative diff from the frozen merge base to the frozen reviewed head.",
+  "changedFiles": "Complete changed-file metadata for the frozen comparison.",
+  "pull": "Mutable API description retained with retrieval identity; post-cutoff labels and decision metadata omitted.",
+  "feedback": "All retrieved feedback strictly before the frozen cutoff. Later review discussion is excluded.",
+  "labels": "Expected outcomes and later corroborating evidence are not staged for the subject.",
+  "limitation": "Curated one-context source projection, not a complete repository or hosted coordinator replay."
+}

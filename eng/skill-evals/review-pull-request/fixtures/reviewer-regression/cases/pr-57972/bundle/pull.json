@@ -1,0 +1,34 @@
+{
+  "number": 57972,
+  "state": "OPEN",
+  "title": "Fix concurrent request handling for OpenAPI documents",
+  "body": {
+    "path": "required/pull/body.source",
+    "utf8Bytes": 1073,
+    "sha256": "dc669f96760d58998daaf886f01ab472abb06c4738b99f2f8266e1dde2f892c9"
+  },
+  "draft": false,
+  "author": {
+    "id": "MDQ6VXNlcjIyOTE4MzY2",
+    "is_bot": false,
+    "login": "xC0dex",
+    "name": "Justin Lampe"
+  },
+  "labels": [],
+  "milestone": null,
+  "createdAt": "2024-09-19T19:39:28Z",
+  "url": "https://github.com/dotnet/aspnetcore/pull/57972",
+  "retrieval": {
+    "retrievedAtUtc": "2026-10-31T18:45:17.120322Z",
+    "liveHead": "603b836186ec1baad3186eb4b84bf91c15c8ed10",
+    "frozenReviewHead": "0a8373f036c151ae2773f4e5a1cb4aeccade6bce",
+    "baseRef": "main",
+    "source": "gh pr view",
+    "descriptionHistoricalAtCutoff": true,
+    "labelsHistoricalAtCutoff": false,
+    "note": "Exact latest PR body version before the feedback cutoff; labels and post-cutoff decision metadata omitted.",
+    "descriptionSnapshotEditedAt": "2024-09-19T19:39:28Z",
+    "descriptionSnapshotEditor": "xC0dex",
+    "descriptionSource": "GitHub GraphQL userContentEdits.diff"
+  }
+}

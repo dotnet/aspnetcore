@@ -1,0 +1,106 @@
+diff --git a/src/OpenApi/src/Services/Schemas/OpenApiSchemaStore.cs b/src/OpenApi/src/Services/Schemas/OpenApiSchemaStore.cs
+index 88f1dd4633afd47f3a08501b7bb97a11a4117d03..b41a6fc124ecdff7ef8f98a2f340d747bb4c66f2 100644
+--- a/src/OpenApi/src/Services/Schemas/OpenApiSchemaStore.cs
++++ b/src/OpenApi/src/Services/Schemas/OpenApiSchemaStore.cs
+@@ -1,6 +1,7 @@
+ // Licensed to the .NET Foundation under one or more agreements.
+ // The .NET Foundation licenses this file to you under the MIT license.
+ 
++using System.Collections.Concurrent;
+ using System.IO.Pipelines;
+ using System.Text.Json.Nodes;
+ using Microsoft.AspNetCore.Http;
+@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.OpenApi;
+ /// </summary>
+ internal sealed class OpenApiSchemaStore
+ {
+-    private readonly Dictionary<OpenApiSchemaKey, JsonNode> _schemas = new()
++    private readonly ConcurrentDictionary<OpenApiSchemaKey, JsonNode> _schemas = new()
+     {
+         // Pre-populate OpenAPI schemas for well-defined types in ASP.NET Core.
+         [new OpenApiSchemaKey(typeof(IFormFile), null)] = new JsonObject
+@@ -48,8 +49,8 @@ internal sealed class OpenApiSchemaStore
+         },
+     };
+ 
+-    public readonly Dictionary<OpenApiSchema, string?> SchemasByReference = new(OpenApiSchemaComparer.Instance);
+-    private readonly Dictionary<string, int> _referenceIdCounter = new();
++    public readonly ConcurrentDictionary<OpenApiSchema, string?> SchemasByReference = new(OpenApiSchemaComparer.Instance);
++    private readonly ConcurrentDictionary<string, int> _referenceIdCounter = new();
+ 
+     /// <summary>
+     /// Resolves the JSON schema for the given type and parameter description.
+@@ -59,13 +60,7 @@ internal sealed class OpenApiSchemaStore
+     /// <returns>A <see cref="JsonObject" /> representing the JSON schema associated with the key.</returns>
+     public JsonNode GetOrAdd(OpenApiSchemaKey key, Func<OpenApiSchemaKey, JsonNode> valueFactory)
+     {
+-        if (_schemas.TryGetValue(key, out var schema))
+-        {
+-            return schema;
+-        }
+-        var targetSchema = valueFactory(key);
+-        _schemas.Add(key, targetSchema);
+-        return targetSchema;
++        return _schemas.GetOrAdd(key, valueFactory(key));
+     }
+ 
+     /// <summary>
+diff --git a/src/OpenApi/src/Transformers/Implementations/OpenApiSchemaReferenceTransformer.cs b/src/OpenApi/src/Transformers/Implementations/OpenApiSchemaReferenceTransformer.cs
+index 07c76fe22974d61bcf98af0ffd9b5f30179ed7a5..35a0da7ff7cfa419f06c57f277cb969e29139ab9 100644
+--- a/src/OpenApi/src/Transformers/Implementations/OpenApiSchemaReferenceTransformer.cs
++++ b/src/OpenApi/src/Transformers/Implementations/OpenApiSchemaReferenceTransformer.cs
+@@ -1,6 +1,7 @@
+ // Licensed to the .NET Foundation under one or more agreements.
+ // The .NET Foundation licenses this file to you under the MIT license.
+ 
++using System.Collections.Concurrent;
+ using System.Linq;
+ using Microsoft.Extensions.DependencyInjection;
+ using Microsoft.OpenApi.Models;
+@@ -85,7 +86,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
+     /// <param name="schema">The inline schema to replace with a reference.</param>
+     /// <param name="schemasByReference">A cache of schemas and their associated reference IDs.</param>
+     /// <param name="isTopLevel">When <see langword="true" />, will skip resolving references for the top-most schema provided.</param>
+-    internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, Dictionary<OpenApiSchema, string?> schemasByReference, bool isTopLevel = false)
++    internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, ConcurrentDictionary<OpenApiSchema, string?> schemasByReference, bool isTopLevel = false)
+     {
+         if (schema is null)
+         {
+diff --git a/src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Integration/OpenApiDocumentConcurrentRequestTests.cs b/src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Integration/OpenApiDocumentConcurrentRequestTests.cs
+new file mode 100644
+index 0000000000000000000000000000000000000000..e3a5e55d40f540713ee8c85b18a5e8ac36389c45
+--- /dev/null
++++ b/src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Integration/OpenApiDocumentConcurrentRequestTests.cs
+@@ -0,0 +1,32 @@
++// Licensed to the .NET Foundation under one or more agreements.
++// The .NET Foundation licenses this file to you under the MIT license.
++
++using System.Net;
++using System.Net.Http;
++
++namespace Microsoft.AspNetCore.OpenApi.Tests.Integration;
++
++public class OpenApiDocumentConcurrentRequestTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
++{
++    [Fact]
++    public async Task MapOpenApi_HandlesConcurrentRequests()
++    {
++        // Arrange
++        var client = fixture.CreateClient();
++        var requests = new List<Task<HttpResponseMessage>>
++        {
++            client.GetAsync("/openapi/v1.json"),
++            client.GetAsync("/openapi/v1.json"),
++            client.GetAsync("/openapi/v1.json")
++        };
++
++        // Act
++        var results = await Task.WhenAll(requests);
++
++        // Assert
++        foreach (var result in results)
++        {
++            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
++        }
++    }
++}

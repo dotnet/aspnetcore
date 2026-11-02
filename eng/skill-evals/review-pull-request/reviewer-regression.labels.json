@@ -1,0 +1,618 @@
+{
+  "schemaVersion": 1,
+  "revision": 4,
+  "policy": {
+    "knownDefectAllowedTiers": [
+      "VERIFIED",
+      "QUESTION"
+    ],
+    "unresolvedTier": "PLAUSIBLE",
+    "unresolvedPublished": false,
+    "otherRows": "pending"
+  },
+  "rows": [
+    {
+      "id": "V01",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V02",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V03",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V04",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V05",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V06",
+      "category": "OTHER",
+      "partition": "development",
+      "expectedSurfaced": null,
+      "allowedTiers": [],
+      "required": false,
+      "reportOnly": true,
+      "status": "pending-adjudication"
+    },
+    {
+      "id": "V07",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V08",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V09",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V10",
+      "category": "OTHER",
+      "partition": "development",
+      "expectedSurfaced": null,
+      "allowedTiers": [],
+      "required": false,
+      "reportOnly": true,
+      "status": "pending-adjudication"
+    },
+    {
+      "id": "V11",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V12",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V13",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V14",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V15",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V16",
+      "category": "OTHER",
+      "partition": "development",
+      "expectedSurfaced": null,
+      "allowedTiers": [],
+      "required": false,
+      "reportOnly": true,
+      "status": "pending-adjudication"
+    },
+    {
+      "id": "V17",
+      "category": "OTHER",
+      "partition": "development",
+      "expectedSurfaced": null,
+      "allowedTiers": [],
+      "required": false,
+      "reportOnly": true,
+      "status": "pending-adjudication"
+    },
+    {
+      "id": "V18",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V19",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V20",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V21",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": true,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V22",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V23",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": true,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V24",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V25",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V26",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V27",
+      "category": "OTHER",
+      "partition": "development",
+      "expectedSurfaced": null,
+      "allowedTiers": [],
+      "required": false,
+      "reportOnly": true,
+      "status": "pending-adjudication"
+    },
+    {
+      "id": "V28",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V29",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V30",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V31",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V32",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": true,
+      "status": "active"
+    },
+    {
+      "id": "V33",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V34",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V35",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V36",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": true,
+      "status": "active"
+    },
+    {
+      "id": "V37",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V38",
+      "category": "OTHER",
+      "partition": "development",
+      "expectedSurfaced": null,
+      "allowedTiers": [],
+      "required": false,
+      "reportOnly": true,
+      "status": "pending-adjudication"
+    },
+    {
+      "id": "V39",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V40",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V41",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V42",
+      "category": "OTHER",
+      "partition": "development",
+      "expectedSurfaced": null,
+      "allowedTiers": [],
+      "required": false,
+      "reportOnly": true,
+      "status": "pending-adjudication"
+    },
+    {
+      "id": "V43",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V44",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V45",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V46",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V47",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "V48",
+      "category": "GOOD",
+      "partition": "development",
+      "expectedSurfaced": true,
+      "allowedTiers": [
+        "VERIFIED",
+        "QUESTION"
+      ],
+      "required": false,
+      "reportOnly": false,
+      "status": "active"
+    },
+    {
+      "id": "L69",
+      "category": "BAD",
+      "partition": "development",
+      "expectedSurfaced": false,
+      "allowedTiers": [
+        "DISCARDED"
+      ],
+      "required": true,
+      "reportOnly": false,
+      "status": "active"
+    }
+  ]
+}

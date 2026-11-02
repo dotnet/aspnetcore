@@ -1,0 +1,80 @@
+{
+  "comments": [
+    {
+      "id": 6543527153,
+      "author": {
+        "login": "PureWeen",
+        "id": 5375137,
+        "type": "User"
+      },
+      "body": {
+        "path": "required/feedback/comments/6543527153.source",
+        "utf8Bytes": 7,
+        "sha256": "0d38c8cdf5fee3444d9db3ef6b57fcd16eb80cc74963adf9bc998605169ecb0d"
+      },
+      "createdAt": "2026-10-31T12:45:13Z",
+      "updatedAt": "2026-10-31T12:45:13Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": 5704801904,
+      "author": {
+        "login": "copilot-pull-request-reviewer[bot]",
+        "id": 175728472,
+        "type": "Bot"
+      },
+      "body": {
+        "path": "required/feedback/reviews/5704801904.source",
+        "utf8Bytes": 1185,
+        "sha256": "0ef45a6fdc181f5bbc15565a7395d75d2f116363ae8acb5ed4f06da2635758fc"
+      },
+      "state": "COMMENTED",
+      "submittedAt": "2026-10-29T20:52:42Z",
+      "commitId": "e6b1f901426ddae837ec0d4dbdec271956e4b8f0"
+    },
+    {
+      "id": 5714776887,
+      "author": {
+        "login": "oroztocil",
+        "id": 79744616,
+        "type": "User"
+      },
+      "body": {
+        "path": "required/feedback/reviews/5714776887.source",
+        "utf8Bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "state": "COMMENTED",
+      "submittedAt": "2026-10-30T15:42:18Z",
+      "commitId": "e6b1f901426ddae837ec0d4dbdec271956e4b8f0"
+    }
+  ],
+  "inline": [
+    {
+      "id": 4425483102,
+      "author": {
+        "login": "oroztocil",
+        "id": 79744616,
+        "type": "User"
+      },
+      "body": {
+        "path": "required/feedback/inline/4425483102.source",
+        "utf8Bytes": 17,
+        "sha256": "f39cc7ff9c1182ca6a08006ac958286e05aa607fe1e17dc5aa88d1af2ac0f9e0"
+      },
+      "path": "src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs",
+      "line": null,
+      "side": "RIGHT",
+      "startLine": null,
+      "startSide": null,
+      "originalLine": 47,
+      "originalStartLine": null,
+      "commitId": "e6b1f901426ddae837ec0d4dbdec271956e4b8f0",
+      "originalCommitId": "e6b1f901426ddae837ec0d4dbdec271956e4b8f0",
+      "inReplyToId": null,
+      "createdAt": "2026-10-30T15:42:18Z",
+      "updatedAt": "2026-10-30T15:42:18Z"
+    }
+  ]
+}
