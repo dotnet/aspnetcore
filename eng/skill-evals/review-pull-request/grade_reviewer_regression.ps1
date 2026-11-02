@@ -39,6 +39,60 @@ function New-ErrorResult {
     }
 }
 
+function Get-ArtifactSections {
+    param([string]$Artifact)
+
+    $sectionNames = 'STATUS|PR|HEAD_SHA|MERGE_BASE_SHA|BASE_TIP_SHA|GUIDANCE_SOURCE|' +
+        'GUIDES|UNCOVERED|PATH|NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|' +
+        'DISCARDED|QUESTIONS?|INTENT_QUESTIONS|QUESTIONS_FOR_AUTHOR|TEST_BOUNDARY|LIMITATIONS'
+    $headers = @([regex]::Matches(
+        $Artifact,
+        "(?m)^(?<name>$sectionNames):[ \t]*(?<inline>[^\r\n]*)"
+    ))
+    $sections = @{}
+    for ($index = 0; $index -lt $headers.Count; $index++) {
+        $header = $headers[$index]
+        $name = $header.Groups['name'].Value
+        $contentStart = $header.Index + $header.Length
+        $contentEnd = if ($index + 1 -lt $headers.Count) {
+            $headers[$index + 1].Index
+        } else {
+            $Artifact.Length
+        }
+        $content = (
+            $header.Groups['inline'].Value + "`n" +
+            $Artifact.Substring($contentStart, $contentEnd - $contentStart)
+        ).Trim()
+        if ($sections.ContainsKey($name)) {
+            $sections[$name] = "$($sections[$name])`n$content"
+        } else {
+            $sections[$name] = $content
+        }
+    }
+    return $sections
+}
+
+function Test-CandidateMention {
+    param(
+        [string]$Text,
+        [object]$Candidate
+    )
+
+    $idPattern = "(?<![A-Za-z0-9])$([regex]::Escape([string]$Candidate.id))(?![A-Za-z0-9])"
+    if ([regex]::IsMatch($Text, $idPattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
+        return $true
+    }
+
+    $pathPattern = [regex]::Escape([string]$Candidate.path).Replace('/', '[/\\]')
+    $line = [int]$Candidate.line
+    $anchorPattern = "$pathPattern(?:(?:\s*[:#]\s*L?$line\b)|(?:[^\r\n]{0,60}\bline\s+$line\b))"
+    return [regex]::IsMatch(
+        $Text,
+        $anchorPattern,
+        [Text.RegularExpressions.RegexOptions]::IgnoreCase
+    )
+}
+
 try {
     $graderInput = Get-Content $env:EVALUATE_GRADER_INPUT -Raw | ConvertFrom-Json -Depth 100
     $labels = Get-Content (Join-Path $env:EVALUATE_WORKSPACE '.reviewer-eval/labels.json') -Raw |
@@ -61,6 +115,32 @@ try {
         New-ErrorResult "Malformed REVIEWER_REGRESSION_RESULT JSON: $($_.Exception.Message)" |
             ConvertTo-Json -Depth 20 -Compress
         exit 0
+    }
+
+    $artifact = $output.Substring(0, $match.Index).TrimEnd()
+    $sections = Get-ArtifactSections $artifact
+    $requiredSections = @('NEW_FINDINGS', 'UNRESOLVED', 'DISCARDED')
+    $missingSections = @($requiredSections | Where-Object { -not $sections.ContainsKey($_) })
+    $questionSections = @($sections.Keys | Where-Object {
+        $_ -match '(^|_)QUESTIONS?($|_)'
+    })
+    $publishedText = @(
+        if ($sections.ContainsKey('NEW_FINDINGS')) {
+            $sections['NEW_FINDINGS']
+        }
+        foreach ($name in $questionSections) {
+            $sections[$name]
+        }
+    ) -join "`n"
+    $unresolvedText = if ($sections.ContainsKey('UNRESOLVED')) {
+        $sections['UNRESOLVED']
+    } else {
+        ''
+    }
+    $discardedText = if ($sections.ContainsKey('DISCARDED')) {
+        $sections['DISCARDED']
+    } else {
+        ''
     }
 
     $expectedByPullRequest = @{
@@ -98,7 +178,25 @@ try {
         } else {
             $false
         }
-        $integrityPassed = $executed -and $tierValid -and $reportedSurfaced -eq $derivedSurfaced
+        $publishedMention = Test-CandidateMention $publishedText $expected
+        $unresolvedMention = Test-CandidateMention $unresolvedText $expected
+        $discardedMention = Test-CandidateMention $discardedText $expected
+        $dispositionMentions = @(
+            if ($publishedMention) { 'published' }
+            if ($unresolvedMention) { 'unresolved' }
+            if ($discardedMention) { 'discarded' }
+        )
+        $artifactMatchesTier = switch ($tier) {
+            'VERIFIED' { $publishedMention }
+            'QUESTION' { $publishedMention }
+            'PLAUSIBLE' { $unresolvedMention }
+            'DISCARDED' { $discardedMention }
+            default { $false }
+        }
+        $artifactIntegrityPassed = $missingSections.Count -eq 0 -and
+            $dispositionMentions.Count -eq 1 -and $artifactMatchesTier
+        $integrityPassed = $executed -and $tierValid -and
+            $reportedSurfaced -eq $derivedSurfaced -and $artifactIntegrityPassed
 
         $expectedSurfaced = $expected.expectedSurfaced
         $surfacedPassed = if ($null -eq $expectedSurfaced) {
@@ -133,12 +231,19 @@ try {
             required = [bool]$expected.required
             reportOnly = [bool]$expected.reportOnly
             enforced = -not [bool]$expected.reportOnly
+            artifactDisposition = $dispositionMentions -join ','
+            missingArtifactSections = $missingSections
         }
         $details.Add((New-Detail "execution/$id" $executed "Result row was present exactly once: $executed." $common))
         $details.Add((New-Detail "surfaced/$id" $surfacedPassed "Expected surfaced=$expectedSurfaced; actual surfaced=$derivedSurfaced." $common))
         $details.Add((New-Detail "tier-justified/$id" $tierPassed "Allowed tiers: $(@($expected.allowedTiers) -join ', '); actual tier: $tier." $common))
         $details.Add((New-Detail "acceptance/$id" $acceptancePassed "Execution, surfaced, tier, and integrity checks completed." $common))
-        $details.Add((New-Detail "integrity/$id" $integrityPassed "Tier was valid and surfaced agreed with the tier adapter." $common))
+        $integrityEvidence = if ($integrityPassed) {
+            'The convenience block agrees with the authoritative review artifact.'
+        } else {
+            "INTEGRITY_FAIL: tier=$tier; artifact disposition=$($dispositionMentions -join ','); missing sections=$($missingSections -join ',')."
+        }
+        $details.Add((New-Detail "integrity/$id" $integrityPassed $integrityEvidence $common))
     }
 
     $prPassed = [int]$result.pr -eq $PullRequest
@@ -160,7 +265,9 @@ try {
     $passed = $executionFailed.Count -eq 0 -and $acceptanceFailed.Count -eq 0 -and
         $integrityFailed.Count -eq 0 -and $shapePassed -and -not $adjudicationPending
     $score = if ($passed) { 1 } else { 0 }
-    $evidence = if ($adjudicationPending) {
+    $evidence = if ($integrityFailed.Count -gt 0) {
+        "INTEGRITY_FAIL: the convenience block disagrees with the authoritative review artifact for $($integrityFailed -join ', ')."
+    } elseif ($adjudicationPending) {
         'ADJUDICATION_PENDING: novel plausible findings require manual adjudication.'
     } elseif ($passed) {
         'All enforced deterministic reviewer regression checks passed.'

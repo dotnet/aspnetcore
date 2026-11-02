@@ -18,9 +18,14 @@ the protocol/trace `eval.vally.yaml` suite proposed in #70055.
 
 The deterministic program grader records separate execution, surfaced,
 tier-justified, acceptance, and integrity outcomes for every expected case ID.
-Missing rows, malformed output, grader errors, and required-case failures fail
-closed. Novel plausible findings produce `ADJUDICATION_PENDING` rather than
-being rejected automatically. The prompt grader is secondary evidence only;
+The normal review artifact is authoritative. The appended
+`REVIEWER_REGRESSION_RESULT` block is only a convenience index: the grader
+cross-checks each indexed tier against `NEW_FINDINGS`, questions, `UNRESOLVED`,
+and `DISCARDED` using the candidate ID or exact path and line. A missing
+artifact section or any mismatch produces `INTEGRITY_FAIL`. Missing rows,
+malformed output, grader errors, and required-case failures also fail closed.
+Novel plausible findings produce `ADJUDICATION_PENDING` rather than being
+rejected automatically. The prompt grader is secondary evidence only;
 Vally 0.19.0 retains its rubric rows under `gradeResult.details` and
 `metadata.rubric_scores`, but not arbitrary judge-defined JSON.
 

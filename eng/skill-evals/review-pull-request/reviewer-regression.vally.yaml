@@ -43,7 +43,9 @@ stimuli:
       Include one result for every supplied candidate. VERIFIED and QUESTION mean surfaced; PLAUSIBLE and DISCARDED
       mean not surfaced. For the current legacy skill only, map NEW_FINDINGS to VERIFIED, explicit intent questions
       to QUESTION, UNRESOLVED to PLAUSIBLE, and DISCARDED to DISCARDED. Put plausible findings that do not correspond
-      to a supplied candidate in novelFindings so they can be manually adjudicated.
+      to a supplied candidate in novelFindings so they can be manually adjudicated. In the normal artifact, identify
+      each supplied candidate by its ID or exact path:line in NEW_FINDINGS, a questions section, UNRESOLVED, or
+      DISCARDED. The artifact is authoritative; the JSON block is only a convenience index.
     rubric:
       - Dispositions are supported by the frozen source and avoid invented external contracts.
       - Only final published findings or explicit intent questions use VERIFIED or QUESTION.
@@ -115,7 +117,9 @@ stimuli:
       Include one result for every supplied candidate. VERIFIED and QUESTION mean surfaced; PLAUSIBLE and DISCARDED
       mean not surfaced. For the current legacy skill only, map NEW_FINDINGS to VERIFIED, explicit intent questions
       to QUESTION, UNRESOLVED to PLAUSIBLE, and DISCARDED to DISCARDED. Put plausible findings that do not correspond
-      to a supplied candidate in novelFindings so they can be manually adjudicated.
+      to a supplied candidate in novelFindings so they can be manually adjudicated. In the normal artifact, identify
+      each supplied candidate by its ID or exact path:line in NEW_FINDINGS, a questions section, UNRESOLVED, or
+      DISCARDED. The artifact is authoritative; the JSON block is only a convenience index.
     rubric:
       - Dispositions are supported by the frozen source and avoid invented external contracts.
       - V23 remains a published finding or an explicit intent question.

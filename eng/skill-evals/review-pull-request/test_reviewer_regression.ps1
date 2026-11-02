@@ -24,27 +24,79 @@ try {
         )
         novelFindings = @()
     }
-    $output = "REVIEWER_REGRESSION_RESULT`n``````json`n$($resultBlock | ConvertTo-Json -Depth 20 -Compress)`n``````"
+    $baseResultJson = $resultBlock | ConvertTo-Json -Depth 20 -Compress
+    $consistentArtifact = @'
+STATUS: NO_FINDINGS
+PR: 70106
+NEW_FINDINGS: none
+EXISTING_FEEDBACK_COVERAGE: none
+UNRESOLVED: none
+DISCARDED:
+- V21 source-disproved candidate
+- V32 source-disproved candidate
+- V36 source-disproved candidate
+- L69 source-disproved candidate
+TEST_BOUNDARY: source-only
+LIMITATIONS: none
+'@
     $graderInput = [ordered]@{
-        trajectory = [ordered]@{ output = $output }
+        trajectory = [ordered]@{ output = '' }
         stimulus = [ordered]@{ name = 'reviewer-regression-pr-70106' }
     }
     $graderInputPath = Join-Path $graderWorkspace 'input.json'
-    Set-Content $graderInputPath ($graderInput | ConvertTo-Json -Depth 20) -Encoding utf8NoBOM
     $env:EVALUATE_WORKSPACE = $graderWorkspace
     $env:EVALUATE_GRADER_INPUT = $graderInputPath
     try {
-        $grade = & (Join-Path $PSScriptRoot 'grade_reviewer_regression.ps1') -PullRequest 70106 |
-            ConvertFrom-Json -Depth 100
-        if (-not $grade.passed) {
-            throw 'Deterministic grader self-test expected a passing result.'
+        function Invoke-TestGrade {
+            param(
+                [string]$Artifact,
+                [object]$Block
+            )
+
+            $graderInput.trajectory.output = "$Artifact`nREVIEWER_REGRESSION_RESULT`n``````json`n$($Block | ConvertTo-Json -Depth 20 -Compress)`n``````"
+            Set-Content $graderInputPath ($graderInput | ConvertTo-Json -Depth 20) -Encoding utf8NoBOM
+            return & (Join-Path $PSScriptRoot 'grade_reviewer_regression.ps1') -PullRequest 70106 |
+                ConvertFrom-Json -Depth 100
         }
 
-        $resultBlock.results = @($resultBlock.results | Where-Object id -ne 'L69')
-        $graderInput.trajectory.output = "REVIEWER_REGRESSION_RESULT`n``````json`n$($resultBlock | ConvertTo-Json -Depth 20 -Compress)`n``````"
-        Set-Content $graderInputPath ($graderInput | ConvertTo-Json -Depth 20) -Encoding utf8NoBOM
-        $grade = & (Join-Path $PSScriptRoot 'grade_reviewer_regression.ps1') -PullRequest 70106 |
-            ConvertFrom-Json -Depth 100
+        $block = $baseResultJson | ConvertFrom-Json -Depth 20
+        $grade = Invoke-TestGrade $consistentArtifact $block
+        if (-not $grade.passed) {
+            throw 'Deterministic grader expected the consistent artifact and index to pass.'
+        }
+        $integrity = $grade.details | Where-Object name -eq 'integrity/V32'
+        if (-not $integrity.passed) {
+            throw 'Consistent artifact/index integrity check did not pass.'
+        }
+
+        $publishedArtifact = $consistentArtifact.Replace(
+            'NEW_FINDINGS: none',
+            'NEW_FINDINGS: P2 src/Components/WebAssembly/WebAssembly.Authentication/src/Services/AuthorizationMessageHandler.cs:65 - published candidate'
+        )
+        $publishedArtifact = [regex]::Replace(
+            $publishedArtifact,
+            '(?m)^- V32 source-disproved candidate\r?\n?',
+            ''
+        )
+        $grade = Invoke-TestGrade $publishedArtifact $block
+        $integrity = $grade.details | Where-Object name -eq 'integrity/V32'
+        if ($grade.passed -or $integrity.passed) {
+            throw 'Artifact-published/index-discarded mismatch did not fail integrity.'
+        }
+
+        $block = $baseResultJson | ConvertFrom-Json -Depth 20
+        $v32 = $block.results | Where-Object id -eq 'V32'
+        $v32.tier = 'VERIFIED'
+        $v32.surfaced = $true
+        $grade = Invoke-TestGrade $consistentArtifact $block
+        $integrity = $grade.details | Where-Object name -eq 'integrity/V32'
+        if ($grade.passed -or $integrity.passed) {
+            throw 'Artifact-discarded/index-published mismatch did not fail integrity.'
+        }
+
+        $block = $baseResultJson | ConvertFrom-Json -Depth 20
+        $block.results = @($block.results | Where-Object id -ne 'L69')
+        $grade = Invoke-TestGrade $consistentArtifact $block
         if ($grade.passed) {
             throw 'Deterministic grader self-test expected a missing required row to fail.'
         }

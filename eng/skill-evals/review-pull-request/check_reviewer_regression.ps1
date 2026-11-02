@@ -88,6 +88,12 @@ if (@(Compare-Object $caseIds $labelIds).Count -ne 0) {
 if (@($caseIds | Group-Object | Where-Object Count -gt 1).Count -ne 0) {
     $errors.Add('Corpus IDs are not unique.')
 }
+foreach ($label in $labels.rows) {
+    $case = $cases.cases | Where-Object id -eq $label.id
+    if ($label.path -ne $case.path -or [int]$label.line -ne [int]$case.line) {
+        $errors.Add("$($label.id) hidden label anchor does not match the corpus.")
+    }
+}
 
 foreach ($id in 'V21', 'L69') {
     $row = $labels.rows | Where-Object id -eq $id
