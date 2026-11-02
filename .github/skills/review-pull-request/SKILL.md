@@ -234,9 +234,15 @@ remain source-only without reporting `INCOMPLETE`. Workers remain source-only. A
 source-only review remains valid; tests and CI claims are supporting evidence, and only
 an eligible recorded local repro is execution proof.
 
-After all coordinator source adjudication and optional validation, if the provisional
-`NEW_FINDINGS` set is nonempty, launch exactly one fresh
-`review-candidate-verifier` custom agent for the PR, once. This is a coordinator-owned
+After all coordinator source adjudication and optional validation, assemble the
+provisional `NEW_FINDINGS` verifier set from every non-duplicate concrete candidate
+anchored to a RIGHT-side changed `file:line`, including coordinator-accepted candidates
+and coordinator-disputed, intent-ambiguous, overlap, or contract-dependent candidates
+that were not already disproven by a direct same-path old/new check. Treat coordinator
+uncertainty on `intent`, `overlap`, `oldVsNew`, or `contract` as reason to include the
+candidate in the provisional verifier set rather than pre-filtering it to `UNRESOLVED`
+before verification. If that provisional `NEW_FINDINGS` set is nonempty, launch exactly
+one fresh `review-candidate-verifier` custom agent for the PR, once. This is a coordinator-owned
 post-gate verifier, not a routed guide worker; it does not change the
 one-worker-per-guide count or any per-guide worker invariant. Use the same explicitly
 selected model and reasoning effort as the guide workers. Give it the trusted bundle
