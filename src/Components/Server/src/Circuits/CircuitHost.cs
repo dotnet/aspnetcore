@@ -39,6 +39,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _disposed;
     private bool _rootComponentUpdateQueueOverflowed;
     private int _pendingRootComponentUpdates;
+    private Task _rootComponentOperationsTask = Task.CompletedTask;
     private Task _rootComponentUpdateTask = Task.CompletedTask;
     private long _startTime;
     private ResumedPersistedCircuitState _persistedCircuitState;
@@ -789,10 +790,15 @@ internal partial class CircuitHost : IAsyncDisposable
                 else
                 {
                     _pendingRootComponentUpdates++;
+                    var previousOperations = _rootComponentOperationsTask;
                     var previousUpdate = _rootComponentUpdateTask;
+                    var operationsApplied = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var updateCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _rootComponentOperationsTask = operationsApplied.Task;
                     _rootComponentUpdateTask = updateCompletion.Task;
                     return UpdateRootComponentsCore(
+                        previousOperations,
+                        operationsApplied,
                         previousUpdate,
                         updateCompletion,
                         operationBatch,
@@ -811,21 +817,24 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         var exception = new InvalidOperationException("The maximum number of pending root component updates has been exceeded.");
         Log.RootComponentUpdateQueueOverflow(_logger, CircuitId, MaxPendingRootComponentUpdates, exception);
-        UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(exception, isTerminating: false));
         await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(exception), exception);
+        UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(exception, isTerminating: false));
     }
 
-    private void CompleteRootComponentUpdate(TaskCompletionSource updateCompletion)
+    private void CompleteRootComponentUpdate(TaskCompletionSource operationsApplied, TaskCompletionSource updateCompletion)
     {
         lock (_rootComponentUpdateLock)
         {
             _pendingRootComponentUpdates--;
         }
 
+        operationsApplied.TrySetResult();
         updateCompletion.SetResult();
     }
 
     private async Task UpdateRootComponentsCore(
+        Task previousOperations,
+        TaskCompletionSource operationsApplied,
         Task previousUpdate,
         TaskCompletionSource updateCompletion,
         RootComponentOperationBatch operationBatch,
@@ -837,7 +846,7 @@ internal partial class CircuitHost : IAsyncDisposable
         {
             try
             {
-                await previousUpdate.WaitAsync(_rootComponentUpdateCancellation.Token);
+                await previousOperations.WaitAsync(_rootComponentUpdateCancellation.Token);
                 _rootComponentUpdateCancellation.Token.ThrowIfCancellationRequested();
             }
             catch (OperationCanceledException) when (_rootComponentUpdateCancellation.IsCancellationRequested)
@@ -846,24 +855,55 @@ internal partial class CircuitHost : IAsyncDisposable
                 return;
             }
 
-            await Renderer.Dispatcher.InvokeAsync(() => UpdateRootComponentsOnDispatcher(operationBatch, store, isRestore, cancellation));
+            var updateSucceeded = await Renderer.Dispatcher.InvokeAsync(() => UpdateRootComponentsOnDispatcher(
+                operationBatch,
+                store,
+                isRestore,
+                cancellation,
+                operationsApplied));
+            if (!updateSucceeded)
+            {
+                return;
+            }
+
+            try
+            {
+                await previousUpdate.WaitAsync(_rootComponentUpdateCancellation.Token);
+                _rootComponentUpdateCancellation.Token.ThrowIfCancellationRequested();
+            }
+            catch (OperationCanceledException) when (_rootComponentUpdateCancellation.IsCancellationRequested)
+            {
+                return;
+            }
+
+            try
+            {
+                await Client.SendAsync("JS.EndUpdateRootComponents", operationBatch.BatchId, CancellationToken.None);
+                Log.UpdateRootComponentsSucceeded(_logger);
+            }
+            catch (Exception ex)
+            {
+                Log.UpdateRootComponentsFailed(_logger, ex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+            }
         }
         finally
         {
-            CompleteRootComponentUpdate(updateCompletion);
+            CompleteRootComponentUpdate(operationsApplied, updateCompletion);
         }
     }
 
-    private async Task UpdateRootComponentsOnDispatcher(
+    private async Task<bool> UpdateRootComponentsOnDispatcher(
         RootComponentOperationBatch operationBatch,
         IClearableStore store,
         bool isRestore,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        TaskCompletionSource operationsApplied)
     {
         var shouldClearStore = false;
         var shouldWaitForQuiescence = false;
         var operations = operationBatch.Operations;
-        var batchId = operationBatch.BatchId;
         var postRemovalTask = Task.CompletedTask;
         TaskCompletionSource? taskCompletionSource = null;
         try
@@ -927,14 +967,11 @@ internal partial class CircuitHost : IAsyncDisposable
                 }
             }
 
-            var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
+            var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, operationsApplied);
             taskCompletionSource?.SetResult();
 
             await operationsTask;
-
-            await Client.SendAsync("JS.EndUpdateRootComponents", batchId, CancellationToken.None);
-
-            Log.UpdateRootComponentsSucceeded(_logger);
+            return true;
         }
         catch (Exception ex)
         {
@@ -942,6 +979,7 @@ internal partial class CircuitHost : IAsyncDisposable
             Log.UpdateRootComponentsFailed(_logger, ex);
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+            return false;
         }
         finally
         {
@@ -968,7 +1006,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private async ValueTask PerformRootComponentOperations(
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
-        Task postStateTask)
+        Task postStateTask,
+        TaskCompletionSource operationsApplied)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
         webRootComponentManager.SetCurrentUpdateTask(postStateTask);
@@ -1011,6 +1050,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
             return Task.CompletedTask;
         });
+
+        operationsApplied.TrySetResult();
 
         if (pendingTasks != null)
         {
