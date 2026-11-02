@@ -13,12 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <ProjectReference Include="$(RepoRoot)src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Primitives" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 
 </Project>

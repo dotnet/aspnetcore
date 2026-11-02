@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Extensions.Http.Polly" />
-    <Reference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+
+    <ProjectReference Include="$(RepoRoot)src\HttpClientFactory\Polly\src\Microsoft.Extensions.Http.Polly.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,9 +17,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.Primitives" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 </Project>

@@ -3129,6 +3129,34 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void AnchorMode_End_AutomaticSortedHistory_DoesNotUndoBottomPin()
+    {
+        var js = (IJavaScriptExecutor)Browser;
+        InstallEndAnchorCorrectionProbe(js);
+
+        try
+        {
+            Browser.MountTestComponent<VirtualizationEndAnchorHistory>();
+            var container = Browser.Exists(By.Id("scroll-container"));
+            Browser.Equal("2696", () => Browser.Exists(By.Id("item-count")).Text);
+            Browser.Equal("1", () => Browser.Exists(By.Id("initial-history-count")).Text);
+            Browser.True(
+                () => (bool)js.ExecuteScript("return window.__endAnchorCorrectionProbe.reachedBottom;"),
+                TimeSpan.FromSeconds(10),
+                "The loaded history must receive a real bottom pin before checking for rollback.");
+
+            WaitForRenderToSettle(container, js, trackScrollHeight: true);
+
+            AssertNoEndAnchorRollback(js, "automatic sorted history");
+            Browser.True(() => GetBottomRenderedIndex(js) == 0 && IsScrolledToBottom(js, container));
+        }
+        finally
+        {
+            js.ExecuteScript("window.__endAnchorCorrectionProbe.restore();");
+        }
+    }
+
+    [Fact]
     public void Table_StartAnchor_AsyncProvider_ContinuousPrepend_MaterializesNewHeadWithoutIndexReversal()
     {
         Browser.MountTestComponent<VirtualizationTableScrollWithAppend>();
@@ -5183,6 +5211,54 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"{message} (index before: {indexBefore}, after: {lastPos.index}, relTop before: {relTopBefore}, after: {lastPos.relTop}, scrollTop: {lastPos.scrollTop}, tolerance: {driftTolerance})");
     }
 
+    private static void InstallEndAnchorCorrectionProbe(IJavaScriptExecutor js)
+    {
+        // WebDriver polling cannot observe both scrollTop assignments within one synchronous refresh.
+        js.ExecuteScript(
+            """
+            const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop');
+            const probe = {
+                reachedBottom: false,
+                rollbacks: [],
+                restore() {
+                    Object.defineProperty(Element.prototype, 'scrollTop', descriptor);
+                    delete window.__endAnchorCorrectionProbe;
+                }
+            };
+            window.__endAnchorCorrectionProbe = probe;
+            Object.defineProperty(Element.prototype, 'scrollTop', {
+                configurable: true,
+                get() {
+                    return descriptor.get.call(this);
+                },
+                set(value) {
+                    const before = descriptor.get.call(this);
+                    descriptor.set.call(this, value);
+                    if (this.id !== 'scroll-container') {
+                        return;
+                    }
+                    const after = descriptor.get.call(this);
+                    const gap = this.scrollHeight - this.clientHeight - after;
+                    if (probe.reachedBottom && before - after > 1) {
+                        probe.rollbacks.push({ from: before, to: after, gap });
+                    }
+                    if (this.scrollHeight > this.clientHeight && Math.abs(gap) < 2) {
+                        probe.reachedBottom = true;
+                    }
+                }
+            });
+            """);
+    }
+
+    private static void AssertNoEndAnchorRollback(IJavaScriptExecutor js, string scenario)
+    {
+        var rollbackCount = Convert.ToInt64(js.ExecuteScript(
+            "return window.__endAnchorCorrectionProbe.rollbacks.length;"), CultureInfo.InvariantCulture);
+        var rollbacks = js.ExecuteScript("return JSON.stringify(window.__endAnchorCorrectionProbe.rollbacks);");
+        Assert.True(rollbackCount == 0,
+            $"End following must not undo a bottom pin after {scenario}. Recorded viewport rollbacks: {rollbacks}");
+    }
+
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
     /// item count, scroll position, and first visible item identity stabilize.
@@ -5925,11 +6001,16 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ", container, anchorIndex, anchorOffset);
     }
 
-    private void MountAnchorModeForScrollToItem(bool useProvider, bool variableHeight = false, bool delay = false)
+    private void MountAnchorModeForScrollToItem(bool useProvider, bool variableHeight = false, bool delay = false, bool largeOverscan = false)
     {
         Browser.MountTestComponent<VirtualizationAnchorMode>();
         var container = Browser.Exists(By.Id("scroll-container"));
         Browser.Exists(By.Id("list-not-loaded"));
+
+        if (largeOverscan)
+        {
+            Browser.Exists(By.Id("set-large-overscan")).Click();
+        }
 
         if (useProvider)
         {
@@ -6908,7 +6989,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68777")]
     public void ScrollToItem_UserScrollDuringProviderFetch_UserScrollWins()
     {
         // While the provider is fetching for ScrollToItemAsync, a real user scroll must win.
@@ -6929,9 +7009,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetProviderEvents(js).Contains("scroll-start"));
 
         // While call #1 is still blocked, perform a real user scroll far from row 800.
-        // The scroll event triggers spacer IO -> the fix cancels _currentScrollCts ->
-        // call #1's WaitAsync(ct) throws OCE -> RefreshDataCoreAsync starts call #2 for
-        // the user's window. The caller observes OperationCanceledException.
+        // The wheel input stops programmatic convergence and schedules a fresh spacer
+        // observation that cancels _currentScrollCts. Call #1's WaitAsync(ct) then
+        // throws OCE, and RefreshDataCoreAsync starts call #2 for the user's window.
         ScrollContainerWithWheelTo(js, container, 5000);
 
         Browser.True(() => GetProviderEvents(js).Contains("p1-cancel"));
@@ -6973,6 +7053,90 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             return top >= 0 && top < 250;
         }, $"Top rendered should reflect the user scroll (< 250), but was {GetTopRenderedIndex(js)}");
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_UserSmallScrollWithinOverscanDuringProviderFetch_UserScrollWins(bool variableHeight)
+    {
+        MountAnchorModeForScrollToItem(useProvider: true, variableHeight: variableHeight, largeOverscan: true);
+        var js = (IJavaScriptExecutor)Browser;
+        var container = Browser.Exists(By.Id("scroll-container"));
+
+        SetScrollTargetIndex(500);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 500");
+        Browser.True(() => GetTopRenderedIndex(js) == 500);
+        Browser.Exists(By.CssSelector(".item[data-index='550']"));
+
+        Browser.Exists(By.Id("toggle-provider-gate")).Click();
+
+        SetScrollTargetIndex(550);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        Browser.True(() => GetProviderCallIndex(js) >= 1);
+        Browser.True(() => GetProviderEvents(js).Contains("p1-enter"));
+        Browser.True(() => GetProviderEvents(js).Contains("scroll-start"));
+
+        try
+        {
+            var scrollTopBeforeUserInput = GetScrollTop(js, container);
+            ScrollContainerWithWheelTo(js, container, checked((int)scrollTopBeforeUserInput + 100));
+            Browser.True(() => GetScrollTop(js, container) > scrollTopBeforeUserInput);
+            var userScrollTop = GetScrollTop(js, container);
+
+            Browser.True(() => AreBothSpacersOutsideObserverRoot(js, container),
+                $"Expected the small wheel movement to leave both spacers outside the observer root. {GetSpacerIntersectionState(js, container)}");
+
+            Browser.Exists(By.Id("release-provider-gate")).Click();
+            WaitForScrollStatus("Completed: 550");
+            Browser.True(() => GetProviderEvents(js).Contains("p1-return"),
+                $"Expected p1 to finish after releasing the gate. Events: {GetProviderEvents(js)}");
+            Browser.True(() => Math.Abs(GetScrollTop(js, container) - userScrollTop) < 50,
+                $"Expected the user scroll position {userScrollTop} to win, but scrollTop became {GetScrollTop(js, container)}. " +
+                $"Events: {GetProviderEvents(js)}; {GetSpacerIntersectionState(js, container)}");
+        }
+        finally
+        {
+            Browser.Exists(By.Id("release-provider-gate")).Click();
+        }
+    }
+
+    private static bool AreBothSpacersOutsideObserverRoot(IJavaScriptExecutor js, IWebElement container)
+        => (bool)js.ExecuteScript(@"
+            const container = arguments[0];
+            const state = getSpacerIntersectionState(container);
+            return !state.beforeIntersecting && !state.afterIntersecting;
+
+            function getSpacerIntersectionState(container) {
+                const rootMargin = 50;
+                const before = container.firstElementChild;
+                const after = container.lastElementChild;
+                const root = container.getBoundingClientRect();
+                const beforeRect = before.getBoundingClientRect();
+                const afterRect = after.getBoundingClientRect();
+                return {
+                    beforeIntersecting: beforeRect.bottom > root.top - rootMargin && beforeRect.top < root.bottom + rootMargin,
+                    afterIntersecting: afterRect.bottom > root.top - rootMargin && afterRect.top < root.bottom + rootMargin,
+                };
+            }", container);
+
+    private static string GetSpacerIntersectionState(IJavaScriptExecutor js, IWebElement container)
+        => (string)js.ExecuteScript(@"
+            const container = arguments[0];
+            const before = container.firstElementChild;
+            const after = container.lastElementChild;
+            const root = container.getBoundingClientRect();
+            const beforeRect = before.getBoundingClientRect();
+            const afterRect = after.getBoundingClientRect();
+            const rootMargin = 50;
+            const beforeIntersecting = beforeRect.bottom > root.top - rootMargin && beforeRect.top < root.bottom + rootMargin;
+            const afterIntersecting = afterRect.bottom > root.top - rootMargin && afterRect.top < root.bottom + rootMargin;
+            const items = [...container.querySelectorAll('.item')].map(item => item.getAttribute('data-index'));
+            return `scrollTop=${container.scrollTop}; viewport=[${root.top},${root.bottom}]; `
+                + `before=[${beforeRect.top},${beforeRect.bottom}] intersecting=${beforeIntersecting}; `
+                + `after=[${afterRect.top},${afterRect.bottom}] intersecting=${afterIntersecting}; `
+                + `items=${items.slice(0, 3).join(',')}..${items.slice(-3).join(',')}`;
+        ", container);
 
     private static long GetProviderCallIndex(IJavaScriptExecutor js)
     {
