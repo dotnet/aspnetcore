@@ -80,7 +80,13 @@ internal sealed class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUs
                 values: new { area = "Identity", code },
                 protocol: Request.Scheme)!;
 
-            await _emailSender.SendPasswordResetLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+            var storedEmail = await _userManager.GetEmailAsync(user);
+            if (string.IsNullOrEmpty(storedEmail))
+            {
+                throw new InvalidOperationException("Users must have an email.");
+            }
+
+            await _emailSender.SendPasswordResetLinkAsync(user, storedEmail, HtmlEncoder.Default.Encode(callbackUrl));
 
             return RedirectToPage("./ForgotPasswordConfirmation");
         }
