@@ -30,6 +30,7 @@
       "dependabot",
       "dotnet-maestro",
       "dotnet-maestro-bot",
+      "dotnet-policy-service",
       "github-actions",
       "copilot-pull-request-reviewer",
       "azure-pipelines"
