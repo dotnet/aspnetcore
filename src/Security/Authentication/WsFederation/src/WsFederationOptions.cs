@@ -190,7 +190,7 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     /// <remarks>
     /// The <c>wsignoutcleanup1.0</c> message doesn't include a signature or session identifier, so the handler can't
     /// verify that a request came from the identity provider. A request from any origin that reaches this path can
-    /// sign out the local session.
+    /// cause the handler to sign out the configured <see cref="SignOutScheme"/>.
     ///
     /// The default path is <c>/signin-wsfed</c>. If the app doesn't need identity-provider-initiated sign-out, set
     /// this property to <see cref="PathString.Empty"/> to disable it. This is generally the recommended choice for

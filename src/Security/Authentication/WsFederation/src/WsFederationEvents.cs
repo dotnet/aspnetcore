@@ -27,9 +27,10 @@ public class WsFederationEvents : RemoteAuthenticationEvents
     /// Invoked when a wsignoutcleanup request is received at the RemoteSignOutPath endpoint.
     /// </summary>
     /// <remarks>
-    /// Unless this event handles or skips the request, the handler signs out the local session. The request isn't
-    /// authenticated by the handler. To reject requests that don't match the identity provider's expected origin,
-    /// call <see cref="HandleRequestContext{WsFederationOptions}.HandleResponse"/> or
+    /// Unless this event handles or skips the request, the handler calls <c>SignOutAsync</c> for the configured
+    /// <see cref="WsFederationOptions.SignOutScheme"/>. The cleanup message isn't signed or bound to a particular
+    /// user or session. To reject requests that don't match the identity provider's expected origin, call
+    /// <see cref="HandleRequestContext{WsFederationOptions}.HandleResponse"/> or
     /// <see cref="HandleRequestContext{WsFederationOptions}.SkipHandler"/>.
     /// The following example deliberately rejects a missing <c>Referer</c> header and uses a trailing slash to avoid
     /// matching look-alike host names:
@@ -49,9 +50,10 @@ public class WsFederationEvents : RemoteAuthenticationEvents
     /// </example>
     /// Before applying a filter, verify which headers the identity provider actually sends during sign-out, such as
     /// <c>Referer</c>, <c>Sec-Fetch-Dest</c>, and <c>Sec-Fetch-Site</c>, because delivery can vary by provider and
-    /// deployment. These headers are request metadata, not cryptographic authentication, and non-browser clients can
-    /// forge them. For iframe- or image-based cleanup, the authentication cookie generally needs
-    /// <c>SameSite=None</c> (and <c>Secure</c>) to be sent by the browser.
+    /// deployment. The header check helps prevent another site from triggering sign-out through the user's browser,
+    /// but these headers are request metadata, not cryptographic authentication. For cross-site iframe- or
+    /// image-based cleanup, the browser might ignore the cookie deletion unless the deletion cookie uses
+    /// <c>SameSite=None</c> and <c>Secure</c>. Browser restrictions on third-party cookies can still prevent cleanup.
     /// </remarks>
     public Func<RemoteSignOutContext, Task> OnRemoteSignOut { get; set; } = context => Task.CompletedTask;
 
@@ -85,8 +87,9 @@ public class WsFederationEvents : RemoteAuthenticationEvents
     /// </summary>
     /// <remarks>
     /// The default implementation invokes <see cref="OnRemoteSignOut"/>. If the event doesn't handle or skip the
-    /// request, the handler signs out the local session. Call
-    /// <see cref="HandleRequestContext{WsFederationOptions}.HandleResponse"/> or
+    /// request, the handler calls <c>SignOutAsync</c> for the configured
+    /// <see cref="WsFederationOptions.SignOutScheme"/>.
+    /// Call <see cref="HandleRequestContext{WsFederationOptions}.HandleResponse"/> or
     /// <see cref="HandleRequestContext{WsFederationOptions}.SkipHandler"/> to prevent the sign-out.
     /// </remarks>
     public virtual Task RemoteSignOut(RemoteSignOutContext context) => OnRemoteSignOut(context);
