@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="../src/build/netstandard2.0/Microsoft.AspNetCore.Components.Analyzers.targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(RepoRoot)global.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="TestFiles\**\*.*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
