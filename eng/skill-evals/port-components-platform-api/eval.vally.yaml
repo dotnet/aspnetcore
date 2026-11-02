@@ -275,10 +275,6 @@ stimuli:
     tags:
       network: none
       phase: design
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - The plan keeps isExtended as GetIsExtendedAsync returning ValueTask<bool> rather than dropping or deferring it for its browser support.
       - "GetIsExtendedAsync is marked [Experimental(\"ASP0040\", UrlFormat = \"https://aka.ms/aspnet/analyzer/{0}\")], and the Baseline members are not marked experimental."
@@ -288,6 +284,11 @@ stimuli:
       - Callers reach the family through a synchronous Screen extension property on Window, and the other attributes become GetWidthAsync, GetHeightAsync, and GetColorDepthAsync with int, int, and uint results.
       - No source implementation is attempted before the proposal is agreed.
     graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: skill-invocation
         config:
           required:
@@ -306,10 +307,6 @@ stimuli:
     tags:
       network: none
       phase: design
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - Window.CookieStore stays a synchronous, non-nullable property even though the browser object can be missing.
       - Every member that reaches the browser object throws NotSupportedException when window.cookieStore is missing or null, and the answer treats this as the fixed package rule rather than an open question.
@@ -320,6 +317,11 @@ stimuli:
       - The XML documentation adds an exception element for NotSupportedException to each member that reaches the browser object and does not document JSException.
       - Unit coverage includes both a JSException from the acquisition and a null reference, and shows that disposal still does not throw.
     graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: skill-invocation
         config:
           required:
@@ -340,10 +342,6 @@ stimuli:
     tags:
       network: none
       phase: verification
-    constraints:
-      reject_tools:
-        - edit
-        - create
     rubric:
       - The answer identifies that a step that waits only for the result text can pass on the text of the previous step.
       - "The demo shows each result in one shared status element as text that starts with the operation name, such as \"<operation>: <result>\"."
@@ -351,6 +349,11 @@ stimuli:
       - Each test step reads the counter before the click and waits for it to go up by one before checking the result text.
       - The counter goes up only after the operation finishes, not when the click starts.
     graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
       - type: skill-invocation
         config:
           required:
