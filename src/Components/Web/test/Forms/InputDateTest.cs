@@ -153,7 +153,7 @@ public class InputDateTest
 
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
-        Assert.Contains("The DateProperty field must be a date and time.", validationMessages);
+        Assert.Contains("The Date from attribute field must be a date and time.", validationMessages);
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public class InputDateTest
 
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
-        Assert.Contains("The DateProperty field must be a year and month.", validationMessages);
+        Assert.Contains("The Date from attribute field must be a year and month.", validationMessages);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class InputDateTest
 
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
-        Assert.Contains("The DateProperty field must be a time.", validationMessages);
+        Assert.Contains("The Date from attribute field must be a time.", validationMessages);
     }
 
     // Test InputDateType with nullable types
@@ -320,7 +320,7 @@ public class InputDateTest
 
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
-        Assert.Contains("My custom parse error for DateProperty.", validationMessages);
+        Assert.Contains("My custom parse error for Date from attribute.", validationMessages);
     }
 
     [Fact]
@@ -357,7 +357,7 @@ public class InputDateTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var classAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
-        Assert.Contains("valid", classAttribute.AttributeValue.ToString());
+        Assert.Equal("valid", classAttribute.AttributeValue);
     }
 
     [Fact]
