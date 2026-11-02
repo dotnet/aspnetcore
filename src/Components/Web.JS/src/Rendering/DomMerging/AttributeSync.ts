@@ -1,7 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function synchronizeAttributes(destination: Element, source: Element) {
+export function synchronizeAttributes(destination: Element, source: Element, preserveModalState: boolean) {
+  if (!preserveModalState && destination instanceof HTMLDialogElement && destination.matches(':modal')) {
+    // Complete the native modal lifecycle before applying attributes from a different page.
+    destination.close();
+  }
+
   const destAttrs = destination.attributes;
   const sourceAttrs = source.attributes;
 
@@ -38,15 +43,16 @@ export function synchronizeAttributes(destination: Element, source: Element) {
 
     for (const attrToDelete of remainingDestAttrs.values()) {
       // Delete
-      if (!shouldPreserveAttribute(destination, attrToDelete)) {
+      if (!shouldPreserveAttribute(destination, attrToDelete, preserveModalState)) {
         removeAttribute(destination, attrToDelete);
       }
     }
   }
 }
 
-function shouldPreserveAttribute(element: Element, attr: Attr): boolean {
-  return element instanceof HTMLDialogElement
+function shouldPreserveAttribute(element: Element, attr: Attr, preserveModalState: boolean): boolean {
+  return preserveModalState
+    && element instanceof HTMLDialogElement
     && element.matches(':modal')
     && attr.name === 'open';
 }

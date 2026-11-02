@@ -104,7 +104,7 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
   if (markers) {
     const { startMarker, endMarker } = markers;
     if (enableDomPreservation) {
-      synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag);
+      synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag, { preserveModalState: true });
     } else {
       // In this mode we completely delete the old content before inserting the new content
       const destinationRoot = endMarker.parentNode!;
