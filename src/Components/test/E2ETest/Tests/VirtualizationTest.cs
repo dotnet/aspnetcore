@@ -417,12 +417,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "return document.querySelectorAll('#variable-height-table tbody tr td').length;");
         Assert.True(itemRowCount > 0, "Should have <tr> elements containing <td> cells");
 
-        // Initial item measurements can change the document height after scrolling.
-        Browser.True(() =>
-        {
-            Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
-            return Browser.FindElement(By.Id("vht-row-499")).Displayed;
-        });
+        Browser.Exists(By.TagName("body")).SendKeys(Keys.End);
+        Browser.True(() => Browser.Exists(By.Id("vht-row-499")).Displayed);
 
         var nestedTrCountAfterScroll = (long)js.ExecuteScript(
             "return document.querySelectorAll('#variable-height-table tr > tr').length;");
