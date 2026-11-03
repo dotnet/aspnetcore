@@ -51,6 +51,24 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWasmStandaloneTemplate_WeatherDoesNotOverflowAtNarrowViewport(BrowserKind browserKind)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync();
+        var (serveProcess, listeningUri) = project.ServePublishedStandaloneApp(Output);
+        using (serveProcess)
+        {
+            await AssertWeatherDoesNotOverflowAtNarrowViewportAsync(browserKind, listeningUri);
+        }
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(args: ["--pwa"]);

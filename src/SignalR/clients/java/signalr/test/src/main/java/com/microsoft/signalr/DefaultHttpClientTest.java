@@ -9,12 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
+
+import com.sun.net.httpserver.HttpServer;
 
 import io.reactivex.rxjava3.observers.TestObserver;
 
@@ -32,6 +35,73 @@ public class DefaultHttpClientTest {
             observer.assertNoErrors();
             assertEquals(200, observer.values().get(0).getStatusCode());
         }
+    }
+
+    @Test
+    public void requestCookiesAreSharedWithTimeoutCloneButNotOtherClients() throws Exception {
+        HttpServer server = startCookieServer();
+        try (DefaultHttpClient client = new DefaultHttpClient(null);
+             DefaultHttpClient otherClient = new DefaultHttpClient(null)) {
+            String url = "http://localhost:" + server.getAddress().getPort() + "/hub";
+            client.get(url + "/negotiate").timeout(30, TimeUnit.SECONDS).blockingGet();
+
+            assertEquals("ARRAffinity=server-a", getCookieHeader(client, url));
+            try (DefaultHttpClient clone = client.cloneWithTimeOut(30000)) {
+                assertEquals("ARRAffinity=server-a", getCookieHeader(clone, url));
+            }
+            assertEquals("", getCookieHeader(otherClient, url));
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    public void responseCookiesAreUpdatedAndExpired() throws Exception {
+        HttpServer server = startCookieServer();
+        try (DefaultHttpClient client = new DefaultHttpClient(null)) {
+            String url = "http://localhost:" + server.getAddress().getPort() + "/hub";
+            client.get(url + "/negotiate").timeout(30, TimeUnit.SECONDS).blockingGet();
+            assertEquals("ARRAffinity=server-a", getCookieHeader(client, url));
+
+            client.get(url + "/renew").timeout(30, TimeUnit.SECONDS).blockingGet();
+            assertEquals("ARRAffinity=server-b", getCookieHeader(client, url));
+
+            client.get(url + "/expire").timeout(30, TimeUnit.SECONDS).blockingGet();
+            assertEquals("", getCookieHeader(client, url));
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    private static String getCookieHeader(DefaultHttpClient client, String url) {
+        HttpResponse response = client.get(url).timeout(30, TimeUnit.SECONDS).blockingGet();
+        assertEquals(200, response.getStatusCode());
+        return StandardCharsets.UTF_8.decode(response.getContent()).toString();
+    }
+
+    private static HttpServer startCookieServer() throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        server.createContext("/hub", exchange -> {
+            try {
+                String path = exchange.getRequestURI().getPath();
+                if (path.equals("/hub/negotiate")) {
+                    exchange.getResponseHeaders().add("Set-Cookie", "ARRAffinity=server-a; Path=/");
+                } else if (path.equals("/hub/renew")) {
+                    exchange.getResponseHeaders().add("Set-Cookie", "ARRAffinity=server-b; Path=/");
+                } else if (path.equals("/hub/expire")) {
+                    exchange.getResponseHeaders().add("Set-Cookie", "ARRAffinity=; Path=/; Max-Age=0");
+                }
+
+                String cookie = exchange.getRequestHeaders().getFirst("Cookie");
+                byte[] body = (cookie == null ? "" : cookie).getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
+            } finally {
+                exchange.close();
+            }
+        });
+        server.start();
+        return server;
     }
 
     // Reading the response body can fail after OkHttp has already handed us the response. OkHttp does not
