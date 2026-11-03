@@ -237,12 +237,17 @@ public sealed class Url : IAsyncDisposable
 
         _disposed = true;
 
-        if (_searchParams is not null)
+        try
         {
-            await ((IInternalAsyncDisposal)_searchParams).InternalDisposeAsync().ConfigureAwait(false);
+            if (_searchParams is not null)
+            {
+                await ((IInternalAsyncDisposal)_searchParams).InternalDisposeAsync().ConfigureAwait(false);
+            }
         }
-
-        await _reference.DisposeAsync().ConfigureAwait(false);
+        finally
+        {
+            await _reference.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     private ValueTask<string> GetStringAsync(string propertyName)
