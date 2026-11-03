@@ -4,6 +4,7 @@
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
+import { setClickListenerRegisteredCallback } from '../Rendering/Events/EventDelegatorListeners';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -37,6 +38,7 @@ const acceptHeader = 'text/html; blazor-enhanced-nav=on';
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
+let clickListenerReorderPending = false;
 
 // This gets initialized to the current URL when we load.
 // After that, it gets updated every time we successfully complete a navigation.
@@ -59,6 +61,7 @@ export function hasNeverStartedAnyEnhancedPageLoad() {
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
   navigationEnhancementCallbacks = callbacks;
+  setClickListenerRegisteredCallback(onClickListenerRegistered);
   document.addEventListener('click', onDocumentClick);
   document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
@@ -67,6 +70,8 @@ export function attachProgressivelyEnhancedNavigationListener(callbacks: Navigat
 }
 
 export function detachProgressivelyEnhancedNavigationListener() {
+  setClickListenerRegisteredCallback(undefined);
+  clickListenerReorderPending = false;
   document.removeEventListener('click', onDocumentClick);
   document.removeEventListener('submit', onDocumentSubmit);
   window.removeEventListener('popstate', onPopState);
@@ -88,7 +93,23 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
 }
 
+function onClickListenerRegistered(isDispatchingClick: boolean) {
+  // Removing a listener during dispatch skips it for that click. Let it run before reordering.
+  if (isDispatchingClick) {
+    clickListenerReorderPending = true;
+    return;
+  }
+
+  clickListenerReorderPending = false;
+  document.removeEventListener('click', onDocumentClick);
+  document.addEventListener('click', onDocumentClick);
+}
+
 function onDocumentClick(event: MouseEvent) {
+  if (clickListenerReorderPending) {
+    onClickListenerRegistered(false);
+  }
+
   if (hasInteractiveRouter()) {
     return;
   }

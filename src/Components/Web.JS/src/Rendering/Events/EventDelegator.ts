@@ -4,6 +4,7 @@
 import { EventFieldInfo } from './EventFieldInfo';
 import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions } from './EventTypes';
 import { isRendererAttached, dispatchEvent } from '../WebRendererInteropMethods';
+import { dispatchGlobalEvent, notifyGlobalListenerAdded } from './EventDelegatorListeners';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -74,7 +75,8 @@ export class EventDelegator {
   constructor(private browserRendererId: number) {
     const eventDelegatorId = ++EventDelegator.nextEventDelegatorId;
     this.eventsCollectionKey = `_blazorEvents_${eventDelegatorId}`;
-    this.eventInfoStore = new EventInfoStore(this.onGlobalEvent.bind(this));
+    const globalListener = this.onGlobalEvent.bind(this);
+    this.eventInfoStore = new EventInfoStore(event => dispatchGlobalEvent(event, globalListener));
   }
 
   public setListener(element: Element, eventName: string, eventHandlerId: number, renderingComponentId: number): void {
@@ -294,6 +296,7 @@ class EventInfoStore {
       // We preserve the non-bubbling behavior by only dispatching such events to the targeted element.
       const useCapture = Object.prototype.hasOwnProperty.call(nonBubblingEvents, eventName);
       document.addEventListener(eventName, this.globalListener, useCapture);
+      notifyGlobalListenerAdded(eventName);
     }
   }
 
@@ -314,6 +317,7 @@ class EventInfoStore {
     // We preserve the non-bubbling behavior by only dispatching such events to the targeted element.
     const useCapture = Object.prototype.hasOwnProperty.call(nonBubblingEvents, eventName);
     document.addEventListener(eventName, this.globalListener, { capture: useCapture, passive: false });
+    notifyGlobalListenerAdded(eventName);
   }
 
   public update(oldEventHandlerId: number, newEventHandlerId: number) {
