@@ -149,6 +149,6 @@ public class HubMethodDescriptorTests
         var executor = ObjectMethodExecutor.Create(
             typeof(MethodHub).GetMethod(nameof(MethodHub.AuthMethod))!,
             typeof(MethodHub).GetTypeInfo());
-        return new HubMethodDescriptor(executor, serviceProviderIsService: null, authorizationMetadata);
+        return new HubMethodDescriptor(executor, serviceProviderIsService: null, authorizationMetadata) { Name = nameof(MethodHub.AuthMethod) };
     }
 }
