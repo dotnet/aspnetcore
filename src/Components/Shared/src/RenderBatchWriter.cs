@@ -36,8 +36,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// </summary>
 internal sealed class RenderBatchWriter : IDisposable
 {
+    // A batch with more distinct deduplicated strings than this gets a fresh dictionary afterwards,
+    // so a writer reused across batches does not keep a large table alive.
+    private const int MaxRetainedDeduplicatedStrings = 128;
+
     private readonly ArrayBuilder<string> _strings;
-    private readonly Dictionary<string, int> _deduplicatedStringIndices;
+    private Dictionary<string, int> _deduplicatedStringIndices;
     private readonly BinaryWriter _binaryWriter;
     private readonly bool _useUtf16StringTable;
 
@@ -56,17 +60,40 @@ internal sealed class RenderBatchWriter : IDisposable
 
     public void Write(in RenderBatch renderBatch)
     {
-        var updatedComponentsOffset = Write(renderBatch.UpdatedComponents);
-        var referenceFramesOffset = Write(renderBatch.ReferenceFrames);
-        var disposedComponentIdsOffset = Write(renderBatch.DisposedComponentIDs);
-        var disposedEventHandlerIdsOffset = Write(renderBatch.DisposedEventHandlerIDs);
-        var stringTableOffset = _useUtf16StringTable ? WriteStringTableUtf16() : WriteStringTable();
+        try
+        {
+            var updatedComponentsOffset = Write(renderBatch.UpdatedComponents);
+            var referenceFramesOffset = Write(renderBatch.ReferenceFrames);
+            var disposedComponentIdsOffset = Write(renderBatch.DisposedComponentIDs);
+            var disposedEventHandlerIdsOffset = Write(renderBatch.DisposedEventHandlerIDs);
+            var stringTableOffset = _useUtf16StringTable ? WriteStringTableUtf16() : WriteStringTable();
 
-        _binaryWriter.Write(updatedComponentsOffset);
-        _binaryWriter.Write(referenceFramesOffset);
-        _binaryWriter.Write(disposedComponentIdsOffset);
-        _binaryWriter.Write(disposedEventHandlerIdsOffset);
-        _binaryWriter.Write(stringTableOffset);
+            _binaryWriter.Write(updatedComponentsOffset);
+            _binaryWriter.Write(referenceFramesOffset);
+            _binaryWriter.Write(disposedComponentIdsOffset);
+            _binaryWriter.Write(disposedEventHandlerIdsOffset);
+            _binaryWriter.Write(stringTableOffset);
+        }
+        finally
+        {
+            // Each batch has its own string table. Reset it even if writing failed, so the writer
+            // can be reused for the next batch and holds no strings or pooled buffers in between.
+            ResetStringTable();
+        }
+    }
+
+    private void ResetStringTable()
+    {
+        _strings.Clear();
+
+        if (_deduplicatedStringIndices.Count > MaxRetainedDeduplicatedStrings)
+        {
+            _deduplicatedStringIndices = new Dictionary<string, int>();
+        }
+        else
+        {
+            _deduplicatedStringIndices.Clear();
+        }
     }
 
     int Write(in ArrayRange<RenderTreeDiff> diffs)
