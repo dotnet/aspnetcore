@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <EmbeddedResource Include="..\src\Pagination\Paginator.razor.css" LogicalName="Paginator.razor.css" />
   </ItemGroup>
 
 </Project>
