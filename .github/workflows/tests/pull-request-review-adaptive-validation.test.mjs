@@ -280,6 +280,25 @@ try {
     readStarted(`read-${toolCallId}`, name),
     readCompleted(`read-${toolCallId}`),
   ];
+  const hostedCandidateVerifier = (
+    toolCallId = 'verifier-one',
+    name = 'candidate-verifier',
+    decision = 'KEEP') => [
+    taskStarted(toolCallId, name, { agentType: 'review-candidate-verifier' }),
+    workerStarted(toolCallId, toolCallId, 'review-candidate-verifier'),
+    taskSpawned(toolCallId, name),
+    workerTool(toolCallId, 'view'),
+    workerTool(toolCallId, 'grep'),
+    {
+      type: 'subagent.completed',
+      agentId: toolCallId,
+      data: { toolCallId, agentName: 'review-candidate-verifier' },
+    },
+    readStarted(`read-${toolCallId}`, name),
+    readCompleted(
+      `read-${toolCallId}`,
+      `{"candidateId":"C1","decision":"${decision}"}`),
+  ];
   const sameIdWorker = (id = 'worker-same-id') => [
     taskStarted(id, id, { inputOnly: true }),
     workerStarted(id),
@@ -291,6 +310,7 @@ try {
   const publicationTransports = [
     {
       name: 'Findings',
+      prePublicationEvents: hostedCandidateVerifier(),
       events: [
         ...safeOutputCall('finding', 'safeoutputs-create_pull_request_review_comment', {
           path: 'example.cs', line: 1, body: 'A validated finding.',
@@ -300,12 +320,12 @@ try {
         }),
       ],
     },
-    { name: 'Noop', events: publication() },
-    { name: 'Stopped', events: stopped() },
+    { name: 'Noop', prePublicationEvents: [], events: publication() },
+    { name: 'Stopped', prePublicationEvents: [], events: stopped() },
   ];
-  for (const { name, events } of publicationTransports) {
+  for (const { name, prePublicationEvents, events } of publicationTransports) {
     const nativeName = `Native${name}Accepted`;
-    const native = runVerifier([...hostedWorker(), ...events], '1');
+    const native = runVerifier([...hostedWorker(), ...prePublicationEvents, ...events], '1');
     assert.equal(native.status, 0, `${nativeName}: ${native.stderr}`);
     console.log(`Validated ${nativeName}.`);
 
@@ -982,32 +1002,74 @@ try {
   console.log(
     `Validated ${rejectedClarifications.length + acceptedClarifications.length} clarification collection cases.`);
 
-  const hostedCandidateVerifier = (
-    toolCallId = 'verifier-one',
-    name = 'candidate-verifier',
-    decision = 'KEEP') => [
-    taskStarted(toolCallId, name, { agentType: 'review-candidate-verifier' }),
-    workerStarted(toolCallId, toolCallId, 'review-candidate-verifier'),
-    taskSpawned(toolCallId, name),
-    workerTool(toolCallId, 'view'),
-    workerTool(toolCallId, 'grep'),
-    {
-      type: 'subagent.completed',
-      agentId: toolCallId,
-      data: { toolCallId, agentName: 'review-candidate-verifier' },
-    },
-    readStarted(`read-${toolCallId}`, name),
-    readCompleted(
-      `read-${toolCallId}`,
-      `{"candidateId":"C1","decision":"${decision}"}`),
-  ];
-
   const acceptedVerifierRun = runVerifier([
     ...initialReport,
     ...hostedCandidateVerifier(),
     ...publication(),
   ], '1');
   assert.equal(acceptedVerifierRun.status, 0, acceptedVerifierRun.stderr);
+
+  const findingsWithoutVerifierRejected = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('finding', 'safeoutputs-create_pull_request_review_comment', {
+      path: 'example.cs', line: 1, body: 'A validated finding.\n\nconfidence: verified',
+    }),
+    ...safeOutputCall('review', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT', body: 'One validated finding.',
+    }),
+  ], '1');
+  assert.notEqual(findingsWithoutVerifierRejected.status, 0);
+  assert.match(
+    findingsWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
+  const mixedFindingsWithoutVerifierRejected = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('finding-discarded', 'safeoutputs-create_pull_request_review_comment', {
+      path: 'example.cs',
+      line: 1,
+      body: '- [DISCARDED] Pre-existing behavior.\n  - confidence: discarded\n  - Why discarded: Unchanged in merge-base.',
+    }),
+    ...safeOutputCall('finding-verified', 'safeoutputs-create_pull_request_review_comment', {
+      path: 'example.cs',
+      line: 2,
+      body: '- Verified regression.\n  - confidence: verified',
+    }),
+    ...safeOutputCall('review', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT', body: 'Two findings.',
+    }),
+  ], '1');
+  assert.notEqual(mixedFindingsWithoutVerifierRejected.status, 0);
+  assert.match(
+    mixedFindingsWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
+  const reviewOnlyWithoutVerifierRejected = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('review', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT', body: 'Review body without inline comments.',
+    }),
+  ], '1');
+  assert.notEqual(reviewOnlyWithoutVerifierRejected.status, 0);
+  assert.match(
+    reviewOnlyWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
+  const discardedOnlyFindingsWithoutVerifierAccepted = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('finding-discarded', 'safeoutputs-create_pull_request_review_comment', {
+      path: 'example.cs',
+      line: 1,
+      body: '- [DISCARDED] Pre-existing behavior.\n  - confidence: discarded\n  - Why discarded: Unchanged in merge-base.',
+    }),
+    ...safeOutputCall('review', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT', body: 'One pre-verification discarded candidate.',
+    }),
+  ], '1');
+  assert.equal(
+    discardedOnlyFindingsWithoutVerifierAccepted.status,
+    0,
+    discardedOnlyFindingsWithoutVerifierAccepted.stderr);
 
   const verifierDisallowedSkill = runVerifier([
     ...initialReport,
@@ -1119,10 +1181,69 @@ try {
     },
     readCompleted(
       '192396e8-4f94-4f67-b926-2c8de862d775',
-      'Agent is idle.\n\nPATH: per-guide-worker — docs/CrossCuttingGuidance.md only\nRESULT: complete'),
+      'Agent is idle.\n\nPATH: per-guide-worker\nGUIDE: docs/CrossCuttingGuidance.md\nRESULT: complete'),
     ...publication(),
   ], '1');
   assert.equal(runtimeIdleReadWorker.status, 0, runtimeIdleReadWorker.stderr);
+
+  const runtimeIdleReadBeforeCompletedRejected = runVerifier([
+    taskStarted('call_task1', 'guide-one'),
+    workerStarted('call_task1', '23871449-d358-43e9-9d8f-6ce940dbb4ad'),
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolCallId: '192396e8-4f94-4f67-b926-2c8de862d775',
+        toolName: 'read_agent',
+        arguments: { agent_id: '23871449-d358-43e9-9d8f-6ce940dbb4ad', since_turn: 0 },
+      },
+    },
+    readCompleted(
+      '192396e8-4f94-4f67-b926-2c8de862d775',
+      'Agent is idle.\n\nPATH: per-guide-worker\nRESULT: complete'),
+    ...publication(),
+    workerCompleted('call_task1', '23871449-d358-43e9-9d8f-6ce940dbb4ad'),
+  ], '1');
+  assert.notEqual(runtimeIdleReadBeforeCompletedRejected.status, 0);
+  assert.match(runtimeIdleReadBeforeCompletedRejected.stderr, /wait: true/);
+
+  const runtimeIdleReadAfterClarificationBeforeSecondCompletedRejected = runVerifier([
+    ...initialReport,
+    ...clarification('write-one'),
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolCallId: '192396e8-4f94-4f67-b926-2c8de862d775',
+        toolName: 'read_agent',
+        arguments: { agent_id: 'guide-one', since_turn: 0 },
+      },
+    },
+    readCompleted(
+      '192396e8-4f94-4f67-b926-2c8de862d775',
+      'Follow-up reply before second subagent.completed.'),
+    ...publication(),
+  ], '1');
+  assert.notEqual(runtimeIdleReadAfterClarificationBeforeSecondCompletedRejected.status, 0);
+  assert.match(runtimeIdleReadAfterClarificationBeforeSecondCompletedRejected.stderr, /wait: true/);
+
+  const runtimeIdleReadWithoutSinceTurnZeroRejected = runVerifier([
+    taskStarted('call_task1', 'guide-one'),
+    workerStarted('call_task1', '23871449-d358-43e9-9d8f-6ce940dbb4ad'),
+    workerCompleted('call_task1', '23871449-d358-43e9-9d8f-6ce940dbb4ad'),
+    {
+      type: 'tool.execution_start',
+      data: {
+        toolCallId: '192396e8-4f94-4f67-b926-2c8de862d775',
+        toolName: 'read_agent',
+        arguments: { agent_id: '23871449-d358-43e9-9d8f-6ce940dbb4ad' },
+      },
+    },
+    readCompleted(
+      '192396e8-4f94-4f67-b926-2c8de862d775',
+      'Agent is idle.\n\nPATH: per-guide-worker\nRESULT: complete'),
+    ...publication(),
+  ], '1');
+  assert.notEqual(runtimeIdleReadWithoutSinceTurnZeroRejected.status, 0);
+  assert.match(runtimeIdleReadWithoutSinceTurnZeroRejected.stderr, /wait: true/);
 
   const nonUuidMissingWaitRejected = runVerifier([
     taskStarted('call_task1', 'guide-one'),

@@ -266,6 +266,7 @@ post-steps:
           worker = {
             aliases: new Set(),
             collections: [],
+            completedIndices: [],
             isVerifier,
             latestClarificationIndex: -1,
             name: taskStart.name,
@@ -281,6 +282,19 @@ post-steps:
 
         for (const alias of [...eventAliases(event), taskStart.name]) {
           registerAlias(worker, alias);
+        }
+      });
+
+      events.forEach((event, index) => {
+        if (event.type !== 'subagent.completed' || event.data?.cancelled === true) {
+          return;
+        }
+
+        const worker = typeof event.agentId === 'string'
+          ? resolveWorker([event.agentId])
+          : null;
+        if (worker && index > worker.startedIndex) {
+          worker.completedIndices.push(index);
         }
       });
 
@@ -424,8 +438,12 @@ post-steps:
           }
           const isRuntimeIdleRead =
             input.wait === undefined &&
+            input.since_turn === 0 &&
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-              event.data?.toolCallId ?? '');
+              event.data?.toolCallId ?? '') &&
+            worker.completedIndices.some(completedIndex =>
+              completedIndex > Math.max(worker.startedIndex, worker.latestClarificationIndex) &&
+              completedIndex < startIndex);
           if (input.wait !== true && !isRuntimeIdleRead) {
             violations.push(
               `read_agent for '${worker.name}' must use wait: true.`);
@@ -464,7 +482,7 @@ post-steps:
             content.trim().length > 0 &&
             (worker.isVerifier
               ? /"?decision"?\s*:\s*"?(?:KEEP|DOWNGRADE|DROP)\b/.test(content)
-              : /^[ \t]*PATH:[ \t]*per-guide-worker\b/m.test(content))) {
+              : /^[ \t]*PATH:[ \t]*per-guide-worker[ \t]*$/m.test(content))) {
             worker.collections.push(completion);
           }
         });
@@ -479,6 +497,28 @@ post-steps:
             violations.push(
               `Review worker '${worker.name}' received a write_agent follow-up that was not collected before publication.`);
           }
+        }
+
+        const reviewComments = events.filter(event =>
+          isTopLevelToolStart(event) &&
+          event.data?.toolName === 'safeoutputs-create_pull_request_review_comment');
+        const reviewSubmissions = events.filter(event =>
+          isTopLevelToolStart(event) &&
+          event.data?.toolName === 'safeoutputs-submit_pull_request_review');
+        const hasFindingsPublication =
+          reviewComments.length > 0 || reviewSubmissions.length > 0;
+        const isDiscardedOnlyFindingsPublication =
+          reviewComments.length > 0 &&
+          reviewComments.every(event => {
+            const body = toolInput(event)?.body;
+            return typeof body === 'string' &&
+              /(?:^|\n)\s*(?:[-*]\s+|\d+\.\s+|#+\s+|\*\*)?\[DISCARDED\]\s+\S/.test(body) &&
+              (/\bconfidence\s*:\s*`?discarded`?\b/i.test(body) ||
+                /\bWhy discarded\s*:/i.test(body));
+          });
+        if (hasFindingsPublication && !isDiscardedOnlyFindingsPublication && verifiers.size !== 1) {
+          violations.push(
+            `Findings publication requires 1 '${verifierAgentName}' subagent unless every inline comment is a pre-verification [DISCARDED] candidate, but recorded ${verifiers.size}.`);
         }
 
         const latestWorkerPreVerifierIndex = Math.max(
@@ -984,7 +1024,11 @@ applicable:
 - `contract`: the applicable assigned base-tip or primary-repository contract, or
   `n/a` when the claim does not depend on one. Head production code is the change
   under review and is never a contract. A head declaration may serve only when
-  `oldVsNew` is `n/a`.
+  `oldVsNew` is `n/a` and the claim is not an incomplete-fix or new-feature omission.
+  For an incomplete-fix or new-feature omission claim, a binding assigned issue, API,
+  or base-tip/primary-repository contract is mandatory (`contract` cannot be `n/a` or
+  a head declaration; use `null` and return `DROP` with `dropBasis: "unestablished"`
+  when missing).
 - `intent`: a PR-added or PR-changed head test that exercises the claimed exact input
   and asserts the claimed consumer-visible effect, or `n/a`. A head test that covers a
   different input, layer, or sibling case is not intent evidence and does not

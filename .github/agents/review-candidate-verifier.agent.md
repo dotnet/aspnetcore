@@ -31,7 +31,11 @@ applicable:
 - `contract`: the applicable assigned base-tip or primary-repository contract, or
   `n/a` when the claim does not depend on one. Head production code is the change
   under review and is never a contract. A head declaration may serve only when
-  `oldVsNew` is `n/a`.
+  `oldVsNew` is `n/a` and the claim is not an incomplete-fix or new-feature omission.
+  For an incomplete-fix or new-feature omission claim, a binding assigned issue, API,
+  or base-tip/primary-repository contract is mandatory (`contract` cannot be `n/a` or
+  a head declaration; use `null` and return `DROP` with `dropBasis: "unestablished"`
+  when missing).
 - `intent`: a PR-added or PR-changed head test that exercises the claimed exact input
   and asserts the claimed consumer-visible effect, or `n/a`. A head test that covers a
   different input, layer, or sibling case is not intent evidence and does not
