@@ -94,6 +94,40 @@ public class RenderBatchWriterTest
     }
 
     [Fact]
+    public void CanIncludeLargeDisposedIdArrays()
+    {
+        // Arrange: lengths that span multiple internal write chunks and end with a partial chunk
+        var componentIds = Enumerable.Range(0, 151).Select(i => i * 7919 - 500000).ToArray();
+        var eventHandlerIds = Enumerable.Range(0, 71).Select(i => ulong.MaxValue - (ulong)i * 104729).ToArray();
+
+        // Act
+        var bytes = Serialize(new RenderBatch(
+            new ArrayRange<RenderTreeDiff>(),
+            new ArrayRange<RenderTreeFrame>(),
+            new ArrayRange<int>(componentIds, 150),
+            new ArrayRange<ulong>(eventHandlerIds, 70),
+            default));
+
+        // Assert
+        var componentIdsStart = ReadInt(bytes, bytes.Length - 12);
+        Assert.Equal(150, ReadInt(bytes, componentIdsStart));
+        for (var i = 0; i < 150; i++)
+        {
+            Assert.Equal(componentIds[i], ReadInt(bytes, componentIdsStart + 4 + i * 4));
+        }
+
+        var eventHandlerIdsStart = ReadInt(bytes, bytes.Length - 8);
+        Assert.Equal(componentIdsStart + 4 + 150 * 4, eventHandlerIdsStart);
+        Assert.Equal(70, ReadInt(bytes, eventHandlerIdsStart));
+        for (var i = 0; i < 70; i++)
+        {
+            Assert.Equal(eventHandlerIds[i], BinaryPrimitives.ReadUInt64LittleEndian(bytes.Slice(eventHandlerIdsStart + 4 + i * 8, 8)));
+        }
+
+        Assert.Equal(eventHandlerIdsStart + 4 + 70 * 8, ReadInt(bytes, bytes.Length - 4)); // Strings follow immediately
+    }
+
+    [Fact]
     public void CanIncludeUpdatedComponentsWithEmptyEdits()
     {
         // Arrange/Act
@@ -420,6 +454,103 @@ public class RenderBatchWriterTest
             writer.Write(renderBatch);
         }
         return ms.ToArray();
+    }
+
+    [Fact]
+    public void ReusedWriterStartsEachBatchWithEmptyStringTable()
+    {
+        // Arrange
+        using var ms = new MemoryStream();
+        using var writer = new RenderBatchWriter(ms, leaveOpen: true);
+        var firstBatch = CreateBatchWithRemovedAttributes("first");
+        var secondBatch = CreateBatchWithRemovedAttributes("second", "first");
+
+        // Act
+        writer.Write(firstBatch);
+        ms.SetLength(0);
+        writer.Write(secondBatch);
+
+        // Assert
+        var bytes = ms.ToArray();
+        Assert.Equal(new[] { "second", "first" }, ReadStringTable(bytes));
+        Assert.Equal(Serialize(secondBatch).ToArray(), bytes);
+    }
+
+    [Fact]
+    public void ReusedWriterStartsWithEmptyStringTableAfterFailedWrite()
+    {
+        // Arrange
+        using var ms = new MemoryStream();
+        // Component ID, edit count and the first edit (16 bytes) fit; the second edit does not.
+        using var stream = new FailingStream(ms) { FailAfterBytes = 24 };
+        using var writer = new RenderBatchWriter(stream, leaveOpen: true);
+        var failingBatch = CreateBatchWithRemovedAttributes("first", "other");
+        var secondBatch = CreateBatchWithRemovedAttributes("second");
+
+        // Act
+        Assert.Throws<IOException>(() => writer.Write(failingBatch));
+        stream.FailAfterBytes = int.MaxValue;
+        ms.SetLength(0);
+        writer.Write(secondBatch);
+
+        // Assert
+        var bytes = ms.ToArray();
+        Assert.Equal(new[] { "second" }, ReadStringTable(bytes));
+        Assert.Equal(Serialize(secondBatch).ToArray(), bytes);
+    }
+
+    private static RenderBatch CreateBatchWithRemovedAttributes(params string[] attributeNames)
+    {
+        var editsBuilder = new RenderTree.ArrayBuilder<RenderTreeEdit>();
+        for (var i = 0; i < attributeNames.Length; i++)
+        {
+            editsBuilder.Append(RenderTreeEdit.RemoveAttribute(i, attributeNames[i]));
+        }
+
+        return new RenderBatch(
+            new ArrayRange<RenderTreeDiff>(new[]
+            {
+                new RenderTreeDiff(123, editsBuilder.ToSegment(0, editsBuilder.Count))
+            }, 1),
+            default,
+            default,
+            default,
+            default);
+    }
+
+    private sealed class FailingStream(Stream inner) : Stream
+    {
+        private long _written;
+
+        public int FailAfterBytes { get; set; }
+
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override bool CanWrite => true;
+        public override long Length => inner.Length;
+        public override long Position
+        {
+            get => inner.Position;
+            set => throw new NotSupportedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count) => Write(buffer.AsSpan(offset, count));
+
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            if (_written + buffer.Length > FailAfterBytes)
+            {
+                throw new IOException("Simulated write failure.");
+            }
+
+            _written += buffer.Length;
+            inner.Write(buffer);
+        }
+
+        public override void Flush() => inner.Flush();
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
     }
 
     private Span<byte> Serialize(RenderBatch renderBatch)
