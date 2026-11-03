@@ -117,7 +117,9 @@ public class UrlTest
         Assert.Equal("3", await searchParams.GetAsync("page"));
         Assert.Equal(["one", "two"], await searchParams.GetAllAsync("tag"));
         Assert.True(await searchParams.HasAsync("tag"));
+        Assert.False(await searchParams.HasAsync("missing"));
         Assert.True(await searchParams.HasAsync("tag", "two"));
+        Assert.False(await searchParams.HasAsync("tag", "missing"));
         Assert.Equal(3u, await searchParams.GetSizeAsync());
 
         var entries = new List<KeyValuePair<string, string>>();
@@ -348,6 +350,25 @@ public class UrlTest
         await Assert.ThrowsAsync<ObjectDisposedException>(() => borrowed.GetSizeAsync().AsTask());
         await Assert.ThrowsAsync<ObjectDisposedException>(() => owned.GetSizeAsync().AsTask());
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await CollectAsync(owned.EntriesAsync()));
+    }
+
+    [Fact]
+    public async Task UrlDisposal_DisposesUrlReferenceWhenSearchParamsDisposalThrows()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var url = await provider.GetRequiredService<IBrowserPlatform>().Window.Url.CreateAsync("https://example.test/");
+        await url.SearchParams.GetSizeAsync();
+        var urlReference = jsRuntime.UrlReferences.Single();
+        var searchParamsReference = urlReference.SearchParams;
+        var expectedException = new InvalidOperationException("SearchParams disposal failed.");
+        searchParamsReference.DisposeException = expectedException;
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => url.DisposeAsync().AsTask());
+
+        Assert.Same(expectedException, exception);
+        Assert.True(searchParamsReference.Disposed);
+        Assert.True(urlReference.Disposed);
     }
 
     [Fact]
@@ -625,6 +646,8 @@ public class UrlTest
 
         public bool Disposed { get; private set; }
 
+        public Exception? DisposeException { get; set; }
+
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
             object? result = identifier switch
@@ -662,6 +685,11 @@ public class UrlTest
         public ValueTask DisposeAsync()
         {
             Disposed = true;
+
+            if (DisposeException is { } exception)
+            {
+                return ValueTask.FromException(exception);
+            }
 
             return ValueTask.CompletedTask;
         }

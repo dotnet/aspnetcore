@@ -241,7 +241,7 @@ public sealed class Url : IAsyncDisposable
         {
             if (_searchParams is not null)
             {
-                await ((IInternalAsyncDisposal)_searchParams).InternalDisposeAsync().ConfigureAwait(false);
+                await _searchParams.DisposeAsync().ConfigureAwait(false);
             }
         }
         finally

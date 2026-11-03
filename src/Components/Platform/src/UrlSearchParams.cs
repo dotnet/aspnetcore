@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// <remarks>
 /// Dispose instances created by <see cref="UrlSearchParamsConstructor"/>. Instances obtained from <see cref="Url.SearchParams"/> are owned by their URL and should not be disposed separately.
 /// </remarks>
-public sealed class UrlSearchParams : IAsyncDisposable, IInternalAsyncDisposal
+public sealed class UrlSearchParams : IAsyncDisposable
 {
     private Task<IJSObjectReference>? _referenceTask;
     private readonly IJSObjectReference? _ownerReference;
@@ -241,9 +241,6 @@ public sealed class UrlSearchParams : IAsyncDisposable, IInternalAsyncDisposal
             await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
         }
     }
-
-    ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
-        => DisposeAsync();
 
     private async IAsyncEnumerable<T> EnumerateAsync<T>(
         string identifier,
