@@ -21,6 +21,25 @@ public class QueryFeatureTests
         Assert.Equal("bar", queryCollection["foo"]);
     }
 
+    [Fact]
+    public void QueryDecodesLongNamesAndValues()
+    {
+        // Encoded name and value exceed 256 characters so decoding uses a pooled buffer.
+        var encodedName = string.Concat(Enumerable.Repeat("n%C3%A9+", 50));
+        var encodedValue = string.Concat(Enumerable.Repeat("a%2Bb+c%26", 40));
+        var expectedName = string.Concat(Enumerable.Repeat("n\u00e9 ", 50));
+        var expectedValue = string.Concat(Enumerable.Repeat("a+b c&", 40));
+
+        var features = new FeatureCollection();
+        features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = $"?{encodedName}={encodedValue}&short=x%20y" };
+
+        var queryCollection = new QueryFeature(features).Query;
+
+        Assert.Equal(2, queryCollection.Count);
+        Assert.Equal(expectedValue, queryCollection[expectedName]);
+        Assert.Equal("x y", queryCollection["short"]);
+    }
+
     [Theory]
     [InlineData("?key1=value1&key2=value2")]
     [InlineData("key1=value1&key2=value2")]

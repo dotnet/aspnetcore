@@ -17,6 +17,22 @@ public class QueryHelperTests
     }
 
     [Fact]
+    public void ParseQueryDecodesLongNamesAndValues()
+    {
+        // Encoded name and value exceed 256 characters so decoding uses a pooled buffer.
+        var encodedName = string.Concat(Enumerable.Repeat("n%C3%A9+", 50));
+        var encodedValue = string.Concat(Enumerable.Repeat("a%2Bb+c%26", 40));
+        var expectedName = string.Concat(Enumerable.Repeat("n\u00e9 ", 50));
+        var expectedValue = string.Concat(Enumerable.Repeat("a+b c&", 40));
+
+        var collection = QueryHelpers.ParseQuery($"?{encodedName}={encodedValue}&short=x%20y");
+
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(expectedValue, collection[expectedName].FirstOrDefault());
+        Assert.Equal("x y", collection["short"].FirstOrDefault());
+    }
+
+    [Fact]
     public void ParseQueryWithoutQuestionmarkWorks()
     {
         var collection = QueryHelpers.ParseQuery("key1=value1&key2=value2");

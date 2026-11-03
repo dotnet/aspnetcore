@@ -137,6 +137,8 @@ internal
 
             if (rented is not null)
             {
+                // Query values may contain sensitive data.
+                buffer.Clear();
                 ArrayPool<char>.Shared.Return(rented);
             }
 
