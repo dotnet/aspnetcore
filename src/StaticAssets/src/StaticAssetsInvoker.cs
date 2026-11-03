@@ -134,11 +134,22 @@ internal class StaticAssetsInvoker
             _logger);
 
         var (preconditionState, isRange, range) = requestContext.ComprehendRequestHeaders();
+        var isHead = HttpMethods.IsHead(context.Request.Method);
+        // Body-sending paths observe deletion while sending; metadata-only responses need a fresh lookup.
+        var metadataOnlyResponse = isHead ||
+            preconditionState is PreconditionState.NotModified or PreconditionState.PreconditionFailed ||
+            (isRange && range is null);
+        if (metadataOnlyResponse && !_fileProvider.GetFileInfo(_resource.AssetPath).Exists)
+        {
+            HandleFileNotFound(context, _logger, Route);
+            return;
+        }
+
         switch (preconditionState)
         {
             case PreconditionState.Unspecified:
             case PreconditionState.ShouldProcess:
-                if (HttpMethods.IsHead(context.Request.Method))
+                if (isHead)
                 {
                     await SendStatusAsync(requestContext, StatusCodes.Status200OK);
                     return;
@@ -160,18 +171,7 @@ internal class StaticAssetsInvoker
                 }
                 catch (FileNotFoundException)
                 {
-                    if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() != null)
-                    {
-                        var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-                        if (!environment.IsDevelopment() && environment.WebRootFileProvider is not CompositeFileProvider)
-                        {
-                            _logger.EnsureStaticWebAssetsEnabled();
-                        }
-                    }
-                    context.Response.Clear();
-                    _logger.FileNotFound(Route);
-                    context.Response.Headers.CacheControl = "no-store";
-                    await SendStatusAsync(requestContext, StatusCodes.Status404NotFound);
+                    HandleFileNotFound(context, _logger, Route);
                 }
                 return;
             case PreconditionState.NotModified:
@@ -187,6 +187,24 @@ internal class StaticAssetsInvoker
                 Debug.Fail(exception.ToString());
                 throw exception;
         }
+    }
+
+    internal static void HandleFileNotFound(HttpContext context, ILogger logger, string route)
+    {
+        if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() is not null)
+        {
+            var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+            if (!environment.IsDevelopment() && environment.WebRootFileProvider is not CompositeFileProvider)
+            {
+                logger.EnsureStaticWebAssetsEnabled();
+            }
+        }
+
+        context.Response.Clear();
+        logger.FileNotFound(route);
+        context.Response.Headers.CacheControl = "no-store";
+        logger.Handled(StatusCodes.Status404NotFound, route);
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
     }
 
     private async Task SendAsync(StaticAssetInvocationContext context)
