@@ -133,16 +133,20 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 
 ## Review and independent validation
 
-Launch exactly one fresh reviewer worker per routed guide as a full-capability
-`general-purpose` agent, never an explore, fast, or other lightweight agent. Select the
+Launch exactly one fresh reviewer worker per routed guide as the native
+`review-guide-worker` custom agent, never a built-in `general-purpose`, explore, fast,
+or other agent. Its native profile must expose only `read`, `search`, and `skill`; a
+missing profile or any additional worker tool makes that guide `incomplete`. Select the
 caller-supplied worker model, or `gpt-5.6-sol` when the caller omitted it; pass that model
 explicitly and independently to every worker, never inheriting the coordinator or
 session model. Pass the caller-supplied reasoning effort explicitly and independently
 to every worker; when omitted, omit the effort setting and record
 `not supplied (runtime default)`. Use `mode: "background"` so the same worker can receive
-follow-ups through `write_agent`. Wait for its completion notification, then collect the
-actual report with `read_agent` using `wait: true`; after each same-worker clarification,
-wait and collect its completed follow-up the same way before synthesis. Record each
+follow-ups through `write_agent`. After the `task` calls return, stay in your turn and
+collect each worker's actual report with `read_agent` using `wait: true` (repeating on
+timeout if needed) rather than ending your response to wait for a completion
+notification; after each same-worker clarification, collect its completed follow-up the
+same way before synthesis. Record each
 requested agent type, model, and effort plus any runtime-reported values; record missing
 runtime telemetry as `unknown`, which alone does not make a guide incomplete. A confirmed
 mismatch, runtime rejection, or inability to apply an explicitly requested setting makes
