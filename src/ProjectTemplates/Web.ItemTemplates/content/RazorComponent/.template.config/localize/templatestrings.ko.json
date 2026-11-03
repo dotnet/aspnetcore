@@ -2,8 +2,8 @@
   "author": "Microsoft",
   "name": "Razor 구성 요소",
   "description": "Razor로 구현된 재사용 가능한 UI 구성 요소",
-  "symbols/namespace/description": "namespace for the generated code",
-  "symbols/use-code-behind/description": "create component with a code-behind file",
-  "symbols/use-code-behind/displayName": "Use Code Behind",
+  "symbols/namespace/description": "생성된 코드의 네임스페이스",
+  "symbols/use-code-behind/description": "코드 숨김 파일이 있는 구성 요소 만들기",
+  "symbols/use-code-behind/displayName": "코드 숨김 사용",
   "postActions/openInEditor/description": "편집기에서 Component1.razor를 엽니다."
 }

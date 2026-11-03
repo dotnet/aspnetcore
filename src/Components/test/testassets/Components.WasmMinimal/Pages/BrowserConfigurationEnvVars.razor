@@ -1,5 +1,6 @@
 ﻿@page "/browser-configuration-env-vars"
 @using Microsoft.AspNetCore.Components.Web
+@inject Microsoft.Extensions.Hosting.IHostEnvironment HostEnvironment
 @rendermode RenderMode.InteractiveWebAssembly
 
 <h1>Browser Configuration Environment Variables</h1>
@@ -7,6 +8,11 @@
 <p>
     Execution mode:
     <strong id="execution-mode">@executionMode</strong>
+</p>
+
+<p>
+    Environment name:
+    <strong id="environment-name">@environmentName</strong>
 </p>
 
 <p>
@@ -21,6 +27,7 @@
 
 @code {
     string executionMode = "static";
+    string environmentName = "";
     string myTestVar = "";
     string anotherTestVar = "";
 
@@ -29,6 +36,7 @@
         if (firstRender)
         {
             executionMode = OperatingSystem.IsBrowser() ? "webassembly" : "server";
+            environmentName = HostEnvironment.EnvironmentName;
             myTestVar = Environment.GetEnvironmentVariable("MY_TEST_VAR") ?? "(not set)";
             anotherTestVar = Environment.GetEnvironmentVariable("ANOTHER_TEST_VAR") ?? "(not set)";
             StateHasChanged();

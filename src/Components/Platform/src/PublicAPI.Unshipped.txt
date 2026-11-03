@@ -1,4 +1,58 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Platform.CookieInit
+Microsoft.AspNetCore.Components.Platform.CookieInit.CookieInit() -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Domain.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieInit.Domain.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Expires.get -> double?
+Microsoft.AspNetCore.Components.Platform.CookieInit.Expires.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.MaxAge.get -> long?
+Microsoft.AspNetCore.Components.Platform.CookieInit.MaxAge.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Name.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieInit.Name.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Partitioned.get -> bool
+Microsoft.AspNetCore.Components.Platform.CookieInit.Partitioned.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Path.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieInit.Path.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.SameSite.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieInit.SameSite.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Value.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieInit.Value.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieListItem
+Microsoft.AspNetCore.Components.Platform.CookieListItem.CookieListItem() -> void
+Microsoft.AspNetCore.Components.Platform.CookieListItem.Name.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieListItem.Name.init -> void
+Microsoft.AspNetCore.Components.Platform.CookieListItem.Value.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieListItem.Value.init -> void
+Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.Lax = 1 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.None = 2 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict = 0 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieStore
+Microsoft.AspNetCore.Components.Platform.CookieStore.DeleteAsync(Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions! options) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStore.DeleteAsync(string! name) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAllAsync() -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!>
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAllAsync(Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions! options) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!>
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAllAsync(string! name) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!>
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAsync(Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions! options) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.CookieListItem?>
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAsync(string! name) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.CookieListItem?>
+Microsoft.AspNetCore.Components.Platform.CookieStore.SetAsync(Microsoft.AspNetCore.Components.Platform.CookieInit! options) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStore.SetAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.CookieStoreDeleteOptions() -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Domain.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Domain.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Name.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Name.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Partitioned.get -> bool
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Partitioned.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Path.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Path.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.CookieStoreGetOptions() -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.set -> void
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Window.get -> Microsoft.AspNetCore.Components.Platform.Window!
 Microsoft.AspNetCore.Components.Platform.Storage
@@ -9,6 +63,9 @@ Microsoft.AspNetCore.Components.Platform.Storage.KeyAsync(uint index) -> System.
 Microsoft.AspNetCore.Components.Platform.Storage.RemoveItemAsync(string! key) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.SetItemAsync(string! key, string! value) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Window
+Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions
+Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
+Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).CookieStore.get -> Microsoft.AspNetCore.Components.Platform.CookieStore!
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
