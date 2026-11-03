@@ -133,6 +133,20 @@ export function emptyLogicalElement(element: LogicalElement): void {
   }
 }
 
+export function resetLogicalChildren(element: LogicalElement): void {
+  const children = getLogicalChildrenArray(element);
+  for (const child of children) {
+    delete child[logicalParentPropname];
+  }
+  children.length = 0;
+}
+
+export function adoptLogicalChild(child: Node, parent: LogicalElement, childIndex: number): void {
+  const logicalChild = toLogicalElement(child, true);
+  getLogicalChildrenArray(parent).splice(childIndex, 0, logicalChild);
+  logicalChild[logicalParentPropname] = parent;
+}
+
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
   const containerElement = document.createComment('!');
   insertLogicalChild(containerElement, parent, childIndex);

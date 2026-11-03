@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using TestServer;
 using Xunit.Abstractions;
 
@@ -26,6 +27,283 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
+
+    [Theory]
+    [InlineData("server", "")]
+    [InlineData("wasm", "")]
+    [InlineData("auto", "")]
+    [InlineData("server", "text")]
+    [InlineData("wasm", "text")]
+    [InlineData("auto", "text")]
+    [InlineData("server", "attribute")]
+    [InlineData("wasm", "attribute")]
+    [InlineData("server", "element")]
+    [InlineData("wasm", "element")]
+    [InlineData("server", "extra")]
+    [InlineData("wasm", "extra")]
+    [InlineData("server", "missing")]
+    [InlineData("wasm", "missing")]
+    [InlineData("server", "markup")]
+    [InlineData("wasm", "markup")]
+    [InlineData("server", "namespace")]
+    [InlineData("wasm", "namespace")]
+    [InlineData("server", "order")]
+    [InlineData("wasm", "order")]
+    [InlineData("server", "attribute-order")]
+    [InlineData("wasm", "attribute-order")]
+    public void PrerenderedDom_IsPreservedOnlyWhenInitialOutputMatches(string platform, string mismatch)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&mismatch={mismatch}");
+        var root = Browser.Exists(By.Id("dom-first-root"));
+        var secondRoot = Browser.Exists(By.Id("dom-second-root"));
+        var input = Browser.Exists(By.Id("dom-first-input"));
+        input.Clear();
+        input.SendKeys("Before activation");
+        var textarea = Browser.Exists(By.Id("dom-first-textarea"));
+        textarea.Clear();
+        textarea.SendKeys("Edited textarea");
+        Browser.Exists(By.Id("dom-first-checkbox")).Click();
+        new SelectElement(Browser.Exists(By.Id("dom-first-select"))).SelectByValue("second");
+        var secondInput = Browser.Exists(By.Id("dom-second-input"));
+        secondInput.Clear();
+        secondInput.SendKeys("Other root");
+        var inputBound = Browser.Exists(By.Id("dom-first-input-bound"));
+        inputBound.Clear();
+        inputBound.SendKeys("Before input");
+        input.Click();
+
+        var js = (IJavaScriptExecutor)Browser;
+        if (mismatch == "namespace")
+        {
+            js.ExecuteScript("""
+                const original = document.querySelector('#dom-first-root svg text');
+                const replacement = document.createElementNS('http://www.w3.org/1999/xhtml', 'text');
+                replacement.textContent = original.textContent;
+                original.replaceWith(replacement);
+                """);
+        }
+        else if (mismatch == "attribute-order")
+        {
+            js.ExecuteScript("""
+                const root = arguments[0];
+                const id = root.id;
+                root.removeAttribute('id');
+                root.setAttribute('id', id);
+                """, root);
+        }
+        // WebDriver cannot set a selection range or observe synchronous removal records.
+        js.ExecuteScript("""
+            arguments[0].setSelectionRange(2, 7);
+            document.getElementById('dom-first-scroll').scrollTop = 90;
+            if (!customElements.get('prerendered-dom-probe')) {
+                customElements.define('prerendered-dom-probe', class extends HTMLElement {
+                    connectedCallback() { this.connectionCount = (this.connectionCount || 0) + 1; }
+                });
+            }
+            window.prerenderedDomAnimation = document.getElementById('dom-first-animation').getAnimations()[0];
+            window.prerenderedDomStylesheet = document.getElementById('dom-first-stylesheet').sheet;
+            window.prerenderedDomRemovals = 0;
+            window.prerenderedDomObserver = new MutationObserver(records => {
+                for (const record of records) {
+                    for (const removed of record.removedNodes) {
+                        if (removed === arguments[1] || removed.contains(arguments[1])) {
+                            window.prerenderedDomRemovals++;
+                        }
+                    }
+                }
+            });
+            window.prerenderedDomObserver.observe(document, { childList: true, subtree: true });
+            """, input, root);
+
+        // Clicking the start button would itself move focus out of the input.
+        js.ExecuteScript("callBlazorStart()");
+        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+        Browser.True(() => Browser.FindElement(By.Id("dom-second-ready")).Text is "Server" or "WebAssembly");
+
+        var shouldPreserve = mismatch is "" or "attribute-order";
+        var currentRoot = Browser.FindElement(By.Id("dom-first-root"));
+        Assert.Equal(shouldPreserve, root.Equals(currentRoot));
+        Assert.Equal(shouldPreserve, input.Equals(Browser.FindElement(By.Id("dom-first-input"))));
+        Assert.Equal(shouldPreserve ? "Before activation" : "Initial", Browser.FindElement(By.Id("dom-first-input")).GetDomProperty("value"));
+        Assert.Equal(shouldPreserve ? "Edited textarea" : "Initial", Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
+        Assert.Equal(shouldPreserve, Browser.FindElement(By.Id("dom-first-checkbox")).Selected);
+        Assert.Equal(shouldPreserve ? "second" : "first", new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Assert.Equal(shouldPreserve ? 90L : 0L, js.ExecuteScript("return document.getElementById('dom-first-scroll').scrollTop"));
+        Assert.Equal(shouldPreserve ? 0L : 1L, js.ExecuteScript("return window.prerenderedDomRemovals"));
+        Assert.Equal(shouldPreserve ? 2L : 3L, js.ExecuteScript("return window.prerenderedDomScriptRuns"));
+        Assert.Equal("Initial", Browser.FindElement(By.Id("dom-first-model")).Text);
+        Assert.Equal("Initial", Browser.FindElement(By.Id("dom-first-input-model")).Text);
+        Assert.Equal(shouldPreserve ? "Before input" : "Initial", Browser.FindElement(By.Id("dom-first-input-bound")).GetDomProperty("value"));
+        Assert.Equal(secondRoot, Browser.FindElement(By.Id("dom-second-root")));
+        Assert.Equal("Other root", secondInput.GetDomProperty("value"));
+
+        if (shouldPreserve)
+        {
+            Assert.Equal(input, Browser.SwitchTo().ActiveElement());
+            Assert.Equal("2", input.GetDomProperty("selectionStart"));
+            Assert.Equal("7", input.GetDomProperty("selectionEnd"));
+            Assert.Equal("1", Browser.FindElement(By.Id("dom-first-custom")).GetDomProperty("connectionCount"));
+            Assert.Equal(true, js.ExecuteScript("return window.prerenderedDomAnimation === document.getElementById('dom-first-animation').getAnimations()[0]"));
+            Assert.Equal(true, js.ExecuteScript("return !!window.prerenderedDomStylesheet && window.prerenderedDomStylesheet === document.getElementById('dom-first-stylesheet').sheet"));
+        }
+        js.ExecuteScript("window.prerenderedDomObserver.disconnect()");
+
+        Browser.Click(By.Id("dom-first-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("dom-first-count")).Text);
+        Browser.Equal("Hello 1 world", () => Browser.FindElement(By.Id("dom-first-adjacent")).Text);
+        Browser.Equal("Nested 1", () => Browser.FindElement(By.Id("dom-first-child")).Text);
+        Browser.Click(By.Id("dom-first-add-option"));
+        Assert.Equal(shouldPreserve ? "second" : "first", new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Browser.Click(By.Id("dom-first-select-third"));
+        Browser.Equal("third", () => new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Browser.Click(By.Id("dom-first-stop-propagation"));
+        Browser.Equal("1/0", () => Browser.FindElement(By.Id("dom-first-events")).Text);
+        Browser.Click(By.Id("dom-first-focus"));
+        Browser.Equal(Browser.FindElement(By.Id("dom-first-input")), () => Browser.SwitchTo().ActiveElement());
+        var currentInput = Browser.FindElement(By.Id("dom-first-input"));
+        currentInput.Clear();
+        currentInput.SendKeys("After activation" + Keys.Tab);
+        Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-model")).Text);
+        Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
+        inputBound = Browser.FindElement(By.Id("dom-first-input-bound"));
+        inputBound.Clear();
+        inputBound.SendKeys("After input");
+        Browser.Equal("After input", () => Browser.FindElement(By.Id("dom-first-input-model")).Text);
+        Browser.Click(By.Id("dom-first-toggle"));
+        Browser.DoesNotExist(By.Id("dom-first-child"));
+        Browser.Click(By.Id("dom-first-toggle"));
+        Browser.Equal("Nested 1", () => Browser.FindElement(By.Id("dom-first-child")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    [InlineData("auto")]
+    public void PrerenderedDom_WithoutPrerenderingUsesNormalRendering(string platform)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&noPrerender=true");
+        Browser.DoesNotExist(By.Id("dom-first-root"));
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+        Browser.Click(By.Id("dom-first-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("dom-first-count")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    [InlineData("auto")]
+    public void PrerenderedDom_PreservesDocumentSelectionAcrossTextFrames(string platform)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}");
+        Browser.Exists(By.Id("dom-first-selection"));
+        var js = (IJavaScriptExecutor)Browser;
+        // WebDriver cannot select an exact range spanning text-frame boundaries.
+        js.ExecuteScript("""
+            const text = document.getElementById('dom-first-selection').firstChild;
+            const range = document.createRange();
+            range.setStart(text, 2);
+            range.setEnd(text, 10);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            callBlazorStart();
+            """);
+        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+        Assert.Equal("llo 0 wo", js.ExecuteScript("return window.getSelection().toString()"));
+    }
+
+    [Theory]
+    [InlineData("server", true)]
+    [InlineData("wasm", false)]
+    public void PrerenderedDom_EditFormRetainsNormalBindingAndSubmission(string platform, bool shouldPreserve)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&includeForm=true");
+        var root = Browser.Exists(By.Id("dom-first-root"));
+        var input = Browser.Exists(By.Id("dom-first-nested-input"));
+        input.Clear();
+        input.SendKeys("Before activation");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("callBlazorStart()");
+        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+        Assert.Equal(shouldPreserve, root.Equals(Browser.FindElement(By.Id("dom-first-root"))));
+        input = Browser.FindElement(By.Id("dom-first-nested-input"));
+        Assert.Equal(shouldPreserve ? "Before activation" : "Nested", input.GetDomProperty("value"));
+        input.Clear();
+        input.SendKeys("After activation" + Keys.Tab);
+        Browser.Click(By.Id("dom-first-submit"));
+        Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-submitted")).Text);
+    }
+
+    [Fact]
+    public void PrerenderedDom_AutoPreservesNodesBeforeWebAssemblyResourcesAreAvailable()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        BlockWebAssemblyResourceLoad();
+        try
+        {
+            PrerenderedDom_IsPreservedOnlyWhenInitialOutputMatches("auto", "");
+            Browser.Equal("Server", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
+        }
+        finally
+        {
+            UnblockWebAssemblyResourceLoad();
+        }
+    }
+
+    [Fact]
+    public void PrerenderedDom_AutoPreservesNodesWhenWebAssemblyIsCached()
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?platform=wasm");
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
+        PrerenderedDom_IsPreservedOnlyWhenInitialOutputMatches("auto", "");
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    [InlineData("auto")]
+    public void PrerenderedDom_PreservesPlayingVideo(string platform)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}");
+        var video = Browser.Exists(By.Id("dom-first-video"));
+        var js = (IJavaScriptExecutor)Browser;
+        // A browser-produced video stream avoids a codec or external media-file dependency.
+        Assert.Null(js.ExecuteAsyncScript("""
+            const done = arguments[arguments.length - 1];
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 16;
+            const context = canvas.getContext('2d');
+            let frame = 0;
+            function draw() {
+                context.fillStyle = frame++ % 2 ? 'red' : 'blue';
+                context.fillRect(0, 0, 16, 16);
+                window.prerenderedDomVideoFrame = requestAnimationFrame(draw);
+            }
+            draw();
+            const video = document.getElementById('dom-first-video');
+            window.prerenderedDomVideoStream = canvas.captureStream(30);
+            video.srcObject = window.prerenderedDomVideoStream;
+            video.play().then(() => done(null), error => done(error.message));
+            """));
+        try
+        {
+            Browser.True(() => (bool)js.ExecuteScript("return document.getElementById('dom-first-video').currentTime > 0"));
+            var before = js.ExecuteScript("return document.getElementById('dom-first-video').currentTime");
+            js.ExecuteScript("callBlazorStart()");
+            Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+            Assert.Equal(video, Browser.FindElement(By.Id("dom-first-video")));
+            Assert.False(bool.Parse(video.GetDomProperty("paused")));
+            Browser.True(() => (bool)js.ExecuteScript("return document.getElementById('dom-first-video').currentTime > arguments[0]", before));
+        }
+        finally
+        {
+            js.ExecuteScript("""
+                cancelAnimationFrame(window.prerenderedDomVideoFrame);
+                window.prerenderedDomVideoStream.getTracks().forEach(track => track.stop());
+                """);
+        }
+    }
 
     [Fact]
     public void CanRenderInteractiveServerComponent()

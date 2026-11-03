@@ -1,0 +1,20 @@
+@page "/prerendered-dom"
+@using Microsoft.AspNetCore.Components.Web
+
+<TestContentPackage.PrerenderedDomContent @rendermode="Mode" IdSuffix="first" Mismatch="@Mismatch" IncludeForm="IncludeForm" />
+<TestContentPackage.PrerenderedDomContent @rendermode="Mode" IdSuffix="second" />
+
+@code {
+    [SupplyParameterFromQuery] public string Platform { get; set; }
+    [SupplyParameterFromQuery] public string Mismatch { get; set; }
+    [SupplyParameterFromQuery] public bool NoPrerender { get; set; }
+    [SupplyParameterFromQuery] public bool IncludeForm { get; set; }
+
+    private IComponentRenderMode Mode => Platform switch
+    {
+        "server" => new InteractiveServerRenderMode(prerender: !NoPrerender),
+        "wasm" => new InteractiveWebAssemblyRenderMode(prerender: !NoPrerender),
+        "auto" => new InteractiveAutoRenderMode(prerender: !NoPrerender),
+        _ => throw new InvalidOperationException($"Unknown render mode '{Platform}'.")
+    };
+}
