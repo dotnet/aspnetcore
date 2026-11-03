@@ -115,6 +115,11 @@ public sealed class FileDownload : MediaComponentBase
 
         try
         {
+            if (source.Stream.CanSeek)
+            {
+                source.Stream.Position = 0;
+            }
+
             var result = await JSRuntime.InvokeAsync<bool>(
                 "Blazor._internal.BinaryMedia.downloadAsync",
                 token,

@@ -1,4 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Media.Audio
+Microsoft.AspNetCore.Components.Media.Audio.Audio() -> void
+Microsoft.AspNetCore.Components.Media.Audio.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Media.MediaContext!>?
+Microsoft.AspNetCore.Components.Media.Audio.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Media.FileDownload
 Microsoft.AspNetCore.Components.Media.FileDownload.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Media.FileDownloadContext!>?
 Microsoft.AspNetCore.Components.Media.FileDownload.ChildContent.set -> void

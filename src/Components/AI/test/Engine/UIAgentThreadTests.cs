@@ -92,6 +92,49 @@ public class UIAgentThreadTests
     }
 
     [Fact]
+    public async Task RestoreAsync_MultimodalMessage_ReturnsFlatBlocksAndPreservesHistory()
+    {
+        var thread = new InMemoryConversationThread("thread-1");
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((_, _, _) => ResponseEmitters.EmitTextResponse("First response"));
+        var message = new ChatMessage(ChatRole.User,
+            [new TextContent("Describe"), new DataContent(new byte[] { 1, 2, 3 }, "image/png")]);
+        var firstAgent = CreateAgent(client, thread);
+        var originalBlocks = new List<ContentBlock>();
+        await foreach (var block in firstAgent.SendMessageAsync(message))
+        {
+            originalBlocks.Add(block);
+        }
+
+        var restoredAgent = CreateAgent(client, thread);
+        var blocks = await restoredAgent.RestoreAsync();
+
+        Assert.Equal(originalBlocks.Select(block => block.GetType()), blocks.Select(block => block.GetType()));
+        Assert.Equal(originalBlocks.Select(block => block.Role), blocks.Select(block => block.Role));
+        Assert.Equal(
+            ["Describe", "First response"],
+            blocks.OfType<RichContentBlock>().Select(block => block.RawText));
+        Assert.Single(blocks.OfType<MediaContentBlock>());
+
+        List<ChatMessage>? observedMessages = null;
+        client.SetHandler((messages, _, _) =>
+        {
+            observedMessages = messages.ToList();
+            return ResponseEmitters.EmitTextResponse("Second response");
+        });
+        await CollectAsync(restoredAgent, "Next");
+
+        Assert.NotNull(observedMessages);
+        Assert.Equal(3, observedMessages.Count);
+        Assert.Equal(ChatRole.User, observedMessages[0].Role);
+        Assert.Equal(2, observedMessages[0].Contents.Count);
+        Assert.Equal("Describe", Assert.IsType<TextContent>(observedMessages[0].Contents[0]).Text);
+        Assert.IsType<DataContent>(observedMessages[0].Contents[1]);
+        Assert.Equal("First response", observedMessages[1].Text);
+        Assert.Equal("Next", observedMessages[2].Text);
+    }
+
+    [Fact]
     public async Task RestoreAsync_ThenSendMessage_IncludesRestoredHistory()
     {
         var thread = new InMemoryConversationThread("thread-1");

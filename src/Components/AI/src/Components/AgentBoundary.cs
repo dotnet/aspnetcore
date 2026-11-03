@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// Creates the <see cref="AgentContext"/> for a <see cref="UIAgent"/> and cascades it to the
 /// chat components underneath it.
 /// </summary>
-public class AgentBoundary : ComponentBase, IDisposable
+public sealed class AgentBoundary : ComponentBase, IDisposable
 {
     private AgentContext _context = default!;
     private UIAgent _currentAgent = default!;
@@ -73,6 +73,5 @@ public class AgentBoundary : ComponentBase, IDisposable
     public void Dispose()
     {
         _context?.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

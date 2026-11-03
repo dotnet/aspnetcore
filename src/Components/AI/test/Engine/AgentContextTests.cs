@@ -90,19 +90,37 @@ public class AgentContextTests
     }
 
     [Fact]
-    public async Task RetryAsync_AfterError_ReplacesResponseBlocks()
+    public async Task RetryAsync_RepeatedFailuresPreserveOneRequestAndNoPartialResponse()
     {
         var callCount = 0;
-        var context = CreateContext(_ => callCount++ == 0
-            ? ResponseEmitters.EmitErrorAfterTokens(["partial"], new InvalidOperationException("boom"))
-            : ResponseEmitters.EmitTextResponse("Recovered"));
+        var requestHistoryCounts = new List<int>();
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((messages, _, _) =>
+        {
+            requestHistoryCounts.Add(messages.Count());
+            return callCount++ < 2
+                ? ResponseEmitters.EmitErrorAfterTokens(
+                    ["partial"],
+                    new InvalidOperationException("boom"))
+                : ResponseEmitters.EmitTextResponse("Recovered");
+        });
+        var context = new AgentContext(new UIAgent(client));
 
         await context.SendMessageAsync("Hello");
+        var turn = Assert.Single(context.Turns);
+        Assert.Single(turn.RequestBlocks);
+        Assert.Empty(turn.ResponseBlocks);
+
+        await context.RetryAsync();
+        Assert.Single(turn.RequestBlocks);
+        Assert.Empty(turn.ResponseBlocks);
+
         await context.RetryAsync();
 
         Assert.Equal(ConversationStatus.Idle, context.Status);
         Assert.Null(context.Error);
-        var turn = Assert.Single(context.Turns);
+        Assert.Equal([1, 1, 1], requestHistoryCounts);
+        Assert.Single(turn.RequestBlocks);
         Assert.Equal("Recovered", Assert.IsType<RichContentBlock>(Assert.Single(turn.ResponseBlocks)).RawText);
     }
 
@@ -133,8 +151,9 @@ public class AgentContextTests
             ct));
 
         var sendTask = context.SendMessageAsync("Hello");
-        await context.CancelAsync();
+        var cancelTask = context.CancelAsync();
         gate.SetResult();
+        await cancelTask;
         await sendTask;
 
         Assert.Equal(ConversationStatus.Idle, context.Status);
