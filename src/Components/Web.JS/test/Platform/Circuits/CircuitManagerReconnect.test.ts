@@ -19,7 +19,7 @@ describe('CircuitManager reconnect', () => {
       state: 'Connected',
       invoke: jest.fn(() => Promise.resolve(true)),
     };
-    let completeStartConnection: (connection: typeof connection) => void;
+    let completeStartConnection: ((value: typeof connection) => void) | undefined;
     const startConnection = jest.fn(() => new Promise<typeof connection>(resolve => completeStartConnection = resolve));
     const onConnectionUp = jest.fn();
     const manager = new CircuitManager(
