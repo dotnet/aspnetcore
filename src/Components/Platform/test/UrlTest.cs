@@ -167,7 +167,12 @@ public class UrlTest
             jsRuntime.ConstructorCalls,
             call => AssertInvocation(call, "URLSearchParams"),
             call => AssertInvocation(call, "URLSearchParams", "name=text"),
-            call => AssertInvocation(call, "URLSearchParams", record),
+            call =>
+            {
+                Assert.Equal("URLSearchParams", call.Identifier);
+                var entries = Assert.IsType<string[][]>(Assert.Single(call.Arguments));
+                Assert.Equal(["name", "record"], entries[0]);
+            },
             call =>
             {
                 Assert.Equal("URLSearchParams", call.Identifier);
@@ -403,7 +408,13 @@ public class UrlTest
         var constructor = provider.GetRequiredService<IBrowserPlatform>().Window.UrlSearchParams;
         IReadOnlyDictionary<string, string> record = new Dictionary<string, string>
         {
-            ["name"] = "record",
+            ["hasOwnProperty"] = "property",
+            ["__jsObjectId"] = "value",
+            ["10"] = "ten",
+            ["2"] = "two",
+            ["4294967294"] = "max-index",
+            ["01"] = "leading-zero",
+            ["4294967295"] = "not-an-index",
         };
         IEnumerable<KeyValuePair<string, string>> sequence =
         [
@@ -412,7 +423,9 @@ public class UrlTest
         ];
 
         _ = constructor.CreateAsync(record);
-        Assert.Equal("[{\"name\":\"record\"}]", runtime.ArgsJson);
+        Assert.Equal(
+            """[[["2","two"],["10","ten"],["4294967294","max-index"],["hasOwnProperty","property"],["__jsObjectId","value"],["01","leading-zero"],["4294967295","not-an-index"]]]""",
+            runtime.ArgsJson);
 
         _ = constructor.CreateAsync(sequence);
         Assert.Equal("[[[\"name\",\"first\"],[\"name\",\"second\"]]]", runtime.ArgsJson);

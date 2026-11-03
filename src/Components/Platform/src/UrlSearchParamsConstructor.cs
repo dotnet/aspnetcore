@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
 using Microsoft.JSInterop;
 
@@ -48,7 +49,12 @@ public sealed class UrlSearchParamsConstructor
     {
         ArgumentNullException.ThrowIfNull(init);
 
-        return CreateCoreAsync([init]);
+        var entries = init
+            .OrderBy(static pair => GetRecordKeyOrder(pair.Key))
+            .Select(static pair => new[] { pair.Key, pair.Value })
+            .ToArray();
+
+        return CreateCoreAsync([entries]);
     }
 
     /// <summary>
@@ -72,4 +78,11 @@ public sealed class UrlSearchParamsConstructor
 
         return new UrlSearchParams(reference);
     }
+
+    private static uint GetRecordKeyOrder(string key)
+        => uint.TryParse(key, NumberStyles.None, CultureInfo.InvariantCulture, out var index) &&
+            index != uint.MaxValue &&
+            index.ToString(CultureInfo.InvariantCulture) == key
+                ? index
+                : uint.MaxValue;
 }
