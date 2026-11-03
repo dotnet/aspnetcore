@@ -39,22 +39,14 @@ assert.equal(
       'tools: ["read", "search", "skill"]\nstrict-tools-list: true\nuser-invocable: false'),
   'The local review-guide-worker profile may differ only by its internal local flags and description.');
 
-assert.match(workflowSource, /bash:\s*\[":\*"\]/);
-assert.match(workflowSource, /^\s+edit:\s*$/m);
-assert.match(workflowSource, /memory:\s*8g/);
+assert.match(workflowSource, /bash:\s*false/);
+assert.match(workflowSource, /edit:\s*false/);
+assert.doesNotMatch(workflowSource, /memory:\s*8g/);
 assert.match(workflowSource, /  roles: \[admin, maintainer, write\]/);
 assert.doesNotMatch(workflowSource, /user-rate-limit/);
-assert.doesNotMatch(workflowSource, /^\s+- (?:containers|defaults|dotnet|github|java|node|powershell|python)\s*$/m);
-assert.match(workflowSource, /- "builds\.dotnet\.microsoft\.com"/);
-assert.match(workflowSource, /- "ci\.dot\.net"/);
-assert.match(workflowSource, /- "pkgs\.dev\.azure\.com"/);
-assert.match(workflowSource, /- "\*\.vsblob\.vsassets\.io"/);
-assert.match(workflowSource, /- "data\.nuget\.org"/);
-assert.match(workflowSource, /- "oneocsp\.microsoft\.com"/);
-assert.match(workflowSource, /- "www\.microsoft\.com"/);
-assert.match(workflowSource, /- playwright/);
-assert.doesNotMatch(workflowSource, /- "(?:github\.com|release-assets\.githubusercontent\.com|storage\.googleapis\.com)"/);
-assert.match(workflowSource, /DOTNET_CLI_TELEMETRY_OPTOUT:\s*"1"/);
+assert.match(workflowSource, /network:\r?\n  allowed:\r?\n    - defaults\r?\n    - github\r?\n    - node/);
+assert.doesNotMatch(workflowSource, /builds\.dotnet\.microsoft\.com|pkgs\.dev\.azure\.com|playwright/);
+assert.doesNotMatch(workflowSource, /DOTNET_CLI_TELEMETRY_OPTOUT/);
 assert.match(workflowSource, /name: Verify restricted review workers/);
 assert.match(workflowSource, /expectedAgentName = 'review-guide-worker'/);
 assert.match(workflowSource, /allowedTools = new Set\(\['glob', 'grep', 'read_file', 'rg', 'search', 'skill', 'view'\]\)/);
@@ -82,48 +74,32 @@ assert.match(
 assert.match(workflowSource, /if \(event\.data\?\.parentToolCallId\)/);
 assert.match(workflowSource, /## agent: `review-guide-worker`/);
 assert.match(workflowSource, /tools: \["read", "search", "skill"\]/);
-assert.match(workflowSource, /worktree=\/tmp\/gh-aw\/review-worktree/);
-assert.match(workflowSource, /update-ref refs\/review\/head "\$REVIEW_HEAD"/);
-assert.match(workflowSource, /refs\/review\/merge-base:refs\/remotes\/review\/merge-base/);
-assert.match(workflowSource, /--depth=1 "\$store"/);
-assert.match(workflowSource, /status --porcelain\)"; then\s+:\s+else/);
+assert.doesNotMatch(workflowSource, /\/tmp\/gh-aw\/review-worktree/);
 assert.match(workflowSource, /chmod -R a\+rX,a-w \/tmp\/gh-aw\/review-bundle/);
-assert.match(workflowSource, /Only after collecting every required guide worker's actual result/);
-assert.match(workflowSource, /write temporary\s+tests or repros/);
-assert.match(workflowSource, /PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1/);
-assert.match(workflowSource, /existing `Microsoft\.Playwright` NuGet dependency/);
-assert.match(workflowSource, /Do not inject package-feed credentials/);
-assert.match(workflowSource, /configured npm feed requires authentication/);
-assert.match(workflowSource, /explicitly\s+select an already-installed system Chrome or Chromium executable/);
+assert.match(workflowSource, /Perform source-only analysis of/);
+assert.match(workflowSource, /Do not execute target code\./);
+assert.match(workflowSource, /stay in your turn and collect each worker's report with `read_agent`/);
 assert.doesNotMatch(workflowSource, /review_execution|review-execution|execution\.json/);
 assert.equal(workflowSource.split(retargetDiagnostic).length - 1, 2);
 assert.doesNotMatch(workflowSource, /The PR head moved or closed after review; safe outputs are blocked\./);
 
-assert.match(workflowLock, /--allow-tool shell/);
-assert.match(workflowLock, /--allow-tool write/);
-assert.match(workflowLock, /--memory-limit 8g/);
-assert.match(workflowLock, /GH_AW_TOOL_TIMEOUT: "?1800"?/);
+assert.doesNotMatch(workflowLock, /--allow-tool shell/);
+assert.doesNotMatch(workflowLock, /--allow-tool write/);
+assert.doesNotMatch(workflowLock, /--memory-limit 8g/);
+assert.match(workflowLock, /GH_AW_TOOL_TIMEOUT: "?120"?/);
 assert.doesNotMatch(workflowLock, /check_rate_limit|GH_AW_RATE_LIMIT|rate_limit_ok/);
 assert.match(workflowLock, /Restore inline sub-agents from activation artifact/);
 assert.match(workflowLock, /Verify restricted review workers/);
-assert.match(workflowLock, /builds\.dotnet\.microsoft\.com/);
-assert.match(workflowLock, /pkgs\.dev\.azure\.com/);
-assert.doesNotMatch(workflowLock, /release-assets\.githubusercontent\.com/);
-assert.doesNotMatch(workflowLock, /storage\.googleapis\.com/);
-assert.doesNotMatch(workflowLock, /api\.nuget\.org/);
-assert.doesNotMatch(workflowLock, /registry\.npmjs\.org/);
-assert.doesNotMatch(workflowLock, /pypi\.org/);
-assert.match(workflowLock, /worktree=\/tmp\/gh-aw\/review-worktree/);
-assert.match(workflowLock, /refs\/review\/head:refs\/remotes\/review\/head/);
-assert.match(workflowLock, /status --porcelain\)\\"; then\\n\s+:\\nelse/);
+assert.doesNotMatch(workflowLock, /builds\.dotnet\.microsoft\.com|pkgs\.dev\.azure\.com/);
+assert.doesNotMatch(workflowLock, /\/tmp\/gh-aw\/review-worktree/);
 assert.doesNotMatch(workflowLock, /review_execution|review-execution|review-build-sandbox/);
 assert.equal(workflowLock.split(retargetDiagnostic).length - 1, 2);
 assert.doesNotMatch(workflowLock, /The PR head moved or closed after review; safe outputs are blocked\./);
 
 assert.match(workflowTests, /- '\.github\/agents\/\*\*'/);
 
-assert.match(skill, /write temporary\s+tests or repros/);
-assert.match(skill, /Temporary validation edits are diagnostic only/);
+assert.match(skill, /Hosted runs and workers must not execute target code, build, test/);
+assert.match(skill, /stay in your turn and\r?\ncollect each worker's actual report with `read_agent` using `wait: true`/);
 assert.match(skill, /Workers remain source-only/);
 assert.match(skill, /`review-guide-worker` custom agent/);
 assert.doesNotMatch(skill, /full-capability\s+`general-purpose` agent/);
@@ -991,4 +967,4 @@ try {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }
 
-console.log('Validated adaptive in-sandbox pull request review capabilities.');
+console.log('Validated source-only hosted pull request review capabilities.');
