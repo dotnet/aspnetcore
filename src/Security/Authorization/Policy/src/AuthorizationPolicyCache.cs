@@ -35,6 +35,11 @@ internal sealed class AuthorizationPolicyCache : IDisposable
         _policyCache.Value![endpoint] = policy;
     }
 
+    public bool TryAdd(Endpoint endpoint, AuthorizationPolicy policy)
+    {
+        return _policyCache.Value!.TryAdd(endpoint, policy);
+    }
+
     public void Dispose()
     {
         _policyCache.Dispose();
