@@ -184,7 +184,7 @@ internal sealed class HostingApplicationDiagnostics
         if (startTimestamp != 0)
         {
             currentTimestamp = Stopwatch.GetTimestamp();
-            var reachedPipelineEnd = GetItemsIfCreated(httpContext)?.ContainsKey(RequestUnhandledKey) == true;
+            var reachedPipelineEnd = TryGetItem(httpContext, RequestUnhandledKey, out _);
 
             // Non-inline
             LogRequestFinished(context, startTimestamp, currentTimestamp);
@@ -274,6 +274,35 @@ internal sealed class HostingApplicationDiagnostics
 
         // Logging Scope is finished with
         context.Scope?.Dispose();
+    }
+
+    private static Endpoint? GetOriginalEndpoint(HttpContext httpContext)
+    {
+        // Same as HttpExtensions.GetOriginalEndpoint, but avoids allocating HttpContext.Items.
+        var endpoint = httpContext.GetEndpoint();
+        if (endpoint == null && TryGetItem(httpContext, HttpExtensions.OriginalEndpointKey, out var e) && e is Endpoint originalEndpoint)
+        {
+            endpoint = originalEndpoint;
+        }
+        return endpoint;
+    }
+
+    private static bool TryGetItem(HttpContext httpContext, object key, out object? value)
+    {
+        if (httpContext.GetType() == typeof(DefaultHttpContext))
+        {
+            // DefaultHttpContext.Items is backed by IItemsFeature and creates it on first access.
+            // Read the feature directly so a request that never used Items doesn't allocate it here.
+            if (httpContext.Features.Get<IItemsFeature>() is not { } itemsFeature)
+            {
+                value = null;
+                return false;
+            }
+
+            return itemsFeature.Items.TryGetValue(key, out value);
+        }
+
+        return httpContext.Items.TryGetValue(key, out value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -600,39 +629,7 @@ internal sealed class HostingApplicationDiagnostics
         }
     }
 
-    private static Endpoint? GetOriginalEndpoint(HttpContext httpContext)
-    {
-        var endpoint = httpContext.GetEndpoint();
-
-        // Some middleware re-execute the middleware pipeline with the HttpContext. Before they do this,
-        // they clear state from context, such as the previously matched endpoint. The original endpoint
-        // is stashed with a known key in HttpContext.Items. Use it as a fallback.
-        if (endpoint is null &&
-            GetItemsIfCreated(httpContext) is { } items &&
-            items.TryGetValue(HttpExtensions.OriginalEndpointKey, out var e) &&
-            e is Endpoint originalEndpoint)
-        {
-            endpoint = originalEndpoint;
-        }
-
-        return endpoint;
-    }
-
     private static string? GetRoute(Endpoint? endpoint) => endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
-
-    private static IDictionary<object, object?>? GetItemsIfCreated(HttpContext httpContext)
-    {
-        // Telemetry only reads values that other components may have added to HttpContext.Items.
-        // Reading DefaultHttpContext.Items when the request hasn't used it would allocate the
-        // items collection and add it to the server's features.
-        if (httpContext.GetType() == typeof(DefaultHttpContext))
-        {
-            // DefaultHttpContext stores Items in IItemsFeature, which is only added to the features when Items is first used.
-            return httpContext.Features.Get<IItemsFeature>()?.Items;
-        }
-
-        return httpContext.Items;
-    }
 
     // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
     // DynamicDependency matches the properties selected in:
