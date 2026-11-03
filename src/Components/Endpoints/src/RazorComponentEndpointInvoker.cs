@@ -95,8 +95,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         var bufferCrossSiteRequest = HttpMethods.IsGet(context.Request.Method) &&
             string.Equals(context.Request.Headers["Sec-Fetch-Site"], "cross-site", StringComparison.OrdinalIgnoreCase) &&
             context.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery) &&
-            context.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider &&
-            context.RequestServices.GetRequiredService<IAntiforgery>().GetTokens(context).CookieToken is not null;
+            context.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider;
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host

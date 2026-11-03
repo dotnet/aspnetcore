@@ -4,11 +4,14 @@
 #nullable enable
 
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +27,95 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.AspNetCore.Components.Endpoints.Tests;
 public class RazorComponentEndpointInvokerTest
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task Invoker_CrossSiteFormFreePage_DoesNotRequireUserIdentifier(bool hasCookie, bool supportsInteractivity)
+    {
+        await using var services = CreateRedirectingPageServices();
+        await using var renderer = new EndpointHtmlRenderer(services, NullLoggerFactory.Instance);
+        var invoker = new RazorComponentEndpointInvoker(renderer, NullLogger<RazorComponentEndpointInvoker>.Instance);
+        var context = CreateRedirectingPageContext(services, typeof(FormFreePage));
+        context.Request.Method = "GET";
+        context.Request.Headers["Sec-Fetch-Site"] = "cross-site";
+        context.Items[MiddlewareInvokedKeys.Antiforgery] = true;
+        if (supportsInteractivity)
+        {
+            context.SetEndpoint(new Endpoint(
+                null,
+                new EndpointMetadataCollection(
+                    new ComponentTypeMetadata(typeof(FormFreePage)),
+                    new RootComponentMetadata(typeof(FormFreePage)),
+                    new ConfiguredRenderModesMetadata([RenderMode.InteractiveServer])),
+                "form-free-page"));
+        }
+        if (hasCookie)
+        {
+            var cookieContext = new DefaultHttpContext { RequestServices = services };
+            cookieContext.Request.Scheme = "https";
+            services.GetRequiredService<IAntiforgery>().GetAndStoreTokens(cookieContext);
+            context.Request.Headers.Cookie = cookieContext.Response.Headers.SetCookie.ToString().Split(';')[0];
+        }
+        context.User = new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "test"));
+        Assert.True(context.User.Identity!.IsAuthenticated);
+        Assert.Null(context.User.Identity.Name);
+        Assert.Empty(context.User.Claims);
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Contains("Form-free page", await ReadBody(context));
+        Assert.Equal(0, context.Response.Headers.SetCookie.Count);
+        Assert.Null(services.GetRequiredService<AntiforgeryStateProvider>().GetAntiforgeryToken());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Invoker_CrossSiteForm_GeneratesTokensWhenRequired(bool hasUserIdentifier)
+    {
+        await using var services = CreateRedirectingPageServices();
+        await using var renderer = new EndpointHtmlRenderer(services, NullLoggerFactory.Instance);
+        var invoker = new RazorComponentEndpointInvoker(renderer, NullLogger<RazorComponentEndpointInvoker>.Instance);
+        var context = CreateRedirectingPageContext(services, typeof(TokenPage));
+        context.Request.Method = "GET";
+        context.Request.Headers["Sec-Fetch-Site"] = "cross-site";
+        context.Items[MiddlewareInvokedKeys.Antiforgery] = true;
+        context.User = new ClaimsPrincipal(new ClaimsIdentity(
+            hasUserIdentifier ? [new Claim(ClaimTypes.Name, "Test user")] : [],
+            authenticationType: "test"));
+
+        if (hasUserIdentifier)
+        {
+            await invoker.Render(context);
+
+            Assert.Contains("__RequestVerificationToken", await ReadBody(context));
+            Assert.NotEqual(0, context.Response.Headers.SetCookie.Count);
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => invoker.Render(context));
+            Assert.Contains("IsAuthenticated", exception.Message);
+        }
+    }
+
+    private sealed class FormFreePage : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, "Form-free page");
+    }
+
+    private sealed class TokenPage : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<AntiforgeryToken>(0);
+            builder.CloseComponent();
+        }
+    }
+
     [Fact]
     public async Task Invoker_RedirectWhileInitializingChildren_DoesNotWriteUninitializedComponentFrames()
     {
