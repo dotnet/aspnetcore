@@ -121,7 +121,7 @@ public class AgentContextTests
     }
 
     [Fact]
-    public async Task SendMessageAsync_LoggingFailure_PreservesErrorState()
+    public async Task SendMessageAsync_LoggingFailure_PropagatesException()
     {
         var processingException = new InvalidOperationException("processing failed");
         var loggerFactory = new ThrowingLoggerFactory();
@@ -136,8 +136,10 @@ public class AgentContextTests
         using var agent = new UIAgent(client, configure: null, loggerFactory);
         using var context = new AgentContext(agent);
 
-        await context.SendMessageAsync("Hello");
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => context.SendMessageAsync("Hello"));
 
+        Assert.Same(loggerFactory.LoggingException, exception);
         Assert.Equal(ConversationStatus.Error, context.Status);
         Assert.Same(processingException, context.Error);
     }
@@ -220,6 +222,8 @@ public class AgentContextTests
 
     private sealed class ThrowingLoggerFactory : ILoggerFactory, ILogger
     {
+        public InvalidOperationException LoggingException { get; } = new("logging failed");
+
         public void AddProvider(ILoggerProvider provider)
         {
         }
@@ -243,7 +247,7 @@ public class AgentContextTests
         {
             if (logLevel == LogLevel.Error)
             {
-                throw new InvalidOperationException("logging failed");
+                throw LoggingException;
             }
         }
     }
