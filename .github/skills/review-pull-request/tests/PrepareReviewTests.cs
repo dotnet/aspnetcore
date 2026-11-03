@@ -674,6 +674,12 @@ public class PrepareReviewTests
             Assert.Equal(count, classified.Included.Count + classified.Context.Count + classified.Skipped.Count);
             Assert.All(classified.Context, link => Assert.Equal("context", link.Role));
             Assert.All(classified.Skipped, link => Assert.NotNull(link.Reason));
+            Assert.All(classified.Included, link =>
+            {
+                var target = File.ReadAllText(Path.Combine(RepositoryRoot, link.Path));
+                var resolved = PrepareReviewProgram.ResolvePolicy(target, link.Anchor!, link.Path);
+                Assert.StartsWith("#", resolved, StringComparison.Ordinal);
+            });
         }
         var architecture = PrepareReviewProgram.GuideLinks(
             File.ReadAllText(Path.Combine(RepositoryRoot, "docs/BlazorComponentsGuidance.md")),
@@ -684,8 +690,15 @@ public class PrepareReviewTests
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Contains("src/Components/AGENTS.md#cross-runtime-design-checkpoint",
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        Assert.Contains("src/Components/AGENTS.md#permanent-regression-test-boundary",
+            architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Contains("src/Components/AGENTS.md#creating-e2e-tests",
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        var permanentBoundary = PrepareReviewProgram.ResolvePolicy(
+            File.ReadAllText(Path.Combine(RepositoryRoot, "src/Components/AGENTS.md")),
+            "permanent-regression-test-boundary",
+            "src/Components/AGENTS.md");
+        Assert.Contains("src/Components/test/E2ETest", permanentBoundary, StringComparison.Ordinal);
         var sample = "- Apply [binding](Policy.md#binding).\n" +
             "- Orient with [architecture](../src/Components/ARCHITECTURE.md).\n" +
             "- Read [design](<../src/Components/DESIGN.md> \"Context\").\n" +
@@ -702,6 +715,7 @@ public class PrepareReviewTests
         Assert.Equal([
             "CONTRIBUTING.md#tests",
             ".github/copilot-instructions.md#running-tests",
+            "src/Components/AGENTS.md#permanent-regression-test-boundary",
             "src/Components/AGENTS.md#creating-e2e-tests",
         ], mixedLinks.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Empty(mixedLinks.Skipped);

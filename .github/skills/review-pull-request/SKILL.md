@@ -263,7 +263,9 @@ new-feature omission claim); the exact assigned issue, API, base-tip, or
 primary-repository contract paths; and, when validation was used, the immutable
 source-bound validation artifacts and their paths, not an assertion that tests passed.
 It may read and search only those assigned frozen inputs, must verify only the supplied
-findings, and must not perform a fresh review.
+findings, and must not perform a fresh review. When packaging each provisional finding
+for the verifier, preserve the worker's source-backed trigger, mechanism, and material
+effect without appending untraced downstream consequences.
 
 Require exactly one verifier result for every assigned candidate and no extra or
 duplicate result. Require `decision`, `downgradeKind`, `dropBasis`,
