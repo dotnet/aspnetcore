@@ -345,6 +345,13 @@ public class Http2KeepAliveTests : Http2TestBase
         await SendDataAsync(1, new byte[16384], false).DefaultTimeout();
         await SendDataAsync(1, new byte[16383], false).DefaultTimeout();
 
+        // Confirm the server has processed all preceding DATA frames before advancing fake time.
+        await SendPingAsync(Http2PingFrameFlags.NONE).DefaultTimeout();
+        await ExpectAsync(Http2FrameType.PING,
+            withLength: 8,
+            withFlags: (byte)Http2PingFrameFlags.ACK,
+            withStreamId: 0).DefaultTimeout();
+
         // Heartbeat that exceeds interval
         TriggerTick(TimeSpan.FromSeconds(1.1));
 
