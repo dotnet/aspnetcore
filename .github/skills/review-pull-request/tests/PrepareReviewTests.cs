@@ -240,9 +240,9 @@ public class PrepareReviewTests
             manifest["exclusions"]![0]!["scope"]!);
         Assert.Equal("## Required clause\n- First line.\n- Second line.",
             await fixture.RequiredTextAsync(manifest["policies"]![0]!["body"]!));
-        Assert.Contains("Running PR code",
+        Assert.Contains("Running PR code, tests, CI, browser workflows",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["scope"]!));
-        Assert.Contains("Workers, hosted runs",
+        Assert.Contains("Workers, hosted runs, and supplied-bundle runs remain source-only",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["reason"]!));
         Assert.Contains("Do not review the excluded scope",
             await fixture.RequiredTextAsync(manifest["exclusions"]![1]!["body"]!));
@@ -531,6 +531,106 @@ public class PrepareReviewTests
     }
 
     [Fact]
+    public async Task KeepsCallerFrozenBaseWhenTheBranchAdvances()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var baseTip = fixture.BaseTip;
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = baseTip,
+            MergeBase = fixture.MergeBase,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+        fixture.BaseTip = fixture.Commit(new() { ["src/Unchanged.cs"] = "ADVANCED_BRANCH\n" }, baseTip);
+
+        var manifest = await fixture.PrepareAsync(options);
+
+        Assert.Equal(baseTip, manifest["target"]!["baseTip"]!.GetValue<string>());
+        Assert.Equal(fixture.MergeBase, manifest["target"]!["mergeBase"]!.GetValue<string>());
+        Assert.Equal("BASE_TIP_DEPENDENCY\n", await fixture.SourceAsync(manifest, "baseTip", "src/Unchanged.cs"));
+        Assert.Equal(0, fixture.BranchRefCalls);
+    }
+
+    [Fact]
+    public async Task RejectsARetargetedPullRequestWithCallerFrozenBase()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = fixture.BaseTip,
+            MergeBase = fixture.MergeBase,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+        fixture.Pull["base"]!["ref"] = "release/different";
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Equal("The live PR base ref differs from the expected frozen base.", exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
+    public async Task RejectsADifferentCallerFrozenMergeBase()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = fixture.Head,
+            BaseTip = fixture.BaseTip,
+            MergeBase = fixture.BaseTip,
+            BaseRef = fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Equal("The comparison differs from the expected frozen merge base.", exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
+    public async Task AcceptsCallerFrozenBaseArgumentsAtTheCommandLine()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var exitCode = await PrepareReviewProgram.RunAsync([
+            "--repo", "owner/product", "--pr", "42", "--head", fixture.Head,
+            "--base-tip", fixture.BaseTip, "--merge-base", fixture.MergeBase,
+            "--base-ref", fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+            "--guidance-root", fixture.GuidanceRoot, "--output", fixture.Output,
+        ], fixture.CreateDependencies());
+
+        Assert.Equal(0, exitCode);
+        var manifest = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "manifest.json")))!;
+        Assert.Equal(fixture.BaseTip, manifest["target"]!["baseTip"]!.GetValue<string>());
+        Assert.Equal(fixture.MergeBase, manifest["target"]!["mergeBase"]!.GetValue<string>());
+        Assert.Equal(0, fixture.BranchRefCalls);
+    }
+
+    [Theory]
+    [InlineData("head")]
+    [InlineData("base-tip")]
+    [InlineData("merge-base")]
+    [InlineData("base-ref")]
+    public async Task RejectsIncompleteCallerFrozenBase(string missing)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var options = fixture.Options with
+        {
+            Head = missing == "head" ? null : fixture.Head,
+            BaseTip = missing == "base-tip" ? null : fixture.BaseTip,
+            MergeBase = missing == "merge-base" ? null : fixture.MergeBase,
+            BaseRef = missing == "base-ref" ? null : fixture.Pull["base"]!["ref"]!.GetValue<string>(),
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.PrepareAsync(options));
+
+        Assert.Contains("A frozen base requires", exception.Message);
+        Assert.Equal(0, fixture.PullRequestCalls);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Fact]
     public async Task IncludesExactRequiredPolicySectionFromSelectedGuidanceSnapshot()
     {
         await using var fixture = await Fixture.CreateAsync();
@@ -710,6 +810,142 @@ public class PrepareReviewTests
             Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
         }
     }
+
+    [Theory]
+    [InlineData("added", "rest")]
+    [InlineData("modified", "rest")]
+    [InlineData("removed", "rest")]
+    [InlineData("renamed", "rest")]
+    [InlineData("rename-only", "rest")]
+    [InlineData("added", "literal")]
+    [InlineData("modified", "payload")]
+    public async Task PreparesBinaryChangesWithoutChangingTheAuthoritativeDiff(string change, string format)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.ConfigureBinaryChange(change, format);
+        var diffText = Utf8NoBom.GetString(fixture.Diff);
+        if (format == "payload")
+        {
+            Assert.Contains("GIT binary patch", diffText);
+        }
+        else if (change != "rename-only")
+        {
+            Assert.Matches(@"(?m)^index [a-f0-9]{12}\.\.[a-f0-9]{12}(?: [0-7]{6})?\nBinary files ", diffText);
+            Assert.DoesNotContain("GIT binary patch", diffText);
+        }
+        if (change is "renamed" or "rename-only")
+        {
+            Assert.Contains("rename from src/Binary.bin\nrename to src/Renamed.bin", diffText);
+        }
+
+        var manifest = await fixture.PrepareAsync();
+
+        var head = fixture.Pull["head"]!["sha"]!.GetValue<string>();
+        Assert.Equal(head, manifest["target"]!["head"]!.GetValue<string>());
+        Assert.Equal(fixture.Git(fixture.Repository, "rev-parse", $"{head}^{{tree}}"),
+            fixture.Git(Path.Combine(fixture.Output, ".objects"), "write-tree"));
+        Assert.Equal(fixture.Diff, await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "diff.patch")));
+        Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(fixture.Diff)),
+            manifest["artifacts"]!["diff.patch"]!.GetValue<string>());
+        Assert.Equal("TEXT_HEAD\r\n", await fixture.SourceAsync(manifest, "head", "src/Control.txt"));
+        if (change != "added")
+        {
+            Assert.Equal(BinaryContents("BEFORE"), await fixture.SourceAsync(manifest, "mergeBase", "src/Binary.bin"));
+        }
+        var headPath = change is "renamed" or "rename-only" ? "src/Renamed.bin" : "src/Binary.bin";
+        if (change == "removed")
+        {
+            Assert.False(File.Exists(Path.Combine(fixture.Output,
+                manifest["sources"]!["head"]!["root"]!.GetValue<string>(), headPath + ".source")));
+        }
+        else
+        {
+            Assert.Equal(BinaryContents(change == "rename-only" ? "BEFORE" : "AFTER"),
+                await fixture.SourceAsync(manifest, "head", headPath));
+        }
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("missing-binary-section", "does not reconstruct the frozen head")]
+    [InlineData("wrong-binary-object", "does not reconstruct the frozen head")]
+    [InlineData("truncated-text-hunk", "corrupt patch")]
+    public async Task RejectsIncompleteOrTamperedRestBinaryDiff(string damage, string diagnostic)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.ConfigureBinaryChange("modified", "rest");
+        var diff = Utf8NoBom.GetString(fixture.Diff);
+        switch (damage)
+        {
+            case "missing-binary-section":
+                Assert.StartsWith("diff --git a/src/Binary.bin ", diff);
+                diff = diff[(diff.IndexOf("\ndiff --git ", StringComparison.Ordinal) + 1)..];
+                break;
+            case "wrong-binary-object":
+                var oldId = fixture.Git(fixture.Repository, "rev-parse", $"{fixture.MergeBase}:src/Binary.bin");
+                var newId = fixture.Git(fixture.Repository, "rev-parse",
+                    $"{fixture.Pull["head"]!["sha"]!.GetValue<string>()}:src/Binary.bin");
+                diff = diff.Replace($"..{newId[..12]}", $"..{oldId[..12]}", StringComparison.Ordinal);
+                break;
+            case "truncated-text-hunk":
+                diff = diff[..diff.LastIndexOf("+TEXT_HEAD", StringComparison.Ordinal)];
+                break;
+        }
+        fixture.Diff = Utf8NoBom.GetBytes(diff);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.PrepareAsync);
+
+        Assert.Contains(diagnostic, exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Theory]
+    [InlineData(false, "unknown")]
+    [InlineData(true, "ambiguous")]
+    public void RejectsUnknownOrAmbiguousBinaryObjectPrefixes(bool ambiguous, string diagnostic)
+    {
+        var knownIds = new HashSet<string>(StringComparer.Ordinal) { new('b', 40) };
+        if (ambiguous)
+        {
+            knownIds.Add(new('a', 40));
+            knownIds.Add(new string('a', 39) + "b");
+        }
+        var diff = Utf8NoBom.GetBytes(
+            "diff --git a/file.bin b/file.bin\nindex aaaa..bbbb 100644\nBinary files a/file.bin and b/file.bin differ\n");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PrepareReviewProgram.ExpandBinaryIndexLines(diff, knownIds));
+
+        Assert.Contains(diagnostic, exception.Message);
+    }
+
+    [Fact]
+    public void BinaryIndexExpansionPreservesOtherBytesAndFullIndexLines()
+    {
+        var oldId = new string('a', 40);
+        var newId = new string('b', 40);
+        var knownIds = new HashSet<string>(StringComparer.Ordinal) { oldId, newId };
+        var text = "diff --git a/text b/text\r\nindex aaaa..bbbb 100644\r\n--- a/text\r\n+++ b/text\r\n" +
+            "@@ -1 +1 @@\r\n-\u00ff\r\n+\u00fe\r\n";
+        var binary = "diff --git a/file.bin b/file.bin\r\nindex aaaa..bbbb\r\n" +
+            "Binary files a/file.bin and b/file.bin differ\r\n";
+        var expected = text + binary.Replace("aaaa..bbbb", $"{oldId}..{newId}", StringComparison.Ordinal);
+        Assert.Equal(Encoding.Latin1.GetBytes(expected), PrepareReviewProgram.ExpandBinaryIndexLines(
+            Encoding.Latin1.GetBytes(text + binary), knownIds));
+
+        foreach (var unchanged in new[]
+        {
+            text,
+            expected,
+            $"diff --git a/file.bin b/file.bin\nindex {oldId}..{newId} 100644\nGIT binary patch\nliteral 1\nA\n",
+        })
+        {
+            var bytes = Encoding.Latin1.GetBytes(unchanged);
+            Assert.Equal(bytes, PrepareReviewProgram.ExpandBinaryIndexLines(bytes, new HashSet<string>()));
+        }
+    }
+
+    private static string BinaryContents(string suffix) => "\0" + new string('b', 2048) + "\n" + suffix + "\n";
 
     [Theory]
     [InlineData(false, "docs/CrossCuttingGuidance.md")]
@@ -907,6 +1143,16 @@ public class PrepareReviewTests
         Assert.Contains(
             "For a native local coordinator shell denial, do not propose `--allow-all-paths`.",
             skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Hosted runs and workers must not execute target code, build, test, clone, check out the PR head, modify files, or call a mutating GitHub API.",
+            skill, StringComparison.Ordinal);
+        Assert.Contains("optional detached-worktree validation described below", skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "Never run target code in the developer checkout or bundle",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "After the `task` calls return, stay in your turn and collect each worker's actual report with `read_agent` using `wait: true`",
+            skill, StringComparison.Ordinal);
         var workerContractStart = skill.IndexOf("PATH: per-guide-worker", StringComparison.Ordinal);
         Assert.True(workerContractStart >= 0);
         var workerContract = skill[workerContractStart..];
@@ -920,17 +1166,23 @@ public class PrepareReviewTests
         var workflow = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
             RepositoryRoot, ".github/workflows/pull-request-review.md"), Utf8NoBom), @"\s+", " ");
         Assert.Contains(
-            "Treat the assignment metadata as producer/checker-validated trust data; do not ask workers to recompute UTF-8 lengths or SHA-256 hashes.",
+            "Apply the skill's review contract unchanged. It owns worker configuration and dispatch, exact assignments and native reads, independent candidate validation, severity, changed-line anchors, feedback disposition, and structured result semantics.",
             workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "Workers must read each assigned non-source file to EOF through native `view` or `read_file` calls",
+            "Do not replace those rules with a second review policy in this adapter.",
             workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "They must page with `view_range` or the equivalent `read_file` offset and limit until the final line; a truncated read is a required-input failure, not completion.",
+            "Every guide worker must use the native `review-guide-worker` profile, whose explicit tool list exposes only reading, searching, and skill loading.",
             workflow, StringComparison.Ordinal);
-        Assert.Contains("must not invoke `bash`, `shell`, or `powershell`", workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "may use native `rg`, `grep`, or `glob` only beneath their assigned frozen source roots",
+            "Workers are source-only and must not receive coordinator-only inputs.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains("Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "After launching workers, stay in your turn and collect each worker's report with `read_agent` using `wait: true` rather than ending your response to wait for a notification.",
+            workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "Do not execute target code.",
             workflow, StringComparison.Ordinal);
     }
 
@@ -1728,6 +1980,7 @@ public class PrepareReviewTests
         public bool FailFetch { get; set; }
         public bool FailApi { get; set; }
         public int PullRequestCalls { get; private set; }
+        public int BranchRefCalls { get; private set; }
         public Action<int>? BeforePullResponse { get; set; }
 
         public static Task<Fixture> CreateAsync(bool components = false)
@@ -1751,6 +2004,61 @@ public class PrepareReviewTests
             if (parent is not null) arguments.AddRange(["-p", parent]);
             arguments.AddRange(["-m", "Fixture"]);
             return Git(Repository, arguments.ToArray());
+        }
+
+        public void ConfigureBinaryChange(string change, string format)
+        {
+            const string oldPath = "src/Binary.bin";
+            var newPath = change is "renamed" or "rename-only" ? "src/Renamed.bin" : oldPath;
+            var originalFiles = new Dictionary<string, object> { ["src/Control.txt"] = "TEXT_BASE\r\n" };
+            if (change != "added")
+            {
+                originalFiles[oldPath] = BinaryContents("BEFORE");
+            }
+            MergeBase = Commit(originalFiles);
+            BaseTip = MergeBase;
+            var headFiles = new Dictionary<string, object>(originalFiles) { ["src/Control.txt"] = "TEXT_HEAD\r\n" };
+            headFiles.Remove(oldPath);
+            if (change != "removed")
+            {
+                headFiles[newPath] = BinaryContents(change == "rename-only" ? "BEFORE" : "AFTER");
+            }
+            Head = Commit(headFiles, MergeBase);
+            Pull["head"]!["sha"] = Head;
+            Pull["changed_files"] = 2;
+            var binaryFile = new JsonObject
+            {
+                ["filename"] = change == "removed" ? oldPath : newPath,
+                ["status"] = change == "rename-only" ? "renamed" : change,
+                ["sha"] = Git(Repository, "rev-parse", $"{(change == "removed" ? MergeBase : Head)}:{newPath}"),
+                ["additions"] = 0,
+                ["deletions"] = 0,
+                ["changes"] = 0,
+            };
+            if (change is "renamed" or "rename-only")
+            {
+                binaryFile["previous_filename"] = oldPath;
+            }
+            Files = new JsonArray(binaryFile, new JsonObject
+            {
+                ["filename"] = "src/Control.txt",
+                ["status"] = "modified",
+                ["sha"] = Git(Repository, "rev-parse", $"{Head}:src/Control.txt"),
+                ["additions"] = 1,
+                ["deletions"] = 1,
+                ["changes"] = 2,
+            });
+            Diff = GitBytes(Repository, ["diff", "--no-ext-diff", "--no-textconv", "-M", "--abbrev=12",
+                .. (format == "payload" ? new[] { "--binary" } : Array.Empty<string>()), MergeBase, Head]);
+            if (format == "literal")
+            {
+                var id = binaryFile["sha"]!.GetValue<string>();
+                Diff = Utf8NoBom.GetBytes(
+                    $"diff --git a/{oldPath} b/{oldPath}\nnew file mode 100644\n" +
+                    $"index 000000000000..{id[..12]}\nBinary files /dev/null and b/{oldPath} differ\n" +
+                    Utf8NoBom.GetString(GitBytes(Repository, "diff", "--no-ext-diff", "--abbrev=12",
+                        MergeBase, Head, "--", "src/Control.txt")));
+            }
         }
 
         public Task<JsonObject> PrepareAsync() => PrepareAsync(Options);
@@ -1863,12 +2171,20 @@ public class PrepareReviewTests
             if (endpoint.Contains("/pulls/42/reviews?", StringComparison.Ordinal)) return Node(Reviews.DeepClone());
             if (endpoint.Contains("/pulls/42/comments?", StringComparison.Ordinal)) return Node(InlineComments.DeepClone());
             if (endpoint.Contains("/files?", StringComparison.Ordinal)) return Node(Files.DeepClone());
-            if (endpoint.Contains("/git/ref/heads/", StringComparison.Ordinal)) return Node(new JsonObject { ["object"] = new JsonObject { ["sha"] = BaseTip } });
-            if (endpoint.Contains("/compare/", StringComparison.Ordinal)) return Node(new JsonObject
+            if (endpoint.Contains("/git/ref/heads/", StringComparison.Ordinal))
             {
-                ["base_commit"] = new JsonObject { ["sha"] = BaseTip },
-                ["merge_base_commit"] = new JsonObject { ["sha"] = MergeBase },
-            });
+                BranchRefCalls++;
+                return Node(new JsonObject { ["object"] = new JsonObject { ["sha"] = BaseTip } });
+            }
+            if (endpoint.Contains("/compare/", StringComparison.Ordinal))
+            {
+                var comparisonBase = endpoint.Split("/compare/", StringSplitOptions.None)[1].Split("...", StringSplitOptions.None)[0];
+                return Node(new JsonObject
+                {
+                    ["base_commit"] = new JsonObject { ["sha"] = comparisonBase },
+                    ["merge_base_commit"] = new JsonObject { ["sha"] = MergeBase },
+                });
+            }
             if (endpoint.EndsWith("/pulls/42", StringComparison.Ordinal))
             {
                 PullRequestCalls++;

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.InternalTesting;
@@ -620,13 +621,13 @@ public class DefaultPageHandlerMethodSelectorTest
         // Arrange
         var descriptor1 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(Post)),
+            MethodInfo = GetHandlerMethod(nameof(Post)),
             HttpMethod = "POST",
         };
 
         var descriptor2 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(PostAsync)),
+            MethodInfo = GetHandlerMethod(nameof(PostAsync)),
             HttpMethod = "POST",
         };
 
@@ -672,14 +673,14 @@ public class DefaultPageHandlerMethodSelectorTest
         // Arrange
         var descriptor1 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(Post)),
+            MethodInfo = GetHandlerMethod(nameof(Post)),
             HttpMethod = "POST",
             Name = "Add",
         };
 
         var descriptor2 = new HandlerMethodDescriptor
         {
-            MethodInfo = GetType().GetMethod(nameof(PostAsync)),
+            MethodInfo = GetHandlerMethod(nameof(PostAsync)),
             HttpMethod = "POST",
             Name = "Add",
         };
@@ -726,12 +727,151 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Equal(message, ex.Message);
     }
 
+    [Fact]
+    public void Select_ReturnsNull_WhenPageHasNoHandlers()
+    {
+        // Arrange
+        var pageContext = new PageContext
+        {
+            ActionDescriptor = new CompiledPageActionDescriptor
+            {
+                HandlerMethods = new List<HandlerMethodDescriptor>(),
+            },
+            RouteData = new RouteData(),
+            HttpContext = new DefaultHttpContext
+            {
+                Request =
+                    {
+                        Method = "GET"
+                    },
+            },
+        };
+        var selector = CreateSelector();
+
+        // Act
+        var actual = selector.Select(pageContext);
+
+        // Assert
+        Assert.Null(actual);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Select_PrefersNamedHandler_WhenUnnamedHandlersAreAmbiguous(bool namedHandlerFirst)
+    {
+        // Arrange
+        var unnamed1 = new HandlerMethodDescriptor
+        {
+            MethodInfo = GetHandlerMethod(nameof(Post)),
+            HttpMethod = "POST",
+        };
+
+        var unnamed2 = new HandlerMethodDescriptor
+        {
+            MethodInfo = GetHandlerMethod(nameof(PostAsync)),
+            HttpMethod = "POST",
+        };
+
+        var named = new HandlerMethodDescriptor
+        {
+            HttpMethod = "POST",
+            Name = "Add",
+        };
+
+        var handlers = namedHandlerFirst ?
+            new List<HandlerMethodDescriptor> { named, unnamed1, unnamed2 } :
+            new List<HandlerMethodDescriptor> { unnamed1, unnamed2, named };
+
+        var pageContext = new PageContext
+        {
+            ActionDescriptor = new CompiledPageActionDescriptor
+            {
+                HandlerMethods = handlers,
+            },
+            RouteData = new RouteData
+            {
+                Values =
+                    {
+                        { "handler", "add" }
+                    }
+            },
+            HttpContext = new DefaultHttpContext
+            {
+                Request =
+                    {
+                        Method = "POST"
+                    },
+            },
+        };
+        var selector = CreateSelector();
+
+        // Act
+        var actual = selector.Select(pageContext);
+
+        // Assert
+        Assert.Same(named, actual);
+    }
+
+    [Fact]
+    public void Select_FuzzyMatchForHead_ThrowsIfMoreThanOneHandlerMatches()
+    {
+        // Arrange
+        var descriptor1 = new HandlerMethodDescriptor
+        {
+            MethodInfo = GetHandlerMethod(nameof(Post)),
+            HttpMethod = "GET",
+        };
+
+        var descriptor2 = new HandlerMethodDescriptor
+        {
+            MethodInfo = GetHandlerMethod(nameof(PostAsync)),
+            HttpMethod = "GET",
+        };
+
+        var pageContext = new PageContext
+        {
+            ActionDescriptor = new CompiledPageActionDescriptor
+            {
+                HandlerMethods = new List<HandlerMethodDescriptor>()
+                    {
+                        descriptor1,
+                        descriptor2,
+                    },
+            },
+            RouteData = new RouteData(),
+            HttpContext = new DefaultHttpContext
+            {
+                Request =
+                    {
+                        Method = "HEAD"
+                    },
+            },
+        };
+        var selector = CreateSelector();
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => selector.Select(pageContext));
+        var methods = descriptor1.MethodInfo + ", " + descriptor2.MethodInfo;
+        var message = "Multiple handlers matched. The following handlers matched route data and had all constraints satisfied:" +
+            Environment.NewLine + Environment.NewLine + methods;
+
+        Assert.Equal(message, ex.Message);
+    }
+
     protected void Post()
     {
     }
 
     protected void PostAsync()
     {
+    }
+
+    private static MethodInfo GetHandlerMethod(string name)
+    {
+        var method = typeof(DefaultPageHandlerMethodSelectorTest).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+        return method;
     }
 
     private static DefaultPageHandlerMethodSelector CreateSelector()
