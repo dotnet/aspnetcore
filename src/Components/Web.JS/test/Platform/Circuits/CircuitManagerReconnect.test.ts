@@ -14,6 +14,58 @@ describe('CircuitManager reconnect', () => {
     jest.restoreAllMocks();
   });
 
+  test('coalesces overlapping reconnect attempts and allows subsequent attempts', async () => {
+    const connection = {
+      state: 'Connected',
+      invoke: jest.fn(() => Promise.resolve(true)),
+    };
+    let completeStartConnection: (connection: typeof connection) => void;
+    const startConnection = jest.fn(() => new Promise<typeof connection>(resolve => completeStartConnection = resolve));
+    const onConnectionUp = jest.fn();
+    const manager = new CircuitManager(
+      {} as never,
+      '',
+      resolveOptions({
+        circuitHandlers: [],
+        reconnectionHandler: { onConnectionDown: jest.fn(), onConnectionUp },
+      }),
+      { log: () => { /* no-op */ } } as never,
+      new JSEventRegistry(),
+    );
+    const internal = manager as unknown as {
+      _circuitId: string;
+      _connection: { state: string };
+      startConnection: typeof startConnection;
+    };
+    internal._circuitId = 'test-circuit-id';
+    internal._connection = { state: 'Disconnected' };
+    internal.startConnection = startConnection;
+
+    const firstReconnect = manager.reconnect();
+    const secondReconnect = manager.reconnect();
+
+    expect(startConnection).toHaveBeenCalledTimes(1);
+
+    expect(completeStartConnection).toBeDefined();
+    completeStartConnection?.(connection);
+
+    await expect(Promise.all([firstReconnect, secondReconnect])).resolves.toEqual([true, true]);
+    expect(connection.invoke).toHaveBeenCalledTimes(1);
+    expect(onConnectionUp).toHaveBeenCalledTimes(1);
+
+    internal._connection = { state: 'Disconnected' };
+    const subsequentReconnect = manager.reconnect();
+
+    expect(startConnection).toHaveBeenCalledTimes(2);
+
+    expect(completeStartConnection).toBeDefined();
+    completeStartConnection?.(connection);
+
+    await expect(subsequentReconnect).resolves.toBe(true);
+    expect(connection.invoke).toHaveBeenCalledTimes(2);
+    expect(onConnectionUp).toHaveBeenCalledTimes(2);
+  });
+
   test('stops the connection when ConnectCircuit throws', async () => {
     const error = new Error('ConnectCircuit failed');
     let stopped = false;

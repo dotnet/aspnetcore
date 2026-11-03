@@ -44,6 +44,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _startPromise?: Promise<boolean>;
 
+  private _reconnectPromise?: Promise<boolean>;
+
   private _renderingFailed = false;
 
   private _disposePromise?: Promise<void>;
@@ -297,10 +299,24 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       throw new Error('Circuit host not initialized.');
     }
 
+    if (this._reconnectPromise) {
+      return this._reconnectPromise;
+    }
+
     if (this._connection!.state === HubConnectionState.Connected) {
       return true;
     }
 
+    const reconnectPromise = this.reconnectCore();
+    this._reconnectPromise = reconnectPromise;
+    try {
+      return await reconnectPromise;
+    } finally {
+      this._reconnectPromise = undefined;
+    }
+  }
+
+  private async reconnectCore(): Promise<boolean> {
     const connection = await this.startConnection();
     this._connection = connection;
 
