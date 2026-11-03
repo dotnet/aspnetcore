@@ -7,6 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>annotations</Nullable>
     <NoWarn>$(NoWarn);CA1852</NoWarn>
+    <DefineConstants>$(DefineConstants);COMPONENTS_SERVER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,9 @@
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
     <Compile Include="$(RepoRoot)src\Components\Endpoints\src\Rendering\Buffering\*.cs" LinkBase="Endpoints\Buffering" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Server" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Server" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Server" />
   </ItemGroup>
 
 </Project>
