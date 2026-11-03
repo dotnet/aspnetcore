@@ -265,7 +265,7 @@ source-bound validation artifacts and their paths, not an assertion that tests p
 It may read and search only those assigned frozen inputs, must verify only the supplied
 findings, and must not perform a fresh review. When packaging each provisional finding
 for the verifier, preserve the worker's source-backed trigger, mechanism, and material
-effect without appending untraced downstream consequences.
+effect without adding or escalating untraced downstream consequences.
 
 Require exactly one verifier result for every assigned candidate and no extra or
 duplicate result. Require `decision`, `downgradeKind`, `dropBasis`,
