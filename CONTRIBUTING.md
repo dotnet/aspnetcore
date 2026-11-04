@@ -47,7 +47,9 @@ To help you be successful we've put together a few simple rules to follow when y
 
 Within that set, we have additionally marked issues that are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with the `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
 
-If you would like to make a contribution to an area not documented here, first open an issue with a description of the change you would like to make and the problem it solves so it can be discussed before a pull request is submitted.
+If you would like to make a contribution to an area not documented here, first open an issue with a description of the change you would like to make and the problem it solves so it can be discussed before a non-draft pull request is submitted or a draft is marked ready for review.
+
+Draft pull requests may be opened without an originating issue link or a separate API proposal issue. Before opening a non-draft pull request or marking a draft ready for review, link an open originating issue and, for public API changes, create and link a separate API proposal issue following the [API review process](/docs/APIReviewProcess.md). API approval covering the final API shape is still required before an RTM release.
 
 ### Before writing code
 
@@ -60,7 +62,7 @@ If you would like to make a contribution to an area not documented here, first o
 
 Before submitting a pull request, make sure that it checks the following requirements:
 
-* You find an existing issue with the "help-wanted" label or discuss with the team to agree on adding a new issue with that label
+* You find an existing issue with the "help-wanted" label or discuss with the team to agree on adding a new issue with that label (may be deferred while the PR is a draft)
 * You post a high-level description of how it will be implemented and receive a positive acknowledgement from the team before getting too committed to the approach or investing too much effort in implementing it.
 * You add test coverage following existing patterns within the codebase
 * Your code matches the existing syntax conventions within the codebase
