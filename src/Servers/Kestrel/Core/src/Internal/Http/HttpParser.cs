@@ -484,14 +484,8 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         if (ch == ByteQuestionMark)
         {
             // We have a query string
-            for (; (uint)offset < (uint)requestLine.Length; offset++)
-            {
-                ch = requestLine[offset];
-                if (ch == ByteSpace)
-                {
-                    break;
-                }
-            }
+            var spaceIndex = requestLine.Slice(offset).IndexOf(ByteSpace);
+            offset = spaceIndex >= 0 ? offset + spaceIndex : requestLine.Length;
         }
 
         var queryEnd = offset;
