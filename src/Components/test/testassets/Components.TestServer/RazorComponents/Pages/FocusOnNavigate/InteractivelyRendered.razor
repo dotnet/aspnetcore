@@ -1,0 +1,8 @@
+@page "/focus-on-navigate/interactive"
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+
+<h1>Interactively rendered element to focus</h1>
+
+<ComponentWithElementToFocus @rendermode="InteractiveServer" />
+
+<input type="text" id="other-focusable-input" placeholder="Other focusable element" />
