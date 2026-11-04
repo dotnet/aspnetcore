@@ -6091,6 +6091,28 @@ public class RendererTest
         }
     }
 
+    [Fact]
+    public async Task DispatchExceptionAsync_AfterRendererIsDisposed_DoesNotThrow()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        renderer.Dispose();
+
+        // Act
+        await component.DispatchAsync(new InvalidTimeZoneException("Test exception"));
+
+        // Assert
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
+    private class DispatchExceptionComponent : ComponentBase
+    {
+        public Task DispatchAsync(Exception exception) => DispatchExceptionAsync(exception);
+    }
+
     private class ComponentThatAwaitsTask : ComponentBase
     {
         [Parameter] public Task TaskToAwait { get; set; }

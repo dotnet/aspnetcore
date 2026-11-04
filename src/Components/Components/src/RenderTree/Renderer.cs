@@ -1180,7 +1180,21 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     }
 
     internal void HandleComponentException(Exception exception, int componentId)
-        => HandleExceptionViaErrorBoundary(exception, GetRequiredComponentState(componentId));
+    {
+        if (_rendererIsDisposed)
+        {
+            return;
+        }
+
+        var componentState = GetOptionalComponentState(componentId);
+        if (componentState is null)
+        {
+            // The component was disposed before the exception was dispatched.
+            return;
+        }
+
+        HandleExceptionViaErrorBoundary(exception, componentState);
+    }
 
     /// <summary>
     /// If the exception can be routed to an error boundary around <paramref name="errorSourceOrNull"/>, do so.
