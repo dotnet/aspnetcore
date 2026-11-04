@@ -8,6 +8,7 @@ using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -45,7 +46,13 @@ builder.Services.AddAuthenticationStateDeserialization(options =>
     };
 });
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+if (new Uri(host.Services.GetRequiredService<NavigationManager>().Uri).Query.Contains("delay-webassembly-startup", StringComparison.Ordinal))
+{
+    await host.Services.GetRequiredService<IJSRuntime>().InvokeVoidAsync("webAssemblyStartup.wait");
+}
+
+await host.RunAsync();
 
 internal static partial class JSImports
 {

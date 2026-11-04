@@ -22,6 +22,60 @@ public class GlobalInteractivityTest(
 {
 
     [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void UsesCurrentLocationAfterWebAssemblyStartup(int navigationCount)
+    {
+        Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
+        js.ExecuteScript("Blazor.addEventListener('enhancedload', () => window.webAssemblyStartup.enhancedLoads++)");
+
+        for (var i = 0; i < Math.Min(navigationCount, 2); i++)
+        {
+            Browser.Click(By.Id("next-page"));
+            Browser.Equal(i == 0 ? "Counter" : "Final", () => Browser.Exists(By.TagName("h1")).Text);
+            Browser.True(() => (long)js.ExecuteScript("return window.webAssemblyStartup.enhancedLoads") > i);
+            if (navigationCount == 3 && i == 0)
+            {
+                js.ExecuteScript("history.replaceState({ ...history.state, userState: 'startup-state' }, '', location.href)");
+            }
+        }
+
+        if (navigationCount == 3)
+        {
+            Browser.Navigate().Back();
+            Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
+            Browser.True(() => (long)js.ExecuteScript("return window.webAssemblyStartup.enhancedLoads") > 2);
+        }
+
+        var expectedHeading = navigationCount switch
+        {
+            0 => "Home",
+            2 => "Final",
+            _ => "Counter",
+        };
+        var expectedUri = Browser.Url;
+
+        js.ExecuteScript("window.webAssemblyStartup.release()");
+
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal(expectedHeading, () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(expectedUri, () => Browser.Exists(By.Id("navigation-uri")).Text);
+        Browser.Equal(navigationCount == 3 ? "startup-state" : "", () => Browser.Exists(By.Id("history-entry-state")).Text);
+
+        Browser.Click(By.Id("increment"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
+
+        Browser.Click(By.Id("next-page"));
+        Browser.Equal(navigationCount == 0 ? "Counter" : "Final", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+    }
+
+    [Theory]
     [InlineData("server", false)]
     [InlineData("webassembly", false)]
     [InlineData("server", true)]
