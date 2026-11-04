@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Static server-side rendering of Razor components over MCP Apps.</Description>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)..\THIRD-PARTY-NOTICES.txt</PackageThirdPartyNoticesFile>
+    <!-- Preserve the resource identity of the shared Components form-mapping implementation. -->
+    <RootNamespace>Microsoft.AspNetCore.Components.Endpoints</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Update="Microsoft.Extensions.AI.Abstractions" Version="10.8.3" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" PrivateAssets="all" />
+    <PackageReference Include="ModelContextProtocol" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InteropWorkingDir>$(MSBuildThisFileDirectory)JS\</InteropWorkingDir>
+  </PropertyGroup>
+
+  <Target Name="IncludeMcpBrowserRuntime" BeforeTargets="ResolveProjectStaticWebAssets" Condition="'$(NoBuild)' != 'true'">
+    <Error Condition="'$(DesignTimeBuild)' != 'true' and !Exists('$(InteropWorkingDir)dist\$(Configuration)\blazor.mcp.js')"
+           Text="The blazor.mcp.js browser runtime is missing. Run npm run build --workspace @microsoft/aspnetcore-components-mcp." />
+    <ItemGroup>
+      <_McpJsOutput Include="$(InteropWorkingDir)dist\$(Configuration)\blazor.mcp.js*" />
+      <Content Include="@(_McpJsOutput)"
+               Link="wwwroot\%(_McpJsOutput.Filename)%(_McpJsOutput.Extension)"
+               ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Content Remove="JS\**\*.ts;JS\package.json;JS\rollup.config.mjs;JS\tsconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\FormMapping\**\*.cs"
+             Exclude="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormDataProvider.cs;$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormValueMapper.cs"
+             LinkBase="FormMapping" />
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" LinkBase="Shared" />
+    <EmbeddedResource Include="$(RepoRoot)src\Components\Endpoints\src\FormMapping\FormDataResources.resx"
+                      Link="FormMapping\FormDataResources.resx" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Mcp.Tests" />
+  </ItemGroup>
+</Project>

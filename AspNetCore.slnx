@@ -105,6 +105,12 @@
     <Project Path="src/Components/JSInterop/src/Microsoft.JSInterop.csproj" />
     <Project Path="src/Components/JSInterop/test/Microsoft.JSInterop.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Components/Mcp/">
+    <Project Path="src/Components/Mcp/src/Microsoft.AspNetCore.Components.Mcp.csproj" />
+    <Project Path="src/Components/Mcp/test/Microsoft.AspNetCore.Components.Mcp.Tests.csproj" />
+    <Project Path="src/Components/Mcp/testassets/Components.McpTestApp/Components.McpTestApp.csproj" />
+    <Project Path="src/Components/Mcp/testassets/Components.McpTestApp.E2E.Tests/Components.McpTestApp.E2E.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Components/Samples/">
     <Project Path="src/Components/Samples/BlazorWebAppGlobal.Client/BlazorWebAppGlobal.Client.csproj" />
     <Project Path="src/Components/Samples/BlazorWebAppGlobal/BlazorWebAppGlobal.csproj" />

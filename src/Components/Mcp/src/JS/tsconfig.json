@@ -1,0 +1,10 @@
+{
+  "extends": "../../../Web.JS/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "rootDir": "../../..",
+    "lib": [ "DOM", "DOM.Iterable", "ES2024" ],
+    "skipLibCheck": true,
+    "noEmitOnError": true
+  }
+}

@@ -1,0 +1,36 @@
+@page "/mcp-redirect"
+@using BlazorMcpProof
+@inject McpFormEffects Effects
+@inject McpScopeProbe Scope
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<form method="post" @formname="redirect" @onsubmit="Submit">
+    <AntiforgeryToken />
+    <input type="hidden" name="Case" value="@ActiveCase" />
+    <button id="redirect-submit" type="submit">Submit and redirect</button>
+</form>
+
+@code {
+    [SupplyParameterFromQuery(Name = "case")]
+    public string? QueryCase { get; set; }
+
+    [SupplyParameterFromForm(Name = "Case")]
+    private string? FormCase { get; set; }
+
+    private string ActiveCase => FormCase ?? QueryCase ?? "redirect";
+
+    protected override void OnInitialized()
+    {
+        Scope.CaseId = ActiveCase;
+        Effects.ComponentCreated(ActiveCase);
+    }
+
+    private void Submit()
+    {
+        Effects.Record(ActiveCase, "redirected");
+        Navigation.NavigateTo($"mcp-redirect-result?case={Uri.EscapeDataString(ActiveCase)}");
+    }
+
+    public void Dispose() => Effects.ComponentDisposed(ActiveCase);
+}

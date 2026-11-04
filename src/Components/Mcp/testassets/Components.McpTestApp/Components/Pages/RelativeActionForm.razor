@@ -1,0 +1,53 @@
+@page "/forms/nested/edit"
+@page "/forms/nested/save"
+@page "/save"
+@using BlazorMcpProof
+@inject NavigationManager Navigation
+@inject McpFormEffects Effects
+
+<p id="relative-location">@Navigation.ToBaseRelativePath(Navigation.Uri)</p>
+<form id="relative-form" method="post" action="@FormAction" @formname="relative-save" @onsubmit="SubmitHandler">
+    <AntiforgeryToken />
+    <input type="hidden" name="Case" value="@ActiveCase" />
+    <button id="relative-submit" type="submit" formaction="@SubmitterAction">Save</button>
+</form>
+<p id="action-result">@result</p>
+
+@code {
+    private string? result;
+
+    [SupplyParameterFromQuery(Name = "mode")]
+    public string? Mode { get; set; }
+
+    [SupplyParameterFromQuery(Name = "case")]
+    public string? QueryCase { get; set; }
+
+    [SupplyParameterFromForm(Name = "Case")]
+    private string? FormCase { get; set; }
+
+    private string ActiveCase => FormCase ?? QueryCase ?? "relative-action";
+    private string? FormAction => Mode switch
+    {
+        "form-action" => "save",
+        "submitter-action" => "forms/nested/save",
+        "empty" => "",
+        _ => null,
+    };
+    private string? SubmitterAction => Mode == "submitter-action" ? "save" : null;
+    private Action SubmitHandler => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?')[0] switch
+    {
+        "save" => SaveAtBase,
+        "forms/nested/save" => SaveAtNestedPath,
+        _ => SaveAtCurrentLocation,
+    };
+
+    private void SaveAtBase() => Record("base-target");
+    private void SaveAtNestedPath() => Record("nested-target");
+    private void SaveAtCurrentLocation() => Record("current-target");
+
+    private void Record(string destination)
+    {
+        result = destination;
+        Effects.Record(ActiveCase, destination);
+    }
+}

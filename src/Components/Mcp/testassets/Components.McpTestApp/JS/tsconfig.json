@@ -1,0 +1,9 @@
+{
+  "extends": "../../../../Shared.JS/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "lib": [ "DOM", "DOM.Iterable", "ES2024" ],
+    "skipLibCheck": true,
+    "noEmitOnError": true
+  }
+}
