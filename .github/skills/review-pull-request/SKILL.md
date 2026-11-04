@@ -133,18 +133,32 @@ its call edge; an unsupported hypothetical is not an incomplete material claim.
 
 ## Review and independent validation
 
-Launch exactly one fresh reviewer worker per routed guide as a full-capability
-`general-purpose` agent, never an explore, fast, or other lightweight agent, explicitly
-using
-`gpt-5.6-sol` (the evaluated configuration). Use `mode: "background"` so the same worker
-can receive follow-ups through `write_agent`. Wait for its completion notification, then
-collect the actual report with `read_agent` using `wait: true`; after each same-worker
-clarification, wait and collect its completed follow-up the same way before synthesis.
-If the user explicitly selected a different
-worker model, report the run as unevaluated. Record each requested agent type/model and
-any runtime-reported values; record unavailable runtime values as `unknown`, which alone
-does not make a guide incomplete. A confirmed mismatch or unavailable agent type/model
-makes that guide `incomplete`. Give each worker the trusted absolute bundle root (the
+Launch exactly one fresh reviewer worker per routed guide as the native
+`review-guide-worker` custom agent, never a built-in `general-purpose`, explore, fast,
+or other agent. Its native profile must expose only `read`, `search`, and `skill`
+(synthetic provider/runtime batching wrappers such as `multi_tool_use.parallel` that
+only batch those allowed tools and grant no shell, edit, network, or delegation
+capability do not count as additional tools); a missing profile or any additional
+worker capability tool makes that guide `incomplete`. Select the
+caller-supplied worker model, or `gpt-5.6-sol` when the caller omitted it; pass that model
+explicitly and independently to every worker, never inheriting the coordinator or
+session model. Pass the caller-supplied reasoning effort explicitly and independently
+to every worker; when omitted, omit the effort setting and record
+`not supplied (runtime default)`. Use `mode: "background"` so the same worker can receive
+follow-ups through `write_agent`. After the `task` calls return, stay in your turn and
+collect each worker's actual report with `read_agent` using `wait: true` (repeating on
+timeout if needed; every model-issued `read_agent` call must pass `wait: true`, while a
+runtime-synthesized `agent_idle` `read_agent` event with a bare-UUID `toolCallId` and
+`since_turn: 0` that delivers the completed `PATH: per-guide-worker` report after
+`subagent.completed` also satisfies collection; never issue a status-only `read_agent`)
+rather than ending your response to wait for a completion notification; after each
+same-worker clarification, collect its completed follow-up the same way before synthesis. Record each
+requested agent type, model, and effort plus any runtime-reported values; record missing
+runtime telemetry as `unknown`, which alone does not make a guide incomplete. A confirmed
+mismatch, runtime rejection, or inability to apply an explicitly requested setting makes
+that guide `incomplete`. Mark a worker-model run other than `gpt-5.6-sol` as
+`UNEVALUATED`; effort alone does not change the evaluation label. Give each worker the
+trusted absolute bundle root (the
 directory containing `manifest.json`), its routed guide's verbatim
 `guides[].assignment` object, the frozen `target` identities, and a role-to-root mapping
 containing only `sources[role].root` for the roles named by
@@ -173,7 +187,7 @@ must read every assigned non-source file to EOF through native `view` or `read_f
 using `view_range` or the equivalent `read_file` offset and limit until the final line.
 It must not invoke `bash`, `shell`, or `powershell`, and may use native `rg`, `grep`, or
 `glob` only beneath its assigned frozen source roots. A worker labels its own report
-`PATH: per-guide-worker` and names only its assigned guide; only the coordinator labels
+with a standalone `PATH: per-guide-worker` line and names only its assigned guide; only the coordinator labels
 the combined result `PATH: per-guide`. Do not label a per-guide worker
 `single-reviewer` or claim that its own guide result completes the entire PR. If a
 worker fails or does not return, record that guide as incomplete rather than
@@ -226,6 +240,73 @@ remain source-only without reporting `INCOMPLETE`. Workers remain source-only. A
 source-only review remains valid; tests and CI claims are supporting evidence, and only
 an eligible recorded local repro is execution proof.
 
+After all coordinator source adjudication and optional validation, assemble the
+provisional `NEW_FINDINGS` verifier set from every non-duplicate concrete candidate
+anchored to a RIGHT-side changed `file:line`, including coordinator-accepted candidates
+and coordinator-disputed, intent-ambiguous, overlap, or contract-dependent candidates
+that were not already disproven by a direct same-path old/new check. Treat coordinator
+uncertainty on `intent`, `overlap`, `oldVsNew`, or `contract` as reason to include the
+candidate in the provisional verifier set rather than pre-filtering it to `UNRESOLVED`
+before verification. If that provisional `NEW_FINDINGS` set is nonempty, launch exactly
+one fresh `review-candidate-verifier` custom agent for the PR, once, using
+`mode: "background"`, stay in your turn, and collect its report with
+`read_agent` using `wait: true` (repeating on timeout if needed; every model-issued `read_agent` call must pass
+`wait: true`, while a runtime-synthesized `agent_idle` `read_agent` delivery after
+`subagent.completed` is also valid; never issue a status-only `read_agent` or a
+`write_agent` follow-up to the verifier). This is a
+coordinator-owned post-gate verifier, not a routed guide worker; it does not change the
+one-worker-per-guide count or any per-guide worker invariant. Use the same explicitly
+selected model and reasoning effort as the guide workers. Give it the trusted bundle
+root; the role-to-root mapping for the frozen `source/<sha>` roots; the exact diff and
+changed-file references; every provisional finding (identifying any incomplete-fix or
+new-feature omission claim); the exact assigned issue, API, base-tip, or
+primary-repository contract paths; and, when validation was used, the immutable
+source-bound validation artifacts and their paths, not an assertion that tests passed.
+It may read and search only those assigned frozen inputs, must verify only the supplied
+findings, and must not perform a fresh review.
+
+Require exactly one verifier result for every assigned candidate and no extra or
+duplicate result. Require `decision`, `downgradeKind`, `dropBasis`,
+`contradictedLink`, every declared `links` field including `intent`, and the remaining
+verifier output fields to match the verifier schema. Map each result independently:
+`KEEP` remains in `NEW_FINDINGS` with `confidence: verified`; `DOWNGRADE` with
+`downgradeKind: intent` remains in `NEW_FINDINGS` with `confidence: question`, with its
+claim phrased as "is this behavior change on <input> intended?"; `DOWNGRADE` with
+`downgradeKind: external`, or `DROP` because a required link is unestablished, records
+the candidate in `UNRESOLVED` with the exact `missingEvidence` and, when anchored to a
+RIGHT-side changed `file:line`, keeps it inline in `NEW_FINDINGS` with
+`confidence: unresolved`, its claim prefixed with `[UNRESOLVED] `, and `Why unresolved:`
+stating the exact `missingEvidence` and verifier rationale; `DROP` because frozen
+source contradicts a required link records it in `DISCARDED` with the exact source
+reason and, when anchored to a RIGHT-side changed `file:line`, keeps it inline in
+`NEW_FINDINGS` with `confidence: discarded`, its claim prefixed with `[DISCARDED] `,
+and `Why discarded:` stating the refuting `file:line` and verifier rationale. Proven
+pre-existing same behavior on the candidate's exact input sequence is recorded in
+`DISCARDED` with the compared old/new source reason and surfaced inline with
+`confidence: discarded` (`[DISCARDED] ` plus `Why discarded:`). Any concrete candidate
+that a worker proposed in `CANDIDATES` or `UNRESOLVED` and that the coordinator directly
+disproves before verification is likewise recorded in `DISCARDED` and, when anchored to a
+RIGHT-side changed `file:line`, kept inline in `NEW_FINDINGS` with `confidence: discarded`
+(`[DISCARDED] ` plus the coordinator's `Why discarded:` reason). The same inline rule applies
+to every candidate evaluated by `review-candidate-verifier`. A routine negative topic
+check recorded only in a worker's own `DISCARDED` section, without being proposed in
+`CANDIDATES` or `UNRESOLVED` or evaluated by the verifier, remains in the summary
+`DISCARDED` section and must not be promoted into `NEW_FINDINGS`. As a deterministic safety net,
+when a contradicted `DROP` names `contradictedLink: contract` but its cited contract is
+head-side, keep the candidate in `NEW_FINDINGS` as an intent question with `confidence:
+question` instead of discarding it. This is an intentional adaptation of the verifier
+contract for skill output. External behavior that remains unestablished is
+`UNRESOLVED`.
+
+For a `KEEP` or an intent question, accept a verifier-corrected changed-line anchor or
+faithful repro when the core claim and effect are fully proven; an inaccurate submitted
+anchor or repro alone is not grounds to discard it. Before returning, check any
+corrected anchor against the RIGHT side of the frozen diff and any corrected repro
+against the verifier's cited frozen proof. A failed, missing, malformed, extra,
+duplicate, or schema-invalid verifier result, or a correction that fails those checks,
+makes the review `INCOMPLETE`. Never retry, substitute another agent, or complete the
+verifier's work in the coordinator.
+
 ## Return result; never publish
 
 The first line is always `STATUS: FINDINGS`, `STATUS: NO_FINDINGS`,
@@ -234,24 +315,36 @@ The first line is always `STATUS: FINDINGS`, `STATUS: NO_FINDINGS`,
 `BASE_TIP_SHA`, `GUIDANCE_SOURCE` (immutable commit or explicitly dirty working tree),
 `GUIDES` (each routed guide and its status, completed in-scope checks, exclusions,
 and unresolved candidates), `UNCOVERED`, `PATH` (`per-guide` or `single-reviewer`),
-`NEW_FINDINGS` (zero to five, ordered by severity and confidence),
+`NEW_FINDINGS` (zero to five, ordered by confidence (`verified`, `question`,
+`unresolved`, `discarded`) and then severity (`P1`, `P2`, `P3`) so unresolved or
+discarded items never displace verified findings or questions),
 `EXISTING_FEEDBACK_COVERAGE` (deduplicated true positives with the existing comment or
-review reference), `UNRESOLVED` (candidate and exact missing evidence), `DISCARDED`
-(claim and precise source reason), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
-`NEW_FINDINGS` entry contains only a one-line claim; `file:line`; severity (`P1` for
+review reference), `UNRESOLVED` (every unresolved candidate and exact missing evidence,
+including any surfaced inline), `DISCARDED`
+(every discarded candidate or worker-discarded routine negative topic check and its
+precise source reason, identifying any candidate surfaced inline), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
+`NEW_FINDINGS` entry contains a one-line claim (prefixed with `[UNRESOLVED] ` when
+`confidence` is `unresolved` or `[DISCARDED] ` when `confidence` is `discarded`); `file:line`; severity (`P1` for
 broken/incorrect common usage or data loss, `P2` for incorrect behavior in a realistic
-narrower scenario, or `P3` for minor/edge or test/doc-only impact); a minimal repro using
-app/user code, CLI commands, or workflow inputs that reaches the affected behavior;
-what goes wrong in at most two lines; and a fix snippet when possible.
+narrower scenario, or `P3` for minor/edge or test/doc-only impact); confidence
+(`verified`, `question`, `unresolved`, or `discarded`); when `confidence` is `unresolved` or
+`discarded`, a one-line `Why unresolved:` or `Why discarded:` summary citing the exact
+missing evidence or refuting `file:line` and old/new comparison; a minimal repro using app/user code, CLI commands, or
+workflow inputs that reaches the affected behavior; what goes wrong in at most two
+lines; and a fix snippet when possible (or `none` when `discarded`). An unresolved or
+discarded `NEW_FINDINGS` entry must come from a candidate proposed in a worker's
+`CANDIDATES` or `UNRESOLVED`, or evaluated by `review-candidate-verifier`; never create
+one solely from a routine check listed only in a worker's `DISCARDED`.
 
 Return `BLOCKED` when a required bundle input is invalid, missing, unreadable,
 mismatched, malformed, empty, or truncated. Return `INCOMPLETE` when a routed worker
 fails or does not return, reports such a required-input failure, or ran with a confirmed
 worker-configuration mismatch. External-contract and non-code metadata gaps stay
 `UNRESOLVED`; they do not cause either status.
-`NO_FINDINGS` is allowed only after every routed guide completes and no new candidate
-survives independent validation, but it must still disclose deduplicated true positives
-and unresolved candidates. Use `FINDINGS` when at least one new finding survives.
+`NO_FINDINGS` is allowed only after every routed guide completes and `NEW_FINDINGS` is
+empty, but it must still disclose deduplicated true positives
+and all unresolved or discarded summary entries. Summary-only routine negative checks
+in `DISCARDED` do not require `FINDINGS`. Use `FINDINGS` when at least one `NEW_FINDINGS` entry is present.
 An excluded scope must remain visible, never be reported as completed. Neither
 `INCOMPLETE` nor `BLOCKED` licenses partial publication; source-only confidence is not
 runtime proof.

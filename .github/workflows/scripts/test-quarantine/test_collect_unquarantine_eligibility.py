@@ -105,6 +105,30 @@ class UnquarantineTests(unittest.TestCase):
         self.assertEqual(set(receipt["pipelines"]), {"84", "87"})
         self.assertEqual(receipt["targets"], [])
 
+    def test_unresolved_consumer_blocks_even_a_first_quarantine_receipt(self):
+        (self.path.parent / "Sample.Tests.csproj").write_text(
+            "<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>"
+            "</PropertyGroup></Project>", encoding="utf-8",
+        )
+        express = self.root / "src/Express.Tests"
+        express.mkdir()
+        (express / "Express.Tests.csproj").write_text(
+            '<Project><PropertyGroup><DefineConstants Condition="$(Unknown)">EXPRESS'
+            '</DefineConstants></PropertyGroup><ItemGroup>'
+            '<Compile Include="../Sample.Tests/SampleTests.cs" /></ItemGroup></Project>',
+            encoding="utf-8",
+        )
+        self.set_source(FIXTURES.source(FIXTURES.QUARANTINE_ATTRIBUTE).replace(
+            "namespace Microsoft.AspNetCore.Tests;",
+            "#if IIS_FUNCTIONALS\nnamespace Microsoft.AspNetCore.Tests;\n"
+            "#else\nnamespace Microsoft.AspNetCore.Express.Tests;\n#endif",
+        ))
+        for target in self.history["targets"]:
+            target.update(status="first-quarantine", introduced_utc="2026-07-01T00:00:00Z")
+        receipt = self.collect()
+        self.assertEqual(receipt["targets"], [])
+        self.assertEqual(receipt["excluded"]["source-consumers-unproven"], 1)
+
     def test_missing_page_aborts_instead_of_emitting_empty_candidates(self):
         provider = Provider()
         provider.fail_build = 2
