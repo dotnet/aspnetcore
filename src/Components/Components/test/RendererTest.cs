@@ -6094,17 +6094,28 @@ public class RendererTest
     [Fact]
     public async Task DispatchExceptionAsync_AfterRendererIsDisposed_DoesNotThrow()
     {
-        // Arrange
         var renderer = new TestRenderer();
         var component = new DispatchExceptionComponent();
         var componentId = renderer.AssignRootComponentId(component);
         await renderer.RenderRootComponentAsync(componentId);
         renderer.Dispose();
+        
+        await component.DispatchAsync(new InvalidTimeZoneException("Test exception"));
+        
+        Assert.Empty(renderer.HandledExceptions);
+    }
 
-        // Act
+    [Fact]
+    public async Task DispatchExceptionAsync_AfterComponentIsRemoved_DoesNotThrow()
+    {
+        var renderer = new TestRenderer();
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(componentId));
+
         await component.DispatchAsync(new InvalidTimeZoneException("Test exception"));
 
-        // Assert
         Assert.Empty(renderer.HandledExceptions);
     }
 
