@@ -19,7 +19,7 @@ public class QueryHelperTests
     [Fact]
     public void ParseQueryDecodesLongNamesAndValues()
     {
-        // Encoded name and value exceed 256 characters so decoding uses a pooled buffer.
+        // Encoded name and value longer than 256 characters with mixed escapes.
         var encodedName = string.Concat(Enumerable.Repeat("n%C3%A9+", 50));
         var encodedValue = string.Concat(Enumerable.Repeat("a%2Bb+c%26", 40));
         var expectedName = string.Concat(Enumerable.Repeat("n\u00e9 ", 50));
@@ -33,19 +33,23 @@ public class QueryHelperTests
     }
 
     [Theory]
-    [InlineData(4, false)]
-    [InlineData(4, true)]
-    [InlineData(256, false)]
-    [InlineData(256, true)]
-    [InlineData(257, false)]
-    [InlineData(257, true)]
-    [InlineData(1000, true)]
-    public void ParseQueryDecodesNamesAndValuesOfVaryingLength(int encodedLength, bool includePlus)
+    [InlineData(4, "%20", " ")]
+    [InlineData(4, "+", " ")]
+    [InlineData(4, "+%20", "  ")]
+    [InlineData(256, "%20", " ")]
+    [InlineData(256, "+", " ")]
+    [InlineData(256, "+%20", "  ")]
+    [InlineData(257, "%20", " ")]
+    [InlineData(257, "+", " ")]
+    [InlineData(257, "+%20", "  ")]
+    [InlineData(1000, "%20", " ")]
+    [InlineData(1000, "+", " ")]
+    [InlineData(1000, "+%20", "  ")]
+    public void ParseQueryDecodesNamesAndValuesOfVaryingLength(int encodedLength, string suffix, string decodedSuffix)
     {
-        // Covers the '%'-only path and the pooled '+' path for short and long inputs, including lengths around 256.
-        var suffix = includePlus ? "+%20" : "%20";
+        // Covers '%'-only, '+'-only and mixed inputs for short and long names/values, including lengths around 256.
         var encoded = new string('x', encodedLength - suffix.Length) + suffix;
-        var expected = new string('x', encodedLength - suffix.Length) + (includePlus ? "  " : " ");
+        var expected = new string('x', encodedLength - suffix.Length) + decodedSuffix;
         Assert.Equal(encodedLength, encoded.Length);
 
         var collection = QueryHelpers.ParseQuery($"?{encoded}={encoded}&a+b=c%2Bd");

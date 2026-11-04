@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
@@ -118,27 +116,19 @@ public class QueryFeature : IQueryFeature
     private static string DecodeToString(ReadOnlyMemory<char> chars)
     {
         var source = chars.Span;
-        if (!source.Contains('+'))
+        if (!source.ContainsAny('%', '+'))
         {
-            return source.Contains('%') ? Uri.UnescapeDataString(source) : chars.ToString();
+            return chars.ToString();
         }
 
-        // Replace '+' and unescape in a pooled buffer so only the final string is allocated.
-        var rented = ArrayPool<char>.Shared.Rent(source.Length);
-        var buffer = rented.AsSpan(0, source.Length);
-        try
+        if (!source.Contains('+'))
         {
-            source.Replace(buffer, '+', ' ');
-            var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
-            Debug.Assert(success);
-            return new string(buffer.Slice(0, unescapedLength));
+            return Uri.UnescapeDataString(source);
         }
-        finally
-        {
-            // Query values may contain sensitive data.
-            buffer.Clear();
-            ArrayPool<char>.Shared.Return(rented);
-        }
+
+        // Uri.UnescapeDataString returns the same instance when there is nothing to unescape.
+        var replaced = string.Create(source.Length, chars, static (destination, chars) => chars.Span.Replace(destination, '+', ' '));
+        return Uri.UnescapeDataString(replaced);
     }
 
     internal struct KvpAccumulator
