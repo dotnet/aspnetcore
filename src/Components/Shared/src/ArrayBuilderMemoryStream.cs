@@ -40,7 +40,7 @@ internal sealed class ArrayBuilderMemoryStream : Stream
         set => throw new NotSupportedException();
     }
 
-    public ArrayBuilder<byte> ArrayBuilder { get; }
+    public ArrayBuilder<byte> ArrayBuilder { get; set; }
 
     /// <inheritdoc />
     public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
