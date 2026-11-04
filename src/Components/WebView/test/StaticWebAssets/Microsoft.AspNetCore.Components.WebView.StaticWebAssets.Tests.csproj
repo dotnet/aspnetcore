@@ -5,6 +5,7 @@
     ship static web assets:
       * Microsoft.AspNetCore.Components.WebView         (primary subject of issue #67374)
       * Microsoft.AspNetCore.Components.WebAssembly
+      * Microsoft.AspNetCore.Components.Server.AutoPause
       * Microsoft.AspNetCore.App.Internal.Assets
       * Microsoft.AspNetCore.Identity.UI
 
@@ -23,6 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Server.AutoPause" />
     <Reference Include="Microsoft.AspNetCore.Components.WebView" />
   </ItemGroup>
 

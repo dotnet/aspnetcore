@@ -177,4 +177,22 @@ public class QuickGridInteractiveCompatTest : ServerTestBase<BasicTestAppServerS
         Assert.Equal("true", status.GetDomAttribute("aria-atomic"));
         Assert.Equal(summaryText, summary.Text);
     }
+
+    [Fact]
+    public void PaginatorNavigationHasAccessibleName()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+
+        Browser.Equal("Pagination", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".first-paginator .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("Pagination", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".top-paginator .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("People pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+
+        Browser.Click(By.Id("toggle-paginator-labelledby"));
+
+        Browser.Equal("More people pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+
+        Browser.Click(By.Id("toggle-paginator-labelledby"));
+
+        Browser.Equal("People pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+    }
 }

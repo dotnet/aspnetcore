@@ -47,6 +47,7 @@ public class ClientCertificateTests : IISFunctionalTestBase
             .WithAllHostingModels();
 
     [ConditionalTheory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/70094")]
     [MemberData(nameof(TestVariants))]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public Task HttpsNoClientCert_NoClientCert(TestVariant variant)
