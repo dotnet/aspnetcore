@@ -1,0 +1,82 @@
+﻿@page "/render-fragment-interactive"
+@using Microsoft.AspNetCore.Components.Web
+
+<h1>RenderFragment crossing interactive boundary</h1>
+
+@{
+    IComponentRenderMode renderMode = Mode switch
+    {
+        "wasm" => new InteractiveWebAssemblyRenderMode(),
+        _ => new InteractiveServerRenderMode(),
+    };
+}
+
+@if (Test == 1)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test1">
+        <p id="simple-text">Hello from SSR</p>
+    </TestContentPackage.RenderFragmentChild>
+}
+
+@if (Test == 2)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test2">
+        <div id="nested-elements">
+            <h2>Title</h2>
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+            </ul>
+        </div>
+    </TestContentPackage.RenderFragmentChild>
+}
+
+@if (Test == 3)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test3">
+        <span id="mixed-content">Text and <strong>bold</strong> and <em>italic</em></span>
+    </TestContentPackage.RenderFragmentChild>
+}
+
+@if (Test == 4)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test4">
+        <div id="with-attributes" class="styled" data-value="42">Attributed content</div>
+    </TestContentPackage.RenderFragmentChild>
+}
+
+@if (Test == 5)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test5">
+        <TestContentPackage.RenderFragmentChild IdSuffix="test5-inner">
+            <p id="nested-child">Nested RenderFragment content</p>
+        </TestContentPackage.RenderFragmentChild>
+    </TestContentPackage.RenderFragmentChild>
+}
+
+@if (Test == 6)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test6">
+        <TestContentPackage.TypedParameterDisplay IdSuffix="typed" Count="42" Score="3.14" IsActive="true" />
+    </TestContentPackage.RenderFragmentChild>
+}
+
+@if (Test == 7)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test7">
+        <div id="keyed-container">
+            @for (var i = 1; i <= 3; i++)
+            {
+                <span @key="i" id="keyed-@i">Item @i</span>
+            }
+        </div>
+    </TestContentPackage.RenderFragmentChild>
+}
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "test")]
+    public int Test { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "mode")]
+    public string Mode { get; set; } = "server";
+}

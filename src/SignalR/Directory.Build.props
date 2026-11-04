@@ -1,0 +1,19 @@
+﻿<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <SignalRSharedSourceRoot>$(MSBuildThisFileDirectory)common\Shared\</SignalRSharedSourceRoot>
+    <SignalRTestUtilsProject>$(MSBuildThisFileDirectory)common\testassets\Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj</SignalRTestUtilsProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" !$(IsTestProject) ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;signalr</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,30 @@
+﻿@page "/WithQueryGuidParameter"
+
+<p>GuidValue: <strong id="value-QueryGuid">@GuidValue</strong></p>
+<p>StringValue: <strong id="value-StringValue">@StringValue</strong></p>
+
+<p>OnParametersSet count: <strong id="param-set-count">@onParametersSetCount</strong></p>
+
+<p>
+    Links:
+    <a href="WithQueryGuidParameter?l=8b7ae9ee-de22-4dd0-8fa1-b31e66abcc79">With GuidValue</a> |
+    <a href="WithQueryParameters/Abc?l=50&l=100&l=-20">Another page with LongValues</a> |
+    <a href="WithQueryParameters/Abc?stringvalue=B">Another page with StringValue</a> |
+</p>
+
+@code
+{
+    private int onParametersSetCount;
+
+    // Use "l" as the query parameter name to test that it doesn't cause problems with
+    // WithQueryParameters.LongValues which is also called "l".
+    // https://github.com/dotnet/aspnetcore/issues/52483
+    [SupplyParameterFromQuery(Name = "l")] public Guid GuidValue { get ; set; }
+
+    [SupplyParameterFromQuery] public string StringValue { get ; set; }
+
+    protected override void OnParametersSet()
+    {
+        onParametersSetCount++;
+    }
+}

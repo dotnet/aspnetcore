@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <MicrosoftWebXdtExtensionsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'Microsoft.Web.Xdt.Extensions', '$(Configuration)', 'net462'))</MicrosoftWebXdtExtensionsDir>
+    <MicrosoftWebXdtExtensionsDir Condition="'$(DotNetBuildPass)' == '2'">$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'Microsoft.Web.Xdt.Extensions', '$(TargetArchitecture)', '$(Configuration)', 'net462'))</MicrosoftWebXdtExtensionsDir>
+    <MicrosoftWebXdtExtensionsPath>$(MicrosoftWebXdtExtensionsDir)Microsoft.Web.Xdt.Extensions.dll</MicrosoftWebXdtExtensionsPath>
+    <BaseIntermediateOutputPath Condition="'$(DotNetBuildPass)' == '2'">$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', '$(TargetArchitecture)'))</BaseIntermediateOutputPath>
+    <IntermediateOutputPath Condition="'$(PlatformName)' == 'AnyCPU' AND '$(DotNetBuildPass)' == '2'">$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', '$(Configuration)'))</IntermediateOutputPath>
+    <IntermediateOutputPath Condition="'$(PlatformName)' != 'AnyCPU' AND '$(DotNetBuildPass)' == '2'">$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', '$(PlatformName)', '$(Configuration)'))</IntermediateOutputPath>
+  </PropertyGroup>
+
+</Project>

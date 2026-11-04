@@ -1,0 +1,8 @@
+﻿@page
+
+@functions {
+    public IActionResult OnGet()
+    {
+        return new RedirectToRouteResult(new { controller = "Redirect", action = "RedirectToPageAction", param = 92 });
+    }
+}

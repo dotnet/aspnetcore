@@ -1,0 +1,16 @@
+﻿<p>
+This component renders two range inputs:
+One with the 'value' attribute specified before the 'min' and 'max' attributees, and one specified after.
+</p>
+
+<p>
+This verifies that the value is applied after all other attributes so it doesn't get incorrectly clamped
+by the default 'min' and 'max' attribute values.
+</p>
+
+<input id="range-value-first" value="@RangeValue" type="range" min="20" max="220" />
+<input id="range-value-last" type="range" min="20" max="220" value="@RangeValue" />
+
+@code {
+    private const int RangeValue = 210;
+}

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Intended for internal testing use only.</Description>
+    <IsShippingPackage>false</IsShippingPackage>
+    <SignAssembly>false</SignAssembly>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Photino.NET" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\WebView\WebView\src\Microsoft.AspNetCore.Components.WebView.csproj" />
+  </ItemGroup>
+
+</Project>

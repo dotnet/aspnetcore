@@ -1,0 +1,101 @@
+<Project>
+
+  <!-- Make sure the settings files get copied to the test output folder. -->
+  <ItemGroup>
+    <None Update="e2eTestSettings*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Update="e2eTestSettings*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target
+    Name="WarnSeleniumNotSupported"
+    BeforeTargets="Build"
+    Condition="'$(SeleniumE2ETestsSupported)' != 'true'">
+    <Message Importance="High" Text="Selenium tests are not supported for OS '$(OS)' and architecture '$(TargetArchitecture)'." />
+  </Target>
+
+  <!-- Running prerequisites -->
+
+  <Target Name="EnsurePrerequisites" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" BeforeTargets="Build">
+    <!-- JAVA -->
+    <!-- https://github.com/dotnet/aspnetcore-internal/issues/2555 -->
+    <Message Importance="High" Text="Ensuring JAVA is available" />
+    <Exec Command="java -version" />
+    <Message Importance="High" Text="JAVA is available on the PATH" />
+  </Target>
+
+  <!-- Resolve content roots at build time -->
+
+  <Target Name="_ResolveTestProjectReferences" DependsOnTargets="ResolveReferences">
+    <PropertyGroup>
+      <_DefaultProjectRoot>$([System.IO.Path]::GetFullPath($(_DefaultProjectFilter)))</_DefaultProjectRoot>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ContentRootProjectReferences
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND $([System.String]::Copy(%(ReferencePath.MSBuildSourceProjectFile)).StartsWith('$(_DefaultProjectRoot)'))" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="_ResolveTestProjectReferences">
+    <ItemGroup>
+      <_ContentRootMetadata
+        Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
+        Include="%(_ContentRootProjectReferences.Identity)"
+        AssemblyName="%(_ContentRootProjectReferences.FusionName)"
+        ContentRootPath="$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
+        ContentRootTest="$([System.IO.Path]::GetFileName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
+        Priority="0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AssemblyAttribute
+        Condition=" '%(_ContentRootMetadata.Identity)' != '' "
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>TestAssemblyApplication[%(_ContentRootMetadata.AssemblyName)]</_Parameter1>
+        <_Parameter2>%(_ContentRootMetadata.ContentRootPath)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AddSeleniumSupportedMetadataAttribute" BeforeTargets="GetAssemblyAttributes">
+    <PropertyGroup>
+      <_SeleniumE2ETestsSupportedAttributeValue>false</_SeleniumE2ETestsSupportedAttributeValue>
+      <_SeleniumE2ETestsSupportedAttributeValue Condition="'$(SeleniumE2ETestsSupported)' == 'true'">true</_SeleniumE2ETestsSupportedAttributeValue>
+    </PropertyGroup>
+    <ItemGroup>
+      <AssemblyAttribute
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.Selenium.Supported</_Parameter1>
+        <_Parameter2>$(_SeleniumE2ETestsSupportedAttributeValue)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AddProcessTrackingMetadataAttribute" BeforeTargets="GetAssemblyAttributes">
+    <MakeDir Directories="$(SeleniumProcessTrackingFolder)" />
+    <ItemGroup>
+      <AssemblyAttribute
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.Selenium.ProcessTracking</_Parameter1>
+        <_Parameter2>$(SeleniumProcessTrackingFolder)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+    <MakeDir Directories="$(SauceConnectProcessTrackingFolder)" />
+    <ItemGroup>
+      <AssemblyAttribute
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.SauceConnect.ProcessTracking</_Parameter1>
+        <_Parameter2>$(SauceConnectProcessTrackingFolder)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_EnsureSeleniumScreenShotsFolder" BeforeTargets="Build">
+    <MakeDir Directories="$(SeleniumScreenShotsFolderPath)" />
+  </Target>
+
+</Project>

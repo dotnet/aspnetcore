@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor 视图",
+  "description": "空的 Razor 视图",
+  "postActions/openInEditor/description": "在编辑器中打开创建的视图"
+}

@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Form that binds guid</h2>
+
+<form data-enhance name="bind-guid" method="post" @onsubmit="() => _submitted = true" @formname="bind-guid">
+    <input type="text" name="Id" value="@(_attemptedValue ?? Id.ToString())" />
+    <input id="send-guid" type="submit" value="Send" />
+    <AntiforgeryToken />
+</form>
+
+@if (_submitted)
+{
+    var errors = Context.GetErrors("bind-guid", nameof(Id))?.ErrorMessages;
+    if (errors == null)
+    {
+        <p id="pass-guid">Your GUID is @Id!</p>
+    }
+    else
+    {
+        <p>There were errors:</p>
+        <ul id="errors">
+            @foreach (var error in errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    }
+}
+@code {
+    bool _submitted = false;
+    string _attemptedValue = null;
+    IReadOnlyList<FormattableString> _errors;
+
+    [SupplyParameterFromForm(FormName = "bind-guid")] public Guid Id { get; set; } = Guid.NewGuid();
+
+    [CascadingParameter] public FormMappingContext Context { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _errors = Context.GetErrors("bind-guid", nameof(Id))?.ErrorMessages;
+        if (_errors != null)
+        {
+            _attemptedValue = Context.GetAttemptedValue("bind-guid", nameof(Id));
+        }
+    }
+}

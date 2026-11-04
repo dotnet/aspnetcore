@@ -1,0 +1,15 @@
+<h2>Category: Laptops</h2>
+<h2>Region: North</h2>
+
+    <h2>Cached content</h2>
+    Locations closest to your locale:
+
+NorthWest Store
+<div>CorrelationId in View Component: 1</div>
+
+    <partial-title>Listing items</partial-title>
+
+Cached Content for Laptops
+<div>CorrelationId in Partial: 1</div>
+
+    <div>CorrelationId in Splash: 1</div>

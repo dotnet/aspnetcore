@@ -1,0 +1,90 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "CustomEncryptorSample",
+      "type": "coreclr",
+      "preLaunchTask": "CustomEncryptorSample-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/CustomEncryptorSample/Debug/${env:TARGET}/CustomEncryptorSample.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+    },
+    {
+      "name": "EntityFrameworkCoreSample",
+      "type": "coreclr",
+      "preLaunchTask": "EntityFrameworkCoreSample-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/EntityFrameworkCoreSample/Debug/${env:TARGET}/EntityFrameworkCoreSample.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+    },
+    {
+      "name": "KeyManagementSample",
+      "type": "coreclr",
+      "preLaunchTask": "KeyManagementSample-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/KeyManagementSample/Debug/${env:TARGET}/KeyManagementSample.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+    },
+    {
+      "name": "NonDISample",
+      "type": "coreclr",
+      "preLaunchTask": "NonDISample-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/NonDISample/Debug/${env:TARGET}/NonDISample.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+    },
+    {
+      "name": "Redis",
+      "type": "coreclr",
+      "preLaunchTask": "Redis-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/Redis/Debug/${env:TARGET}/Redis.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+    }
+  ]
+}

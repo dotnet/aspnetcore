@@ -1,0 +1,23 @@
+﻿@page "/persistent-state/counter"
+
+<TestContentPackage.PersistentComponents.ComponentWithPersistentState @rendermode="@RenderModeHelper.GetRenderMode(_renderMode)"/>
+
+
+@code{
+    [Parameter, SupplyParameterFromQuery(Name = "renderMode")]
+    public string? RenderModeStr { get; set; }
+
+    private RenderModeId _renderMode;
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(RenderModeStr))
+        {
+            _renderMode = RenderModeHelper.ParseRenderMode(RenderModeStr);
+        }
+        else
+        {
+            throw new ArgumentException("RenderModeStr cannot be null or empty", nameof(RenderModeStr));
+        }
+    }
+}

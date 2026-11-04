@@ -1,0 +1,29 @@
+﻿<?xml version="1.0"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+
+  <xdt:Import path="%XDT_EXTENSIONPATH%\Microsoft.Web.Xdt.Extensions.dll"
+              namespace="Microsoft.Web.Xdt.Extensions" />
+
+    <system.webServer xdt:Transform="InsertIfMissing">
+      <runtime xdt:Transform="InsertIfMissing" >
+        <environmentVariables xdt:Transform="InsertIfMissing">
+          <add name="PATH" value="%XDT_EXTENSIONPATH%;%USERPROFILE%\.dotnet\tools;%PATH%" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
+          <add name="DOTNET_SKIP_FIRST_TIME_EXPERIENCE" value="1" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
+          <add name="DOTNET_ROOT" value="%XDT_EXTENSIONPATH%" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
+        </environmentVariables>
+      </runtime>
+
+      <globalModules>
+        <add name="AspNetCoreModuleV2" image="%XDT_EXTENSIONPATH%\ancm\aspnetcorev2.dll" xdt:Locator="Match(name)" xdt:Transform="Replace" />
+      </globalModules>
+    </system.webServer>
+
+    <location>
+      <system.webServer>
+        <modules>
+          <add name="AspNetCoreModuleV2" lockItem="true" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing" />
+        </modules>
+      </system.webServer>
+    </location>
+
+</configuration>

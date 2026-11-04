@@ -1,0 +1,24 @@
+﻿@model HtmlGenerationWebSite.Models.ValidationProviderAttributeModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<body>
+    <form asp-controller="HtmlGeneration_ValidationProviderAttribute" asp-action="Index">
+        <div>
+            <label asp-for="FirstName"></label>
+            <input asp-for="FirstName" type="text" class="form-control" />
+            <span asp-validation-for="FirstName"></span>
+        </div>
+
+        <div>
+            <label asp-for="LastName"></label>
+            <input asp-for="LastName" type="text" class="form-control" />
+            <span asp-validation-for="LastName"></span>
+        </div>
+
+        <div asp-validation-summary="All"></div>
+        <div asp-validation-summary="ModelOnly"></div>
+        <input type="submit" />
+    </form>
+</body>
+</html>

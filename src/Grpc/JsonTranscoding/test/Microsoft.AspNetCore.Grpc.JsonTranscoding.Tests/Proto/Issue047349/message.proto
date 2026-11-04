@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message Issue047349Message {
+  int32 a = 1 [json_name = 'b'];
+  int32 b = 2 [json_name = 'a'];
+  int32 c = 3 [json_name = 'd'];
+}

@@ -1,0 +1,35 @@
+#nullable enable
+const Microsoft.AspNetCore.Server.IIS.IISServerDefaults.AuthenticationScheme = "Windows" -> string!
+Microsoft.AspNetCore.Builder.IISServerOptions
+Microsoft.AspNetCore.Builder.IISServerOptions.AllowSynchronousIO.get -> bool
+Microsoft.AspNetCore.Builder.IISServerOptions.AllowSynchronousIO.set -> void
+Microsoft.AspNetCore.Builder.IISServerOptions.AuthenticationDisplayName.get -> string?
+Microsoft.AspNetCore.Builder.IISServerOptions.AuthenticationDisplayName.set -> void
+Microsoft.AspNetCore.Builder.IISServerOptions.AutomaticAuthentication.get -> bool
+Microsoft.AspNetCore.Builder.IISServerOptions.AutomaticAuthentication.set -> void
+Microsoft.AspNetCore.Builder.IISServerOptions.IISServerOptions() -> void
+Microsoft.AspNetCore.Builder.IISServerOptions.MaxRequestBodyBufferSize.get -> int
+Microsoft.AspNetCore.Builder.IISServerOptions.MaxRequestBodyBufferSize.set -> void
+Microsoft.AspNetCore.Builder.IISServerOptions.MaxRequestBodySize.get -> long?
+Microsoft.AspNetCore.Builder.IISServerOptions.MaxRequestBodySize.set -> void
+Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions
+Microsoft.AspNetCore.Http.Features.IServerVariablesFeature (forwarded, contained in Microsoft.AspNetCore.Http.Features)
+Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Features)
+Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Features)
+Microsoft.AspNetCore.Server.IIS.BadHttpRequestException
+Microsoft.AspNetCore.Server.IIS.BadHttpRequestException.StatusCode.get -> int
+Microsoft.AspNetCore.Server.IIS.HttpContextExtensions
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppConfigPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationId.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationPhysicalPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationVirtualPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolConfigFile.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolId.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.IISVersion.get -> System.Version!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteId.get -> uint
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteName.get -> string!
+Microsoft.AspNetCore.Server.IIS.IISServerDefaults
+Microsoft.AspNetCore.Server.IIS.IISServerDefaults.IISServerDefaults() -> void
+static Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions.UseIIS(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Server.IIS.HttpContextExtensions.GetIISServerVariable(this Microsoft.AspNetCore.Http.HttpContext! context, string! variableName) -> string?

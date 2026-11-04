@@ -1,0 +1,12 @@
+﻿<div style="outline: 1px solid black;">
+    <strong>Nested query parameters:</strong>
+    <p>Nested IntValue: <strong id="value-nested-QueryInt">@IntValue</strong></p>
+    <p>Nested LongValues: <strong id="value-nested-LongValues">@LongValues.Length values (@string.Join(", ", LongValues.Select(x => x.ToString()).ToArray()))</strong></p>
+</div>
+
+@code
+{
+    [SupplyParameterFromQuery] public int IntValue { get ; set; }
+
+    [SupplyParameterFromQuery(Name = "l")] public long[] LongValues { get ; set; }
+}

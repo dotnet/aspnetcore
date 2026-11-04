@@ -1,0 +1,17 @@
+<div id="runtime-mode"
+     data-dynamic-code-supported="@(RuntimeFeature.IsDynamicCodeSupported ? "true" : "false")"
+     data-circuit-attached="@(_circuitAttached ? "true" : "false")">
+</div>
+
+@code {
+    private bool _circuitAttached;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _circuitAttached = true;
+            StateHasChanged();
+        }
+    }
+}

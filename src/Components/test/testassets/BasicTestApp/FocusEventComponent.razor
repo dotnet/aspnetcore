@@ -1,0 +1,55 @@
+﻿@using System.Collections.Generic
+
+<h2>Focus and activation</h2>
+
+<p @onfocusin="OnFocusEvent" @onfocusout="OnFocusEvent">
+    Input: <input id="input" type="text" @onfocus="OnFocusEvent" @onblur="OnFocusEvent" />
+</p>
+<p>
+    Output: <span id="output">@message</span>
+</p>
+<p>
+    <button @onclick="Clear">Clear</button>
+</p>
+
+<p>
+    A button that disappears when clicked:
+    @if (showButtonThatDisappearsWhenClicked)
+    {
+        <button id="button-that-disappears" @onfocusout="DisappearingButtonFocusOut" @onclick="MakeButtonDisappear">
+            Click me
+        </button>
+    }
+
+    Received focus out: <strong id="button-received-focus-out">@buttonReceivedFocusOut</strong>
+</p>
+
+<p>
+    Another input (to distract you) <input id="other" />
+</p>
+
+@code {
+    bool showButtonThatDisappearsWhenClicked = true;
+    bool buttonReceivedFocusOut;
+    string message;
+
+    void OnFocusEvent(FocusEventArgs e)
+    {
+        message += $"{e.Type},";
+    }
+
+    void Clear()
+    {
+        message = string.Empty;
+    }
+
+    void MakeButtonDisappear()
+    {
+        showButtonThatDisappearsWhenClicked = false;
+    }
+
+    void DisappearingButtonFocusOut()
+    {
+        buttonReceivedFocusOut = true;
+    }
+}

@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC ViewImports",
+  "description": "Pagina di importazione di una visualizzazione MVC",
+  "symbols/namespace/description": "spazio dei nomi per il codice generato",
+  "postActions/openInEditor/description": "Apre _ViewImports.cshtml nell'editor"
+}

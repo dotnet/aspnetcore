@@ -1,0 +1,21 @@
+﻿@page "/forms/antiforgery-server-interactive"
+
+@using Microsoft.AspNetCore.Components.Forms
+
+@rendermode RenderMode.InteractiveServer
+
+<h3>FormRenderedWithServerInteractivityCanUseAntiforgeryToken</h3>
+
+<form action="api/antiforgery-form" method="post">
+    <AntiforgeryToken />
+    <input type="text" id="value" name="value" />
+    @if (HttpContext is null)
+    {
+        <input id="send" type="submit" value="Send" />
+    }
+</form>
+
+@code {
+    [CascadingParameter]
+    HttpContext? HttpContext { get; set; }
+}

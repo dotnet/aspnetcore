@@ -1,0 +1,37 @@
+﻿@using HtmlGenerationWebSite.Components
+@using HtmlGenerationWebSite.Models
+@using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+@model ViewModel
+
+@{
+    var metadata = ViewData.ModelMetadata;
+}
+
+<div class="row">
+    <h4>At Model index</h4>
+    <div class="col-md-3">MetadataKind: '@metadata.MetadataKind'</div>
+    <div class="col-md-3">ModelType: '@metadata.ModelType.Name'</div>
+    @if (metadata.MetadataKind == ModelMetadataKind.Property)
+    {
+        <div class="col-md-3">PropertyName: '@metadata.PropertyName'</div>
+    }
+</div>
+
+<div class="row">
+    @Html.DisplayFor(m => m)
+</div>
+<div class="row">
+    @(await Html.PartialAsync("PartialForViewModel"))
+</div>
+<div class="row">
+    @(await Component.InvokeAsync<CheckViewData>())
+</div>
+<div class="row">
+    @Html.DisplayFor(m => m.Integer)
+</div>
+<div class="row">
+    @Html.DisplayFor(m => m.NullableLong)
+</div>
+<div class="row">
+    @Html.DisplayFor(m => m.Template)
+</div>

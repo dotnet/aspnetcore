@@ -1,0 +1,4 @@
+wwwroot/lib/
+
+# Sauce Connect proxy logs.
+sc-*.log

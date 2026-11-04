@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor ページ",
+  "description": "ページ モデルのある/ない Razor ページ",
+  "symbols/namespace/description": "生成されたコードの名前空間",
+  "symbols/no-pagemodel/description": "PageModel なしでページを作成する",
+  "symbols/no-pagemodel/displayName": "PageModel を除外する",
+  "postActions/openInEditor/description": "エディターで Index.cshtml を開きます"
+}

@@ -1,0 +1,8 @@
+parameters:
+  is1ESPipeline: false
+
+variables:
+  - ${{ if eq(parameters.is1ESPipeline, 'true') }}:
+    - template: /eng/common/templates-official/variables/pool-providers.yml
+  - ${{ else }}:
+    - template: /eng/common/templates/variables/pool-providers.yml

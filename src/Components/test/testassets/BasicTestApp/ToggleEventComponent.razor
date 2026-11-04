@@ -1,0 +1,24 @@
+﻿<div>
+    <p>
+        Output: <span id="output">@message</span>
+    </p>
+
+
+    <p>Open the details.</p>
+
+    <details id="details-toggle" @ontoggle="OnToggle">
+        <summary>Summary</summary>
+        <p></p>
+        <p>Detailed content</p>
+    </details>
+
+</div>
+
+@code {
+    string message { get; set; }
+
+    void OnToggle(EventArgs e)
+    {
+        message += "ontoggle,";
+    }
+}

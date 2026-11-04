@@ -1,0 +1,14 @@
+parameters:
+  PackageVersion: unused
+  BuildDropPath: unused
+  PackageName: unused
+  ManifestDirPath: unused
+  IgnoreDirectories: unused
+  sbomContinueOnError: unused
+  is1ESPipeline: unused
+  publishArtifacts: unused
+
+steps:
+- script: |
+    echo "##vso[task.logissue type=warning]Including generate-sbom.yml is deprecated, SBOM generation is handled 1ES PT now. Remove this include."
+  displayName: Issue generate-sbom.yml deprecation warning

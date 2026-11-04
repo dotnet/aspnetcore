@@ -1,0 +1,27 @@
+﻿@page "/stopping-renderer"
+@inject NavigationManager NavigationManager
+
+<p>Parent content</p>
+<AsyncComponent @rendermode="@RenderModeHelper.GetRenderMode(CurrentRenderMode)" Delay="@Delay" />
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "destination")]
+    public string Destination { get; set; } = string.Empty;
+
+    [Parameter, SupplyParameterFromQuery(Name = "renderMode")]
+    public string? RenderModeStr { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "delay")]
+    public int Delay { get; set; }
+
+    private RenderModeId CurrentRenderMode => RenderModeHelper.ParseRenderMode(RenderModeStr);
+
+    protected override Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(Destination))
+        {
+            NavigationManager.NavigateTo(Destination);
+        }
+        return Task.CompletedTask;
+    }
+}

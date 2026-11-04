@@ -1,0 +1,54 @@
+﻿@page "/forms/default-form-bound-multiple-primitive-parameters-changed-names"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form with bound parameter</h2>
+
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="myform">
+    <input type="text" name="UpdatedParameter" value="@(_attemptedParameterValue ?? Parameter.ToString())" />
+    <input type="text" name="UpdatedOtherParameter" value="@(_attemptedOtherValue ?? OtherParameter.ToString())" />
+    <input id="send" type="submit" value="Send" />
+    <AntiforgeryToken />
+</form>
+
+@if (_submitted)
+{
+    if (_errors.Count == 0)
+    {
+        <p id="ParameterValue">Your number is @Parameter!</p>
+        <p id="OtherParameterValue">Your other value is @OtherParameter!</p>
+    }
+    else
+    {
+        <p>There were errors:</p>
+        <ul id="errors">
+            @foreach (var error in _errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    }
+}
+@code {
+    bool _submitted = false;
+    string _attemptedParameterValue = null;
+    string _attemptedOtherValue = null;
+
+    IList<FormattableString> _errors;
+
+    [SupplyParameterFromForm(Name = "UpdatedParameter")] public int Parameter { get; set; } = 0;
+    [SupplyParameterFromForm(Name = "UpdatedOtherParameter")] public bool OtherParameter { get; set; } = false;
+
+    [CascadingParameter] public FormMappingContext Context { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _errors = (Context.GetErrors("UpdatedParameter")?.ErrorMessages ?? Array.Empty<FormattableString>())
+            .Concat(Context.GetErrors("UpdatedOtherParameter")?.ErrorMessages ?? Array.Empty<FormattableString>()).ToList();
+
+        if (_errors.Count > 0)
+        {
+            _attemptedParameterValue = Context.GetAttemptedValue("UpdatedParameter");
+            _attemptedOtherValue = Context.GetAttemptedValue("UpdatedOtherParameter");
+        }
+    }
+}

@@ -1,0 +1,95 @@
+﻿@inject PersistentComponentState AppState
+@inject PreserveStateService PreserveService
+@implements IDisposable
+@using System.Text
+@using System.Buffers
+
+<p id="@($"state-{State}")">@State: @_state</p>
+
+@if (_restored)
+{
+    <p id="@($"restored-{State}")">true</p>
+}
+
+<p>Service state at @State render time: <span id="@($"service-{State}")">@PreserveService.Guid</span></p>
+
+@* This section proves that state is only available during the first render and its gone afterwards. *@
+@if(ExtraState != null)
+{
+    <button id="@($"button-{ExtraState}")" @onclick="DisplayExtraState">DisplayExtraState</button>
+    @if(_extraStateAvailable == true)
+    {
+        <p>Extra state available: true</p>
+        <p>Extra state: <span id="@($"extra-{ExtraState}")">@_extraState</span></p>
+    }
+    else if(_extraStateAvailable == null)
+    {
+        <p>Extra state available: unknown</p>
+    }
+    else
+    {
+        <p>Extra state available: false</p>
+        <p>Extra state: <span id="@($"extra-{ExtraState}")">@_extraState</span></p>
+    }
+}
+
+@code{
+    [Parameter] public string State { get; set; }
+
+    [Parameter] public string ExtraState { get; set; }
+
+    private string _state = null;
+    private string _extraState = null;
+    private bool _restored;
+    private bool? _extraStateAvailable;
+    private PersistingComponentStateSubscription _registration;
+
+    protected override void OnInitialized()
+    {
+        if (AppState.TryTakeFromJson<string>(State, out var preserved))
+        {
+            _state = preserved;
+            _restored = true;
+        }
+        else
+        {
+            if(ExtraState != null)
+            {
+                _extraStateAvailable = true;
+            }
+            _state = Guid.NewGuid().ToString();
+            _extraState = Guid.NewGuid().ToString();
+            _registration = AppState.RegisterOnPersisting(PersistState);
+
+            Task PersistState()
+            {
+                AppState.PersistAsJson(State, _state);
+                if(ExtraState != null)
+                {
+                    AppState.PersistAsJson(ExtraState, _extraState);
+                }
+
+                return Task.CompletedTask;
+            }
+        }
+    }
+
+    public void DisplayExtraState()
+    {
+        if (AppState.TryTakeFromJson<string>(ExtraState, out var extraState))
+        {
+            _extraStateAvailable = true;
+            _extraState = extraState;
+        }
+        else
+        {
+            _extraStateAvailable = false;
+            _extraState = Guid.NewGuid().ToString();
+        }
+    }
+
+    void IDisposable.Dispose()
+    {
+        _registration.Dispose();
+    }
+}

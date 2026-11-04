@@ -1,0 +1,23 @@
+﻿@page "/streaming-parent-with-deferred-child"
+@attribute [StreamRendering]
+
+<h1>Parent that mounts a session-writing child only after streaming begins</h1>
+
+@if (_done)
+{
+    <StreamingDeferredSessionChild />
+}
+else
+{
+    <p id="parent-streaming">Streaming...</p>
+}
+
+@code {
+    private bool _done;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(50);
+        _done = true;
+    }
+}

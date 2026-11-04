@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.ComponentParametersTypeCache.GetParameterType(System.String,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.RootComponentTypeCache.ResolveType(Microsoft.AspNetCore.Components.RootComponentTypeCache.Key,System.Reflection.Assembly[])</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssemblyComponentParameterDeserializer.DeserializeParameters(System.Collections.Generic.IList{Microsoft.AspNetCore.Components.ComponentParameter},System.Collections.Generic.IList{System.Object})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.HotReload.HotReloadAgent.&lt;TopologicalSort&gt;g__Visit|10_0(System.Reflection.Assembly[],System.Reflection.Assembly,System.Collections.Generic.List{System.Reflection.Assembly},System.Collections.Generic.HashSet{System.String})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.HotReload.HotReloadAgent.GetMetadataUpdateTypes(System.Collections.Generic.IReadOnlyList{Microsoft.Extensions.HotReload.UpdateDelta})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2070</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.HotReload.HotReloadAgent.&lt;GetHandlerActions&gt;g__GetUpdateMethod|9_1(System.Type,System.String)</property>
+    </attribute>
+  </assembly>
+</linker>

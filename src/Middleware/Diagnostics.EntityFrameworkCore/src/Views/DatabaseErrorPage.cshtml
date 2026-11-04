@@ -1,0 +1,163 @@
+﻿@using System
+@using System.Linq
+@using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
+@using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
+@{
+    Response.StatusCode = 500;
+    Response.ContentType = "text/html; charset=utf-8";
+    Response.ContentLength = null; // Clear any prior Content-Length
+}
+@functions
+{
+    public DatabaseErrorPageModel Model { get; set; } = default!;
+
+    public string UrlEncode(string content)
+    {
+        return UrlEncoder.Encode(content);
+    }
+
+    public string JavaScriptEncode(string content)
+    {
+        return JavaScriptEncoder.Encode(content);
+    }
+}
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Internal Server Error</title>
+    <style>
+            <%$ include: ErrorPage.css %>
+    </style>
+</head>
+<body>
+    <h1>@Strings.DatabaseErrorPage_Title</h1>
+    <p>
+        @for (Exception? ex = Model.Exception; ex != null; ex = ex.InnerException)
+        {
+            <span>@ex.GetType().Name: @ex.Message</span>
+            <br />
+        }
+    </p>
+    <hr />
+
+    @{
+        var contextWithNoDBOrMigrations = Model.ContextDetails.Where(c => !c.DatabaseExists && !c.PendingMigrations.Any());
+        if (contextWithNoDBOrMigrations.Any())
+        {
+            <div>
+                <h2>@Strings.DatabaseErrorPage_NoDbOrMigrationsTitle</h2>
+                <p>@Strings.DatabaseErrorPage_NoDbOrMigrationsInfo</p>
+
+                <ul>
+                    @foreach (var context in contextWithNoDBOrMigrations)
+                    {
+                        <li>@context.Type.Name</li>
+                    }
+                </ul>
+
+                <p>@Strings.DatabaseErrorPage_NoDbOrMigrationsInfoPMC</p>
+                <code> @Strings.DatabaseErrorPage_AddMigrationCommandPMC</code>
+                <br />
+                <code> @Strings.DatabaseErrorPage_ApplyMigrationsCommandPMC</code>
+                <p>@Strings.DatabaseErrorPage_NoDbOrMigrationsInfoCLI</p>
+                <code> @Strings.DatabaseErrorPage_AddMigrationCommandCLI</code>
+                <br />
+                <code> @Strings.DatabaseErrorPage_ApplyMigrationsCommandCLI</code>
+                <hr />
+            </div>
+        }
+
+        var contextWithPendingMigrations = Model.ContextDetails.Where(c => c.PendingMigrations.Any()).Except(contextWithNoDBOrMigrations);
+        if (contextWithPendingMigrations.Any())
+        {
+            <div>
+                <h2>@Strings.DatabaseErrorPage_PendingMigrationsTitle</h2>
+                <p>@Strings.DatabaseErrorPage_PendingMigrationsInfo</p>
+
+                @foreach (var context in contextWithPendingMigrations)
+                {
+                    <h3>@context.Type.Name</h3>
+                    <ul>
+                        @foreach (var migration in context.PendingMigrations)
+                        {
+                            <li>@migration</li>
+                        }
+                    </ul>
+
+                    <p>
+                        <button id="applyMigrations" onclick="ApplyMigrations()" data-assemblyname="@JavaScriptEncode(context.Type.AssemblyQualifiedName!)">@Strings.DatabaseErrorPage_ApplyMigrationsButton</button>
+                        <span id="applyMigrationsError" class="error"></span>
+                        <span id="applyMigrationsSuccess"></span>
+                    </p>
+                }
+
+                <script>
+                function ApplyMigrations() {
+                    applyMigrations.disabled = true;
+                    applyMigrationsError.innerHTML = "";
+                    applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonRunning)";
+
+                    var req = new XMLHttpRequest();
+
+                    req.onload = function (e) {
+                        if (req.status === 204) {
+                            applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonDone)";
+                            applyMigrationsSuccess.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_MigrationsAppliedRefresh)";
+                        } else {
+                            ErrorApplyingMigrations();
+                        }
+                    };
+
+                    req.onerror = function (e) {
+                        ErrorApplyingMigrations();
+                    };
+
+                    var formBody = "context=" + encodeURIComponent(document.getElementById('applyMigrations').getAttribute('data-assemblyname'));
+                    req.open("POST", "@JavaScriptEncode(Model.PathBase.Add(Model.Options.MigrationsEndPointPath).Value!)", true);
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    req.send(formBody);
+                }
+
+                function ErrorApplyingMigrations() {
+                    applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButton)";
+                    applyMigrationsError.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsFailed)";
+                    applyMigrations.disabled = false;
+                }
+                </script>
+
+                <p>@Strings.DatabaseErrorPage_HowToApplyFromPMC</p>
+                <code>@Strings.DatabaseErrorPage_ApplyMigrationsCommandPMC</code>
+                <p>@Strings.DatabaseErrorPage_HowToApplyFromCLI</p>
+                <code>@Strings.DatabaseErrorPage_ApplyMigrationsCommandCLI</code>
+                <hr />
+            </div>
+        }
+
+        var contextWithPendingModelChanges = Model.ContextDetails.Where(c => c.PendingModelChanges).Except(contextWithNoDBOrMigrations).Except(contextWithPendingMigrations);
+        if (contextWithPendingModelChanges.Any())
+        {
+            <div>
+                <h2>@Strings.DatabaseErrorPage_PendingChangesTitle</h2>
+                <p>@Strings.DatabaseErrorPage_PendingChangesInfo</p>
+                <ul>
+                    @foreach (var context in contextWithPendingModelChanges)
+                    {
+                        <li>@context.Type.Name</li>
+                    }
+                </ul>
+                <p>@Strings.DatabaseErrorPage_PendingChangesInfoPMC</p>
+                <code>@Strings.DatabaseErrorPage_AddMigrationCommandPMC</code>
+                <br />
+                <code>@Strings.DatabaseErrorPage_ApplyMigrationsCommandPMC</code>
+                <p>@Strings.DatabaseErrorPage_PendingChangesInfoCLI</p>
+                <code>@Strings.DatabaseErrorPage_AddMigrationCommandCLI</code>
+                <br />
+                <code>@Strings.DatabaseErrorPage_ApplyMigrationsCommandCLI</code>
+                <hr />
+            </div>
+        }
+    }
+</body>
+</html>

@@ -1,0 +1,85 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TestGroupName>ProjectTemplates.Blazor.E2ETests</TestGroupName>
+    <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
+
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
+
+    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
+    <RunBlazorPlaywrightTemplateTests Condition="'$(RunBlazorPlaywrightTemplateTests)' == ''">$(RunTemplateTests)</RunBlazorPlaywrightTemplateTests>
+    <SkipTests Condition="'$(RunBlazorPlaywrightTemplateTests)' != 'true'">true</SkipTests>
+    <SkipTests Condition="'$(RunBlazorPlaywrightTemplateTests)' == 'true'">false</SkipTests>
+    <BuildHelixPayload Condition="'$(RunBlazorPlaywrightTemplateTests)' != 'true'">false</BuildHelixPayload>
+
+    <BaseOutputPath />
+    <OutputPath />
+
+    <!-- https://github.com/dotnet/aspnetcore/issues/38818 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+
+    <!-- Properties that affect test runs -->
+    <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
+    <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
+    <RestoreFolderName>Blazor</RestoreFolderName>
+    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+    <TestDependsOnMssql>true</TestDependsOnMssql>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
+    <Compile Include="..\..\Shared\**" LinkBase="Helpers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="playwrightSettings.*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DependentUpon>playwrightSettings.json</DependentUpon>
+    </Content>
+    <Content Include="playwrightSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestAssets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Remove="TestAssets\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AngleSharp" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
+    <PackageReference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj" Private="false" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
+  </ItemGroup>
+
+  <!-- Shared testing infrastructure for running E2E template tests -->
+  <Import Project="..\..\TestInfrastructure\PrepareForTest.targets" />
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(OutputPath).playwright\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)\.playwright\%(_PublishFiles.RecursiveDir)\" />
+  </Target>
+</Project>

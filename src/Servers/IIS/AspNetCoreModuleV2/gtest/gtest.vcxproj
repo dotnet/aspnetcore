@@ -1,0 +1,32 @@
+﻿<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\build\Build.Lib.Settings" />
+  <ItemGroup>
+    <ClCompile Include="$(GoogleTestSubmoduleRoot)\googlemock\src\gmock-all.cc" />
+    <ClCompile Include="$(GoogleTestSubmoduleRoot)\googletest\src\gtest-all.cc" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CAC1267B-8778-4257-AAC6-CAF481723B01}</ProjectGuid>
+    <RootNamespace>gtest</RootNamespace>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <TargetName>gtest</TargetName>
+    <TargetName Condition="'$(Configuration)'=='Debug'">gtestd</TargetName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <SourcePath>$(VC_SourcePath);</SourcePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles />
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googletest;$(GoogleTestSubmoduleRoot)googlemock;$(GoogleTestSubmoduleRoot)googlemock\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

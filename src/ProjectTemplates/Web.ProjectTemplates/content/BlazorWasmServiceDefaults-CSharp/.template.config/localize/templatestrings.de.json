@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Standardeinstellungen des Blazor WebAssembly-Diensts",
+  "description": "Eine Projektvorlage zum Erstellen einer Dienststandardbibliothek für Blazor WebAssembly-Anwendungen. Umfasst OpenTelemetry, Dienstermittlung und Resilienzunterstützung für die Aspire-Integration.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/hosted/description": "Konfigurieren Sie die Konfiguration für ein gehostetes Blazor-Webszenario, bei dem die Konfiguration über einen DOM-Kommentar vom Server fließt. Bei FALSE (Standard) wird für ein eigenständiges Szenario mit einem Konfigurationsendpunkt und einem JS-Initialisierer konfiguriert.",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "postActions/restore/description": "Stellt die NuGet-Pakete wieder her, die für dieses Projekt erforderlich sind.",
+  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen"
+}

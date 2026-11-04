@@ -1,0 +1,56 @@
+﻿@page "/forms/client-validation/custom-validator"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<script type="module" src="@Assets["RazorComponents/Pages/Forms/ClientValidation/CustomValidator.razor.js"]"></script>
+
+<h2 id="page-title">Custom validator</h2>
+
+<style>
+    .validation-message { color: red; }
+
+
+</style>
+
+<EditForm Model="Form" FormName="custom-validator" method="post">
+    <DataAnnotationsValidator />
+    <div>
+        <label for="code">Code</label>
+        <InputText id="code" @bind-Value="Form!.Code" />
+        <ValidationMessage For="() => Form!.Code" />
+    </div>
+    <button type="submit" id="submit">Submit</button>
+</EditForm>
+
+@code {
+    [SupplyParameterFromForm] private CustomValidatorModel? Form { get; set; }
+
+    protected override void OnInitialized() => Form ??= new CustomValidatorModel();
+
+    public class CustomValidatorModel
+    {
+        [StartsWith("ABC-", ErrorMessage = "Code must start with 'ABC-'.")]
+        public string? Code { get; set; }
+    }
+
+    // A custom ValidationAttribute that also contributes a client-side rule by implementing
+    // IClientValidationRuleProvider. The framework emits its rule into the carrier payload.
+    // The matching JS validator is registered from CustomValidator.razor.js.
+    private sealed class StartsWithAttribute : ValidationAttribute, IClientValidationRuleProvider
+    {
+        private readonly string _prefix;
+
+        public StartsWithAttribute(string prefix) => _prefix = prefix;
+
+        public override bool IsValid(object? value)
+            => value is not string text || text.Length == 0 || text.StartsWith(_prefix, StringComparison.Ordinal);
+
+        public IEnumerable<ClientValidationRule> GetClientValidationRules()
+            => new[]
+            {
+                new ClientValidationRule(
+                    "startswith",
+                    new Dictionary<string, string> { ["prefix"] = _prefix }),
+            };
+    }
+}

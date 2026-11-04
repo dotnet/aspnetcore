@@ -1,0 +1,31 @@
+﻿@using WeatherForecast = Pages.GridRendering.WeatherForecast
+
+<table class="table">
+    <thead>
+        <tr>
+            @foreach (var item in Columns)
+            {
+                <th>@item</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        <RowCollection Data="@Data"
+                       Columns="@Columns"
+                       OnClick="@HandleClickEvent"></RowCollection>
+    </tbody>
+</table>
+
+
+@code {
+    [Parameter]
+    public WeatherForecast[] Data { get; set; }
+
+    [Parameter]
+    public List<string> Columns { get; set; }
+
+    Task HandleClickEvent(int index)
+    {
+        return Task.CompletedTask;
+    }
+}

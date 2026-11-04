@@ -1,0 +1,20 @@
+﻿@page "/httpcontext"
+
+<h1>HttpContext</h1>
+
+<p>
+    Request method: <span id="request-method">@Ctx.Request.Method</span>
+</p>
+<p>
+    Request path: <span id="request-path">@Ctx.Request.Path</span>
+</p>
+
+@code {
+    [CascadingParameter] public HttpContext Ctx { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Show we can change the response status code
+        Ctx.Response.StatusCode = 201;
+    }
+}

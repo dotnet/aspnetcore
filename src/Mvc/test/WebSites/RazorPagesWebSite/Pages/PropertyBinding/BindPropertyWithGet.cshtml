@@ -1,0 +1,9 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.RazorPages
+
+@functions
+{
+    [BindProperty(SupportsGet=true)]
+    public int Value { get; set; }
+}
+<p>@Value</p>

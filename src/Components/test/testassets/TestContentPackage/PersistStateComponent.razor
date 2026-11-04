@@ -1,0 +1,40 @@
+﻿@implements IDisposable
+@inject PersistentComponentState ApplicationState
+
+<p>Application state is <span id="@KeyName">@value</span></p>
+<p>Render mode: <span id="render-mode-@KeyName">@_renderMode</span></p>
+
+@code {
+    [Parameter, EditorRequired]
+    public string KeyName { get; set; } = "";
+
+    private string value = "not started";
+    private string _renderMode = "SSR";
+
+    private PersistingComponentStateSubscription persistingSubscription;
+
+    protected override void OnInitialized()
+    {
+        persistingSubscription = ApplicationState.RegisterOnPersisting(() =>
+        {
+            ApplicationState.PersistAsJson(KeyName, $"restored");
+            return Task.CompletedTask;
+        });
+
+        if (!ApplicationState.TryTakeFromJson<string>(KeyName, out var restored))
+        {
+            value = "not restored";
+        }
+        else
+        {
+            value = restored!;
+        }
+
+        _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+    }
+
+    void IDisposable.Dispose()
+    {
+        persistingSubscription.Dispose();
+    }
+}

@@ -1,0 +1,21 @@
+﻿@page "/forms/form-posted-while-enhanced-nav-in-progress"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Navigation
+
+<h2>This form is posted while an enhanced navigation request is in progress.</h2>
+
+<a id="not-ending" href="forms/endpoint-that-never-finishes-rendering">Endpoint that never sends a response</a>
+
+<form data-enhance method="post" @onsubmit="@(() => _submitted = true)" @formname="my-form">
+    <AntiforgeryToken />
+    <input id="send" type="submit" value="Send" />
+</form>
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+}

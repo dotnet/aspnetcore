@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include="greet.proto" GrpcServices="Server" />
+    <Protobuf Include="transcoding.proto" GrpcServices="Server" />
+
+    <PackageReference Include="Grpc.AspNetCore" />
+
+    <ProjectReference Include="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
+  </ItemGroup>
+</Project>

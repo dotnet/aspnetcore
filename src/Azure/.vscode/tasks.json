@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+        "label": "AzureAppServicesHostingStartupSample-build",
+        "command": "dotnet",
+        "type": "process",
+        "args": [
+            "build",
+            "${workspaceFolder}/samples/AzureAppServicesHostingStartupSample/AzureAppServicesHostingStartupSample.csproj"
+        ],
+        "problemMatcher": "$msCompile",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
+    }
+]
+}

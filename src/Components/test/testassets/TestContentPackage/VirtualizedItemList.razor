@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<div id="@Id" class="@(_isInteractive ? "interactive" : "ssr")" style="height: 200px; overflow-y: scroll;">
+    <Virtualize Items="Items">
+        <p class="virtualize-item">@context</p>
+    </Virtualize>
+</div>
+
+@code {
+    private bool _isInteractive;
+
+    [Parameter]
+    [EditorRequired]
+    public string Id { get; set; }
+
+    [Parameter]
+    public string[] Items { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInteractive = true;
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,9 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\..\\..\\..\\AspNetCore.slnx",
+    "projects" : [
+      "src\\Installers\\Windows\\AspNetCoreModule-Setup\\IIS-Setup\\iisca\\lib\\iisca.vcxproj",
+      "src\\Installers\\Windows\\AspNetCoreModule-Setup\\IIS-Setup\\IIS-Common\\lib\\IISSetup.CommonLib.vcxproj"
+    ]
+  }
+}

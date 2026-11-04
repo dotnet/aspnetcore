@@ -1,0 +1,3 @@
+#nullable enable
+Microsoft.Extensions.DependencyInjection.EntityFrameworkAdapterServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.EntityFrameworkAdapterServiceCollectionExtensions.AddQuickGridEntityFrameworkAdapter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void

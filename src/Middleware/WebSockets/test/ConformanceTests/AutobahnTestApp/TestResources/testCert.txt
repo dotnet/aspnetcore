@@ -1,0 +1,3 @@
+﻿The password for this is 'testPassword'
+
+DO NOT EVER TRUST THIS CERT. The private key for it is publicly released.

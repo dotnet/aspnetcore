@@ -1,0 +1,77 @@
+﻿@using Components.TestServer.Services
+@attribute [StreamRendering]
+<p>Streaming component with persistent state</p>
+
+<p>This component demonstrates state persistence alongside streaming rendering. When the component first renders, it'll emit a message "streaming" and yield until its notified via a call to <code>/persistent-state/end-streaming</code>. When the component renders it will try to restore the state and if present display that it succeded in doing so and the restored value. If the state is not present, it will indicate it didn't find it and display a "fresh" value.</p>
+
+    <p id="interactive">Interactive: @(!RunningOnServer)</p>
+@if (_streaming)
+{
+    <p id="streaming">Streaming: @_streaming</p>
+}
+else
+{
+    <p id="interactive-runtime">Interactive runtime: @_interactiveRuntime</p>
+    <p id="state-found">State found:@_stateFound</p>
+    <p id="state-value">State value:@_stateValue</p>
+}
+
+@code {
+
+    private bool _streaming;
+    private bool _stateFound;
+    private string _stateValue;
+    private string _interactiveRuntime;
+
+    [Inject] public PersistentComponentState PersistentComponentState { get; set; }
+
+    [Inject] public AsyncOperationService StreamingManager { get; set; }
+
+    [Parameter] public string StreamingId { get; set; }
+
+    [Parameter] public string ServerState { get; set; }
+
+    [CascadingParameter(Name = nameof(RunningOnServer))] public bool RunningOnServer { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(StreamingId))
+        {
+            throw new InvalidOperationException("StreamingId is required.");
+        }
+        PersistentComponentState.RegisterOnPersisting(PersistState);
+
+        if (RunningOnServer)
+        {
+            _interactiveRuntime = "none";
+            _streaming = true;
+            await StreamingManager.Start(StreamingId);
+            _streaming = false;
+        }else
+        {
+            _interactiveRuntime = OperatingSystem.IsBrowser() ? "wasm" : "server";
+        }
+
+        // We do this to ensure that the state remains accessible during the entire first render
+        // cycle (technically until the root component reaches quiescence).
+        await Task.Yield();
+        _stateFound = PersistentComponentState.TryTakeFromJson<string>("NonStreamingComponentWithPersistentState", out _stateValue);
+
+        if (!_stateFound)
+        {
+            _stateValue = "fresh";
+        }
+
+        if (RunningOnServer)
+        {
+            _stateFound = true;
+            _stateValue = ServerState ?? "restored";
+        }
+    }
+
+    Task PersistState()
+    {
+        PersistentComponentState.PersistAsJson("NonStreamingComponentWithPersistentState", _stateValue);
+        return Task.CompletedTask;
+    }
+}

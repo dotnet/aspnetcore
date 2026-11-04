@@ -1,0 +1,7 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(MSBuildThisFileDirectory)settings\common.props" />
+  <Import Project="$(MSBuildThisFileDirectory)settings\release.props" />
+  <Import Project="$(MSBuildThisFileDirectory)settings\debug.props" />
+
+</Project>

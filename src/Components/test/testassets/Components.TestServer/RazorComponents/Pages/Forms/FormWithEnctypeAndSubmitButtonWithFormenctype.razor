@@ -1,0 +1,31 @@
+﻿@page "/forms/form-with-enctype-and-submit-button-with-formenctype"
+@using Microsoft.AspNetCore.Components.Forms
+@inject IHttpContextAccessor HttpContextAccessor
+
+<h1>Form with enctype and Submit Button with formenctype</h1>
+
+<form id="form" data-enhance method="post" enctype="@Enctype" @onsubmit="Submitted" @formname="someform">
+    <AntiforgeryToken />
+    <input id="submit-button" type="submit" formenctype="@Formenctype" />
+</form>
+
+@if (_submitted)
+{
+    <p>Http request ContentType: <span id="content-type">@_contentType</span></p>
+}
+
+@code {
+    bool _submitted = false;
+    private string? _contentType;
+
+    [SupplyParameterFromQuery] public string? Enctype { get; set; }
+    [SupplyParameterFromQuery] public string? Formenctype { get; set; }
+
+    public void Submitted()
+    {
+        _submitted = true;
+
+        var httpContext = HttpContextAccessor.HttpContext;
+        _contentType = httpContext?.Request.ContentType;
+    }
+}

@@ -1,0 +1,8 @@
+﻿<h2>Category: @ViewBag.Category</h2>
+<h2>Region: @ViewBag.Locale</h2>
+<cache vary-by-header="Locale" vary-by-query="categoryid">
+    <h2>Cached content</h2>
+    @await Component.InvokeAsync("Splash")
+    @await Html.PartialAsync("_SplashPartial")
+    <div>CorrelationId in Splash: @ViewBag.CorrelationId</div>
+</cache>

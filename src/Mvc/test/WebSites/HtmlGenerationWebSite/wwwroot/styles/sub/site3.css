@@ -1,0 +1,7 @@
+﻿body::after {
+    display: block;
+    background-color: #ff0000;
+    color: #fff;
+    margin-top: 2.4em;
+    content: "ERROR: Stylesheet 'site3.css' was loaded despite being excluded!";
+}

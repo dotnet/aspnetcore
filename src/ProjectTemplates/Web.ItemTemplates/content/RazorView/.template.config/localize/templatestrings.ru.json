@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Представление Razor",
+  "description": "Пустое представление Razor",
+  "postActions/openInEditor/description": "Открытие созданного представления в редакторе"
+}

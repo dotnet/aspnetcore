@@ -1,0 +1,97 @@
+﻿@using System.Collections.Generic
+@using System.Text.Json
+
+<div>
+    <h2>Mouse position</h2>
+    <p>
+        Output: <span id="output">@message</span>
+    </p>
+    <p>
+        @* We use the label here as a target for the "mouseout" event *@
+        <span id="mouseover_label">Mouseover:</span> <input id="mouseover_input" type="text" @onmouseover="OnMouseEvent" @onmouseout="OnMouseEvent" />
+    </p>
+    <p>
+        Mouseenter: <input id="mouseenter_input" type="text" @onmouseenter="OnMouseEvent" @onmouseleave="OnMouseEvent" />
+    </p>
+    <p>
+        Pointerenter: <input id="pointerenter_input" type="text" @onpointerenter="OnPointerEvent" @onpointerleave="OnPointerEvent" />
+    </p>
+    <p>
+        <span id="mousemove_input" @onmousemove="OnMouseEvent">Mousemove city!</span>
+    </p>
+    <p>
+        Mousedown: <input id="mousedown_input" @onmousedown="OnMouseEvent" @onmouseup="OnMouseEvent" />
+    </p>
+    <p>
+        Pointerdown: <input id="pointerdown_input" @onpointerdown="OnPointerEvent" />
+    </p>
+    <p>
+        <div id="drag_input" draggable="true" @ondragstart="OnDragEvent">Drag Me</div>
+        <div id="drop" @ondrop="OnDragEvent" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
+    </p>
+    <p>
+        <button id="clear_event_log" @onclick="Clear">Clear</button>
+    </p>
+
+    <p>
+        Another input (to distract you) <input id="other" />
+    </p>
+
+    <p>
+        Polymorphic args handler:
+        <div id="polymorphic_event_elem" draggable="true" @onpointerup="OnPolymorphicEvent" @ondragstart="OnPolymorphicEvent">Click or drag me</div>
+    </p>
+</div>
+
+@code {
+
+    string message;
+
+    void OnMouseEvent(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += $"{e.Type},";
+    }
+
+    void OnPointerEvent(PointerEventArgs e)
+    {
+        DumpEvent(e);
+        message += $"{e.Type},";
+    }
+
+    void OnDragEvent(DragEventArgs e)
+    {
+        DumpEvent(e);
+        message += $"{e.Type},";
+    }
+
+    void OnPolymorphicEvent(EventArgs e)
+    {
+        // The purpose of this handler is to show that, even though the declared args type is
+        // the EventArgs base class, at runtime we actually receive the subclass corresponding
+        // to the event that occurred. Note that this will only be supported for the built-in
+        // web event types (for back compatibility), and cannot work for any custom events,
+        // since we have no way to know which subclass you'd want for a custom event.
+        message += e.GetType().FullName;
+
+        switch (e)
+        {
+            case PointerEventArgs pointerEvent:
+                message += $":{pointerEvent.PointerType}";
+                break;
+            case DragEventArgs dragEvent:
+                message += $":{dragEvent.Buttons}";
+                break;
+        }
+    }
+
+    void DumpEvent(MouseEventArgs e)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(e));
+    }
+
+    void Clear()
+    {
+        message = string.Empty;
+    }
+}

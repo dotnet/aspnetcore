@@ -1,0 +1,14 @@
+﻿@page "{id:int}"
+@functions
+{
+    [ModelBinder]
+    public UserModel UserModel { get; set; }
+
+    [FromRoute]
+    public int Id { get; set; }
+}
+Id = @Id, Name = @UserModel?.Name, Age = @UserModel?.Age
+@Html.ValidationSummary()
+<form action="">
+    @Html.AntiForgeryToken()
+</form>

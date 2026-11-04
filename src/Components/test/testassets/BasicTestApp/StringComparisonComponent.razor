@@ -1,0 +1,11 @@
+﻿@{
+    // This test verifies that invariant cultue works correctly in WebAssembly environments. The test case is based on the discussions here: https://stackoverflow.com/a/20085219
+    var string1 = "Strasse";
+    var string2 = "Straße";
+
+    var ordinalComparison = string1.Equals(string2, StringComparison.Ordinal);
+    var invariantComparison = string1.Equals(string2, StringComparison.InvariantCulture);
+}
+
+<div id="results">Ordinal: @ordinalComparison Invariant: @invariantComparison</div>
+

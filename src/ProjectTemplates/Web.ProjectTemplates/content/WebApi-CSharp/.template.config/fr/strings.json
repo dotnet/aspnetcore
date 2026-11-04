@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "API web ASP.NET Core",
+    "description": "Modèle de projet pour la création d’une API web RESTful à l’aide de contrôleurs ASP.NET Core ou d’API minimales, avec prise en charge facultative pour OpenAPI et l’authentification.",
+    "parameter.DisableOpenAPI.name": "Activer la prise en charge d'_OpenAPI",
+    "parameter.DisableOpenAPI.description": "Active la prise en charge d'OpenAPI (Swagger)",
+    "parameter.UseMinimalAPIs.name": "Utiliser des contrôleurs",
+    "parameter.UseMinimalAPIs.description": "Utilisez des contrôleurs à la place des API minimales."
+  }
+}

@@ -1,0 +1,14 @@
+﻿@using HtmlGenerationWebSite.Models
+@using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+
+@{
+    var metadata = ViewData.ModelMetadata;
+}
+
+<h5>Template / partial for ... - LackModel</h5>
+<div class="col-md-3">MetadataKind: '@metadata.MetadataKind'</div>
+<div class="col-md-3">ModelType: '@metadata.ModelType.Name'</div>
+@if (metadata.MetadataKind == ModelMetadataKind.Property)
+{
+    <div class="col-md-3">PropertyName: '@metadata.PropertyName'</div>
+}

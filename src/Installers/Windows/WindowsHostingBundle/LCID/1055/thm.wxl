@@ -1,0 +1,87 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] Kurulumu"/>
+  
+  <String Id="Title" Value="[BundleNameShort]"/>
+  
+  <String Id="SubTitle" Value="[BundleNameSub]"/>
+  
+  <String Id="InstallVersion" Value="[WixBundleVersion] Sürümü"/>
+  <String Id="ConfirmCancelMessage" Value="İptal etmek istediğinizden emin misiniz?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Önceki sürüm"/>
+  <String Id="HelpHeader" Value="Kurulum Yardımı"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - dizindeki paketin eksiksiz bir yerel kopyasını yükler, onarır, kaldırır veya oluşturur. Yükleme varsayılan eylemdir.
+
+/passive | /quiet - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve istem görüntülemez. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir.
+
+/norestart - yeniden başlatma girişimlerini durdurur. Varsayılan olarak kullanıcı arabirimi yeniden başlatmadan önce sorar.
+
+/log &lt;LOG_FILE&gt; - belirli bir dosyaya kaydeder. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur."/>
+  <String Id="HelpCloseButton" Value="&amp;Kapat"/>
+  <String Id="InstallAcceptCheckbox" Value="Lisans hüküm ve koşullarını &amp;kabul ediyorum"/>
+  <String Id="InstallInstallButton" Value="&amp;Yükle"/>
+  <String Id="InstallCloseButton" Value="&amp;Kapat"/>
+  <String Id="ProgressHeader" Value="Kurulum İlerleme Durumu"/>
+  <String Id="ProgressLabel" Value="İşleniyor:"/>
+  <String Id="OverallProgressPackageText" Value="Başlatılıyor..."/>
+  <String Id="ProgressCancelButton" Value="İ&amp;ptal"/>
+  <String Id="ModifyHeader" Value="Kurulumu Değiştir"/>
+  <String Id="ModifyRepairButton" Value="&amp;Onar"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Kaldır"/>
+  <String Id="ModifyCloseButton" Value="&amp;Kapat"/>
+  <String Id="SuccessCacheHeader" Value="Önbellek Başarıyla Tamamlandı"/>
+  <String Id="SuccessModifyHeader" Value="Değiştirme Başarıyla Tamamlandı"/>
+  <String Id="SuccessRepairHeader" Value="Onarım Başarıyla Tamamlandı"/>
+  <String Id="SuccessUninstallHeader" Value="Kaldırma Başarıyla Tamamlandı"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Kaldırma Başarıyla Tamamlandı"/>
+  <String Id="SuccessInstallHeader" Value="Yükleme Başarıyla Tamamlandı"/>
+  <String Id="SuccessHeader" Value="Kurulum Başarılı"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Başlatma"/>
+  <String Id="SuccessLayoutHeader" Value="Düzen Başarıyla Tamamlandı"/>
+  <String Id="SuccessRestartText" Value="Yazılımı kullanabilmek için bilgisayarınızı yeniden başlatmanız gerekiyor."/>
+  <String Id="SuccessUninstallRestartText" Value="Yazılımın kaldırılmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor."/>
+  <String Id="SuccessRestartButton" Value="&amp;Yeniden Başlat"/>
+  <String Id="SuccessCloseButton" Value="&amp;Kapat"/>
+  <String Id="FailureHeader" Value="Kurulum Başarısız"/>
+  <String Id="FailureCacheHeader" Value="Önbellek Başarısız"/>
+  <String Id="FailureLayoutHeader" Value="Düzen Başarısız"/>
+  <String Id="FailureModifyHeader" Value="Değiştirme Başarısız"/>
+  <String Id="FailureInstallHeader" Value="Kurulum Başarısız"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Kaldırılamadı"/>
+  <String Id="FailureUninstallHeader" Value="Kaldırılamadı"/>
+  <String Id="FailureRepairHeader" Value="Onarım Başarısız"/>
+  <String Id="FailureHyperlinkLogText" Value="Bir veya daha fazla sorun kurulumun başarısız olmasına neden oldu. Lütfen sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href=&quot;#&quot;&gt;günlük dosyasına&lt;/a&gt; bakın."/>
+  <String Id="FailureRestartText" Value="Yazılımın geri alınmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor."/>
+  <String Id="FailureRestartButton" Value="&amp;Yeniden Başlat"/>
+  <String Id="FailureCloseButton" Value="&amp;Kapat"/>
+  <String Id="FilesInUseHeader" Value="Kullanımda Olan Dosyalar"/>
+  <String Id="FilesInUseLabel" Value="Şu uygulamalar güncelleştirilmesi gereken dosyaları kullanıyor:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Uygulamaları kapatın ve yeniden başlatmayı deneyin."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="&amp;Uygulamaları kapatın."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Uygulamaları kapatmayın. Yeniden başlatma gerekiyor."/>
+  <String Id="FilesInUseOkButton" Value="&amp;Tamam"/>
+  <String Id="FilesInUseCancelButton" Value="İ&amp;ptal"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Yeniden Dene"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Yoksay"/>
+  <String Id="FilesInUseExitButton" Value="Çı&amp;k"/>
+  <String Id="FilesInUseTitle" Value="Kullanımda Olan Dosyalar"/>
+  <String Id="LicenseAssent" Value="Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Gizlilik Bildirimi&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET için Lisans Bilgileri&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetri toplama ve geri çevirme&lt;/A&gt;"/>
+
+  <!-- Custom UI strings -->
+  
+  <String Id="Welcome" Value="[WixBundleName] Kurulumu'na Hoş Geldiniz."/>
+  
+  <String Id="InstallResetIIS" Value="Yükleme tamamlandıktan sonra lütfen IIS'yi yeniden başlatın. Daha fazla bilgiyi &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;bu sayfada&lt;/a&gt; bulabilirsiniz."/>
+  
+  <String Id="InstallNoIIS" Value="IIS bu makinede etkin değil. ASP.NET Core uygulamalarını IIS ile çalıştırmak istiyorsanız, bu yükleyiciyi çalıştırmadan önce IIS'yi yüklemeniz gerekir. Daha fazla bilgiyi &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;bu sayfada&lt;/a&gt; bulabilirsiniz."/>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;lisans koşulları&lt;/a&gt; ve &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;gizlilik bildirimi&lt;/a&gt;."/>
+  
+  <String Id="ModifyResetIIS" Value="Yükleme tamamlandıktan sonra lütfen IIS'yi yeniden başlatın. Daha fazla bilgiyi &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;bu sayfada&lt;/a&gt; bulabilirsiniz."/>
+  
+  <String Id="ModifyNoIIS" Value="IIS bu makinede etkin değil. ASP.NET Core uygulamalarını IIS ile çalıştırmak istiyorsanız, bu yükleyiciyi çalıştırmadan önce IIS'yi yüklemeniz gerekir. Daha fazla bilgiyi &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;bu sayfada&lt;/a&gt; bulabilirsiniz."/>
+</WixLocalization>

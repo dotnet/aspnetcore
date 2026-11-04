@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Archivo TypeScript",
+  "description": "Archivo de origen de TypeScript en blanco",
+  "postActions/openInEditor/description": "Abre file1.ts en el editor"
+}

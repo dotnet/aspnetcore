@@ -1,0 +1,93 @@
+name: Relabel benchmark perf issues
+
+# Re-labels issues opened by the perf regression bot:
+#   - if the body has only :thumbsup: (improvement signal in the bot's body
+#     templates), swap "perf-regression" for "perf-improvement"
+#   - otherwise (only :thumbsdown:, both, or neither — e.g. reliability /
+#     "Benchmark stopped running" issues), leave labels alone.
+#
+# Why thumbs and not the title?
+#   The bot's body templates already encode the per-metric direction:
+#     - rps:            :thumbsup: when Change > 0  (higher is better)
+#     - published-size: :thumbsup: when Change < 0  (lower is better)
+#     - start-time:     :thumbsup: when Change < 0  (lower is better)
+#     - reliability:    no thumbs (these aren't perf wins)
+#   So a single :thumbsup:/:thumbsdown: check works across all sources
+#   without this workflow needing to know which metric is which.
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  relabel:
+    # Pre-filter: only run on issues the perf regression bot just filed
+    # with the canonical (area-perf + perf-regression) label pair, and
+    # skip forks outside the 'dotnet' org. Together these guarantee we
+    # only act on bot-authored perf issues — not, e.g., a human bug
+    # report that happens to carry a `perf-regression` label.
+    if: >-
+      ${{ github.repository_owner == 'dotnet'
+          && github.event.issue.user.login == 'pr-benchmarks[bot]'
+          && contains(github.event.issue.labels.*.name, 'area-perf')
+          && contains(github.event.issue.labels.*.name, 'perf-regression') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect direction and swap labels
+        uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            const title = issue.title || '';
+
+            const hasThumbsUp   = body.includes(':thumbsup:');
+            const hasThumbsDown = body.includes(':thumbsdown:');
+
+            // Only act on unambiguous, all-improvement issues.
+            // Both-thumbs (mixed) shouldn't happen today — the bot splits
+            // positive vs. negative regressions into separate issues — but
+            // if it ever does, leaving the issue alone is the safe default.
+            const isImprovement = hasThumbsUp && !hasThumbsDown;
+
+            core.info(
+              `#${issue.number} "${title}" — thumbsUp=${hasThumbsUp}, ` +
+              `thumbsDown=${hasThumbsDown}, isImprovement=${isImprovement}`
+            );
+
+            if (!isImprovement) {
+              core.info('Not an unambiguous improvement — leaving labels untouched.');
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+            const issue_number = issue.number;
+
+            try {
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number,
+                labels: ['perf-improvement'],
+              });
+              core.info(`Added perf-improvement to #${issue_number}.`);
+            } catch (e) {
+              core.setFailed(`Failed to add perf-improvement: ${e.message}`);
+              return;
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                owner, repo, issue_number,
+                name: 'perf-regression',
+              });
+              core.info(`Removed perf-regression from #${issue_number}.`);
+            } catch (e) {
+              if (e.status === 404) {
+                core.info('perf-regression label was already absent.');
+              } else {
+                core.setFailed(`Failed to remove perf-regression: ${e.message}`);
+              }
+            }

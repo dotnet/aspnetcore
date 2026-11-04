@@ -1,0 +1,32 @@
+# Obtains internal runtime download credentials and populates the 'dotnetbuilds-internal-container-read-token-base64'
+# variable with the base64-encoded SAS token, by default
+
+parameters:
+- name: federatedServiceConnection
+  type: string
+  default: 'dotnetbuilds-internal-read'
+- name: outputVariableName
+  type: string
+  default: 'dotnetbuilds-internal-container-read-token-base64'
+- name: expiryInHours
+  type: number
+  default: 1
+- name: base64Encode
+  type: boolean
+  default: true
+- name: is1ESPipeline
+  type: boolean
+  default: false
+
+steps:
+- ${{ if ne(variables['System.TeamProject'], 'public') }}:
+  - template: /eng/common/core-templates/steps/get-delegation-sas.yml
+    parameters:
+      federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
+      outputVariableName: ${{ parameters.outputVariableName }}
+      expiryInHours: ${{ parameters.expiryInHours }}
+      base64Encode: ${{ parameters.base64Encode }}
+      storageAccount: dotnetbuilds
+      container: internal
+      permissions: rl
+      is1ESPipeline: ${{ parameters.is1ESPipeline }}

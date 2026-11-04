@@ -1,0 +1,9 @@
+﻿@inherits LayoutComponentBase
+
+<NavLink href="interactive-in-layout/streaming">Streaming</NavLink>
+<NavLink href="interactive-in-layout/non-streaming">Non-streaming</NavLink>
+
+@* https://github.com/dotnet/aspnetcore/issues/52126 *@
+<TestContentPackage.Counter IdSuffix="counter" IncrementAmount="1" @rendermode="RenderMode.InteractiveServer" />
+
+@Body

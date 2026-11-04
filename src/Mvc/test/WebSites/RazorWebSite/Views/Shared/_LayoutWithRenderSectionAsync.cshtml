@@ -1,0 +1,6 @@
+﻿<title>@ViewBag.Title</title>
+@RenderBody()
+@await FlushAsync()
+@await Html.PartialAsync("_PartialThatSetsTitle")
+@await RenderSectionAsync("content")
+More content from layout

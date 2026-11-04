@@ -1,0 +1,64 @@
+﻿@page "/LongPageWithHash/{param1:int?}"
+@inject NavigationManager NavigationManager
+
+<a id="anchor-test1" href="LongPageWithHash#test1">Go to test1 on this page</a>
+<br />
+<a id="anchor-test2" href="LongPageWithHash2#test2">Go to test2 on LongPageWithHash2 page</a>
+<br />
+<a id="anchor-test1-with-query" href="LongPageWithHash?color=green&number=123#test1">Go to test1 same url with query</a>
+<br />
+<a id="anchor-test1-with-param" href="LongPageWithHash/11#test1">Go to test1 with param</a>
+<br />
+<a id="anchor-test1-with-param-and-query" href="LongPageWithHash/11?color=green&number=123#test1">Go to test1 with param and query</a>
+<br />
+<button id="navigate-test1" class="btn btn-primary" @onclick="GoToTest1">NavigationManager.NavigateTo same page #test1</button>
+<br />
+<button id="navigate-test2" class="btn btn-primary" @onclick="GoToTest2">NavigationManager.NavigateTo LongPageWithHash2 #test2</button>
+<br />
+<button id="navigate-test1-with-query" class="btn btn-primary" @onclick="GoToTest1WithQuery">NavigationManager.NavigateTo same page #test1 with query</button>
+<br />
+<button id="navigate-test1-with-param" class="btn btn-primary" @onclick="GoToTest1WithParam">NavigationManager.NavigateTo same page #test1 with param</button>
+<br />
+<button id="navigate-test1-with-param-and-query" class="btn btn-primary" @onclick="GoToTest1WithParamAndQuery">NavigationManager.NavigateTo same page #test1 with param and query</button>
+
+<p>@Param1</p>
+
+<div style="border: 2px dashed red; margin: 1rem; padding: 1rem; height: 1500px;">
+    Scroll past me to find the links
+</div>
+
+<p id="test1">Test1</p>
+
+<div style="border: 2px dashed red; margin: 1rem; padding: 1rem; height: 1500px;">
+    Scroll past me to find the links
+</div>
+
+@code {
+    [Parameter] public int Param1 { get; set; }
+
+
+    void GoToTest1()
+    {
+        NavigationManager.NavigateTo("LongPageWithHash#test1");
+    }
+
+    void GoToTest2()
+    {
+        NavigationManager.NavigateTo("LongPageWithHash2#test2");
+    }
+
+    void GoToTest1WithQuery()
+    {
+        NavigationManager.NavigateTo("LongPageWithHash?color=green&number=123#test1");
+    }
+
+    void GoToTest1WithParam()
+    {
+        NavigationManager.NavigateTo("LongPageWithHash/22#test1");
+    }
+
+    void GoToTest1WithParamAndQuery()
+    {
+        NavigationManager.NavigateTo("LongPageWithHash/22?color=green&number=123#test1");
+    }
+}

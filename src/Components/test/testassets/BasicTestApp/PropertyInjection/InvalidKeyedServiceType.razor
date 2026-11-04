@@ -1,0 +1,7 @@
+﻿<h3>InvalidKeyedServiceType</h3>
+
+@code {
+    // The keyed service exists, but it has a different type than the property.
+    [Inject(Key = "keyed-service-1")]
+    public NavigationManager NavigationManager { get; set; }
+}

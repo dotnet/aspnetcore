@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "API Denetleyicisi",
+  "description": "okuma/yazma eylemleri olan veya olmayan API Denetleyicisi",
+  "symbols/namespace/description": "Oluşturulan kod için ad alanı",
+  "symbols/actions/description": "okuma / yazma eylemleri olan denetleyici oluşturun",
+  "symbols/actions/displayName": "Okuma / Yazma Eylemleri Ekle",
+  "postActions/openInEditor/description": "Oluşturulan denetleyiciyi düzenleyicide açar"
+}

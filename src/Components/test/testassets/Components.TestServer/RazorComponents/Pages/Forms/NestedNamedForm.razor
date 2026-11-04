@@ -1,0 +1,21 @@
+﻿@page "/forms/nested-named-form"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Nested named form</h2>
+
+<FormMappingScope Name="parent-context" Context="bindingContext">
+    <EditForm Enhance FormName="named-form-handler" EditContext="_editContext" method="POST" OnValidSubmit="() => _submitted = true">
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+</FormMappingScope>
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+    EditContext _editContext = new EditContext(new object());
+}

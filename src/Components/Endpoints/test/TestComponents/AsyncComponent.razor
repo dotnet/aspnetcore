@@ -1,0 +1,24 @@
+﻿@if (loaded)
+{
+    <text>Loaded</text>
+}
+else
+{
+    <text>Loading...</text>
+}
+@code {
+    [Parameter] public Task WaitFor { get; set; }
+
+    bool loaded;
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+
+        if (WaitFor is not null)
+        {
+            await WaitFor;
+        }
+
+        loaded = true;
+    }
+}

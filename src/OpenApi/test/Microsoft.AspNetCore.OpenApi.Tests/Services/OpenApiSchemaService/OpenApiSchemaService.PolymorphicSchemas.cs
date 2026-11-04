@@ -1,0 +1,518 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Net.Http;
+using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Builder;
+
+public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
+{
+    [Fact]
+    public async Task HandlesPolymorphicTypeWithMappingsAndStringDiscriminator()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Shape shape) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema;
+            // Assert discriminator mappings have been configured correctly
+            Assert.Equal("$type", schema.Discriminator.PropertyName);
+            Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("triangle", item.Key),
+                item => Assert.Equal("square", item.Key)
+            );
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("#/components/schemas/ShapeTriangle", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/ShapeSquare", item.Value.Reference.ReferenceV3)
+            );
+            // Assert the schemas with the discriminator have been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("ShapeTriangle", out var triangleSchema));
+            Assert.Contains(schema.Discriminator.PropertyName, triangleSchema.Properties.Keys);
+            Assert.Equal("triangle", triangleSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+            Assert.True(document.Components.Schemas.TryGetValue("ShapeSquare", out var squareSchema));
+            Assert.Equal("square", squareSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+        });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypeWithMappingsAndIntegerDiscriminator()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (WeatherForecastBase forecast) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema;
+            // Assert discriminator mappings have been configured correctly
+            Assert.Equal("$type", schema.Discriminator.PropertyName);
+            Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("0", item.Key),
+                item => Assert.Equal("1", item.Key),
+                item => Assert.Equal("2", item.Key)
+            );
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithCity", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews", item.Value.Reference.ReferenceV3)
+            );
+            // Assert schema with discriminator = 0 has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("WeatherForecastBaseWeatherForecastWithCity", out var citySchema));
+            Assert.Contains(schema.Discriminator.PropertyName, citySchema.Properties.Keys);
+            Assert.Equal(0, citySchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<int>());
+            // Assert schema with discriminator = 1 has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("WeatherForecastBaseWeatherForecastWithTimeSeries", out var timeSeriesSchema));
+            Assert.Contains(schema.Discriminator.PropertyName, timeSeriesSchema.Properties.Keys);
+            Assert.Equal(1, timeSeriesSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<int>());
+            // Assert schema with discriminator = 2 has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("WeatherForecastBaseWeatherForecastWithLocalNews", out var newsSchema));
+            Assert.Contains(schema.Discriminator.PropertyName, newsSchema.Properties.Keys);
+            Assert.Equal(2, newsSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<int>());
+        });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithCustomPropertyName()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Person person) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema;
+            // Assert discriminator mappings have been configured correctly
+            Assert.Equal("discriminator", schema.Discriminator.PropertyName);
+            Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("student", item.Key),
+                item => Assert.Equal("teacher", item.Key)
+            );
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("#/components/schemas/PersonStudent", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/PersonTeacher", item.Value.Reference.ReferenceV3)
+            );
+            // Assert schema with discriminator = 0 has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("PersonStudent", out var citySchema));
+            Assert.Contains(schema.Discriminator.PropertyName, citySchema.Properties.Keys);
+            Assert.Equal("student", citySchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+            // Assert schema with discriminator = 1 has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("PersonTeacher", out var timeSeriesSchema));
+            Assert.Contains(schema.Discriminator.PropertyName, timeSeriesSchema.Properties.Keys);
+            Assert.Equal("teacher", timeSeriesSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+        });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithNonAbstractBaseClassWithNoDiscriminator()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Color color) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema;
+            // Assert discriminator mappings are not configured for this type since we
+            // can't meet OpenAPI's restrictions that derived types _always_ have a discriminator
+            // property associated with them.
+            Assert.Null(schema.Discriminator);
+            Assert.Collection(schema.AnyOf,
+                schema => Assert.Equal("ColorPaintColor", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("ColorFabricColor", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("ColorBase", ((OpenApiSchemaReference)schema).Reference.Id));
+            // Assert schema with discriminator = "paint" has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("ColorPaintColor", out var paintSchema));
+            Assert.Contains("$type", paintSchema.Properties.Keys);
+            Assert.Equal("paint", paintSchema.Properties["$type"].Enum.First().GetValue<string>());
+            // Assert schema with discriminator = "fabric" has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("ColorFabricColor", out var fabricSchema));
+            Assert.Contains("$type", fabricSchema.Properties.Keys);
+            Assert.Equal("fabric", fabricSchema.Properties["$type"].Enum.First().GetValue<string>());
+            // Assert that schema for `Color` has been inserted into the components without a discriminator
+            Assert.True(document.Components.Schemas.TryGetValue("ColorBase", out var colorSchema));
+            Assert.DoesNotContain("$type", colorSchema.Properties.Keys);
+        });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithNonAbstractBaseClassAndDiscriminator()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Pet pet) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema;
+            // Assert discriminator mappings have been configured correctly
+            Assert.Equal("$type", schema.Discriminator.PropertyName);
+            Assert.Equal("#/components/schemas/Pet", schema.Discriminator.DefaultMapping.Reference.ReferenceV3);
+            Assert.False(schema.Discriminator.DefaultMapping.UnresolvedReference);
+            Assert.Same(document.Components.Schemas["Pet"], schema.Discriminator.DefaultMapping.Target);
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("cat", item.Key),
+                item => Assert.Equal("dog", item.Key),
+                item => Assert.Equal("pet", item.Key)
+            );
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("#/components/schemas/PetCat", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/PetDog", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/PetPet", item.Value.Reference.ReferenceV3)
+            );
+            // OpenAPI requires that derived types in a polymorphic schema _always_ have a discriminator
+            // property associated with them. STJ permits the discriminator to be omitted from the
+            // if the base type is a non-abstract class and falls back to serializing to this base
+            // type. In this scenario, we check that the base class is not included in the `anyOf`
+            // schema.
+            Assert.Collection(schema.AnyOf,
+                schema => Assert.Equal("PetCat", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("PetDog", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("PetPet", ((OpenApiSchemaReference)schema).Reference.Id));
+            // Assert schema with discriminator = "dog" has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("PetDog", out var dogSchema));
+            Assert.Contains(schema.Discriminator.PropertyName, dogSchema.Properties.Keys);
+            Assert.Equal("dog", dogSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+            // Assert schema with discriminator = "cat" has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("PetCat", out var catSchema));
+            Assert.Contains(schema.Discriminator.PropertyName, catSchema.Properties.Keys);
+            Assert.Equal("cat", catSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+            // Assert schema with discriminator = "cat" has been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("PetPet", out var petSchema));
+            Assert.Contains(schema.Discriminator.PropertyName, petSchema.Properties.Keys);
+            Assert.Equal("pet", petSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+        });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithNoExplicitDiscriminators()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Organism color) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema;
+            // Assert discriminator mappings are not configured for this type since we
+            // can't meet OpenAPI's restrictions that derived types _always_ have a discriminator
+            // property associated with them.
+            Assert.Null(schema.Discriminator);
+            Assert.Collection(schema.AnyOf,
+                schema => Assert.Equal("OrganismAnimal", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("OrganismPlant", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("OrganismBase", ((OpenApiSchemaReference)schema).Reference.Id));
+            // Assert that schemas without discriminators have been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("OrganismAnimal", out var animalSchema));
+            Assert.DoesNotContain("$type", animalSchema.Properties.Keys);
+            Assert.True(document.Components.Schemas.TryGetValue("OrganismPlant", out var plantSchema));
+            Assert.DoesNotContain("$type", plantSchema.Properties.Keys);
+            Assert.True(document.Components.Schemas.TryGetValue("OrganismBase", out var baseSchema));
+            Assert.DoesNotContain("$type", baseSchema.Properties.Keys);
+        });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Employee color) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            Assert.Equal("Employee", ((OpenApiSchemaReference)mediaType.Schema).Reference.Id);
+            var schema = mediaType.Schema;
+            // Assert that discriminator mappings are configured correctly for type.
+            Assert.Equal("$type", schema.Discriminator.PropertyName);
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("manager", item.Key),
+                item => Assert.Equal("employee", item.Key)
+            );
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("#/components/schemas/EmployeeManager", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/EmployeeEmployee", item.Value.Reference.ReferenceV3)
+            );
+            // Assert that anyOf schemas use the correct reference IDs.
+            Assert.Collection(schema.AnyOf,
+                schema => Assert.Equal("EmployeeManager", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("EmployeeEmployee", ((OpenApiSchemaReference)schema).Reference.Id));
+            // Assert that schemas without discriminators have been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("EmployeeManager", out var managerSchema));
+            Assert.Equal("manager", managerSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+            Assert.True(document.Components.Schemas.TryGetValue("EmployeeEmployee", out var employeeSchema));
+            Assert.Equal("employee", employeeSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
+            // Assert that the schema has a correct self-reference to the base-type. This points to the schema that contains the discriminator.
+            Assert.Equal("Employee", ((OpenApiSchemaReference)employeeSchema.Properties["manager"]).Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithDictionaryPropertiesOnDerivedTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (DictionaryContainerBase container) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+
+            foreach (var componentName in new[] { "DictionaryContainerBaseDictionaryContainerAlpha", "DictionaryContainerBaseDictionaryContainerBeta", "DictionaryContainerBaseDictionaryContainerGamma" })
+            {
+                Assert.True(document.Components.Schemas.TryGetValue(componentName, out var derivedSchema));
+
+                // Dictionary<string, string> Tags => { "type": "object", "additionalProperties": { "type": "string" } }
+                var tags = derivedSchema.Properties["tags"];
+                Assert.True(tags.Type.Value.HasFlag(JsonSchemaType.Object));
+                Assert.NotNull(tags.AdditionalProperties);
+                Assert.True(tags.AdditionalProperties.Type.Value.HasFlag(JsonSchemaType.String));
+
+                // Dictionary<string, string[]> Labels => additionalProperties is an array of strings and
+                // must not be an empty schema for any derived type.
+                var labels = derivedSchema.Properties["labels"];
+                Assert.True(labels.Type.Value.HasFlag(JsonSchemaType.Object));
+                Assert.NotNull(labels.AdditionalProperties);
+                Assert.True(labels.AdditionalProperties.Type.Value.HasFlag(JsonSchemaType.Array));
+                Assert.NotNull(labels.AdditionalProperties.Items);
+                Assert.True(labels.AdditionalProperties.Items.Type.Value.HasFlag(JsonSchemaType.String));
+            }
+        });
+
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/api": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DictionaryContainerBase"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "DictionaryContainerBase": {
+                    "required": [
+                      "$type"
+                    ],
+                    "type": "object",
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/DictionaryContainerBaseDictionaryContainerAlpha"
+                      },
+                      {
+                        "$ref": "#/components/schemas/DictionaryContainerBaseDictionaryContainerBeta"
+                      },
+                      {
+                        "$ref": "#/components/schemas/DictionaryContainerBaseDictionaryContainerGamma"
+                      }
+                    ],
+                    "discriminator": {
+                      "propertyName": "$type",
+                      "mapping": {
+                        "alpha": "#/components/schemas/DictionaryContainerBaseDictionaryContainerAlpha",
+                        "beta": "#/components/schemas/DictionaryContainerBaseDictionaryContainerBeta",
+                        "gamma": "#/components/schemas/DictionaryContainerBaseDictionaryContainerGamma"
+                      }
+                    }
+                  },
+                  "DictionaryContainerBaseDictionaryContainerAlpha": {
+                    "required": [
+                      "tags",
+                      "labels"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "$type": {
+                        "enum": [
+                          "alpha"
+                        ],
+                        "type": "string"
+                      },
+                      "tags": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "labels": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "DictionaryContainerBaseDictionaryContainerBeta": {
+                    "required": [
+                      "tags",
+                      "labels"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "$type": {
+                        "enum": [
+                          "beta"
+                        ],
+                        "type": "string"
+                      },
+                      "tags": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "labels": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "DictionaryContainerBaseDictionaryContainerGamma": {
+                    "required": [
+                      "tags",
+                      "labels"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "$type": {
+                        "enum": [
+                          "gamma"
+                        ],
+                        "type": "string"
+                      },
+                      "tags": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "labels": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)));
+    }
+}

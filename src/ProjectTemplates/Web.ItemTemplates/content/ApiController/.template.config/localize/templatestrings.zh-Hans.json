@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "API 控制器",
+  "description": "具有或不具有读/写操作的 API 控制器",
+  "symbols/namespace/description": "所生成代码的命名空间",
+  "symbols/actions/description": "使用读/写操作创建控制器",
+  "symbols/actions/displayName": "添加读/写操作",
+  "postActions/openInEditor/description": "在编辑器中打开创建的控制器"
+}

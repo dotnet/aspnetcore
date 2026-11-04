@@ -1,0 +1,42 @@
+﻿@page "/forms/with-nullable-datetime"
+@using Microsoft.AspNetCore.Components.Forms
+<h3>Edit Form With Nullable DateTime</h3>
+<EditForm Enhance Model="@this.Model" method="post" id="nullable" FormName="nullable-datetime-testform" OnValidSubmit="this.HandleSubmit">
+    <ValidationSummary />
+    <div>
+        <label for="Model.NullableDateTime">
+            Date:
+            <input type="date" id="datetime" name="Model.NullableDateTime" @bind-value="this.Model.NullableDateTime" />
+        </label>
+        <ValidationMessage For="() => Model.NullableDateTime" />
+    </div>
+    <button id="send" type="submit">Submit</button>
+</EditForm>
+@code {
+    [SupplyParameterFromForm]
+    public FormObject Model
+    {
+        get;
+        set;
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        this.Model ??= new FormObject();
+    }
+
+    private void HandleSubmit()
+    {
+    }
+
+    public class FormObject
+    {
+        public DateTime? NullableDateTime
+        {
+            get;
+            set;
+        }
+    };
+}

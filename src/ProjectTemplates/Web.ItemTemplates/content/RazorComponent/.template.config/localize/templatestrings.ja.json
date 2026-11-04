@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor コンポーネント",
+  "description": "Razor で実装された再利用可能な UI コンポーネント",
+  "symbols/namespace/description": "生成されたコードの名前空間",
+  "symbols/use-code-behind/description": "コード ビハインド ファイルを使用してコンポーネントを作成する",
+  "symbols/use-code-behind/displayName": "コード ビハインドを使用する",
+  "postActions/openInEditor/description": "エディターで Component1.razor を開きます"
+}

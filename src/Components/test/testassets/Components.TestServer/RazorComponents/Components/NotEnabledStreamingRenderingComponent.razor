@@ -1,0 +1,79 @@
+﻿@using System.IO.Pipelines;
+@using System.Threading.Channels;
+
+<p>
+    Every time you make a request to <a id="add-item-link" href="@(UseLargeItems ? AddLargeItemUrl : AddItemUrl)" target="_blank">add item</a>, we'll
+    add an item to this streaming response.
+</p>
+<p>
+    Complete the response by visiting <a id="end-response-link" href="@EndResponseUrl" target="_blank">end response</a>.
+</p>
+
+<ul>
+    @foreach (var item in items)
+    {
+        <li>@item</li>
+    }
+</ul>
+
+<p id="status">
+    @if (finished)
+    {
+        <text>Finished</text>
+    }
+    else
+    {
+        <text>Waiting for more...</text>
+    }
+</p>
+
+@code {
+    [Parameter]
+    public bool UseLargeItems { get; set; } = false;
+
+    // Caution: Don't use statics like this in real apps. This is only for an E2E test. If you did this
+    // in production, different users/requests could interfere with each other.
+    static Channel<string> StreamingDataChannel;
+    static int StreamingDataChannelCount;
+
+    const string AddItemUrl = "streaming/add-item";
+    const string AddLargeItemUrl = "streaming/add-large-item";
+    const string EndResponseUrl = "streaming/end-response";
+
+    bool finished;
+    List<string> items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        StreamingDataChannel = Channel.CreateUnbounded<string>();
+        StreamingDataChannelCount = 0;
+
+        await foreach (var item in StreamingDataChannel.Reader.ReadAllAsync())
+        {
+            items.Add(item);
+            StateHasChanged();
+        }
+
+        finished = true;
+    }
+
+    public static void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapGet(AddItemUrl, () =>
+        {
+            StreamingDataChannel.Writer.TryWrite($"Item {++StreamingDataChannelCount}");
+            return "Added item";
+        });
+        endpoints.MapGet(AddLargeItemUrl, () =>
+        {
+            StreamingDataChannel.Writer.TryWrite( $"Large Item {++StreamingDataChannelCount} {new string('*', 5000)}");
+            return "Added large item";
+        });
+
+        endpoints.MapGet(EndResponseUrl, () =>
+        {
+            StreamingDataChannel.Writer.Complete();
+            return "Response ended";
+        });
+    }
+}

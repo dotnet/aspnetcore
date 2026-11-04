@@ -1,0 +1,11 @@
+﻿@attribute [StreamRendering]
+Loading task status: @LoadingTask.Status
+@code {
+    [Parameter] public Task LoadingTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadingTask;
+        await Task.Delay(100); // Doesn't strictly make any difference to the test, but clarifies that arbitrary async stuff could happen here
+    }
+}

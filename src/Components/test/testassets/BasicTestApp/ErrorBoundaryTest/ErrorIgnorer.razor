@@ -1,0 +1,14 @@
+﻿@inherits ErrorBoundaryBase
+@*
+    A badly-behaved error boundary that tries to keep using its same ChildContent even after an error.
+    This is to check we still don't retain the descendant component instances.
+*@
+@ChildContent
+
+@code {
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        // Ignore it
+        return Task.CompletedTask;
+    }
+}

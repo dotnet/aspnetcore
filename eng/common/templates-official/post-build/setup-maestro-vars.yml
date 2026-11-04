@@ -1,0 +1,8 @@
+steps:
+- template: /eng/common/core-templates/post-build/setup-maestro-vars.yml
+  parameters:
+    # Specifies whether to use 1ES
+    is1ESPipeline: true
+
+    ${{ each parameter in parameters }}:
+      ${{ parameter.key }}: ${{ parameter.value }}

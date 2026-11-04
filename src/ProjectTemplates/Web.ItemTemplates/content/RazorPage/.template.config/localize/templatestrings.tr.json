@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor Sayfası",
+  "description": "Sayfa modeli olan veya olmayan bir Razor sayfası",
+  "symbols/namespace/description": "oluşturulan kod için ad alanı",
+  "symbols/no-pagemodel/description": "PageModel olmadan sayfa oluşturma",
+  "symbols/no-pagemodel/displayName": "PageModel'i Dışla",
+  "postActions/openInEditor/description": "Düzenleyicide Index.cshtml’yi açar"
+}

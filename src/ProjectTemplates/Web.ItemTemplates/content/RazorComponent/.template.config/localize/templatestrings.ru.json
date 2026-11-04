@@ -1,0 +1,9 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Компонент Razor",
+  "description": "Компонент пользовательского интерфейса для повторного использования, реализованный с помощью Razor",
+  "symbols/namespace/description": "пространство имен для сформированного кода",
+  "symbols/use-code-behind/description": "создать компонент с файлом code-behind",
+  "symbols/use-code-behind/displayName": "Использование кода программной части",
+  "postActions/openInEditor/description": "Открывает Component1.razor в редакторе"
+}

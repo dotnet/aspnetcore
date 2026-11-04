@@ -1,0 +1,8 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<p>Hello @(Name ?? "(null)")!</p>
+
+@code {
+    [Parameter] public string Name { get; set; }
+}

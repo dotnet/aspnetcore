@@ -1,0 +1,29 @@
+@page "/persistent-state/auto-pause-fetch"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Fetch survives pause</h1>
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<button id="start-fetch" data-token="@_token" onclick="window.startGatedFetch('@_token')">Start fetch</button>
+
+<script>
+    window.__fetchResult = window.__fetchResult || 'idle';
+
+    window.startGatedFetch = function (token) {
+        window.__fetchResult = 'pending';
+        fetch('/subdir/autopause-test/js-gate/' + token)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                window.__fetchResult = data.released ? 'delivered' : 'aborted';
+            });
+    };
+</script>
+
+@code {
+    private readonly string _token = Guid.NewGuid().ToString("N");
+}

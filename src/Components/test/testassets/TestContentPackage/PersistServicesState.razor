@@ -1,0 +1,41 @@
+﻿@using TestContentPackage.Services
+
+@inject InteractiveServerService InteractiveServerState
+@inject InteractiveWebAssemblyService InteractiveWebAssemblyState
+@inject InteractiveAutoService InteractiveAutoState
+
+<p>Interactive server state is <span id="server-state">@InteractiveServerState.State</span></p>
+<p>Filtered server state is <span id="filtered-server-state">@InteractiveServerState.FilteredState</span></p>
+<p>Interactive webassembly state is <span id="wasm-state">@InteractiveWebAssemblyState.State</span></p>
+<p>Filtered webassembly state is <span id="filtered-wasm-state">@InteractiveWebAssemblyState.FilteredState</span></p>
+<p>Interactive auto state is <span id="auto-state">@InteractiveAutoState.State</span></p>
+<p>Filtered auto state is <span id="filtered-auto-state">@InteractiveAutoState.FilteredState</span></p>
+
+<p>Render mode: <span id="render-mode">@_renderMode</span></p>
+
+@code {
+
+    private string _renderMode = "";
+
+    protected override void OnInitialized()
+    {
+        _renderMode = RendererInfo.Name;
+        if (!RendererInfo.IsInteractive)
+        {
+            InteractiveServerState.State = "Server state";
+            InteractiveServerState.FilteredState = "Filtered server state";
+            InteractiveWebAssemblyState.State = "WebAssembly state";
+            InteractiveWebAssemblyState.FilteredState = "Filtered webassembly state";
+            InteractiveAutoState.State = "Auto state";
+            InteractiveAutoState.FilteredState = "Filtered auto state";
+        }else
+        {
+            InteractiveServerState.State ??= "not restored";
+            InteractiveServerState.FilteredState ??= "not restored";
+            InteractiveWebAssemblyState.State ??= "not restored";
+            InteractiveWebAssemblyState.FilteredState ??= "not restored";
+            InteractiveAutoState.FilteredState ??= "not restored";
+            InteractiveAutoState.State ??= "not restored";
+        }
+    }
+}

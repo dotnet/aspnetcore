@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Social weather</title>
+</head>
+<body>
+    <form id="reportWeather" action="#">
+        <label for="temperature">Temperature</label><input type="number" id="temperature" value="72"/>
+        <label for="weather">Weather</label>
+        <select id="weather">
+            <option value="Sunny">Sunny</option>
+            <option value="MostlySunny">Mostly Sunny</option>
+            <option value="PartlySunny">Partly Sunny</option>
+            <option value="PartlyCloudy">Partly Cloudy</option>
+            <option value="MostlyCloudy">Mostly Cloudy</option>
+            <option value="Cloudy">Cloudy</option>
+        </select>
+        <label for="zipCode">Zip</label><input type="text" id="zipCode" value="98052" />
+        <input type="submit" value="Send report" />
+    </form>
+    <br />
+    <div>
+        <h3>Weather reports</h3>
+        <table id="reportsTable">
+            <tr>
+                <th>ZipCode</th>
+                <th>Temperature</th>
+                <th>Weather</th>
+                <th>Updated on:</th>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <p>Status: <span id="status" /></p>
+    </div>
+    <script>
+        function get(id) {
+            return document.getElementById(id);
+        }
+
+        function updateReport(report) {
+            if (report.ZipCode) {
+                let row = get('report' + report.ZipCode);
+                if (row) {
+                    while (row.hasChildNodes()) {
+                        row.removeChild(row.lastChild);
+                    }
+                }
+                else {
+                    row = document.createElement('tr');
+                    row.id = 'report' + report.ZipCode;
+                    get('reportsTable').appendChild(row);
+                }
+                row.innerHTML = `
+                    <td>${report.ZipCode}</td>
+                    <td>${report.Temperature}&#8457; </td>
+                    <td>${report.Weather.match(/[A-Z][a-z]+|[0-9]+/g).join(" ")}</td>
+                    <td>${new Date(report.ReportTime)}</td>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            function updateStatus(text, color) {
+                var span = get('status');
+                span.innerHTML = text;
+                span.style.color = color;
+            }
+
+            let connectUrl = `ws://${document.location.host}/weather?formatType=json`;
+            let webSocket = new WebSocket(connectUrl);
+            webSocket.onopen = event => {
+                updateStatus('Connected', 'green');
+            };
+
+            webSocket.onerror = event => {
+                updateStatus('Error occurred', 'green');
+            };
+
+            webSocket.onmessage = event => {
+                updateReport(JSON.parse(event.data));
+            }
+
+            webSocket.onclose = event => {
+                updateStatus(`WebSocket closed. Reason: ${event.code}`, event.wasClean ? 'green' : 'red')
+            }
+
+            get('reportWeather').addEventListener('submit', event => {
+                let weather = get('weather');
+
+                webSocket.send(
+                    JSON.stringify({
+                        Temperature: get('temperature').value,
+                        Weather: weather.options[weather.selectedIndex].value,
+                        ReportTime: Date.now(),
+                        ZipCode: get('zipCode').value
+                    }));
+                event.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>

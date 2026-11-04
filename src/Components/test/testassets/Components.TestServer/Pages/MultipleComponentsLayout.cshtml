@@ -1,0 +1,44 @@
+﻿@using BasicTestApp.MultipleComponents;
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple component entry points</title>
+    <base href="~/" />
+    @* This page is used to validate the ability to render multiple root components in a blazor server-side application.
+    *@
+</head>
+<body>
+    <div id="test-container">
+        <component type="typeof(GreeterComponent)" render-mode="Server" param-name='"Red fish"' />
+        <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered" param-name='"Blue fish"' />
+        @RenderBody()
+        <component type="typeof(GreeterComponent)" render-mode="Server" param-name='"Red fish"' />
+        <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered" param-name='"Blue fish"' />
+    </div>
+
+    @*
+        So that E2E tests can make assertions about both the prerendered and
+        interactive states, we only load the .js file when told to.
+    *@
+    <hr />
+
+    <button id="load-boot-script" onclick="start()">Load boot script</button>
+
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script src="js/jsRootComponentInitializers.js"></script>
+    <script>
+        // Used by InteropOnInitializationComponent
+        function setElementValue(element, newValue) {
+            element.value = newValue;
+            return element.value;
+        }
+
+        function start() {
+            Blazor.start({
+                logLevel: 1 // LogLevel.Debug
+            });
+        }
+    </script>
+</body>
+</html>

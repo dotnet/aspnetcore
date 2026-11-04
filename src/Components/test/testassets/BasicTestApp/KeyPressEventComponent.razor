@@ -1,0 +1,24 @@
+﻿@using System.Text.Json
+
+Type here: <input @onkeypress=OnKeyPressed />
+<ul>
+    @foreach (var key in keysPressed)
+    {
+        <li>@key</li>
+    }
+</ul>
+
+@code {
+    List<string> keysPressed = new List<string>();
+
+    void OnKeyPressed(KeyboardEventArgs eventArgs)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(eventArgs));
+        keysPressed.Add(eventArgs.Key);
+
+        if (eventArgs.Type != "keypress")
+        {
+            throw new ArgumentException($"Expected 'keypress' event type, got {eventArgs.Type}");
+        }
+    }
+}

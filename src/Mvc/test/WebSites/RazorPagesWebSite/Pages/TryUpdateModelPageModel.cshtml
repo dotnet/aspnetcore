@@ -1,0 +1,10 @@
+﻿@page "{id:int}"
+@using RazorPagesWebSite.Pages
+@model TryUpdateModelPageModel
+
+@Html.ValidationSummary()
+<form action="">
+    @Html.AntiForgeryToken()    
+</form>
+Updated: @Model.Updated
+Name = @Model.UserModel?.Name

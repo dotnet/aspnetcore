@@ -1,0 +1,15 @@
+﻿@using System.Security.Claims
+    
+<!-- Simple view used when a user doesn't have authorization to access a resource -->
+<h2>Access Denied: @(User?.Identity?.Name ?? "User") is not authorized to view this page.</h2>
+
+<!-- Show the current user's date of birth (if such a claim exists) for debugging purposes -->
+@{
+    var dateOfBirth = User?.FindFirst(c => c.Type == ClaimTypes.DateOfBirth)?.Value;
+}
+<h3>Date of birth: @(dateOfBirth ?? "<Undefined>")</h3>
+
+<ul>
+    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+    <li>@Html.ActionLink("Sign Out", "Signout", "Account")</li>
+</ul>

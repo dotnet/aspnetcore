@@ -1,0 +1,5 @@
+﻿<?xml version="1.0"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <!-- This file exists to prevent applicationHost.xdt from being applied to scm host that runs
+      other dotnet processes (dotnet build, csc etc. )-->
+</configuration>

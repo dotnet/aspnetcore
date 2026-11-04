@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Components\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+  </ItemGroup>
+
+</Project>

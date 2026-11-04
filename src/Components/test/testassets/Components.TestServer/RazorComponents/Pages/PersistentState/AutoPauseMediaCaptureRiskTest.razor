@@ -1,0 +1,34 @@
+@page "/persistent-state/auto-pause-media-capture-risk"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Media capture state risk</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<canvas id="capture-source" width="10" height="10" style="display:none"></canvas>
+
+<script>
+    if (!window.__mediaCaptureHookInitialized) {
+        window.__mediaCaptureHookInitialized = true;
+        window.__savedMediaState = null;
+        window.__captureReady = false;
+
+        var canvas = document.getElementById('capture-source');
+        canvas.getContext('2d').fillRect(0, 0, 10, 10);
+        var stream = canvas.captureStream();
+        window.__activeStream = stream;
+        window.__captureReady = stream.active;
+
+        if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+            window.__mitigationHandler = function () {
+                var s = window.__activeStream;
+                window.__savedMediaState = s.active + ',' + s.getTracks().length + ',' + s.getTracks()[0].readyState;
+            };
+        }
+    }
+</script>

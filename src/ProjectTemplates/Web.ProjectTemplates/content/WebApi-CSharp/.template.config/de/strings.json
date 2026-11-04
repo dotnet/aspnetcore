@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "ASP.NET Core-Web-API",
+    "description": "Eine Projektvorlage zum Erstellen einer RESTful-Web-API mit ASP.NET Core-Controllern oder minimalen APIs mit optionaler Unterstützung für OpenAPI und Authentifizierung.",
+    "parameter.DisableOpenAPI.name": "_OpenAPI-Unterstützung aktivieren",
+    "parameter.DisableOpenAPI.description": "Aktiviert OpenAPI-Unterstützung (Swagger)",
+    "parameter.UseMinimalAPIs.name": "Controller verwenden",
+    "parameter.UseMinimalAPIs.description": "Verwenden Sie Controller anstelle minimaler APIs."
+  }
+}

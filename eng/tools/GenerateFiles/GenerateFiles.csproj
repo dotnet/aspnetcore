@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Use SDK bundled version to avoid needing workarounds set up here. -->
+    <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
+  <Target Name="GenerateDirectoryBuildFiles">
+    <PropertyGroup>
+      <_TemplateProperties>
+        AspNetCorePatchVersion=$(AspNetCorePatchVersion);
+        DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+        MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
+        MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
+        MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
+        LibNetHostAppPackVersion=$(BundledNETCoreAppPackageVersion);
+        SupportedRuntimeIdentifiers=$([MSBuild]::Escape($(SupportedRuntimeIdentifiers)));
+        ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir)
+      </_TemplateProperties>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(BaseOutputPath)" />
+
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(BaseOutputPath)Directory.Build.props" />
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)Directory.Build.props.in"
+      Properties="$(_TemplateProperties)"
+      SkipUnchanged="true"
+      OutputPath="$(BaseOutputPath)Directory.Build.props" />
+
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(BaseOutputPath)Directory.Build.targets" />
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)Directory.Build.targets.in"
+      Properties="$(_TemplateProperties)"
+      SkipUnchanged="true"
+      OutputPath="$(BaseOutputPath)Directory.Build.targets" />
+  </Target>
+</Project>

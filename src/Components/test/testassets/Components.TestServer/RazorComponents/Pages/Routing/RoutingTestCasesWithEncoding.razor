@@ -1,0 +1,15 @@
+﻿@page "/🙂/routing"
+@inject NavigationManager NavigationManager
+<h3>Routing test cases with encoded urls</h3>
+
+<ul>
+    <li>
+        <a href="%F0%9F%99%82/routing/catch-all/http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback/another">Catch all</a>
+    </li>
+    <li>
+        <a href="%F0%9F%99%82/routing/parameters/http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback">Parameters</a>
+    </li>
+    <li>
+        <a href="%F0%9F%99%82/routing/%F0%9F%99%82complex-segment(http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback)">Complex segments</a>
+    </li>
+</ul>

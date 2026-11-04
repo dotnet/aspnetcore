@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "TypeScript 文件",
+  "description": "空白 TypeScript 源文件",
+  "postActions/openInEditor/description": "在编辑器中打开 file1.ts"
+}

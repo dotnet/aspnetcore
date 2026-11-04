@@ -1,0 +1,8 @@
+﻿@page "/persistent-state/page-with-webassembly-interactivity"
+
+<p>
+    This page is used to ensure that the WebAssembly runtime is downloaded and available
+    so that WebAssembly interactivity will get used for components with the Auto render mode
+</p>
+
+<TestContentPackage.Counter @rendermode="RenderMode.InteractiveWebAssembly" IncrementAmount="1" IdSuffix="counter" />

@@ -1,0 +1,33 @@
+﻿@page "/locked-navigation"
+@using BasicTestApp.RouterTest
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Locked navigation</title>
+    <base href="~/" />
+</head>
+<body>
+    <app><component type="typeof(LockNavigationOnPageLoad)" render-mode="ServerPrerendered" /></app>
+
+    @*
+        So that E2E tests can make assertions about both the prerendered and
+        interactive states, we only load the .js file when told to.
+    *@
+    <hr />
+
+    <button id="load-boot-script" onclick="start()">Load boot script</button>
+
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+
+    <script>
+        function start() {
+            Blazor.start({
+                logLevel: 1 // LogLevel.Debug
+            }).then(function () {
+                window['__aspnetcore__testing__blazor__started__'] = true;
+            });
+        }
+    </script>
+</body>
+</html>

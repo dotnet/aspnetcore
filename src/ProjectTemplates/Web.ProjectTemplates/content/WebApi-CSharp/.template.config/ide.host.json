@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "order": 200,
+  "icon": "ide/icon.ico",
+  "supportsDocker": true,
+  "symbolInfo": [
+    {
+      "id": "DisableOpenAPI",
+      "name": {
+        "text": "Enable _OpenAPI support",
+        "overrideDefaultText": true
+      },
+      "description": {
+        "text": "Enables OpenAPI (Swagger) support",
+        "overrideDefaultText": true
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": "true",
+      "persistenceScope": "templateGroup"
+    },
+    {
+      "id": "UseProgramMain",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
+    },
+    {
+      "id": "UseMinimalAPIs",
+      "name": {
+        "text": "Use controllers",
+        "overrideDefaultText": true
+      },
+      "description": {
+        "text": "Use controllers instead of minimal APIs.",
+        "overrideDefaultText": true
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "persistenceScope": "templateGroup"
+    }
+  ],
+  "disableHttpsSymbol": "NoHttps"
+}

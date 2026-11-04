@@ -1,0 +1,82 @@
+﻿@page "/forms/default-form-bound-complextype-multiple-components"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form with bound complex type parameter broken into multiple components</h2>
+
+<EditForm Enhance Model="Model" method="POST" OnValidSubmit="DisplayCustomer" FormName="someform">
+    <ValidationSummary />
+    <div>
+        <label for="Model.Name">
+            Name:
+            <InputText @bind-Value="Model.Name" />
+        </label>
+        <ValidationMessage For="() => Model.Name" />
+    </div>
+    <div>
+        <label for="Model.Email">
+            Email:
+            <InputText @bind-Value="Model.Email" />
+        </label>
+        <ValidationMessage For="() => Model.Email" />
+    </div>
+    <div>
+        <label for="Model.IsPreferred">
+            Preferred:
+            <InputCheckbox @bind-Value="Model.IsPreferred" />
+        </label>
+        <ValidationMessage For="() => Model.IsPreferred" />
+    </div>
+    <fieldset>
+        <legend>Billing Address</legend>
+        <AddressEditor @bind-Value="Model.BillingAddress" />
+    </fieldset>
+    <fieldset>
+        <legend>Shipping Address</legend>
+        <AddressEditor @bind-Value="Model.ShippingAddress" />
+    </fieldset>
+
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_shouldDisplayCustomer)
+{
+    <p id="name">Customer: @Model.Name</p>
+    <p id="email">Email: @Model.Email</p>
+    <p id="preferred">Preferred: @Model.IsPreferred</p>
+    <p id="billing-address-street">Billing Street: @Model.BillingAddress.Street</p>
+    <p id="billing-address-city">Billing City: @Model.BillingAddress.City</p>
+    <p id="billing-address-area-code">Billing Area Code: @Model.BillingAddress.AreaCode</p>
+    <p id="shipping-address-street">Shipping Street: @Model.ShippingAddress.Street</p>
+    <p id="shipping-address-city">Shipping City: @Model.ShippingAddress.City</p>
+    <p id="shipping-address-area-code">Shipping Area Code: @Model.ShippingAddress.AreaCode</p>
+}
+
+@code {
+
+    bool _shouldDisplayCustomer = false;
+
+    public void DisplayCustomer() => _shouldDisplayCustomer = true;
+
+    [SupplyParameterFromForm] public Customer Model { get; set; }
+
+    [CascadingParameter] public FormMappingContext Context { get; set; }
+
+    protected override void OnInitialized() => Model ??= new Customer();
+
+    public class Customer
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public bool IsPreferred { get; set; }
+        public Address BillingAddress { get; set; } = new();
+        public Address ShippingAddress { get; set; } = new();
+    }
+
+    public class Address
+    {
+        public string Street { get; set; }
+        public string City { get; set; }
+        public int AreaCode { get; set; }
+    }
+}

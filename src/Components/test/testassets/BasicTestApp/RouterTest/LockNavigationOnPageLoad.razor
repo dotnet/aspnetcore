@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+
+@inject INavigationInterception NavigationInterception
+
+<a id="internal-navigation-link" href="should-never-get-here">Internal navigation</a>
+
+<span id="num-prevented-navigations">Prevented navigations: @_numPreventedNavigations</span>
+
+<NavigationLock OnBeforeInternalNavigation="HandleBeforeInternalNavigationAsync" ConfirmExternalNavigation />
+
+@code {
+    private int _numPreventedNavigations = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await NavigationInterception.EnableNavigationInterceptionAsync();
+        }
+    }
+
+    private Task HandleBeforeInternalNavigationAsync(LocationChangingContext context)
+    {
+        _numPreventedNavigations++;
+        context.PreventNavigation();
+        return Task.CompletedTask;
+    }
+}
