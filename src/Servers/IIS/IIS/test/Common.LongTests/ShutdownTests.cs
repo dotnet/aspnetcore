@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -467,7 +468,7 @@ public class ShutdownTests : IISFunctionalTestBase
         var deploymentResult = await DeployAsync(deploymentParameters);
 
         var processBefore = await deploymentResult.HttpClient.GetStringAsync("/ProcessId");
-        using var process = System.Diagnostics.Process.GetProcessById(int.Parse(processBefore));
+        using var process = System.Diagnostics.Process.GetProcessById(int.Parse(processBefore, CultureInfo.InvariantCulture));
 
         // Just "touching" web.config should be enough
         deploymentResult.ModifyWebConfig(element => { });
