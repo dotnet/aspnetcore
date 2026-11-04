@@ -417,7 +417,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "return document.querySelectorAll('#variable-height-table tbody tr td').length;");
         Assert.True(itemRowCount > 0, "Should have <tr> elements containing <td> cells");
 
-        Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+        Browser.Exists(By.TagName("body")).SendKeys(Keys.End);
         Browser.True(() => Browser.Exists(By.Id("vht-row-499")).Displayed);
 
         var nestedTrCountAfterScroll = (long)js.ExecuteScript(
