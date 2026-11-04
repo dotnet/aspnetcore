@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
@@ -33,13 +34,11 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 {
     private const int MaxRetries = 10;
 
-    [ConditionalFact]
-    [HostNameIsReachable]
+    [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
     public async Task RegisterAddresses_HostName_Success()
     {
-        var hostName = Dns.GetHostName();
-        await RegisterAddresses_Success($"http://{hostName}:0", $"http://{hostName}");
+        await RegisterAddresses_Success("http://test-host:0", "http://test-host", connectAddress: IPAddress.Loopback);
     }
 
     [Theory]
@@ -178,7 +177,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         await RegisterAddresses_StaticPort_Success("http://localhost", new[] { "http://localhost", "http://127.0.0.1", "http://[::1]" });
     }
 
-    private async Task RegisterAddresses_Success(string addressInput, string[] testUrls, int testPort = 0)
+    private async Task RegisterAddresses_Success(string addressInput, string[] testUrls, int testPort = 0, IPAddress connectAddress = null)
     {
         var hostBuilder = TransportSelector.GetHostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -202,7 +201,9 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 
             foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
             {
-                var response = await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false);
+                var response = connectAddress is null
+                    ? await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false)
+                    : await GetStringAsync(testUrl, connectAddress);
 
                 // Filter out the scope id for IPv6, that's not sent over the wire. "fe80::3%1"
                 // See https://github.com/aspnet/Common/pull/369
@@ -221,8 +222,8 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    private Task RegisterAddresses_Success(string addressInput, string testUrl, int testPort = 0)
-        => RegisterAddresses_Success(addressInput, new[] { testUrl }, testPort);
+    private Task RegisterAddresses_Success(string addressInput, string testUrl, int testPort = 0, IPAddress connectAddress = null)
+        => RegisterAddresses_Success(addressInput, new[] { testUrl }, testPort, connectAddress);
 
     private Task RegisterAddresses_StaticPort_Success(string addressInput, string[] testUrls) =>
         RunTestWithStaticPort(port => RegisterAddresses_Success($"{addressInput}:{port}", testUrls, port));
@@ -356,16 +357,14 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         await ListenAnyIP_Success(new[] { "http://[::1]", "http://localhost", "http://127.0.0.1" });
     }
 
-    [ConditionalFact]
-    [HostNameIsReachable]
+    [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
     public async Task ListenAnyIP_HostName_Success()
     {
-        var hostName = Dns.GetHostName();
-        await ListenAnyIP_Success(new[] { $"http://{hostName}" });
+        await ListenAnyIP_Success(new[] { "http://test-host" }, connectAddress: IPAddress.Loopback);
     }
 
-    private async Task ListenAnyIP_Success(string[] testUrls, int testPort = 0)
+    private async Task ListenAnyIP_Success(string[] testUrls, int testPort = 0, IPAddress connectAddress = null)
     {
         var hostBuilder = TransportSelector.GetHostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -385,7 +384,9 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 
             foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
             {
-                var response = await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false);
+                var response = connectAddress is null
+                    ? await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false)
+                    : await GetStringAsync(testUrl, connectAddress);
 
                 // Compare the response with Uri.ToString(), rather than testUrl directly.
                 // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
@@ -1188,6 +1189,29 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         {
             return context.Response.WriteAsync(context.Request.GetDisplayUrl());
         });
+    }
+
+    private static async Task<string> GetStringAsync(string requestUri, IPAddress connectAddress)
+    {
+        using var handler = new SocketsHttpHandler
+        {
+            ConnectCallback = async (context, cancellationToken) =>
+            {
+                var socket = new Socket(connectAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                try
+                {
+                    await socket.ConnectAsync(connectAddress, context.DnsEndPoint.Port, cancellationToken);
+                    return new NetworkStream(socket, ownsSocket: true);
+                }
+                catch
+                {
+                    socket.Dispose();
+                    throw;
+                }
+            }
+        };
+        using var client = new HttpClient(handler);
+        return await client.GetStringAsync(requestUri);
     }
 
     private static int GetNextPort()
