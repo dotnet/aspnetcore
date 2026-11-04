@@ -314,14 +314,15 @@ public class InputSelectTest
         var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.NotNullableEnum
+            ValueExpression = () => model.NotNullableEnum,
+            Value = TestEnum.Two
         };
         var fieldIdentifier = FieldIdentifier.Create(() => model.NotNullableEnum);
         var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         await inputSelectComponent.SetCurrentValueAsStringAsync("NotARealEnumValue");
 
-        Assert.Equal(default, inputSelectComponent.CurrentValue);
+        Assert.Equal(TestEnum.Two, inputSelectComponent.CurrentValue);
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
     }
@@ -333,14 +334,15 @@ public class InputSelectTest
         var rootComponent = new TestInputHostComponent<int, TestInputSelect<int>>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.NotNullableInt
+            ValueExpression = () => model.NotNullableInt,
+            Value = 42
         };
         var fieldIdentifier = FieldIdentifier.Create(() => model.NotNullableInt);
         var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         await inputSelectComponent.SetCurrentValueAsStringAsync("abc");
 
-        Assert.Equal(default, inputSelectComponent.CurrentValue);
+        Assert.Equal(42, inputSelectComponent.CurrentValue);
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
     }
@@ -352,7 +354,8 @@ public class InputSelectTest
         var rootComponent = new TestInputHostComponent<int?, TestInputSelect<int?>>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.NullableInt
+            ValueExpression = () => model.NullableInt,
+            Value = model.NullableInt
         };
         var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
@@ -389,7 +392,8 @@ public class InputSelectTest
         var rootComponent = new TestInputHostComponent<Guid?, TestInputSelect<Guid?>>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.NullableGuid
+            ValueExpression = () => model.NullableGuid,
+            Value = model.NullableGuid
         };
         var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
@@ -405,7 +409,8 @@ public class InputSelectTest
         var rootComponent = new TestInputHostComponent<bool?, TestInputSelect<bool?>>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.NullableBool
+            ValueExpression = () => model.NullableBool,
+            Value = model.NullableBool
         };
         var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
