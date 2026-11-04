@@ -63,6 +63,67 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestDelegateRejectsMissingFormBodyBeforeAntiforgeryValidation(bool throwOnBadRequest)
+    {
+        var source = """app.MapPost("/form", ([FromForm] string message, HttpContext context) => context.Items["invoked"] = message);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton(LoggerFactory);
+        builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = throwOnBadRequest);
+        await using var app = builder.Build();
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: app.Services);
+        ((IEndpointRouteBuilder)app).DataSources.Add(new DefaultEndpointDataSource(endpoint));
+
+        app.Use(async (context, next) =>
+        {
+            try
+            {
+                await next(context);
+            }
+            finally
+            {
+                Assert.False(context.Features.Get<IHttpRequestBodyDetectionFeature>().CanHaveBody);
+                var validationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+                Assert.NotNull(validationFeature);
+                Assert.False(validationFeature.IsValid);
+                Assert.NotNull(validationFeature.Error);
+                Assert.Null(context.Items["invoked"]);
+            }
+        });
+        await app.StartAsync();
+
+        using var client = app.GetTestClient();
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/form");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://example.org");
+
+        if (throwOnBadRequest)
+        {
+            var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => client.SendAsync(request));
+            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(@"Unexpected request without body, failed to bind parameter ""string message"" from the request body as form.", exception.Message);
+            Assert.Null(exception.InnerException);
+            Assert.DoesNotContain(TestSink.Writes, write => write.EventId.Name == "UnexpectedRequestWithoutBody");
+        }
+        else
+        {
+            using var response = await client.SendAsync(request);
+            Assert.Equal(400, (int)response.StatusCode);
+            Assert.Equal("", await response.Content.ReadAsStringAsync());
+            var logMessage = Assert.Single(TestSink.Writes.Where(write => write.EventId.Name == "UnexpectedRequestWithoutBody"));
+            Assert.Equal(new EventId(11, "UnexpectedRequestWithoutBody"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Equal(@"Unexpected request without body, failed to bind parameter ""string message"" from the request body as form.", logMessage.Message);
+            Assert.Null(logMessage.Exception);
+        }
+
+        Assert.DoesNotContain(TestSink.Writes, write => write.EventId.Name == "InvalidAntiforgeryToken");
+    }
+
+    [Theory]
     [InlineData("missing-token", false)]
     [InlineData("invalid-token", false)]
     [InlineData("missing-cookie", false)]

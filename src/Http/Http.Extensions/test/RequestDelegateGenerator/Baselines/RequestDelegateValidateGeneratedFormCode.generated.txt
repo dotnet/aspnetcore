@@ -333,6 +333,13 @@ namespace Microsoft.AspNetCore.Http.Generated
             object? formValue = null;
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
 
+            if (feature?.CanHaveBody == false)
+            {
+                logOrThrowExceptionHelper.UnexpectedRequestWithoutBody(parameterTypeName, parameterName);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (false, null);
+            }
+
             if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
             {
                 logOrThrowExceptionHelper.InvalidAntiforgeryToken(parameterTypeName, parameterName, antiforgeryValidationFeature.Error!);
@@ -570,6 +577,23 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Action<ILogger, string, string, Exception?> _invalidFormRequestBody =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "InvalidFormRequestBody"), "Failed to read parameter \"{ParameterType} {ParameterName}\" from the request body as form.");
+
+        public void UnexpectedRequestWithoutBody(string parameterTypeName, string parameterName)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, "Unexpected request without body, failed to bind parameter \"{0} {1}\" from the request body as form.", parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _unexpectedRequestWithoutBody(_rdgLogger, parameterTypeName, parameterName, null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, Exception?> _unexpectedRequestWithoutBody =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(11, "UnexpectedRequestWithoutBody"), "Unexpected request without body, failed to bind parameter \"{ParameterType} {ParameterName}\" from the request body as form.");
 
         public void InvalidAntiforgeryToken(string parameterTypeName, string parameterName, Exception exception)
         {

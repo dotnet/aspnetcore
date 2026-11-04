@@ -144,6 +144,13 @@ internal static class RequestDelegateGeneratorSources
             object? formValue = null;
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
 
+            if (feature?.CanHaveBody == false)
+            {
+                logOrThrowExceptionHelper.UnexpectedRequestWithoutBody(parameterTypeName, parameterName);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (false, null);
+            }
+
             if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
             {
                 logOrThrowExceptionHelper.InvalidAntiforgeryToken(parameterTypeName, parameterName, antiforgeryValidationFeature.Error!);
@@ -373,6 +380,23 @@ internal static class RequestDelegateGeneratorSources
 
         private static readonly Action<ILogger, string, string, Exception?> _invalidFormRequestBody =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.InvalidFormRequestBodyEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, true)}});
+
+        public void UnexpectedRequestWithoutBody(string parameterTypeName, string parameterName)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyExceptionMessage, true)}}, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _unexpectedRequestWithoutBody(_rdgLogger, parameterTypeName, parameterName, null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, Exception?> _unexpectedRequestWithoutBody =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyLogMessage, true)}});
 
         public void InvalidAntiforgeryToken(string parameterTypeName, string parameterName, Exception exception)
         {
