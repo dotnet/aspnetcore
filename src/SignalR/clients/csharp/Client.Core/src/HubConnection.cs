@@ -2707,14 +2707,15 @@ public partial class HubConnection : IAsyncDisposable
         // Returns the registered handler name so hub protocols don't allocate a new target string for every invocation received.
         string? IInvocationBinder.GetTarget(ReadOnlySpan<byte> utf8Bytes)
         {
-            const int MaxStackallocLength = 256;
-            if (utf8Bytes.Length > MaxStackallocLength)
+            // Longer targets skip the lookup and the protocol allocates the string as before.
+            const int MaxTargetLength = 256;
+            if (utf8Bytes.Length > MaxTargetLength)
             {
                 return null;
             }
 
-            // UTF-8 never decodes to more chars than bytes.
-            Span<char> chars = stackalloc char[utf8Bytes.Length];
+            // UTF-8 never decodes to more chars than bytes, so the fixed-size buffer always fits.
+            Span<char> chars = stackalloc char[MaxTargetLength];
             // Decode strictly so invalid UTF-8 falls back to the protocol's own validation instead of matching a handler via U+FFFD.
             if (System.Text.Unicode.Utf8.ToUtf16(utf8Bytes, chars, out _, out var charsWritten, replaceInvalidSequences: false) != OperationStatus.Done)
             {

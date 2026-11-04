@@ -1055,6 +1055,23 @@ public partial class HubConnectionTests
                 Assert.Equal("Foo", binder.GetTarget("Foo"u8));
                 Assert.Null(binder.GetTarget("Bar"u8));
                 Assert.Null(binder.GetTarget(Encoding.UTF8.GetBytes(longName)));
+
+                // Targets up to the 256-byte buffer are looked up; longer ones fall back to the protocol allocating the string.
+                var belowLimit = new string('b', 255);
+                var atLimit = new string('c', 256);
+                var aboveLimit = new string('d', 257);
+                // Multi-byte UTF-8 (3 bytes per char) that fills the buffer exactly.
+                var multiByteAtLimit = new string('\u20AC', 85) + "x";
+                hubConnection.On<int>(belowLimit, _ => { });
+                hubConnection.On<int>(atLimit, _ => { });
+                hubConnection.On<int>(aboveLimit, _ => { });
+                hubConnection.On<int>(multiByteAtLimit, _ => { });
+                Assert.Same(belowLimit, binder.GetTarget(Encoding.UTF8.GetBytes(belowLimit)));
+                Assert.Same(atLimit, binder.GetTarget(Encoding.UTF8.GetBytes(atLimit)));
+                Assert.Null(binder.GetTarget(Encoding.UTF8.GetBytes(aboveLimit)));
+                Assert.Equal(256, Encoding.UTF8.GetByteCount(multiByteAtLimit));
+                Assert.Same(multiByteAtLimit, binder.GetTarget(Encoding.UTF8.GetBytes(multiByteAtLimit)));
+
                 // Invalid UTF-8 must not match a handler registered with the replacement character.
                 Assert.Null(binder.GetTarget(new byte[] { 0xFF }));
             }
