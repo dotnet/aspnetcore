@@ -1186,14 +1186,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             return;
         }
 
-        var componentState = GetOptionalComponentState(componentId);
-        if (componentState is null)
-        {
-            // The component was disposed before the exception was dispatched.
-            return;
-        }
-
-        HandleExceptionViaErrorBoundary(exception, componentState);
+        HandleExceptionViaErrorBoundary(exception, GetRequiredComponentState(componentId));
     }
 
     /// <summary>

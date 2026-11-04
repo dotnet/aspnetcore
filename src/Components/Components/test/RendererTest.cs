@@ -6099,14 +6099,14 @@ public class RendererTest
         var componentId = renderer.AssignRootComponentId(component);
         await renderer.RenderRootComponentAsync(componentId);
         renderer.Dispose();
-        
+
         await component.DispatchAsync(new InvalidTimeZoneException("Test exception"));
-        
+
         Assert.Empty(renderer.HandledExceptions);
     }
 
     [Fact]
-    public async Task DispatchExceptionAsync_AfterComponentIsRemoved_DoesNotThrow()
+    public async Task DispatchExceptionAsync_AfterComponentIsRemoved_Throws()
     {
         var renderer = new TestRenderer();
         var component = new DispatchExceptionComponent();
@@ -6114,14 +6114,197 @@ public class RendererTest
         await renderer.RenderRootComponentAsync(componentId);
         await renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(componentId));
 
-        await component.DispatchAsync(new InvalidTimeZoneException("Test exception"));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => component.DispatchAsync(new InvalidTimeZoneException("Test exception")));
 
+        Assert.Equal($"The renderer does not have a component with ID {componentId}.", exception.Message);
         Assert.Empty(renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task DispatchExceptionAsync_DuringRendererDisposal_DoesNotThrow()
+    {
+        var renderer = new TestRenderer();
+        renderer.ShouldHandleExceptions = true;
+        var component = new DispatchExceptionOnDisposeComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        component.OnDisposing = () =>
+        {
+            Assert.True(renderer.Disposed);
+            Assert.Empty(renderer.GetCurrentRenderTreeFrames(componentId).AsEnumerable());
+        };
+
+        renderer.Dispose();
+
+        Assert.True(component.DispatchCompleted);
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task DispatchExceptionAsync_WhileRendererDisposalIsPending_DoesNotThrow()
+    {
+        var renderer = new TestRenderer { ShouldHandleExceptions = true };
+        var disposalCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var disposableComponent = new AsyncDisposableComponent
+        {
+            AsyncDisposeAction = () => new ValueTask(disposalCompletion.Task)
+        };
+        renderer.AssignRootComponentId(disposableComponent);
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        var disposalTask = renderer.DisposeAsync().AsTask();
+        try
+        {
+            Assert.True(disposableComponent.Disposed);
+            Assert.True(renderer.Disposed);
+            Assert.False(disposalTask.IsCompleted);
+
+            await component.DispatchAsync(new InvalidTimeZoneException("Test exception"));
+
+            Assert.Empty(renderer.HandledExceptions);
+        }
+        finally
+        {
+            disposalCompletion.SetResult();
+            await disposalTask;
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DispatchExceptionAsync_QueuedWithRendererDisposal_RespectsDispatcherOrder(bool dispatchBeforeDisposal)
+    {
+        var renderer = new TestRenderer { ShouldHandleExceptions = true };
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        var exception = new InvalidTimeZoneException("Test exception");
+        var dispatcherEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var releaseDispatcher = new ManualResetEventSlim();
+        var dispatcherTask = Task.Run(() => renderer.Dispatcher.InvokeAsync(() =>
+        {
+            dispatcherEntered.SetResult();
+            releaseDispatcher.Wait();
+        }));
+        await dispatcherEntered.Task;
+
+        Task dispatchTask;
+        Task disposalTask;
+        try
+        {
+            if (dispatchBeforeDisposal)
+            {
+                dispatchTask = component.DispatchAsync(exception);
+                disposalTask = renderer.Dispatcher.InvokeAsync(renderer.Dispose);
+            }
+            else
+            {
+                disposalTask = renderer.Dispatcher.InvokeAsync(renderer.Dispose);
+                dispatchTask = component.DispatchAsync(exception);
+            }
+
+            Assert.False(dispatchTask.IsCompleted);
+            Assert.False(disposalTask.IsCompleted);
+        }
+        finally
+        {
+            releaseDispatcher.Set();
+            await dispatcherTask;
+        }
+
+        await disposalTask;
+        await dispatchTask;
+
+        if (dispatchBeforeDisposal)
+        {
+            Assert.Same(exception, Assert.Single(renderer.HandledExceptions));
+        }
+        else
+        {
+            Assert.Empty(renderer.HandledExceptions);
+        }
+    }
+
+    [Fact]
+    public async Task DispatchExceptionAsync_LiveComponent_UsesClosestErrorBoundary()
+    {
+        var renderer = new TestRenderer();
+        var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+        {
+            TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+            {
+                builder.OpenComponent<DispatchExceptionComponent>(0);
+                builder.CloseComponent();
+            });
+        }));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+        var batch = Assert.Single(renderer.Batches);
+        var componentFrame = Assert.Single(batch.GetComponentFrames<DispatchExceptionComponent>());
+        var component = (DispatchExceptionComponent)componentFrame.Component;
+        var errorBoundaries = batch.GetComponentFrames<TestErrorBoundary>()
+            .Select(frame => (TestErrorBoundary)frame.Component).ToArray();
+        var exception = new InvalidTimeZoneException("Test exception");
+
+        await component.DispatchAsync(exception);
+
+        Assert.Collection(errorBoundaries,
+            boundary => Assert.Null(boundary.ReceivedException),
+            boundary => Assert.Same(exception, boundary.ReceivedException));
+        Assert.Empty(renderer.HandledExceptions);
+        Assert.Equal(componentFrame.ComponentId, Assert.Single(renderer.Batches[1].DisposedComponentIDs));
+    }
+
+    [Fact]
+    public async Task DispatchExceptionAsync_LiveComponentWithoutErrorBoundary_Throws()
+    {
+        var renderer = new TestRenderer();
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        var exception = new InvalidTimeZoneException("Test exception");
+
+        var thrownException = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => component.DispatchAsync(exception));
+
+        Assert.Same(exception, thrownException);
+    }
+
+    [Fact]
+    public async Task DispatchExceptionAsync_AfterAnotherComponentIsRemoved_UsesFatalHandler()
+    {
+        var renderer = new TestRenderer { ShouldHandleExceptions = true };
+        var removedComponentId = renderer.AssignRootComponentId(new DispatchExceptionComponent());
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(removedComponentId);
+        await renderer.RenderRootComponentAsync(componentId);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(removedComponentId));
+        var exception = new InvalidTimeZoneException("Test exception");
+
+        await component.DispatchAsync(exception);
+
+        Assert.Same(exception, Assert.Single(renderer.HandledExceptions));
     }
 
     private class DispatchExceptionComponent : ComponentBase
     {
         public Task DispatchAsync(Exception exception) => DispatchExceptionAsync(exception);
+    }
+
+    private class DispatchExceptionOnDisposeComponent : ComponentBase, IAsyncDisposable
+    {
+        public Action OnDisposing { get; set; }
+
+        public bool DispatchCompleted { get; private set; }
+
+        public async ValueTask DisposeAsync()
+        {
+            OnDisposing();
+            await DispatchExceptionAsync(new InvalidTimeZoneException("Test exception"));
+            DispatchCompleted = true;
+        }
     }
 
     private class ComponentThatAwaitsTask : ComponentBase
