@@ -1,0 +1,92 @@
+OFFLINE SOURCE CASE
+Historical motif: #70106 / #70043, round 2 candidate C1.
+Synthetic reduction, not a verbatim PR snapshot or an execution transcript.
+Source roles are frozen for this exercise. mergeBase is the old diff side;
+baseTip equals mergeBase. Line prefixes are source coordinates, not code.
+All application producer, callback, guard, catch, and store paths are below.
+No live checkout, manifest bootstrap, or external implementation is needed.
+
+CANDIDATE C1 (untrusted reviewer proposal)
+Anchor: head PersistenceManager.cs:8 (RIGHT-side changed line).
+Claim: Introducing InvokeAsync now causes two persistence callbacks that write
+the same key to discard the whole state instead of persisting the first value.
+Trigger: register SaveCart twice, then CommitAsync with a new PendingState.
+Claimed old behavior: the first cart value reaches Store.WriteAsync.
+Claimed head effect: state is cleared and Store.WriteAsync is never called.
+
+SOURCE mergeBase PersistenceManager.cs
+01 public sealed class PersistenceManager
+02 {
+03     public async Task CommitAsync(Func<PendingState, Task>[] callbacks, Store store)
+04     {
+05         var state = new PendingState();
+06         try
+07         {
+08             foreach (var callback in callbacks) { await callback(state); }
+09         }
+10         catch (InvalidOperationException)
+11         {
+12             state.Clear();
+13             return;
+14         }
+15         await store.WriteAsync(state);
+16     }
+17 }
+
+SOURCE head PersistenceManager.cs
+01 public sealed class PersistenceManager
+02 {
+03     public async Task CommitAsync(Func<PendingState, Task>[] callbacks, Store store)
+04     {
+05         var state = new PendingState();
+06         try
+07         {
+08             foreach (var callback in callbacks) { await InvokeAsync(callback, state); }
+09         }
+10         catch (InvalidOperationException)
+11         {
+12             state.Clear();
+13             return;
+14         }
+15         await store.WriteAsync(state);
+16     }
+17     private static Task InvokeAsync(Func<PendingState, Task> callback, PendingState state)
+18         => callback(state);
+19 }
+
+SOURCE all roles PendingState.cs
+01 public sealed class PendingState
+02 {
+03     private readonly Dictionary<string, string> pending = new();
+04     public void Persist(string key, string value)
+05     {
+06         if (pending.ContainsKey(key)) { throw new InvalidOperationException("Duplicate key"); }
+07         pending.Add(key, value);
+08     }
+09     public void Clear() => pending.Clear();
+10 }
+
+SOURCE all roles Application.cs
+01 static Task SaveCart(PendingState state)
+02 {
+03     state.Persist("cart", "item-1");
+04     return Task.CompletedTask;
+05 }
+06 await manager.CommitAsync([SaveCart, SaveCart], store);
+
+SOURCE all roles Store.cs
+01 public sealed class Store
+02 {
+03     public int Writes { get; private set; }
+04     public Task WriteAsync(PendingState state)
+05     {
+06         Writes++;
+07         return Task.CompletedTask;
+08     }
+09 }
+
+DIFF: PersistenceManager.cs line 8 replaced; head lines 17-18 added.
+FEEDBACK: no issue or review comment covers C1.
+GUIDANCE: compare the exact old and new producer-to-consumer path, including
+caught callback failures and the final store write, before asserting a regression.
+No requirement to change duplicate-key policy accompanies this refactor.

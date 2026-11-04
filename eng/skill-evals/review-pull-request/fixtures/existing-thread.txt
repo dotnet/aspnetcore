@@ -1,0 +1,91 @@
+OFFLINE SOURCE CASE
+Historical motif: #70269, existing inline feedback coverage.
+Synthetic reduction, not a verbatim PR snapshot or an execution transcript.
+mergeBase is the old diff side; baseTip equals mergeBase.
+Source line numbers, the changed-line anchor, and the projected feedback refer
+to the same frozen head. All encoder and consumer paths for C1 are included.
+
+CANDIDATE C1 (untrusted reviewer proposal)
+Anchor: head PacketEncoder.cs:6 (RIGHT-side changed line).
+Claim: Encoding a nonempty payload now omits its final byte and appends zero
+because the copy length is payload.Length - 1 while the result retains full length.
+Trigger: Send([7, 9]) through PacketSender.
+Material effect: the wire receives [7, 0] instead of [7, 9].
+
+SOURCE mergeBase PacketEncoder.cs
+01 public static class PacketEncoder
+02 {
+03     public static byte[] Encode(byte[] payload)
+04     {
+05         var result = new byte[payload.Length];
+06         Array.Copy(payload, result, payload.Length);
+07         return result;
+08     }
+09 }
+
+SOURCE head PacketEncoder.cs
+01 public static class PacketEncoder
+02 {
+03     public static byte[] Encode(byte[] payload)
+04     {
+05         var result = new byte[payload.Length];
+06         Array.Copy(payload, result, payload.Length - 1);
+07         return result;
+08     }
+09 }
+
+SOURCE all roles PacketSender.cs
+01 public sealed class PacketSender
+02 {
+03     private readonly Wire wire;
+04     public PacketSender(Wire wire) { this.wire = wire; }
+05     public void Send(byte[] payload)
+06     {
+07         wire.Write(PacketEncoder.Encode(payload));
+08     }
+09 }
+
+SOURCE all roles Wire.cs
+01 public sealed class Wire
+02 {
+03     public byte[]? LastPayload { get; private set; }
+04     public void Write(byte[] payload) => LastPayload = payload;
+05 }
+
+SOURCE baseTip docs/Encoding.md
+01 Encode returns a fresh buffer containing every input byte in the same order.
+02 Send writes that encoded buffer to the wire without a trailing sentinel byte.
+
+DIFF PacketEncoder.cs
+@@ -3,7 +3,7 @@
+     public static byte[] Encode(byte[] payload)
+     {
+         var result = new byte[payload.Length];
+-        Array.Copy(payload, result, payload.Length);
++        Array.Copy(payload, result, payload.Length - 1);
+         return result;
+     }
+
+FEEDBACK frozen projection
+threadId: PRRT_kwDOExampleThread1
+rootCommentId: 123456789
+isResolved: false
+isOutdated: false
+path: PacketEncoder.cs
+side: RIGHT
+line: 6
+commit: head
+body: |
+  This drops the last byte for every nonempty packet. Send([7, 9]) now writes
+  [7, 0] because only one byte is copied into a two-byte zero-initialized array.
+  Copy payload.Length bytes here to preserve the wire format.
+
+SOURCE guidance ReviewGuide.md
+01 Review existing feedback before emitting a new finding.
+02 Compare the trigger, mechanism, effect, and changed line, not just wording.
+03 A comment's resolved status is thread metadata, not proof of code behavior.
+
+All prior feedback is projected above; there are no other threads or issues.
+The array allocation and three-argument Array.Copy have their ordinary managed
+semantics; no runtime-specific or third-party behavior is disputed in this case.
+Do not reinterpret the final zero as an intentional protocol delimiter.

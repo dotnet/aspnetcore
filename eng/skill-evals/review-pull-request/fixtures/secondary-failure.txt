@@ -1,0 +1,95 @@
+OFFLINE SOURCE CASE
+Historical motif: #70269 / #69445, secondary-failure suppression.
+Synthetic reduction, not a verbatim PR snapshot or an execution transcript.
+mergeBase is the old diff side; baseTip equals mergeBase.
+All implementation bodies for the demonstrated failure sequence are below.
+There is no observed execution, omitted sink body, or live repository dependency.
+
+CANDIDATE C1 (untrusted reviewer proposal)
+Anchor: head WorkHandler.cs:15 (RIGHT-side changed line).
+Claim: The new inner catch is a defect because it silently suppresses a
+diagnostic sink exception. A caller expecting SinkException no longer sees it.
+Trigger: Work.Run throws WorkException and the configured sink throws
+SinkException while reporting that failure.
+Proposed justification: exceptions must never be swallowed.
+Claimed material effect: the caller receives WorkException instead of SinkException.
+
+SOURCE mergeBase WorkHandler.cs
+01 public sealed class WorkHandler
+02 {
+03     private readonly IDiagnosticSink sink;
+04     public WorkHandler(IDiagnosticSink sink) { this.sink = sink; }
+05     public void Execute()
+06     {
+07         try
+08         {
+09             Work.Run();
+10         }
+11         catch (Exception primary)
+12         {
+13             sink.Report(primary);
+14             throw;
+15         }
+16     }
+17 }
+
+SOURCE head WorkHandler.cs
+01 public sealed class WorkHandler
+02 {
+03     private readonly IDiagnosticSink sink;
+04     public WorkHandler(IDiagnosticSink sink) { this.sink = sink; }
+05     public void Execute()
+06     {
+07         try
+08         {
+09             Work.Run();
+10         }
+11         catch (Exception primary)
+12         {
+13             try { sink.Report(primary); }
+14             catch
+15             {
+16             }
+17             throw;
+18         }
+19     }
+20 }
+
+SOURCE all roles FailureTypes.cs
+01 public sealed class WorkException : Exception { }
+02 public sealed class SinkException : Exception { }
+03 public static class Work
+04 {
+05     public static void Run() => throw new WorkException();
+06 }
+07 public interface IDiagnosticSink
+08 {
+09     void Report(Exception error);
+10 }
+11 public sealed class ThrowingSink : IDiagnosticSink
+12 {
+13     public void Report(Exception error) => throw new SinkException();
+14 }
+
+SOURCE all roles Application.cs
+01 var handler = new WorkHandler(new ThrowingSink());
+02 try { handler.Execute(); }
+03 catch (SinkException) { Console.WriteLine("sink failed"); }
+04 catch (WorkException) { Console.WriteLine("work failed"); }
+
+SOURCE baseTip docs/Diagnostics.md (entire applicable contract)
+01 Execute runs the work operation and reports failures to the configured sink.
+02 Applications supply IDiagnosticSink through the WorkHandler constructor.
+
+SOURCE guidance ReviewGuide.md (entire applicable policy)
+01 Report concrete changed behavior when a binding contract establishes a defect.
+02 Preserve distinctions between a work failure and a diagnostic failure.
+
+DIFF: WorkHandler.cs replaces the old line 13 with head lines 13-16.
+FEEDBACK: no issue or review thread covers C1.
+CONTRACT INVENTORY: the interface, target-base document, and reviewer policy
+above are complete for this exercise. They do not specify propagation or
+precedence when the sink itself throws while reporting an existing failure.
+No API proposal, issue requirement, or primary diagnostic-failure contract is
+included. The candidate's proposed justification is a reviewer assertion,
+not an additional target-base policy. Adjudicate it against the frozen evidence.
