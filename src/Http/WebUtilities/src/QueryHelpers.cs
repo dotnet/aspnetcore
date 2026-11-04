@@ -176,10 +176,13 @@ public static class QueryHelpers
         public void Dispose()
         {
             var buffer = _buffer;
+            var length = _length;
             _buffer = Array.Empty<char>();
             _length = 0;
             if (buffer.Length > 0)
             {
+                // Query values may contain sensitive data.
+                buffer.AsSpan(0, length).Clear();
                 ArrayPool<char>.Shared.Return(buffer);
             }
         }
@@ -188,6 +191,8 @@ public static class QueryHelpers
         {
             var newBuffer = ArrayPool<char>.Shared.Rent(Math.Max(_buffer.Length * 2, _length + additional));
             _buffer.AsSpan(0, _length).CopyTo(newBuffer);
+            // Query values may contain sensitive data.
+            _buffer.AsSpan(0, _length).Clear();
             ArrayPool<char>.Shared.Return(_buffer);
             _buffer = newBuffer;
         }
