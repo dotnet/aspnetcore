@@ -6,6 +6,7 @@
 <h1>Network failure</h1>
 
 <a id="successful-navigation" href="nav">Successful navigation</a>
+<a id="error-ui-navigation" href="nav/network-failure/@Id?replaceErrorUi=true">Replace error UI</a>
 
 <form action="@Action" method="post" data-enhance @formname="network-failure">
     <AntiforgeryToken />
@@ -15,7 +16,25 @@
 </form>
 
 <p id="received-value">@Value</p>
-<div id="blazor-error-ui" style="display: none">An unhandled error has occurred.</div>
+@if (ReplaceErrorUi)
+{
+    <section id="blazor-error-ui" style="display: none">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">Dismiss</span>
+    </section>
+}
+else if (IncludeErrorUi)
+{
+    <div id="blazor-error-ui" style="display: none">
+        An unhandled error has occurred.
+        @if (IncludeErrorUiControls)
+        {
+            <a href="." class="reload">Reload</a>
+            <span class="dismiss">Dismiss</span>
+        }
+    </div>
+}
 
 @code {
     [Parameter] public string Id { get; set; } = default!;
@@ -25,6 +44,15 @@
 
     [SupplyParameterFromQuery]
     private string Formmethod { get; set; } = "get";
+
+    [SupplyParameterFromQuery]
+    private bool IncludeErrorUi { get; set; } = true;
+
+    [SupplyParameterFromQuery]
+    private bool IncludeErrorUiControls { get; set; } = true;
+
+    [SupplyParameterFromQuery]
+    private bool ReplaceErrorUi { get; set; }
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;

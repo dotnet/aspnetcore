@@ -232,7 +232,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   try {
     response = await responsePromise;
   } catch (ex) {
-    handleEnhancedNavigationFailure(ex, internalDestinationHref, isGetRequest, abortController);
+    handleEnhancedNavigationFailure(ex, internalDestinationHref, isGetRequest, abortController, true);
     return;
   }
 
@@ -357,7 +357,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   try {
     await responseBodyPromise;
   } catch (ex) {
-    handleEnhancedNavigationFailure(ex, internalDestinationHref, isGetRequest, abortController);
+    const isResponseReadFailure = ex instanceof ResponseReadError;
+    const originalError = isResponseReadFailure ? ex.cause : ex;
+    handleEnhancedNavigationFailure(originalError, internalDestinationHref, isGetRequest, abortController, isResponseReadFailure);
     return;
   }
 
@@ -386,12 +388,12 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   }
 }
 
-function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: string, isGetRequest: boolean, abortController: AbortController) {
-  if ((ex as Error).name === 'AbortError' && abortController.signal.aborted) {
+function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: string, isGetRequest: boolean, abortController: AbortController, isResponseReadFailure: boolean) {
+  if (isResponseReadFailure && ex instanceof Error && ex.name === 'AbortError' && abortController.signal.aborted) {
     return;
   }
 
-  if (isGetRequest) {
+  if (isResponseReadFailure && isGetRequest && currentEnhancedNavigationAbortController === abortController) {
     retryEnhancedNavAsFullPageLoad(internalDestinationHref);
     return;
   }
@@ -414,13 +416,16 @@ async function getResponsePartsWithFraming(response: Response, onInitialDocument
   if (!frameBoundary) {
     // Shouldn't happen, but perhaps some proxy stripped the headers. In that case we just won't respect streaming and will
     // wait for the whole response.
-    const allResponseText = await response.text();
+    const allResponseText = await response.text().catch(ex => {
+      throw new ResponseReadError(ex);
+    });
     onInitialDocument(response, allResponseText);
     return;
   }
 
   // This is going to be a framed response, so split it into chunks based on our framing boundaries
   let isFirstFramedChunk = true;
+  let callbackFailure: { error: unknown } | undefined;
   await response.body
     .pipeThrough(new TextDecoderStream())
     .pipeThrough(splitStream(`<!--${frameBoundary}-->`))
@@ -429,14 +434,32 @@ async function getResponsePartsWithFraming(response: Response, onInitialDocument
         // Inside here, we know the chunks correspond precisely to frames within our message framing mechanism.
         // The first one is always the initial document that we will merge into the existing DOM. All subsequent ones
         // are blocks of <blazor-ssr>...</blazor-ssr> markup whose insertion would trigger a streaming SSR DOM update.
-        if (isFirstFramedChunk) {
-          isFirstFramedChunk = false;
-          onInitialDocument(response, chunk);
-        } else {
-          onStreamingElement(chunk);
+        try {
+          if (isFirstFramedChunk) {
+            isFirstFramedChunk = false;
+            onInitialDocument(response, chunk);
+          } else {
+            onStreamingElement(chunk);
+          }
+        } catch (ex) {
+          callbackFailure = { error: ex };
+          throw ex;
         }
       },
-    }));
+    })).catch(ex => {
+      // A rejected write is an application callback failure, not a failed response read.
+      if (callbackFailure) {
+        throw callbackFailure.error;
+      }
+
+      throw new ResponseReadError(ex);
+    });
+}
+
+class ResponseReadError extends Error {
+  constructor(cause: unknown) {
+    super('Failed to read the enhanced navigation response.', { cause });
+  }
 }
 
 export function replaceDocumentWithPlainText(text: string) {
