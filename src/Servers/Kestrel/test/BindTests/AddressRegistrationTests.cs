@@ -1195,6 +1195,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
     {
         using var handler = new SocketsHttpHandler
         {
+            UseProxy = false,
             ConnectCallback = async (context, cancellationToken) =>
             {
                 var socket = new Socket(connectAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
