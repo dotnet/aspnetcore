@@ -260,7 +260,7 @@ public class ComponentsActivityStateTest
             var navigationSampling = Enum.Parse<ActivitySamplingResult>(samplingText);
             var navigationSampleCount = 0;
             var navigations = new List<Activity>();
-            Activity? stoppedEvent = null;
+            Activity stoppedEvent = null;
             using var listener = new ActivityListener
             {
                 ShouldListenTo = source => source.Name == ComponentsActivitySource.Name,
@@ -644,7 +644,7 @@ public class ComponentsActivityStateTest
             scroll => scroll.RefreshScrollPositionForHash(It.IsAny<string>()) == Task.CompletedTask));
         if (useRoutingStateProvider)
         {
-            var routeData = new RouteData(typeof(ActivityTestRoutePage), new Dictionary<string, object?>())
+            var routeData = new RouteData(typeof(ActivityTestRoutePage), new Dictionary<string, object>())
             {
                 Template = "/interactive",
             };
@@ -664,7 +664,7 @@ public class ComponentsActivityStateTest
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
             Uri = ToAbsoluteUri(uri).AbsoluteUri;
-            NotifyLocationChanged(isIntercepted: false);
+            NotifyLocationChanged(isInterceptedLink: false);
         }
     }
 
