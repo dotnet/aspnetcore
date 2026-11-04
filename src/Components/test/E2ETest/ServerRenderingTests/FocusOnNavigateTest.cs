@@ -81,12 +81,12 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [Fact]
     public void FocusIsPreserved_WhenUserFocusesAnotherElementBeforeInteractiveRender()
     {
-        Navigate($"{ServerPathBase}/focus-on-navigate/interactive");
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null);
+        Navigate($"{ServerPathBase}/focus-on-navigate/interactive?suppress-autostart");
+        Browser.Equal("static", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
 
-        Browser.Click(By.Id("other-focusable-input"));
+        Browser.Click(By.Id("call-blazor-start"));
         Browser.Equal("interactive", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "other-focusable-input");
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "call-blazor-start");
     }
 
     [Fact]
