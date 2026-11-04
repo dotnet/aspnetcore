@@ -1,0 +1,32 @@
+@page "/nav/prevent-default/{mode}"
+@inject NavigationManager Navigation
+
+<PageTitle>Prevent default links</PageTitle>
+
+<h1>Prevent default links</h1>
+
+<a id="server-links" href="@($"nav/prevent-default/server?prerender={Prerender}")">Server links</a>
+<a id="wasm-links" href="@($"nav/prevent-default/wasm?prerender={Prerender}")">WebAssembly links</a>
+<a id="mixed-links" href="@($"nav/prevent-default/mixed?prerender={Prerender}")">Mixed links</a>
+<a id="static-ordinary" href="nav/other">Static ordinary link</a>
+
+@if (Mode is "server" or "mixed")
+{
+    <TestContentPackage.PreventDefaultLinks Id="server" ReturnUrl="@Navigation.Uri" @rendermode="@(new InteractiveServerRenderMode(Prerender))" />
+}
+@if (Mode is "wasm" or "mixed")
+{
+    <TestContentPackage.PreventDefaultLinks Id="wasm" ReturnUrl="@Navigation.Uri" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+}
+@if (Mode is "auto" or "mixed")
+{
+    <TestContentPackage.PreventDefaultLinks Id="auto" ReturnUrl="@Navigation.Uri" @rendermode="@(new InteractiveAutoRenderMode(Prerender))" />
+}
+
+@code {
+    [Parameter]
+    public string Mode { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    public bool Prerender { get; set; } = true;
+}

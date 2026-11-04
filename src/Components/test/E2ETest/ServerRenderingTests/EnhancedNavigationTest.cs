@@ -730,6 +730,366 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
     }
 
+    [Theory]
+    [InlineData("server", true)]
+    [InlineData("server", false)]
+    [InlineData("wasm", true)]
+    [InlineData("wasm", false)]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    [InlineData("mixed", true)]
+    [InlineData("mixed", false)]
+    public void PreventDefaultIsRespectedWithEnhancedNavigation(string mode, bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/{mode}?prerender={prerender}");
+        var originalUrl = Browser.Url;
+        var originalDocument = Browser.Exists(By.TagName("html"));
+        var ids = mode == "mixed" ? new[] { "server", "wasm", "auto" } : new[] { mode };
+
+        foreach (var id in ids)
+        {
+            AssertPreventDefaultLinksAreInteractive(id);
+        }
+
+        foreach (var id in ids)
+        {
+            var count = 1;
+            foreach (var link in new[] { "original", "route", "fragment", "conditional", "no-enhance", "nested-target", "ancestor", "stop", "async" })
+            {
+                AssertPreventDefaultClick($"{link}-{id}", id, ++count, originalUrl);
+            }
+        }
+
+        var firstId = ids[0];
+        Browser.Exists(By.Id($"prevent-{firstId}")).Click();
+        Browser.Equal("False", () => Browser.Exists(By.Id($"prevention-{firstId}")).Text);
+        Browser.Exists(By.Id($"prevent-{firstId}")).Click();
+        Browser.Equal("True", () => Browser.Exists(By.Id($"prevention-{firstId}")).Text);
+        AssertPreventDefaultClick($"conditional-{firstId}", firstId, 11, originalUrl);
+
+        Browser.Exists(By.Id($"ordinary-fragment-{firstId}")).Click();
+        Browser.Equal($"{originalUrl}#target-{firstId}", () => Browser.Url);
+        Browser.Exists(By.Id($"ordinary-{firstId}")).Click();
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.False(originalDocument.IsStale());
+    }
+
+    [Theory]
+    [InlineData("server", true)]
+    [InlineData("server", false)]
+    [InlineData("wasm", true)]
+    [InlineData("wasm", false)]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    [InlineData("mixed", true)]
+    [InlineData("mixed", false)]
+    public void EnhancedNavigationWorksWhenPreventDefaultIsDisabled(string mode, bool prerender)
+    {
+        var ids = mode == "mixed" ? new[] { "server", "wasm", "auto" } : new[] { mode };
+
+        foreach (var id in ids)
+        {
+            Navigate($"{ServerPathBase}/nav/prevent-default/{mode}?prerender={prerender}");
+            foreach (var rendererId in ids)
+            {
+                AssertPreventDefaultLinksAreInteractive(rendererId);
+            }
+
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            Browser.Exists(By.Id($"prevent-{id}")).Click();
+            Browser.Equal("False", () => Browser.Exists(By.Id($"prevention-{id}")).Text);
+
+            Browser.Exists(By.Id($"conditional-{id}")).Click();
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.False(originalDocument.IsStale());
+        }
+    }
+
+    [Theory]
+    [InlineData("server", true)]
+    [InlineData("server", false)]
+    [InlineData("wasm", true)]
+    [InlineData("wasm", false)]
+    public void PreventDefaultIsRespectedAfterAnotherRendererStarts(string firstMode, bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/{firstMode}?prerender={prerender}");
+        AssertPreventDefaultLinksAreInteractive(firstMode);
+
+        Browser.Exists(By.Id("mixed-links")).Click();
+        var counts = new[] { "server", "wasm", "auto" }.ToDictionary(id => id, AssertPreventDefaultLinksAreInteractive);
+
+        var originalUrl = Browser.Url;
+        foreach (var id in new[] { "server", "wasm", "auto" })
+        {
+            AssertPreventDefaultClick($"original-{id}", id, counts[id] + 1, originalUrl);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void PreventDefaultIsRespectedWithColdAndWarmAuto(bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("""
+            localStorage.removeItem('blazor-resource-hash:Components.WasmMinimal');
+            sessionStorage.setItem('block-load-boot-resource', 'true');
+            """);
+
+        var url = $"{ServerPathBase}/nav/prevent-default/auto?prerender={prerender}";
+        Navigate(url);
+        AssertPreventDefaultLinksAreInteractive("auto");
+        Browser.Equal("Server", () => Browser.Exists(By.Id("runtime-auto")).Text);
+        var originalUrl = Browser.Url;
+        AssertPreventDefaultClick("original-auto", "auto", 2, originalUrl);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockLoadBootResource()");
+        Browser.Exists(By.Id("unblocked-wasm"));
+
+        Navigate(url);
+        AssertPreventDefaultLinksAreInteractive("auto");
+        Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("runtime-auto")).Text);
+        AssertPreventDefaultClick("original-auto", "auto", 2, originalUrl);
+    }
+
+    [Fact]
+    public void EnhancedNavigationWorksAfterInteractiveServerCircuitIsDisposed()
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/server");
+        AssertPreventDefaultLinksAreInteractive("server");
+        var originalDocument = Browser.Exists(By.TagName("html"));
+        Browser.Manage().Logs.GetLog(LogType.Browser);
+
+        Browser.Exists(By.Id("ordinary-server")).Click();
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.False(originalDocument.IsStale());
+        Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser).Any(log => log.Message.Contains("Connection disconnected.")));
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Home")).Click();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.False(originalDocument.IsStale());
+    }
+
+    [Theory]
+    [InlineData("static", true)]
+    [InlineData("server", true)]
+    [InlineData("server", false)]
+    [InlineData("wasm", true)]
+    [InlineData("wasm", false)]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    [InlineData("mixed", true)]
+    [InlineData("mixed", false)]
+    public void EnhancedNavigationWorksWithDocumentStopPropagation(string mode, bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/{mode}?prerender={prerender}");
+        var originalDocument = Browser.Exists(By.TagName("html"));
+        var ids = mode == "mixed" ? new[] { "server", "wasm", "auto" } : mode == "static" ? Array.Empty<string>() : new[] { mode };
+        var counts = ids.ToDictionary(id => id, AssertPreventDefaultLinksAreInteractive);
+        var originalUrl = Browser.Url;
+
+        InstallDocumentClickProbe(stopPropagation: true);
+        try
+        {
+            foreach (var id in ids)
+            {
+                AssertPreventDefaultClick($"original-{id}", id, counts[id] + 1, originalUrl);
+            }
+
+            Browser.Exists(By.Id("static-ordinary")).Click();
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.False(originalDocument.IsStale());
+        }
+        finally
+        {
+            RemoveDocumentClickProbe();
+        }
+    }
+
+    [Theory]
+    [InlineData("server", true)]
+    [InlineData("server", false)]
+    [InlineData("wasm", true)]
+    [InlineData("wasm", false)]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    [InlineData("mixed", true)]
+    [InlineData("mixed", false)]
+    public void PreventDefaultIsRespectedAfterClickListenerIsReregistered(string mode, bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/{mode}?prerender={prerender}");
+        var ids = mode == "mixed" ? new[] { "server", "wasm", "auto" } : new[] { mode };
+        var counts = ids.ToDictionary(id => id, AssertPreventDefaultLinksAreInteractive);
+        var originalUrl = Browser.Url;
+
+        InstallDocumentClickProbe(stopPropagation: true);
+        try
+        {
+            foreach (var id in ids)
+            {
+                Browser.Exists(By.Id($"reveal-{id}")).Click();
+                Browser.Exists(By.Id($"late-{id}"));
+                AssertPreventDefaultClick($"late-{id}", id, counts[id] + 1, originalUrl);
+                AssertPreventDefaultClick($"original-{id}", id, counts[id] + 2, originalUrl);
+            }
+
+            Assert.True((bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.registrations > 0"));
+        }
+        finally
+        {
+            RemoveDocumentClickProbe();
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void EnhancedNavigationWorksWhenClickRegistersAnotherListener(bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/wasm?prerender={prerender}");
+        AssertPreventDefaultLinksAreInteractive("wasm");
+        Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("runtime-wasm")).Text);
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        InstallDocumentClickProbe(stopPropagation: false);
+        try
+        {
+            Browser.Exists(By.Id("register-and-navigate-wasm")).Click();
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.False(originalDocument.IsStale());
+            Assert.True((bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.reentrantRegistrations > 0"));
+        }
+        finally
+        {
+            RemoveDocumentClickProbe();
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void EnhancedNavigationWorksWhenClickRegistersAnotherListenerAndTriggersNestedClick(bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/wasm?prerender={prerender}");
+        AssertPreventDefaultLinksAreInteractive("wasm");
+        Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("runtime-wasm")).Text);
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        InstallDocumentClickProbe(stopPropagation: false);
+        try
+        {
+            Browser.Exists(By.Id("register-and-nested-click-wasm")).Click();
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.False(originalDocument.IsStale());
+            Assert.Equal(1L, (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.nestedClicksDuringOuterClick"));
+        }
+        finally
+        {
+            RemoveDocumentClickProbe();
+        }
+    }
+
+    private void InstallDocumentClickProbe(bool stopPropagation)
+    {
+        // WebDriver cannot install or observe native listeners, or click synchronously inside a managed click.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("""
+            const probe = window.documentClickProbe = {
+                add: document.addEventListener,
+                registrations: 0,
+                reentrantRegistrations: 0,
+                nestedClicksDuringOuterClick: 0,
+            };
+            probe.capture = event => probe.event = event;
+            probe.clickNested = elementId => {
+                const isDuringOuterClick = probe.event?.eventPhase === Event.BUBBLING_PHASE
+                    && probe.reentrantRegistrations > 0;
+                document.getElementById(elementId).click();
+                if (isDuringOuterClick) {
+                    probe.nestedClicksDuringOuterClick++;
+                }
+            };
+            probe.stop = event => {
+                if (arguments[0] && event.target instanceof Element && event.target.closest('a')) {
+                    event.stopPropagation();
+                }
+            };
+            document.addEventListener('click', probe.capture, true);
+            document.addEventListener('click', probe.stop);
+            document.addEventListener = function(type, listener, options) {
+                if (type === 'click') {
+                    probe.registrations++;
+                    if (probe.event?.eventPhase === Event.BUBBLING_PHASE) {
+                        probe.reentrantRegistrations++;
+                    }
+                }
+                return probe.add.call(this, type, listener, options);
+            };
+            """, stopPropagation);
+    }
+
+    private void RemoveDocumentClickProbe()
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript("""
+            const probe = window.documentClickProbe;
+            if (probe) {
+                document.removeEventListener('click', probe.capture, true);
+                document.removeEventListener('click', probe.stop);
+                document.addEventListener = probe.add;
+                delete window.documentClickProbe;
+            }
+            """);
+    }
+
+    private int AssertPreventDefaultLinksAreInteractive(string id)
+    {
+        Browser.Equal("True", () => Browser.Exists(By.Id($"interactive-{id}")).Text);
+        var expectedCount = int.Parse(Browser.Exists(By.Id($"count-{id}")).Text, CultureInfo.InvariantCulture) + 1;
+        Browser.Exists(By.Id($"increment-{id}")).Click();
+        Browser.Equal(expectedCount.ToString(CultureInfo.InvariantCulture), () => Browser.Exists(By.Id($"count-{id}")).Text);
+
+        return expectedCount;
+    }
+
+    private void AssertPreventDefaultClick(string linkId, string id, int expectedCount, string originalUrl)
+    {
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        // WebDriver cannot observe history API calls that leave the URL unchanged.
+        jsExecutor.ExecuteScript("""
+            const probe = window.preventDefaultHistoryProbe = {
+                pushState: history.pushState,
+                replaceState: history.replaceState,
+                calls: 0,
+            };
+            for (const method of ['pushState', 'replaceState']) {
+                history[method] = function(...args) {
+                    probe.calls++;
+                    return probe[method].apply(this, args);
+                };
+            }
+            """);
+
+        try
+        {
+            Browser.Exists(By.Id(linkId)).Click();
+            var expectedText = expectedCount.ToString(CultureInfo.InvariantCulture);
+            Browser.True(() => Browser.Url != originalUrl || Browser.FindElements(By.Id($"count-{id}")).Any(element => element.Text == expectedText));
+            Assert.Equal(originalUrl, Browser.Url);
+            Browser.Equal(expectedText, () => Browser.Exists(By.Id($"count-{id}")).Text);
+            Assert.Equal(0L, (long)jsExecutor.ExecuteScript("return window.preventDefaultHistoryProbe.calls"));
+        }
+        finally
+        {
+            jsExecutor.ExecuteScript("""
+                const probe = window.preventDefaultHistoryProbe;
+                if (probe) {
+                    history.pushState = probe.pushState;
+                    history.replaceState = probe.replaceState;
+                    delete window.preventDefaultHistoryProbe;
+                }
+                """);
+        }
+    }
+
     [Fact]
     public void CanUpdateHrefOnLinkTagWithIntegrity()
     {
