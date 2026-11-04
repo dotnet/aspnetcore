@@ -45,7 +45,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:DISCARDED\b.{0,4000}\bC1\b|\[DISCARDED\].{0,2000}Why discarded:)'
+          pattern: '(?is)(?:DISCARDED_*\b.{0,4000}\bC1\b|\[DISCARDED\].{0,2000}Why discarded[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -79,7 +79,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:UNRESOLVED\b.{0,4000}\bC1\b|\[UNRESOLVED\].{0,2000}Why unresolved:)'
+          pattern: '(?is)(?:UNRESOLVED_*\b.{0,4000}\bC1\b|\[UNRESOLVED\].{0,2000}Why unresolved[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -113,7 +113,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)NEW_FINDINGS\b.{0,4000}(?:confidence\s*[:=]\s*["\x27]?(?:verified|question)\b|["\x27]confidence["\x27]\s*:\s*["\x27](?:verified|question)\b)'
+          pattern: '(?is)NEW_FINDINGS_*\b.{0,4000}confidence[`''"*_\s]*[:=][`''"*_\s]*(?:verified|question)_*\b'
       - type: prompt
         config:
           scoring: binary
@@ -147,7 +147,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:UNRESOLVED\b.{0,4000}\bC1\b|\[UNRESOLVED\].{0,2000}Why unresolved:)'
+          pattern: '(?is)(?:UNRESOLVED_*\b.{0,4000}\bC1\b|\[UNRESOLVED\].{0,2000}Why unresolved[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -181,7 +181,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?s)EXISTING_FEEDBACK_COVERAGE\b.{0,4000}PRRT_kwDOExampleThread1'
+          pattern: '(?s)EXISTING_FEEDBACK_COVERAGE_*\b.{0,4000}PRRT_kwDOExampleThread1'
       - type: prompt
         config:
           scoring: binary
