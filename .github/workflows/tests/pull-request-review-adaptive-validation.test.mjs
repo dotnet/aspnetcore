@@ -56,6 +56,12 @@ assert.equal(
       'tools: ["read", "search"]',
       'tools: ["read", "search"]\nstrict-tools-list: true\nuser-invocable: false'),
   'The local review-candidate-verifier profile may differ only by its internal local flags and description.');
+assert.match(localVerifierProfile, /concrete third-party package or runtime library method \(not a caller-supplied\r?\n  implementation of a public interface or extension hook\)/);
+assert.match(localVerifierProfile, /already triggers the same guard or validation failure in the underlying\r?\n  collaborator/);
+assert.match(localVerifierProfile, /suppresses a reachable secondary failure \(from\r?\n  logging, cleanup, callbacks, or recovery\), old-side absence of that secondary call\r?\n  makes `oldVsNew` `"n\/a"`, not contradicted/);
+assert.match(localVerifierProfile, /A consequence that would occur\r?\n  only if the head change were reverted is not head `effect`/);
+assert.match(localVerifierProfile, /secondary-failure suppression claim/);
+assert.match(localVerifierProfile, /either `intent` is `n\/a` or an established `contract`\r?\nforbids the head behavior on that exact input/);
 
 assert.match(workflowSource, /bash:\s*false/);
 assert.match(workflowSource, /edit:\s*false/);
