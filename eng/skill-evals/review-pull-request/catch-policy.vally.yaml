@@ -1,0 +1,104 @@
+name: review-pull-request-catch-policy
+description: Focused source-only regression evaluation for secondary-failure suppression and deduplication (70269).
+type: capability
+defaults:
+  runs: 5
+  timeout: 420s
+scoring:
+  weights:
+    prompt: 1
+  threshold: 1
+stimuli:
+- name: Distinguish processing errors from newly suppressed logger failures
+  agent_environment:
+    files:
+    - src: ../../../.github/skills/review-pull-request/SKILL.md
+      dest: .github/skills/review-pull-request/SKILL.md
+    - src: ../../../docs/CrossCuttingGuidance.md
+      dest: docs/CrossCuttingGuidance.md
+  prompt: |
+    This is an offline, single-context evaluation of the exception-policy and
+    deduplication rules, not a live PR review. Read
+    .github/skills/review-pull-request/SKILL.md and
+    docs/CrossCuttingGuidance.md as criteria, then adjudicate the four cases below.
+    In the skill, read the complete "Review and independent validation" and
+    "Return result; never publish" sections. In the guide, read the complete
+    "Diagnostics, logging, exceptions, and tool output" topic. Reading only a file's
+    opening lines is insufficient; page any truncated required section to its end.
+    Do not bootstrap a bundle, invoke the skill, spawn workers, fetch, execute target
+    code, or publish. The excerpts below are the complete source and contract evidence
+    for this bounded exercise; do not infer missing contracts. Return each case's
+    disposition, source-based reasoning, and missing evidence separately. First quote
+    the skill's deduplication/failure-policy rule and the guide's secondary-failure
+    rule to establish that both required sections were read.
+    If either is missing, report BLOCKED and stop; do not search
+    outside the workspace or substitute generic review advice.
+    Use the skill's UNRESOLVED, NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, and
+    DISCARDED categories where applicable. These are analysis results only:
+    do not recommend posting nits, replying, resolving threads, approving, or
+    requesting changes.
+
+    All four cases use the same old/new source:
+
+    OLD AgentContext.cs:
+    10 public async Task SendMessageAsync()
+    11 {
+    12     try { await client.ProcessAsync(); }
+    13     catch (Exception processingError)
+    14     {
+    15         Error = processingError;
+    16         Status = ConversationStatus.Error;
+    17         NotifyStatusChanged();
+    18         return;
+    19     }
+    20 }
+
+    HEAD AgentContext.cs (RIGHT-side added lines are 17-18):
+    10 public async Task SendMessageAsync()
+    11 {
+    12     try { await client.ProcessAsync(); }
+    13     catch (Exception processingError)
+    14     {
+    15         Error = processingError;
+    16         Status = ConversationStatus.Error;
+    17         try { logger.LogError(processingError, "Processing failed"); }
+    18         catch (Exception) { }
+    19         NotifyStatusChanged();
+    20         return;
+    21     }
+    22 }
+
+    The application can configure client and logger. In each scenario client.ProcessAsync
+    asynchronously throws exception A. The configured logger's actual LogError
+    implementation then throws distinct exception B synchronously. NotifyStatusChanged
+    invokes registered subscribers without throwing. The new catch loses B; Error
+    retains A, subscribers are notified, and SendMessageAsync completes successfully.
+    The old code also completes successfully with Error=A and notification, but never
+    invokes the logger and therefore cannot produce B at this seam.
+
+    The issue asks to log processing failures. The PR rationale says the catch
+    preserves prior successful task completion. Its new test configures this throwing
+    logger, awaits SendMessageAsync successfully, and asserts Error is A.
+
+    Case A: No existing feedback. No contract specifies the handling of logger failures.
+    Case B: Same contracts as A, plus an existing thread at AgentContext.cs:18:
+    "We should avoid using an empty handler. Why is it needed?"
+    Case C: No existing feedback. The target-base API contract explicitly requires
+    failures from the configured logger during error reporting to propagate through
+    the returned task. This also applies to newly introduced logging call sites.
+    Case D: No existing feedback. The target-base API contract explicitly requires
+    error reporting to be best-effort: suppress logger failures, preserve the
+    processing error in Error, and notify status subscribers.
+  graders:
+  - type: prompt
+    config:
+      scoring: binary
+  rubric:
+  - All criteria are mandatory. The answer quotes the actual deduplication/failure-policy rule from the skill and the secondary-failure rule from the guide before adjudicating; quoting only a generic missing-input rule, a missing-file response, guessed guidance, or case-only answer fails.
+  - Distinguishes original processing exception A from secondary logger exception B, and traces B's silent loss at added AgentContext.cs:18 without claiming that the old code propagated B.
+  - Cases A and B EACH explicitly retain the concrete concern in UNRESOLVED with the missing logger-failure contract; neither produces a NEW_FINDINGS entry, optional nit, or policy-justification comment.
+  - Case B references and assesses the existing thread without emitting a duplicate new finding, treating the comment as contract authority, or assuming that deduplication means resolution.
+  - Case C identifies a contract-backed defect at the added catch with the reachable client-to-logger trigger and caller-visible missing task fault.
+  - Case D rejects a defect claim using the explicit best-effort contract, while distinguishing this justification from the original-error preservation argument.
+  - Does not use the PR rationale or PR-added test as independent authority for the suppression policy, and does not apply a blanket rule for or against empty catches.
+  - Does not recommend posting, replying, resolving threads, approving, or requesting changes. Dispositions are analysis categories, not GitHub actions.

@@ -20,6 +20,13 @@ beside the spec that consumes them, normally under a `fixtures` directory. Do
 not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
+`review-pull-request/catch-policy.vally.yaml` is a specialized, offline policy
+exercise. It stages the current reviewer skill and cross-cutting guide from this
+checkout into each trial workspace; it does not invoke live PR review or measure
+baseline-versus-skilled improvement. Its binary grader requires all four policy
+cases to pass. Run it explicitly with
+`./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/catch-policy.vally.yaml`.
+
 The experiment deliberately does not override `runs`. A standard spec owns its
 trial count through `defaults.runs`. The existing specs retain five runs and 25
 trials each. The dotnet/skills quality gate uses five trials as the minimum at

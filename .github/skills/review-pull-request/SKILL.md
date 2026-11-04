@@ -216,6 +216,25 @@ repository contract; a missing test or unclear intent alone is not a material
 behavioral finding. Do not create a candidate that merely requests a test or a
 rationale without a concrete effect.
 
+For new or broadened exception suppression, independently check the failure policy:
+separate the original operation error from secondary logging, cleanup, callback, or
+recovery errors. Preserving the former does not prove that the latter is handled.
+Compare the exact old/new failure path and verify any expected or best-effort policy
+against the target contract, not just the PR rationale or new tests. If the reachable
+suppression and observable effect are established but the required policy is not,
+retain that concrete candidate in `UNRESOLVED` with the missing contract; do not
+silently convert it to LGTM or invent a defect. Documented best-effort handling is
+counterevidence, and an empty catch alone is not a finding.
+
+The coordinator must assess existing feedback before deduplicating publication.
+Record supported duplicates in `EXISTING_FEEDBACK_COVERAGE`; record a concrete
+unsettled failure-policy concern in `UNRESOLVED` with its existing thread reference
+and missing evidence, even when the thread already covers the concern.
+Deduplication prevents repeat publication; it does not settle the failure policy.
+Do not re-emit the duplicate as a new finding or an optional nit. Never treat a review
+comment as contract authority. Keep coordinator-only feedback inputs out of guide
+worker assignments.
+
 Reject a candidate when source disproves it, with the precise called edge and full
 return path. A discard that argues behavior is unchanged must compare the old and new
 observable effect along the candidate's exact input sequence, including same-value and
