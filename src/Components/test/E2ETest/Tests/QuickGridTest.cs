@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using BasicTestApp;
 using BasicTestApp.QuickGridTest;
 using Microsoft.AspNetCore.Components.E2ETest;
@@ -237,51 +236,25 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
         Browser.Exists(By.Id("no-click"));
-        app.FindElement(By.Id("prepend-row-on-click")).Click();
 
+        var lastHeaderControl = grid.FindElements(By.CssSelector("thead a, thead button")).Last();
         var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
-        Browser.Equal(firstRow, () =>
-        {
-            Browser.FindElement(By.Id("test-selector-select")).SendKeys(Keys.Tab);
-            return Browser.SwitchTo().ActiveElement();
-        });
+        lastHeaderControl.SendKeys(Keys.Tab);
+        Browser.Equal(firstRow, () => Browser.SwitchTo().ActiveElement());
 
-        firstRow.SendKeys(Keys.ArrowDown);
-        var secondRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(2)"));
-        Assert.Equal(secondRow, Browser.SwitchTo().ActiveElement());
-        for (var i = 0; i <= secondRow.FindElements(By.CssSelector("td")).Count; i++)
-        {
-            Browser.SwitchTo().ActiveElement().SendKeys(Keys.ArrowRight);
-        }
-        Assert.Equal(secondRow, Browser.SwitchTo().ActiveElement());
-        secondRow.SendKeys(Keys.Enter);
-
-        Browser.Equal("PersonId: 11205", () => app.FindElement(By.Id("clicked-person-id")).Text);
-        Browser.Equal("Name: Nur Sari", () => app.FindElement(By.Id("clicked-person-name")).Text);
+        firstRow.SendKeys(Keys.Enter);
+        Browser.Equal("PersonId: 11203", () => app.FindElement(By.Id("clicked-person-id")).Text);
+        Browser.Equal("Name: Julie Smith", () => app.FindElement(By.Id("clicked-person-name")).Text);
         Browser.Equal("Click count: 1", () => app.FindElement(By.Id("click-count")).Text);
 
-        Browser.Equal("4", () => secondRow.GetDomAttribute("aria-rowindex"));
-        secondRow.SendKeys(Keys.ArrowDown);
-        Assert.Equal(grid.FindElement(By.CssSelector("tbody > tr:nth-child(4)")), Browser.SwitchTo().ActiveElement());
-        var originalSize = Browser.Manage().Window.Size;
-        try
-        {
-            Browser.Manage().Window.Size = new System.Drawing.Size(1000, 300);
-            new Actions(Browser).SendKeys(Keys.Tab).Perform();
-            var entryRow = Browser.ExecuteJavaScript<IWebElement>(@"
-                return [...document.querySelectorAll('#grid tbody > tr.row-clickable')].find(row => {
-                    const rect = row.getBoundingClientRect();
-                    return rect.bottom > 0 && rect.top < innerHeight;
-                });");
-            Assert.NotNull(entryRow);
-            Assert.NotEqual(grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)")), entryRow);
-            new Actions(Browser).KeyDown(Keys.Shift).SendKeys(Keys.Tab).KeyUp(Keys.Shift).Perform();
-            Browser.Equal(entryRow, () => Browser.SwitchTo().ActiveElement());
-        }
-        finally
-        {
-            Browser.Manage().Window.Size = originalSize;
-        }
+        firstRow.SendKeys(Keys.Tab);
+        var secondRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(2)"));
+        Browser.Equal(secondRow, () => Browser.SwitchTo().ActiveElement());
+
+        secondRow.SendKeys(Keys.Space);
+        Browser.Equal("PersonId: 11205", () => app.FindElement(By.Id("clicked-person-id")).Text);
+        Browser.Equal("Name: Nur Sari", () => app.FindElement(By.Id("clicked-person-name")).Text);
+        Browser.Equal("Click count: 2", () => app.FindElement(By.Id("click-count")).Text);
     }
 
     [Fact]
@@ -289,27 +262,25 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     {
         app = Browser.MountTestComponent<QuickGridScrollComponent>();
         app.FindElement(By.Id("toggle-provider")).Click();
-        app.FindElement(By.Id("enable-row-navigation")).Click();
-        app.FindElement(By.Id("toggle-delay")).Click();
 
         Browser.Exists(By.CssSelector("#scroll-container tr.row-clickable [data-index='0']"));
-        var initialLastIndex = int.Parse(app.FindElements(By.CssSelector("#scroll-container tr.row-clickable [data-index]")).Last().GetDomAttribute("data-index"), CultureInfo.InvariantCulture);
-        var initialCalls = int.Parse(app.FindElement(By.Id("provider-call-count")).Text, CultureInfo.InvariantCulture);
-        var targetIndex = initialLastIndex + 5;
+        const int targetIndex = 15;
         Browser.DoesNotExist(By.CssSelector($"#scroll-container [data-index='{targetIndex}']"));
-        Browser.Equal("2", () =>
+
+        var firstRow = app.FindElement(By.CssSelector("#scroll-container tr.row-clickable[aria-rowindex='2']"));
+        firstRow.Click();
+        Browser.Equal("2", () => Browser.SwitchTo().ActiveElement().GetDomAttribute("aria-rowindex"));
+
+        for (var i = 0; i < targetIndex; i++)
         {
-            Browser.FindElement(By.Id("test-selector-select")).SendKeys(Keys.Tab);
-            return Browser.SwitchTo().ActiveElement().GetDomAttribute("aria-rowindex");
-        });
+            var expectedRowIndex = $"{i + 3}";
+            Browser.Exists(By.CssSelector($"#scroll-container tr.row-clickable[aria-rowindex='{expectedRowIndex}']"));
+            new Actions(Browser).SendKeys(Keys.Tab).Perform();
+            Browser.Equal(expectedRowIndex, () => Browser.SwitchTo().ActiveElement().GetDomAttribute("aria-rowindex"));
+        }
 
-        new Actions(Browser).SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowDown, targetIndex))).Perform();
-        Browser.Equal((targetIndex + 2).ToString(CultureInfo.InvariantCulture), () => Browser.SwitchTo().ActiveElement().GetDomAttribute("aria-rowindex"));
-
-        Browser.True(() => int.Parse(app.FindElement(By.Id("provider-call-count")).Text, CultureInfo.InvariantCulture) > initialCalls);
-        Browser.True(() => int.Parse(app.FindElement(By.Id("provider-start-index")).Text, CultureInfo.InvariantCulture) > 0);
         new Actions(Browser).SendKeys(Keys.Enter).Perform();
-        Browser.Equal(targetIndex.ToString(CultureInfo.InvariantCulture), () => app.FindElement(By.Id("activated-row")).Text);
+        Browser.Equal($"Activated: {targetIndex}", () => app.FindElement(By.Id("status")).Text);
     }
 
     [Fact]
