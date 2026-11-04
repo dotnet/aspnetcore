@@ -1,8 +1,0 @@
-﻿@using BasicWebSite.RazorComponents;
-
-<h1>Razor components</h1>
-<div id="Greetings">@(await Html.RenderComponentAsync<Greetings>(RenderMode.Static))</div>
-
-<div id="FetchData">@(await Html.RenderComponentAsync<FetchData>(RenderMode.Static, new { StartDate = new DateTime(2019, 01, 15) }))</div>
-
-<div id="Routing">@(await Html.RenderComponentAsync<RouterContainer>(RenderMode.Static))</div>

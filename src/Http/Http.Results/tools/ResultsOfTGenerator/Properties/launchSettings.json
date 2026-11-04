@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ResultsOfTGenerator": {
-      "commandName": "Project",
-      "workingDirectory": "$(ProjectDir)\\..\\..\\src\\"
-    }
-  }
-}

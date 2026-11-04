@@ -1,3 +1,0 @@
-#nullable enable
-virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Aaguid.get -> byte[]?
-virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Aaguid.set -> void

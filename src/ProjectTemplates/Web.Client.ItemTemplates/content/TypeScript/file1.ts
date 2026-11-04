@@ -1,1 +1,0 @@
-// Write your TypeScript code.

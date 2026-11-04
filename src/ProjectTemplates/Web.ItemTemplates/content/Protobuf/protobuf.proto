@@ -1,3 +1,0 @@
-syntax = "proto3";
-
-option csharp_namespace = "MyApp.Namespace";

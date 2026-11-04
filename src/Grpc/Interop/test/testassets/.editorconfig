@@ -1,3 +1,0 @@
-[*.{cs,vb}]
-# IDE0073: File header
-dotnet_diagnostic.IDE0073.severity = none

@@ -1,9 +1,0 @@
-﻿{
-  "author": "Microsoft",
-  "name": "Componente Razor",
-  "description": "Componente riutilizzabile dell'interfaccia utente implementato con Razor",
-  "symbols/namespace/description": "spazio dei nomi per il codice generato",
-  "symbols/use-code-behind/description": "creare un componente con un file code-behind",
-  "symbols/use-code-behind/displayName": "Usare il code-behind",
-  "postActions/openInEditor/description": "Apre Component1.razor nell'editor"
-}
