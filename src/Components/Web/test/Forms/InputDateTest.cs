@@ -117,10 +117,6 @@ public class InputDateTest
         {
             EditContext = new EditContext(model),
             ValueExpression = () => model.DateProperty,
-            AdditionalAttributes = new Dictionary<string, object>
-                {
-                    { "DisplayName", "Date only property" }
-                }
         };
         var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
@@ -271,7 +267,7 @@ public class InputDateTest
 
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
-        Assert.Contains("The DateProperty field must be a time.", validationMessages);
+        Assert.Contains("The Date only property field must be a time.", validationMessages);
     }
 
     [Fact]
@@ -572,6 +568,7 @@ public class InputDateTest
 
     private class TestModelDateOnly
     {
+        [Display(Name = "Date only property")]
         public DateOnly DateProperty { get; set; }
     }
 
