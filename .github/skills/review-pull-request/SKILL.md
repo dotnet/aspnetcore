@@ -207,7 +207,9 @@ Independently check every returned candidate before acceptance. Require:
 3. Frozen old-side behavior, frozen head behavior, and the actual called overload,
    producer-to-consumer path, and any required target-base or primary contract. A
    sibling helper is not evidence about the called helper. Read its full body and
-   return path before accepting **or discarding** a claim.
+   return path before accepting **or discarding** a claim. If diff and source appear
+   inconsistent, re-read the exact old/head files and verify their roles before
+   reporting an evidence mismatch.
 4. No equivalent earlier issue, review, resolved inline comment, or current
    feedback; no speculative, stylistic, or otherwise unsupported clause.
 
@@ -225,6 +227,9 @@ suppression and observable effect are established but the required policy is not
 retain that concrete candidate in `UNRESOLVED` with the missing contract; do not
 silently convert it to LGTM or invent a defect. Documented best-effort handling is
 counterevidence, and an empty catch alone is not a finding.
+Policy uncertainty does not establish a failure producer: when the selected source
+path rules out the secondary failure, discard that claim rather than inventing a
+missing contract or retaining a hypothetical failure in `UNRESOLVED`.
 
 The coordinator must assess existing feedback before deduplicating publication.
 Record supported duplicates in `EXISTING_FEEDBACK_COVERAGE`; record a concrete
