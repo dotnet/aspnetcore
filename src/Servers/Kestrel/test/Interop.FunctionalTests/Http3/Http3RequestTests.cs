@@ -343,14 +343,14 @@ public class Http3RequestTests : LoggedTest
             var contentType1 = contentType;
             var authority1 = authority;
 
-            if (protocol == HttpProtocols.Http3)
+            await WaitForLogAsync(logs =>
             {
-                await WaitForLogAsync(logs =>
-                {
-                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
-                                         w.EventId.Name == "StreamPooled");
-                }, "Wait for server to finish pooling stream.");
-            }
+                return protocol == HttpProtocols.Http3
+                    ? logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
+                                    w.EventId.Name == "StreamPooled")
+                    : logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http2" &&
+                                    w.EventId.Name == "Http2StreamPooled");
+            }, "Wait for server to finish pooling stream.");
 
             var response2 = await SendRequestAsync(protocol, host, client);
             var contentType2 = contentType;
