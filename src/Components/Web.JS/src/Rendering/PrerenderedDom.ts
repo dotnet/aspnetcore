@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ArrayValues, EditType, FrameType, RenderBatch, RenderTreeDiff, RenderTreeFrame } from './RenderBatch/RenderBatch';
-import { LogicalElement, getLogicalRootDescriptor, resetLogicalChildren, toLogicalElement } from './LogicalElements';
+import { LogicalElement, adoptLogicalChild, getLogicalRootDescriptor, isSvgElement, isMathMLElement, resetLogicalChildren, toLogicalElement } from './LogicalElements';
 
-interface Position {
+interface Cursor {
   parent: Node;
   next: Node | null;
-  offset: number;
+  end?: Node;
+  text?: TextRun;
 }
 
 interface TextPart {
@@ -20,11 +21,24 @@ type MatchedNode = Node | TextPart;
 
 interface FrameMatch {
   nodes: MatchedNode[];
-  position?: Position;
-  emptyText?: boolean;
+  replace?: boolean;
 }
 
-export type PrerenderedFrameMatches = Map<number, Node[]>;
+interface Insertion {
+  node: Node;
+  parent: Node;
+  next: Node | null;
+  offset: number;
+  enabled: boolean;
+}
+
+interface TextRun {
+  content: string;
+  segments: { content: string; nodes: MatchedNode[]; insertion: Insertion }[];
+  insertions: Insertion[];
+}
+
+export type PrerenderedFrameMatches = Map<number, { nodes: Node[]; replace: boolean }>;
 
 export class PrerenderedDom {
   private readonly matches = new Map<number, FrameMatch>();
@@ -34,6 +48,12 @@ export class PrerenderedDom {
   private readonly elements: Element[] = [];
 
   private readonly formActions: Element[] = [];
+
+  private readonly markupElements = new Set<Element>();
+
+  private readonly insertions: Insertion[] = [];
+
+  private readonly removals = new Set<Node>();
 
   private readonly frames: ArrayValues<RenderTreeFrame>;
 
@@ -48,12 +68,16 @@ export class PrerenderedDom {
   public match(componentId: number, root: LogicalElement): boolean {
     const descriptor = getLogicalRootDescriptor(root);
     const end = descriptor?.end;
-    if (!end || !descriptor.start.parentNode) {
+    if (!end || !descriptor.start.parentNode || end.parentNode !== descriptor.start.parentNode) {
       return false;
     }
 
-    const cursor: Position = { parent: descriptor.start.parentNode, next: descriptor.start.nextSibling, offset: 0 };
-    return this.matchComponent(componentId, cursor) && cursor.next === end && cursor.offset === 0;
+    const cursor: Cursor = { parent: descriptor.start.parentNode, next: descriptor.start.nextSibling, end };
+    if (!this.matchComponent(componentId, cursor)) {
+      return false;
+    }
+    this.removeRemaining(cursor);
+    return cursor.next === end;
   }
 
   public adopt(root: LogicalElement): PrerenderedFrameMatches {
@@ -65,8 +89,10 @@ export class PrerenderedDom {
           addSplit(node.text, node.offset + node.length);
         }
       }
-      if (match.position?.next instanceof Text) {
-        addSplit(match.position.next, match.position.offset);
+    }
+    for (const { next, offset, enabled } of this.insertions) {
+      if (enabled && next instanceof Text) {
+        addSplit(next, offset);
       }
     }
 
@@ -81,22 +107,31 @@ export class PrerenderedDom {
       textParts.set(text, parts);
     }
 
+    for (const { node, parent, next, offset, enabled } of this.insertions) {
+      if (enabled) {
+        const before = next instanceof Text && offset > 0 ? textParts.get(next)!.get(offset)! : next;
+        parent.insertBefore(node, before);
+      }
+    }
+    for (const node of this.removals) {
+      node.parentNode!.removeChild(node);
+    }
+
     const result: PrerenderedFrameMatches = new Map();
     for (const [index, match] of this.matches) {
       const nodes = match.nodes.map(node => node instanceof Node ? node : textParts.get(node.text)!.get(node.offset)!);
-      if (match.position) {
-        const { parent, next, offset } = match.position;
-        const before = next instanceof Text && offset > 0 ? textParts.get(next)!.get(offset)! : next;
-        const marker = match.emptyText ? document.createTextNode('') : document.createComment('!');
-        parent.insertBefore(marker, before);
-        nodes.unshift(marker);
-      }
-      result.set(index, nodes);
+      result.set(index, { nodes, replace: match.replace ?? false });
     }
 
     resetLogicalChildren(root);
     for (const element of this.elements) {
       resetLogicalChildren(toLogicalElement(element, true));
+    }
+    for (const element of this.markupElements) {
+      const logical = toLogicalElement(element, true);
+      resetLogicalChildren(logical);
+      const container = element instanceof HTMLTemplateElement ? element.content : element;
+      Array.from(container.childNodes).forEach((child, index) => adoptLogicalChild(child, logical, index));
     }
     for (const element of this.formActions) {
       element.removeAttribute('action');
@@ -115,7 +150,7 @@ export class PrerenderedDom {
     }
   }
 
-  private matchComponent(componentId: number, cursor: Position, selectValue?: string | null): boolean {
+  private matchComponent(componentId: number, cursor: Cursor, selectValue?: string | null): boolean {
     if (this.components.has(componentId)) {
       return false;
     }
@@ -145,27 +180,29 @@ export class PrerenderedDom {
     return true;
   }
 
-  private matchFrame(index: number, cursor: Position, selectValue?: string | null): number {
+  private matchFrame(index: number, cursor: Cursor, selectValue?: string | null): number {
     const { frameReader } = this.batch;
     const frame = this.batch.referenceFramesEntry(this.frames, index);
     switch (frameReader.frameType(frame)) {
       case FrameType.element: {
+        this.flushText(cursor);
         const element = cursor.next;
         const tagName = frameReader.elementName(frame)!;
         const parentElement = cursor.parent instanceof Element ? cursor.parent : null;
-        const namespace = tagName === 'svg' || (parentElement?.namespaceURI === 'http://www.w3.org/2000/svg' && parentElement.localName !== 'foreignObject')
+        const namespace = tagName === 'svg' || (parentElement !== null && isSvgElement(parentElement))
           ? 'http://www.w3.org/2000/svg'
-          : tagName === 'math' || parentElement?.namespaceURI === 'http://www.w3.org/1998/Math/MathML'
+          : tagName === 'math' || (parentElement !== null && isMathMLElement(parentElement))
             ? 'http://www.w3.org/1998/Math/MathML'
             : 'http://www.w3.org/1999/xhtml';
-        if (!(element instanceof Element) || cursor.offset || element.namespaceURI !== namespace ||
+        if (!(element instanceof Element) || element === cursor.end || element.namespaceURI !== namespace ||
             element.localName !== (namespace === 'http://www.w3.org/1999/xhtml' ? tagName.toLowerCase() : tagName)) {
-          return -1;
+          return this.replaceFrame(index, cursor);
         }
 
         const end = index + frameReader.subtreeLength(frame);
         const attributes = new Map<string, string>();
         let value: string | null = null;
+        let normalizeFormAction = false;
         let childIndex = index + 1;
         for (; childIndex < end; childIndex++) {
           const attribute = this.batch.referenceFramesEntry(this.frames, childIndex);
@@ -190,47 +227,44 @@ export class PrerenderedDom {
         if (element instanceof HTMLFormElement && !attributes.get('action') &&
             element.getAttribute('action') === location.pathname + location.search) {
           attributes.set('action', element.getAttribute('action')!);
-          this.formActions.push(element);
+          normalizeFormAction = true;
         }
         for (const name of Array.from(attributes.keys())) {
           if (name.startsWith('__internal_') && !element.hasAttribute(name)) {
             attributes.delete(name);
           }
         }
-        if (element.attributes.length !== attributes.size ||
-            Array.from(element.attributes).some(attribute => attributes.get(attribute.name) !== attribute.value)) {
-          return -1;
+        if (!matchesAttributes(element, attributes) ||
+            (element instanceof HTMLTextAreaElement &&
+              element.defaultValue !== (value ?? this.textContent(childIndex, end)))) {
+          return this.replaceFrame(index, cursor);
         }
 
         this.matches.set(index, { nodes: [element] });
         this.elements.push(element);
+        if (normalizeFormAction) {
+          this.formActions.push(element);
+        }
         const container = element instanceof HTMLTemplateElement ? element.content : element;
-        const children: Position = { parent: container, next: container.firstChild, offset: 0 };
-        if (element instanceof HTMLTextAreaElement && value) {
-          if (element.textContent !== value || childIndex !== end) {
+        const children: Cursor = { parent: container, next: container.firstChild };
+        if (!(element instanceof HTMLTextAreaElement && value !== null)) {
+          if (this.matchRange(childIndex, end, children, element instanceof HTMLSelectElement ? value : selectValue) < 0) {
             return -1;
           }
-        } else if (this.matchRange(childIndex, end, children, element instanceof HTMLSelectElement ? value : selectValue) < 0 || children.next) {
-          return -1;
+          this.removeRemaining(children);
         }
         cursor.next = element.nextSibling;
         return 1;
       }
       case FrameType.text: {
         const content = frameReader.textContent(frame)!;
-        if (!content) {
-          this.matches.set(index, { nodes: [], position: { ...cursor }, emptyText: true });
-          return 1;
-        }
-        const text = this.matchText(content, cursor);
-        if (!text) {
-          return -1;
-        }
-        this.matches.set(index, { nodes: [text] });
+        const nodes: MatchedNode[] = [];
+        this.matches.set(index, { nodes });
+        this.matchText(content, cursor, nodes);
         return 1;
       }
       case FrameType.component: {
-        this.matches.set(index, { nodes: [], position: { ...cursor } });
+        this.matches.set(index, { nodes: [this.insert(document.createComment('!'), cursor).node] });
         return this.matchComponent(frameReader.componentId(frame), cursor, selectValue) ? 1 : -1;
       }
       case FrameType.region:
@@ -240,24 +274,13 @@ export class PrerenderedDom {
         const parent = cursor.parent instanceof Element ? cursor.parent : null;
         const parsed = markup ? this.parseMarkup(
           markup,
-          parent?.namespaceURI === 'http://www.w3.org/2000/svg' && parent.localName !== 'foreignObject',
-          parent?.namespaceURI === 'http://www.w3.org/1998/Math/MathML'
+          parent !== null && isSvgElement(parent),
+          parent !== null && isMathMLElement(parent)
         ) : document.createDocumentFragment();
-        const match: FrameMatch = { nodes: [], position: { ...cursor } };
+        const match: FrameMatch = { nodes: [this.insert(document.createComment('!'), cursor).node] };
         this.matches.set(index, match);
         for (const expected of Array.from(parsed.childNodes)) {
-          if (expected instanceof Text) {
-            const text = this.matchText(expected.data, cursor);
-            if (!text) {
-              return -1;
-            }
-            match.nodes.push(text);
-          } else if (cursor.offset || !cursor.next?.isEqualNode(expected)) {
-            return -1;
-          } else {
-            match.nodes.push(cursor.next);
-            cursor.next = cursor.next.nextSibling;
-          }
+          this.matchMarkupNode(expected, cursor, match.nodes);
         }
         return 1;
       }
@@ -269,7 +292,7 @@ export class PrerenderedDom {
     }
   }
 
-  private matchRange(start: number, end: number, cursor: Position, selectValue?: string | null): number {
+  private matchRange(start: number, end: number, cursor: Cursor, selectValue?: string | null): number {
     let count = 0;
     for (let index = start; index < end; index++) {
       const inserted = this.matchFrame(index, cursor, selectValue);
@@ -288,20 +311,133 @@ export class PrerenderedDom {
     return count;
   }
 
-  private matchText(content: string, cursor: Position): TextPart | Text | undefined {
-    if (!content) {
-      return document.createTextNode('');
+  private matchText(content: string, cursor: Cursor, nodes: MatchedNode[]): void {
+    if (!cursor.text) {
+      cursor.text = { content: '', segments: [], insertions: [] };
     }
-    const text = cursor.next;
-    if (!(text instanceof Text) || text.data.substring(cursor.offset, cursor.offset + content.length) !== content) {
-      return undefined;
-    }
-    const result: TextPart = { text, offset: cursor.offset, length: content.length };
-    cursor.offset += content.length;
-    if (cursor.offset === text.length) {
-      cursor.next = text.nextSibling;
-      cursor.offset = 0;
-    }
-    return result;
+    const run = cursor.text;
+    const insertion = this.insert(document.createTextNode(content), cursor);
+    run.segments.push({ content, nodes, insertion });
+    run.content += content;
   }
+
+  private textContent(start: number, end: number): string | undefined {
+    let content = '';
+    for (let index = start; index < end; index++) {
+      const frame = this.batch.referenceFramesEntry(this.frames, index);
+      switch (this.batch.frameReader.frameType(frame)) {
+        case FrameType.text:
+          content += this.batch.frameReader.textContent(frame);
+          break;
+        case FrameType.region:
+        case FrameType.elementReferenceCapture:
+        case FrameType.namedEvent:
+          break;
+        default:
+          return undefined;
+      }
+    }
+    return content;
+  }
+
+  private flushText(cursor: Cursor): void {
+    const run = cursor.text;
+    if (!run) {
+      return;
+    }
+    delete cursor.text;
+    const text = cursor.next;
+    const matches = text instanceof Text && text.data === run.content;
+    let offset = 0;
+    for (const segment of run.segments) {
+      if (matches && segment.content) {
+        segment.nodes.push({ text, offset, length: segment.content.length });
+        segment.insertion.enabled = false;
+      } else {
+        segment.nodes.push(segment.insertion.node);
+      }
+      offset += segment.content.length;
+    }
+    for (const insertion of run.insertions) {
+      if (matches && insertion.offset === text.length) {
+        insertion.next = text.nextSibling;
+        insertion.offset = 0;
+      } else if (!matches) {
+        insertion.offset = 0;
+      }
+    }
+    if (run.content) {
+      if (matches) {
+        cursor.next = text.nextSibling;
+      } else {
+        this.removeNext(cursor);
+      }
+    }
+  }
+
+  private insert(node: Node, cursor: Cursor): Insertion {
+    const insertion = { node, parent: cursor.parent, next: cursor.next, offset: cursor.text?.content.length ?? 0, enabled: true };
+    cursor.text?.insertions.push(insertion);
+    this.insertions.push(insertion);
+    return insertion;
+  }
+
+  private replaceFrame(index: number, cursor: Cursor): number {
+    const placeholder = document.createComment('!');
+    this.insert(placeholder, cursor);
+    this.matches.set(index, { nodes: [placeholder], replace: true });
+    this.removeNext(cursor);
+    return 1;
+  }
+
+  private removeNext(cursor: Cursor): void {
+    if (cursor.next && cursor.next !== cursor.end) {
+      this.removals.add(cursor.next);
+      cursor.next = cursor.next.nextSibling;
+    }
+  }
+
+  private removeRemaining(cursor: Cursor): void {
+    this.flushText(cursor);
+    while (cursor.next && cursor.next !== cursor.end) {
+      this.removeNext(cursor);
+    }
+  }
+
+  private matchMarkupNode(expected: Node, cursor: Cursor, nodes: MatchedNode[]): void {
+    if (expected instanceof Text) {
+      this.matchText(expected.data, cursor, nodes);
+      return;
+    }
+    this.flushText(cursor);
+    const actual = cursor.next;
+    if (actual && actual !== cursor.end && actual.nodeType === expected.nodeType &&
+        (expected instanceof Element
+          ? actual instanceof Element && actual.localName === expected.localName && actual.namespaceURI === expected.namespaceURI &&
+            matchesAttributes(actual, new Map(Array.from(expected.attributes, attribute => [attribute.name, attribute.value]))) &&
+            (!(actual instanceof HTMLTextAreaElement) || expected instanceof HTMLTextAreaElement && actual.defaultValue === expected.defaultValue)
+          : actual.nodeValue === expected.nodeValue)) {
+      nodes.push(actual);
+      if (actual instanceof Element && expected instanceof Element) {
+        this.markupElements.add(actual);
+        const container = actual instanceof HTMLTemplateElement ? actual.content : actual;
+        const expectedContainer = expected instanceof HTMLTemplateElement ? expected.content : expected;
+        const children: Cursor = { parent: container, next: container.firstChild };
+        for (const child of Array.from(expectedContainer.childNodes)) {
+          this.matchMarkupNode(child, children, []);
+        }
+        this.removeRemaining(children);
+      }
+      cursor.next = actual.nextSibling;
+    } else {
+      this.insert(expected, cursor);
+      nodes.push(expected);
+      this.removeNext(cursor);
+    }
+  }
+}
+
+function matchesAttributes(element: Element, attributes: Map<string, string>): boolean {
+  return element.attributes.length === attributes.size &&
+    Array.from(element.attributes).every(attribute => attributes.get(attribute.name) === attribute.value);
 }

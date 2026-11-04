@@ -1,14 +1,22 @@
 @page "/prerendered-dom"
 @using Microsoft.AspNetCore.Components.Web
 
-<TestContentPackage.PrerenderedDomContent @rendermode="Mode" IdSuffix="first" Mismatch="@Mismatch" IncludeForm="IncludeForm" />
-<TestContentPackage.PrerenderedDomContent @rendermode="Mode" IdSuffix="second" />
+@if (Scenario is not null)
+{
+    <TestContentPackage.PrerenderedDomPositionContent @rendermode="Mode" Scenario="@Scenario" />
+}
+else
+{
+    <TestContentPackage.PrerenderedDomContent @rendermode="Mode" IdSuffix="first" Mismatch="@Mismatch" IncludeForm="IncludeForm" />
+    <TestContentPackage.PrerenderedDomContent @rendermode="Mode" IdSuffix="second" />
+}
 
 @code {
     [SupplyParameterFromQuery] public string Platform { get; set; }
     [SupplyParameterFromQuery] public string Mismatch { get; set; }
     [SupplyParameterFromQuery] public bool NoPrerender { get; set; }
     [SupplyParameterFromQuery] public bool IncludeForm { get; set; }
+    [SupplyParameterFromQuery] public string Scenario { get; set; }
 
     private IComponentRenderMode Mode => Platform switch
     {

@@ -1,6 +1,6 @@
 @using Microsoft.AspNetCore.Components.Forms
 
-<section id="@Id("root")" class="prerendered-dom">
+<section id="@Id("root")" class="@(Mismatch == "root-attribute" && RendererInfo.IsInteractive ? "prerendered-dom-changed" : "prerendered-dom")">
     <h2>Prerendered DOM</h2>
     <p id="@Id("count")">Count: @count</p>
     <input id="@Id("input")" @bind="text" @ref="input" />

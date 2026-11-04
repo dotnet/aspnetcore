@@ -112,8 +112,8 @@ export class BrowserRenderer {
     if (elementsToClearOnRootComponentRender.delete(element)) {
       const prerendered = this.prerenderedDom.get(componentId);
       if (prerendered) {
-        for (const [index, nodes] of prerendered.adopt(element)) {
-          this.adoptedFrames.set(index, nodes);
+        for (const [index, match] of prerendered.adopt(element)) {
+          this.adoptedFrames.set(index, match);
         }
       } else {
         this.detachEventHandlersFromElement(element);
@@ -321,7 +321,8 @@ export class BrowserRenderer {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
 
-    const adoptedElement = this.adoptedFrames.get(frameIndex)?.[0];
+    const match = this.adoptedFrames.get(frameIndex);
+    const adoptedElement = match?.replace ? undefined : match?.nodes[0];
     if (adoptedElement instanceof Element) {
       adoptLogicalChild(adoptedElement, parent, childIndex);
       const end = frameIndex + frameReader.subtreeLength(frame);
@@ -364,7 +365,7 @@ export class BrowserRenderer {
       if (frameReader.frameType(descendantFrame) === FrameType.attribute) {
         this.applyAttribute(batch, componentId, newDomElementRaw, descendantFrame);
       } else {
-        insertLogicalChild(newDomElementRaw, parent, childIndex);
+        this.insertElementNode(newDomElementRaw, parent, childIndex, frameIndex);
         inserted = true;
         // As soon as we see a non-attribute child, all the subsequent child frames are
         // not attributes, so bail out and insert the remnants recursively
@@ -375,14 +376,25 @@ export class BrowserRenderer {
 
     // this element did not have any children, so it's not inserted yet.
     if (!inserted) {
-      insertLogicalChild(newDomElementRaw, parent, childIndex);
+      this.insertElementNode(newDomElementRaw, parent, childIndex, frameIndex);
     }
 
     applyAnyDeferredValue(newDomElementRaw);
   }
 
+  private insertElementNode(element: Element, parent: LogicalElement, childIndex: number, frameIndex: number): void {
+    const match = this.adoptedFrames.get(frameIndex);
+    if (match?.replace) {
+      const placeholder = match.nodes[0];
+      placeholder.parentNode!.replaceChild(element, placeholder);
+      adoptLogicalChild(element, parent, childIndex);
+    } else {
+      insertLogicalChild(element, parent, childIndex);
+    }
+  }
+
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame, frameIndex: number) {
-    const adopted = this.adoptedFrames.get(frameIndex)?.[0];
+    const adopted = this.adoptedFrames.get(frameIndex)?.nodes[0];
     const containerElement = adopted ? toLogicalElement(adopted) : createAndInsertLogicalContainer(parent, childIndex);
     if (adopted) {
       adoptLogicalChild(adopted, parent, childIndex);
@@ -395,7 +407,7 @@ export class BrowserRenderer {
   }
 
   private insertText(batch: RenderBatch, parent: LogicalElement, childIndex: number, textFrame: RenderTreeFrame, frameIndex: number) {
-    const adopted = this.adoptedFrames.get(frameIndex)?.[0];
+    const adopted = this.adoptedFrames.get(frameIndex)?.nodes[0];
     if (adopted) {
       adoptLogicalChild(adopted, parent, childIndex);
       return;
@@ -406,7 +418,7 @@ export class BrowserRenderer {
   }
 
   private insertMarkup(batch: RenderBatch, parent: LogicalElement, childIndex: number, markupFrame: RenderTreeFrame, frameIndex?: number) {
-    const adopted = frameIndex === undefined ? undefined : this.adoptedFrames.get(frameIndex);
+    const adopted = frameIndex === undefined ? undefined : this.adoptedFrames.get(frameIndex)?.nodes;
     if (adopted) {
       adoptLogicalChild(adopted[0], parent, childIndex);
       const markupContainer = toLogicalElement(adopted[0]);
