@@ -1,0 +1,15 @@
+Microsoft.AspNetCore.Components.AI.Mcp includes the following browser libraries:
+
+1. MCP Apps (@modelcontextprotocol/ext-apps)
+   https://github.com/modelcontextprotocol/ext-apps
+   See licenses/ext-apps/LICENSE.
+2. MCP TypeScript client and core (@modelcontextprotocol/client and @modelcontextprotocol/core)
+   https://github.com/modelcontextprotocol/typescript-sdk
+   See licenses/client/LICENSE and licenses/core/LICENSE.
+3. Zod
+   https://github.com/colinhacks/zod
+   See licenses/zod/LICENSE.
+
+The full upstream license files are included in this package. The MCP packages
+include their upstream MIT/Apache-2.0 licensing-transition notices. Their
+documentation is not incorporated into the browser bundles.

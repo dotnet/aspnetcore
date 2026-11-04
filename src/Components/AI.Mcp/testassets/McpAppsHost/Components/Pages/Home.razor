@@ -1,0 +1,105 @@
+@page "/"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@using System.Linq
+@using ModelContextProtocol.Client
+@inject IConfiguration Configuration
+@inject HostState State
+
+<PageTitle>Standard MCP Apps host</PageTitle>
+
+<h1>Standard MCP Apps host</h1>
+<p id="interactive-status">@(_interactive ? "ready" : "loading")</p>
+@if (_agent is not null)
+{
+    <button id="rerender" @onclick="Rerender">Rerender host</button>
+    <button id="release" @onclick="Release">Release model response</button>
+    <span id="render-count">@_renderCount</span>
+    <ChatPage Agent="_agent">
+        <MessageListContent>
+            <BlockRenderer TBlock="McpAppContentBlock" Context="block">
+                <McpBlock THost="Host" @key="block.Id" Host="_appHost" Block="block" />
+            </BlockRenderer>
+        </MessageListContent>
+    </ChatPage>
+}
+else
+{
+    <p role="status">Connecting to the MCP server.</p>
+}
+
+@code {
+    private readonly McpAppHost _appHost = new(new());
+    private readonly CancellationTokenSource _lifetime = new();
+    private McpClient? _client;
+    private McpClient? _otherClient;
+    private UIAgent? _agent;
+    private bool _interactive;
+    private int _renderCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var cancellationToken = _lifetime.Token;
+        var endpoint = new Uri(Configuration["MCP_SERVER_URL"]
+            ?? throw new InvalidOperationException("MCP_SERVER_URL must be configured."));
+        _client = await ConnectAsync(endpoint, cancellationToken);
+        var tools = await _client.ListToolsAsync(cancellationToken: cancellationToken);
+        var functions = _appHost.BindTools(_client, tools).Cast<AITool>().ToList();
+        if (Configuration["OTHER_MCP_SERVER_URL"] is { } otherEndpoint)
+        {
+            _otherClient = await ConnectAsync(new Uri(otherEndpoint), cancellationToken);
+            var otherTools = await _otherClient.ListToolsAsync(cancellationToken: cancellationToken);
+            functions.AddRange(_appHost.BindTools(_otherClient, otherTools.Select(tool => tool.WithName("other_" + tool.Name))));
+        }
+
+        _agent = new UIAgent(new FunctionInvokingChatClient(new ScriptedChatClient(State)), options =>
+        {
+            options.ChatOptions = new ChatOptions { Tools = functions };
+            _appHost.Configure(options);
+        });
+    }
+
+    private static Task<McpClient> ConnectAsync(Uri endpoint, CancellationToken cancellationToken)
+    {
+        var options = new McpClientOptions();
+        options.EnableMcpApps();
+
+        return McpClient.CreateAsync(new HttpClientTransport(new() { Endpoint = endpoint }), options,
+            cancellationToken: cancellationToken);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
+
+    private void Rerender()
+    {
+        _renderCount++;
+    }
+
+    private void Release()
+    {
+        State.Release.TrySetResult();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _lifetime.Cancel();
+        _agent?.Dispose();
+        _appHost.Dispose();
+        if (_client is not null)
+        {
+            await _client.DisposeAsync();
+        }
+        if (_otherClient is not null)
+        {
+            await _otherClient.DisposeAsync();
+        }
+        _lifetime.Dispose();
+    }
+}

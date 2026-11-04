@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor" TreatAsLocalProperty="VersionPrefix;PreReleaseVersionLabel;PreReleaseVersionIteration">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Hosts standard MCP Apps in isolated Blazor AI content views.</Description>
+    <PackageTags>blazor;ai;mcp;components</PackageTags>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <NoWarn>$(NoWarn);RS0026</NoWarn>
+    <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)..\THIRD-PARTY-NOTICES.txt</PackageThirdPartyNoticesFile>
+    <InteropWorkingDir>$(MSBuildThisFileDirectory)Interop\</InteropWorkingDir>
+    <ResolveStaticWebAssetsInputsDependsOn>IncludeCompileJsOutput;$(ResolveStaticWebAssetsInputsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Components\AI\src\Microsoft.AspNetCore.Components.AI.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="ModelContextProtocol.Core" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.AI.Mcp.Tests" />
+    <Content Remove="Interop\**" />
+    <None Include="$(InteropWorkingDir)node_modules\@modelcontextprotocol\ext-apps\LICENSE" Pack="true" PackagePath="licenses/ext-apps" />
+    <None Include="$(RepoRoot)node_modules\@modelcontextprotocol\client\LICENSE" Pack="true" PackagePath="licenses/client" />
+    <None Include="$(RepoRoot)node_modules\@modelcontextprotocol\core\LICENSE" Pack="true" PackagePath="licenses/core" />
+    <None Include="$(InteropWorkingDir)node_modules\zod\LICENSE" Pack="true" PackagePath="licenses/zod" />
+  </ItemGroup>
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="ResolveJSModuleStaticWebAssets;ResolveJsInitializerModuleStaticWebAssets">
+    <ItemGroup>
+      <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**\*.js" />
+      <_JsBuildOutput>
+        <RelativePath>%(_JsBuildOutput.RecursiveDir)%(Filename)%(Extension)</RelativePath>
+      </_JsBuildOutput>
+    </ItemGroup>
+    <DefineStaticWebAssets Condition="'@(_JsBuildOutput)' != ''" SourceType="Discovered" SourceId="$(PackageId)"
+      ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\" BasePath="_content\$(PackageId)"
+      CandidateAssets="@(_JsBuildOutput)" RelativePathFilter="**.js" RelativePathPattern="**">
+      <Output TaskParameter="Assets" ItemName="_JSBuildStaticWebAsset" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssetEndpoints Condition="'@(_JsBuildOutput)' != ''" CandidateAssets="@(_JSBuildStaticWebAsset)"
+      ExistingEndpoints="@()" ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_JSBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+    <ItemGroup>
+      <StaticWebAsset Include="@(_JSBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_JSBuildStaticWebAssetEndpoint)" />
+      <FileWrites Include="@(_JsBuildOutput)" />
+    </ItemGroup>
+  </Target>
+</Project>

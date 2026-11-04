@@ -57,6 +57,13 @@
     <Project Path="src/Components/AI/testassets/DojoClient/DojoClient.csproj" />
     <Project Path="src/Components/AI/testassets/DojoClient.E2E.Tests/DojoClient.E2E.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Components/AI.Mcp/">
+    <Project Path="src/Components/AI.Mcp/src/Microsoft.AspNetCore.Components.AI.Mcp.csproj" />
+    <Project Path="src/Components/AI.Mcp/test/Microsoft.AspNetCore.Components.AI.Mcp.Tests.csproj" />
+    <Project Path="src/Components/AI.Mcp/testassets/McpAppsHost/McpAppsHost.csproj" />
+    <Project Path="src/Components/AI.Mcp/testassets/McpAppsHost.E2E.Tests/McpAppsHost.E2E.Tests.csproj" />
+    <Project Path="src/Components/AI.Mcp/testassets/McpAppsServer/McpAppsServer.csproj" />
+  </Folder>
   <Folder Name="/src/Components/Authorization/">
     <Project Path="src/Components/Authorization/src/Microsoft.AspNetCore.Components.Authorization.csproj" />
     <Project Path="src/Components/Authorization/test/Microsoft.AspNetCore.Components.Authorization.Tests.csproj" />

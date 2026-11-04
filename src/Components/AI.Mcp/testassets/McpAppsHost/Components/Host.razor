@@ -1,0 +1,48 @@
+@inherits McpContentHost
+@using System.Text.Json
+@inject IConfiguration Configuration
+
+@if (!IsClosed)
+{
+    <section class="mcp-host">
+        <button class="mcp-theme" @onclick="ChangeThemeAsync">Toggle theme</button>
+        <button class="mcp-close" @onclick="async () => await CloseAsync()">Close app</button>
+        <iframe @ref="Frame"
+                title="Application-configured MCP host"
+                sandbox="allow-scripts allow-same-origin"
+                allow="clipboard-write 'none'"
+                referrerpolicy="no-referrer"
+                style="width:100%;border:0">
+        </iframe>
+    </section>
+}
+
+@code {
+    private McpContentOptions _options = default!;
+    private string _theme = "light";
+
+    protected override McpContentOptions Options => _options;
+
+    protected override void OnInitialized()
+    {
+        _options = new()
+        {
+            ProxyUrl = new(Configuration["PROXY_URL"]
+                ?? throw new InvalidOperationException("PROXY_URL must be configured.")),
+            MaximumHeight = 900,
+        };
+        var serverUrl = new Uri(Configuration["MCP_SERVER_URL"]
+            ?? throw new InvalidOperationException("MCP_SERVER_URL must be configured."));
+        _options.BrowserPolicy.ResourceDomains.Add(serverUrl.GetLeftPart(UriPartial.Authority));
+        _options.BrowserPolicy.ConnectDomains.Add(new UriBuilder(serverUrl)
+        {
+            Scheme = serverUrl.Scheme == Uri.UriSchemeHttps ? "wss" : "ws",
+        }.Uri.GetLeftPart(UriPartial.Authority));
+    }
+
+    private async Task ChangeThemeAsync()
+    {
+        _theme = _theme == "light" ? "dark" : "light";
+        await UpdateHostContextAsync(JsonSerializer.SerializeToElement(new { theme = _theme }));
+    }
+}

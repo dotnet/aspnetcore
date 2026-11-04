@@ -13,6 +13,8 @@
     "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
     "src/Components/WebAssembly/Authentication.Msal/src/Interop",
     "src/Components/CustomElements/src/js",
+    "src/Components/AI.Mcp/src/Interop",
+    "src/Components/AI.Mcp/testassets/McpAppsServer/Interop",
     "src/Components/Server.AutoPause/src/js",
     "src/ProjectTemplates/test/Templates.Tests"
   ],
