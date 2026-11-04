@@ -1123,9 +1123,8 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [InlineData(HttpProtocols.Http3)]
+    [QuarantinedTestData("https://github.com/dotnet/aspnetcore/issues/38008", OperatingSystems.Windows | OperatingSystems.Linux | OperatingSystems.MacOSX, HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
     public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
     {
         // Arrange

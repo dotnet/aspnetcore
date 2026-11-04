@@ -18,15 +18,21 @@ return await PrepareReviewProgram.RunAsync(args);
 internal static partial class PrepareReviewProgram
 {
     internal const string Suffix = ".source";
+    internal const string RoutingPath = ".github/skills/review-pull-request/routing.md";
+    private const string RequiredTextRoot = "required";
     private const int MaximumBlobBytes = 16 * 1024 * 1024;
+    private const int MaximumNativeReadLineBytes = 2048;
     private const int MaximumProcessOutputBytes = 64 * 1024 * 1024;
+    private const string TargetMovedDuringPreparationMessage =
+        "The target or base branch moved during preparation; no ready manifest was written.";
+    private const string ExecutionExclusionScope =
+        "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree";
+    private const string ExecutionExclusionReason =
+        "Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
+        "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
+        "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
+        "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
-    private static readonly HashSet<string> ComponentsOnlyPolicies = new(StringComparer.Ordinal)
-    {
-        "src/Components/AGENTS.md#code-clarity-and-durable-knowledge",
-        "src/Components/AGENTS.md#cross-runtime-design-checkpoint",
-        "src/Components/AGENTS.md#creating-e2e-tests",
-    };
 
     internal sealed record Options(
         string? Repo,
@@ -36,7 +42,10 @@ internal static partial class PrepareReviewProgram
         string? Hostname = null,
         string? Guidance = null,
         string? GuidanceRoot = null,
-        bool Check = false);
+        bool Check = false,
+        string? BaseTip = null,
+        string? MergeBase = null,
+        string? BaseRef = null);
 
     internal sealed record Dependencies(
         Func<string, string?, Task<JsonNode?>>? Api = null,
@@ -46,6 +55,8 @@ internal static partial class PrepareReviewProgram
     internal sealed record Link(string Path, string? Anchor, string Guide, string? Role = null, string? Reason = null);
     internal sealed record GuideLinkResult(List<Link> Included, List<Link> Context, List<Link> Skipped);
     internal sealed record GuideResult(string Principles, List<string> Topics, string Body);
+    internal sealed record RoutingEntry(string Prefix, string Guide);
+    private sealed record RoutingResult(string Sha256, List<string> Guides);
     private sealed record TreeEntry(string Mode, string Type, string Sha, string Name);
     private sealed record Pointer(string Path, string Kind, string? Commit = null);
 
@@ -90,6 +101,7 @@ internal static partial class PrepareReviewProgram
     private static Options ParseArguments(string[] args)
     {
         string? repo = null, pr = null, output = null, head = null, hostname = null, guidance = null, guidanceRoot = null;
+        string? baseTip = null, mergeBase = null, baseRef = null;
         var check = false;
         for (var index = 0; index < args.Length; index++)
         {
@@ -99,7 +111,7 @@ internal static partial class PrepareReviewProgram
                 check = true;
                 continue;
             }
-            Require(name is "--repo" or "--pr" or "--output" or "--head" or "--hostname" or "--guidance" or "--guidance-root"
+            Require(name is "--repo" or "--pr" or "--output" or "--head" or "--hostname" or "--guidance" or "--guidance-root" or "--base-tip" or "--merge-base" or "--base-ref"
                 && index + 1 < args.Length, $"Unknown or incomplete option: {name}");
             var value = args[++index];
             switch (name)
@@ -111,12 +123,37 @@ internal static partial class PrepareReviewProgram
                 case "--hostname": hostname = value; break;
                 case "--guidance": guidance = value; break;
                 case "--guidance-root": guidanceRoot = value; break;
+                case "--base-tip": baseTip = value; break;
+                case "--merge-base": mergeBase = value; break;
+                case "--base-ref": baseRef = value; break;
             }
         }
-        return new(repo, pr, output ?? string.Empty, head, hostname, guidance, guidanceRoot, check);
+        return new(repo, pr, output ?? string.Empty, head, hostname, guidance, guidanceRoot, check, baseTip, mergeBase, baseRef);
     }
 
     internal static string[] GitArguments(params string[] args) => ["-c", "core.longpaths=true", .. args];
+
+    internal static byte[] ExpandBinaryIndexLines(byte[] diff, IReadOnlySet<string> knownIds)
+    {
+        return Encoding.Latin1.GetBytes(BinaryIndexLine().Replace(Encoding.Latin1.GetString(diff), match =>
+            $"index {Expand(match.Groups[1].Value)}..{Expand(match.Groups[2].Value)}{match.Groups[3].Value}{match.Groups[4].Value}"));
+
+        string Expand(string prefix)
+        {
+            if (prefix.Length == 40)
+            {
+                return prefix;
+            }
+            if (prefix.All(character => character == '0'))
+            {
+                return new string('0', 40);
+            }
+            var matches = knownIds.Where(id => id.StartsWith(prefix, StringComparison.Ordinal)).Take(2).ToArray();
+            Require(matches.Length == 1,
+                $"The authoritative binary diff has an {(matches.Length == 0 ? "unknown" : "ambiguous")} object prefix: {prefix}");
+            return matches[0];
+        }
+    }
 
     private static byte[] Git(string directory, params string[] args) =>
         Run("git", GitArguments(["-C", directory, .. args]));
@@ -124,8 +161,10 @@ internal static partial class PrepareReviewProgram
     private static byte[] Objects(string directory, params string[] args) =>
         Run("git", GitArguments(["--git-dir", directory, .. args]));
 
-    private static byte[] Run(string command, IReadOnlyList<string> args, string? workingDirectory = null, byte[]? input = null)
+    internal static byte[] Run(string command, IReadOnlyList<string> args, string? workingDirectory = null, byte[]? input = null,
+        int maximumProcessOutputBytes = MaximumProcessOutputBytes)
     {
+        Require(maximumProcessOutputBytes > 0, "The maximum process output must be positive.");
         var start = new ProcessStartInfo(command)
         {
             WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory,
@@ -146,13 +185,77 @@ internal static partial class PrepareReviewProgram
             process.StandardInput.BaseStream.Write(input);
             process.StandardInput.Close();
         }
-        using var output = new MemoryStream();
-        var outputTask = process.StandardOutput.BaseStream.CopyToAsync(output);
-        var errorTask = process.StandardError.ReadToEndAsync();
+        var exceededOutputLimit = 0;
+        async Task<byte[]> ReadOutputAsync()
+        {
+            using var output = new MemoryStream();
+            var buffer = ArrayPool<byte>.Shared.Rent(81920);
+            try
+            {
+                int read;
+                while ((read = await process.StandardOutput.BaseStream.ReadAsync(buffer)) > 0)
+                {
+                    if (Volatile.Read(ref exceededOutputLimit) != 0
+                        || output.Length > maximumProcessOutputBytes - read)
+                    {
+                        KillProcess();
+                        continue;
+                    }
+                    await output.WriteAsync(buffer.AsMemory(0, read));
+                }
+                return output.ToArray();
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+        async Task<string> ReadErrorAsync()
+        {
+            var error = new StringBuilder();
+            var buffer = ArrayPool<char>.Shared.Rent(4096);
+            var bytes = 0;
+            try
+            {
+                int read;
+                while ((read = await process.StandardError.ReadAsync(buffer)) > 0)
+                {
+                    var additionalBytes = Utf8NoBom.GetByteCount(buffer, 0, read);
+                    if (Volatile.Read(ref exceededOutputLimit) != 0
+                        || bytes > maximumProcessOutputBytes - additionalBytes)
+                    {
+                        KillProcess();
+                        continue;
+                    }
+                    error.Append(buffer, 0, read);
+                    bytes += additionalBytes;
+                }
+                return error.ToString();
+            }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(buffer);
+            }
+        }
+        void KillProcess()
+        {
+            if (Interlocked.Exchange(ref exceededOutputLimit, 1) != 0)
+            {
+                return;
+            }
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException) when (process.HasExited)
+            {
+            }
+        }
+        var outputTask = ReadOutputAsync();
+        var errorTask = ReadErrorAsync();
         Task.WaitAll(outputTask, errorTask);
         process.WaitForExit();
-        Require(output.Length <= MaximumProcessOutputBytes
-            && Utf8NoBom.GetByteCount(errorTask.Result) <= MaximumProcessOutputBytes,
+        Require(exceededOutputLimit == 0,
             $"{command} failed: process output exceeded 64 MiB.");
         if (process.ExitCode != 0)
         {
@@ -164,7 +267,7 @@ internal static partial class PrepareReviewProgram
             var error = stderr.Trim();
             throw new InvalidOperationException($"{command} failed: {(error.Length > 0 ? error : $"exit code {process.ExitCode}")}");
         }
-        return output.ToArray();
+        return outputTask.Result;
     }
 
     private static void Require(bool condition, string message)
@@ -265,6 +368,325 @@ internal static partial class PrepareReviewProgram
     private static Task WriteAsync(string directory, string name, string text) =>
         WriteAsync(directory, name, Utf8NoBom.GetBytes(text));
 
+    private static JsonObject FileReference(string path, byte[] bytes) => new()
+    {
+        ["path"] = path,
+        ["utf8Bytes"] = bytes.Length,
+        ["sha256"] = Hash(bytes),
+    };
+
+    private static async Task<JsonObject> FileReferenceAsync(string output, string path) =>
+        FileReference(path, await File.ReadAllBytesAsync(
+            Path.Combine(output, path.Replace('/', Path.DirectorySeparatorChar))));
+
+    private static JsonObject AssignedFile(string kind, JsonObject reference) => new()
+    {
+        ["kind"] = kind,
+        ["path"] = reference["path"]!.GetValue<string>(),
+        ["utf8Bytes"] = reference["utf8Bytes"]!.GetValue<int>(),
+        ["sha256"] = reference["sha256"]!.GetValue<string>(),
+    };
+
+    private static JsonObject AssignedFileReference(JsonObject assigned) => new()
+    {
+        ["path"] = assigned["path"]!.GetValue<string>(),
+        ["utf8Bytes"] = assigned["utf8Bytes"]!.GetValue<int>(),
+        ["sha256"] = assigned["sha256"]!.GetValue<string>(),
+    };
+
+    private static async Task<JsonObject> WriteRequiredTextAsync(string output, string path, string text)
+    {
+        Require(path.StartsWith($"{RequiredTextRoot}/", StringComparison.Ordinal) && path.EndsWith(Suffix, StringComparison.Ordinal),
+            $"Invalid required text path: {path}");
+        CheckPaths([path[..^Suffix.Length]]);
+        var bytes = Utf8NoBom.GetBytes(text);
+        RequireMaximumLineLength(bytes, path, "Required text");
+        await WriteAsync(output, path, bytes);
+        return FileReference(path, bytes);
+    }
+
+    private static void RequireMaximumLineLength(byte[] bytes, string name, string kind)
+    {
+        var line = 1;
+        var start = 0;
+        for (var index = 0; index <= bytes.Length; index++)
+        {
+            if (index < bytes.Length && bytes[index] != (byte)'\n')
+            {
+                continue;
+            }
+            Require(index - start <= MaximumNativeReadLineBytes,
+                $"{kind} line exceeds {MaximumNativeReadLineBytes} UTF-8 bytes: {name}:{line}");
+            start = index + 1;
+            line++;
+        }
+    }
+
+    private static JsonObject? ProjectUser(JsonNode? node)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+        var user = node.AsObject();
+        return new JsonObject
+        {
+            ["login"] = user["login"]!.GetValue<string>(),
+            ["id"] = JsonInteger(user["id"]!),
+            ["type"] = user["type"]!.GetValue<string>(),
+        };
+    }
+
+    private static JsonArray ProjectLabels(JsonNode? node)
+    {
+        var labels = node?.AsArray() ?? throw new InvalidOperationException("GitHub pull metadata is missing labels.");
+        return new JsonArray(labels.Select(label => new JsonObject
+        {
+            ["name"] = label!["name"]!.GetValue<string>(),
+        }).ToArray());
+    }
+
+    private static JsonObject? ProjectMilestone(JsonNode? node) =>
+        node is null ? null : new JsonObject
+        {
+            ["number"] = node["number"]!.GetValue<int>(),
+            ["title"] = node["title"]!.GetValue<string>(),
+        };
+
+    private static JsonArray ProjectFiles(JsonArray files) =>
+        new(files.Select(file =>
+        {
+            var source = file!.AsObject();
+            var projected = new JsonObject
+            {
+                ["filename"] = source["filename"]!.GetValue<string>(),
+                ["status"] = source["status"]!.GetValue<string>(),
+                ["sha"] = source["sha"]!.GetValue<string>(),
+                ["additions"] = source["additions"]!.GetValue<int>(),
+                ["deletions"] = source["deletions"]!.GetValue<int>(),
+                ["changes"] = source["changes"]!.GetValue<int>(),
+            };
+            if (source["previous_filename"] is JsonNode previousFilename)
+            {
+                projected["previousFilename"] = previousFilename.GetValue<string>();
+            }
+            return projected;
+        }).ToArray());
+
+    private static async Task<JsonObject> ProjectPullAsync(string output, JsonObject pull)
+    {
+        var body = pull["body"] is null ? null : await WriteRequiredTextAsync(
+            output, $"{RequiredTextRoot}/pull/body{Suffix}", pull["body"]!.GetValue<string>());
+        return new JsonObject
+        {
+            ["number"] = pull["number"]!.GetValue<int>(),
+            ["state"] = pull["state"]!.GetValue<string>(),
+            ["title"] = pull["title"]!.GetValue<string>(),
+            ["body"] = body,
+            ["draft"] = pull["draft"]!.GetValue<bool>(),
+            ["author"] = pull["user"] is null ? null : ProjectUser(pull["user"]),
+            ["labels"] = ProjectLabels(pull["labels"]),
+            ["milestone"] = ProjectMilestone(pull["milestone"]),
+            ["createdAt"] = pull["created_at"]!.GetValue<string>(),
+            ["updatedAt"] = pull["updated_at"]!.GetValue<string>(),
+        };
+    }
+
+    private static async Task<JsonObject> ProjectFeedbackAsync(
+        string output, JsonArray comments, JsonArray reviews, JsonArray inlineComments)
+    {
+        var projectedComments = new JsonArray();
+        foreach (var item in comments)
+        {
+            var source = item!.AsObject();
+            var id = JsonInteger(source["id"]!);
+            projectedComments.Add(new JsonObject
+            {
+                ["id"] = id,
+                ["author"] = ProjectUser(source["user"]),
+                ["body"] = source["body"] is null ? null : await WriteRequiredTextAsync(
+                    output, $"{RequiredTextRoot}/feedback/comments/{id}{Suffix}", source["body"]!.GetValue<string>()),
+                ["createdAt"] = source["created_at"]!.GetValue<string>(),
+                ["updatedAt"] = source["updated_at"]!.GetValue<string>(),
+            });
+        }
+        var projectedReviews = new JsonArray();
+        foreach (var item in reviews)
+        {
+            var source = item!.AsObject();
+            var id = JsonInteger(source["id"]!);
+            projectedReviews.Add(new JsonObject
+            {
+                ["id"] = id,
+                ["author"] = ProjectUser(source["user"]),
+                ["body"] = source["body"] is null ? null : await WriteRequiredTextAsync(
+                    output, $"{RequiredTextRoot}/feedback/reviews/{id}{Suffix}", source["body"]!.GetValue<string>()),
+                ["state"] = source["state"]!.GetValue<string>(),
+                ["submittedAt"] = source["submitted_at"]?.GetValue<string>(),
+                ["commitId"] = source["commit_id"]?.GetValue<string>(),
+            });
+        }
+        var projectedInlineComments = new JsonArray();
+        foreach (var item in inlineComments)
+        {
+            var source = item!.AsObject();
+            var id = JsonInteger(source["id"]!);
+            var projected = new JsonObject
+            {
+                ["id"] = id,
+                ["author"] = ProjectUser(source["user"]),
+                ["body"] = source["body"] is null ? null : await WriteRequiredTextAsync(
+                    output, $"{RequiredTextRoot}/feedback/inline/{id}{Suffix}", source["body"]!.GetValue<string>()),
+                ["path"] = source["path"]!.GetValue<string>(),
+                ["line"] = source["line"]?.GetValue<int>(),
+                ["side"] = source["side"]?.GetValue<string>(),
+                ["startLine"] = source["start_line"]?.GetValue<int>(),
+                ["startSide"] = source["start_side"]?.GetValue<string>(),
+                ["originalLine"] = source["original_line"]?.GetValue<int>(),
+                ["originalStartLine"] = source["original_start_line"]?.GetValue<int>(),
+                ["commitId"] = source["commit_id"]?.GetValue<string>(),
+                ["originalCommitId"] = source["original_commit_id"]?.GetValue<string>(),
+                ["inReplyToId"] = source["in_reply_to_id"] is null ? null : JsonInteger(source["in_reply_to_id"]!),
+                ["createdAt"] = source["created_at"]!.GetValue<string>(),
+                ["updatedAt"] = source["updated_at"]!.GetValue<string>(),
+            };
+            projectedInlineComments.Add(projected);
+        }
+        return new JsonObject
+        {
+            ["comments"] = projectedComments,
+            ["reviews"] = projectedReviews,
+            ["inline"] = projectedInlineComments,
+        };
+    }
+
+    private static void RequireProperties(
+        JsonObject value, string name, IReadOnlyCollection<string> required, IReadOnlyCollection<string>? optional = null)
+    {
+        optional ??= [];
+        var allowed = required.Concat(optional).ToHashSet(StringComparer.Ordinal);
+        Require(value.All(pair => allowed.Contains(pair.Key)), $"Prepared {name} metadata has unexpected properties.");
+        Require(required.All(property => value.ContainsKey(property)), $"Prepared {name} metadata omits required properties.");
+    }
+
+    private static void ValidateProjectedUser(JsonNode? node, string name)
+    {
+        var user = node?.AsObject() ?? throw new InvalidOperationException($"Prepared {name} metadata omits its author.");
+        RequireProperties(user, $"{name} author", ["login", "id", "type"]);
+        Require(user["login"]!.GetValue<string>().Length > 0
+            && TryJsonSafeInteger(user["id"], out _)
+            && user["type"]!.GetValue<string>().Length > 0,
+            $"Prepared {name} author metadata is malformed.");
+    }
+
+    private static void ValidateProjectedPull(JsonObject pull)
+    {
+        RequireProperties(pull, "pull",
+            ["number", "state", "title", "body", "draft", "author", "labels", "milestone", "createdAt", "updatedAt"]);
+        Require(pull["number"]!.GetValue<int>() > 0
+            && pull["state"]!.GetValue<string>() == "open"
+            && pull["title"]!.GetValue<string>().Length > 0,
+            "Prepared pull metadata is malformed.");
+        _ = pull["draft"]!.GetValue<bool>();
+        _ = pull["createdAt"]!.GetValue<string>();
+        _ = pull["updatedAt"]!.GetValue<string>();
+        Require(pull["body"] is null or JsonObject, "Prepared pull body reference is malformed.");
+        Require(pull["milestone"] is null or JsonObject, "Prepared pull milestone metadata is malformed.");
+        if (pull["author"] is not null)
+        {
+            ValidateProjectedUser(pull["author"], "pull");
+        }
+        foreach (var labelNode in pull["labels"]!.AsArray())
+        {
+            var label = labelNode!.AsObject();
+            RequireProperties(label, "pull label", ["name"]);
+            _ = label["name"]!.GetValue<string>();
+        }
+        if (pull["milestone"] is JsonObject milestone)
+        {
+            RequireProperties(milestone, "pull milestone", ["number", "title"]);
+            Require(milestone["number"]!.GetValue<int>() > 0, "Prepared pull milestone metadata is malformed.");
+            _ = milestone["title"]!.GetValue<string>();
+        }
+    }
+
+    private static void ValidateProjectedFiles(JsonArray files)
+    {
+        foreach (var item in files)
+        {
+            var file = item!.AsObject();
+            RequireProperties(file, "changed-file",
+                ["filename", "status", "sha", "additions", "deletions", "changes"], ["previousFilename"]);
+            Require(file["filename"]!.GetValue<string>().Length > 0
+                && file["status"]!.GetValue<string>().Length > 0
+                && FullShaRegex().IsMatch(file["sha"]!.GetValue<string>())
+                && file["additions"]!.GetValue<int>() >= 0
+                && file["deletions"]!.GetValue<int>() >= 0
+                && file["changes"]!.GetValue<int>() >= 0,
+                "Prepared changed-file metadata is malformed.");
+            if (file["previousFilename"] is not null)
+            {
+                Require(file["previousFilename"]!.GetValue<string>().Length > 0,
+                    "Prepared changed-file metadata is malformed.");
+            }
+        }
+    }
+
+    private static void ValidateProjectedFeedback(JsonObject feedback)
+    {
+        RequireProperties(feedback, "feedback", ["comments", "reviews", "inline"]);
+        foreach (var item in feedback["comments"]!.AsArray())
+        {
+            var comment = item!.AsObject();
+            RequireProperties(comment, "issue-comment", ["id", "author", "body", "createdAt", "updatedAt"]);
+            Require(TryJsonSafeInteger(comment["id"], out _), "Prepared issue-comment metadata is malformed.");
+            Require(comment["body"] is null or JsonObject, "Prepared issue-comment body reference is malformed.");
+            if (comment["author"] is not null) ValidateProjectedUser(comment["author"], "issue-comment");
+            _ = comment["createdAt"]!.GetValue<string>();
+            _ = comment["updatedAt"]!.GetValue<string>();
+        }
+        foreach (var item in feedback["reviews"]!.AsArray())
+        {
+            var review = item!.AsObject();
+            RequireProperties(review, "review", ["id", "author", "body", "state", "submittedAt", "commitId"]);
+            Require(TryJsonSafeInteger(review["id"], out _)
+                && review["state"]!.GetValue<string>().Length > 0,
+                "Prepared review metadata is malformed.");
+            Require(review["body"] is null or JsonObject, "Prepared review body reference is malformed.");
+            if (review["author"] is not null) ValidateProjectedUser(review["author"], "review");
+            if (review["submittedAt"] is not null) _ = review["submittedAt"]!.GetValue<string>();
+            if (review["commitId"] is not null) _ = review["commitId"]!.GetValue<string>();
+        }
+        foreach (var item in feedback["inline"]!.AsArray())
+        {
+            var comment = item!.AsObject();
+            RequireProperties(comment, "inline-comment", [
+                "id", "author", "body", "path", "line", "side", "startLine", "startSide", "originalLine",
+                "originalStartLine", "commitId", "originalCommitId", "inReplyToId", "createdAt", "updatedAt",
+            ]);
+            Require(TryJsonSafeInteger(comment["id"], out _)
+                && comment["path"]!.GetValue<string>().Length > 0,
+                "Prepared inline-comment metadata is malformed.");
+            Require(comment["body"] is null or JsonObject, "Prepared inline-comment body reference is malformed.");
+            if (comment["author"] is not null) ValidateProjectedUser(comment["author"], "inline-comment");
+            foreach (var name in new[] { "line", "startLine", "originalLine", "originalStartLine" })
+            {
+                if (comment[name] is not null) _ = comment[name]!.GetValue<int>();
+            }
+            if (comment["inReplyToId"] is not null)
+            {
+                Require(TryJsonSafeInteger(comment["inReplyToId"], out _),
+                    "Prepared inline-comment metadata is malformed.");
+            }
+            foreach (var name in new[] { "side", "startSide", "commitId", "originalCommitId" })
+            {
+                if (comment[name] is not null) _ = comment[name]!.GetValue<string>();
+            }
+            _ = comment["createdAt"]!.GetValue<string>();
+            _ = comment["updatedAt"]!.GetValue<string>();
+        }
+    }
+
     private static void CreateNewDirectory(string path)
     {
         Require(!Directory.Exists(path) && !File.Exists(path), $"Cannot create directory because it already exists: {path}");
@@ -275,6 +697,20 @@ internal static partial class PrepareReviewProgram
     {
         Require(!Directory.Exists(path) && !File.Exists(path), $"Output directory already exists: {path}");
         Directory.CreateDirectory(path);
+    }
+
+    private static void DeleteOutputDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+        foreach (var name in Directory.EnumerateFileSystemEntries(path, "*", SearchOption.AllDirectories))
+        {
+            File.SetAttributes(name, File.GetAttributes(name) & ~FileAttributes.ReadOnly);
+        }
+        File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
+        Directory.Delete(path, recursive: true);
     }
 
     private static List<string> Walk(string directory, string prefix = "")
@@ -391,11 +827,78 @@ internal static partial class PrepareReviewProgram
     private static string AnchorFor(string title) => NonAnchorRegex().Replace(TagRegex().Replace(title.ToLowerInvariant(), ""), "")
         .Replace(" ", "-", StringComparison.Ordinal);
 
-    private static bool ChangedIn(JsonArray files, Regex expression) => files.Any(file =>
-        new[] { file?["filename"]?.GetValue<string>(), file?["previous_filename"]?.GetValue<string>() }
-            .Any(name => name is not null && expression.IsMatch(name)));
+    internal static List<RoutingEntry> ParseRouting(string markdown)
+    {
+        var lines = markdown.ReplaceLineEndings("\n").Split('\n').Select(line => line.Trim()).ToArray();
+        const string header = "| Changed path prefix | Guide |";
+        var headers = lines.Select((line, index) => (line, index)).Where(item => item.line == header).ToList();
+        Require(headers.Count == 1, "Required routing table is empty or malformed.");
+        var headerIndex = headers[0].index;
+        Require(headerIndex + 2 < lines.Length && lines[headerIndex + 1] == "| --- | --- |",
+            "Required routing table is empty or malformed.");
+        var entries = new List<RoutingEntry>();
+        var tableLines = new HashSet<int> { headerIndex, headerIndex + 1 };
+        for (var index = headerIndex + 2; index < lines.Length && lines[index].StartsWith('|'); index++)
+        {
+            tableLines.Add(index);
+            var cells = lines[index].Split('|');
+            Require(cells.Length == 4 && cells[0].Length == 0 && cells[3].Length == 0,
+                "Required routing table is empty or malformed.");
+            var prefix = cells[1].Trim();
+            var guide = cells[2].Trim();
+            Require(prefix.Length > 0 && guide.EndsWith(".md", StringComparison.Ordinal),
+                "Required routing table is empty or malformed.");
+            if (prefix == "*")
+            {
+                CheckPaths([guide]);
+            }
+            else
+            {
+                Require(prefix.EndsWith('/') && !prefix.Contains('*', StringComparison.Ordinal),
+                    "Every routing prefix except * must end in /.");
+                CheckPaths([prefix[..^1], guide]);
+            }
+            entries.Add(new(prefix, guide));
+        }
+        Require(entries.Count > 0 && lines.Select((line, index) => (line, index))
+            .Where(item => item.line.StartsWith('|')).All(item => tableLines.Contains(item.index)),
+            "Required routing table is empty or malformed.");
+        Require(entries.Any(entry => entry.Prefix == "*"), "Required routing table needs a * row.");
+        Require(entries.Distinct().Count() == entries.Count, "Required routing table has a duplicate row.");
+        return entries;
+    }
 
-    internal static GuideLinkResult GuideLinks(string text, string guidePath, bool components)
+    private static async Task<RoutingResult> RouteGuidesAsync(string guidanceRoot, JsonArray files)
+    {
+        var routingFile = Path.Combine(guidanceRoot, (RoutingPath + Suffix).Replace('/', Path.DirectorySeparatorChar));
+        Require(File.Exists(routingFile), $"Required routing table is missing: {RoutingPath}");
+        var routingBytes = await File.ReadAllBytesAsync(routingFile);
+        var entries = ParseRouting(Utf8NoBom.GetString(routingBytes));
+        foreach (var guide in entries.Select(entry => entry.Guide).Distinct(StringComparer.Ordinal))
+        {
+            var guideFile = Path.Combine(guidanceRoot, (guide + Suffix).Replace('/', Path.DirectorySeparatorChar));
+            Require(File.Exists(guideFile), $"Required guide {guide} is missing.");
+            ValidateGuide(await File.ReadAllTextAsync(guideFile, Utf8NoBom), guide);
+        }
+        var guides = new List<string>();
+        foreach (var entry in entries)
+        {
+            if ((entry.Prefix == "*" || files.Any(file =>
+                    new[]
+                    {
+                        file?["filename"]?.GetValue<string>(),
+                        file?["previous_filename"]?.GetValue<string>() ?? file?["previousFilename"]?.GetValue<string>(),
+                    }
+                        .Any(name => name is not null && name.StartsWith(entry.Prefix, StringComparison.Ordinal))))
+                && !guides.Contains(entry.Guide, StringComparer.Ordinal))
+            {
+                guides.Add(entry.Guide);
+            }
+        }
+        return new(Hash(routingBytes), guides);
+    }
+
+    internal static GuideLinkResult GuideLinks(string text, string guidePath)
     {
         var included = new List<Link>();
         var context = new List<Link>();
@@ -423,10 +926,6 @@ internal static partial class PrepareReviewProgram
                 if (SkippedLineRegex().IsMatch(line))
                 {
                     skipped.Add(link with { Reason = "Supporting source example, not a delegated criterion." });
-                }
-                else if (!components && anchor is not null && ComponentsOnlyPolicies.Contains($"{resolved}#{anchor}"))
-                {
-                    skipped.Add(link with { Reason = "Components-only criterion is not applicable to this change." });
                 }
                 else if (anchor is not null)
                 {
@@ -795,6 +1294,19 @@ internal static partial class PrepareReviewProgram
 
     internal static async Task<JsonObject> PrepareAsync(Options options, Dependencies? dependencies = null)
     {
+        try
+        {
+            return await PrepareOnceAsync(options, dependencies);
+        }
+        catch (InvalidOperationException error) when (!options.Check && error.Message == TargetMovedDuringPreparationMessage)
+        {
+            DeleteOutputDirectory(Path.GetFullPath(options.Output));
+            return await PrepareOnceAsync(options, dependencies);
+        }
+    }
+
+    private static async Task<JsonObject> PrepareOnceAsync(Options options, Dependencies? dependencies)
+    {
         dependencies ??= new();
         var timings = new JsonObject();
         async Task<T> Timed<T>(string name, Func<Task<T>> action)
@@ -814,6 +1326,11 @@ internal static partial class PrepareReviewProgram
             "Cannot resolve a single target repository; specify --repo OWNER/REPO and --pr NUMBER.");
         Require(options.Output.Length > 0, "Specify a new --output directory, or --check an existing prepared directory.");
         Require(options.Head is null || FullShaRegex().IsMatch(options.Head), "--head must be a full immutable commit.");
+        Require(options.BaseTip is null && options.MergeBase is null && options.BaseRef is null
+            || options.Head is not null && options.BaseTip is not null && FullShaRegex().IsMatch(options.BaseTip)
+                && options.MergeBase is not null && FullShaRegex().IsMatch(options.MergeBase)
+                && !string.IsNullOrEmpty(options.BaseRef),
+            "A frozen base requires --head, --base-tip, --merge-base, and --base-ref with full immutable commits.");
         Require(options.Guidance is null || options.GuidanceRoot is null, "Select either --guidance or --guidance-root.");
         var producer = ProducerHash(dependencies.ProducerSourcePath);
         var host = options.Hostname ?? "github.com";
@@ -851,14 +1368,21 @@ internal static partial class PrepareReviewProgram
             var head = pull["head"]!["sha"]!.GetValue<string>();
             Require(options.Head is null || options.Head == head, "The live PR head differs from the expected frozen head.");
             var baseRef = pull["base"]!["ref"]!.GetValue<string>();
-            var encodedRef = Uri.EscapeDataString(baseRef);
-            var branch = (await Api($"{endpoint}/git/ref/heads/{encodedRef}"))!.AsObject();
-            var baseTip = branch["object"]?["sha"]?.GetValue<string>() ?? "";
+            Require(options.BaseRef is null || options.BaseRef == baseRef, "The live PR base ref differs from the expected frozen base.");
+            var baseTip = options.BaseTip ?? "";
+            if (options.BaseTip is null)
+            {
+                var encodedRef = Uri.EscapeDataString(baseRef);
+                var branch = (await Api($"{endpoint}/git/ref/heads/{encodedRef}"))!.AsObject();
+                baseTip = branch["object"]?["sha"]?.GetValue<string>() ?? "";
+            }
             Require(FullShaRegex().IsMatch(baseTip), "The base branch did not resolve to a full commit.");
             var comparison = (await Api($"{endpoint}/compare/{baseTip}...{head}"))!.AsObject();
             var mergeBase = comparison["merge_base_commit"]?["sha"]?.GetValue<string>() ?? "";
             Require(comparison["base_commit"]?["sha"]?.GetValue<string>() == baseTip && FullShaRegex().IsMatch(mergeBase),
                 "GitHub did not return the expected immutable comparison identities.");
+            Require(options.MergeBase is null || options.MergeBase == mergeBase,
+                "The comparison differs from the expected frozen merge base.");
             return (new JsonObject
             {
                 ["hostname"] = host,
@@ -997,15 +1521,22 @@ internal static partial class PrepareReviewProgram
             Objects(store, "read-tree", frozen.Identity["mergeBase"]!.GetValue<string>());
             if (diff.Length > 0)
             {
-                Objects(store, "apply", "--cached", "--binary", "--whitespace=nowarn", Path.Combine(output, "diff.patch"));
+                // REST omits binary payloads; resolve its prefixes against the frozen changed objects, not supplied bytes.
+                var knownIds = Utf8NoBom.GetString(Objects(store, "diff", "--raw", "--no-abbrev", "-z", "--no-renames",
+                    "--no-ext-diff", "--no-textconv", frozen.Identity["mergeBase"]!.GetValue<string>(), frozen.Identity["head"]!.GetValue<string>()))
+                    .Split('\0').Where((_, index) => index % 2 == 0)
+                    .SelectMany(entry => entry.Split(' ').Skip(2).Take(2)).ToHashSet(StringComparer.Ordinal);
+                Run("git", GitArguments(["--git-dir", store, "apply", "--cached", "--binary", "--whitespace=nowarn", "-"]),
+                    input: ExpandBinaryIndexLines(diff, knownIds));
             }
             Require(Utf8NoBom.GetString(Objects(store, "write-tree")).Trim()
                 == Utf8NoBom.GetString(Objects(store, "rev-parse", $"{frozen.Identity["head"]!.GetValue<string>()}^{{tree}}")).Trim(),
                 "The authoritative diff does not reconstruct the frozen head; incomplete or unsupported diff.");
             return true;
         });
-        await WriteJsonAsync(output, "files.json", files);
-        await WriteJsonAsync(output, "pull.json", frozen.Pull);
+        var projectedFiles = ProjectFiles(files);
+        await WriteJsonAsync(output, "files.json", projectedFiles);
+        await WriteJsonAsync(output, "pull.json", await ProjectPullAsync(output, frozen.Pull));
 
         async Task<JsonArray> Paginate(string uri)
         {
@@ -1020,12 +1551,11 @@ internal static partial class PrepareReviewProgram
         }
         await Timed("feedback", async () =>
         {
-            var feedback = new JsonObject
-            {
-                ["comments"] = await Paginate($"issues/{options.Pr}/comments"),
-                ["reviews"] = await Paginate($"pulls/{options.Pr}/reviews"),
-                ["inline"] = await Paginate($"pulls/{options.Pr}/comments"),
-            };
+            var feedback = await ProjectFeedbackAsync(
+                output,
+                await Paginate($"issues/{options.Pr}/comments"),
+                await Paginate($"pulls/{options.Pr}/reviews"),
+                await Paginate($"pulls/{options.Pr}/comments"));
             await WriteJsonAsync(output, "feedback.json", feedback);
             return true;
         });
@@ -1080,53 +1610,85 @@ internal static partial class PrepareReviewProgram
         var guides = new JsonArray();
         var policies = new JsonArray();
         var context = new JsonArray();
-        var components = ChangedIn(files, ComponentsPathRegex());
-        var exclusions = new JsonArray
+        var routing = await RouteGuidesAsync(Path.Combine(output, "guidance"), files);
+        var workerArtifacts = new Dictionary<string, JsonObject>(StringComparer.Ordinal)
         {
-            new JsonObject
-            {
-                ["scope"] = "Running PR code, tests, CI, browser workflows, or implementation samples",
-                ["reason"] = "This is a source-only review; assess changed tests and contracts from source.",
-            },
+            ["diff"] = await FileReferenceAsync(output, "diff.patch"),
+            ["changedFiles"] = await FileReferenceAsync(output, "files.json"),
         };
+        var securityExclusion = ResolvePolicy(
+            await File.ReadAllTextAsync(Path.Combine(output, "guidance",
+                (".github/copilot-instructions.md" + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
+            "security-concerns-are-out-of-scope", ".github/copilot-instructions.md");
+        var exclusions = new JsonArray(new JsonObject
+        {
+            ["scope"] = await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/coordinator/exclusions/0000-scope{Suffix}", ExecutionExclusionScope),
+            ["reason"] = await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/coordinator/exclusions/0000-reason{Suffix}", ExecutionExclusionReason),
+        });
         const string instructionPath = ".github/copilot-instructions.md";
-        var instruction = await File.ReadAllTextAsync(Path.Combine(output, "guidance",
-            (instructionPath + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
         exclusions.Add(new JsonObject
         {
             ["source"] = $"{instructionPath}#security-concerns-are-out-of-scope",
-            ["body"] = ResolvePolicy(instruction, "security-concerns-are-out-of-scope", instructionPath),
+            ["body"] = await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/coordinator/exclusions/0001-body{Suffix}", securityExclusion),
         });
         var skippedLinks = new JsonArray();
-        var guideNames = new List<string> { "docs/CrossCuttingGuidance.md" };
-        if (ChangedIn(files, ComponentsPathRegex())) guideNames.Add("docs/BlazorComponentsGuidance.md");
-        foreach (var name in guideNames)
+        for (var guideIndex = 0; guideIndex < routing.Guides.Count; guideIndex++)
         {
-            var body = await File.ReadAllTextAsync(Path.Combine(output, "guidance",
-                (name + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
+            var name = routing.Guides[guideIndex];
+            var guideInputPath = $"guidance/{name}{Suffix}";
+            var body = await File.ReadAllTextAsync(Path.Combine(
+                output, guideInputPath.Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
             var parsed = ValidateGuide(body, name);
-            guides.Add(new JsonObject { ["path"] = name, ["topics"] = new JsonArray(parsed.Topics.Select(topic => JsonValue.Create(topic)).ToArray()) });
-            var links = GuideLinks(body, name, components);
+            var assignedFiles = new JsonArray(
+                AssignedFile("guide", await FileReferenceAsync(output, guideInputPath)),
+                AssignedFile("diff", workerArtifacts["diff"]),
+                AssignedFile("changedFiles", workerArtifacts["changedFiles"]));
+            var links = GuideLinks(body, name);
             foreach (var link in links.Skipped) skippedLinks.Add(LinkJson(link));
             var classified = await ContextLinksAsync(links.Context, Path.Combine(output, "guidance"), guidance["pointers"]?.AsArray());
             foreach (var item in classified) context.Add(item!.DeepClone());
+            var guidePolicyIndex = 0;
             foreach (var link in links.Included)
             {
                 var target = await File.ReadAllTextAsync(Path.Combine(output, "guidance",
                     (link.Path + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
                 var item = LinkJson(link);
-                item["body"] = ResolvePolicy(target, link.Anchor!, link.Path);
+                var policyBody = await WriteRequiredTextAsync(
+                    output, $"{RequiredTextRoot}/guides/{guideIndex:D4}/policies/{guidePolicyIndex:D4}{Suffix}",
+                    ResolvePolicy(target, link.Anchor!, link.Path));
+                item["body"] = policyBody;
                 policies.Add(item);
+                assignedFiles.Add(AssignedFile("policy", policyBody));
+                guidePolicyIndex++;
             }
+            assignedFiles.Add(AssignedFile("exclusion", await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0000-scope{Suffix}", ExecutionExclusionScope)));
+            assignedFiles.Add(AssignedFile("exclusion", await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0000-reason{Suffix}", ExecutionExclusionReason)));
+            assignedFiles.Add(AssignedFile("exclusion", await WriteRequiredTextAsync(
+                output, $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0001-body{Suffix}", securityExclusion)));
+            guides.Add(new JsonObject
+            {
+                ["path"] = name,
+                ["topics"] = new JsonArray(parsed.Topics.Select(topic => JsonValue.Create(topic)).ToArray()),
+                ["assignment"] = new JsonObject
+                {
+                    ["files"] = assignedFiles,
+                    ["sourceRoles"] = new JsonArray("head", "mergeBase", "baseTip"),
+                },
+            });
         }
-        Require(JsonEqual((await Freeze()).Identity, frozen.Identity),
-            "The target or base branch moved during preparation; no ready manifest was written.");
+        Require(JsonEqual((await Freeze()).Identity, frozen.Identity), TargetMovedDuringPreparationMessage);
         var manifestStopwatch = Stopwatch.StartNew();
         var artifacts = new JsonObject();
         foreach (var name in new[] { "diff.patch", "files.json", "pull.json", "feedback.json" })
         {
             artifacts[name] = Hash(await File.ReadAllBytesAsync(Path.Combine(output, name)));
         }
+        var requiredTextDigest = await DirectoryDigestAsync(Path.Combine(output, RequiredTextRoot));
         timings["manifest"] = Math.Round(manifestStopwatch.Elapsed.TotalMilliseconds, 3);
         var manifest = new JsonObject
         {
@@ -1137,12 +1699,23 @@ internal static partial class PrepareReviewProgram
             ["suffix"] = Suffix,
             ["sources"] = sources,
             ["guidance"] = guidance,
+            ["routing"] = new JsonObject
+            {
+                ["path"] = RoutingPath,
+                ["sha256"] = routing.Sha256,
+            },
             ["guides"] = guides,
             ["policies"] = policies,
             ["context"] = context,
             ["skippedLinks"] = skippedLinks,
             ["exclusions"] = exclusions,
             ["artifacts"] = artifacts,
+            ["requiredText"] = new JsonObject
+            {
+                ["root"] = RequiredTextRoot,
+                ["files"] = requiredTextDigest["files"]!.DeepClone(),
+                ["sha256"] = requiredTextDigest["sha256"]!.DeepClone(),
+            },
             ["timingsMs"] = timings,
             ["limitations"] = "Tracked Git bytes only. Symlinks, submodules and LFS pointers are inert data and cannot establish their target behavior.",
         };
@@ -1154,7 +1727,9 @@ internal static partial class PrepareReviewProgram
     private static async Task<JsonObject> CheckPreparedAsync(string output, string producer, JsonObject identity,
         JsonObject guidance, Func<Task<(JsonObject Identity, JsonObject Pull)>> freeze)
     {
-        var manifest = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "manifest.json")))!.AsObject();
+        var manifestBytes = await File.ReadAllBytesAsync(Path.Combine(output, "manifest.json"));
+        RequireMaximumLineLength(manifestBytes, "manifest.json", "Prepared serialized JSON");
+        var manifest = JsonNode.Parse(manifestBytes)!.AsObject();
         Require(manifest["version"]!.GetValue<int>() == 2 && manifest["ready"]!.GetValue<bool>()
             && manifest["producer"]!.GetValue<string>() == producer && manifest["suffix"]!.GetValue<string>() == Suffix
             && JsonEqual(manifest["target"], identity), "Prepared input is stale, mismatched, or from a different preparation version.");
@@ -1166,16 +1741,21 @@ internal static partial class PrepareReviewProgram
         }
         var sources = manifest["sources"] as JsonObject;
         var artifacts = manifest["artifacts"] as JsonObject;
+        var requiredText = manifest["requiredText"] as JsonObject;
         Require(sources is not null
             && sources.Select(pair => pair.Key).Order(StringComparer.Ordinal).SequenceEqual(["baseTip", "head", "mergeBase"])
             && manifest["guidance"]?["root"]?.GetValue<string>() == "guidance"
+            && manifest["routing"] is JsonObject
             && artifacts is not null
             && artifacts.Select(pair => pair.Key).Order(StringComparer.Ordinal).SequenceEqual(["diff.patch", "feedback.json", "files.json", "pull.json"])
+            && requiredText is not null && requiredText["root"]?.GetValue<string>() == RequiredTextRoot
+            && requiredText["files"] is JsonValue && requiredText["sha256"] is JsonValue
             && manifest["guides"] is JsonArray && manifest["policies"] is JsonArray && manifest["context"] is JsonArray
             && manifest["exclusions"] is JsonArray && manifest["skippedLinks"] is JsonArray && timings is not null
             && timingNames.All(name => timings[name] is JsonValue value && value.GetValue<double>() >= 0)
             && timings.All(pair => pair.Value is JsonValue value && value.GetValue<double>() >= 0),
             "Prepared manifest omits required inputs.");
+        RequireProperties(requiredText!, "required-text root", ["root", "files", "sha256"]);
         foreach (var role in new[] { "head", "mergeBase", "baseTip" })
         {
             Require(sources![role]!["commit"]!.GetValue<string>() == identity[role]!.GetValue<string>()
@@ -1199,14 +1779,163 @@ internal static partial class PrepareReviewProgram
         }
         foreach (var pair in artifacts!)
         {
-            Require(!pair.Key.Contains('/') && Hash(await File.ReadAllBytesAsync(Path.Combine(output, pair.Key)))
-                == pair.Value!.GetValue<string>(), $"Incomplete or modified input: {pair.Key}");
+            var bytes = await File.ReadAllBytesAsync(Path.Combine(output, pair.Key));
+            if (pair.Key.EndsWith(".json", StringComparison.Ordinal))
+            {
+                RequireMaximumLineLength(bytes, pair.Key, "Prepared serialized JSON");
+            }
+            Require(!pair.Key.Contains('/') && Hash(bytes) == pair.Value!.GetValue<string>(),
+                $"Incomplete or modified input: {pair.Key}");
         }
+        var pull = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "pull.json")))!.AsObject();
+        var feedback = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "feedback.json")))!.AsObject();
+        ValidateProjectedPull(pull);
+        ValidateProjectedFeedback(feedback);
+        const string instructions = ".github/copilot-instructions.md";
+        var preparedSecurityExclusion = ResolvePolicy(
+            await File.ReadAllTextAsync(Path.Combine(output, "guidance",
+                (instructions + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
+            "security-concerns-are-out-of-scope", instructions);
+        var requiredReferences = new List<JsonObject>();
+        if (pull["body"] is JsonObject pullBody)
+        {
+            requiredReferences.Add(pullBody);
+        }
+        foreach (var group in new[] { "comments", "reviews", "inline" })
+        {
+            foreach (var item in feedback[group]!.AsArray())
+            {
+                if (item!["body"] is JsonObject body)
+                {
+                    requiredReferences.Add(body);
+                }
+            }
+        }
+        foreach (var policy in manifest["policies"]!.AsArray())
+        {
+            requiredReferences.Add(policy!["body"]!.AsObject());
+        }
+        foreach (var exclusion in manifest["exclusions"]!.AsArray())
+        {
+            foreach (var name in new[] { "scope", "reason", "body" })
+            {
+                if (exclusion![name] is JsonObject reference)
+                {
+                    requiredReferences.Add(reference);
+                }
+            }
+        }
+        var requiredNames = new List<string>();
+        foreach (var reference in requiredReferences)
+        {
+            var path = await ValidateRequiredTextReferenceAsync(output, reference);
+            Require(!requiredNames.Contains(path, StringComparer.Ordinal), $"Prepared required text path is reused: {path}");
+            requiredNames.Add(path);
+        }
+        var guideIndex = 0;
+        foreach (var guideNode in manifest["guides"]!.AsArray())
+        {
+            var guide = guideNode!.AsObject();
+            RequireProperties(guide, "guide", ["path", "topics", "assignment"]);
+            var guidePath = guide["path"]!.GetValue<string>();
+            var assignment = guide["assignment"]!.AsObject();
+            RequireProperties(assignment, "worker assignment", ["files", "sourceRoles"]);
+            Require(assignment["sourceRoles"]!.AsArray().Select(role => role!.GetValue<string>())
+                .SequenceEqual(["head", "mergeBase", "baseTip"], StringComparer.Ordinal),
+                $"Prepared worker assignment has invalid source roles: {guidePath}");
+            var assignedFiles = assignment["files"]!.AsArray().Select(file => file!.AsObject()).ToArray();
+            Require(assignedFiles.Select(file => file["path"]!.GetValue<string>()).Distinct(StringComparer.Ordinal).Count()
+                == assignedFiles.Length, $"Prepared worker assignment reuses an input path: {guidePath}");
+            foreach (var assigned in assignedFiles)
+            {
+                RequireProperties(assigned, "worker assignment file", ["kind", "path", "utf8Bytes", "sha256"]);
+                Require(assigned["kind"]!.GetValue<string>()
+                    is "guide" or "policy" or "exclusion" or "diff" or "changedFiles",
+                    $"Prepared worker assignment has an invalid input kind: {guidePath}");
+            }
+
+            var guideInput = assignedFiles.SingleOrDefault(file => file["kind"]!.GetValue<string>() == "guide");
+            Require(guideInput is not null
+                && guideInput["path"]!.GetValue<string>() == $"guidance/{guidePath}{Suffix}",
+                $"Prepared worker assignment has the wrong guide input: {guidePath}");
+            await ValidateFileReferenceAsync(output, AssignedFileReference(guideInput!), "worker assignment guide");
+
+            foreach (var (kind, path, artifactName) in new[]
+            {
+                ("diff", "diff.patch", "diff.patch"),
+                ("changedFiles", "files.json", "files.json"),
+            })
+            {
+                var input = assignedFiles.SingleOrDefault(file => file["kind"]!.GetValue<string>() == kind);
+                Require(input is not null && input["path"]!.GetValue<string>() == path
+                    && input["sha256"]!.GetValue<string>() == artifacts![artifactName]!.GetValue<string>(),
+                    $"Prepared worker assignment has the wrong {kind} input: {guidePath}");
+                await ValidateFileReferenceAsync(output, AssignedFileReference(input!), $"worker assignment {kind}");
+            }
+
+            var expectedAssignedPolicies = manifest["policies"]!.AsArray()
+                .Where(policy => policy!["guide"]!.GetValue<string>() == guidePath)
+                .Select(policy => policy!["body"]!.AsObject())
+                .ToArray();
+            var assignedPolicies = assignedFiles
+                .Where(file => file["kind"]!.GetValue<string>() == "policy")
+                .Select(AssignedFileReference)
+                .ToArray();
+            Require(expectedAssignedPolicies.Length == assignedPolicies.Length,
+                "Prepared required policy inputs are incomplete.");
+            Require(expectedAssignedPolicies.Zip(assignedPolicies).All(pair => JsonEqual(pair.First, pair.Second)),
+                $"Prepared worker assignment has incorrect policy inputs: {guidePath}");
+            for (var policyIndex = 0; policyIndex < assignedPolicies.Length; policyIndex++)
+            {
+                var policy = assignedPolicies[policyIndex];
+                var path = await ValidateRequiredTextReferenceAsync(output, policy);
+                Require(path == $"{RequiredTextRoot}/guides/{guideIndex:D4}/policies/{policyIndex:D4}{Suffix}",
+                    $"Prepared worker assignment policy has an invalid projected path: {guidePath}");
+            }
+
+            var assignedExclusions = assignedFiles
+                .Where(file => file["kind"]!.GetValue<string>() == "exclusion")
+                .Select(AssignedFileReference)
+                .ToArray();
+            Require(assignedExclusions.Length == 3,
+                $"Prepared worker assignment has incorrect exclusion inputs: {guidePath}");
+            var expectedExclusionText = new[] { ExecutionExclusionScope, ExecutionExclusionReason, preparedSecurityExclusion };
+            var expectedExclusionPaths = new[]
+            {
+                $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0000-scope{Suffix}",
+                $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0000-reason{Suffix}",
+                $"{RequiredTextRoot}/guides/{guideIndex:D4}/exclusions/0001-body{Suffix}",
+            };
+            for (var exclusionIndex = 0; exclusionIndex < assignedExclusions.Length; exclusionIndex++)
+            {
+                var reference = assignedExclusions[exclusionIndex];
+                var path = await ValidateRequiredTextReferenceAsync(output, reference);
+                Require(path == expectedExclusionPaths[exclusionIndex],
+                    $"Prepared worker assignment exclusion has an invalid projected path: {guidePath}");
+                Require(!requiredNames.Contains(path, StringComparer.Ordinal),
+                    $"Prepared required text path is reused: {path}");
+                requiredNames.Add(path);
+                Require(await ReadRequiredTextAsync(output, reference) == expectedExclusionText[exclusionIndex],
+                    $"Prepared worker assignment exclusion changed: {guidePath}");
+            }
+            guideIndex++;
+        }
+        var actualRequiredNames = Walk(Path.Combine(output, RequiredTextRoot))
+            .Select(name => $"{RequiredTextRoot}/{name}").ToArray();
+        Require(requiredNames.Order(StringComparer.Ordinal).SequenceEqual(actualRequiredNames, StringComparer.Ordinal),
+            "Prepared required text references are incomplete.");
+        var actualRequiredText = await DirectoryDigestAsync(Path.Combine(output, RequiredTextRoot));
+        Require(actualRequiredText["sha256"]!.GetValue<string>() == requiredText!["sha256"]!.GetValue<string>()
+            && actualRequiredText["files"]!.GetValue<int>() == requiredText["files"]!.GetValue<int>(),
+            "Incomplete or modified prepared required text.");
         var changed = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "files.json")))!.AsArray();
-        var required = new List<string> { "docs/CrossCuttingGuidance.md" };
-        if (ChangedIn(changed, ComponentsPathRegex())) required.Add("docs/BlazorComponentsGuidance.md");
+        ValidateProjectedFiles(changed);
+        var routing = await RouteGuidesAsync(Path.Combine(output, "guidance"), changed);
+        Require(manifest["routing"]!["path"]!.GetValue<string>() == RoutingPath
+            && manifest["routing"]!["sha256"]!.GetValue<string>() == routing.Sha256,
+            "Prepared routing table changed.");
         Require(manifest["guides"]!.AsArray().Select(guide => guide!["path"]!.GetValue<string>())
-            .SequenceEqual(required, StringComparer.Ordinal), "Prepared guide routing is incomplete.");
+            .SequenceEqual(routing.Guides, StringComparer.Ordinal), "Prepared guide routing is incomplete.");
         var included = new List<Link>();
         var context = new List<Link>();
         var skipped = new List<Link>();
@@ -1217,7 +1946,7 @@ internal static partial class PrepareReviewProgram
             var actual = ValidateGuide(body, path);
             Require(actual.Topics.SequenceEqual(guide["topics"]!.AsArray().Select(item => item!.GetValue<string>()), StringComparer.Ordinal),
                 $"Prepared guide topics changed: {path}");
-            var links = GuideLinks(body, path, ChangedIn(changed, ComponentsPathRegex()));
+            var links = GuideLinks(body, path);
             included.AddRange(links.Included);
             context.AddRange(links.Context);
             skipped.AddRange(links.Skipped);
@@ -1239,22 +1968,82 @@ internal static partial class PrepareReviewProgram
             var path = policy!["path"]!.GetValue<string>();
             var actual = ResolvePolicy(await File.ReadAllTextAsync(Path.Combine(output, "guidance",
                 (path + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom), policy["anchor"]!.GetValue<string>(), path);
-            Require(actual == policy["body"]!.GetValue<string>(), $"Prepared policy clauses changed: {path}#{policy["anchor"]!.GetValue<string>()}");
+            Require(actual == await ReadRequiredTextAsync(output, policy["body"]!.AsObject()),
+                $"Prepared policy clauses changed: {path}#{policy["anchor"]!.GetValue<string>()}");
         }
-        const string instructions = ".github/copilot-instructions.md";
         Require(manifest["exclusions"]!.AsArray().Count == 2
-            && manifest["exclusions"]![1]!["body"]!.GetValue<string>() == ResolvePolicy(
-                await File.ReadAllTextAsync(Path.Combine(output, "guidance",
-                    (instructions + Suffix).Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom),
-                "security-concerns-are-out-of-scope", instructions),
+            && await ReadRequiredTextAsync(output, manifest["exclusions"]![0]!["scope"]!.AsObject()) == ExecutionExclusionScope
+            && await ReadRequiredTextAsync(output, manifest["exclusions"]![0]!["reason"]!.AsObject()) == ExecutionExclusionReason
+            && await ReadRequiredTextAsync(output, manifest["exclusions"]![1]!["body"]!.AsObject()) == preparedSecurityExclusion,
             "Prepared exclusions do not match the trusted instruction snapshot.");
-        _ = freeze;
+        Require(JsonEqual((await freeze()).Identity, manifest["target"]),
+            "The target or base branch moved during validation.");
         return manifest;
     }
 
     private static async Task WriteJsonAsync(string directory, string name, JsonNode value)
     {
-        await WriteAsync(directory, name, SerializeJson(value));
+        var bytes = Utf8NoBom.GetBytes(SerializeJson(value));
+        RequireMaximumLineLength(bytes, name, "Serialized JSON");
+        await WriteAsync(directory, name, bytes);
+    }
+
+    private static async Task<(string Path, byte[] Bytes)> ValidateFileReferenceAsync(
+        string output, JsonObject reference, string description)
+    {
+        RequireProperties(reference, description, ["path", "utf8Bytes", "sha256"]);
+        var path = reference["path"]!.GetValue<string>();
+        Require(path.Length > 0
+            && !Path.IsPathFullyQualified(path)
+            && !path.Contains('\\', StringComparison.Ordinal)
+            && !path.Split('/').Contains("..", StringComparer.Ordinal),
+            $"Prepared {description} path is invalid: {path}");
+        var fullOutput = Path.GetFullPath(output);
+        var fullPath = Path.GetFullPath(Path.Combine(output, path.Replace('/', Path.DirectorySeparatorChar)));
+        var outputPrefix = Path.EndsInDirectorySeparator(fullOutput) ? fullOutput : fullOutput + Path.DirectorySeparatorChar;
+        Require(fullPath.StartsWith(outputPrefix, StringComparison.OrdinalIgnoreCase),
+            $"Prepared {description} path escapes the bundle: {path}");
+        byte[] bytes;
+        try
+        {
+            var info = new FileInfo(fullPath);
+            Require(info.Exists && info.LinkTarget is null
+                && (info.Attributes & (FileAttributes.Directory | FileAttributes.Device | FileAttributes.ReparsePoint)) == 0,
+                $"Prepared {description} is missing or not an ordinary file: {path}");
+            bytes = await File.ReadAllBytesAsync(fullPath);
+        }
+        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException
+            or UnauthorizedAccessException or IOException)
+        {
+            throw new InvalidOperationException($"Prepared {description} is unreadable: {path}", error);
+        }
+        Require(bytes.Length == reference["utf8Bytes"]!.GetValue<int>(),
+            $"Prepared {description} has the wrong UTF-8 byte length: {path}");
+        Require(Hash(bytes) == reference["sha256"]!.GetValue<string>(),
+            $"Prepared {description} has the wrong SHA-256: {path}");
+        return (path, bytes);
+    }
+
+    private static async Task<string> ValidateRequiredTextReferenceAsync(string output, JsonObject reference)
+    {
+        Require(reference.Select(pair => pair.Key).SequenceEqual(["path", "utf8Bytes", "sha256"]),
+            "Prepared required text metadata is malformed.");
+        var path = reference["path"]!.GetValue<string>();
+        Require(path.StartsWith($"{RequiredTextRoot}/", StringComparison.Ordinal)
+            && path.EndsWith(Suffix, StringComparison.Ordinal)
+            && !path.Split('/').Contains("..", StringComparer.Ordinal),
+            $"Prepared required text path is invalid: {path}");
+        CheckPaths([path[..^Suffix.Length]]);
+        var (_, bytes) = await ValidateFileReferenceAsync(output, reference, "required text");
+        RequireMaximumLineLength(bytes, path, "Prepared required text");
+        return path;
+    }
+
+    private static async Task<string> ReadRequiredTextAsync(string output, JsonObject reference)
+    {
+        var path = await ValidateRequiredTextReferenceAsync(output, reference);
+        return await File.ReadAllTextAsync(
+            Path.Combine(output, path.Replace('/', Path.DirectorySeparatorChar)), Utf8NoBom);
     }
 
     internal static string SerializeJson(JsonNode value) => SerializeJson(value, indented: true) + "\n";
@@ -1453,6 +2242,8 @@ internal static partial class PrepareReviewProgram
         return true;
     }
 
+    [GeneratedRegex("^index ([a-f0-9]{4,40})\\.\\.([a-f0-9]{4,40})( [0-7]{6})?(\\r?\\n)(?=Binary files [^\\r\\n]* differ(?:\\r?\\n|$))", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
+    private static partial Regex BinaryIndexLine();
     [GeneratedRegex("^[a-f0-9]{40}$", RegexOptions.CultureInvariant)]
     private static partial Regex FullShaRegex();
     [GeneratedRegex("^[a-z0-9_.-]+/[a-z0-9_.-]+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
@@ -1485,8 +2276,6 @@ internal static partial class PrepareReviewProgram
     private static partial Regex SkippedLineRegex();
     [GeneratedRegex("^(#{1,6}) (.+)$", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
     private static partial Regex HeadingRegex();
-    [GeneratedRegex("^src/Components/", RegexOptions.CultureInvariant)]
-    private static partial Regex ComponentsPathRegex();
     [GeneratedRegex("^(?:https://github\\.com/|git@github\\.com:)([a-z0-9_.-]+/[a-z0-9_.-]+?)(?:\\.git)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex RemoteRegex();
 }

@@ -2,6 +2,7 @@
 
 import argparse
 import collections
+import hashlib
 import importlib.util
 import json
 import os
@@ -26,10 +27,22 @@ USING_LINE = "using Microsoft.AspNetCore.InternalTesting;"
 ATTRIBUTE_LINE = re.compile(
     r"^\[\s*(?:assembly\s*:\s*)?"
     r"(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
-    r"QuarantinedTest(?:Attribute)?\s*\(\s*"
+    r"(?P<attribute>QuarantinedTest(?:Data)?)(?:Attribute)?\s*\(\s*"
     r'"https://github\.com/dotnet/aspnetcore/issues/'
-    r'(?P<reference>\d+|#aw_[A-Za-z0-9_]{3,12})"\s*\)\s*\]$'
+    r'(?P<reference>\d+|#aw_[A-Za-z0-9_]{3,12})"\s*'
+    r'(?:,\s*(?P<operating_systems>OperatingSystems\.[A-Za-z]+'
+    r'(?:\s*\|\s*OperatingSystems\.[A-Za-z]+)*))?'
+    r'(?:,\s*(?P<data>.*))?\)\s*\]$'
 )
+INLINE_DATA_LINE = re.compile(
+    r"^\[\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
+    r"InlineData(?:Attribute)?\s*\((?P<data>.*)\)\s*\]$"
+)
+OPERATING_SYSTEMS = {
+    "OperatingSystems.Linux",
+    "OperatingSystems.MacOSX",
+    "OperatingSystems.Windows",
+}
 
 
 class ValidationError(ValueError):
@@ -110,6 +123,7 @@ def changed_patch_lines(patch):
     changed = []
     attributes = []
     in_hunk = False
+    hunk = 0
     for line in patch.splitlines():
         if line.startswith("diff --git "):
             in_hunk = False
@@ -118,6 +132,7 @@ def changed_patch_lines(patch):
             continue
         if line.startswith("@@"):
             in_hunk = True
+            hunk += 1
             continue
         if not in_hunk:
             continue
@@ -126,17 +141,137 @@ def changed_patch_lines(patch):
         if not line.startswith(("+", "-")):
             continue
         content = line[1:].strip()
-        changed.append((line[0], content))
-    for operation, content in changed:
+        changed.append((line[0], content, hunk))
+    logical_changes = []
+    current_operation = None
+    current_lines = []
+    bracket_depth = 0
+    current_hunk = None
+    for operation, content, hunk in changed:
+        syntax = ELIGIBILITY.sanitize_csharp(content)
+        if current_lines:
+            if operation != current_operation or hunk != current_hunk:
+                raise ValidationError(
+                    "Patch splits one attribute across add/remove operations"
+                )
+            current_lines.append(content)
+            bracket_depth += ELIGIBILITY.square_bracket_delta(syntax)
+            if bracket_depth == 0:
+                logical_changes.append((
+                    current_operation,
+                    " ".join(current_lines),
+                    len(current_lines),
+                    current_hunk,
+                ))
+                current_operation = None
+                current_lines = []
+            continue
+        if content.startswith("["):
+            bracket_depth = ELIGIBILITY.square_bracket_delta(syntax)
+            if bracket_depth > 0:
+                current_operation = operation
+                current_hunk = hunk
+                current_lines = [content]
+                continue
+        logical_changes.append((operation, content, 1, hunk))
+    if current_lines:
+        raise ValidationError("Patch contains an incomplete attribute")
+
+    row_comments = []
+    for operation, content, physical_line_count, hunk in logical_changes:
+        comment = ""
+        syntax = ELIGIBILITY.sanitize_csharp(content)
+        closing = syntax.rfind("]") + 1
+        if closing and not syntax[closing:].strip():
+            suffix = content[closing:]
+            if suffix.strip() and re.fullmatch(
+                r"\s*(?:/\*.*?\*/\s*)*(?://[^\n]*)?", suffix
+            ):
+                comment = suffix
+                content = content[:closing]
         attribute = ATTRIBUTE_LINE.fullmatch(content)
         if attribute:
-            attributes.append((operation, attribute.group("reference")))
+            attribute_name = attribute.group("attribute")
+            operating_systems = attribute.group("operating_systems")
+            data = attribute.group("data")
+            if attribute_name == "QuarantinedTestData" and data is None:
+                raise ValidationError(
+                    "QuarantinedTestData must include one or more data values"
+                )
+            if (
+                attribute_name == "QuarantinedTestData"
+                and operating_systems is None
+            ):
+                raise ValidationError(
+                    "QuarantinedTestData must include operating systems"
+                )
+            if attribute_name == "QuarantinedTest" and data is not None:
+                raise ValidationError(
+                    "QuarantinedTest does not accept test data values"
+                )
+            if (
+                attribute_name == "QuarantinedTestData"
+                and physical_line_count != 1
+            ):
+                raise ValidationError(
+                    "Automated data-row rewrites require one-line attributes"
+                )
+            if comment and attribute_name != "QuarantinedTestData":
+                raise ValidationError(
+                    "Trailing comments are supported only on data-row replacements"
+                )
+            if operating_systems is not None:
+                values = [
+                    value.strip()
+                    for value in operating_systems.split("|")
+                ]
+                if (
+                    len(values) != len(set(values))
+                    or any(value not in OPERATING_SYSTEMS for value in values)
+                ):
+                    raise ValidationError(
+                        "Quarantine operating systems must be unique supported "
+                        "OperatingSystems flags"
+                    )
+            attributes.append((
+                operation,
+                attribute.group("reference"),
+                "data" if data is not None else "quarantine",
+                data,
+            ))
+            if data is not None:
+                row_comments.append((operation, hunk, data, comment))
+            continue
+        inline_data = INLINE_DATA_LINE.fullmatch(content)
+        if inline_data:
+            if physical_line_count != 1:
+                raise ValidationError(
+                    "Automated data-row rewrites require one-line attributes"
+                )
+            attributes.append((
+                operation,
+                None,
+                "inline",
+                inline_data.group("data"),
+            ))
+            row_comments.append((operation, hunk, inline_data.group("data"), comment))
             continue
         if operation == "+" and content == USING_LINE:
             continue
         raise ValidationError(
             f"Patch contains a non-quarantine change: {operation}{content}"
         )
+    if any(comment for _, _, _, comment in row_comments):
+        removed_comments = collections.Counter(
+            (hunk, data, comment) for operation, hunk, data, comment in row_comments
+            if operation == "-"
+        )
+        added_comments = collections.Counter(
+            (hunk, data, comment) for operation, hunk, data, comment in row_comments
+            if operation == "+"
+        )
+        if removed_comments != added_comments:
+            raise ValidationError("Data-row replacements must preserve trailing comments")
     return attributes
 
 
@@ -146,7 +281,27 @@ def target_key(target):
         target["path"],
         target.get("type"),
         target.get("method"),
+        target.get("data"),
     )
+
+
+def target_operating_systems(target):
+    operating_systems = target.get("operating_systems")
+    if not isinstance(operating_systems, list):
+        return None
+    return tuple(operating_systems)
+
+
+def validate_operating_systems(target, record, key):
+    expected = record.get("quarantine_operating_systems")
+    if (
+        not isinstance(expected, list)
+        or tuple(expected) != target_operating_systems(target)
+    ):
+        raise ValidationError(
+            "Quarantine operating systems do not match deterministic "
+            f"failure evidence: {key}"
+        )
 
 
 def target_map(root, source_index):
@@ -191,11 +346,21 @@ def exact_source_target(test_name, record):
     source = record.get("source_resolution")
     if not isinstance(source, dict) or source.get("status") != "exact":
         return None
+    inline_data = source.get("matching_inline_data")
+    if isinstance(inline_data, dict):
+        return (
+            "data",
+            source.get("path"),
+            source.get("declaring_type") or source.get("type"),
+            source.get("method"),
+            inline_data.get("data"),
+        )
     return (
         "method",
         source.get("path"),
         source.get("declaring_type") or source.get("type"),
         source.get("method"),
+        None,
     )
 
 
@@ -237,6 +402,7 @@ def validate_addition(target, eligibility, issue_items):
             raise ValidationError(
                 f"Case A addition is not bound to an exact eligible test: {key}"
             )
+        validate_operating_systems(target, record, key)
         return ("case-a", test_name)
 
     if not reference.isdigit():
@@ -249,6 +415,7 @@ def validate_addition(target, eligibility, issue_items):
             isinstance(record, dict)
             and record.get("originating_case") == "case-b"
             and record.get("case_b_eligible") is True
+            and record.get("case_b_issue_verified") is True
             and record.get("case_b_issue") == issue
             and record.get("current_quarantine_state") == "not-quarantined"
             and record.get("latest_quarantine_transition") == "removed"
@@ -259,6 +426,7 @@ def validate_addition(target, eligibility, issue_items):
         raise ValidationError(
             f"Case B addition is not bound to one exact eligible test: {key}"
         )
+    validate_operating_systems(target, tests[matches[0]], key)
     return ("case-b", matches[0])
 
 
@@ -277,7 +445,7 @@ def history_target_map(history):
     return result
 
 
-def validate_removals(removed, history_targets):
+def validate_removals(removed, history_targets, unquarantine_targets):
     issues = set()
     for key, target in removed.items():
         reference = target["reference"]
@@ -295,6 +463,16 @@ def validate_removals(removed, history_targets):
             raise ValidationError(
                 f"Unquarantine target is not an exact first quarantine: {key}"
             )
+        evidence = unquarantine_targets.get(key)
+        if (
+            not isinstance(evidence, dict)
+            or evidence.get("eligible") is not True
+            or evidence.get("issue") != issue
+            or evidence.get("introduced_utc") != history_target.get("introduced_utc")
+        ):
+            raise ValidationError(
+                f"Unquarantine target lacks deterministic Part 2 eligibility: {key}"
+            )
         issues.add(issue)
     if len(issues) != 1:
         raise ValidationError(
@@ -302,25 +480,50 @@ def validate_removals(removed, history_targets):
         )
 
 
-def changed_project_roots(root, base_commit, current_main, project_roots):
+def changed_project_roots(root, base_commit, current_main, project_roots, target_paths=()):
     if current_main == base_commit:
         return set()
     result = run(
         root,
         "git",
         "diff",
+        "--no-renames",
         "--name-only",
         f"{base_commit}..{current_main}",
     )
     changed = set(result.stdout.splitlines())
-    return {
+    scopes_by_project = {
+        project_root: set(target_paths)
+        | set(ELIGIBILITY.project_paths(root, project_root, base_commit))
+        | set(ELIGIBILITY.project_paths(root, project_root, current_main))
+        for project_root in project_roots
+    }
+    stale = {
         project_root
         for project_root in project_roots
         if any(
-            path == project_root or path.startswith(f"{project_root}/")
+            path == scope or path.startswith(f"{scope}/")
             for path in changed
+            for scope in scopes_by_project[project_root]
         )
     }
+    for path in changed:
+        if not path.endswith(".csproj"):
+            continue
+        project_root = str(pathlib.PurePosixPath(path).parent)
+        for commit in (base_commit, current_main):
+            context = ELIGIBILITY.project_context(root, project_root, commit)
+            for target_path in target_paths:
+                membership = ELIGIBILITY.project_membership(root, project_root, context, target_path)
+                if membership is True or (membership is None and (
+                    pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(target_path).parents
+                    or (context and any(
+                        ELIGIBILITY.compile_glob_matches(root, project_root, pattern, target_path)
+                        for pattern in context["includes"]
+                    ))
+                )):
+                    stale.add(project_root)
+    return stale
 
 
 def validate_commit_changes(root, base_commit, head_commit, branch):
@@ -406,6 +609,7 @@ def validate_outputs(
     ref,
     commit,
     current_main=None,
+    unquarantine_path=None,
 ):
     repo_root = pathlib.Path(repo_root).resolve()
     payload = load_json(agent_output_path)
@@ -418,6 +622,18 @@ def validate_outputs(
         ref,
         commit,
     )
+    if unquarantine_path is None:
+        raise ValidationError("Required deterministic Part 2 receipt is missing")
+    unquarantine = load_json(unquarantine_path)
+    validate_receipts(unquarantine, history, repository, ref, commit)
+    if (
+        unquarantine.get("complete") is not True
+        or unquarantine.get("history_sha256")
+        != hashlib.sha256(pathlib.Path(history_path).read_bytes()).hexdigest()
+        or set(unquarantine.get("pipelines", {})) != {"84", "87"}
+    ):
+        raise ValidationError("Deterministic Part 2 collection is incomplete or unbound")
+    unquarantine_targets = history_target_map(unquarantine)
     pull_requests = items(payload, "create_pull_request")
     issue_items = items(payload, "create_quarantine_issue")
     if not pull_requests:
@@ -428,6 +644,14 @@ def validate_outputs(
             )
         return []
     history_targets = history_target_map(history)
+
+    if any(
+        item.get("repo") is not None and item["repo"] != repository
+        for item in pull_requests
+    ):
+        raise ValidationError(
+            "Every create_pull_request item must target the workflow repository"
+        )
 
     branches = [item.get("branch") for item in pull_requests]
     if any(not isinstance(branch, str) or not branch for branch in branches):
@@ -540,12 +764,29 @@ def validate_outputs(
                 )
                 removed = {
                     key: target for key, target in before.items()
-                    if key not in after or after[key]["reference"] != target["reference"]
+                    if (
+                        key not in after
+                        or after[key]["reference"] != target["reference"]
+                        or target_operating_systems(after[key])
+                        != target_operating_systems(target)
+                    )
                 }
                 added = {
                     key: target for key, target in after.items()
-                    if key not in before or before[key]["reference"] != target["reference"]
+                    if (
+                        key not in before
+                        or before[key]["reference"] != target["reference"]
+                        or target_operating_systems(before[key])
+                        != target_operating_systems(target)
+                    )
                 }
+                if any(
+                    target.get("source_ambiguous")
+                    for target in [*removed.values(), *added.values()]
+                ):
+                    raise ValidationError(
+                        "Quarantine edit has unproven consuming projects"
+                    )
                 if removed and added:
                     raise ValidationError(
                         f"Branch {item['branch']!r} mixes quarantine additions "
@@ -567,21 +808,22 @@ def validate_outputs(
                     (removed.get(key) or added[key])["project_root"]
                     for key in targets
                 }
+                target_paths = {
+                    (removed.get(key) or added[key])["path"]
+                    for key in targets
+                }
                 stale_roots = changed_project_roots(
                     repo_root,
                     history_commit,
                     current_main,
                     project_roots,
+                    target_paths,
                 )
                 if stale_roots:
                     raise ValidationError(
                         "origin/main changed a validated test project after "
                         f"evidence collection: {sorted(stale_roots)}"
                     )
-                target_paths = {
-                    (removed.get(key) or added[key])["path"]
-                    for key in targets
-                }
                 if not paths.issubset(target_paths):
                     raise ValidationError(
                         f"Patch changes files outside its quarantine targets: "
@@ -598,8 +840,31 @@ def validate_outputs(
                         eligibility,
                         issue_items,
                     )
-                    reference = next(iter(added.values()))["reference"]
-                    if attribute_changes != [("+", reference)]:
+                    added_target = next(iter(added.values()))
+                    reference = added_target["reference"]
+                    expected_changes = [
+                        (
+                            "+",
+                            reference,
+                            (
+                                "data"
+                                if added_target["scope"] == "data"
+                                else "quarantine"
+                            ),
+                            added_target.get("data"),
+                        )
+                    ]
+                    if added_target["scope"] == "data":
+                        expected_changes.insert(
+                            0,
+                            (
+                                "-",
+                                None,
+                                "inline",
+                                added_target["data"],
+                            ),
+                        )
+                    if attribute_changes != expected_changes:
                         raise ValidationError(
                             "Quarantine pull request attribute lines do not "
                             "match its one derived target"
@@ -612,16 +877,42 @@ def validate_outputs(
                         "test": test_name,
                     })
                 else:
-                    expected_attributes = collections.Counter(
-                        ("-", target["reference"])
-                        for target in removed.values()
-                    )
+                    expected_attributes = collections.Counter()
+                    physical_targets = set()
+                    for target in removed.values():
+                        physical_target = (
+                            target["scope"],
+                            target["path"],
+                            tuple(target["attribute_lines"]),
+                            target.get("data"),
+                            target["reference"],
+                        )
+                        if physical_target in physical_targets:
+                            continue
+                        physical_targets.add(physical_target)
+                        expected_attributes.update([(
+                            "-",
+                            target["reference"],
+                            (
+                                "data"
+                                if target["scope"] == "data"
+                                else "quarantine"
+                            ),
+                            target.get("data"),
+                        )])
+                        if target["scope"] == "data":
+                            expected_attributes.update([(
+                                "+",
+                                None,
+                                "inline",
+                                target["data"],
+                            )])
                     if collections.Counter(attribute_changes) != expected_attributes:
                         raise ValidationError(
                             "Unquarantine pull request attribute lines do not "
                             "match its derived targets"
                         )
-                    validate_removals(removed, history_targets)
+                    validate_removals(removed, history_targets, unquarantine_targets)
                     summaries.append({
                         "branch": item["branch"],
                         "operation": "unquarantine",
@@ -682,6 +973,7 @@ def main():
             args.repository,
             args.ref,
             args.commit,
+            unquarantine_path=evidence_directory / "test-quarantine-unquarantine-eligibility.json",
         )
     except ValidationError as error:
         raise SystemExit(f"FATAL: {error}") from error

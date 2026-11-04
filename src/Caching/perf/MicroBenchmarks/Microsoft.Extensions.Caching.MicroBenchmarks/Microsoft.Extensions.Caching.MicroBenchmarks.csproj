@@ -11,10 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.Extensions.Caching.SqlServer" />
-    <Reference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+
+    <ProjectReference Include="$(RepoRoot)src\Caching\SqlServer\src\Microsoft.Extensions.Caching.SqlServer.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Caching\StackExchangeRedis\src\Microsoft.Extensions.Caching.StackExchangeRedis.csproj" />
 
     <!--<Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />-->
 
@@ -22,6 +23,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 </Project>

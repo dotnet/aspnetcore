@@ -33,9 +33,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\dotnet-dev-certs\src\dotnet-dev-certs.csproj" IncludeInAggregateExecutable="true" />
-    <ProjectReference Include="..\..\dotnet-user-jwts\src\dotnet-user-jwts.csproj" IncludeInAggregateExecutable="true" />
-    <ProjectReference Include="..\..\dotnet-user-secrets\src\dotnet-user-secrets.csproj" IncludeInAggregateExecutable="true" />
+    <ProjectReference Include="$(RepoRoot)src\Tools\dotnet-dev-certs\src\dotnet-dev-certs.csproj" IncludeInAggregateExecutable="true" />
+    <ProjectReference Include="$(RepoRoot)src\Tools\dotnet-user-jwts\src\dotnet-user-jwts.csproj" IncludeInAggregateExecutable="true" />
+    <ProjectReference Include="$(RepoRoot)src\Tools\dotnet-user-secrets\src\dotnet-user-secrets.csproj" IncludeInAggregateExecutable="true" />
   </ItemGroup>
 
   <Target Name="PublishAspNetCoreToolsOnBuild"

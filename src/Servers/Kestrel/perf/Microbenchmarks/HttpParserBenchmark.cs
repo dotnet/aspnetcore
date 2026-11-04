@@ -59,6 +59,36 @@ public class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
         }
     }
 
+    private static readonly byte[] _queryStringRequest = System.Text.Encoding.ASCII.GetBytes(
+        "GET /api/products/search?q=wireless+noise+cancelling+headphones&category=electronics&minPrice=50&maxPrice=400&sort=rating_desc&page=2&pageSize=24 HTTP/1.1\r\n" +
+        "Host: localhost\r\n" +
+        "\r\n");
+
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void QueryString()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(_queryStringRequest);
+            ParseData();
+        }
+    }
+
+    private static readonly byte[] _shortQueryStringRequest = System.Text.Encoding.ASCII.GetBytes(
+        "GET /api/items?id=42 HTTP/1.1\r\n" +
+        "Host: localhost\r\n" +
+        "\r\n");
+
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void ShortQueryString()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(_shortQueryStringRequest);
+            ParseData();
+        }
+    }
+
     [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
     public void Unicode()
     {
