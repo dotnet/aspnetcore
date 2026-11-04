@@ -56,18 +56,32 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
         builder.RequestDelegate = async context =>
         {
             var originalFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
-            var fileInfo = context.RequestServices.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(asset.AssetPath);
-            // Truncating is correct because the manifest truncates the timestamp when it serializes the Last-Modified header
-            // (HTTP date format only supports second precision). We need to apply the same truncation here so that we correctly
-            // detect unchanged files rather than always seeing them as different due to subsecond precision mismatch.
-            if (fileInfo.Length != asset.GetContentLength() || TruncateToSeconds(fileInfo.LastModified) != asset.GetLastModified())
+            try
             {
-                // At this point, we know that the file has changed from what was generated at build time.
-                // This is for example, when someone changes something in the WWWRoot folder.
+                var fileInfo = context.RequestServices.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(asset.AssetPath);
+                if (!fileInfo.Exists)
+                {
+                    throw new FileNotFoundException($"The file '{asset.AssetPath}' could not be found.");
+                }
 
-                // In case we were dealing with a compressed asset, we are going to wrap the response body feature to re-compress the asset on the fly.
-                // and write that to the response instead.
-                context.Features.Set<IHttpResponseBodyFeature>(new RuntimeStaticAssetResponseBodyFeature(originalFeature, context, asset));
+                // Truncating is correct because the manifest truncates the timestamp when it serializes the Last-Modified header
+                // (HTTP date format only supports second precision). We need to apply the same truncation here so that we correctly
+                // detect unchanged files rather than always seeing them as different due to subsecond precision mismatch.
+                if (fileInfo.Length != asset.GetContentLength() || TruncateToSeconds(fileInfo.LastModified) != asset.GetLastModified())
+                {
+                    // At this point, we know that the file has changed from what was generated at build time.
+                    // This is for example, when someone changes something in the WWWRoot folder.
+
+                    // In case we were dealing with a compressed asset, we are going to wrap the response body feature to re-compress the asset on the fly.
+                    // and write that to the response instead.
+                    context.Features.Set<IHttpResponseBodyFeature>(new RuntimeStaticAssetResponseBodyFeature(originalFeature, context, asset));
+                }
+            }
+            catch (FileNotFoundException ex)
+            {
+                // A compressed representation can still exist after its source disappears.
+                StaticAssetsInvoker.HandleFileNotFound(context, ex, context.RequestServices.GetRequiredService<ILogger<StaticAssetsInvoker>>());
+                return;
             }
 
             await original(context);
