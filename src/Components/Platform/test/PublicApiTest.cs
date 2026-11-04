@@ -25,6 +25,7 @@ public class PublicApiTest
     [Theory]
     [InlineData(typeof(Window))]
     [InlineData(typeof(Storage))]
+    [InlineData(typeof(CookieStore))]
     public void SharedInstances_CannotBeDisposedByApplicationCode(Type type)
     {
         Assert.False(typeof(IAsyncDisposable).IsAssignableFrom(type));
@@ -38,6 +39,7 @@ public class PublicApiTest
         Type[] liveBrowserObjectTypes =
         [
             typeof(Storage),
+            typeof(CookieStore),
         ];
 
         var synchronousMethods = liveBrowserObjectTypes
