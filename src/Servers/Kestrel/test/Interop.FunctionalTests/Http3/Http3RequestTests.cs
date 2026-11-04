@@ -2079,8 +2079,8 @@ public class Http3RequestTests : LoggedTest
     {
         Logger.LogInformation($"Started waiting for logs: {message}");
 
-        var retryCount = !Debugger.IsAttached ? 5 : int.MaxValue;
-        for (var i = 0; i < retryCount; i++)
+        var stopwatch = Stopwatch.StartNew();
+        while (true)
         {
             if (testLogs(TestSink.Writes))
             {
@@ -2088,7 +2088,12 @@ public class Http3RequestTests : LoggedTest
                 return;
             }
 
-            await Task.Delay(100 * (i + 1));
+            if (!Debugger.IsAttached && stopwatch.Elapsed >= TestConstants.DefaultTimeout)
+            {
+                break;
+            }
+
+            await Task.Delay(100);
         }
 
         throw new Exception($"Wait for logs failure: {message}");
