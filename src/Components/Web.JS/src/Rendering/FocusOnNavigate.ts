@@ -74,11 +74,13 @@ function onFocusIn() {
 }
 
 function onFocusOut(event: FocusEvent) {
-  queueMicrotask(() => {
-    if (event.target instanceof Node && event.target.isConnected) {
-      focusedSelector = null;
-    }
-  });
+  if (!event.relatedTarget) {
+    queueMicrotask(() => {
+      if (event.target instanceof Node && event.target.isConnected) {
+        focusedSelector = null;
+      }
+    });
+  }
 }
 
 function tryApplyFocus() {
