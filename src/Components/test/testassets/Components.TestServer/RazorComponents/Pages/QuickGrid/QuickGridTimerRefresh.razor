@@ -7,7 +7,7 @@
 <p id="refresh-status">@refreshStatus</p>
 
 <div id="timer-grid">
-    <QuickGrid @ref="grid" Items="@items.AsQueryable()">
+    <QuickGrid @ref="grid" Items="@queryableItems">
         <PropertyColumn Property="@(item => item.Id)" />
         <PropertyColumn Property="@(item => item.Name)" />
     </QuickGrid>
@@ -21,10 +21,16 @@
         new(2, "Second before refresh"),
     ];
 
+    private IQueryable<Item> queryableItems = default!;
     private QuickGrid<Item> grid = default!;
     private Timer? timer;
     private bool refreshStarted;
     private string refreshStatus = "Ready";
+
+    protected override void OnInitialized()
+    {
+        queryableItems = items.AsQueryable();
+    }
 
     private void StartTimerRefresh()
     {
