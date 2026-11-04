@@ -65,6 +65,40 @@ else
             </div>
         </div>
     </div>
+
+    <div id="debounce-scenario">
+        <h3>Scenario 4: oninput:debounce</h3>
+        <input id="debounced-input"
+               @bind="debouncedText"
+               @bind:event="oninput"
+               @bind:after="OnDebouncedInput"
+               @oninput:debounce="debounceInterval" />
+        <button id="debounced-submit" @onclick="OnDebouncedSubmit">Submit</button>
+        <span id="debounced-value">@debouncedText</span>
+        <span id="debounced-count">@debouncedInputCount</span>
+        <span id="debounced-submitted">@submittedDebouncedText</span>
+    </div>
+
+    <div id="throttle-click-scenario">
+        <h3>Scenario 5: onclick:throttle (discrete)</h3>
+        <button id="throttled-click-button"
+                @onclick="OnThrottledClick"
+                @onclick:throttle="throttleClickInterval">
+            Throttled Click
+        </button>
+        <span id="throttled-click-count">@throttledClickCount</span>
+    </div>
+
+    <div id="throttle-scroll-scenario">
+        <h3>Scenario 6: onscroll:throttle (continuous)</h3>
+        <div id="throttled-scroll-area"
+             @onscroll="OnThrottledScroll"
+             @onscroll:throttle="throttleScrollInterval"
+             style="width: 300px; height: 100px; overflow-y: scroll; border: 1px solid gray;">
+            <div style="height: 600px;">Scroll content</div>
+        </div>
+        <span id="throttled-scroll-count">@throttledScrollCount</span>
+    </div>
 </div>
 
 <pre id="event-log">@eventLog</pre>
@@ -74,6 +108,17 @@ else
     private bool preventDefaultEnabled = true;
     private bool stopPropagationEnabled = true;
     private bool eventHandlersEnabled = true;
+
+    private int debounceInterval = 300;
+    private string debouncedText = string.Empty;
+    private int debouncedInputCount;
+    private string submittedDebouncedText = string.Empty;
+
+    private int throttleClickInterval = 400;
+    private int throttledClickCount;
+
+    private int throttleScrollInterval = 200;
+    private int throttledScrollCount;
 
     private string eventLog = string.Empty;
 
@@ -113,5 +158,25 @@ else
     private void OnParentMouseDown()
     {
         LogEvent("mousedown handler called on parent");
+    }
+
+    private void OnDebouncedInput()
+    {
+        debouncedInputCount++;
+    }
+
+    private void OnDebouncedSubmit()
+    {
+        submittedDebouncedText = debouncedText;
+    }
+
+    private void OnThrottledClick()
+    {
+        throttledClickCount++;
+    }
+
+    private void OnThrottledScroll()
+    {
+        throttledScrollCount++;
     }
 }

@@ -26,6 +26,19 @@ public sealed class EventHandlerAttribute : Attribute
     /// <param name="enableStopPropagation"></param>
     /// <param name="enablePreventDefault"></param>
     public EventHandlerAttribute(string attributeName, Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault)
+        : this(attributeName, eventArgsType, enableStopPropagation, enablePreventDefault, EventThrottleMode.Leading)
+    {
+    }
+
+    /// <summary>
+    /// Constructs an instance of <see cref="EventHandlerAttribute"/>.
+    /// </summary>
+    /// <param name="attributeName">The attribute name.</param>
+    /// <param name="eventArgsType">The event argument type.</param>
+    /// <param name="enableStopPropagation">Whether the event supports stopping propagation.</param>
+    /// <param name="enablePreventDefault">Whether the event supports preventing default behavior.</param>
+    /// <param name="throttleMode">The throttling behavior for the event.</param>
+    public EventHandlerAttribute(string attributeName, Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault, EventThrottleMode throttleMode)
     {
         ArgumentNullException.ThrowIfNull(attributeName);
         ArgumentNullException.ThrowIfNull(eventArgsType);
@@ -34,6 +47,7 @@ public sealed class EventHandlerAttribute : Attribute
         EventArgsType = eventArgsType;
         EnableStopPropagation = enableStopPropagation;
         EnablePreventDefault = enablePreventDefault;
+        ThrottleMode = throttleMode;
     }
 
     /// <summary>
@@ -55,4 +69,9 @@ public sealed class EventHandlerAttribute : Attribute
     /// Gets the event's ability to prevent default event flow.
     /// </summary>
     public bool EnablePreventDefault { get; }
+
+    /// <summary>
+    /// Gets the throttling behavior for the event.
+    /// </summary>
+    public EventThrottleMode ThrottleMode { get; }
 }

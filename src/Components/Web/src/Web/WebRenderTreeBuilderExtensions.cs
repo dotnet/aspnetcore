@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -48,5 +49,44 @@ public static class WebRenderTreeBuilderExtensions
     public static void AddEventStopPropagationAttribute(this RenderTreeBuilder builder, int sequence, string eventName, bool value)
     {
         builder.AddAttribute(sequence, $"__internal_stopPropagation_{eventName}", value);
+    }
+
+    /// <summary>
+    /// Appends a frame representing an instruction to debounce the specified event by the
+    /// given interval in milliseconds.
+    /// </summary>
+    /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+    /// <param name="eventName">The name of the event to be affected.</param>
+    /// <param name="value">The debounce interval in milliseconds, or a value less than or equal to zero to disable debouncing.</param>
+    public static void AddEventDebounceAttribute(this RenderTreeBuilder builder, int sequence, string eventName, int value)
+    {
+        builder.AddAttribute(
+            sequence,
+            $"__internal_debounce_{eventName}",
+            value > 0 ? value.ToString(CultureInfo.InvariantCulture) : null);
+    }
+
+    /// <summary>
+    /// Appends a frame representing an instruction to throttle the specified event by the
+    /// given interval in milliseconds.
+    /// </summary>
+    /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+    /// <param name="eventName">The name of the event to be affected.</param>
+    /// <param name="value">The throttle interval in milliseconds, or a value less than or equal to zero to disable throttling.</param>
+    /// <param name="throttleMode">The throttling mode to apply when the interval is positive.</param>
+    public static void AddEventThrottleAttribute(this RenderTreeBuilder builder, int sequence, string eventName, int value, EventThrottleMode throttleMode = EventThrottleMode.Leading)
+    {
+        string? attributeValue = null;
+        if (value > 0)
+        {
+            var intervalText = value.ToString(CultureInfo.InvariantCulture);
+            attributeValue = throttleMode == EventThrottleMode.LeadingAndTrailing
+                ? $"{intervalText}:trailing"
+                : intervalText;
+        }
+
+        builder.AddAttribute(sequence, $"__internal_throttle_{eventName}", attributeValue);
     }
 }

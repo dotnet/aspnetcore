@@ -146,4 +146,57 @@ public class EventFlagsTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
         var newScrollTop = int.Parse(scrollableDiv.GetDomProperty("scrollTop"), CultureInfo.InvariantCulture);
         Assert.True(newScrollTop >= 200);
     }
+
+    [Fact]
+    public void OnInput_WithDebounce_CoalescesRapidKeystrokes()
+    {
+        var input = Browser.Exists(By.Id("debounced-input"));
+        input.SendKeys("hello");
+
+        Browser.Equal("hello", () => Browser.Exists(By.Id("debounced-value")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("debounced-count")).Text);
+    }
+
+    [Fact]
+    public void OnInput_WithDebounce_FlushesImmediatelyBeforeSubsequentClickEvent()
+    {
+        var input = Browser.Exists(By.Id("debounced-input"));
+        var submitButton = Browser.Exists(By.Id("debounced-submit"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "const el = arguments[0]; el.value = 'flushed'; el.dispatchEvent(new Event('input', { bubbles: true })); arguments[1].click();",
+            input,
+            submitButton);
+
+        Browser.Equal("flushed", () => Browser.Exists(By.Id("debounced-submitted")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("debounced-count")).Text);
+    }
+
+    [Fact]
+    public void OnClick_WithDiscreteThrottle_FiresLeadingOnlyDuringCooldown()
+    {
+        var button = Browser.Exists(By.Id("throttled-click-button"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "const btn = arguments[0]; btn.click(); btn.click(); btn.click();",
+            button);
+
+        Browser.Equal("1", () => Browser.Exists(By.Id("throttled-click-count")).Text);
+    }
+
+    [Fact]
+    public void OnScroll_WithContinuousThrottle_FiresLeadingAndTrailing()
+    {
+        var scrollArea = Browser.Exists(By.Id("throttled-scroll-area"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "const el = arguments[0];" +
+            "el.scrollTop = 50; el.dispatchEvent(new Event('scroll'));" +
+            "el.scrollTop = 100; el.dispatchEvent(new Event('scroll'));" +
+            "el.scrollTop = 150; el.dispatchEvent(new Event('scroll'));",
+            scrollArea);
+
+        // Leading edge + trailing edge = 2 events total for 3 rapid scroll events
+        Browser.Equal("2", () => Browser.Exists(By.Id("throttled-scroll-count")).Text);
+    }
 }

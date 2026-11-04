@@ -18,21 +18,21 @@ namespace Microsoft.AspNetCore.Components.Web;
 [EventHandler("onmouseout", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmouseleave", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmouseenter", typeof(MouseEventArgs), true, true)]
-[EventHandler("onmousemove", typeof(MouseEventArgs), true, true)]
+[EventHandler("onmousemove", typeof(MouseEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("onmousedown", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmouseup", typeof(MouseEventArgs), true, true)]
 [EventHandler("onclick", typeof(MouseEventArgs), true, true)]
 [EventHandler("ondblclick", typeof(MouseEventArgs), true, true)]
-[EventHandler("onwheel", typeof(WheelEventArgs), true, true)]
-[EventHandler("onmousewheel", typeof(WheelEventArgs), true, true)]
+[EventHandler("onwheel", typeof(WheelEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
+[EventHandler("onmousewheel", typeof(WheelEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("oncontextmenu", typeof(MouseEventArgs), true, true)]
 
 // Drag events
-[EventHandler("ondrag", typeof(DragEventArgs), true, true)]
+[EventHandler("ondrag", typeof(DragEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("ondragend", typeof(DragEventArgs), true, true)]
 [EventHandler("ondragenter", typeof(DragEventArgs), true, true)]
 [EventHandler("ondragleave", typeof(DragEventArgs), true, true)]
-[EventHandler("ondragover", typeof(DragEventArgs), true, true)]
+[EventHandler("ondragover", typeof(DragEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("ondragstart", typeof(DragEventArgs), true, true)]
 [EventHandler("ondrop", typeof(DragEventArgs), true, true)]
 
@@ -43,12 +43,12 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 // Input events
 [EventHandler("onchange", typeof(ChangeEventArgs), true, true)]
-[EventHandler("oninput", typeof(ChangeEventArgs), true, true)]
+[EventHandler("oninput", typeof(ChangeEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("oninvalid", typeof(EventArgs), true, true)]
 [EventHandler("onreset", typeof(EventArgs), true, true)]
-[EventHandler("onselect", typeof(EventArgs), true, true)]
+[EventHandler("onselect", typeof(EventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("onselectstart", typeof(EventArgs), true, true)]
-[EventHandler("onselectionchange", typeof(EventArgs), true, true)]
+[EventHandler("onselectionchange", typeof(EventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("onsubmit", typeof(EventArgs), true, true)]
 
 // Clipboard events
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 // Touch events
 [EventHandler("ontouchcancel", typeof(TouchEventArgs), true, true)]
 [EventHandler("ontouchend", typeof(TouchEventArgs), true, true)]
-[EventHandler("ontouchmove", typeof(TouchEventArgs), true, true)]
+[EventHandler("ontouchmove", typeof(TouchEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("ontouchstart", typeof(TouchEventArgs), true, true)]
 [EventHandler("ontouchenter", typeof(TouchEventArgs), true, true)]
 [EventHandler("ontouchleave", typeof(TouchEventArgs), true, true)]
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 [EventHandler("onpointerdown", typeof(PointerEventArgs), true, true)]
 [EventHandler("onpointerenter", typeof(PointerEventArgs), true, true)]
 [EventHandler("onpointerleave", typeof(PointerEventArgs), true, true)]
-[EventHandler("onpointermove", typeof(PointerEventArgs), true, true)]
+[EventHandler("onpointermove", typeof(PointerEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("onpointerout", typeof(PointerEventArgs), true, true)]
 [EventHandler("onpointerover", typeof(PointerEventArgs), true, true)]
 [EventHandler("onpointerup", typeof(PointerEventArgs), true, true)]
@@ -88,14 +88,14 @@ namespace Microsoft.AspNetCore.Components.Web;
 [EventHandler("onpause", typeof(EventArgs), true, true)]
 [EventHandler("onplay", typeof(EventArgs), true, true)]
 [EventHandler("onplaying", typeof(EventArgs), true, true)]
-[EventHandler("onratechange", typeof(EventArgs), true, true)]
+[EventHandler("onratechange", typeof(EventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("onseeked", typeof(EventArgs), true, true)]
-[EventHandler("onseeking", typeof(EventArgs), true, true)]
+[EventHandler("onseeking", typeof(EventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("onstalled", typeof(EventArgs), true, true)]
 [EventHandler("onstop", typeof(EventArgs), true, true)]
 [EventHandler("onsuspend", typeof(EventArgs), true, true)]
-[EventHandler("ontimeupdate", typeof(EventArgs), true, true)]
-[EventHandler("onvolumechange", typeof(EventArgs), true, true)]
+[EventHandler("ontimeupdate", typeof(EventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
+[EventHandler("onvolumechange", typeof(EventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("onwaiting", typeof(EventArgs), true, true)]
 
 // Progress events
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 [EventHandler("onabort", typeof(ProgressEventArgs), true, true)]
 [EventHandler("onload", typeof(ProgressEventArgs), true, true)]
 [EventHandler("onloadend", typeof(ProgressEventArgs), true, true)]
-[EventHandler("onprogress", typeof(ProgressEventArgs), true, true)]
+[EventHandler("onprogress", typeof(ProgressEventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 [EventHandler("onerror", typeof(ErrorEventArgs), true, true)]
 
 // General events
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 [EventHandler("onpointerlockchange", typeof(EventArgs), true, true)]
 [EventHandler("onpointerlockerror", typeof(EventArgs), true, true)]
 [EventHandler("onreadystatechange", typeof(EventArgs), true, true)]
-[EventHandler("onscroll", typeof(EventArgs), true, true)]
+[EventHandler("onscroll", typeof(EventArgs), true, true, EventThrottleMode.LeadingAndTrailing)]
 
 // <details>
 [EventHandler("ontoggle", typeof(EventArgs), true, true)]

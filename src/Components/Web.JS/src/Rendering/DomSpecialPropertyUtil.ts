@@ -9,6 +9,19 @@
 // and the SSR DOM merging logic.
 
 const deferredValuePropname = '_blazorDeferredValue';
+const pendingUserInputPropname = '_blazorHasPendingUserInput';
+
+export function setHasPendingUserInput(element: Element, hasPendingInput: boolean): void {
+  if (hasPendingInput) {
+    element[pendingUserInputPropname] = true;
+  } else {
+    delete element[pendingUserInputPropname];
+  }
+}
+
+export function hasPendingUserInput(element: Element): boolean {
+  return element[pendingUserInputPropname] === true;
+}
 
 export function tryApplySpecialProperty(element: Element, name: string, value: string | null) {
   switch (name) {
@@ -48,7 +61,9 @@ export function applyAnyDeferredValue(element: Element) {
 function tryApplyCheckedProperty(element: Element, value: string | null) {
   // Certain elements have built-in behaviour for their 'checked' property
   if (element.tagName === 'INPUT') {
-    (element as any).checked = value !== null;
+    if (!hasPendingUserInput(element)) {
+      (element as any).checked = value !== null;
+    }
     return true;
   } else {
     return false;
@@ -75,6 +90,10 @@ function tryApplyValueProperty(element: Element, value: string | null): boolean 
       // default attribute values that may incorrectly constain the specified 'value'.
       // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
       // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
+
+      if (hasPendingUserInput(element)) {
+        return true;
+      }
 
       if (value && element instanceof HTMLSelectElement && isMultipleSelectElement(element)) {
         value = JSON.parse(value);

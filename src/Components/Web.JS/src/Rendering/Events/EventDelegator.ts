@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { EventFieldInfo } from './EventFieldInfo';
-import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions } from './EventTypes';
+import {
+  eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions,
+} from './EventTypes';
 import { isRendererAttached, dispatchEvent } from '../WebRendererInteropMethods';
+import { setHasPendingUserInput } from '../DomSpecialPropertyUtil';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -59,6 +62,23 @@ const disableableEventNames = toLookup([
   'mouseup',
 ]);
 
+const nonFlushingContinuousEvents = toLookup([
+  'drag',
+  'dragover',
+  'mousemove',
+  'mousewheel',
+  'pointermove',
+  'progress',
+  'ratechange',
+  'scroll',
+  'seeking',
+  'selectionchange',
+  'timeupdate',
+  'touchmove',
+  'volumechange',
+  'wheel',
+]);
+
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
 // calling an EventInfoStore that deals with registering/unregistering the underlying delegated
 // event listeners as required (and also maps actual events back to the given callback).
@@ -70,6 +90,8 @@ export class EventDelegator {
   private readonly afterClickCallbacks: ((event: MouseEvent) => void)[] = [];
 
   private eventInfoStore: EventInfoStore;
+
+  private pendingRateLimitedStates = new Set<EventRateLimitState>();
 
   constructor(private browserRendererId: number) {
     const eventDelegatorId = ++EventDelegator.nextEventDelegatorId;
@@ -108,6 +130,7 @@ export class EventDelegator {
       const element = info.element;
       const elementEventInfos = this.getEventHandlerInfosForElement(element, false);
       if (elementEventInfos) {
+        this.cancelRateLimitState(elementEventInfos, info.eventName);
         elementEventInfos.removeHandler(info.eventName);
       }
     }
@@ -119,7 +142,12 @@ export class EventDelegator {
     const infosForElement = this.getEventHandlerInfosForElement(element, false);
     if (infosForElement) {
       for (const handlerInfo of infosForElement.enumerateHandlers()) {
+        this.cancelRateLimitState(infosForElement, handlerInfo.eventName);
         this.eventInfoStore.remove(handlerInfo.eventHandlerId);
+      }
+
+      for (const state of infosForElement.enumerateRateLimitStates()) {
+        this.clearRateLimitTimer(state);
       }
 
       delete element[this.eventsCollectionKey];
@@ -162,6 +190,73 @@ export class EventDelegator {
     }
   }
 
+  public setDebounce(element: Element, eventName: string, durationMs: number): void {
+    const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    const previousDuration = infoForElement.debounce(eventName);
+    const normalizedDuration = durationMs > 0 ? durationMs : 0;
+
+    if (normalizedDuration > 0 && (infoForElement.throttle(eventName)?.interval ?? 0) > 0) {
+      this.setThrottle(element, eventName, 0, false);
+    }
+
+    infoForElement.debounce(eventName, normalizedDuration);
+
+    if (previousDuration === 0 && normalizedDuration > 0) {
+      this.eventInfoStore.addGlobalListener(eventName);
+      if (eventName === 'input') {
+        this.eventInfoStore.addGlobalListener('blur');
+        this.eventInfoStore.addGlobalListener('change');
+      }
+    } else if (previousDuration > 0 && normalizedDuration === 0) {
+      this.cancelRateLimitState(infoForElement, eventName);
+      this.eventInfoStore.decrementCountByEventName(getBrowserEventName(eventName));
+      if (eventName === 'input') {
+        this.eventInfoStore.decrementCountByEventName('blur');
+        this.eventInfoStore.decrementCountByEventName('change');
+      }
+    }
+  }
+
+  public setThrottle(element: Element, eventName: string, durationMs: number, trailing = false): void {
+    const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    const previousConfig = infoForElement.throttle(eventName);
+    const previousDuration = previousConfig ? previousConfig.interval : 0;
+    const previousTrailing = previousConfig ? previousConfig.trailing : false;
+    const normalizedDuration = durationMs > 0 ? durationMs : 0;
+
+    if (normalizedDuration > 0 && infoForElement.debounce(eventName) > 0) {
+      this.setDebounce(element, eventName, 0);
+    }
+
+    infoForElement.throttle(eventName, normalizedDuration, trailing);
+
+    const previouslyNeededFlushListeners = previousDuration > 0 && previousTrailing && eventName === 'input';
+    const nowNeedsFlushListeners = normalizedDuration > 0 && trailing && eventName === 'input';
+    const previouslyNeededKeyUpListener = previousDuration > 0 && (eventName === 'keydown' || eventName === 'keypress');
+    const nowNeedsKeyUpListener = normalizedDuration > 0 && (eventName === 'keydown' || eventName === 'keypress');
+
+    if (previousDuration === 0 && normalizedDuration > 0) {
+      this.eventInfoStore.addGlobalListener(eventName);
+    } else if (previousDuration > 0 && normalizedDuration === 0) {
+      this.cancelRateLimitState(infoForElement, eventName);
+      this.eventInfoStore.decrementCountByEventName(getBrowserEventName(eventName));
+    }
+
+    if (!previouslyNeededFlushListeners && nowNeedsFlushListeners) {
+      this.eventInfoStore.addGlobalListener('blur');
+      this.eventInfoStore.addGlobalListener('change');
+    } else if (previouslyNeededFlushListeners && !nowNeedsFlushListeners) {
+      this.eventInfoStore.decrementCountByEventName('blur');
+      this.eventInfoStore.decrementCountByEventName('change');
+    }
+
+    if (!previouslyNeededKeyUpListener && nowNeedsKeyUpListener) {
+      this.eventInfoStore.addGlobalListener('keyup');
+    } else if (previouslyNeededKeyUpListener && !nowNeedsKeyUpListener) {
+      this.eventInfoStore.decrementCountByEventName('keyup');
+    }
+  }
+
   private onGlobalEvent(evt: Event) {
     if (!(evt.target instanceof Element)) {
       return;
@@ -170,6 +265,12 @@ export class EventDelegator {
     if (!isRendererAttached(this.browserRendererId)) {
       // when connection closed, it will detachWebRendererInterop, so we need to check if the renderer is still attached
       return;
+    }
+
+    if (evt.type === 'blur' || evt.type === 'change') {
+      this.flushPendingRateLimitedEventsForElement(evt.target);
+    } else if (evt.type === 'keyup') {
+      this.resetKeyThrottleCooldownsOnPath(evt);
     }
 
     // Always dispatch to any listeners for the original underlying browser event name
@@ -224,11 +325,24 @@ export class EventDelegator {
             browserEvent.preventDefault();
           }
 
-          dispatchEvent(this.browserRendererId, {
-            eventHandlerId: handlerInfo.eventHandlerId,
-            eventName: eventName,
-            eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent),
-          }, eventArgs);
+          const eventFieldInfo = EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent);
+          const debounceMs = handlerInfos.debounce(eventName);
+          const throttleConfig = handlerInfos.throttle(eventName);
+
+          if (debounceMs > 0) {
+            this.scheduleDebouncedEvent(candidateElement, handlerInfos, eventName, debounceMs, eventFieldInfo, eventArgs, browserEvent);
+          } else if (throttleConfig && throttleConfig.interval > 0) {
+            this.scheduleThrottledEvent(candidateElement, handlerInfos, eventName, throttleConfig, eventFieldInfo, eventArgs, browserEvent);
+          } else {
+            if (!Object.prototype.hasOwnProperty.call(nonFlushingContinuousEvents, browserEvent.type)) {
+              this.flushAllPendingRateLimitedEvents(browserEvent, eventName);
+            }
+            dispatchEvent(this.browserRendererId, {
+              eventHandlerId: handlerInfo.eventHandlerId,
+              eventName: eventName,
+              eventFieldInfo: eventFieldInfo,
+            }, eventArgs);
+          }
         }
 
         if (handlerInfos.stopPropagation(eventName)) {
@@ -242,6 +356,195 @@ export class EventDelegator {
 
       candidateEventTarget = (eventIsNonBubbling || stopPropagationWasRequested) ? undefined : path.shift();
     }
+  }
+
+  private scheduleDebouncedEvent(
+    element: Element,
+    handlerInfos: EventHandlerInfosForElement,
+    eventName: string,
+    debounceMs: number,
+    eventFieldInfo: EventFieldInfo | null,
+    eventArgs: unknown,
+    sourceEvent: Event
+  ): void {
+    const state = handlerInfos.getOrCreateRateLimitState(element, eventName);
+    if (state.timerId !== null) {
+      clearTimeout(state.timerId);
+    }
+
+    state.pendingSnapshot = {
+      eventFieldInfo,
+      eventArgs,
+      sourceEvent,
+    };
+    this.pendingRateLimitedStates.add(state);
+
+    if (eventName === 'input') {
+      setHasPendingUserInput(element, true);
+    }
+
+    state.timerId = setTimeout(() => {
+      state.timerId = null;
+      this.dispatchPendingSnapshot(state);
+    }, debounceMs);
+  }
+
+  private scheduleThrottledEvent(
+    element: Element,
+    handlerInfos: EventHandlerInfosForElement,
+    eventName: string,
+    throttleConfig: ThrottleConfig,
+    eventFieldInfo: EventFieldInfo | null,
+    eventArgs: unknown,
+    sourceEvent: Event
+  ): void {
+    const state = handlerInfos.getOrCreateRateLimitState(element, eventName);
+
+    if (!state.inThrottleCooldown) {
+      if (!Object.prototype.hasOwnProperty.call(nonFlushingContinuousEvents, sourceEvent.type)) {
+        this.flushAllPendingRateLimitedEvents(sourceEvent, eventName);
+      }
+
+      const handlerInfo = handlerInfos.getHandler(eventName);
+      if (handlerInfo && isRendererAttached(this.browserRendererId)) {
+        dispatchEvent(this.browserRendererId, {
+          eventHandlerId: handlerInfo.eventHandlerId,
+          eventName: eventName,
+          eventFieldInfo: eventFieldInfo,
+        }, eventArgs);
+      }
+
+      state.inThrottleCooldown = true;
+      state.timerId = setTimeout(() => {
+        this.onThrottleCooldownElapsed(state);
+      }, throttleConfig.interval);
+    } else if (throttleConfig.trailing) {
+      state.pendingSnapshot = {
+        eventFieldInfo,
+        eventArgs,
+        sourceEvent,
+      };
+      this.pendingRateLimitedStates.add(state);
+
+      if (eventName === 'input') {
+        setHasPendingUserInput(element, true);
+      }
+    }
+  }
+
+  private onThrottleCooldownElapsed(state: EventRateLimitState): void {
+    state.timerId = null;
+
+    if (state.pendingSnapshot) {
+      this.dispatchPendingSnapshot(state);
+      const currentThrottleConfig = state.handlerInfos.throttle(state.eventName);
+      if (currentThrottleConfig && currentThrottleConfig.interval > 0) {
+        state.inThrottleCooldown = true;
+        state.timerId = setTimeout(() => {
+          this.onThrottleCooldownElapsed(state);
+        }, currentThrottleConfig.interval);
+      } else {
+        state.inThrottleCooldown = false;
+      }
+    } else {
+      state.inThrottleCooldown = false;
+    }
+  }
+
+  private dispatchPendingSnapshot(state: EventRateLimitState): void {
+    const snapshot = state.pendingSnapshot;
+    if (!snapshot) {
+      return;
+    }
+
+    state.pendingSnapshot = null;
+    this.pendingRateLimitedStates.delete(state);
+
+    if (state.eventName === 'input') {
+      setHasPendingUserInput(state.element, false);
+    }
+
+    const handlerInfo = state.handlerInfos.getHandler(state.eventName);
+    if (handlerInfo && isRendererAttached(this.browserRendererId)) {
+      dispatchEvent(this.browserRendererId, {
+        eventHandlerId: handlerInfo.eventHandlerId,
+        eventName: state.eventName,
+        eventFieldInfo: snapshot.eventFieldInfo,
+      }, snapshot.eventArgs);
+    }
+  }
+
+  private flushAllPendingRateLimitedEvents(currentBrowserEvent?: Event, triggeringEventName?: string): void {
+    if (this.pendingRateLimitedStates.size === 0) {
+      return;
+    }
+
+    const statesToFlush = Array.from(this.pendingRateLimitedStates);
+    for (const state of statesToFlush) {
+      if (state.pendingSnapshot
+        && state.pendingSnapshot.sourceEvent !== currentBrowserEvent
+        && (state.eventName !== triggeringEventName || state.element !== currentBrowserEvent?.target)) {
+        if (state.eventName === triggeringEventName) {
+          continue;
+        }
+        this.clearRateLimitTimer(state);
+        this.dispatchPendingSnapshot(state);
+      }
+    }
+  }
+
+  private flushPendingRateLimitedEventsForElement(element: Element): void {
+    const infos = this.getEventHandlerInfosForElement(element, false);
+    if (!infos) {
+      return;
+    }
+
+    for (const state of infos.enumerateRateLimitStates()) {
+      if (state.pendingSnapshot) {
+        this.clearRateLimitTimer(state);
+        this.dispatchPendingSnapshot(state);
+      }
+    }
+  }
+
+  private resetKeyThrottleCooldownsOnPath(evt: Event): void {
+    const path = evt.composedPath();
+    for (const target of path) {
+      if (target instanceof Element) {
+        const infos = this.getEventHandlerInfosForElement(target, false);
+        if (infos) {
+          this.resetKeyThrottleCooldown(infos, 'keydown');
+          this.resetKeyThrottleCooldown(infos, 'keypress');
+        }
+      }
+    }
+  }
+
+  private resetKeyThrottleCooldown(infos: EventHandlerInfosForElement, eventName: string): void {
+    const state = infos.getRateLimitState(eventName);
+    if (state && state.inThrottleCooldown && !state.pendingSnapshot) {
+      this.clearRateLimitTimer(state);
+    }
+  }
+
+  private cancelRateLimitState(infos: EventHandlerInfosForElement, eventName: string): void {
+    const state = infos.getRateLimitState(eventName);
+    if (state) {
+      this.clearRateLimitTimer(state);
+      state.pendingSnapshot = null;
+      this.pendingRateLimitedStates.delete(state);
+      if (eventName === 'input') {
+        setHasPendingUserInput(state.element, false);
+      }
+    }
+  }
+
+  private clearRateLimitTimer(state: EventRateLimitState): void {
+    if (state.timerId !== null) {
+      clearTimeout(state.timerId);
+      state.timerId = null;
+    }
+    state.inThrottleCooldown = false;
   }
 
   private getEventHandlerInfosForElement(element: Element, createIfNeeded: boolean): EventHandlerInfosForElement | null {
@@ -379,10 +682,26 @@ class EventHandlerInfosForElement {
 
   private stopPropagationFlags: { [eventName: string]: boolean } | null = null;
 
+  private debounceIntervals: { [eventName: string]: number } | null = null;
+
+  private throttleConfigs: { [eventName: string]: ThrottleConfig } | null = null;
+
+  private rateLimitStates: { [eventName: string]: EventRateLimitState } | null = null;
+
   public *enumerateHandlers() : IterableIterator<EventHandlerInfo> {
     for (const eventName in this.handlers) {
       if (Object.prototype.hasOwnProperty.call(this.handlers, eventName)) {
         yield this.handlers[eventName];
+      }
+    }
+  }
+
+  public *enumerateRateLimitStates() : IterableIterator<EventRateLimitState> {
+    if (this.rateLimitStates) {
+      for (const eventName in this.rateLimitStates) {
+        if (Object.prototype.hasOwnProperty.call(this.rateLimitStates, eventName)) {
+          yield this.rateLimitStates[eventName];
+        }
       }
     }
   }
@@ -416,6 +735,65 @@ class EventHandlerInfosForElement {
 
     return this.stopPropagationFlags ? this.stopPropagationFlags[eventName] : false;
   }
+
+  public debounce(eventName: string, setValue?: number): number {
+    if (setValue !== undefined) {
+      this.debounceIntervals = this.debounceIntervals || {};
+      this.debounceIntervals[eventName] = setValue;
+    }
+
+    return (this.debounceIntervals && this.debounceIntervals[eventName]) || 0;
+  }
+
+  public throttle(eventName: string, setValue?: number, trailing = false): ThrottleConfig | null {
+    if (setValue !== undefined) {
+      this.throttleConfigs = this.throttleConfigs || {};
+      this.throttleConfigs[eventName] = { interval: setValue, trailing };
+    }
+
+    return (this.throttleConfigs && this.throttleConfigs[eventName]) || null;
+  }
+
+  public getRateLimitState(eventName: string): EventRateLimitState | null {
+    return (this.rateLimitStates && this.rateLimitStates[eventName]) || null;
+  }
+
+  public getOrCreateRateLimitState(element: Element, eventName: string): EventRateLimitState {
+    this.rateLimitStates = this.rateLimitStates || {};
+    let state = this.rateLimitStates[eventName];
+    if (!state) {
+      state = {
+        element,
+        handlerInfos: this,
+        eventName,
+        timerId: null,
+        inThrottleCooldown: false,
+        pendingSnapshot: null,
+      };
+      this.rateLimitStates[eventName] = state;
+    }
+    return state;
+  }
+}
+
+interface ThrottleConfig {
+  interval: number;
+  trailing: boolean;
+}
+
+interface PendingEventSnapshot {
+  eventFieldInfo: EventFieldInfo | null;
+  eventArgs: unknown;
+  sourceEvent: Event;
+}
+
+interface EventRateLimitState {
+  element: Element;
+  handlerInfos: EventHandlerInfosForElement;
+  eventName: string;
+  timerId: ReturnType<typeof setTimeout> | null;
+  inThrottleCooldown: boolean;
+  pendingSnapshot: PendingEventSnapshot | null;
 }
 
 export interface EventDescriptor {
