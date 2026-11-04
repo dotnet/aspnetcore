@@ -164,6 +164,8 @@ In Interactive WebAssembly, the .NET runtime, component instances, renderer, and
 
 A standalone Blazor WebAssembly application starts directly in this composition. A Blazor Web App can first prerender the component on the server and then activate a separate WebAssembly instance after the runtime and application assets are available.
 
+The WebAssembly host reconciles `NavigationManager` with the browser's current URL and history entry state after attaching the renderer and before rendering the initial components. Enhanced navigations can update the browser location during startup, while location-change delivery to the interactive runtime is not yet available.
+
 ```mermaid
 sequenceDiagram
     participant Browser
