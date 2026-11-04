@@ -23,6 +23,9 @@
     [Parameter]
     public bool IsChild { get; set; }
 
+    [Parameter]
+    public bool ThrowOnDispose { get; set; }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -41,6 +44,11 @@
         if (_module is not null)
         {
             await _module.InvokeVoidAsync("waitForDisposal", Id);
+            if (ThrowOnDispose)
+            {
+                throw new InvalidOperationException("Test asynchronous disposal failure.");
+            }
+
             await _module.InvokeVoidAsync("dispose", _element, Id);
             await _module.DisposeAsync();
         }

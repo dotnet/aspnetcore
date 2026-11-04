@@ -1,6 +1,7 @@
 const removalBatches = new Set();
 window.elementReferenceDisposalTest = {
   acknowledgedRemovals: 0,
+  circuitDisposals: 0,
   captures: new Map(),
   isMissing: element => element === null,
   referenceIsMissing(captureId) {
@@ -11,6 +12,15 @@ window.elementReferenceDisposalTest = {
   referencesReleased() {
     return [...this.captures.values()].every(id => this.referenceIsMissing(id));
   },
+};
+
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  const response = await originalFetch(...args);
+  if (args[0] === '_blazor/disconnect' && args[1]?.method === 'POST' && response.ok) {
+    window.elementReferenceDisposalTest.circuitDisposals++;
+  }
+  return response;
 };
 
 // Observe the real removal acknowledgement before releasing any disposal gate.
