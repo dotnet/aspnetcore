@@ -894,7 +894,8 @@ public class VirtualizeTest
         float itemSize,
         int totalItems,
         ItemsProviderDelegate<int> customProvider = null,
-        RenderFragment<int> childContent = null)
+        RenderFragment<int> childContent = null,
+        IJSRuntime jsRuntime = null)
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -909,7 +910,7 @@ public class VirtualizeTest
         };
 
         var serviceProvider = new ServiceCollection()
-            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .AddTransient((sp) => jsRuntime ?? Mock.Of<IJSRuntime>())
             .BuildServiceProvider();
 
         var testRenderer = new TestRenderer(serviceProvider);
@@ -2257,8 +2258,13 @@ public class VirtualizeTest
     [Fact]
     public async Task ScrollToItem_SingleItem_CallsInvokeWithoutError()
     {
+        var jsRuntime = new Mock<IJSRuntime>();
+        jsRuntime.Setup(js => js.InvokeAsync<ViewportFillDirection?>(
+            "Blazor._internal.Virtualize.alignToItem", It.IsAny<CancellationToken>(), It.IsAny<object[]>()))
+            .ReturnsAsync(ViewportFillDirection.Covered);
         var (virtualize, renderer) = await CreateRenderedVirtualize(
-            itemSize: 50f, totalItems: 1);
+            itemSize: 50f, totalItems: 1, childContent: SimpleItemTemplate, jsRuntime: jsRuntime.Object);
+        await using var disposableRenderer = renderer;
 
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
         await renderer.Dispatcher.InvokeAsync(() =>
@@ -2267,17 +2273,28 @@ public class VirtualizeTest
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(0); });
 
-        Assert.NotNull(task);
+        await task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(task.IsCompletedSuccessfully);
+        Assert.Equal(0, virtualize._itemsBefore);
+        jsRuntime.Verify(js => js.InvokeAsync<ViewportFillDirection?>(
+            "Blazor._internal.Virtualize.alignToItem", It.IsAny<CancellationToken>(),
+            It.Is<object[]>(args => args.Length == 2 && (int)args[1] == 0)), Times.Once);
+        Assert.Empty(renderer.HandledExceptions);
     }
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(50)]
-    [InlineData(99)]
-    public async Task ScrollToItem_NearEdges_CallsInvokeWithoutError(int targetIndex)
+    [InlineData(1, 0, 1)]
+    [InlineData(50, 35, 15)]
+    [InlineData(99, 60, 39)]
+    public async Task ScrollToItem_NearEdges_CallsInvokeWithoutError(int targetIndex, int expectedItemsBefore, int expectedLocalIndex)
     {
+        var jsRuntime = new Mock<IJSRuntime>();
+        jsRuntime.Setup(js => js.InvokeAsync<ViewportFillDirection?>(
+            "Blazor._internal.Virtualize.alignToItem", It.IsAny<CancellationToken>(), It.IsAny<object[]>()))
+            .ReturnsAsync(ViewportFillDirection.Covered);
         var (virtualize, renderer) = await CreateRenderedVirtualize(
-            itemSize: 50f, totalItems: 100);
+            itemSize: 50f, totalItems: 100, childContent: SimpleItemTemplate, jsRuntime: jsRuntime.Object);
+        await using var disposableRenderer = renderer;
 
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
         await renderer.Dispatcher.InvokeAsync(() =>
@@ -2286,7 +2303,13 @@ public class VirtualizeTest
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(targetIndex); });
 
-        Assert.NotNull(task);
+        await task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(task.IsCompletedSuccessfully);
+        Assert.Equal(expectedItemsBefore, virtualize._itemsBefore);
+        jsRuntime.Verify(js => js.InvokeAsync<ViewportFillDirection?>(
+            "Blazor._internal.Virtualize.alignToItem", It.IsAny<CancellationToken>(),
+            It.Is<object[]>(args => args.Length == 2 && (int)args[1] == expectedLocalIndex)), Times.Once);
+        Assert.Empty(renderer.HandledExceptions);
     }
 
     [Fact]
@@ -2778,6 +2801,24 @@ public class VirtualizeTest
     public async Task Virtualize_WithPlaceholder_ShowsWhileLoading()
     {
         Virtualize<int> renderedVirtualize = null;
+        var requestStarted = new TaskCompletionSource<ItemsProviderRequest>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var providerGate = new TaskCompletionSource<ItemsProviderResult<int>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var seedRequest = true;
+
+        ValueTask<ItemsProviderResult<int>> gatedProvider(ItemsProviderRequest request)
+        {
+            // Seed the total count before measuring an unloaded window.
+            if (seedRequest)
+            {
+                seedRequest = false;
+                return ValueTask.FromResult(new ItemsProviderResult<int>(
+                    Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
+                    100));
+            }
+
+            requestStarted.SetResult(request);
+            return new ValueTask<ItemsProviderResult<int>>(providerGate.Task);
+        }
 
         var rootComponent = new VirtualizeTestHostcomponent
         {
@@ -2785,10 +2826,7 @@ public class VirtualizeTest
             {
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
-                builder.AddComponentParameter(2, "ItemsProvider", new ItemsProviderDelegate<int>(request =>
-                    ValueTask.FromResult(new ItemsProviderResult<int>(
-                        Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
-                        100))));
+                builder.AddComponentParameter(2, "ItemsProvider", new ItemsProviderDelegate<int>(gatedProvider));
                 builder.AddComponentParameter(3, "ChildContent", SimpleItemTemplate);
                 builder.AddComponentParameter(4, "Placeholder", (RenderFragment<PlaceholderContext>)(placeholderContext =>
                     b =>
@@ -2803,15 +2841,61 @@ public class VirtualizeTest
             }
         };
 
-        var serviceProvider = new ServiceCollection()
+        using var serviceProvider = new ServiceCollection()
             .AddTransient((sp) => Mock.Of<IJSRuntime>())
             .BuildServiceProvider();
 
-        var testRenderer = new TestRenderer(serviceProvider);
+        await using var testRenderer = new TestRenderer(serviceProvider);
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
         await testRenderer.RenderRootComponentAsync(componentId);
+        await testRenderer.Dispatcher.InvokeAsync(() => renderedVirtualize.RefreshDataAsync());
 
         Assert.NotNull(renderedVirtualize);
+        var virtualizeComponentId = testRenderer.Batches
+            .SelectMany(batch => batch.ReferenceFrames)
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component
+                && ReferenceEquals(frame.Component, renderedVirtualize))
+            .ComponentId;
+        var loadedRender = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        try
+        {
+            // A 500px viewport at row 40 plus 15 overscan rows on either side requests rows 25-64.
+            await testRenderer.Dispatcher.InvokeAsync(() =>
+                ((IVirtualizeJsCallbacks)renderedVirtualize).OnBeforeSpacerVisible(
+                    2000f, 0f, 500f, SpacerVisibilityReason.UserScroll));
+
+            var request = await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(25, request.StartIndex);
+            Assert.Equal(40, request.Count);
+            Assert.False(providerGate.Task.IsCompleted);
+            Assert.False(request.CancellationToken.IsCancellationRequested);
+            var loadingText = testRenderer.GetCurrentRenderTreeFrames(virtualizeComponentId)
+                .AsEnumerable()
+                .Where(frame => frame.FrameType == RenderTreeFrameType.Text)
+                .Select(frame => frame.TextContent);
+            Assert.Equal(Enumerable.Repeat("Loading...", 40), loadingText);
+            Assert.Empty(testRenderer.HandledExceptions);
+        }
+        finally
+        {
+            testRenderer.OnUpdateDisplayComplete = () => loadedRender.TrySetResult();
+            providerGate.TrySetResult(new ItemsProviderResult<int>(Enumerable.Range(25, 40), 100));
+            if (requestStarted.Task.IsCompletedSuccessfully)
+            {
+                await loadedRender.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                await testRenderer.Dispatcher.InvokeAsync(() => { });
+            }
+        }
+
+        var loadedText = testRenderer.GetCurrentRenderTreeFrames(virtualizeComponentId)
+            .AsEnumerable()
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Text)
+            .Select(frame => frame.TextContent)
+            .ToArray();
+        Assert.Equal(Enumerable.Range(25, 40).Select(item => item.ToString(CultureInfo.InvariantCulture)), loadedText);
+        Assert.DoesNotContain("Loading...", loadedText);
+        Assert.Empty(testRenderer.HandledExceptions);
     }
 
     [Fact]
@@ -2972,6 +3056,21 @@ public class VirtualizeTest
         public int GetHashCode(int obj) => obj.GetHashCode();
     }
 
+    private sealed record KeyedVirtualizeItem(int Key, int Version);
+
+    private sealed class KeyedVirtualizeItemComparer : IEqualityComparer<KeyedVirtualizeItem>
+    {
+        public int EqualsCallCount { get; private set; }
+
+        public bool Equals(KeyedVirtualizeItem x, KeyedVirtualizeItem y)
+        {
+            EqualsCallCount++;
+            return x?.Key == y?.Key;
+        }
+
+        public int GetHashCode(KeyedVirtualizeItem obj) => obj.Key.GetHashCode();
+    }
+
     [Fact]
     public async Task Virtualize_EmptyContent_RenderedWhenItemsAreEmpty()
     {
@@ -3123,16 +3222,38 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_ItemComparerCustom_DetectsPrependCorrectly()
     {
-        var items = new List<int> { 5, 6, 7, 8, 9 };
+        var itemKeys = Enumerable.Range(0, 200).ToList();
+        var comparer = new KeyedVirtualizeItemComparer();
+        var providerRequests = new List<ItemsProviderRequest>();
+        var version = 0;
 
-        Virtualize<int> renderedVirtualize = null;
+        ValueTask<ItemsProviderResult<KeyedVirtualizeItem>> provider(ItemsProviderRequest request)
+        {
+            providerRequests.Add(request);
+            var items = itemKeys
+                .Skip(request.StartIndex)
+                .Take(Math.Min(request.Count, itemKeys.Count - request.StartIndex))
+                .Select(key => new KeyedVirtualizeItem(key, version++))
+                .ToArray();
+            return ValueTask.FromResult(new ItemsProviderResult<KeyedVirtualizeItem>(items, itemKeys.Count));
+        }
+
+        Virtualize<KeyedVirtualizeItem> renderedVirtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
-            InnerContent = BuildVirtualizeWithContent(
-                itemSize: 50f,
-                items: items,
-                captureRenderedVirtualize: v => renderedVirtualize = v
-            )
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<KeyedVirtualizeItem>>(0);
+                builder.AddComponentParameter(1, nameof(Virtualize<KeyedVirtualizeItem>.ItemSize), 50f);
+                builder.AddComponentParameter(2, nameof(Virtualize<KeyedVirtualizeItem>.ItemsProvider), new ItemsProviderDelegate<KeyedVirtualizeItem>(provider));
+                builder.AddComponentParameter(3, nameof(Virtualize<KeyedVirtualizeItem>.ItemComparer), comparer);
+                builder.AddComponentParameter(4, nameof(Virtualize<KeyedVirtualizeItem>.ChildContent), (RenderFragment<KeyedVirtualizeItem>)(item => childBuilder =>
+                {
+                    childBuilder.AddContent(0, item.Key.ToString(CultureInfo.InvariantCulture));
+                }));
+                builder.AddComponentReferenceCapture(5, component => renderedVirtualize = (Virtualize<KeyedVirtualizeItem>)component);
+                builder.CloseComponent();
+            }
         };
 
         var testRenderer = new TestRenderer(new ServiceCollection()
@@ -3142,21 +3263,23 @@ public class VirtualizeTest
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
 
         await testRenderer.RenderRootComponentAsync(componentId);
-        var itemCountField = typeof(Virtualize<int>).GetField("_itemCount",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var initialItemCount = (int?)itemCountField?.GetValue(renderedVirtualize) ?? 0;
+        Assert.NotNull(renderedVirtualize);
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
-        items.InsertRange(0, new[] { 1, 2, 3, 4 });
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible((100 + 15) * 50f, 40 * 50f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(100, renderedVirtualize._itemsBefore);
 
-        rootComponent.InnerContent = BuildVirtualizeWithContent(
-            itemSize: 50f,
-            items: items,
-            captureRenderedVirtualize: v => renderedVirtualize = v
-        );
-        await testRenderer.RenderRootComponentAsync(componentId);
+        var comparerCallsBeforePrepend = comparer.EqualsCallCount;
+        itemKeys.InsertRange(0, Enumerable.Range(-20, 20));
 
-        var newItemCount = (int?)itemCountField?.GetValue(renderedVirtualize) ?? 0;
-        Assert.Equal(initialItemCount + 4, newItemCount);
+        await testRenderer.Dispatcher.InvokeAsync(() => renderedVirtualize.RefreshDataAsync());
+
+        Assert.True(comparer.EqualsCallCount > comparerCallsBeforePrepend);
+        Assert.Equal(120, renderedVirtualize._itemsBefore);
+        Assert.Equal(120, providerRequests[^1].StartIndex);
     }
 
     [Fact]
@@ -3392,11 +3515,11 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_DistributionRefresh_Optimized()
     {
-        var callCount = 0;
+        var requests = new List<ItemsProviderRequest>();
 
         ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
         {
-            callCount++;
+            requests.Add(request);
             return ValueTask.FromResult(new ItemsProviderResult<int>(
                 Enumerable.Range(request.StartIndex, request.Count),
                 1000
@@ -3409,13 +3532,30 @@ public class VirtualizeTest
             customProvider: provider
         );
 
-        var initialCallCount = callCount;
+        Assert.Empty(requests);
 
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
-        await renderer.Dispatcher.InvokeAsync(() => callbacks.OnBeforeSpacerVisible(0f, 250f, 500f, SpacerVisibilityReason.ViewportFill));
-        await renderer.Dispatcher.InvokeAsync(() => callbacks.OnAfterSpacerVisible(0f, 250f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
-        Assert.True(callCount - initialCallCount <= 3);
+        Assert.Single(requests);
+        Assert.Equal(0, requests[^1].StartIndex);
+        Assert.Equal(40, requests[^1].Count);
+        Assert.Equal(0, virtualize._itemsBefore);
+
+        var visibleItemCapacityField = typeof(Virtualize<int>).GetField("_visibleItemCapacity",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        Assert.NotNull(visibleItemCapacityField);
+        Assert.Equal(40, (int)visibleItemCapacityField.GetValue(virtualize));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 500f, 650f, SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(43, (int)visibleItemCapacityField.GetValue(virtualize));
+        Assert.Single(requests);
+        Assert.Equal(0, virtualize._itemsBefore);
+        Assert.Equal(0, requests[^1].StartIndex);
+        Assert.Equal(40, requests[^1].Count);
     }
 
     [Fact]
