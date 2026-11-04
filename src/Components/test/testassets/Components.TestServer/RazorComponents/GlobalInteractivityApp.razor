@@ -9,6 +9,14 @@
     <Components.WasmMinimal.Routes @rendermode="@PageRenderMode" />
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script>
+        window.webAssemblyStartup = {
+            waiting: false,
+            enhancedLoads: 0,
+            wait: () => new Promise(resolve => {
+                window.webAssemblyStartup.release = resolve;
+                window.webAssemblyStartup.waiting = true;
+            })
+        };
         Blazor.start({
             webAssembly: {
                 loadBootResource: (type, name, defaultUri, integrity) => `WasmMinimal/_framework/${name}`
