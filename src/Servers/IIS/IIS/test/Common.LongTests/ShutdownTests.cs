@@ -467,9 +467,12 @@ public class ShutdownTests : IISFunctionalTestBase
         var deploymentResult = await DeployAsync(deploymentParameters);
 
         var processBefore = await deploymentResult.HttpClient.GetStringAsync("/ProcessId");
+        using var process = System.Diagnostics.Process.GetProcessById(int.Parse(processBefore));
 
         // Just "touching" web.config should be enough
         deploymentResult.ModifyWebConfig(element => { });
+
+        await process.WaitForExitAsync().DefaultTimeout();
 
         // Have to retry here to allow ANCM to receive notification and react to it
         // Verify that worker process gets restarted with new process id
