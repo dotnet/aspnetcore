@@ -32,6 +32,29 @@ public class QueryHelperTests
         Assert.Equal("x y", collection["short"].FirstOrDefault());
     }
 
+    [Theory]
+    [InlineData(4, false)]
+    [InlineData(4, true)]
+    [InlineData(256, false)]
+    [InlineData(256, true)]
+    [InlineData(257, false)]
+    [InlineData(257, true)]
+    [InlineData(1000, true)]
+    public void ParseQueryDecodesNamesAndValuesOfVaryingLength(int encodedLength, bool includePlus)
+    {
+        // Covers the '%'-only path and the pooled '+' path for short and long inputs, including lengths around 256.
+        var suffix = includePlus ? "+%20" : "%20";
+        var encoded = new string('x', encodedLength - suffix.Length) + suffix;
+        var expected = new string('x', encodedLength - suffix.Length) + (includePlus ? "  " : " ");
+        Assert.Equal(encodedLength, encoded.Length);
+
+        var collection = QueryHelpers.ParseQuery($"?{encoded}={encoded}&a+b=c%2Bd");
+
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(expected, collection[expected].FirstOrDefault());
+        Assert.Equal("c+d", collection["a b"].FirstOrDefault());
+    }
+
     [Fact]
     public void ParseQueryWithoutQuestionmarkWorks()
     {

@@ -41,6 +41,32 @@ public class QueryFeatureTests
     }
 
     [Theory]
+    [InlineData(4, false)]
+    [InlineData(4, true)]
+    [InlineData(256, false)]
+    [InlineData(256, true)]
+    [InlineData(257, false)]
+    [InlineData(257, true)]
+    [InlineData(1000, true)]
+    public void QueryDecodesNamesAndValuesOfVaryingLength(int encodedLength, bool includePlus)
+    {
+        // Covers the '%'-only path and the pooled '+' path for short and long inputs, including lengths around 256.
+        var suffix = includePlus ? "+%20" : "%20";
+        var encoded = new string('x', encodedLength - suffix.Length) + suffix;
+        var expected = new string('x', encodedLength - suffix.Length) + (includePlus ? "  " : " ");
+        Assert.Equal(encodedLength, encoded.Length);
+
+        var features = new FeatureCollection();
+        features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = $"?{encoded}={encoded}&a+b=c%2Bd" };
+
+        var queryCollection = new QueryFeature(features).Query;
+
+        Assert.Equal(2, queryCollection.Count);
+        Assert.Equal(expected, queryCollection[expected]);
+        Assert.Equal("c+d", queryCollection["a b"]);
+    }
+
+    [Theory]
     [InlineData("?key1=value1&key2=value2")]
     [InlineData("key1=value1&key2=value2")]
     public void ParseQueryWithUniqueKeysWorks(string queryString)
