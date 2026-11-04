@@ -2701,6 +2701,7 @@ public partial class HubConnectionTests : FunctionalTestBase
 
             TestSink.MessageLogged += handler;
 
+            const string originalMessage = "SignalR";
             var userName = "test1";
             var connectionBuilder = new HubConnectionBuilder()
                 .WithLoggerFactory(LoggerFactory)
@@ -2729,6 +2730,9 @@ public partial class HubConnectionTests : FunctionalTestBase
 
                 // The next websocket the client opens will authenticate as a different user.
                 userName = "test2";
+
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+                Assert.Equal(originalMessage, result);
 
                 var originalWebsocket = websocket;
                 websocket = new ClientWebSocket();
