@@ -67,6 +67,29 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     }
 
     [Fact]
+    public void FocusIsPreserved_OnEnhancedNavigation_WhenFocusedElementIsReplacedByInteractiveRender()
+    {
+        Navigate($"{ServerPathBase}/focus-on-navigate");
+        Browser.Click(By.LinkText("Interactively rendered"));
+        Browser.Equal("interactive", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
+        Browser.True(
+            () => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null,
+            TimeSpan.FromSeconds(5)
+        );
+    }
+
+    [Fact]
+    public void FocusIsPreserved_WhenUserFocusesAnotherElementBeforeInteractiveRender()
+    {
+        Navigate($"{ServerPathBase}/focus-on-navigate/interactive");
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null);
+
+        Browser.Click(By.Id("other-focusable-input"));
+        Browser.Equal("interactive", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "other-focusable-input");
+    }
+
+    [Fact]
     public void FocusIsPreserved_OnEnhancedFormPost_WhenAnyElementMatchesSelector()
     {
         Navigate($"{ServerPathBase}/focus-on-navigate");

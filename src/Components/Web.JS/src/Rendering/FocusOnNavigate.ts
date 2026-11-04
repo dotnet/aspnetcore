@@ -9,12 +9,21 @@ const customElementName = 'blazor-focus-on-navigate';
 let currentFocusOnNavigateElement: FocusOnNavigateElement | null = null;
 let locationOnLastNavigation = location.href;
 let allowApplyFocusAfterEnhancedNavigation = false;
+let focusedSelector: string | null = null;
 
 export function enableFocusOnNavigate(jsEventRegistry: JSEventRegistry) {
   customElements.define(customElementName, FocusOnNavigateElement);
   jsEventRegistry.addEventListener('enhancednavigationstart', onEnhancedNavigationStart);
   jsEventRegistry.addEventListener('enhancednavigationend', onEnhancedNavigationEnd);
   document.addEventListener('focusin', onFocusIn);
+  document.addEventListener('focusout', onFocusOut);
+
+  const observer = new MutationObserver(() => {
+    if (focusedSelector && (!document.activeElement || document.activeElement === document.body)) {
+      tryApplyFocus();
+    }
+  });
+  observer.observe(document, { childList: true, subtree: true });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', onInitialPageLoad, { once: true });
@@ -41,6 +50,8 @@ function onInitialPageLoad() {
 }
 
 function onEnhancedNavigationStart() {
+  focusedSelector = null;
+
   // Only move focus when navigating to a new page.
   if (!isForSamePath(locationOnLastNavigation, location.href)) {
     allowApplyFocusAfterEnhancedNavigation = true;
@@ -59,12 +70,22 @@ function onFocusIn() {
   // If the user explicitly focuses a different element before a navigation completes,
   // don't move focus again.
   allowApplyFocusAfterEnhancedNavigation = false;
+  focusedSelector = null;
+}
+
+function onFocusOut(event: FocusEvent) {
+  queueMicrotask(() => {
+    if (event.target instanceof Node && event.target.isConnected) {
+      focusedSelector = null;
+    }
+  });
 }
 
 function tryApplyFocus() {
   const selector = currentFocusOnNavigateElement?.getAttribute('selector');
   if (selector) {
     domFunctions.focusBySelector(selector);
+    focusedSelector = selector;
   }
 }
 
@@ -77,6 +98,7 @@ class FocusOnNavigateElement extends HTMLElement {
   disconnectedCallback() {
     if (currentFocusOnNavigateElement === this) {
       currentFocusOnNavigateElement = null;
+      focusedSelector = null;
     }
   }
 }
