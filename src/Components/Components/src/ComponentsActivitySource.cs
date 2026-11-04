@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -18,9 +19,10 @@ internal class ComponentsActivitySource
 
     private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
     private ComponentsActivityLinkStore? _componentsActivityLinkStore;
+    private readonly HashSet<Router> _activeRouters = new(ReferenceEqualityComparer.Instance);
 
     internal static bool HasListeners => ActivitySource.HasListeners();
-    internal bool HasNavigationActivity { get; private set; }
+    internal bool HasActiveRouter => _activeRouters.Count > 0;
 
     // there is no System.Diagnostics.ActivitySource.IsSupported yet
     [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
@@ -32,8 +34,14 @@ internal class ComponentsActivitySource
         _componentsActivityLinkStore = store;
     }
 
+    internal void RegisterRouter(Router router) => _activeRouters.Add(router);
+
+    internal void UnregisterRouter(Router router) => _activeRouters.Remove(router);
+
     public ComponentsActivityHandle StartNavigateActivity(string componentType, string route)
     {
+        // A previous route is no longer current even when this navigation is not sampled.
+        _componentsActivityLinkStore?.RemoveActivityContext(ComponentsActivityLinkStore.Route);
         var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
@@ -55,7 +63,6 @@ internal class ComponentsActivitySource
                     // store self link
                     _componentsActivityLinkStore!.SetActivityContext(ComponentsActivityLinkStore.Route, activity.Context,
                         new KeyValuePair<string, object?>("aspnetcore.components.route", route));
-                    HasNavigationActivity = true;
                 }
             }
 

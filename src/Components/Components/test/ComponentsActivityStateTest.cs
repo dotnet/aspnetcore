@@ -6,10 +6,12 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -150,20 +152,195 @@ public class ComponentsActivityStateTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void NavigationUpdate_DoesNotReplaceInteractiveRouterContext(bool clearRoute)
+    public async Task NavigationUpdate_DoesNotReplaceInteractiveRouterContext(bool clearRoute)
     {
         using var listener = CreateListener();
-        var store = new ComponentsActivityLinkStore(null);
-        var source = new ComponentsActivitySource();
-        source.Init(store);
-        var state = new ComponentsActivityState(NullLogger.Instance);
-        state.Initialize(store, source);
-        var navigation = source.StartNavigateActivity("Counter", "/interactive");
-        source.StopNavigateActivity(navigation, null);
+        using var provider = CreateRouterServiceProvider();
+        using var scope = provider.CreateScope();
+        using var renderer = new TestRenderer(scope.ServiceProvider);
+        var host = new ActivityTestRouterHost();
+        var componentId = renderer.AssignRootComponentId(host);
+        await renderer.RenderRootComponentAsync(componentId);
+        var store = new ComponentsActivityLinkStore(renderer);
+        Assert.True(store.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var navigationContext, out _));
+        var state = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>().ActivityState;
 
         state.Apply(clearRoute ? new ComponentsActivityStateUpdate(null) : CreateState(CreateContext(), "/ssr"));
 
-        AssertRoute(store, navigation.Activity!.Context, "/interactive");
+        AssertRoute(store, navigationContext, "/interactive");
+    }
+
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(1, true)]
+    [InlineData(2, false)]
+    [InlineData(2, true)]
+    public async Task NavigationUpdate_AppliesAfterLastInteractiveRouterIsDisposed(int routerCount, bool clearRoute)
+    {
+        using var listener = CreateListener();
+        using var provider = CreateRouterServiceProvider();
+        using var scope = provider.CreateScope();
+        using var renderer = new TestRenderer(scope.ServiceProvider);
+        var host = new ActivityTestRouterHost { RouterCount = routerCount };
+        var componentId = renderer.AssignRootComponentId(host);
+        await renderer.RenderRootComponentAsync(componentId);
+        var store = new ComponentsActivityLinkStore(renderer);
+        Assert.True(store.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var navigationContext, out _));
+        AssertRoute(store, navigationContext, "/interactive");
+        var circuitContext = CreateContext();
+        store.SetActivityContext(ComponentsActivityLinkStore.Circuit, circuitContext, null);
+        var state = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>().ActivityState;
+        var ssrContext = CreateContext();
+        var update = clearRoute ? new ComponentsActivityStateUpdate(null) : CreateState(ssrContext, "/ssr");
+
+        for (var remaining = routerCount - 1; remaining >= 0; remaining--)
+        {
+            host.RouterCount = remaining;
+            await renderer.RenderRootComponentAsync(componentId);
+            await renderer.Dispatcher.InvokeAsync(host.Routers[remaining].Dispose);
+            Assert.True(store.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var currentContext, out _));
+
+            state.Apply(update);
+
+            if (remaining > 0)
+            {
+                AssertRoute(store, currentContext, "/interactive");
+            }
+            else if (clearRoute)
+            {
+                Assert.False(store.TryGetActivityContext(ComponentsActivityLinkStore.Route, out _, out _));
+            }
+            else
+            {
+                AssertRoute(store, ssrContext, "/ssr");
+            }
+
+            Assert.True(store.TryGetActivityContext(ComponentsActivityLinkStore.Circuit, out var actualCircuit, out _));
+            Assert.Equal(circuitContext, actualCircuit);
+        }
+    }
+
+    [Fact]
+    public async Task NavigationUpdate_NewInteractiveRouterRetakesOwnership()
+    {
+        using var listener = CreateListener();
+        using var provider = CreateRouterServiceProvider();
+        using var scope = provider.CreateScope();
+        using var renderer = new TestRenderer(scope.ServiceProvider);
+        var host = new ActivityTestRouterHost();
+        var componentId = renderer.AssignRootComponentId(host);
+        await renderer.RenderRootComponentAsync(componentId);
+        var store = new ComponentsActivityLinkStore(renderer);
+        var state = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>().ActivityState;
+
+        host.RouterCount = 0;
+        await renderer.RenderRootComponentAsync(componentId);
+        var ssrContext = CreateContext();
+        state.Apply(CreateState(ssrContext, "/ssr"));
+        AssertRoute(store, ssrContext, "/ssr");
+
+        host.RouterCount = 1;
+        await renderer.RenderRootComponentAsync(componentId);
+        Assert.True(store.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var navigationContext, out _));
+        Assert.NotEqual(ssrContext, navigationContext);
+
+        state.Apply(CreateState(CreateContext(), "/next-ssr"));
+
+        AssertRoute(store, navigationContext, "/interactive");
+    }
+
+    [Theory]
+    [InlineData(ActivitySamplingResult.None)]
+    [InlineData(ActivitySamplingResult.PropagationData)]
+    [InlineData(ActivitySamplingResult.AllData)]
+    public void Navigation_SamplingDoesNotRetainImportedSsrCorrelation(ActivitySamplingResult samplingResult)
+    {
+        using var remote = RemoteExecutor.Invoke(static async samplingText =>
+        {
+            var navigationSampling = Enum.Parse<ActivitySamplingResult>(samplingText);
+            var navigationSampleCount = 0;
+            var navigations = new List<Activity>();
+            Activity? stoppedEvent = null;
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = source => source.Name == ComponentsActivitySource.Name,
+                Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+                {
+                    if (options.Name == ComponentsActivitySource.OnRouteName)
+                    {
+                        navigationSampleCount++;
+                        return navigationSampling;
+                    }
+
+                    return ActivitySamplingResult.AllData;
+                },
+                ActivityStarted = activity =>
+                {
+                    if (activity.OperationName == ComponentsActivitySource.OnRouteName)
+                    {
+                        navigations.Add(activity);
+                    }
+                },
+                ActivityStopped = activity =>
+                {
+                    if (activity.OperationName == ComponentsActivitySource.OnEventName)
+                    {
+                        stoppedEvent = activity;
+                    }
+                },
+            };
+            ActivitySource.AddActivityListener(listener);
+            using var provider = CreateRouterServiceProvider(useRoutingStateProvider: false);
+            using var scope = provider.CreateScope();
+            var navigationManager = scope.ServiceProvider.GetRequiredService<NavigationManager>();
+            navigationManager.NavigateTo("/activity-test-initial");
+            using var renderer = new TestRenderer(scope.ServiceProvider);
+            var state = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>().ActivityState;
+            var importedContext = CreateContext();
+            state.Apply(CreateState(importedContext, "/activity-test-initial"));
+            var store = new ComponentsActivityLinkStore(renderer);
+            AssertRoute(store, importedContext, "/activity-test-initial");
+            var circuitContext = CreateContext();
+            store.SetActivityContext(ComponentsActivityLinkStore.Circuit, circuitContext, null);
+            var button = new ActivityTestButton();
+            var buttonId = renderer.AssignRootComponentId(button);
+            await renderer.RenderRootComponentAsync(buttonId);
+            var hostId = renderer.AssignRootComponentId(new ActivityTestRouterHost());
+            await renderer.RenderRootComponentAsync(hostId);
+            var initialSampleCount = navigationSampleCount;
+
+            await renderer.Dispatcher.InvokeAsync(() => navigationManager.NavigateTo("/activity-test-updated"));
+            Assert.True(navigationSampleCount > initialSampleCount);
+            state.Apply(CreateState(CreateContext(), "/ignored-ssr"));
+            var eventHandlerId = renderer.GetCurrentRenderTreeFrames(buttonId).AsEnumerable()
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0).AttributeEventHandlerId;
+            await renderer.DispatchEventAsync(eventHandlerId, EventArgs.Empty);
+
+            Assert.Equal(1, button.ClickCount);
+            Assert.NotNull(stoppedEvent);
+            Assert.DoesNotContain(stoppedEvent.Links, link => link.Context == importedContext);
+            if (navigationSampling == ActivitySamplingResult.AllData)
+            {
+                Assert.Equal("/activity-test-updated", stoppedEvent.GetTagItem("aspnetcore.components.route"));
+                Assert.Contains(stoppedEvent.Links, link => link.Context == navigations[^1].Context);
+                Assert.Contains(stoppedEvent.Links, link => link.Context == circuitContext);
+                Assert.Equal(2, stoppedEvent.Links.Count());
+            }
+            else
+            {
+                Assert.Null(stoppedEvent.GetTagItem("aspnetcore.components.route"));
+                Assert.Equal(circuitContext, Assert.Single(stoppedEvent.Links).Context);
+                if (navigationSampling == ActivitySamplingResult.None)
+                {
+                    Assert.Empty(navigations);
+                }
+                else
+                {
+                    Assert.NotEmpty(navigations);
+                    Assert.All(navigations, activity => Assert.False(activity.IsAllDataRequested));
+                }
+            }
+        }, samplingResult.ToString());
     }
 
     [Fact]
@@ -227,6 +404,52 @@ public class ComponentsActivityStateTest
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<ComponentsActivitySource>());
         Assert.Null(provider.GetService<ComponentStatePersistenceManager>());
         Assert.Null(provider.GetService<RegisteredPersistentServiceRegistrationCollection>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PersistenceRegistration_RequiresOnlyPersistentComponentState(bool registerTracing)
+    {
+        using var listener = CreateListener();
+        var manager = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var services = new ServiceCollection().AddLogging();
+        services.AddSingleton(manager.State);
+        services.AddSupplyValueFromPersistentComponentStateProvider();
+        if (registerTracing)
+        {
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+        }
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true,
+        });
+        using var scope = provider.CreateScope();
+        Assert.Null(scope.ServiceProvider.GetService<ComponentStatePersistenceManager>());
+        Assert.Same(manager.State, scope.ServiceProvider.GetRequiredService<PersistentComponentState>());
+        Assert.IsType<PersistentStateValueProvider>(Assert.Single(scope.ServiceProvider.GetServices<ICascadingValueSupplier>()));
+        var store = new ComponentsActivityLinkStore(null);
+        var source = new ComponentsActivitySource();
+        source.Init(store);
+        manager.ActivityState.Initialize(store, source);
+        var server = scope.ServiceProvider.GetRequiredService<ServerComponentsActivityState>();
+        var webAssembly = scope.ServiceProvider.GetRequiredService<WebAssemblyComponentsActivityState>();
+        var serverContext = CreateContext();
+        var serverUpdate = CreateState(serverContext, "/server");
+
+        server.ActivityState = serverUpdate;
+
+        AssertRoute(store, serverContext, "/server");
+        Assert.Equal(serverUpdate, webAssembly.ActivityState);
+        var webAssemblyContext = CreateContext();
+        var webAssemblyUpdate = CreateState(webAssemblyContext, "/webassembly");
+
+        webAssembly.ActivityState = webAssemblyUpdate;
+
+        AssertRoute(store, webAssemblyContext, "/webassembly");
+        Assert.Equal(webAssemblyUpdate, server.ActivityState);
     }
 
     [Fact]
@@ -408,6 +631,67 @@ public class ComponentsActivityStateTest
                 Assert.Equal("""{"route":null}""", System.Text.Encoding.UTF8.GetString(payload));
             }
         });
+    }
+
+    private static ServiceProvider CreateRouterServiceProvider(bool useRoutingStateProvider = true)
+    {
+        var services = new ServiceCollection().AddLogging().AddScoped<ComponentStatePersistenceManager>();
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+        services.AddSingleton<NavigationManager, ActivityTestNavigationManager>();
+        services.AddSingleton(Mock.Of<INavigationInterception>(
+            interception => interception.EnableNavigationInterceptionAsync() == Task.CompletedTask));
+        services.AddSingleton(Mock.Of<IScrollToLocationHash>(
+            scroll => scroll.RefreshScrollPositionForHash(It.IsAny<string>()) == Task.CompletedTask));
+        if (useRoutingStateProvider)
+        {
+            var routeData = new RouteData(typeof(ActivityTestRoutePage), new Dictionary<string, object?>())
+            {
+                Template = "/interactive",
+            };
+            services.AddSingleton(Mock.Of<IRoutingStateProvider>(provider => provider.RouteData == routeData));
+        }
+
+        return services.BuildServiceProvider(validateScopes: true);
+    }
+
+    private sealed class ActivityTestNavigationManager : NavigationManager
+    {
+        public ActivityTestNavigationManager()
+        {
+            Initialize("https://example.com/", "https://example.com/interactive");
+        }
+
+        protected override void NavigateToCore(string uri, bool forceLoad)
+        {
+            Uri = ToAbsoluteUri(uri).AbsoluteUri;
+            NotifyLocationChanged(isIntercepted: false);
+        }
+    }
+
+    [Route("/activity-test-initial")]
+    [Route("/activity-test-updated")]
+    [Route("/interactive")]
+    public sealed class ActivityTestRoutePage : ComponentBase
+    {
+    }
+
+    private sealed class ActivityTestRouterHost : ComponentBase
+    {
+        public int RouterCount { get; set; } = 1;
+        public List<Router> Routers { get; } = [];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            for (var i = 0; i < RouterCount; i++)
+            {
+                builder.OpenComponent<Router>(0);
+                builder.SetKey(i);
+                builder.AddComponentParameter(1, nameof(Router.AppAssembly), typeof(ActivityTestButton).Assembly);
+                builder.AddComponentParameter(2, nameof(Router.Found), (RenderFragment<RouteData>)(_ => content => { }));
+                builder.AddComponentReferenceCapture(3, component => Routers.Add((Router)component));
+                builder.CloseComponent();
+            }
+        }
     }
 
     private sealed class ActivityTestButton : ComponentBase

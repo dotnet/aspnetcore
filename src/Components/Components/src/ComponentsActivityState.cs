@@ -64,7 +64,7 @@ internal sealed class ComponentsActivityState(ILogger logger)
         }
 
         // A live interactive router owns its route context, rather than the earlier SSR renderer.
-        if (_activitySource!.HasNavigationActivity)
+        if (_activitySource!.HasActiveRouter)
         {
             _pendingState = null;
             _hasPendingState = false;
@@ -96,23 +96,27 @@ internal sealed class ComponentsActivityState(ILogger logger)
     }
 }
 
-internal sealed class ServerComponentsActivityState(ComponentStatePersistenceManager manager)
+internal sealed class ServerComponentsActivityState(PersistentComponentState state, ILogger<ComponentStatePersistenceManager> logger)
 {
+    private readonly ComponentsActivityState _activityState = state.GetActivityState(logger);
+
     [PersistentState(AllowUpdates = true)]
     public ComponentsActivityStateUpdate? ActivityState
     {
-        get => manager.ActivityState.Capture();
-        set => manager.ActivityState.Apply(value);
+        get => _activityState.Capture();
+        set => _activityState.Apply(value);
     }
 }
 
-internal sealed class WebAssemblyComponentsActivityState(ComponentStatePersistenceManager manager)
+internal sealed class WebAssemblyComponentsActivityState(PersistentComponentState state, ILogger<ComponentStatePersistenceManager> logger)
 {
+    private readonly ComponentsActivityState _activityState = state.GetActivityState(logger);
+
     [PersistentState(AllowUpdates = true)]
     public ComponentsActivityStateUpdate? ActivityState
     {
-        get => manager.ActivityState.Capture();
-        set => manager.ActivityState.Apply(value);
+        get => _activityState.Capture();
+        set => _activityState.Apply(value);
     }
 }
 
