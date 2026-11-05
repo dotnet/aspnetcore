@@ -58,6 +58,19 @@ public class NavigatorTest
     }
 
     [Fact]
+    public async Task Navigator_ReacquiresReferenceAfterAcquisitionIsFaulted()
+    {
+        var jsRuntime = new RecordingJSRuntime { FailNextGetValue = true };
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var navigator = provider.GetRequiredService<IBrowserPlatform>().Window.Navigator;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => navigator.GetLanguageAsync().AsTask());
+
+        Assert.Equal("en-US", await navigator.GetLanguageAsync());
+        Assert.Equal(2, jsRuntime.GetValueCallCount);
+    }
+
+    [Fact]
     public async Task ScopeDisposal_DisposesTheAcquiredReference()
     {
         var jsRuntime = new RecordingJSRuntime();
@@ -166,6 +179,8 @@ public class NavigatorTest
 
         public bool CancelNextGetValue { get; set; }
 
+        public bool FailNextGetValue { get; set; }
+
         public TaskCompletionSource<IJSObjectReference>? PendingNextGetValue { get; set; }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
@@ -191,6 +206,13 @@ public class NavigatorTest
                 CancelNextGetValue = false;
 
                 return ValueTask.FromCanceled<TValue>(new CancellationToken(canceled: true));
+            }
+
+            if (FailNextGetValue)
+            {
+                FailNextGetValue = false;
+
+                return ValueTask.FromException<TValue>(new InvalidOperationException("The browser failed to return the navigator."));
             }
 
             if (PendingNextGetValue is { } pending)
