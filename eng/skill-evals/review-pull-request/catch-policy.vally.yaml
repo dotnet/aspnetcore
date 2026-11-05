@@ -5,7 +5,7 @@ defaults:
   runs: 5
   timeout: 420s
   model: gpt-5.6-sol
-  judge_model: claude-sonnet-5
+  judge_model: gpt-5.6-sol
 agent_environment:
   files:
   - src: ../../../.github/skills/review-pull-request/SKILL.md
