@@ -150,6 +150,19 @@ export function invokeMethodAsync<T>(assemblyName: string, methodIdentifier: str
 }
 
 /**
+ * Invokes a .NET static method with cooperative cancellation.
+ * @param assemblyName The short name of the assembly containing the method.
+ * @param methodIdentifier The identifier of the JSInvokable method.
+ * @param signal The signal that requests cancellation of this invocation.
+ * @param args JSON-serializable arguments, excluding the method's final CancellationToken parameter.
+ * @returns The result, or a rejection with signal.reason after cancellation is acknowledged.
+ */
+export function invokeMethodAsyncWithCancellation<T>(assemblyName: string, methodIdentifier: string, signal: AbortSignal, ...args: any[]): Promise<T> {
+  const dispatcher = getDefaultCallDispatcher();
+  return dispatcher.invokeDotNetStaticMethodAsyncWithCancellation<T>(assemblyName, methodIdentifier, signal, ...args);
+}
+
+/**
    * Creates a JavaScript object reference that can be passed to .NET via interop calls.
    *
    * @param jsObject The JavaScript Object used to create the JavaScript object reference.
@@ -375,6 +388,16 @@ export interface ICallDispatcher {
   invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T>;
 
   /**
+   * Invokes a .NET static method, supplying its final CancellationToken from an AbortSignal.
+   * @param assemblyName The short name of the assembly containing the method.
+   * @param methodIdentifier The identifier of the JSInvokable method.
+   * @param signal The signal that requests cancellation.
+   * @param args The ordinary JSON-serializable method arguments.
+   * @returns The result, or a rejection with signal.reason after cancellation is acknowledged.
+   */
+  invokeDotNetStaticMethodAsyncWithCancellation<T>(assemblyName: string, methodIdentifier: string, signal: AbortSignal, ...args: any[]): Promise<T>;
+
+  /**
      * Receives notification that a byte array is being transferred from .NET to JS.
      * @param id The identifier for the byte array used during revival.
      * @param data The byte array being transferred for eventual revival.
@@ -465,6 +488,57 @@ class CallDispatcher implements ICallDispatcher {
     return this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, null, args);
   }
 
+  invokeDotNetStaticMethodAsyncWithCancellation<T>(assemblyName: string, methodIdentifier: string, signal: AbortSignal, ...args: any[]): Promise<T> {
+    return this.invokeDotNetMethodAsyncWithCancellation<T>(assemblyName, methodIdentifier, null, signal, args);
+  }
+
+  invokeDotNetMethodAsyncWithCancellation<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, signal: AbortSignal, args: any[]): Promise<T> {
+    if (typeof signal?.aborted !== 'boolean' || typeof signal.addEventListener !== 'function' || typeof signal.removeEventListener !== 'function') {
+      return Promise.reject(new TypeError('An AbortSignal is required for a cancellable invocation.'));
+    }
+
+    if (signal.aborted) {
+      return Promise.reject(signal.reason);
+    }
+
+    // Reserve the existing invocation ID, not a separate consumer-owned cancellation ID.
+    const callId = this._nextAsyncCallId.toString();
+    let cancellationRequested = false;
+    let onAbort: () => void;
+    const result = new Promise<T>((resolve, reject) => {
+      onAbort = () => {
+        if (cancellationRequested) {
+          return;
+        }
+
+        cancellationRequested = true;
+        this.invokeDotNetMethodAsync<void>('Microsoft.JSInterop', '__CancelInvocation', null, [callId])
+          .then(() => reject(signal.reason), reject);
+      };
+
+      const invocation = this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, dotNetObjectId, args, callId);
+      invocation.then(
+        value => {
+          if (!cancellationRequested) {
+            resolve(value);
+          }
+        },
+        error => {
+          if (!cancellationRequested) {
+            reject(error);
+          }
+        }
+      );
+
+      signal.addEventListener('abort', onAbort, { once: true });
+      if (signal.aborted) {
+        onAbort();
+      }
+    });
+
+    return result.finally(() => signal.removeEventListener('abort', onAbort));
+  }
+
   invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
     if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
       const argsJson = stringifyArgs(this, args);
@@ -475,7 +549,7 @@ class CallDispatcher implements ICallDispatcher {
     throw new Error('The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.');
   }
 
-  invokeDotNetMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): Promise<T> {
+  invokeDotNetMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null, cancellationId?: string): Promise<T> {
     if (assemblyName && dotNetObjectId) {
       throw new Error(`For instance method calls, assemblyName should be null. Received '${assemblyName}'.`);
     }
@@ -486,7 +560,7 @@ class CallDispatcher implements ICallDispatcher {
     });
 
     try {
-      const argsJson = stringifyArgs(this, args);
+      const argsJson = stringifyArgs(this, cancellationId === undefined ? args : { __dotNetCancellation: cancellationId, args });
       this._dotNetCallDispatcher.beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
     } catch (ex) {
       // Synchronous failure
@@ -709,6 +783,17 @@ export class DotNetObject {
     return this._callDispatcher.invokeDotNetMethodAsync<T>(null, methodIdentifier, this._id, args);
   }
 
+  /**
+   * Invokes an instance method with cooperative cancellation.
+   * @param methodIdentifier The identifier of the JSInvokable method.
+   * @param signal The signal that requests cancellation of this invocation.
+   * @param args JSON-serializable arguments, excluding the method's final CancellationToken parameter.
+   * @returns The result, or a rejection with signal.reason after cancellation is acknowledged.
+   */
+  public invokeMethodAsyncWithCancellation<T>(methodIdentifier: string, signal: AbortSignal, ...args: any[]): Promise<T> {
+    return this._callDispatcher.invokeDotNetMethodAsyncWithCancellation<T>(null, methodIdentifier, this._id, signal, args);
+  }
+
   public dispose() {
     const promise = this._callDispatcher.invokeDotNetMethodAsync<any>(null, '__Dispose', this._id, null);
     promise.catch(error => console.error(error));
@@ -802,7 +887,7 @@ function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
 }
 
 let nextByteArrayIndex = 0;
-function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null) {
+function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null | { __dotNetCancellation: string, args: any[] | null }) {
   nextByteArrayIndex = 0;
   currentCallDispatcher = callDispatcher;
   const result = JSON.stringify(args, argReplacer);
