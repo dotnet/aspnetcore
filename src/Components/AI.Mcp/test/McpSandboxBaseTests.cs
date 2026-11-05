@@ -14,7 +14,8 @@ public class McpSandboxBaseTests
     [Fact]
     public async Task ConcreteBaseRendersStandaloneDocumentAndDefaultFrame()
     {
-        await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        await using var services = new ServiceCollection().AddLogging()
+            .AddSingleton<NavigationManager>(new TestNavigationManager()).BuildServiceProvider();
         await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 
         var html = await renderer.Dispatcher.InvokeAsync(async () =>
@@ -40,7 +41,8 @@ public class McpSandboxBaseTests
     [Fact]
     public async Task BodyOverrideUsesItsOwnSequenceNumbersAndReceivesParameters()
     {
-        await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        await using var services = new ServiceCollection().AddLogging()
+            .AddSingleton<NavigationManager>(new TestNavigationManager()).BuildServiceProvider();
         await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 
         var html = await renderer.Dispatcher.InvokeAsync(async () =>
@@ -72,7 +74,8 @@ public class McpSandboxBaseTests
     [InlineData("https://host.example/#fragment")]
     public async Task SuppliedOriginIsRenderedWithoutParsingOrValidation(string? origin)
     {
-        await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        await using var services = new ServiceCollection().AddLogging()
+            .AddSingleton<NavigationManager>(new TestNavigationManager()).BuildServiceProvider();
         await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 
         var html = await renderer.Dispatcher.InvokeAsync(async () =>
@@ -96,6 +99,31 @@ public class McpSandboxBaseTests
             });
             builder.CloseElement();
             builder.CloseElement();
+        }
+
+    }
+
+    [Theory]
+    [InlineData("https://sandbox.example/")]
+    [InlineData("https://sandbox.example/chat/")]
+    public async Task BootstrapResolvesModuleAgainstApplicationBaseUri(string baseUri)
+    {
+        await using var services = new ServiceCollection().AddLogging()
+            .AddSingleton<NavigationManager>(new TestNavigationManager(baseUri)).BuildServiceProvider();
+        await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
+
+        var html = await renderer.Dispatcher.InvokeAsync(async () =>
+            (await renderer.RenderComponentAsync<McpSandboxBase>(ParameterView.FromDictionary(
+                new Dictionary<string, object?> { [nameof(McpSandboxBase.HostOrigin)] = "https://host.example" }))).ToHtmlString());
+
+        Assert.Contains(baseUri + "_content/Microsoft.AspNetCore.Components.AI.Mcp/mcp-sandbox.js", html);
+    }
+
+    private sealed class TestNavigationManager : NavigationManager
+    {
+        public TestNavigationManager(string baseUri = "https://sandbox.example/")
+        {
+            Initialize(baseUri, baseUri);
         }
     }
 }

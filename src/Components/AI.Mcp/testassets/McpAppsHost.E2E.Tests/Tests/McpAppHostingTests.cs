@@ -29,6 +29,25 @@ public partial class McpAppHostingTests : BrowserTest
     private IFrameLocator _content = null!;
 
     [TestMethod]
+    public async Task SandboxBootstrapUsesApplicationPathBase()
+    {
+        await OpenAsync(pathBase: "/chat");
+
+        await Expect(_content.Locator("#message")).ToHaveTextAsync("Hello from a standard app.");
+        await SaveAsync("Saved beneath the application path base");
+        await _page.Locator(".mcp-theme").ClickAsync();
+        await Expect(_content.Locator("#theme")).ToHaveTextAsync("dark");
+        using var rootAsset = await _http.GetAsync(_sandboxOrigin + "/_content/Microsoft.AspNetCore.Components.AI.Mcp/mcp-sandbox.js");
+        Assert.AreEqual(HttpStatusCode.NotFound, rootAsset.StatusCode);
+        using var asset = await _http.GetAsync(_sandboxOrigin + "/chat/_content/Microsoft.AspNetCore.Components.AI.Mcp/mcp-sandbox.js");
+        Assert.AreEqual(HttpStatusCode.OK, asset.StatusCode);
+        var document = await _http.GetStringAsync(_sandboxOrigin + "/chat/default-sandbox");
+        StringAssert.Contains(document, "/chat/_content/Microsoft.AspNetCore.Components.AI.Mcp/mcp-sandbox.js");
+        Assert.AreEqual(1, (await ServerStateAsync()).GetProperty("initialCalls").GetInt32());
+        AssertNoBrowserErrors();
+    }
+
+    [TestMethod]
     public async Task LargeDocumentsOriginalResultsAndAppRequestsAreDeliveredIntact()
     {
         await OpenAsync(largePayloads: true);
@@ -612,7 +631,7 @@ public partial class McpAppHostingTests : BrowserTest
 
     private async Task OpenAsync(bool holdResponse = false, bool withOtherConnection = false,
         string prompt = "Open the note", bool waitForOriginalResult = true, bool holdResource = false,
-        Func<IPage, Task>? initialize = null, bool largePayloads = false)
+        Func<IPage, Task>? initialize = null, bool largePayloads = false, string? pathBase = null)
     {
         var instance = Guid.NewGuid().ToString("N");
         _server = await StartServerAsync<global::McpAppsServer.ServerAssembly>(TestRoot.Servers,
@@ -639,6 +658,10 @@ public partial class McpAppHostingTests : BrowserTest
             options.EnvironmentVariables["MCP_SERVER_URL"] = $"{_server.AppUrl}/mcp";
             options.EnvironmentVariables["HOLD_RESPONSE"] = holdResponse.ToString();
             options.EnvironmentVariables["LARGE_PAYLOADS"] = largePayloads.ToString();
+            if (pathBase is not null)
+            {
+                options.EnvironmentVariables["PATH_BASE"] = pathBase;
+            }
             options.EnvironmentVariables["TEST_INSTANCE"] = instance;
             if (_otherServer is not null)
             {
@@ -659,7 +682,7 @@ public partial class McpAppHostingTests : BrowserTest
                 _errors.Add(message.Text);
             }
         };
-        await _page.GotoAsync(_host.TestUrl);
+        await _page.GotoAsync(_host.TestUrl.TrimEnd('/') + pathBase + "/");
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
         await Expect(_page.Locator("#interactive-status")).ToHaveTextAsync("ready");
         await _page.Locator("textarea.sc-ai-input__textarea").FillAsync(prompt);

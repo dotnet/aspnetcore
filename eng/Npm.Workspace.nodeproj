@@ -116,9 +116,9 @@
 
     <!-- Components.AI MCP Apps outputs -->
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\AI.Mcp\src\Interop\dist\Debug\mcp-host.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\AI.Mcp\src\Interop\dist\Debug\mcp-proxy.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\AI.Mcp\src\Interop\dist\Debug\mcp-sandbox.js" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\AI.Mcp\src\Interop\dist\Release\mcp-host.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\AI.Mcp\src\Interop\dist\Release\mcp-proxy.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\AI.Mcp\src\Interop\dist\Release\mcp-sandbox.js" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\AI.Mcp\testassets\McpAppsServer\Interop\dist\Debug\standard-app.js" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\AI.Mcp\testassets\McpAppsServer\Interop\dist\Release\standard-app.js" />
 

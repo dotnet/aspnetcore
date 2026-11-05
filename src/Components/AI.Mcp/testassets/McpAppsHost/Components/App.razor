@@ -1,8 +1,9 @@
+@inject IConfiguration Configuration
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <base href="/" />
+    <base href="@((Configuration["PATH_BASE"] ?? "") + "/")" />
     <link rel="stylesheet" href="@Assets["_content/Microsoft.AspNetCore.Components.AI/ai-chat.css"]" />
     <ImportMap />
     <HeadOutlet />

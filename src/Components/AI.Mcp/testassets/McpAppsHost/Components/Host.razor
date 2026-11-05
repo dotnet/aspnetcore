@@ -8,7 +8,7 @@
         <button class="mcp-theme" disabled="@(!_ready)" @onclick="ChangeThemeAsync">Toggle theme</button>
         <button class="mcp-close" @onclick="async () => await CloseAsync()">Close app</button>
         <iframe @ref="Frame"
-                src="@(Configuration["SANDBOX_ORIGIN"] + "/mcp-sandbox")"
+                src="@(Configuration["SANDBOX_ORIGIN"] + Configuration["PATH_BASE"] + "/mcp-sandbox")"
                 title="Application-configured MCP host"
                 sandbox="allow-scripts allow-same-origin"
                 allow="clipboard-write 'none'"

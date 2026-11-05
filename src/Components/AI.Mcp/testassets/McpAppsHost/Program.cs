@@ -20,6 +20,20 @@ if (builder.Configuration.GetValue<bool>("LARGE_PAYLOADS"))
 builder.Services.AddSingleton(new HostState { HoldResponse = builder.Configuration.GetValue<bool>("HOLD_RESPONSE") });
 
 var app = builder.Build();
+if (builder.Configuration["PATH_BASE"] is { } pathBase)
+{
+    app.UsePathBase(pathBase);
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.PathBase != pathBase)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+        await next(context);
+    });
+    app.UseRouting();
+}
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapMcpAppSandbox<Sandbox>("/mcp-sandbox", hostOrigin, sandboxOrigin,

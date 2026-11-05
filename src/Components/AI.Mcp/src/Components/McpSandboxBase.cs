@@ -16,6 +16,8 @@ public class McpSandboxBase : IComponent
 {
     private RenderHandle _renderHandle;
 
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
     /// <summary>Gets or sets the parent host origin supplied by the sandbox endpoint.</summary>
     [Parameter, EditorRequired]
     public string HostOrigin { get; set; } = default!;
@@ -54,7 +56,7 @@ public class McpSandboxBase : IComponent
             builder.OpenElement(11, "script");
             builder.AddAttribute(12, "type", "module");
             builder.AddMarkupContent(13,
-                "import { start } from '/_content/Microsoft.AspNetCore.Components.AI.Mcp/mcp-sandbox.js';" +
+                $"import {{ start }} from {JsonSerializer.Serialize(Navigation.ToAbsoluteUri("_content/Microsoft.AspNetCore.Components.AI.Mcp/mcp-sandbox.js").AbsoluteUri)};" +
                 $"await start(document.getElementById('mcp-app'),{JsonSerializer.Serialize(HostOrigin)});");
             builder.CloseElement();
             builder.CloseElement();

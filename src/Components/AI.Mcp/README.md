@@ -150,6 +150,9 @@ The concrete base supplies the document shell, sizing, and shared module bootstr
 The Razor-generated body runs in a render-tree region. It must contain exactly one
 iframe with ID `mcp-app`; missing or invalid target markup fails explicitly.
 Do not add `@page`, a layout, scripts, or an interactive render mode.
+The bootstrap resolves its module against the application's navigation base,
+including a configured path base. The application still owns its outer iframe
+URL and normal application base-path configuration.
 
 Configure two listeners in one application process, with endpoint host restrictions:
 
@@ -334,7 +337,7 @@ npm run build --workspace @microsoft/components-ai-mcp-test-app
 . .\activate.ps1
 dotnet test .\src\Components\AI.Mcp\test\Microsoft.AspNetCore.Components.AI.Mcp.Tests.csproj
 dotnet build .\src\Components\AI.Mcp\testassets\McpAppsHost.E2E.Tests\McpAppsHost.E2E.Tests.csproj /p:UseIisNativeAssets=false /p:E2EAppMode=publish
-dotnet run --project .\src\Components\AI.Mcp\testassets\McpAppsHost.E2E.Tests\McpAppsHost.E2E.Tests.csproj --no-build -- --filter "FullyQualifiedName~McpAppHostingTests" --minimum-expected-tests 24
+dotnet run --project .\src\Components\AI.Mcp\testassets\McpAppsHost.E2E.Tests\McpAppsHost.E2E.Tests.csproj --no-build -- --filter "FullyQualifiedName~McpAppHostingTests" --minimum-expected-tests 25
 ```
 
 The native IIS assets are not needed for these Kestrel-hosted scenarios.
