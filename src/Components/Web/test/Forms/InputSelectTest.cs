@@ -216,7 +216,7 @@ public class InputSelectTest
     public async Task RendersMultipleSelectWhenBoundArrayValueIsNull()
     {
         var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string?[]?, TestInputSelect<string?[]?>>
+        var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
         {
             EditContext = new EditContext(model),
             ValueExpression = () => model.NullableStringArray,
@@ -367,7 +367,7 @@ public class InputSelectTest
 
         public int? NullableInt { get; set; }
 
-        public string?[]? NullableStringArray { get; set; }
+        public string[] NullableStringArray { get; set; }
 
         public string[] StringArray { get; set; }
     }

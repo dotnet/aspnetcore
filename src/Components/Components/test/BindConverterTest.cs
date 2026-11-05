@@ -170,7 +170,7 @@ public class BindConverterTest
     [Fact]
     public void FormatValue_Array_Null()
     {
-        string[]? value = null;
+        string[] value = null;
         var actual = BindConverter.FormatValue(value);
         Assert.Null(actual);
     }
@@ -178,8 +178,8 @@ public class BindConverterTest
     [Fact]
     public void FormatValue_Array_Null_Generic()
     {
-        string[]? value = null;
-        var actual = BindConverter.FormatValue<string[]?>(value);
+        string[] value = null;
+        var actual = BindConverter.FormatValue<string[]>(value);
         Assert.Null(actual);
     }
     [Fact]
