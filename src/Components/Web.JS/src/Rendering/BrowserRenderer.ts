@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, RenderTreeDiff, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
+import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, RenderTreeDiff, EditType, FrameType, ArrayValues, countDescendantFrames } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, getLogicalRootDescriptor, adoptLogicalChild } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
@@ -112,9 +112,7 @@ export class BrowserRenderer {
     if (elementsToClearOnRootComponentRender.delete(element)) {
       const prerendered = this.prerenderedDom.get(componentId);
       if (prerendered) {
-        for (const [index, match] of prerendered.adopt(element)) {
-          this.adoptedFrames.set(index, match);
-        }
+        prerendered.adopt(element, this.adoptedFrames);
       } else {
         this.detachEventHandlersFromElement(element);
         emptyLogicalElement(element);
@@ -323,63 +321,39 @@ export class BrowserRenderer {
 
     const match = this.adoptedFrames.get(frameIndex);
     const adoptedElement = match?.replace ? undefined : match?.nodes[0];
-    if (adoptedElement instanceof Element) {
-      adoptLogicalChild(adoptedElement, parent, childIndex);
-      const end = frameIndex + frameReader.subtreeLength(frame);
-      let descendantIndex = frameIndex + 1;
-      for (; descendantIndex < end; descendantIndex++) {
-        const attribute = batch.referenceFramesEntry(frames, descendantIndex);
-        if (frameReader.frameType(attribute) !== FrameType.attribute) {
-          break;
-        }
-        const name = frameReader.attributeName(attribute)!;
-        if (frameReader.attributeEventHandlerId(attribute) || name.startsWith(internalAttributeNamePrefix)) {
-          this.applyAttribute(batch, componentId, adoptedElement, attribute);
-          if (name.startsWith(internalAttributeNamePrefix)) {
-            adoptedElement.removeAttribute(name);
-          }
-        } else if (name === 'value') {
-          rememberDeferredValue(adoptedElement, frameReader.attributeValue(attribute));
-        }
-      }
-      this.insertFrameRange(batch, componentId, toLogicalElement(adoptedElement), 0, frames, descendantIndex, end);
-      return;
-    }
-
-    let newDomElementRaw: Element;
-    if (tagName === 'svg' || isSvgElement(parent)) {
-      newDomElementRaw = document.createElementNS('http://www.w3.org/2000/svg', tagName);
+    const isAdopted = adoptedElement instanceof Element;
+    let domElement: Element;
+    if (isAdopted) {
+      domElement = adoptedElement;
+      adoptLogicalChild(domElement, parent, childIndex);
+    } else if (tagName === 'svg' || isSvgElement(parent)) {
+      domElement = document.createElementNS('http://www.w3.org/2000/svg', tagName);
     } else if (tagName === 'math' || isMathMLElement(parent)) {
-      newDomElementRaw = document.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
+      domElement = document.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
     } else {
-      newDomElementRaw = document.createElement(tagName);
+      domElement = document.createElement(tagName);
     }
-    const newElement = toLogicalElement(newDomElementRaw);
+    const logicalElement = toLogicalElement(domElement);
 
-    let inserted = false;
-
-    // Apply attributes
     const descendantsEndIndexExcl = frameIndex + frameReader.subtreeLength(frame);
-    for (let descendantIndex = frameIndex + 1; descendantIndex < descendantsEndIndexExcl; descendantIndex++) {
+    let descendantIndex = frameIndex + 1;
+    for (; descendantIndex < descendantsEndIndexExcl; descendantIndex++) {
       const descendantFrame = batch.referenceFramesEntry(frames, descendantIndex);
-      if (frameReader.frameType(descendantFrame) === FrameType.attribute) {
-        this.applyAttribute(batch, componentId, newDomElementRaw, descendantFrame);
-      } else {
-        this.insertElementNode(newDomElementRaw, parent, childIndex, frameIndex);
-        inserted = true;
-        // As soon as we see a non-attribute child, all the subsequent child frames are
-        // not attributes, so bail out and insert the remnants recursively
-        this.insertFrameRange(batch, componentId, newElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
+      if (frameReader.frameType(descendantFrame) !== FrameType.attribute) {
         break;
       }
+      this.applyAttribute(batch, componentId, domElement, descendantFrame, isAdopted);
     }
 
-    // this element did not have any children, so it's not inserted yet.
-    if (!inserted) {
-      this.insertElementNode(newDomElementRaw, parent, childIndex, frameIndex);
+    if (!isAdopted) {
+      this.insertElementNode(domElement, parent, childIndex, frameIndex);
     }
-
-    applyAnyDeferredValue(newDomElementRaw);
+    if (descendantIndex < descendantsEndIndexExcl) {
+      this.insertFrameRange(batch, componentId, logicalElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
+    }
+    if (!isAdopted) {
+      applyAnyDeferredValue(domElement);
+    }
   }
 
   private insertElementNode(element: Element, parent: LogicalElement, childIndex: number, frameIndex: number): void {
@@ -437,7 +411,7 @@ export class BrowserRenderer {
     }
   }
 
-  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame) {
+  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame, isAdopted = false) {
     const frameReader = batch.frameReader;
     const attributeName = frameReader.attributeName(attributeFrame)!;
     const eventHandlerId = frameReader.attributeEventHandlerId(attributeFrame);
@@ -448,8 +422,17 @@ export class BrowserRenderer {
       return;
     }
 
-    const value = frameReader.attributeValue(attributeFrame);
-    this.setOrRemoveAttributeOrProperty(toDomElement, attributeName, value);
+    if (isAdopted && !attributeName.startsWith(internalAttributeNamePrefix)) {
+      if (attributeName === 'value') {
+        rememberDeferredValue(toDomElement, frameReader.attributeValue(attributeFrame));
+      }
+    } else {
+      const value = frameReader.attributeValue(attributeFrame);
+      this.setOrRemoveAttributeOrProperty(toDomElement, attributeName, value);
+      if (isAdopted) {
+        toDomElement.removeAttribute(attributeName);
+      }
+    }
   }
 
   private insertFrameRange(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, startIndex: number, endIndexExcl: number): number {
@@ -557,21 +540,6 @@ function parseMarkup(markup: string, isSvg: boolean, isMathML: boolean) {
     });
 
     return sharedTemplateElemForParsing.content;
-  }
-}
-
-function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): number {
-  const frameReader = batch.frameReader;
-  switch (frameReader.frameType(frame)) {
-    // The following frame types have a subtree length. Other frames may use that memory slot
-    // to mean something else, so we must not read it. We should consider having nominal subtypes
-    // of RenderTreeFramePointer that prevent access to non-applicable fields.
-    case FrameType.component:
-    case FrameType.element:
-    case FrameType.region:
-      return frameReader.subtreeLength(frame) - 1;
-    default:
-      return 0;
   }
 }
 

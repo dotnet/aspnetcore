@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ArrayValues, EditType, FrameType, RenderBatch, RenderTreeDiff, RenderTreeFrame } from './RenderBatch/RenderBatch';
+import { ArrayValues, EditType, FrameType, RenderBatch, RenderTreeDiff, RenderTreeFrame, countDescendantFrames } from './RenderBatch/RenderBatch';
 import { LogicalElement, adoptLogicalChild, getLogicalRootDescriptor, isSvgElement, isMathMLElement, resetLogicalChildren, toLogicalElement } from './LogicalElements';
 
 interface Cursor {
@@ -25,11 +25,10 @@ interface FrameMatch {
 }
 
 interface Insertion {
-  node: Node;
+  node: Node | null;
   parent: Node;
   next: Node | null;
   offset: number;
-  enabled: boolean;
 }
 
 interface TextRun {
@@ -80,7 +79,7 @@ export class PrerenderedDom {
     return cursor.next === end;
   }
 
-  public adopt(root: LogicalElement): PrerenderedFrameMatches {
+  public adopt(root: LogicalElement, result: PrerenderedFrameMatches): void {
     const splits = new Map<Text, Set<number>>();
     for (const match of this.matches.values()) {
       for (const node of match.nodes) {
@@ -90,8 +89,8 @@ export class PrerenderedDom {
         }
       }
     }
-    for (const { next, offset, enabled } of this.insertions) {
-      if (enabled && next instanceof Text) {
+    for (const { node, next, offset } of this.insertions) {
+      if (node && next instanceof Text) {
         addSplit(next, offset);
       }
     }
@@ -107,20 +106,14 @@ export class PrerenderedDom {
       textParts.set(text, parts);
     }
 
-    for (const { node, parent, next, offset, enabled } of this.insertions) {
-      if (enabled) {
+    for (const { node, parent, next, offset } of this.insertions) {
+      if (node) {
         const before = next instanceof Text && offset > 0 ? textParts.get(next)!.get(offset)! : next;
         parent.insertBefore(node, before);
       }
     }
     for (const node of this.removals) {
       node.parentNode!.removeChild(node);
-    }
-
-    const result: PrerenderedFrameMatches = new Map();
-    for (const [index, match] of this.matches) {
-      const nodes = match.nodes.map(node => node instanceof Node ? node : textParts.get(node.text)!.get(node.offset)!);
-      result.set(index, { nodes, replace: match.replace ?? false });
     }
 
     resetLogicalChildren(root);
@@ -138,7 +131,10 @@ export class PrerenderedDom {
     }
     const end = getLogicalRootDescriptor(root).end!;
     end.parentNode!.removeChild(end);
-    return result;
+    for (const [index, match] of this.matches) {
+      const nodes = match.nodes.map(node => node instanceof Node ? node : textParts.get(node.text)!.get(node.offset)!);
+      result.set(index, { nodes, replace: match.replace ?? false });
+    }
 
     function addSplit(text: Text, offset: number) {
       let offsets = splits.get(text);
@@ -264,7 +260,9 @@ export class PrerenderedDom {
         return 1;
       }
       case FrameType.component: {
-        this.matches.set(index, { nodes: [this.insert(document.createComment('!'), cursor).node] });
+        const container = document.createComment('!');
+        this.insert(container, cursor);
+        this.matches.set(index, { nodes: [container] });
         return this.matchComponent(frameReader.componentId(frame), cursor, selectValue) ? 1 : -1;
       }
       case FrameType.region:
@@ -277,7 +275,9 @@ export class PrerenderedDom {
           parent !== null && isSvgElement(parent),
           parent !== null && isMathMLElement(parent)
         ) : document.createDocumentFragment();
-        const match: FrameMatch = { nodes: [this.insert(document.createComment('!'), cursor).node] };
+        const container = document.createComment('!');
+        this.insert(container, cursor);
+        const match: FrameMatch = { nodes: [container] };
         this.matches.set(index, match);
         for (const expected of Array.from(parsed.childNodes)) {
           this.matchMarkupNode(expected, cursor, match.nodes);
@@ -301,12 +301,7 @@ export class PrerenderedDom {
       }
       count += inserted;
       const frame = this.batch.referenceFramesEntry(this.frames, index);
-      switch (this.batch.frameReader.frameType(frame)) {
-        case FrameType.element:
-        case FrameType.component:
-        case FrameType.region:
-          index += this.batch.frameReader.subtreeLength(frame) - 1;
-      }
+      index += countDescendantFrames(this.batch, frame);
     }
     return count;
   }
@@ -316,7 +311,8 @@ export class PrerenderedDom {
       cursor.text = { content: '', segments: [], insertions: [] };
     }
     const run = cursor.text;
-    const insertion = this.insert(document.createTextNode(content), cursor);
+    // Reserve the insertion order before intervening component or markup boundaries are queued.
+    const insertion = this.insert(null, cursor);
     run.segments.push({ content, nodes, insertion });
     run.content += content;
   }
@@ -352,9 +348,10 @@ export class PrerenderedDom {
     for (const segment of run.segments) {
       if (matches && segment.content) {
         segment.nodes.push({ text, offset, length: segment.content.length });
-        segment.insertion.enabled = false;
       } else {
-        segment.nodes.push(segment.insertion.node);
+        const node = document.createTextNode(segment.content);
+        segment.insertion.node = node;
+        segment.nodes.push(node);
       }
       offset += segment.content.length;
     }
@@ -375,8 +372,8 @@ export class PrerenderedDom {
     }
   }
 
-  private insert(node: Node, cursor: Cursor): Insertion {
-    const insertion = { node, parent: cursor.parent, next: cursor.next, offset: cursor.text?.content.length ?? 0, enabled: true };
+  private insert(node: Node | null, cursor: Cursor): Insertion {
+    const insertion = { node, parent: cursor.parent, next: cursor.next, offset: cursor.text?.content.length ?? 0 };
     cursor.text?.insertions.push(insertion);
     this.insertions.push(insertion);
     return insertion;
