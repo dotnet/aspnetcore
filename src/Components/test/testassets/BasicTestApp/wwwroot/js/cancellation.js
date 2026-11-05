@@ -1,60 +1,82 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+const references = new Map();
+let releaseControl;
+
 export function initialize(target) {
-    const controllers = new Map();
     window.cancellationTests = {
-        start(id, behavior, alreadyAborted = false) {
+        async start(id, behavior, alreadyAborted = false) {
             const controller = new AbortController();
-            controllers.set(id, controller);
             const signal = controller.signal;
             let listeners = 0;
             const add = signal.addEventListener.bind(signal);
             const remove = signal.removeEventListener.bind(signal);
             signal.addEventListener = (...args) => {
-                listeners++;
-                document.getElementById(`${id}-listeners`).textContent = listeners;
+                document.getElementById(`${id}-listeners`).textContent = ++listeners;
                 add(...args);
             };
             signal.removeEventListener = (...args) => {
-                listeners--;
-                document.getElementById(`${id}-listeners`).textContent = listeners;
+                document.getElementById(`${id}-listeners`).textContent = --listeners;
                 remove(...args);
             };
-            document.getElementById(`${id}-listeners`).textContent = listeners;
             if (alreadyAborted) {
                 controller.abort();
             }
+            const reference = await target.createCancellationTokenReference(signal);
+            references.set(id, { controller, reference });
             document.getElementById(`${id}-js`).textContent = "pending";
             try {
-                target.invokeMethodAsyncWithCancellation("Run", signal, id, behavior).then(
-                    value => document.getElementById(`${id}-js`).textContent = value,
-                    error => {
-                        document.getElementById(`${id}-js`).textContent = error === signal.reason && error.name !== "AbortError"
-                            ? "custom reason preserved"
-                            : error.name === "AbortError" ? "AbortError" : error.message;
-                    });
+                document.getElementById(`${id}-js`).textContent = await target.invokeMethodAsync("Receive", reference, id, behavior);
             } catch (error) {
                 document.getElementById(`${id}-js`).textContent = error.message;
             }
         },
         abort(id) {
-            controllers.get(id).abort();
+            references.get(id).controller.abort();
         },
-        abortWithReason(id) {
-            const reason = {};
-            reason.self = reason;
-            controllers.get(id).abort(reason);
+        async reuse(id) {
+            const canceled = await target.invokeMethodAsync("Inspect", references.get(id).reference);
+            document.getElementById(`${id}-js`).textContent = `reused: ${canceled}`;
         },
-        ordinary() {
-            target.invokeMethodAsync("Ordinary").then(value => {
-                document.getElementById("ordinary-js").textContent = value;
-            });
+        async dispose(id) {
+            await references.get(id).reference.disposeAsync();
+            document.getElementById(`${id}-js`).textContent = "reference disposed";
         },
-        staticInvocation() {
-            DotNet.invokeMethodAsyncWithCancellation("BasicTestApp", "StaticToken", new AbortController().signal).then(
-                value => document.getElementById("static-js").textContent = value,
-                error => document.getElementById("static-js").textContent = error.message);
+        releaseControl() {
+            releaseControl();
         }
     };
+}
+
+export function receive(id, signal) {
+    if (!(signal instanceof AbortSignal)) {
+        throw new Error("Expected a native AbortSignal");
+    }
+    document.getElementById(`${id}-js`).textContent = signal.aborted ? "aborted on entry" : "native signal retained";
+    signal.addEventListener("abort", () => document.getElementById(`${id}-js`).textContent = "aborted in JS", { once: true });
+    if (signal.aborted) {
+        fetch("data:text/plain,value", { signal }).then(
+            () => document.getElementById(`${id}-listeners`).textContent = "fetch unexpectedly completed",
+            error => document.getElementById(`${id}-listeners`).textContent = error.name);
+    }
+    return "returned normally";
+}
+
+export async function waitIgnoringSignal(id, signal) {
+    if (!(signal instanceof AbortSignal)) {
+        throw new Error("Expected a native AbortSignal");
+    }
+    document.getElementById(`${id}-js`).textContent = "JS running with uncanceled signal";
+    signal.addEventListener("abort", () => document.getElementById(`${id}-js`).textContent = "unexpected abort", { once: true });
+    await new Promise(resolve => releaseControl = resolve);
+    document.getElementById(`${id}-js`).textContent = signal.aborted ? "completed with aborted signal" : "JS completed normally";
+    return "JS result";
+}
+
+export async function disposeAll() {
+    for (const { reference } of references.values()) {
+        await reference.disposeAsync();
+    }
+    references.clear();
 }

@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
@@ -97,7 +96,7 @@ public static class DotNetDispatcher
                 targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
             }
 
-            syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, out returnType, allowCancellation: true);
+            syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, out returnType);
         }
         catch (Exception ex)
         {
@@ -111,7 +110,6 @@ public static class DotNetDispatcher
         }
         else if (syncException != null)
         {
-            jsRuntime.CompleteDotNetInvocation(callId);
             // Threw synchronously, let's respond.
             jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(syncException.SourceException, "InvocationFailure"));
         }
@@ -136,7 +134,6 @@ public static class DotNetDispatcher
         }
         else
         {
-            jsRuntime.CompleteDotNetInvocation(callId);
             var syncResultJson = JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
             var dispatchResult = new DotNetInvocationResult(syncResultJson);
             jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
@@ -146,7 +143,6 @@ public static class DotNetDispatcher
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, bool isNonGenericTask)
     {
-        jsRuntime.CompleteDotNetInvocation(invocationInfo.CallId);
         if (task.Exception != null)
         {
             var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(task.Exception.GetBaseException());
@@ -167,26 +163,11 @@ public static class DotNetDispatcher
         jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
     }
 
-    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, out Type? returnType, bool allowCancellation = false)
+    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, out Type? returnType)
     {
         returnType = null;
         var assemblyName = callInfo.AssemblyName;
         var methodIdentifier = callInfo.MethodIdentifier;
-
-        if (allowCancellation && callInfo.CallId is not null && assemblyName == "Microsoft.JSInterop"
-            && callInfo.DotNetObjectId == 0 && methodIdentifier == "__CancelInvocation")
-        {
-            using var arguments = JsonDocument.Parse(argsJson);
-            var array = arguments.RootElement;
-            if (array.ValueKind != JsonValueKind.Array || array.GetArrayLength() != 1
-                || array[0].ValueKind != JsonValueKind.String)
-            {
-                throw new JsonException("Cancellation requires exactly one invocation ID.");
-            }
-
-            returnType = typeof(Task);
-            return jsRuntime.CancelDotNetInvocationAsync(array[0].GetString()!);
-        }
 
         AssemblyKey assemblyKey;
         MethodInfo methodInfo;
@@ -214,7 +195,7 @@ public static class DotNetDispatcher
         }
 
         returnType = methodInfo.ReturnType;
-        var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, parameterTypes, allowCancellation ? callInfo.CallId : null);
+        var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, parameterTypes);
 
         try
         {
@@ -243,30 +224,8 @@ public static class DotNetDispatcher
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
-    internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes, string? callId = null)
+    internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes)
     {
-        if (arguments.AsSpan().TrimStart().StartsWith("{", StringComparison.Ordinal))
-        {
-            using var envelope = JsonDocument.Parse(arguments);
-            var root = envelope.RootElement;
-            if (callId is null || parameterTypes.Length == 0
-                || Array.IndexOf(parameterTypes, typeof(CancellationToken)) != parameterTypes.Length - 1
-                || !root.TryGetProperty("__dotNetCancellation", out var cancellationId)
-                || cancellationId.ValueKind != JsonValueKind.String || cancellationId.GetString() != callId
-                || !root.TryGetProperty("args", out var args) || args.ValueKind != JsonValueKind.Array
-                || args.GetArrayLength() != parameterTypes.Length - 1
-                || root.EnumerateObject().Count() != 2)
-            {
-                throw new JsonException("Cancellation requires a final CancellationToken parameter matching the asynchronous invocation ID.");
-            }
-
-            var ordinaryArgs = ParseArguments(jsRuntime, methodIdentifier, args.GetRawText(), parameterTypes[..^1]);
-            var suppliedArgs = new object?[parameterTypes.Length];
-            ordinaryArgs.CopyTo(suppliedArgs, 0);
-            suppliedArgs[^1] = jsRuntime.BeginDotNetInvocation(callId);
-            return suppliedArgs;
-        }
-
         if (parameterTypes.Length == 0)
         {
             return Array.Empty<object>();
@@ -325,7 +284,8 @@ public static class DotNetDispatcher
                     jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
                 {
                     // The JSON payload has the shape we expect from a DotNetObjectRef instance.
-                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
+                    return parameterType != typeof(CancellationToken)
+                        && (!parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>));
                 }
 
                 return false;

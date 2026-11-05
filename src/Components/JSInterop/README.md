@@ -23,48 +23,75 @@ The JavaScript-side counterpart runs within a standard web browser environment, 
 
 Since `Microsoft.JSInterop.JS` is platform-independent, runtime environments such as Blazor Server or Blazor WebAssembly must initialize it by registering environment-specific callbacks that know how to dispatch invocations across their own communication channels.
 
-## Experimental JavaScript-to-.NET cancellation
+## Experimental cancellation parameter projections
 
-The draft `invokeMethodAsyncWithCancellation` entry points accept an `AbortSignal`.
-The invoked `[JSInvokable]` method declares a final `CancellationToken`, which interop
-supplies in addition to the ordinary arguments:
+Cancellation is a parameter value, not an invocation mode. Explicit references map
+browser `AbortSignal` values to .NET `CancellationToken` parameters and .NET tokens
+to native browser signals. Ordinary invocation APIs and their completion/error
+semantics are unchanged.
+
+### JavaScript signal to .NET token
 
 ```javascript
 const controller = new AbortController();
-const pending = dotNetObject.invokeMethodAsyncWithCancellation(
-    "Load", controller.signal, query);
-controller.abort();
-await pending;
+const reference = await dotNetObject.createCancellationTokenReference(controller.signal);
+try {
+    const result = await dotNetObject.invokeMethodAsync("Load", reference, query);
+} finally {
+    await reference.disposeAsync();
+}
 ```
 
 ```csharp
 [JSInvokable]
-public Task<SearchResult> Load(string query, CancellationToken cancellationToken);
+public Task<SearchResult> Load(CancellationToken cancellationToken, string query);
 ```
 
-Static methods use
-`DotNet.invokeMethodAsyncWithCancellation(assemblyName, methodIdentifier, signal, ...args)`.
-Neither the signal nor its controller is serialized as an application argument.
-An already-aborted signal rejects without calling .NET. Otherwise, abort requests
-cancellation of that invocation's .NET token. After acknowledgement, the JavaScript
-promise rejects with `signal.reason`; dispatch or cancellation-callback failures
-instead reject through the existing interop error path.
+The instance factory targets that object's runtime. For static interop with one
+unambiguous default runtime, `DotNet.createCancellationTokenReference(signal)` is
+also available. The token occupies an ordinary argument position; it need not be last. The
+reference can be retained and reused after an invocation returns. Abort signals
+cancel the projected token, not the interop promise: an ignoring handler remains
+pending or returns normally, and a handler that catches cancellation can return a
+normal result. An already-aborted signal still invokes the method with an already
+canceled token. Browser abort reasons are not translated into .NET exceptions.
 
-Cancellation is cooperative. A handler that ignores its token continues running,
-and interop retains its active invocation until it actually finishes. This does
-not cancel component or application lifetimes, dispose services, or undo completed
-work. The framework removes the signal listener when the caller settles and releases
-the cancellation source when the handler completes or the runtime is disposed.
-The eventual result of an aborted call is not delivered to the caller. Ownership of
-object-reference or stream results produced by a non-cooperating handler is not
-resolved by this experiment and requires a separate design decision before shipping.
+The factory wraps the browser subscription in a `JSObjectReference` and the managed
+source in a `DotNetObjectReference`. Disposing the returned reference removes the
+listener and releases both references without requesting cancellation. The owner
+must keep it alive as long as .NET needs to observe the signal. Asynchronous abort
+notification failures are reported to the browser console and through disposal.
 
-Ordinary invocation APIs are unchanged. In the reverse direction, the existing
-`IJSRuntime.InvokeAsync` overload's `CancellationToken` cancels the managed wait;
-it does not abort the JavaScript function or supply a browser `AbortSignal`.
+### .NET token to JavaScript signal
 
-The names and final-token convention are experimental and require API review.
-Server and WebAssembly have browser scenarios in `InteropCancellationTest`.
+```csharp
+await using var reference =
+    await DotNetCancellationTokenReference.CreateAsync(jsRuntime, cancellationToken);
+await jsRuntime.InvokeVoidAsync("receiveSignal", reference);
+```
+
+```javascript
+function receiveSignal(signal) {
+    return fetch("/data", { signal });
+}
+```
+
+JavaScript receives a native `AbortSignal`, not a JSON token or a promise wrapper.
+The reference owns a managed token observer through `DotNetObjectReference` and the
+native signal through `JSObjectReference`. A pre-canceled token produces an aborted
+signal before the JavaScript function starts. A reference can span multiple calls;
+dispose it only when JavaScript no longer needs the signal. Disposal ends observation
+without aborting the signal or canceling the original token. Raw outgoing tokens
+require this explicit lifetime owner instead of implicit serialization.
+
+The `CancellationToken` controlling `IJSRuntime.InvokeAsync` is separate from these
+arguments: it still cancels only the managed wait and does not become an AbortSignal
+or stop the JavaScript function. No call-ID cancellation registry, argument envelope,
+reserved cancel invocation, automatic promise rejection, or call-completion cleanup
+is involved in these projections.
+
+The public reference APIs are experimental and require API review.
+Both directions have Server and WebAssembly browser scenarios in `InteropCancellationTest`.
 WebView, Native AOT/trimming, multithreaded WebAssembly, multiple attached runtimes,
 Auto activation transitions, and circuit reconnect/resumption require separate
 validation. Static SSR and prerendering do not support JavaScript interop.
