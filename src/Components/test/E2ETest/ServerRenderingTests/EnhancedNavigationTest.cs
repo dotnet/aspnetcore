@@ -1031,6 +1031,37 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void EnhancedNavigationDefersReorderingWhenManagedClickAttachesRenderer(bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/wasm?prerender={prerender}&deferredRegistration=true");
+        Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("deferred-runtime")).Text);
+        Browser.Exists(By.Id("deferred-prevented")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("deferred-count")).Text);
+        var originalDocument = Browser.Exists(By.TagName("html"));
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+
+        InstallDocumentClickProbe(stopPropagation: false);
+        try
+        {
+            Browser.Exists(By.Id("deferred-register-and-navigate")).Click();
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.False(originalDocument.IsStale());
+            Assert.True((long)jsExecutor.ExecuteScript("return window.documentClickProbe.reentrantRegistrations") > 0,
+                (string)jsExecutor.ExecuteScript("return JSON.stringify({ registrations: window.documentClickProbe.registrations, reentrantRegistrations: window.documentClickProbe.reentrantRegistrations, nestedClicks: window.documentClickProbe.nestedClicksDuringOuterClick })"));
+            Assert.Equal(1L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.nestedClicksDuringOuterClick"));
+            Assert.True((bool)jsExecutor.ExecuteScript("return window.documentClickProbe.nestedClickDefaultPrevented"));
+            Assert.Equal(0L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.nestedHistoryCalls"));
+            Assert.Equal(1L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.historyCalls"));
+        }
+        finally
+        {
+            RemoveDocumentClickProbe();
+        }
+    }
+
     private void InstallDocumentClickProbe(bool stopPropagation)
     {
         // WebDriver cannot install or observe native listeners, or click synchronously inside a managed click.
@@ -1040,11 +1071,23 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
                 registrations: 0,
                 reentrantRegistrations: 0,
                 nestedClicksDuringOuterClick: 0,
+                pushState: history.pushState,
+                replaceState: history.replaceState,
+                historyCalls: 0,
             };
+            for (const method of ['pushState', 'replaceState']) {
+                history[method] = function(...args) {
+                    probe.historyCalls++;
+                    return probe[method].apply(this, args);
+                };
+            }
             probe.capture = event => probe.event = event;
             probe.clickNested = elementId => {
                 const isDuringOuterClick = probe.event?.eventPhase === Event.BUBBLING_PHASE;
+                const historyCallsBeforeClick = probe.historyCalls;
                 document.getElementById(elementId).click();
+                probe.nestedClickDefaultPrevented = probe.event.defaultPrevented;
+                probe.nestedHistoryCalls = probe.historyCalls - historyCallsBeforeClick;
                 if (isDuringOuterClick) {
                     probe.nestedClicksDuringOuterClick++;
                 }
@@ -1076,6 +1119,8 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
                 document.removeEventListener('click', probe.capture, true);
                 document.removeEventListener('click', probe.stop);
                 document.addEventListener = probe.add;
+                history.pushState = probe.pushState;
+                history.replaceState = probe.replaceState;
                 delete window.documentClickProbe;
             }
             """);

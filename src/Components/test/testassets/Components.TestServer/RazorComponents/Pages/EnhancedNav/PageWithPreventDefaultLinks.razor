@@ -39,7 +39,14 @@
 }
 @if (Mode is "wasm" or "mixed")
 {
-    <TestContentPackage.PreventDefaultLinks Id="wasm" ReturnUrl="@Navigation.Uri" NativeClick="NativeClick" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+    @if (DeferredRegistration)
+    {
+        <TestContentPackage.DeferredClickRegistration @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+    }
+    else
+    {
+        <TestContentPackage.PreventDefaultLinks Id="wasm" ReturnUrl="@Navigation.Uri" NativeClick="NativeClick" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+    }
 }
 @if (Mode is "auto" or "mixed")
 {
@@ -55,4 +62,7 @@
 
     [SupplyParameterFromQuery]
     public bool NativeClick { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool DeferredRegistration { get; set; }
 }
