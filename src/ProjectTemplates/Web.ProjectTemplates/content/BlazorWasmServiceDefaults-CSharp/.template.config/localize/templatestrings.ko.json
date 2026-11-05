@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor WebAssembly 서비스 기본값",
   "description": "Blazor WebAssembly 애플리케이션에 대한 서비스 기본 라이브러리를 만들기 위한 프로젝트 템플릿입니다. OpenTelemetry, 서비스 검색 및 Aspire 통합을 위한 복원력 지원이 포함되어 있습니다.",
