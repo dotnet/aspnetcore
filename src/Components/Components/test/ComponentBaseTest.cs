@@ -439,7 +439,6 @@ public class ComponentBaseTest
     [Fact]
     public void ErrorBoundaryRendersErrorContentWhenMultipleChildrenThrowInSameBatch()
     {
-        // Arrange
         var renderer = new TestRenderer();
         TestErrorBoundary capturedBoundary = null;
 
@@ -460,13 +459,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
         renderer.RenderRootComponent(rootComponentId);
 
-        // Assert
         Assert.NotNull(capturedBoundary);
         Assert.NotNull(capturedBoundary.ReceivedException);
+
+        // Receiving an exception is not the regression. A later empty clear in the same batch
+        // leaves CurrentException set while the boundary's render tree is blank.
+        var boundaryId = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
+        var boundaryFrames = renderer.GetCurrentRenderTreeFrames(boundaryId).AsEnumerable();
+        Assert.Collection(
+            boundaryFrames,
+            frame => AssertFrame.Element(frame, "div", subtreeLength: 2, sequence: 2),
+            frame => AssertFrame.Attribute(frame, "class", "blazor-error-boundary", sequence: 3));
     }
 
     [Fact]

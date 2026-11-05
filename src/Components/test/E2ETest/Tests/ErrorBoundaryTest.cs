@@ -115,7 +115,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
     }
 
     [Fact]
-    public void CanHandleMultipleExceptionsForOnce()
+    public void CanHandleMultipleExceptionsAtOnce()
     {
         var container = Browser.Exists(By.Id("throw-multiple-errors-foreach-test"));
         container.FindElement(By.ClassName("throw-multiple-errors-foreach")).Click();
