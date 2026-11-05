@@ -100,7 +100,7 @@ stimuli:
   rubric:
   - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
   - Trace FailingClient.ProcessAsync throwing the primary failure, then ThrowingDiagnosticSink.Write throwing a distinct secondary failure into the new inner catch. Explain that the head task completes successfully with Error holding the primary failure and observers notified, while the old code never invoked the sink and therefore did not propagate a sink failure at this seam.
-  - Retain the concrete changed catch and missing sink-failure handling contract in UNRESOLVED. NEW_FINDINGS is empty; neither declare a proven defect nor silently LGTM/discard the uncertainty. The PR-added test and preservation rationale are implementation intent, not independent policy authority.
+  - Retain the concrete changed catch and missing sink-failure handling contract in UNRESOLVED. Do not report a verified defect or intent question. If the unresolved candidate is surfaced inline in NEW_FINDINGS, mark it with unresolved confidence, prefix its claim with [UNRESOLVED], and state the exact missing contract in its Why unresolved field; this preserves the uncertainty without declaring a proven defect. The PR-added test and preservation rationale are implementation intent, not independent policy authority.
   - Do not assume every empty catch is a defect or that primary-error preservation justifies losing secondary failures. Do not propose nits, posting, replying, resolving, approving, or requesting changes.
 - name: existing-policy-question
   agent_environment:
@@ -112,7 +112,7 @@ stimuli:
   rubric:
   - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
   - Trace the selected FailingClient and ThrowingDiagnosticSink through the newly added catch, identifying the distinct primary and secondary failures and the caller-visible successful task completion. Do not claim the old code propagated the secondary failure; the sink call did not exist.
-  - UNRESOLVED explicitly retains the suppression concern, missing sink-failure contract, and existing thread reference feedback-17. NEW_FINDINGS is empty. Merely putting the thread in EXISTING_FEEDBACK_COVERAGE or deferring to it without retaining the missing contract in UNRESOLVED fails.
+  - UNRESOLVED explicitly retains the suppression concern, missing sink-failure contract, and existing thread reference feedback-17. Do not report a verified defect or intent question. If the unresolved candidate is surfaced inline in NEW_FINDINGS, mark it with unresolved confidence, prefix its claim with [UNRESOLVED], and state the exact missing contract in its Why unresolved field. Merely putting the thread in EXISTING_FEEDBACK_COVERAGE or deferring to it without retaining the missing contract in UNRESOLVED fails.
   - Neither the existing question nor the PR rationale/test is contract authority or proof of resolution. Deduplication prevents repeat publication but does not settle the concern. Do not propose nits, posting, replying, resolving, approving, or requesting changes.
 - name: propagation-contract
   agent_environment:
@@ -135,7 +135,7 @@ stimuli:
   graders: *graders
   rubric:
   - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
-  - NEW_FINDINGS and UNRESOLVED are empty for this suppression concern. DISCARDED explains that the explicit target-base best-effort contract authorizes the changed catch, with the primary error retained and status observers notified when the selected sink throws.
+  - UNRESOLVED is empty for this suppression concern. DISCARDED explains that the explicit target-base best-effort contract authorizes the changed catch, with the primary error retained and status observers notified when the selected sink throws. Do not report a verified defect, intent question, or unresolved entry. If the discarded candidate is surfaced inline in NEW_FINDINGS, mark it with discarded confidence, prefix its claim with [DISCARDED], and cite the contract in its Why discarded field.
   - Distinguish the two failures, trace old/head behavior, and use the explicit contract rather than the PR rationale, primary-error preservation alone, or the new test as authority. Do not demand a second logging call to report a failed logger.
   - Do not invent a defect, missing contract, or optional nit merely because the catch is empty. Do not propose posting, replying, resolving, approving, or requesting changes.
 - name: nonthrowing-producer
@@ -147,6 +147,6 @@ stimuli:
   graders: *graders
   rubric:
   - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
-  - NEW_FINDINGS and UNRESOLVED are empty for sink-failure suppression in the bounded scenario. DISCARDED traces RecordingDiagnosticSink.Write, which records the primary exception and returns, so the inner catch is not entered and no secondary sink failure is established.
+  - UNRESOLVED is empty for sink-failure suppression in the bounded scenario. DISCARDED traces RecordingDiagnosticSink.Write, which records the primary exception and returns, so the inner catch is not entered and no secondary sink failure is established. Do not report a verified defect, intent question, or unresolved entry. If this disproven candidate is surfaced inline in NEW_FINDINGS, mark it with discarded confidence, prefix its claim with [DISCARDED], and cite the source line that rules out the secondary failure in its Why discarded field.
   - Recognize that ThrowingDiagnosticSink exists in the source but is not selected by this case and cannot be substituted into the producer path. The propagation contract does not create an exception producer. Do not invent unprovided failures such as out-of-memory.
   - Compare the old behavior to the head's added diagnostic record while retaining the primary error and notifying observers; do not report the lack of a record on the old side as a new head defect. Do not propose nits or GitHub actions.
