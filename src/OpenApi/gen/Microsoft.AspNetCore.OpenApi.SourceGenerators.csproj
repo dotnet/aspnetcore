@@ -14,8 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" VersionOverride="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" VersionOverride="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" VersionOverride="$(SourceGenerator_MicrosoftCodeAnalysisCommonVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" VersionOverride="$(SourceGenerator_MicrosoftCodeAnalysisCSharpVersion)" />
   </ItemGroup>
 
   <ItemGroup>

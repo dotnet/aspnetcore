@@ -14,6 +14,7 @@ namespace PlatformTestApp.E2E.Tests.Tests;
 public partial class StorageTests : BrowserTest
 {
     private static readonly string[] StoragePaths = ["/storage-server", "/storage-wasm"];
+    private static readonly string[] UrlPaths = ["/url-server", "/url-wasm"];
 
     private ServerInstance _server = null!;
     private IPage _page = null!;
@@ -45,6 +46,19 @@ public partial class StorageTests : BrowserTest
             await _page.Locator("#remove-storage").ClickAsync();
             await _page.Locator("#load-storage").ClickAsync();
             await Expect(_page.Locator("#storage-result")).ToHaveTextAsync("Value is missing.");
+        }
+    }
+
+    [TestMethod]
+    public async Task Url_WorksInBothRenderModes()
+    {
+        foreach (var path in UrlPaths)
+        {
+            await NavigateAsync(path, "#run-url");
+
+            await _page.Locator("#run-url").ClickAsync();
+
+            await Expect(_page.Locator("#url-result")).ToHaveTextAsync("URL API passed.");
         }
     }
 

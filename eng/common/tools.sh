@@ -615,7 +615,12 @@ function MSBuild {
     warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=${warn_not_as_error//;/%3B}"
   fi
 
-  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch ${logger_switch[@]+"${logger_switch[@]}"} /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
+  local restore_switch=""
+  if [[ "$restore" == true ]]; then
+    restore_switch="/restore"
+  fi
+
+  RunBuildTool "$_InitializeBuildToolCommand" $restore_switch /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch ${logger_switch[@]+"${logger_switch[@]}"} /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
 function GetDarc {
