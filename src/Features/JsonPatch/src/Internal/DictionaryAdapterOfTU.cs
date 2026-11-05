@@ -158,13 +158,6 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
             return false;
         }
 
-        // The target segment does not have an assigned value to compare the test value with
-        if (currentValue == null)
-        {
-            errorMessage = Resources.FormatValueForTargetSegmentCannotBeNullOrEmpty(segment);
-            return false;
-        }
-
         if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue), JsonConvert.SerializeObject(convertedValue)))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);

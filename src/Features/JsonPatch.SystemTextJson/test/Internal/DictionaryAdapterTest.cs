@@ -332,4 +332,60 @@ public class DictionaryAdapterTest
         Assert.False(testStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
+
+    [Fact]
+    public void Test_DoesNotThrowException_IfValueIsNull()
+    {
+        // Arrange
+        var key = "Name";
+        var dictionary = new Dictionary<string, object>();
+        dictionary[key] = null;
+        var dictionaryAdapter = new DictionaryAdapter<string, object>();
+        var serializerOptions = JsonSerializerOptions.Default;
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, serializerOptions, null, out var message);
+
+        //Assert
+        Assert.True(testStatus);
+        Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+    }
+
+    [Fact]
+    public void Test_ThrowsJsonPatchException_IfValueIsNullAndTestValueIsNotNull()
+    {
+        // Arrange
+        var key = "Name";
+        var dictionary = new Dictionary<string, object>();
+        dictionary[key] = null;
+        var dictionaryAdapter = new DictionaryAdapter<string, object>();
+        var serializerOptions = JsonSerializerOptions.Default;
+        var expectedErrorMessage = "The current value '' at path 'Name' is not equal to the test value 'John'.";
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, serializerOptions, "John", out var errorMessage);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
+
+    [Fact]
+    public void Test_ThrowsJsonPatchException_IfValueIsNotNullAndTestValueIsNull()
+    {
+        // Arrange
+        var key = "Name";
+        var dictionary = new Dictionary<string, object>();
+        dictionary[key] = "James";
+        var dictionaryAdapter = new DictionaryAdapter<string, object>();
+        var serializerOptions = JsonSerializerOptions.Default;
+        var expectedErrorMessage = "The current value 'James' at path 'Name' is not equal to the test value ''.";
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, serializerOptions, null, out var errorMessage);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
 }

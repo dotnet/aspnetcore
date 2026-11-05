@@ -117,6 +117,56 @@ public class DictionaryTest
         Assert.Equal(1, model.DictionaryOfStringToInteger["two"]);
     }
 
+    [Fact]
+    public void TestNullValue_IsSuccessful()
+    {
+        // Arrange
+        var key1 = 100;
+        var model = new CustomerDictionary();
+        model.DictionaryOfStringToCustomer[key1] = null;
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Test($"/DictionaryOfStringToCustomer/{key1}", null);
+
+        // Act & Assert
+        patchDocument.ApplyTo(model);
+    }
+
+    [Fact]
+    public void TestNullValue_FailsWhenValueIsNotNull()
+    {
+        // Arrange
+        var key1 = 100;
+        var value1 = new Customer() { Name = "James" };
+        var model = new CustomerDictionary();
+        model.DictionaryOfStringToCustomer[key1] = value1;
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Test($"/DictionaryOfStringToCustomer/{key1}", null);
+
+        // Act & Assert
+        Assert.Throws<JsonPatchException>(() =>
+        {
+            patchDocument.ApplyTo(model);
+        });
+    }
+
+    [Fact]
+    public void TestPocoObject_FailsWhenValueIsNull()
+    {
+        // Arrange
+        var key1 = 100;
+        var value1 = new Customer() { Name = "James" };
+        var model = new CustomerDictionary();
+        model.DictionaryOfStringToCustomer[key1] = null;
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Test($"/DictionaryOfStringToCustomer/{key1}", value1);
+
+        // Act & Assert
+        Assert.Throws<JsonPatchException>(() =>
+        {
+            patchDocument.ApplyTo(model);
+        });
+    }
+
     private class Customer
     {
         public string Name { get; set; }
