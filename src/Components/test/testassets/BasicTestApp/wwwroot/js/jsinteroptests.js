@@ -244,6 +244,8 @@ window.jsInteropTests = {
   functionThrowsException: functionThrowsException,
   asyncFunctionThrowsSyncException: asyncFunctionThrowsSyncException,
   asyncFunctionThrowsAsyncException: asyncFunctionThrowsAsyncException,
+  throwTypeError: () => { throw new TypeError('Typed failure'); },
+  rejectAbortError: () => Promise.reject(new DOMException('Aborted operation', 'AbortError')),
   returnUndefined: returnUndefined,
   returnNull: returnNull,
   returnPrimitive: returnPrimitive,

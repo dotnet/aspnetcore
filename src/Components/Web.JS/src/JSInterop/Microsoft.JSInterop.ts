@@ -558,9 +558,17 @@ class CallDispatcher implements ICallDispatcher {
   }
 }
 
-function formatError(error: Error | string): string {
+function formatError(error: Error | string): string | { name: string | null; formattedMessage: string } {
   if (error instanceof Error) {
-    return `${error.message}\n${error.stack}`;
+    const formattedMessage = `${error.message}\n${error.stack}`;
+    let name: unknown;
+    try {
+      name = error.name;
+    } catch {
+      return formattedMessage;
+    }
+
+    return { name: typeof name === 'string' ? name : null, formattedMessage };
   }
 
   return error ? error.toString() : 'null';
