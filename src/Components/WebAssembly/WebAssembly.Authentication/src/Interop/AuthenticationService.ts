@@ -258,7 +258,7 @@ class OidcAuthorizeService implements AuthorizeService {
     async completeSignIn(url: string) {
         this.trace('completeSignIn', url);
         const requiresLogin = await this.loginRequired(url);
-        const stateExists = await this.stateExists(url);
+        const stateExists = await this.stateExists(url, true);
         try {
             const user = await this._userManager.signinCallback(url);
             if (window.self !== window.top) {
@@ -330,8 +330,10 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    private async stateExists(url: string) {
-        const stateParam = new URLSearchParams(new URL(url).search).get('state');
+    private async stateExists(url: string, includeFragment = false) {
+        const parsedUrl = new URL(url);
+        const stateParam = new URLSearchParams(parsedUrl.search).get('state')
+            || (includeFragment ? new URLSearchParams(parsedUrl.hash.substring(1)).get('state') : null);
         if (stateParam && this._userManager.settings.stateStore) {
             return await this._userManager.settings.stateStore.get(stateParam);
         } else {

@@ -58,6 +58,21 @@ public class RemoteAuthenticationTest :
         Browser.Equal("Hello, Jane Doe!", () => heading.Text);
     }
 
+    [Theory]
+    [InlineData("query", "access_denied")]
+    [InlineData("query", "server_error")]
+    [InlineData("fragment", "access_denied")]
+    [InlineData("fragment", "server_error")]
+    public void LoginCallbackWithProviderErrorDoesNotRestartLogin(string responseMode, string error)
+    {
+        Navigate($"/subdir/oidc/mount-error-callback?responseMode={responseMode}&error={error}");
+
+        Browser.Equal(new Uri(_serverFixture.RootUri, "/subdir/authentication/login-failed").AbsoluteUri, () => Browser.Url);
+        var failureMessage = Browser.Exists(By.TagName("p"));
+        Browser.Equal("There was an error trying to log you in: 'There was an error signing in.'", () => failureMessage.Text);
+        Browser.Equal("1", () => GetResponseText("/subdir/oidc/interactive-authorization-requests"));
+    }
+
     [Fact]
     public void SilentLoginCallbackInIframeDoesNotRestartLogin()
     {

@@ -62,15 +62,17 @@ public class RemoteAuthenticationStartup
                 var mountSilentCallback = false;
                 var interactiveAuthorizationRequests = 0;
                 var preservedExtraQueryParamsObserved = false;
-                oidcEndpoints.MapGet("authorize", (string redirect_uri, string? state, string? prompt, bool? preservedExtraQueryParams) =>
+                string? authorizationError = null;
+                oidcEndpoints.MapGet("authorize", (string redirect_uri, string response_type, string? state, string? prompt, bool? preservedExtraQueryParams) =>
                 {
+                    var callbackSeparator = response_type == "code" ? "?" : "#";
                     // Require interaction so silent sign-in does not skip RedirectToLogin.razor.
                     if (prompt == "none")
                     {
                         if (mountSilentCallback)
                         {
                             mountSilentCallback = false;
-                            var callbackUrl = JsonSerializer.Serialize($"{redirect_uri}?error=interaction_required&state={state}");
+                            var callbackUrl = JsonSerializer.Serialize($"{redirect_uri}{callbackSeparator}error=interaction_required&state={state}");
                             return Results.Content(
                                 $"""
                                 <script>
@@ -81,14 +83,27 @@ public class RemoteAuthenticationStartup
                                 "text/html");
                         }
 
-                        return Results.Redirect($"{redirect_uri}?error=interaction_required&state={state}");
+                        return Results.Redirect($"{redirect_uri}{callbackSeparator}error=interaction_required&state={state}");
                     }
 
                     interactiveAuthorizationRequests++;
                     preservedExtraQueryParamsObserved = preservedExtraQueryParams == true;
 
+                    if (authorizationError is not null)
+                    {
+                        var error = authorizationError;
+                        authorizationError = null;
+                        return Results.Redirect($"{redirect_uri}{callbackSeparator}error={error}&state={state}");
+                    }
+
                     lastCode = Random.Shared.Next().ToString(CultureInfo.InvariantCulture);
                     return Results.Redirect($"{redirect_uri}?code={lastCode}&state={state}");
+                });
+                oidcEndpoints.MapGet("mount-error-callback", (string error, string responseMode) =>
+                {
+                    authorizationError = error;
+                    interactiveAuthorizationRequests = 0;
+                    return Results.Redirect($"/subdir/test-remote-authentication?responseMode={responseMode}");
                 });
                 oidcEndpoints.MapGet("mount-silent-callback", () =>
                 {
