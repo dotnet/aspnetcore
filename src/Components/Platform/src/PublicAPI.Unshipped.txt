@@ -1,4 +1,58 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Platform.CookieInit
+Microsoft.AspNetCore.Components.Platform.CookieInit.CookieInit() -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Domain.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieInit.Domain.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Expires.get -> double?
+Microsoft.AspNetCore.Components.Platform.CookieInit.Expires.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.MaxAge.get -> long?
+Microsoft.AspNetCore.Components.Platform.CookieInit.MaxAge.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Name.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieInit.Name.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Partitioned.get -> bool
+Microsoft.AspNetCore.Components.Platform.CookieInit.Partitioned.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Path.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieInit.Path.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.SameSite.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieInit.SameSite.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieInit.Value.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieInit.Value.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieListItem
+Microsoft.AspNetCore.Components.Platform.CookieListItem.CookieListItem() -> void
+Microsoft.AspNetCore.Components.Platform.CookieListItem.Name.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieListItem.Name.init -> void
+Microsoft.AspNetCore.Components.Platform.CookieListItem.Value.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieListItem.Value.init -> void
+Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.Lax = 1 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.None = 2 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict = 0 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieStore
+Microsoft.AspNetCore.Components.Platform.CookieStore.DeleteAsync(Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions! options) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStore.DeleteAsync(string! name) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAllAsync() -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!>
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAllAsync(Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions! options) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!>
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAllAsync(string! name) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!>
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAsync(Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions! options) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.CookieListItem?>
+Microsoft.AspNetCore.Components.Platform.CookieStore.GetAsync(string! name) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.CookieListItem?>
+Microsoft.AspNetCore.Components.Platform.CookieStore.SetAsync(Microsoft.AspNetCore.Components.Platform.CookieInit! options) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStore.SetAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.CookieStoreDeleteOptions() -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Domain.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Domain.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Name.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Name.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Partitioned.get -> bool
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Partitioned.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Path.get -> string!
+Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions.Path.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.CookieStoreGetOptions() -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.set -> void
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.get -> string?
+Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.set -> void
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Window.get -> Microsoft.AspNetCore.Components.Platform.Window!
 Microsoft.AspNetCore.Components.Platform.Navigator
@@ -16,7 +70,68 @@ Microsoft.AspNetCore.Components.Platform.Storage.GetLengthAsync() -> System.Thre
 Microsoft.AspNetCore.Components.Platform.Storage.KeyAsync(uint index) -> System.Threading.Tasks.ValueTask<string?>
 Microsoft.AspNetCore.Components.Platform.Storage.RemoveItemAsync(string! key) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.SetItemAsync(string! key, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url
+Microsoft.AspNetCore.Components.Platform.Url.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.GetHashAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetHostAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetHostnameAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetHrefAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetOriginAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetPasswordAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetPathnameAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetPortAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetProtocolAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetSearchAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetUsernameAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.SearchParams.get -> Microsoft.AspNetCore.Components.Platform.UrlSearchParams!
+Microsoft.AspNetCore.Components.Platform.Url.SetHashAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetHostAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetHostnameAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetHrefAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetPasswordAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetPathnameAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetPortAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetProtocolAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetSearchAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetUsernameAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.ToJsonAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.ToStringAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.UrlConstructor
+Microsoft.AspNetCore.Components.Platform.UrlConstructor.CanParseAsync(string! url) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.UrlConstructor.CanParseAsync(string! url, string! baseUrl) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.UrlConstructor.CreateAsync(string! url) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.Url!>
+Microsoft.AspNetCore.Components.Platform.UrlConstructor.CreateAsync(string! url, string! baseUrl) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.Url!>
+Microsoft.AspNetCore.Components.Platform.UrlConstructor.ParseAsync(string! url) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.Url?>
+Microsoft.AspNetCore.Components.Platform.UrlConstructor.ParseAsync(string! url, string! baseUrl) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.Url?>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.AppendAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.DeleteAsync(string! name) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.DeleteAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.EntriesAsync() -> System.Collections.Generic.IAsyncEnumerable<System.Collections.Generic.KeyValuePair<string!, string!>>!
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.GetAllAsync(string! name) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<string!>!>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.GetAsync(string! name) -> System.Threading.Tasks.ValueTask<string?>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.GetSizeAsync() -> System.Threading.Tasks.ValueTask<uint>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.HasAsync(string! name) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.HasAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.KeysAsync() -> System.Collections.Generic.IAsyncEnumerable<string!>!
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.SetAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.SortAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.ToStringAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.ValuesAsync() -> System.Collections.Generic.IAsyncEnumerable<string!>!
+Microsoft.AspNetCore.Components.Platform.UrlSearchParamsConstructor
+Microsoft.AspNetCore.Components.Platform.UrlSearchParamsConstructor.CreateAsync() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.UrlSearchParams!>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParamsConstructor.CreateAsync(string! init) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.UrlSearchParams!>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParamsConstructor.CreateAsync(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string!>>! init) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.UrlSearchParams!>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParamsConstructor.CreateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, string!>! init) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.UrlSearchParams!>
 Microsoft.AspNetCore.Components.Platform.Window
+Microsoft.AspNetCore.Components.Platform.WindowUrlExtensions
+Microsoft.AspNetCore.Components.Platform.WindowUrlExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
+Microsoft.AspNetCore.Components.Platform.WindowUrlExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).Url.get -> Microsoft.AspNetCore.Components.Platform.UrlConstructor!
+Microsoft.AspNetCore.Components.Platform.WindowUrlExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).UrlSearchParams.get -> Microsoft.AspNetCore.Components.Platform.UrlSearchParamsConstructor!
+Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions
+Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
+Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).CookieStore.get -> Microsoft.AspNetCore.Components.Platform.CookieStore!
 Microsoft.AspNetCore.Components.Platform.WindowNavigatorExtensions
 Microsoft.AspNetCore.Components.Platform.WindowNavigatorExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
 Microsoft.AspNetCore.Components.Platform.WindowNavigatorExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).Navigator.get -> Microsoft.AspNetCore.Components.Platform.Navigator!

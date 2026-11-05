@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Platform.Tests" />
   </ItemGroup>
 

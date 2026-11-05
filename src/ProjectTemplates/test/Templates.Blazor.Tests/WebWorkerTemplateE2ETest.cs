@@ -146,7 +146,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
                 output,
                 hostProject.TemplateOutputDir,
                 DotNetMuxer.MuxerPathOrDefault(),
-                "remove reference ../WorkerLib/WorkerLib.csproj");
+                "remove reference ../WorkerLib/WorkerLib.csproj",
+                envVarToRemove: "MSBuildSDKsPath");
             await result.Exited;
 
             if (Directory.Exists(workerLibDir))
@@ -162,13 +163,23 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
         var args = $"new blazorwebworker {hiveArg} -n WorkerLib -o \"{workerLibDir}\"";
 
-        using var result = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), args);
+        using var result = ProcessEx.Run(
+            Output,
+            AppContext.BaseDirectory,
+            DotNetMuxer.MuxerPathOrDefault(),
+            args,
+            envVarToRemove: "MSBuildSDKsPath");
         await result.Exited;
         Assert.True(result.ExitCode == 0, $"Failed to create blazorwebworker template: {result.Output}\n{result.Error}");
 
         CopyWorkerMethods(workerLibDir);
 
-        using var restoreResult= ProcessEx.Run(Output, workerLibDir, DotNetMuxer.MuxerPathOrDefault(), "restore");
+        using var restoreResult= ProcessEx.Run(
+            Output,
+            workerLibDir,
+            DotNetMuxer.MuxerPathOrDefault(),
+            "restore",
+            envVarToRemove: "MSBuildSDKsPath");
         await restoreResult.Exited;
         Assert.True(restoreResult.ExitCode == 0, $"Failed to restore blazorwebworker library: {restoreResult.Output}\n{restoreResult.Error}");
     }
@@ -193,7 +204,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
             Output,
             hostProject.TemplateOutputDir,
             DotNetMuxer.MuxerPathOrDefault(),
-            "add reference ../WorkerLib/WorkerLib.csproj");
+            "add reference ../WorkerLib/WorkerLib.csproj",
+            envVarToRemove: "MSBuildSDKsPath");
         await result.Exited;
         Assert.True(result.ExitCode == 0, $"Failed to add WorkerLib reference: {result.Output}\n{result.Error}");
     }
