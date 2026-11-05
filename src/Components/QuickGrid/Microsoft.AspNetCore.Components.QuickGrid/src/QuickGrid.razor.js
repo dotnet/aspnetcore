@@ -13,6 +13,7 @@ export function init(tableElement) {
         }
     };
     let focusedRowIndex;
+    let focusedRowText;
     const isClickableRow = target => target.parentElement === tableElement.tBodies[0] && target.classList.contains('row-clickable');
     const tableKeyDownHandler = event => {
         if ((event.key === 'Enter' || event.key === ' ') && isClickableRow(event.target)) {
@@ -23,20 +24,41 @@ export function init(tableElement) {
         }
     };
     const focusInHandler = event => {
-        focusedRowIndex = isClickableRow(event.target) ? event.target.getAttribute('aria-rowindex') : null;
+        if (isClickableRow(event.target)) {
+            focusedRowIndex = event.target.getAttribute('aria-rowindex');
+            focusedRowText = event.target.textContent;
+        } else {
+            focusedRowIndex = null;
+            focusedRowText = null;
+        }
     };
     const focusOutHandler = event => {
         queueMicrotask(() => {
-            if (event.target.isConnected) {
+            if (event.target.isConnected && !tableElement.contains(document.activeElement)) {
                 focusedRowIndex = null;
+                focusedRowText = null;
             }
         });
     };
     const observer = new MutationObserver(() => {
-        if (focusedRowIndex && !tableElement.contains(document.activeElement)) {
-            tableElement.tBodies[0]?.querySelector(`:scope > tr.row-clickable[aria-rowindex="${focusedRowIndex}"]`)?.focus();
+        if (isClickableRow(document.activeElement)) {
+            focusedRowIndex = document.activeElement.getAttribute('aria-rowindex');
+            focusedRowText = document.activeElement.textContent;
+            return;
+        }
+        if (focusedRowIndex && (document.activeElement === document.body || document.activeElement === document.documentElement)) {
+            const row = tableElement.tBodies[0]?.querySelector(`:scope > tr.row-clickable[aria-rowindex="${focusedRowIndex}"]`);
+            if (row?.textContent === focusedRowText) {
+                row.focus({ preventScroll: true });
+                return;
+            }
+        }
+        if (!tableElement.contains(document.activeElement)) {
+            focusedRowIndex = null;
+            focusedRowText = null;
         }
     });
+    observer.observe(tableElement, { childList: true, subtree: true, characterData: true });
 
     document.body.addEventListener('click', bodyClickHandler);
     document.body.addEventListener('mousedown', bodyClickHandler); // Otherwise it seems strange that it doesn't go away until you release the mouse button
@@ -44,7 +66,6 @@ export function init(tableElement) {
     tableElement.addEventListener('keydown', tableKeyDownHandler);
     tableElement.addEventListener('focusin', focusInHandler);
     tableElement.addEventListener('focusout', focusOutHandler);
-    observer.observe(tableElement, { childList: true, subtree: true });
 
     return {
         stop: () => {
