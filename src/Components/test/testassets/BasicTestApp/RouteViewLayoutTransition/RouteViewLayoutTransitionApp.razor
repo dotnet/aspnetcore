@@ -15,6 +15,11 @@
     private RouteData _referenceRoute;
     private RouteData _referenceRouteSource;
 
+    protected override void OnInitialized()
+    {
+        InstantiationTrace.Clear();
+    }
+
     private RouteData PrepareRouteData(RouteData routeData)
     {
         if (routeData.PageType != typeof(ReferenceParameterPage))

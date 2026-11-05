@@ -23,6 +23,16 @@ public static class InstantiationTrace
         }
     }
 
+    public static void Clear()
+    {
+        lock (SyncRoot)
+        {
+            EntriesInternal.Clear();
+        }
+
+        Changed?.Invoke();
+    }
+
     public static void Add(string message)
     {
         lock (SyncRoot)
