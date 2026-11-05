@@ -129,6 +129,74 @@ public class ComponentsActivityStateTest
         AssertRoute(restoredStore, context, "/counter");
     }
 
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task PersistenceWrapper_RestoresSsrRouteWithCorrectRemoteness(bool webAssembly, bool initializeBeforeRestore)
+    {
+        using var listener = CreateListener();
+        var serverManager = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var serverStore = new ComponentsActivityLinkStore(null);
+        var serverSource = new ComponentsActivitySource();
+        serverSource.Init(serverStore);
+        serverManager.ActivityState.Initialize(serverStore, serverSource);
+        var navigation = serverSource.StartNavigateActivity("Counter", "/counter");
+        Assert.NotNull(navigation.Activity);
+        var navigationContext = navigation.Activity.Context;
+        Assert.False(navigationContext.IsRemote);
+        serverSource.StopNavigateActivity(navigation, null);
+        var serverWrapper = new ServerComponentsActivityState(serverManager.State, NullLogger<ComponentStatePersistenceManager>.Instance);
+        var update = JsonSerializer.Deserialize<ComponentsActivityStateUpdate>(
+            JsonSerializer.Serialize(serverWrapper.ActivityState, JsonSerializerOptions.Web), JsonSerializerOptions.Web);
+        Assert.NotNull(update);
+        Assert.False(update.Route.IsRemote);
+        using var provider = CreateRouterServiceProvider();
+        using var scope = provider.CreateScope();
+        var manager = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+        Action restore = webAssembly
+            ? () => new WebAssemblyComponentsActivityState(manager.State, NullLogger<ComponentStatePersistenceManager>.Instance).ActivityState = update
+            : () => new ServerComponentsActivityState(manager.State, NullLogger<ComponentStatePersistenceManager>.Instance).ActivityState = update;
+        if (!initializeBeforeRestore)
+        {
+            restore();
+        }
+
+        using var renderer = new TestRenderer(scope.ServiceProvider);
+        if (initializeBeforeRestore)
+        {
+            restore();
+        }
+
+        var button = new ActivityTestButton();
+        var componentId = renderer.AssignRootComponentId(button);
+        await renderer.RenderRootComponentAsync(componentId);
+        var eventHandlerId = renderer.GetCurrentRenderTreeFrames(componentId).AsEnumerable()
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0).AttributeEventHandlerId;
+        Activity stoppedEvent = null;
+        listener.ActivityStopped = activity =>
+        {
+            if (activity.OperationName == ComponentsActivitySource.OnEventName)
+            {
+                stoppedEvent = activity;
+            }
+        };
+
+        await renderer.DispatchEventAsync(eventHandlerId, EventArgs.Empty);
+
+        Assert.Equal(1, button.ClickCount);
+        Assert.NotNull(stoppedEvent);
+        Assert.Equal("/counter", stoppedEvent.GetTagItem("aspnetcore.components.route"));
+        var link = Assert.Single(stoppedEvent.Links);
+        Assert.Equal(navigationContext.TraceId, link.Context.TraceId);
+        Assert.Equal(navigationContext.SpanId, link.Context.SpanId);
+        Assert.Equal(navigationContext.TraceFlags, link.Context.TraceFlags);
+        Assert.Equal(navigationContext.TraceState, link.Context.TraceState);
+        Assert.Equal(webAssembly, link.Context.IsRemote);
+        Assert.False(update.Route.IsRemote);
+    }
+
     [Fact]
     public void Capture_WithoutRendererReturnsNoState()
     {
@@ -443,7 +511,7 @@ public class ComponentsActivityStateTest
 
         AssertRoute(store, serverContext, "/server");
         Assert.Equal(serverUpdate, webAssembly.ActivityState);
-        var webAssemblyContext = CreateContext();
+        var webAssemblyContext = CreateContext(isRemote: true);
         var webAssemblyUpdate = CreateState(webAssemblyContext, "/webassembly");
 
         webAssembly.ActivityState = webAssemblyUpdate;
@@ -553,7 +621,9 @@ public class ComponentsActivityStateTest
             var clientStore = new ComponentsActivityLinkStore(clientRenderer);
             var circuitContext = CreateContext();
             clientStore.SetActivityContext(ComponentsActivityLinkStore.Circuit, circuitContext, null);
-            AssertRoute(clientStore, navigationContext, "/initial");
+            var importedNavigationContext = new ActivityContext(
+                navigationContext.TraceId, navigationContext.SpanId, navigationContext.TraceFlags, navigationContext.TraceState, isRemote: true);
+            AssertRoute(clientStore, importedNavigationContext, "/initial");
             var button = new ActivityTestButton();
             var componentId = clientRenderer.AssignRootComponentId(button);
             await clientRenderer.RenderRootComponentAsync(componentId);
@@ -570,7 +640,7 @@ public class ComponentsActivityStateTest
             await clientRenderer.DispatchEventAsync(eventHandlerId, EventArgs.Empty);
             Assert.NotNull(initialEvent);
             Assert.Equal("/initial", initialEvent.GetTagItem("aspnetcore.components.route"));
-            Assert.Contains(initialEvent.Links, link => link.Context == navigationContext);
+            Assert.Contains(initialEvent.Links, link => link.Context == importedNavigationContext);
 
             serverListener.Dispose();
             Assert.False(ComponentsActivitySource.HasListeners);

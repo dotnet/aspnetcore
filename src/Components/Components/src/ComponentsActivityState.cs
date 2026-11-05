@@ -116,7 +116,10 @@ internal sealed class WebAssemblyComponentsActivityState(PersistentComponentStat
     public ComponentsActivityStateUpdate? ActivityState
     {
         get => _activityState.Capture();
-        set => _activityState.Apply(value);
+        // The persisted route span originated on the server, not in the browser.
+        set => _activityState.Apply(value?.Route is { } route
+            ? value with { Route = route with { IsRemote = true } }
+            : value);
     }
 }
 
