@@ -1,4 +1,5 @@
 @using Microsoft.JSInterop
+@implements IDisposable
 @inject IJSRuntime JSRuntime
 
 <section>
@@ -32,6 +33,8 @@
     <button id="reveal-@Id" @onclick="ShowLateLink">Add prevented link</button>
     <a id="register-and-navigate-@Id" href="nav/other" @onclick="ShowLateLink">Render during navigation</a>
     <a id="register-and-nested-click-@Id" href="nav/other" @onclick="ShowLateLinkAndClickNestedButton">Render and click during navigation</a>
+    <button id="register-and-nested-prevented-click-@Id" @onclick="ShowLateLinkAndClickNestedLink">Render and click a prevented link</button>
+    <a id="native-register-and-navigate-@Id" href="nav/other">Render from a native document listener and navigate</a>
     @if (_showLateLink)
     {
         <a id="late-@Id" href="nav/other" @onclick="Increment" @onclick:preventDefault>Late prevented link</a>
@@ -45,10 +48,15 @@
     [Parameter]
     public string ReturnUrl { get; set; } = default!;
 
+    [Parameter]
+    public bool NativeClick { get; set; }
+
+    private DotNetObjectReference<PreventDefaultLinks> _nativeClickReference;
     private int _count;
     private bool _preventDefault = true;
     private bool _showLateLink;
     private bool _clickAfterRender;
+    private string _nestedClickTarget = "increment";
 
     private void ShowLateLink()
     {
@@ -61,12 +69,41 @@
         _clickAfterRender = true;
     }
 
+    private void ShowLateLinkAndClickNestedLink()
+    {
+        ShowLateLink();
+        _nestedClickTarget = "late";
+        _clickAfterRender = true;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender && NativeClick)
+        {
+            _nativeClickReference = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("nativeDocumentClickProbe.setComponent", _nativeClickReference);
+        }
+
         if (_clickAfterRender)
         {
             _clickAfterRender = false;
-            await JSRuntime.InvokeVoidAsync("documentClickProbe.clickNested", $"increment-{Id}");
+            await JSRuntime.InvokeVoidAsync("documentClickProbe.clickNested", $"{_nestedClickTarget}-{Id}");
+        }
+    }
+
+    [JSInvokable]
+    public void RevealFromNativeClick()
+    {
+        ShowLateLink();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (_nativeClickReference is not null)
+        {
+            ((IJSInProcessRuntime)JSRuntime).InvokeVoid("nativeDocumentClickProbe.dispose");
+            _nativeClickReference.Dispose();
         }
     }
 

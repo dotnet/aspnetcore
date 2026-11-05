@@ -304,10 +304,13 @@ class EventInfoStore {
     // If this event name is an alias, update the global listener for the corresponding browser event
     eventName = getBrowserEventName(eventName);
 
-    // If the listener for this event is already registered, we recreate it to ensure
-    // that it is using the active mode.
+    // Click listeners are already non-passive. Replacing one during dispatch can skip that click.
     if (Object.prototype.hasOwnProperty.call(this.countByEventName, eventName)) {
       this.countByEventName[eventName]++;
+      if (eventName === 'click') {
+        return;
+      }
+
       document.removeEventListener(eventName, this.globalListener);
     } else {
       this.countByEventName[eventName] = 1;

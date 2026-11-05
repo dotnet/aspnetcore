@@ -5,6 +5,29 @@
 
 <h1>Prevent default links</h1>
 
+@if (NativeClick)
+{
+    <script>
+        const probe = window.nativeDocumentClickProbe = {
+            calls: 0,
+            renderedSynchronously: false,
+            setComponent: component => probe.component = component,
+            dispose: () => {
+                document.removeEventListener('click', probe.click);
+                probe.component = null;
+            },
+        };
+        probe.click = event => {
+            if (event.target instanceof Element && event.target.closest('#native-register-and-navigate-wasm')) {
+                probe.calls++;
+                probe.component.invokeMethod('RevealFromNativeClick');
+                probe.renderedSynchronously = !!document.getElementById('late-wasm');
+            }
+        };
+        document.addEventListener('click', probe.click);
+    </script>
+}
+
 <a id="server-links" href="@($"nav/prevent-default/server?prerender={Prerender}")">Server links</a>
 <a id="wasm-links" href="@($"nav/prevent-default/wasm?prerender={Prerender}")">WebAssembly links</a>
 <a id="mixed-links" href="@($"nav/prevent-default/mixed?prerender={Prerender}")">Mixed links</a>
@@ -16,7 +39,7 @@
 }
 @if (Mode is "wasm" or "mixed")
 {
-    <TestContentPackage.PreventDefaultLinks Id="wasm" ReturnUrl="@Navigation.Uri" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+    <TestContentPackage.PreventDefaultLinks Id="wasm" ReturnUrl="@Navigation.Uri" NativeClick="NativeClick" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
 }
 @if (Mode is "auto" or "mixed")
 {
@@ -29,4 +52,7 @@
 
     [SupplyParameterFromQuery]
     public bool Prerender { get; set; } = true;
+
+    [SupplyParameterFromQuery]
+    public bool NativeClick { get; set; }
 }

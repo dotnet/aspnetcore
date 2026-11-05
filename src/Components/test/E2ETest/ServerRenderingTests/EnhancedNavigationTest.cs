@@ -915,7 +915,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [InlineData("auto", false)]
     [InlineData("mixed", true)]
     [InlineData("mixed", false)]
-    public void PreventDefaultIsRespectedAfterClickListenerIsReregistered(string mode, bool prerender)
+    public void PreventDefaultIsRespectedAfterPreventedLinkIsAdded(string mode, bool prerender)
     {
         Navigate($"{ServerPathBase}/nav/prevent-default/{mode}?prerender={prerender}");
         var ids = mode == "mixed" ? new[] { "server", "wasm", "auto" } : new[] { mode };
@@ -933,7 +933,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
                 AssertPreventDefaultClick($"original-{id}", id, counts[id] + 2, originalUrl);
             }
 
-            Assert.True((bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.registrations > 0"));
+            Assert.Equal(0L, (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.registrations"));
         }
         finally
         {
@@ -944,7 +944,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void EnhancedNavigationWorksWhenClickRegistersAnotherListener(bool prerender)
+    public void EnhancedNavigationWorksWhenClickRendersPreventedLink(bool prerender)
     {
         Navigate($"{ServerPathBase}/nav/prevent-default/wasm?prerender={prerender}");
         AssertPreventDefaultLinksAreInteractive("wasm");
@@ -957,7 +957,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             Browser.Exists(By.Id("register-and-navigate-wasm")).Click();
             Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
             Assert.False(originalDocument.IsStale());
-            Assert.True((bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.reentrantRegistrations > 0"));
+            Assert.Equal(0L, (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.reentrantRegistrations"));
         }
         finally
         {
@@ -968,7 +968,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void EnhancedNavigationWorksWhenClickRegistersAnotherListenerAndTriggersNestedClick(bool prerender)
+    public void EnhancedNavigationWorksWhenClickRendersPreventedLinkAndTriggersNestedClick(bool prerender)
     {
         Navigate($"{ServerPathBase}/nav/prevent-default/wasm?prerender={prerender}");
         AssertPreventDefaultLinksAreInteractive("wasm");
@@ -989,6 +989,48 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void EnhancedNavigationWorksWhenNativeDocumentClickRendersPreventedLink(bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/wasm?prerender={prerender}&nativeClick=true");
+        AssertPreventDefaultLinksAreInteractive("wasm");
+        Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("runtime-wasm")).Text);
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)jsExecutor.ExecuteScript("return !!window.nativeDocumentClickProbe.component"));
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        Browser.Exists(By.Id("native-register-and-navigate-wasm")).Click();
+
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.False(originalDocument.IsStale());
+        Assert.Equal(1L, (long)jsExecutor.ExecuteScript("return window.nativeDocumentClickProbe.calls"));
+        Assert.True((bool)jsExecutor.ExecuteScript("return window.nativeDocumentClickProbe.renderedSynchronously"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void PreventDefaultIsRespectedWhenClickRendersAndClicksPreventedLink(bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/wasm?prerender={prerender}");
+        var count = AssertPreventDefaultLinksAreInteractive("wasm");
+        Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("runtime-wasm")).Text);
+        var originalUrl = Browser.Url;
+
+        InstallDocumentClickProbe(stopPropagation: false);
+        try
+        {
+            AssertPreventDefaultClick("register-and-nested-prevented-click-wasm", "wasm", count + 1, originalUrl);
+            Assert.Equal(1L, (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.nestedClicksDuringOuterClick"));
+        }
+        finally
+        {
+            RemoveDocumentClickProbe();
+        }
+    }
+
     private void InstallDocumentClickProbe(bool stopPropagation)
     {
         // WebDriver cannot install or observe native listeners, or click synchronously inside a managed click.
@@ -1001,8 +1043,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             };
             probe.capture = event => probe.event = event;
             probe.clickNested = elementId => {
-                const isDuringOuterClick = probe.event?.eventPhase === Event.BUBBLING_PHASE
-                    && probe.reentrantRegistrations > 0;
+                const isDuringOuterClick = probe.event?.eventPhase === Event.BUBBLING_PHASE;
                 document.getElementById(elementId).click();
                 if (isDuringOuterClick) {
                     probe.nestedClicksDuringOuterClick++;
