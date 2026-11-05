@@ -27,7 +27,11 @@
     <button id="@Id("toggle")" @onclick="() => showChild = !showChild">Toggle child</button>
     <div id="@Id("adjacent")">@("Hello ")@count@(" world")</div>
     <div id="@Id("selection")" contenteditable="true">@("Hello ")@count@(" world")</div>
-    <prerendered-dom-probe id="@Id("custom")"></prerendered-dom-probe>
+    @* Form scenarios isolate positional reuse from initializer fallback. *@
+    @if (!IncludeForm)
+    {
+        <prerendered-dom-probe id="@Id("custom")"></prerendered-dom-probe>
+    }
     @((MarkupString)"<style>@keyframes prerendered-dom { from { opacity: 0.5; } to { opacity: 1; } }</style>")
     <div id="@Id("animation")" style="animation: prerendered-dom 60s linear infinite">Animated content</div>
     <video id="@Id("video")" muted playsinline></video>
@@ -49,7 +53,10 @@
         </EditForm>
         <output id="@Id("submitted")">@(submitted ? model.Text : "Not submitted")</output>
     }
-    @((MarkupString)"<script>window.prerenderedDomScriptRuns = (window.prerenderedDomScriptRuns || 0) + 1;</script>")
+    @if (!IncludeForm)
+    {
+        @((MarkupString)"<script>window.prerenderedDomScriptRuns = (window.prerenderedDomScriptRuns || 0) + 1;</script>")
+    }
     @if (Mismatch != "missing" || !RendererInfo.IsInteractive)
     {
         @if (Mismatch == "element" && RendererInfo.IsInteractive)

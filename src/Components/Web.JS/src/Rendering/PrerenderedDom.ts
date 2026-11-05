@@ -8,7 +8,7 @@ interface Cursor {
   parent: Node;
   next: Node | null;
   end?: Node;
-  text?: TextRun;
+  pendingText?: TextRun;
 }
 
 interface TextPart {
@@ -17,11 +17,12 @@ interface TextPart {
   length: number;
 }
 
-type MatchedNode = Node | TextPart;
+type PlannedNode = Node | TextPart;
 
-interface FrameMatch {
-  nodes: MatchedNode[];
+interface FramePlan {
+  nodes: PlannedNode[];
   replace?: boolean;
+  markup?: { preservedElements: Element[]; insertions: Insertion[] };
 }
 
 interface Insertion {
@@ -33,26 +34,33 @@ interface Insertion {
 
 interface TextRun {
   content: string;
-  segments: { content: string; nodes: MatchedNode[]; insertion: Insertion }[];
+  segments: { content: string; nodes: PlannedNode[]; insertion: Insertion }[];
   insertions: Insertion[];
 }
 
-export type PrerenderedFrameMatches = Map<number, { nodes: Node[]; replace: boolean }>;
+export type PrerenderedFramePlans = Map<number, {
+  nodes: Node[];
+  replace: boolean;
+  insertNewElements?: () => void;
+  updateChildLists?: () => void;
+}>;
 
 export class PrerenderedDom {
-  private readonly matches = new Map<number, FrameMatch>();
+  private readonly framePlans = new Map<number, FramePlan>();
 
   private readonly components = new Set<number>();
 
-  private readonly elements: Element[] = [];
+  private readonly preservedElements: Element[] = [];
 
   private readonly formActions: Element[] = [];
-
-  private readonly markupElements = new Set<Element>();
 
   private readonly insertions: Insertion[] = [];
 
   private readonly removals = new Set<Node>();
+
+  private hasDifferences = false;
+
+  private hasPreservedInitializer = false;
 
   private readonly frames: ArrayValues<RenderTreeFrame>;
 
@@ -64,7 +72,7 @@ export class PrerenderedDom {
     this.frames = batch.arrayRangeReader.values(batch.referenceFrames());
   }
 
-  public match(componentId: number, root: LogicalElement): boolean {
+  public tryPlanRoot(componentId: number, root: LogicalElement): boolean {
     const descriptor = getLogicalRootDescriptor(root);
     const end = descriptor?.end;
     if (!end || !descriptor.start.parentNode || end.parentNode !== descriptor.start.parentNode) {
@@ -72,17 +80,18 @@ export class PrerenderedDom {
     }
 
     const cursor: Cursor = { parent: descriptor.start.parentNode, next: descriptor.start.nextSibling, end };
-    if (!this.matchComponent(componentId, cursor)) {
+    if (!this.planComponent(componentId, cursor)) {
       return false;
     }
-    this.removeRemaining(cursor);
-    return cursor.next === end;
+    this.queueRemainingNodeRemovals(cursor);
+    // A retained initializer cannot be rerun safely when its dependent DOM changes.
+    return cursor.next === end && !(this.hasDifferences && this.hasPreservedInitializer);
   }
 
-  public adopt(root: LogicalElement, result: PrerenderedFrameMatches): void {
+  public prepareRootForRendering(root: LogicalElement, preparedFrames: PrerenderedFramePlans): void {
     const splits = new Map<Text, Set<number>>();
-    for (const match of this.matches.values()) {
-      for (const node of match.nodes) {
+    for (const framePlan of this.framePlans.values()) {
+      for (const node of framePlan.nodes) {
         if (!(node instanceof Node)) {
           addSplit(node.text, node.offset);
           addSplit(node.text, node.offset + node.length);
@@ -106,10 +115,17 @@ export class PrerenderedDom {
       textParts.set(text, parts);
     }
 
+    const deferredElements = new Map<Element, Comment>();
     for (const { node, parent, next, offset } of this.insertions) {
       if (node) {
         const before = next instanceof Text && offset > 0 ? textParts.get(next)!.get(offset)! : next;
-        parent.insertBefore(node, before);
+        if (node instanceof Element) {
+          const placeholder = document.createComment('!');
+          deferredElements.set(node, placeholder);
+          parent.insertBefore(placeholder, before);
+        } else {
+          parent.insertBefore(node, before);
+        }
       }
     }
     for (const node of this.removals) {
@@ -117,23 +133,37 @@ export class PrerenderedDom {
     }
 
     resetLogicalChildren(root);
-    for (const element of this.elements) {
+    for (const element of this.preservedElements) {
       resetLogicalChildren(toLogicalElement(element, true));
-    }
-    for (const element of this.markupElements) {
-      const logical = toLogicalElement(element, true);
-      resetLogicalChildren(logical);
-      const container = element instanceof HTMLTemplateElement ? element.content : element;
-      Array.from(container.childNodes).forEach((child, index) => adoptLogicalChild(child, logical, index));
     }
     for (const element of this.formActions) {
       element.removeAttribute('action');
     }
     const end = getLogicalRootDescriptor(root).end!;
     end.parentNode!.removeChild(end);
-    for (const [index, match] of this.matches) {
-      const nodes = match.nodes.map(node => node instanceof Node ? node : textParts.get(node.text)!.get(node.offset)!);
-      result.set(index, { nodes, replace: match.replace ?? false });
+    for (const [index, framePlan] of this.framePlans) {
+      const nodes = framePlan.nodes.map(node => node instanceof Node ? node : textParts.get(node.text)!.get(node.offset)!);
+      const markup = framePlan.markup;
+      preparedFrames.set(index, {
+        nodes,
+        replace: framePlan.replace ?? false,
+        insertNewElements: markup ? () => {
+          for (const { node } of markup.insertions) {
+            if (node instanceof Element) {
+              const placeholder = deferredElements.get(node)!;
+              placeholder.parentNode!.replaceChild(node, placeholder);
+            }
+          }
+        } : undefined,
+        updateChildLists: markup ? () => {
+          for (const element of markup.preservedElements) {
+            const logical = toLogicalElement(element, true);
+            resetLogicalChildren(logical);
+            const container = element instanceof HTMLTemplateElement ? element.content : element;
+            Array.from(container.childNodes).forEach((child, childIndex) => adoptLogicalChild(child, logical, childIndex));
+          }
+        } : undefined,
+      });
     }
 
     function addSplit(text: Text, offset: number) {
@@ -146,7 +176,7 @@ export class PrerenderedDom {
     }
   }
 
-  private matchComponent(componentId: number, cursor: Cursor, selectValue?: string | null): boolean {
+  private planComponent(componentId: number, cursor: Cursor, selectValue?: string | null): boolean {
     if (this.components.has(componentId)) {
       return false;
     }
@@ -160,28 +190,28 @@ export class PrerenderedDom {
     const edits = diffReader.edits(diff);
     const values = segmentReader.values(edits);
     const offset = segmentReader.offset(edits);
-    const count = segmentReader.count(edits);
+    const editCount = segmentReader.count(edits);
     let siblingIndex = 0;
-    for (let i = offset; i < offset + count; i++) {
+    for (let i = offset; i < offset + editCount; i++) {
       const edit = diffReader.editsEntry(values, i);
       if (editReader.editType(edit) !== EditType.prependFrame || editReader.siblingIndex(edit) !== siblingIndex) {
         return false;
       }
-      const inserted = this.matchFrame(editReader.newTreeIndex(edit), cursor, selectValue);
-      if (inserted < 0) {
+      const plannedChildCount = this.planFrame(editReader.newTreeIndex(edit), cursor, selectValue);
+      if (plannedChildCount < 0) {
         return false;
       }
-      siblingIndex += inserted;
+      siblingIndex += plannedChildCount;
     }
     return true;
   }
 
-  private matchFrame(index: number, cursor: Cursor, selectValue?: string | null): number {
+  private planFrame(index: number, cursor: Cursor, selectValue?: string | null): number {
     const { frameReader } = this.batch;
     const frame = this.batch.referenceFramesEntry(this.frames, index);
     switch (frameReader.frameType(frame)) {
       case FrameType.element: {
-        this.flushText(cursor);
+        this.planPendingText(cursor);
         const element = cursor.next;
         const tagName = frameReader.elementName(frame)!;
         const parentElement = cursor.parent instanceof Element ? cursor.parent : null;
@@ -192,7 +222,7 @@ export class PrerenderedDom {
             : 'http://www.w3.org/1999/xhtml';
         if (!(element instanceof Element) || element === cursor.end || element.namespaceURI !== namespace ||
             element.localName !== (namespace === 'http://www.w3.org/1999/xhtml' ? tagName.toLowerCase() : tagName)) {
-          return this.replaceFrame(index, cursor);
+          return this.planElementReplacement(index, cursor);
         }
 
         const end = index + frameReader.subtreeLength(frame);
@@ -233,40 +263,41 @@ export class PrerenderedDom {
         if (!matchesAttributes(element, attributes) ||
             (element instanceof HTMLTextAreaElement &&
               element.defaultValue !== (value ?? this.textContent(childIndex, end)))) {
-          return this.replaceFrame(index, cursor);
+          return this.planElementReplacement(index, cursor);
         }
 
-        this.matches.set(index, { nodes: [element] });
-        this.elements.push(element);
+        this.framePlans.set(index, { nodes: [element] });
+        this.preservedElements.push(element);
+        this.hasPreservedInitializer ||= mayInitializeDom(element);
         if (normalizeFormAction) {
           this.formActions.push(element);
         }
         const container = element instanceof HTMLTemplateElement ? element.content : element;
         const children: Cursor = { parent: container, next: container.firstChild };
         if (!(element instanceof HTMLTextAreaElement && value !== null)) {
-          if (this.matchRange(childIndex, end, children, element instanceof HTMLSelectElement ? value : selectValue) < 0) {
+          if (this.planFrameRange(childIndex, end, children, element instanceof HTMLSelectElement ? value : selectValue) < 0) {
             return -1;
           }
-          this.removeRemaining(children);
+          this.queueRemainingNodeRemovals(children);
         }
         cursor.next = element.nextSibling;
         return 1;
       }
       case FrameType.text: {
         const content = frameReader.textContent(frame)!;
-        const nodes: MatchedNode[] = [];
-        this.matches.set(index, { nodes });
-        this.matchText(content, cursor, nodes);
+        const nodes: PlannedNode[] = [];
+        this.framePlans.set(index, { nodes });
+        this.queueTextSegment(content, cursor, nodes);
         return 1;
       }
       case FrameType.component: {
         const container = document.createComment('!');
-        this.insert(container, cursor);
-        this.matches.set(index, { nodes: [container] });
-        return this.matchComponent(frameReader.componentId(frame), cursor, selectValue) ? 1 : -1;
+        this.queueInsertion(container, cursor);
+        this.framePlans.set(index, { nodes: [container] });
+        return this.planComponent(frameReader.componentId(frame), cursor, selectValue) ? 1 : -1;
       }
       case FrameType.region:
-        return this.matchRange(index + 1, index + frameReader.subtreeLength(frame), cursor, selectValue);
+        return this.planFrameRange(index + 1, index + frameReader.subtreeLength(frame), cursor, selectValue);
       case FrameType.markup: {
         const markup = frameReader.markupContent(frame);
         const parent = cursor.parent instanceof Element ? cursor.parent : null;
@@ -276,12 +307,15 @@ export class PrerenderedDom {
           parent !== null && isMathMLElement(parent)
         ) : document.createDocumentFragment();
         const container = document.createComment('!');
-        this.insert(container, cursor);
-        const match: FrameMatch = { nodes: [container] };
-        this.matches.set(index, match);
+        const insertionStart = this.insertions.length;
+        this.queueInsertion(container, cursor);
+        const framePlan: FramePlan = { nodes: [container], markup: { preservedElements: [], insertions: [] } };
+        const markupPlan = framePlan.markup!;
+        this.framePlans.set(index, framePlan);
         for (const expected of Array.from(parsed.childNodes)) {
-          this.matchMarkupNode(expected, cursor, match.nodes);
+          this.planMarkupNode(expected, cursor, framePlan.nodes, markupPlan.preservedElements);
         }
+        markupPlan.insertions = this.insertions.slice(insertionStart);
         return 1;
       }
       case FrameType.elementReferenceCapture:
@@ -292,27 +326,27 @@ export class PrerenderedDom {
     }
   }
 
-  private matchRange(start: number, end: number, cursor: Cursor, selectValue?: string | null): number {
-    let count = 0;
+  private planFrameRange(start: number, end: number, cursor: Cursor, selectValue?: string | null): number {
+    let totalChildCount = 0;
     for (let index = start; index < end; index++) {
-      const inserted = this.matchFrame(index, cursor, selectValue);
-      if (inserted < 0) {
+      const plannedChildCount = this.planFrame(index, cursor, selectValue);
+      if (plannedChildCount < 0) {
         return -1;
       }
-      count += inserted;
+      totalChildCount += plannedChildCount;
       const frame = this.batch.referenceFramesEntry(this.frames, index);
       index += countDescendantFrames(this.batch, frame);
     }
-    return count;
+    return totalChildCount;
   }
 
-  private matchText(content: string, cursor: Cursor, nodes: MatchedNode[]): void {
-    if (!cursor.text) {
-      cursor.text = { content: '', segments: [], insertions: [] };
+  private queueTextSegment(content: string, cursor: Cursor, nodes: PlannedNode[]): void {
+    if (!cursor.pendingText) {
+      cursor.pendingText = { content: '', segments: [], insertions: [] };
     }
-    const run = cursor.text;
+    const run = cursor.pendingText;
     // Reserve the insertion order before intervening component or markup boundaries are queued.
-    const insertion = this.insert(null, cursor);
+    const insertion = this.queueInsertion(null, cursor);
     run.segments.push({ content, nodes, insertion });
     run.content += content;
   }
@@ -336,17 +370,17 @@ export class PrerenderedDom {
     return content;
   }
 
-  private flushText(cursor: Cursor): void {
-    const run = cursor.text;
+  private planPendingText(cursor: Cursor): void {
+    const run = cursor.pendingText;
     if (!run) {
       return;
     }
-    delete cursor.text;
+    delete cursor.pendingText;
     const text = cursor.next;
-    const matches = text instanceof Text && text.data === run.content;
+    const textMatches = text instanceof Text && text.data === run.content;
     let offset = 0;
     for (const segment of run.segments) {
-      if (matches && segment.content) {
+      if (textMatches && segment.content) {
         segment.nodes.push({ text, offset, length: segment.content.length });
       } else {
         const node = document.createTextNode(segment.content);
@@ -356,57 +390,60 @@ export class PrerenderedDom {
       offset += segment.content.length;
     }
     for (const insertion of run.insertions) {
-      if (matches && insertion.offset === text.length) {
+      if (textMatches && insertion.offset === text.length) {
         insertion.next = text.nextSibling;
         insertion.offset = 0;
-      } else if (!matches) {
+      } else if (!textMatches) {
         insertion.offset = 0;
       }
     }
     if (run.content) {
-      if (matches) {
+      if (textMatches) {
         cursor.next = text.nextSibling;
       } else {
-        this.removeNext(cursor);
+        this.hasDifferences = true;
+        this.queueNextNodeRemoval(cursor);
       }
     }
   }
 
-  private insert(node: Node | null, cursor: Cursor): Insertion {
-    const insertion = { node, parent: cursor.parent, next: cursor.next, offset: cursor.text?.content.length ?? 0 };
-    cursor.text?.insertions.push(insertion);
+  private queueInsertion(node: Node | null, cursor: Cursor): Insertion {
+    const insertion = { node, parent: cursor.parent, next: cursor.next, offset: cursor.pendingText?.content.length ?? 0 };
+    cursor.pendingText?.insertions.push(insertion);
     this.insertions.push(insertion);
     return insertion;
   }
 
-  private replaceFrame(index: number, cursor: Cursor): number {
+  private planElementReplacement(index: number, cursor: Cursor): number {
+    this.hasDifferences = true;
     const placeholder = document.createComment('!');
-    this.insert(placeholder, cursor);
-    this.matches.set(index, { nodes: [placeholder], replace: true });
-    this.removeNext(cursor);
+    this.queueInsertion(placeholder, cursor);
+    this.framePlans.set(index, { nodes: [placeholder], replace: true });
+    this.queueNextNodeRemoval(cursor);
     return 1;
   }
 
-  private removeNext(cursor: Cursor): void {
+  private queueNextNodeRemoval(cursor: Cursor): void {
     if (cursor.next && cursor.next !== cursor.end) {
+      this.hasDifferences = true;
       this.removals.add(cursor.next);
       cursor.next = cursor.next.nextSibling;
     }
   }
 
-  private removeRemaining(cursor: Cursor): void {
-    this.flushText(cursor);
+  private queueRemainingNodeRemovals(cursor: Cursor): void {
+    this.planPendingText(cursor);
     while (cursor.next && cursor.next !== cursor.end) {
-      this.removeNext(cursor);
+      this.queueNextNodeRemoval(cursor);
     }
   }
 
-  private matchMarkupNode(expected: Node, cursor: Cursor, nodes: MatchedNode[]): void {
+  private planMarkupNode(expected: Node, cursor: Cursor, nodes: PlannedNode[], preservedElements: Element[]): void {
     if (expected instanceof Text) {
-      this.matchText(expected.data, cursor, nodes);
+      this.queueTextSegment(expected.data, cursor, nodes);
       return;
     }
-    this.flushText(cursor);
+    this.planPendingText(cursor);
     const actual = cursor.next;
     if (actual && actual !== cursor.end && actual.nodeType === expected.nodeType &&
         (expected instanceof Element
@@ -416,22 +453,28 @@ export class PrerenderedDom {
           : actual.nodeValue === expected.nodeValue)) {
       nodes.push(actual);
       if (actual instanceof Element && expected instanceof Element) {
-        this.markupElements.add(actual);
+        preservedElements.push(actual);
+        this.hasPreservedInitializer ||= mayInitializeDom(actual);
         const container = actual instanceof HTMLTemplateElement ? actual.content : actual;
         const expectedContainer = expected instanceof HTMLTemplateElement ? expected.content : expected;
         const children: Cursor = { parent: container, next: container.firstChild };
         for (const child of Array.from(expectedContainer.childNodes)) {
-          this.matchMarkupNode(child, children, []);
+          this.planMarkupNode(child, children, [], preservedElements);
         }
-        this.removeRemaining(children);
+        this.queueRemainingNodeRemovals(children);
       }
       cursor.next = actual.nextSibling;
     } else {
-      this.insert(expected, cursor);
+      this.hasDifferences = true;
+      this.queueInsertion(expected, cursor);
       nodes.push(expected);
-      this.removeNext(cursor);
+      this.queueNextNodeRemoval(cursor);
     }
   }
+}
+
+function mayInitializeDom(element: Element): boolean {
+  return element.localName === 'script' || element.localName.includes('-') || element.hasAttribute('is');
 }
 
 function matchesAttributes(element: Element, attributes: Map<string, string>): boolean {

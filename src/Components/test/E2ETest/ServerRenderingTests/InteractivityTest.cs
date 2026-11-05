@@ -122,7 +122,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
         Browser.True(() => Browser.FindElement(By.Id("dom-second-ready")).Text is "Server" or "WebAssembly");
 
-        var shouldPreserve = mismatch != "root-attribute";
+        var shouldPreserve = mismatch is "" or "attribute-order";
         var currentRoot = Browser.FindElement(By.Id("dom-first-root"));
         Assert.Equal(shouldPreserve, root.Equals(currentRoot));
         Assert.Equal(shouldPreserve, input.Equals(Browser.FindElement(By.Id("dom-first-input"))));
@@ -327,6 +327,85 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Click(By.Id("position-toggle"));
         Browser.Equal("Alice", () => Browser.FindElement(By.Id("position-note")).GetDomProperty("value"));
         Assert.Equal("AliceBob", Browser.FindElement(By.Id("position-footer-note")).GetDomProperty("value"));
+    }
+
+    [Theory]
+    [InlineData("server", "script-order")]
+    [InlineData("wasm", "script-order")]
+    [InlineData("server", "unchanged-script-changed-target")]
+    [InlineData("wasm", "unchanged-script-changed-target")]
+    [InlineData("server", "custom-element-order")]
+    [InlineData("wasm", "custom-element-order")]
+    [InlineData("server", "unchanged-custom-element-changed-target")]
+    [InlineData("wasm", "unchanged-custom-element-changed-target")]
+    [InlineData("server", "nested-script-order")]
+    [InlineData("wasm", "nested-script-order")]
+    [InlineData("server", "unchanged-nested-script-changed-target")]
+    [InlineData("wasm", "unchanged-nested-script-changed-target")]
+    public void PrerenderedDom_InitializersBindToCurrentNodes(string platform, string scenario)
+    {
+        VerifyPrerenderedDomInitializer(platform, scenario,
+            shouldPreserveRoot: scenario is not ("unchanged-script-changed-target" or "unchanged-custom-element-changed-target" or "unchanged-nested-script-changed-target"));
+    }
+
+    [Theory]
+    [InlineData("server", "matching-script")]
+    [InlineData("wasm", "matching-script")]
+    [InlineData("server", "matching-custom-element")]
+    [InlineData("wasm", "matching-custom-element")]
+    [InlineData("server", "nested-script-subtree")]
+    [InlineData("wasm", "nested-script-subtree")]
+    public void PrerenderedDom_InitializerControlsKeepMatchingNodes(string platform, string scenario)
+    {
+        VerifyPrerenderedDomInitializer(platform, scenario, shouldPreserveRoot: true);
+    }
+
+    private void VerifyPrerenderedDomInitializer(string platform, string scenario, bool shouldPreserveRoot)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&scenario={scenario}");
+        var root = Browser.Exists(By.Id("position-root"));
+        var footer = Browser.Exists(By.Id("position-footer"));
+        Browser.Exists(By.Id("position-footer-note")).SendKeys("Bob");
+        var js = (IJavaScriptExecutor)Browser;
+        // WebDriver cannot register a custom-element lifecycle callback or compare captured DOM references.
+        js.ExecuteScript("""
+            if (!customElements.get('prerendered-position-connector')) {
+                customElements.define('prerendered-position-connector', class extends HTMLElement {
+                    connectedCallback() {
+                        window.prerenderedPositionInitializerRuns = (window.prerenderedPositionInitializerRuns || 0) + 1;
+                        const target = document.getElementById('position-target');
+                        window.prerenderedPositionInitializedTarget = target;
+                        target.addEventListener('click', function () {
+                            window.prerenderedPositionNativeClicks = (window.prerenderedPositionNativeClicks || 0) + 1;
+                            document.getElementById('position-native-status').textContent = 'Clicked';
+                        });
+                    }
+                });
+            }
+            callBlazorStart();
+            """);
+        Browser.True(() => Browser.FindElement(By.Id("position-ready")).Text is "Server" or "WebAssembly");
+        Browser.Exists(By.Id("position-target")).Click();
+        Assert.Equal("Clicked", Browser.FindElement(By.Id("position-native-status")).Text);
+        Assert.Equal(1L, js.ExecuteScript("return window.prerenderedPositionNativeClicks"));
+        Assert.Equal(true, js.ExecuteScript("return window.prerenderedPositionInitializedTarget === document.getElementById('position-target')"));
+        Assert.Equal(shouldPreserveRoot, root.Equals(Browser.FindElement(By.Id("position-root"))));
+        var currentFooter = Browser.FindElement(By.Id("position-footer"));
+        Assert.Equal(shouldPreserveRoot, footer.Equals(currentFooter));
+        Assert.Equal(shouldPreserveRoot ? "AliceBob" : "Alice", Browser.FindElement(By.Id("position-footer-note")).GetDomProperty("value"));
+        var expectedInitializationCount = scenario is "matching-script" or "matching-custom-element" or "custom-element-order" ? 1L : 2L;
+        Assert.Equal(expectedInitializationCount, js.ExecuteScript("return window.prerenderedPositionInitializerRuns"));
+
+        Browser.Click(By.Id("position-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("position-increment")).Text);
+        Browser.Click(By.Id("position-toggle"));
+        Browser.DoesNotExist(By.Id("position-scope"));
+        Assert.Equal(currentFooter, Browser.FindElement(By.Id("position-footer")));
+        Browser.Click(By.Id("position-toggle"));
+        Browser.Exists(By.Id("position-target")).Click();
+        Assert.Equal("Clicked", Browser.FindElement(By.Id("position-native-status")).Text);
+        Assert.Equal(2L, js.ExecuteScript("return window.prerenderedPositionNativeClicks"));
+        Assert.Equal(currentFooter, Browser.FindElement(By.Id("position-footer")));
     }
 
     [Theory]

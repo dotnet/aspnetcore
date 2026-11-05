@@ -66,6 +66,29 @@
                 case "table":
                     <table id="position-table"><tr><td>@Scenario</td></tr></table>
                     break;
+                case "script-order":
+                case "unchanged-script-changed-target":
+                case "matching-script":
+                    @if (Scenario == "script-order" && RendererInfo.IsInteractive)
+                    {
+                        <span>Interactive insertion</span>
+                    }
+                    <button id="position-target" data-phase="@RenderPhase" type="button">Native target</button>
+                    @((MarkupString)ClickListenerScript)
+                    break;
+                case "custom-element-order":
+                case "unchanged-custom-element-changed-target":
+                case "matching-custom-element":
+                    <button id="position-target" data-phase="@RenderPhase" type="button">Native target</button>
+                    @((MarkupString)(Scenario == "custom-element-order" && !RendererInfo.IsInteractive
+                        ? "<span>Before</span>"
+                        : "<prerendered-position-connector></prerendered-position-connector>"))
+                    break;
+                case "nested-script-order":
+                case "nested-script-subtree":
+                case "unchanged-nested-script-changed-target":
+                    @((MarkupString)$"<div id=\"position-initializer\" data-phase=\"{(Scenario == "nested-script-subtree" ? RenderPhase : "same")}\">{(Scenario == "nested-script-order" && RendererInfo.IsInteractive ? "<span>Interactive insertion</span>" : "")}<button id=\"position-target\" data-phase=\"{RenderPhase}\" type=\"button\">Native target</button>{ClickListenerScript}</div>")
+                    break;
             }
             <input id="position-note" value="Alice" />
         </div>
@@ -74,6 +97,12 @@
     <button id="position-increment" @onclick="() => count++">Count: @count</button>
     <button id="position-toggle" @onclick="() => show = !show">Toggle</button>
     <span id="position-ready">@ready</span>
+    @if (Scenario is "script-order" or "unchanged-script-changed-target" or "matching-script" or
+        "custom-element-order" or "unchanged-custom-element-changed-target" or "matching-custom-element" or
+        "nested-script-order" or "nested-script-subtree" or "unchanged-nested-script-changed-target")
+    {
+        <output id="position-native-status">Not clicked</output>
+    }
 </section>
 
 @code {
@@ -83,6 +112,19 @@
     private bool show = true;
     private ElementReference textarea;
     private string ready = "";
+
+    private string RenderPhase => Scenario is "matching-script" or "matching-custom-element" ? "same" : RendererInfo.Name;
+
+    private const string ClickListenerScript = """
+        <script>
+            window.prerenderedPositionInitializerRuns = (window.prerenderedPositionInitializerRuns || 0) + 1;
+            window.prerenderedPositionInitializedTarget = document.getElementById('position-target');
+            window.prerenderedPositionInitializedTarget.addEventListener('click', function () {
+                window.prerenderedPositionNativeClicks = (window.prerenderedPositionNativeClicks || 0) + 1;
+                document.getElementById('position-native-status').textContent = 'Clicked';
+            });
+        </script>
+        """;
 
     protected override void OnAfterRender(bool firstRender)
     {

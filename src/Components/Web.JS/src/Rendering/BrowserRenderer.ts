@@ -7,7 +7,7 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty, rememberDeferredValue } from './DomSpecialPropertyUtil';
-import { PrerenderedDom, PrerenderedFrameMatches } from './PrerenderedDom';
+import { PrerenderedDom, PrerenderedFramePlans } from './PrerenderedDom';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -31,7 +31,7 @@ export class BrowserRenderer {
 
   private prerenderedDom = new Map<number, PrerenderedDom>();
 
-  private adoptedFrames: PrerenderedFrameMatches = new Map();
+  private framePlans: PrerenderedFramePlans = new Map();
 
   public constructor(browserRendererId: number) {
     this.eventDelegator = new EventDelegator(browserRendererId);
@@ -90,7 +90,7 @@ export class BrowserRenderer {
       const element = this.childComponentLocations[componentId];
       if (prerenderedRoots.delete(element)) {
         const candidate = new PrerenderedDom(batch, diffs, parseMarkup);
-        if (candidate.match(componentId, element)) {
+        if (candidate.tryPlanRoot(componentId, element)) {
           this.prerenderedDom.set(componentId, candidate);
         }
       }
@@ -99,7 +99,7 @@ export class BrowserRenderer {
 
   public endBatch(): void {
     this.prerenderedDom.clear();
-    this.adoptedFrames.clear();
+    this.framePlans.clear();
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
@@ -112,7 +112,7 @@ export class BrowserRenderer {
     if (elementsToClearOnRootComponentRender.delete(element)) {
       const prerendered = this.prerenderedDom.get(componentId);
       if (prerendered) {
-        prerendered.adopt(element, this.adoptedFrames);
+        prerendered.prepareRootForRendering(element, this.framePlans);
       } else {
         this.detachEventHandlersFromElement(element);
         emptyLogicalElement(element);
@@ -319,12 +319,12 @@ export class BrowserRenderer {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
 
-    const match = this.adoptedFrames.get(frameIndex);
-    const adoptedElement = match?.replace ? undefined : match?.nodes[0];
-    const isAdopted = adoptedElement instanceof Element;
+    const framePlan = this.framePlans.get(frameIndex);
+    const preservedElement = framePlan?.replace ? undefined : framePlan?.nodes[0];
+    const isPreservedElement = preservedElement instanceof Element;
     let domElement: Element;
-    if (isAdopted) {
-      domElement = adoptedElement;
+    if (isPreservedElement) {
+      domElement = preservedElement;
       adoptLogicalChild(domElement, parent, childIndex);
     } else if (tagName === 'svg' || isSvgElement(parent)) {
       domElement = document.createElementNS('http://www.w3.org/2000/svg', tagName);
@@ -342,24 +342,24 @@ export class BrowserRenderer {
       if (frameReader.frameType(descendantFrame) !== FrameType.attribute) {
         break;
       }
-      this.applyAttribute(batch, componentId, domElement, descendantFrame, isAdopted);
+      this.applyAttribute(batch, componentId, domElement, descendantFrame, isPreservedElement);
     }
 
-    if (!isAdopted) {
+    if (!isPreservedElement) {
       this.insertElementNode(domElement, parent, childIndex, frameIndex);
     }
     if (descendantIndex < descendantsEndIndexExcl) {
       this.insertFrameRange(batch, componentId, logicalElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
     }
-    if (!isAdopted) {
+    if (!isPreservedElement) {
       applyAnyDeferredValue(domElement);
     }
   }
 
   private insertElementNode(element: Element, parent: LogicalElement, childIndex: number, frameIndex: number): void {
-    const match = this.adoptedFrames.get(frameIndex);
-    if (match?.replace) {
-      const placeholder = match.nodes[0];
+    const framePlan = this.framePlans.get(frameIndex);
+    if (framePlan?.replace) {
+      const placeholder = framePlan.nodes[0];
       placeholder.parentNode!.replaceChild(element, placeholder);
       adoptLogicalChild(element, parent, childIndex);
     } else {
@@ -368,10 +368,10 @@ export class BrowserRenderer {
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame, frameIndex: number) {
-    const adopted = this.adoptedFrames.get(frameIndex)?.nodes[0];
-    const containerElement = adopted ? toLogicalElement(adopted) : createAndInsertLogicalContainer(parent, childIndex);
-    if (adopted) {
-      adoptLogicalChild(adopted, parent, childIndex);
+    const plannedContainer = this.framePlans.get(frameIndex)?.nodes[0];
+    const containerElement = plannedContainer ? toLogicalElement(plannedContainer) : createAndInsertLogicalContainer(parent, childIndex);
+    if (plannedContainer) {
+      adoptLogicalChild(plannedContainer, parent, childIndex);
     }
 
     // All we have to do is associate the child component ID with its location. We don't actually
@@ -381,9 +381,9 @@ export class BrowserRenderer {
   }
 
   private insertText(batch: RenderBatch, parent: LogicalElement, childIndex: number, textFrame: RenderTreeFrame, frameIndex: number) {
-    const adopted = this.adoptedFrames.get(frameIndex)?.nodes[0];
-    if (adopted) {
-      adoptLogicalChild(adopted, parent, childIndex);
+    const plannedTextNode = this.framePlans.get(frameIndex)?.nodes[0];
+    if (plannedTextNode) {
+      adoptLogicalChild(plannedTextNode, parent, childIndex);
       return;
     }
     const textContent = batch.frameReader.textContent(textFrame)!;
@@ -392,12 +392,15 @@ export class BrowserRenderer {
   }
 
   private insertMarkup(batch: RenderBatch, parent: LogicalElement, childIndex: number, markupFrame: RenderTreeFrame, frameIndex?: number) {
-    const adopted = frameIndex === undefined ? undefined : this.adoptedFrames.get(frameIndex)?.nodes;
-    if (adopted) {
-      adoptLogicalChild(adopted[0], parent, childIndex);
-      const markupContainer = toLogicalElement(adopted[0]);
-      for (let index = 1; index < adopted.length; index++) {
-        adoptLogicalChild(adopted[index], markupContainer, index - 1);
+    const markupPlan = frameIndex === undefined ? undefined : this.framePlans.get(frameIndex);
+    const fragmentNodes = markupPlan?.nodes;
+    if (fragmentNodes) {
+      adoptLogicalChild(fragmentNodes[0], parent, childIndex);
+      const markupContainer = toLogicalElement(fragmentNodes[0]);
+      markupPlan?.insertNewElements?.();
+      markupPlan?.updateChildLists?.();
+      for (let index = 1; index < fragmentNodes.length; index++) {
+        adoptLogicalChild(fragmentNodes[index], markupContainer, index - 1);
       }
       return;
     }
@@ -411,7 +414,7 @@ export class BrowserRenderer {
     }
   }
 
-  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame, isAdopted = false) {
+  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame, preserveExistingAttributes = false) {
     const frameReader = batch.frameReader;
     const attributeName = frameReader.attributeName(attributeFrame)!;
     const eventHandlerId = frameReader.attributeEventHandlerId(attributeFrame);
@@ -422,14 +425,14 @@ export class BrowserRenderer {
       return;
     }
 
-    if (isAdopted && !attributeName.startsWith(internalAttributeNamePrefix)) {
+    if (preserveExistingAttributes && !attributeName.startsWith(internalAttributeNamePrefix)) {
       if (attributeName === 'value') {
         rememberDeferredValue(toDomElement, frameReader.attributeValue(attributeFrame));
       }
     } else {
       const value = frameReader.attributeValue(attributeFrame);
       this.setOrRemoveAttributeOrProperty(toDomElement, attributeName, value);
-      if (isAdopted) {
+      if (preserveExistingAttributes) {
         toDomElement.removeAttribute(attributeName);
       }
     }
