@@ -553,6 +553,130 @@ public class StaticAssetsIntegrationTests
     }
 
     [Fact]
+    public async Task ModifiedAssetsIgnoreBuildTimeConditionalRequestHeadersInDevelopment()
+    {
+        // Arrange
+        var appName = nameof(ModifiedAssetsIgnoreBuildTimeConditionalRequestHeadersInDevelopment);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var initialResponse = await client.GetAsync("/sample.txt");
+        var initialETag = Assert.IsType<EntityTagHeaderValue>(initialResponse.Headers.ETag);
+        Assert.True(initialResponse.Content.Headers.LastModified.HasValue);
+        var initialLastModified = initialResponse.Content.Headers.LastModified.Value;
+
+        File.WriteAllText(Path.Combine(webRoot, "sample.txt"), "Hello, World! Modified");
+        var conditionalRequest = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        conditionalRequest.Headers.IfNoneMatch.Add(initialETag!);
+        conditionalRequest.Headers.IfModifiedSince = initialLastModified;
+
+        // Act
+        var response = await client.SendAsync(conditionalRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotEqual(initialETag, response.Headers.ETag);
+        Assert.Equal("Hello, World! Modified", await response.Content.ReadAsStringAsync());
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task ModifiedCompressedAssetsIgnoreBuildTimeConditionalRequestHeadersInDevelopment()
+    {
+        // Arrange
+        var appName = nameof(ModifiedCompressedAssetsIgnoreBuildTimeConditionalRequestHeadersInDevelopment);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", true),
+            ]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var initialRequest = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        initialRequest.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+        var initialResponse = await client.SendAsync(initialRequest);
+        var initialETag = Assert.IsType<EntityTagHeaderValue>(initialResponse.Headers.ETag);
+        Assert.True(initialResponse.Content.Headers.LastModified.HasValue);
+        var initialLastModified = initialResponse.Content.Headers.LastModified.Value;
+
+        File.WriteAllText(Path.Combine(webRoot, "sample.txt"), "Hello, World! Modified");
+
+        var conditionalRequest = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        conditionalRequest.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+        conditionalRequest.Headers.IfNoneMatch.Add(initialETag);
+        conditionalRequest.Headers.IfModifiedSince = initialLastModified;
+
+        // Act
+        var response = await client.SendAsync(conditionalRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotEqual(initialETag, response.Headers.ETag);
+        var gzipContent = await response.Content.ReadAsStreamAsync();
+        using var gzipStream = new GZipStream(gzipContent, CompressionMode.Decompress);
+        using var reader = new StreamReader(gzipStream);
+        var content = reader.ReadToEnd();
+        Assert.Equal("Hello, World! Modified", content);
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
     public async Task RangeRequestReturnsCorrectContentLengthForModifiedAssets()
     {
         // Arrange
