@@ -8,108 +8,108 @@
 <Project>
   <ItemGroup>
     <!-- These assemblies are available as both a NuGet package and in the shared framework -->
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.Internal" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Extensions" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Net.Http.Headers" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Metadata" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.WebUtilities" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Core" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authorization" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Authorization" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Forms" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.JSInterop" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.FileProviders.Embedded" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Configuration.KeyPerFile" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Localization.Abstractions" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Localization" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.ObjectPool" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.WebEncoders" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Features" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Validation" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Authorization" ProjectPath="$(RepoRoot)src/Components/Authorization/src/Microsoft.AspNetCore.Components.Authorization.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepoRoot)src/Components/Components/src/Microsoft.AspNetCore.Components.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src/Components/Forms/src/Microsoft.AspNetCore.Components.Forms.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src/Components/JSInterop/src/Microsoft.JSInterop.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web" ProjectPath="$(RepoRoot)src/Components/Web/src/Microsoft.AspNetCore.Components.Web.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Configuration.KeyPerFile" ProjectPath="$(RepoRoot)src/Configuration.KeyPerFile/src/Microsoft.Extensions.Configuration.KeyPerFile.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Abstractions" ProjectPath="$(RepoRoot)src/DataProtection/Abstractions/src/Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.Internal" ProjectPath="$(RepoRoot)src/DataProtection/Cryptography.Internal/src/Microsoft.AspNetCore.Cryptography.Internal.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" ProjectPath="$(RepoRoot)src/DataProtection/Cryptography.KeyDerivation/src/Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection" ProjectPath="$(RepoRoot)src/DataProtection/DataProtection/src/Microsoft.AspNetCore.DataProtection.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Extensions" ProjectPath="$(RepoRoot)src/DataProtection/Extensions/src/Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Features" ProjectPath="$(RepoRoot)src/Extensions/Features/src/Microsoft.Extensions.Features.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.FileProviders.Embedded" ProjectPath="$(RepoRoot)src/FileProviders/Embedded/src/Microsoft.Extensions.FileProviders.Embedded.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepoRoot)src/HealthChecks/Abstractions/src/Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src/HealthChecks/HealthChecks/src/Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Net.Http.Headers" ProjectPath="$(RepoRoot)src/Http/Headers/src/Microsoft.Net.Http.Headers.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Metadata" ProjectPath="$(RepoRoot)src/Http/Metadata/src/Microsoft.AspNetCore.Metadata.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.WebUtilities" ProjectPath="$(RepoRoot)src/Http/WebUtilities/src/Microsoft.AspNetCore.WebUtilities.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Core" ProjectPath="$(RepoRoot)src/Identity/Extensions.Core/src/Microsoft.Extensions.Identity.Core.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" ProjectPath="$(RepoRoot)src/Identity/Extensions.Stores/src/Microsoft.Extensions.Identity.Stores.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Localization.Abstractions" ProjectPath="$(RepoRoot)src/Localization/Abstractions/src/Microsoft.Extensions.Localization.Abstractions.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Localization" ProjectPath="$(RepoRoot)src/Localization/Localization/src/Microsoft.Extensions.Localization.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.ObjectPool" ProjectPath="$(RepoRoot)src/ObjectPool/src/Microsoft.Extensions.ObjectPool.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authorization" ProjectPath="$(RepoRoot)src/Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" ProjectPath="$(RepoRoot)src/Servers/Connections.Abstractions/src/Microsoft.AspNetCore.Connections.Abstractions.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" ProjectPath="$(RepoRoot)src/SignalR/common/Http.Connections.Common/src/Microsoft.AspNetCore.Http.Connections.Common.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" ProjectPath="$(RepoRoot)src/SignalR/common/Protocols.Json/src/Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" ProjectPath="$(RepoRoot)src/SignalR/common/SignalR.Common/src/Microsoft.AspNetCore.SignalR.Common.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Validation" ProjectPath="$(RepoRoot)src/Validation/src/Microsoft.Extensions.Validation.csproj" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepoRoot)src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
 
     <!-- These assemblies are only in the shared framework -->
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Antiforgery" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Features" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Results" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Identity" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.HttpSys" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.BearerToken" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Cookies" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.OAuth" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authorization.Policy" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.CookiePolicy" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Cors" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HostFiltering" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpLogging" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpOverrides" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpsPolicy" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization.Routing" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.OutputCaching" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RateLimiting" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RequestDecompression" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCompression" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Rewrite" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Session" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.StaticFiles" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.WebSockets" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Razor.Runtime" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Razor" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Core" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Cors" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Localization" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Razor" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Connections" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR.Core" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.StaticAssets" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Endpoints" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Server" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Antiforgery" ProjectPath="$(RepoRoot)src/Antiforgery/src/Microsoft.AspNetCore.Antiforgery.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Endpoints" ProjectPath="$(RepoRoot)src/Components/Endpoints/src/Microsoft.AspNetCore.Components.Endpoints.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src/Components/Server/src/Microsoft.AspNetCore.Components.Server.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src/DefaultBuilder/src/Microsoft.AspNetCore.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Abstractions" ProjectPath="$(RepoRoot)src/Hosting/Abstractions/src/Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting" ProjectPath="$(RepoRoot)src/Hosting/Hosting/src/Microsoft.AspNetCore.Hosting.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" ProjectPath="$(RepoRoot)src/Hosting/Server.Abstractions/src/Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Html.Abstractions" ProjectPath="$(RepoRoot)src/Html.Abstractions/src/Microsoft.AspNetCore.Html.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Abstractions" ProjectPath="$(RepoRoot)src/Http/Authentication.Abstractions/src/Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Core" ProjectPath="$(RepoRoot)src/Http/Authentication.Core/src/Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Abstractions" ProjectPath="$(RepoRoot)src/Http/Http.Abstractions/src/Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Extensions" ProjectPath="$(RepoRoot)src/Http/Http.Extensions/src/Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Features" ProjectPath="$(RepoRoot)src/Http/Http.Features/src/Microsoft.AspNetCore.Http.Features.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Results" ProjectPath="$(RepoRoot)src/Http/Http.Results/src/Microsoft.AspNetCore.Http.Results.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http" ProjectPath="$(RepoRoot)src/Http/Http/src/Microsoft.AspNetCore.Http.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing.Abstractions" ProjectPath="$(RepoRoot)src/Http/Routing.Abstractions/src/Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" ProjectPath="$(RepoRoot)src/Http/Routing/src/Microsoft.AspNetCore.Routing.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Identity" ProjectPath="$(RepoRoot)src/Identity/Core/src/Microsoft.AspNetCore.Identity.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Cors" ProjectPath="$(RepoRoot)src/Middleware/CORS/src/Microsoft.AspNetCore.Cors.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" ProjectPath="$(RepoRoot)src/Middleware/Diagnostics.Abstractions/src/Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics" ProjectPath="$(RepoRoot)src/Middleware/Diagnostics/src/Microsoft.AspNetCore.Diagnostics.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src/Middleware/HealthChecks/src/Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HostFiltering" ProjectPath="$(RepoRoot)src/Middleware/HostFiltering/src/Microsoft.AspNetCore.HostFiltering.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpLogging" ProjectPath="$(RepoRoot)src/Middleware/HttpLogging/src/Microsoft.AspNetCore.HttpLogging.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpOverrides" ProjectPath="$(RepoRoot)src/Middleware/HttpOverrides/src/Microsoft.AspNetCore.HttpOverrides.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpsPolicy" ProjectPath="$(RepoRoot)src/Middleware/HttpsPolicy/src/Microsoft.AspNetCore.HttpsPolicy.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization.Routing" ProjectPath="$(RepoRoot)src/Middleware/Localization.Routing/src/Microsoft.AspNetCore.Localization.Routing.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization" ProjectPath="$(RepoRoot)src/Middleware/Localization/src/Microsoft.AspNetCore.Localization.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.OutputCaching" ProjectPath="$(RepoRoot)src/Middleware/OutputCaching/src/Microsoft.AspNetCore.OutputCaching.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RateLimiting" ProjectPath="$(RepoRoot)src/Middleware/RateLimiting/src/Microsoft.AspNetCore.RateLimiting.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RequestDecompression" ProjectPath="$(RepoRoot)src/Middleware/RequestDecompression/src/Microsoft.AspNetCore.RequestDecompression.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" ProjectPath="$(RepoRoot)src/Middleware/ResponseCaching.Abstractions/src/Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching" ProjectPath="$(RepoRoot)src/Middleware/ResponseCaching/src/Microsoft.AspNetCore.ResponseCaching.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCompression" ProjectPath="$(RepoRoot)src/Middleware/ResponseCompression/src/Microsoft.AspNetCore.ResponseCompression.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Rewrite" ProjectPath="$(RepoRoot)src/Middleware/Rewrite/src/Microsoft.AspNetCore.Rewrite.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Session" ProjectPath="$(RepoRoot)src/Middleware/Session/src/Microsoft.AspNetCore.Session.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.StaticFiles" ProjectPath="$(RepoRoot)src/Middleware/StaticFiles/src/Microsoft.AspNetCore.StaticFiles.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepoRoot)src/Middleware/WebSockets/src/Microsoft.AspNetCore.WebSockets.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Abstractions/src/Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" ProjectPath="$(RepoRoot)src/Mvc/Mvc.ApiExplorer/src/Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Core" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Core/src/Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Cors" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Cors/src/Microsoft.AspNetCore.Mvc.Cors.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" ProjectPath="$(RepoRoot)src/Mvc/Mvc.DataAnnotations/src/Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Formatters.Json/src/Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Formatters.Xml/src/Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Localization" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Localization/src/Microsoft.AspNetCore.Mvc.Localization.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Razor" ProjectPath="$(RepoRoot)src/Mvc/Mvc.Razor/src/Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.RazorPages" ProjectPath="$(RepoRoot)src/Mvc/Mvc.RazorPages/src/Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" ProjectPath="$(RepoRoot)src/Mvc/Mvc.TagHelpers/src/Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" ProjectPath="$(RepoRoot)src/Mvc/Mvc.ViewFeatures/src/Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepoRoot)src/Mvc/Mvc/src/Microsoft.AspNetCore.Mvc.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Razor.Runtime" ProjectPath="$(RepoRoot)src/Razor/Razor.Runtime/src/Microsoft.AspNetCore.Razor.Runtime.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Razor" ProjectPath="$(RepoRoot)src/Razor/Razor/src/Microsoft.AspNetCore.Razor.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.BearerToken" ProjectPath="$(RepoRoot)src/Security/Authentication/BearerToken/src/Microsoft.AspNetCore.Authentication.BearerToken.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Cookies" ProjectPath="$(RepoRoot)src/Security/Authentication/Cookies/src/Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication" ProjectPath="$(RepoRoot)src/Security/Authentication/Core/src/Microsoft.AspNetCore.Authentication.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.OAuth" ProjectPath="$(RepoRoot)src/Security/Authentication/OAuth/src/Microsoft.AspNetCore.Authentication.OAuth.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authorization.Policy" ProjectPath="$(RepoRoot)src/Security/Authorization/Policy/src/Microsoft.AspNetCore.Authorization.Policy.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.CookiePolicy" ProjectPath="$(RepoRoot)src/Security/CookiePolicy/src/Microsoft.AspNetCore.CookiePolicy.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.HttpSys" ProjectPath="$(RepoRoot)src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" ProjectPath="$(RepoRoot)src/Servers/IIS/IIS/src/Microsoft.AspNetCore.Server.IIS.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IISIntegration" ProjectPath="$(RepoRoot)src/Servers/IIS/IISIntegration/src/Microsoft.AspNetCore.Server.IISIntegration.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Core/src/Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Kestrel/src/Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Transport.NamedPipes/src/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Transport.Quic/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" ProjectPath="$(RepoRoot)src/Servers/Kestrel/Transport.Sockets/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Connections" ProjectPath="$(RepoRoot)src/SignalR/common/Http.Connections/src/Microsoft.AspNetCore.Http.Connections.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR.Core" ProjectPath="$(RepoRoot)src/SignalR/server/Core/src/Microsoft.AspNetCore.SignalR.Core.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepoRoot)src/SignalR/server/SignalR/src/Microsoft.AspNetCore.SignalR.csproj" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.StaticAssets" ProjectPath="$(RepoRoot)src/StaticAssets/src/Microsoft.AspNetCore.StaticAssets.csproj" />
   </ItemGroup>
 </Project>

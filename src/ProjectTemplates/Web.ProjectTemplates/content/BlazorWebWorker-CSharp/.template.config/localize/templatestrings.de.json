@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor-Worker",
   "description": "Ein Projekt zur Erstellung einer Klassenbibliothek, die .NET-Code in einem Worker aus einer Blazor-WebAssembly- oder Blazor-Web-App ausführt.",
