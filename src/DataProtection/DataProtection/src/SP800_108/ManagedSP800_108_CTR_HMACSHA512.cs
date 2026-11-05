@@ -43,9 +43,6 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
     /// </remarks>
     private const int FipsMinimumKeyLengthInBytes = 14;
 
-    // Constant size of the stack buffer used for the PRF input; larger inputs use a new array.
-    private const int PrfInputStackBufferSize = 256;
-
     public static void DeriveKeys(ReadOnlySpan<byte> kdk, ReadOnlySpan<byte> label, ReadOnlySpan<byte> contextHeader, ReadOnlySpan<byte> contextData, Span<byte> operationSubkey, Span<byte> validationSubkey)
     {
         if (kdk.Length < FipsMinimumKeyLengthInBytes)
@@ -99,12 +96,10 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         var prfInputLength = checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + (contextHeader.Length + contextData.Length) + sizeof(uint) /* [K]_2 */);
 
 #if NET10_0_OR_GREATER
-        // The label (AAD) contains the purpose strings, which commonly push the input past 128 bytes
-        // (e.g. application discriminator + cookie authentication purposes), so the stack buffer covers up to 256 bytes.
-        // Larger inputs fall back to a dedicated array: this buffer holds key derivation input, so it must not come from a shared pool.
+        // 256 bytes covers typical purpose chains (the AAD is the KDF label); larger inputs use a heap array.
         byte[]? prfInputArray = null;
-        Span<byte> prfInput = prfInputLength <= PrfInputStackBufferSize
-            ? stackalloc byte[PrfInputStackBufferSize].Slice(0, prfInputLength)
+        Span<byte> prfInput = prfInputLength <= 256
+            ? stackalloc byte[256].Slice(0, prfInputLength)
             : (prfInputArray = new byte[prfInputLength]);
 #else
         var prfInputArray = new byte[prfInputLength];
@@ -122,7 +117,6 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 
             // Copy label and context to prfInput since they're stable over all iterations
             label.CopyTo(prfInput.Slice(sizeof(uint)));
-            prfInput[sizeof(uint) + label.Length] = 0x00; // don't rely on the stack buffer being zeroed
             contextHeader.CopyTo(prfInput.Slice(sizeof(uint) + label.Length + 1));
             contextData.CopyTo(prfInput.Slice(sizeof(uint) + label.Length + 1 + contextHeader.Length));
 

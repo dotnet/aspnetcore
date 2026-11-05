@@ -199,8 +199,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
     }
 
-    // The same SymmetricAlgorithm instance is used to calculate the output size and to perform the encryption,
-    // which avoids creating multiple instances per operation.
     private void EncryptCore<TWriter>(SymmetricAlgorithm symmetricAlgorithm, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
         where TWriter : IBufferWriter<byte>, allows ref struct
     {
