@@ -10,10 +10,13 @@
 
 const deferredValuePropname = '_blazorDeferredValue';
 const pendingUserInputPropname = '_blazorHasPendingUserInput';
+const inputEditSequencePropname = '_blazorInputEditSequence';
+const inFlightInputDispatchesPropname = '_blazorInFlightInputDispatches';
 
 export function setHasPendingUserInput(element: Element, hasPendingInput: boolean): void {
   if (hasPendingInput) {
     element[pendingUserInputPropname] = true;
+    element[inputEditSequencePropname] = ((element[inputEditSequencePropname] as number) || 0) + 1;
   } else {
     delete element[pendingUserInputPropname];
   }
@@ -21,6 +24,65 @@ export function setHasPendingUserInput(element: Element, hasPendingInput: boolea
 
 export function hasPendingUserInput(element: Element): boolean {
   return element[pendingUserInputPropname] === true;
+}
+
+export function beginInFlightUserInputDispatch(element: Element, value: string | boolean, advanceSequence = false): () => void {
+  let seq = (element[inputEditSequencePropname] as number) || 0;
+  if (advanceSequence || seq === 0) {
+    seq++;
+    element[inputEditSequencePropname] = seq;
+  }
+
+  if (typeof value !== 'string') {
+    return () => { /* no-op for boolean checkbox state */ };
+  }
+
+  let inFlight = element[inFlightInputDispatchesPropname] as Map<number, string> | undefined;
+  if (!inFlight) {
+    inFlight = new Map<number, string>();
+    element[inFlightInputDispatchesPropname] = inFlight;
+  }
+
+  inFlight.set(seq, value);
+
+  return () => {
+    inFlight?.delete(seq);
+    if (inFlight && inFlight.size === 0) {
+      delete element[inFlightInputDispatchesPropname];
+    }
+  };
+}
+
+export function clearDispatchedUserInputTracking(element: Element): void {
+  delete element[pendingUserInputPropname];
+  delete element[inputEditSequencePropname];
+  delete element[inFlightInputDispatchesPropname];
+}
+
+function shouldSuppressStaleServerValueUpdate(element: Element, incomingValue: string | null): boolean {
+  if (hasPendingUserInput(element)) {
+    return true;
+  }
+
+  const inFlight = element[inFlightInputDispatchesPropname] as Map<number, string> | undefined;
+  if (!inFlight || inFlight.size === 0) {
+    return false;
+  }
+
+  const latestSequence = (element[inputEditSequencePropname] as number) || 0;
+  const normalizedIncoming = incomingValue ?? '';
+
+  for (const [seq, dispatchedValue] of inFlight) {
+    if (seq < latestSequence && dispatchedValue === normalizedIncoming) {
+      inFlight.delete(seq);
+      if (inFlight.size === 0) {
+        delete element[inFlightInputDispatchesPropname];
+      }
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export function tryApplySpecialProperty(element: Element, name: string, value: string | null) {
@@ -91,7 +153,7 @@ function tryApplyValueProperty(element: Element, value: string | null): boolean 
       // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
       // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
 
-      if (hasPendingUserInput(element)) {
+      if (shouldSuppressStaleServerValueUpdate(element, value)) {
         return true;
       }
 

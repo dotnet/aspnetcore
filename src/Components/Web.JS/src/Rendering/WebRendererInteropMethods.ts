@@ -63,10 +63,14 @@ function invokeRendererAttachedListeners(browserRendererId: number) {
   }
 }
 
-export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any): void {
+export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any, onCompleted?: () => void): void {
   return dispatchEventMiddleware(browserRendererId, eventDescriptor.eventHandlerId, () => {
     const interopMethods = getInteropMethods(browserRendererId);
-    return interopMethods.invokeMethodAsync('DispatchEventAsync', eventDescriptor, eventArgs);
+    const result = interopMethods.invokeMethodAsync('DispatchEventAsync', eventDescriptor, eventArgs);
+    if (onCompleted && result && typeof result.then === 'function') {
+      result.then(onCompleted, onCompleted);
+    }
+    return result;
   });
 }
 

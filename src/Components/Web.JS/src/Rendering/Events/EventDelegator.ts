@@ -6,7 +6,11 @@ import {
   eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions,
 } from './EventTypes';
 import { isRendererAttached, dispatchEvent } from '../WebRendererInteropMethods';
-import { setHasPendingUserInput } from '../DomSpecialPropertyUtil';
+import {
+  beginInFlightUserInputDispatch,
+  clearDispatchedUserInputTracking,
+  setHasPendingUserInput,
+} from '../DomSpecialPropertyUtil';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -79,6 +83,22 @@ const nonFlushingContinuousEvents = toLookup([
   'wheel',
 ]);
 
+const typingStreamEvents = toLookup([
+  'input',
+  'keydown',
+  'keypress',
+  'keyup',
+  'select',
+  'selectionchange',
+]);
+
+function isCommitOrNavigationKey(event: Event): boolean {
+  if (event instanceof KeyboardEvent) {
+    return event.key === 'Enter' || event.key === 'Tab' || event.key === 'Escape';
+  }
+  return false;
+}
+
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
 // calling an EventInfoStore that deals with registering/unregistering the underlying delegated
 // event listeners as required (and also maps actual events back to the given callback).
@@ -146,10 +166,21 @@ export class EventDelegator {
         this.eventInfoStore.remove(handlerInfo.eventHandlerId);
       }
 
-      for (const state of infosForElement.enumerateRateLimitStates()) {
-        this.clearRateLimitTimer(state);
+      for (const eventName of infosForElement.enumerateDebounceEventNames()) {
+        this.setDebounce(element, eventName, 0);
       }
 
+      for (const eventName of infosForElement.enumerateThrottleEventNames()) {
+        this.setThrottle(element, eventName, 0, false);
+      }
+
+      for (const state of infosForElement.enumerateRateLimitStates()) {
+        this.clearRateLimitTimer(state);
+        state.pendingSnapshot = null;
+        this.pendingRateLimitedStates.delete(state);
+      }
+
+      clearDispatchedUserInputTracking(element);
       delete element[this.eventsCollectionKey];
     }
   }
@@ -268,9 +299,11 @@ export class EventDelegator {
     }
 
     if (evt.type === 'blur' || evt.type === 'change') {
-      this.flushPendingRateLimitedEventsForElement(evt.target);
+      this.flushPendingRateLimitedEventsOnPath(evt);
     } else if (evt.type === 'keyup') {
       this.resetKeyThrottleCooldownsOnPath(evt);
+    } else if (evt.type === 'click' || evt.type === 'submit') {
+      this.flushAllPendingRateLimitedEvents(evt, evt.type);
     }
 
     // Always dispatch to any listeners for the original underlying browser event name
@@ -407,11 +440,14 @@ export class EventDelegator {
 
       const handlerInfo = handlerInfos.getHandler(eventName);
       if (handlerInfo && isRendererAttached(this.browserRendererId)) {
+        const onCompleted = (eventName === 'input' && eventFieldInfo)
+          ? beginInFlightUserInputDispatch(element, eventFieldInfo.fieldValue, /* advanceSequence */ true)
+          : undefined;
         dispatchEvent(this.browserRendererId, {
           eventHandlerId: handlerInfo.eventHandlerId,
           eventName: eventName,
           eventFieldInfo: eventFieldInfo,
-        }, eventArgs);
+        }, eventArgs, onCompleted);
       }
 
       state.inThrottleCooldown = true;
@@ -464,13 +500,21 @@ export class EventDelegator {
       setHasPendingUserInput(state.element, false);
     }
 
+    if (!state.element.isConnected) {
+      this.clearRateLimitTimer(state);
+      return;
+    }
+
     const handlerInfo = state.handlerInfos.getHandler(state.eventName);
     if (handlerInfo && isRendererAttached(this.browserRendererId)) {
+      const onCompleted = (state.eventName === 'input' && snapshot.eventFieldInfo)
+        ? beginInFlightUserInputDispatch(state.element, snapshot.eventFieldInfo.fieldValue)
+        : undefined;
       dispatchEvent(this.browserRendererId, {
         eventHandlerId: handlerInfo.eventHandlerId,
         eventName: state.eventName,
         eventFieldInfo: snapshot.eventFieldInfo,
-      }, snapshot.eventArgs);
+      }, snapshot.eventArgs, onCompleted);
     }
   }
 
@@ -479,30 +523,55 @@ export class EventDelegator {
       return;
     }
 
+    const eventPath = currentBrowserEvent ? currentBrowserEvent.composedPath() : [];
+    const isTypingEvent = triggeringEventName !== undefined
+      && Object.prototype.hasOwnProperty.call(typingStreamEvents, triggeringEventName)
+      && (triggeringEventName !== 'keydown' || !currentBrowserEvent || !isCommitOrNavigationKey(currentBrowserEvent));
+
     const statesToFlush = Array.from(this.pendingRateLimitedStates);
     for (const state of statesToFlush) {
-      if (state.pendingSnapshot
-        && state.pendingSnapshot.sourceEvent !== currentBrowserEvent
-        && (state.eventName !== triggeringEventName || state.element !== currentBrowserEvent?.target)) {
-        if (state.eventName === triggeringEventName) {
-          continue;
-        }
-        this.clearRateLimitTimer(state);
-        this.dispatchPendingSnapshot(state);
+      if (!state.pendingSnapshot || state.pendingSnapshot.sourceEvent === currentBrowserEvent) {
+        continue;
       }
+
+      if (Object.prototype.hasOwnProperty.call(nonFlushingContinuousEvents, state.eventName)) {
+        // Continuous spatial/media observation events (scroll, mousemove, pointermove, etc.)
+        // should complete their own throttle/debounce window rather than being flushed by clicks.
+        continue;
+      }
+
+      const isOnSameEventPath = eventPath.indexOf(state.element) !== -1;
+
+      if (isOnSameEventPath && state.eventName === triggeringEventName) {
+        // An ancestor or descendant on the same composedPath for the same event name
+        // is part of the current bubbling pass and should not flush itself.
+        continue;
+      }
+
+      if (isOnSameEventPath && isTypingEvent && Object.prototype.hasOwnProperty.call(typingStreamEvents, state.eventName)) {
+        // Ordinary typing events (keydown, keypress, input, keyup, select) on the same element/path
+        // must not flush pending debounced/throttled input or key handlers on that path.
+        continue;
+      }
+
+      this.clearRateLimitTimer(state);
+      this.dispatchPendingSnapshot(state);
     }
   }
 
-  private flushPendingRateLimitedEventsForElement(element: Element): void {
-    const infos = this.getEventHandlerInfosForElement(element, false);
-    if (!infos) {
-      return;
-    }
-
-    for (const state of infos.enumerateRateLimitStates()) {
-      if (state.pendingSnapshot) {
-        this.clearRateLimitTimer(state);
-        this.dispatchPendingSnapshot(state);
+  private flushPendingRateLimitedEventsOnPath(evt: Event): void {
+    const path = evt.composedPath();
+    for (const target of path) {
+      if (target instanceof Element) {
+        const infos = this.getEventHandlerInfosForElement(target, false);
+        if (infos) {
+          for (const state of infos.enumerateRateLimitStates()) {
+            if (state.pendingSnapshot && state.eventName !== evt.type) {
+              this.clearRateLimitTimer(state);
+              this.dispatchPendingSnapshot(state);
+            }
+          }
+        }
       }
     }
   }
@@ -701,6 +770,26 @@ class EventHandlerInfosForElement {
       for (const eventName in this.rateLimitStates) {
         if (Object.prototype.hasOwnProperty.call(this.rateLimitStates, eventName)) {
           yield this.rateLimitStates[eventName];
+        }
+      }
+    }
+  }
+
+  public *enumerateDebounceEventNames() : IterableIterator<string> {
+    if (this.debounceIntervals) {
+      for (const eventName in this.debounceIntervals) {
+        if (Object.prototype.hasOwnProperty.call(this.debounceIntervals, eventName) && this.debounceIntervals[eventName] > 0) {
+          yield eventName;
+        }
+      }
+    }
+  }
+
+  public *enumerateThrottleEventNames() : IterableIterator<string> {
+    if (this.throttleConfigs) {
+      for (const eventName in this.throttleConfigs) {
+        if (Object.prototype.hasOwnProperty.call(this.throttleConfigs, eventName) && this.throttleConfigs[eventName].interval > 0) {
+          yield eventName;
         }
       }
     }

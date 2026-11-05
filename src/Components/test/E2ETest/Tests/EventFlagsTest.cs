@@ -199,4 +199,26 @@ public class EventFlagsTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
         // Leading edge + trailing edge = 2 events total for 3 rapid scroll events
         Browser.Equal("2", () => Browser.Exists(By.Id("throttled-scroll-count")).Text);
     }
+
+    [Fact]
+    public void OnInput_WithDebounceAndKeyHandlers_DoesNotFlushOnTypingKeys_AndFlushesOnEnter()
+    {
+        var input = Browser.Exists(By.Id("debounced-combo-input"));
+        input.SendKeys("abc");
+
+        Browser.Equal("abc", () => Browser.Exists(By.Id("combo-value")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("combo-input-count")).Text);
+        Browser.Equal("3", () => Browser.Exists(By.Id("combo-keydown-count")).Text);
+        Browser.Equal("3", () => Browser.Exists(By.Id("combo-keyup-count")).Text);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "const el = arguments[0];" +
+            "el.value = 'abc-enter';" +
+            "el.dispatchEvent(new Event('input', { bubbles: true }));" +
+            "el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));",
+            input);
+
+        Browser.Equal("abc-enter", () => Browser.Exists(By.Id("combo-enter-committed")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("combo-input-count")).Text);
+    }
 }

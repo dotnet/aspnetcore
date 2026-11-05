@@ -1,3 +1,5 @@
+@using System.Globalization
+
 <style>
     button:focus {
         background-color: yellow !important;
@@ -66,13 +68,14 @@ else
         </div>
     </div>
 
+    @* Using internal attribute names until the Razor compiler support for @onevent:debounce and @onevent:throttle flows into the SDK *@
     <div id="debounce-scenario">
         <h3>Scenario 4: oninput:debounce</h3>
         <input id="debounced-input"
                @bind="debouncedText"
                @bind:event="oninput"
                @bind:after="OnDebouncedInput"
-               @oninput:debounce="debounceInterval" />
+               __internal_debounce_oninput="@(debounceInterval.ToString(CultureInfo.InvariantCulture))" />
         <button id="debounced-submit" @onclick="OnDebouncedSubmit">Submit</button>
         <span id="debounced-value">@debouncedText</span>
         <span id="debounced-count">@debouncedInputCount</span>
@@ -83,7 +86,7 @@ else
         <h3>Scenario 5: onclick:throttle (discrete)</h3>
         <button id="throttled-click-button"
                 @onclick="OnThrottledClick"
-                @onclick:throttle="throttleClickInterval">
+                __internal_throttle_onclick="@(throttleClickInterval.ToString(CultureInfo.InvariantCulture))">
             Throttled Click
         </button>
         <span id="throttled-click-count">@throttledClickCount</span>
@@ -93,11 +96,27 @@ else
         <h3>Scenario 6: onscroll:throttle (continuous)</h3>
         <div id="throttled-scroll-area"
              @onscroll="OnThrottledScroll"
-             @onscroll:throttle="throttleScrollInterval"
+             __internal_throttle_onscroll="@($"{throttleScrollInterval.ToString(CultureInfo.InvariantCulture)}:trailing")"
              style="width: 300px; height: 100px; overflow-y: scroll; border: 1px solid gray;">
             <div style="height: 600px;">Scroll content</div>
         </div>
         <span id="throttled-scroll-count">@throttledScrollCount</span>
+    </div>
+
+    <div id="debounce-with-keydown-scenario">
+        <h3>Scenario 7: oninput:debounce with onkeydown and onkeyup</h3>
+        <input id="debounced-combo-input"
+               @bind="comboText"
+               @bind:event="oninput"
+               @bind:after="OnComboInput"
+               __internal_debounce_oninput="@(debounceInterval.ToString(CultureInfo.InvariantCulture))"
+               @onkeydown="OnComboKeyDown"
+               @onkeyup="OnComboKeyUp" />
+        <span id="combo-value">@comboText</span>
+        <span id="combo-input-count">@comboInputCount</span>
+        <span id="combo-keydown-count">@comboKeyDownCount</span>
+        <span id="combo-keyup-count">@comboKeyUpCount</span>
+        <span id="combo-enter-committed">@comboCommittedOnEnter</span>
     </div>
 </div>
 
@@ -119,6 +138,12 @@ else
 
     private int throttleScrollInterval = 200;
     private int throttledScrollCount;
+
+    private string comboText = string.Empty;
+    private int comboInputCount;
+    private int comboKeyDownCount;
+    private int comboKeyUpCount;
+    private string comboCommittedOnEnter = string.Empty;
 
     private string eventLog = string.Empty;
 
@@ -178,5 +203,24 @@ else
     private void OnThrottledScroll()
     {
         throttledScrollCount++;
+    }
+
+    private void OnComboInput()
+    {
+        comboInputCount++;
+    }
+
+    private void OnComboKeyDown(KeyboardEventArgs e)
+    {
+        comboKeyDownCount++;
+        if (e.Key == "Enter")
+        {
+            comboCommittedOnEnter = comboText;
+        }
+    }
+
+    private void OnComboKeyUp(KeyboardEventArgs e)
+    {
+        comboKeyUpCount++;
     }
 }

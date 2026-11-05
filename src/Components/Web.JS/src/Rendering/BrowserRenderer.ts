@@ -93,6 +93,7 @@ export class BrowserRenderer {
       // no parent to remove that child), so we empty it to restore it to the state it was in before the root
       // component was added.
       const logicalElement = this.childComponentLocations[componentId];
+      this.detachEventHandlersFromElement(logicalElement);
       markAsInteractiveRootComponentElement(logicalElement, false);
 
       if (shouldPreserveContentOnInteractiveComponentDisposal(logicalElement)) {
@@ -147,6 +148,10 @@ export class BrowserRenderer {
         }
         case EditType.removeFrame: {
           const siblingIndex = editReader.siblingIndex(edit);
+          const childToRemove = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
+          if (childToRemove) {
+            this.detachEventHandlersFromElement(childToRemove);
+          }
           removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           break;
         }

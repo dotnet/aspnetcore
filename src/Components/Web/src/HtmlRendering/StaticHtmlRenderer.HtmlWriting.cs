@@ -304,6 +304,12 @@ public partial class StaticHtmlRenderer
                 return candidateIndex;
             }
 
+            if (frame.AttributeName.StartsWith("__internal_debounce_", StringComparison.Ordinal) ||
+                frame.AttributeName.StartsWith("__internal_throttle_", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             if (frame.AttributeName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
                 capturedValueAttribute = frame.AttributeValue as string;

@@ -1,4 +1,6 @@
+@using System.ComponentModel.DataAnnotations
 @using System.Diagnostics
+@implements IDisposable
 
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 p-3 bg-dark text-white rounded">
     <div>
@@ -12,11 +14,17 @@
         </div>
     </div>
     <div class="d-flex gap-2 mt-2 mt-md-0">
-        <a href="event-rate-limiting" class="btn btn-sm @(ModeLabel == "Server" ? "btn-light fw-bold" : "btn-outline-light")">
+        <a id="nav-server-link" href="event-rate-limiting" class="btn btn-sm @(ModeLabel == "Server" ? "btn-light fw-bold" : "btn-outline-light")">
             Interactive Server
         </a>
-        <a href="event-rate-limiting-wasm" class="btn btn-sm @(ModeLabel == "WebAssembly" ? "btn-light fw-bold" : "btn-outline-light")">
+        <a id="nav-wasm-link" href="event-rate-limiting-wasm" class="btn btn-sm @(ModeLabel == "WebAssembly" ? "btn-light fw-bold" : "btn-outline-light")">
             Interactive WebAssembly
+        </a>
+        <a id="nav-auto-link" href="event-rate-limiting-auto" class="btn btn-sm @(ModeLabel == "Auto" ? "btn-light fw-bold" : "btn-outline-light")">
+            Interactive Auto
+        </a>
+        <a id="nav-static-weather-link" href="weather" class="btn btn-sm btn-outline-info">
+            Static SSR (Weather)
         </a>
         <button id="reset-all-btn" type="button" class="btn btn-sm btn-danger" @onclick="ResetAll">
             Reset Counters &amp; Log
@@ -311,11 +319,143 @@
                 </div>
             </div>
         </div>
+
+        <!-- Scenario 5: EditForm + Validation + Debounced Input + Immediate Submit Flush -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header">
+                <strong>5. <code>EditForm</code> Validation + Debounced Input + Immediate Submit/Blur Flush</strong>
+            </div>
+            <div class="card-body">
+                <EditForm EditContext="editContext" OnValidSubmit="HandleValidFormSubmit" OnInvalidSubmit="HandleInvalidFormSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-7">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Email (min 5 chars)</span>
+                                <input id="editform-debounced-email"
+                                       class="form-control"
+                                       placeholder="user@example.com"
+                                       @bind:event="oninput"
+                                       @bind:get="formModel.Email"
+                                       @bind:set="SetFormEmail"
+                                       @oninput:debounce="debounceMs" />
+                                <button id="editform-submit-btn" type="submit" class="btn btn-primary">Validate &amp; Submit</button>
+                            </div>
+                            <ValidationMessage For="@(() => formModel.Email)" />
+                        </div>
+                        <div class="col-md-5 small">
+                            <div>Model Email: <code id="editform-model-email">@formModel.Email</code></div>
+                            <div>
+                                Valid submits: <strong id="editform-valid-submits" class="text-success">@validFormSubmits</strong>
+                                (<code id="editform-last-valid-email">@lastValidSubmittedEmail</code>) |
+                                Invalid: <strong id="editform-invalid-submits" class="text-danger">@invalidFormSubmits</strong>
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+
+        <!-- Scenario 6: Combined @oninput:debounce + @onkeydown/@onkeyup (Autocomplete / Enter-to-Search) -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header">
+                <strong>6. Combined <code>@("@oninput:debounce")</code> + <code>@("@onkeydown")</code> / <code>@("@onkeyup")</code> (Autocomplete &amp; Enter-to-Search)</strong>
+            </div>
+            <div class="card-body">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-6">
+                        <input id="combo-key-input"
+                               class="form-control form-control-sm"
+                               placeholder="Type &amp; press Enter (or Escape to clear)..."
+                               @bind="comboQuery"
+                               @bind:event="oninput"
+                               @bind:after="OnComboInputAfter"
+                               @oninput:debounce="debounceMs"
+                               @onkeydown="OnComboKeyDown"
+                               @onkeyup="OnComboKeyUp" />
+                    </div>
+                    <div class="col-md-6 small">
+                        <div>
+                            Debounced inputs: <strong id="combo-input-count" class="text-primary">@comboInputCount</strong> |
+                            KeyDowns: <strong id="combo-keydown-count">@comboKeyDownCount</strong> |
+                            KeyUps: <strong id="combo-keyup-count">@comboKeyUpCount</strong>
+                        </div>
+                        <div>
+                            Bound: <code id="combo-bound-query">@comboQuery</code> |
+                            Enter-committed: <code id="combo-enter-query">@comboEnterCommittedQuery</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenario 7: Background Re-renders + Async Handler + Clear/Preset + Conditional Disposal -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>7. Stress Test: Background Re-renders, Async Handler, Clear/Preset &amp; Conditional Removal</strong>
+                <div class="d-flex gap-2">
+                    <button id="toggle-bg-timer-btn"
+                            type="button"
+                            class="btn btn-sm @(backgroundTimerRunning ? "btn-warning" : "btn-outline-secondary")"
+                            @onclick="ToggleBackgroundTimer">
+                        @(backgroundTimerRunning ? $"Stop 30ms Render Timer ({backgroundTicks})" : "Start 30ms Render Timer")
+                    </button>
+                    <button id="toggle-conditional-input-btn"
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            @onclick="ScheduleConditionalUnmount">
+                        @(showConditionalInput ? "Unmount in 150ms" : "Mount Conditional Input")
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold mb-1" for="stress-async-input">
+                            Manual <code>value</code> + Async <code>@("@oninput:debounce=\"200\"")</code> (50ms server delay):
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <input id="stress-async-input"
+                                   class="form-control"
+                                   value="@stressText"
+                                   @oninput="OnStressAsyncInput"
+                                   @oninput:debounce="200" />
+                            <button id="stress-preset-btn" type="button" class="btn btn-outline-primary" @onclick="SetStressPreset">Preset</button>
+                            <button id="stress-clear-btn" type="button" class="btn btn-outline-secondary" @onclick="ClearStressText">Clear</button>
+                        </div>
+                        <div class="small mt-1">
+                            Confirmed state: <code id="stress-confirmed-text">@stressText</code>
+                            (Dispatches: <strong id="stress-dispatch-count">@stressDispatchCount</strong>)
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="small fw-semibold mb-1">
+                            Conditional Element Removal (Dispatches: <strong id="conditional-dispatch-count">@conditionalDispatchCount</strong>):
+                        </div>
+                        @if (showConditionalInput)
+                        {
+                            <input id="conditional-debounced-input"
+                                   class="form-control form-control-sm"
+                                   placeholder="Type here then immediately click Unmount..."
+                                   @oninput="OnConditionalInput"
+                                   @oninput:debounce="400" />
+                        }
+                        else
+                        {
+                            <div id="conditional-unmounted-msg" class="text-muted small fst-italic">
+                                Conditional input is unmounted (any pending timer was cancelled).
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Right Column: Live Diagnostic Event Log -->
     <div class="col-lg-4">
-        <div class="card shadow-sm sticky-top" style="top: 1rem;">
+        <div class="card shadow-sm sticky-lg-top" style="top: 1rem;">
             <div class="card-header d-flex justify-content-between align-items-center bg-light">
                 <strong>Diagnostic Event Log (<span id="log-entry-count">@logEntries.Count</span>)</strong>
                 <div class="form-check form-switch mb-0 small">
@@ -422,6 +562,34 @@
     private int throttledScrollCount;
     private int baselineScrollCount;
 
+    // Scenario 5 state (EditForm)
+    private SearchFormModel formModel = new();
+    private EditContext editContext = default!;
+    private int validFormSubmits;
+    private int invalidFormSubmits;
+    private string lastValidSubmittedEmail = string.Empty;
+
+    // Scenario 6 state (Combo key + debounce)
+    private string comboQuery = string.Empty;
+    private string comboEnterCommittedQuery = string.Empty;
+    private int comboInputCount;
+    private int comboKeyDownCount;
+    private int comboKeyUpCount;
+
+    // Scenario 7 state (Stress test & conditional removal)
+    private string stressText = "initial";
+    private int stressDispatchCount;
+    private bool backgroundTimerRunning;
+    private int backgroundTicks;
+    private Timer? backgroundTimer;
+    private bool showConditionalInput = true;
+    private int conditionalDispatchCount;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(formModel);
+    }
+
     private IEnumerable<DiagnosticLogEntry> FilteredLogEntries =>
         showBaselineInLog
             ? logEntries
@@ -487,6 +655,23 @@
 
         throttledScrollCount = 0;
         baselineScrollCount = 0;
+
+        formModel = new();
+        editContext = new EditContext(formModel);
+        validFormSubmits = 0;
+        invalidFormSubmits = 0;
+        lastValidSubmittedEmail = string.Empty;
+
+        comboQuery = string.Empty;
+        comboEnterCommittedQuery = string.Empty;
+        comboInputCount = 0;
+        comboKeyDownCount = 0;
+        comboKeyUpCount = 0;
+
+        stressText = "initial";
+        stressDispatchCount = 0;
+        showConditionalInput = true;
+        conditionalDispatchCount = 0;
 
         logEntries.Clear();
         lastEventTimestampMs = 0;
@@ -604,6 +789,128 @@
     {
         baselineScrollCount++;
         AddLog("Scroll", "BASELINE", "bg-secondary", $"scroll event #{baselineScrollCount}", isBaseline: true);
+    }
+
+    // Scenario 5 handlers
+    private void SetFormEmail(string? value)
+    {
+        formModel.Email = value ?? string.Empty;
+        editContext.NotifyFieldChanged(editContext.Field(nameof(SearchFormModel.Email)));
+        AddLog("EditForm Input", "DEBOUNCED", "bg-primary", $"Email=\"{formModel.Email}\"", isBaseline: false);
+    }
+
+    private void HandleValidFormSubmit()
+    {
+        validFormSubmits++;
+        lastValidSubmittedEmail = formModel.Email;
+        AddLog("EditForm", "FLUSH/VALID", "bg-success", $"Submitted valid Email=\"{lastValidSubmittedEmail}\"", isBaseline: false);
+    }
+
+    private void HandleInvalidFormSubmit()
+    {
+        invalidFormSubmits++;
+        AddLog("EditForm", "INVALID", "bg-danger", $"Invalid Email=\"{formModel.Email}\"", isBaseline: false);
+    }
+
+    // Scenario 6 handlers
+    private void OnComboInputAfter()
+    {
+        comboInputCount++;
+        AddLog("Combo Input", "DEBOUNCED", "bg-primary", $"query=\"{comboQuery}\" (#{comboInputCount})", isBaseline: false);
+    }
+
+    private void OnComboKeyDown(KeyboardEventArgs e)
+    {
+        comboKeyDownCount++;
+        if (e.Key == "Enter")
+        {
+            comboEnterCommittedQuery = comboQuery;
+            AddLog("Combo Enter", "FLUSH/ENTER", "bg-warning text-dark", $"Committed=\"{comboEnterCommittedQuery}\"", isBaseline: false);
+        }
+        else if (e.Key == "Escape")
+        {
+            comboQuery = string.Empty;
+            AddLog("Combo Escape", "CLEAR", "bg-secondary", "Cleared comboQuery", isBaseline: false);
+        }
+    }
+
+    private void OnComboKeyUp(KeyboardEventArgs e)
+    {
+        comboKeyUpCount++;
+    }
+
+    // Scenario 7 handlers
+    private async Task OnStressAsyncInput(ChangeEventArgs e)
+    {
+        var incoming = e.Value?.ToString() ?? string.Empty;
+        stressText = incoming;
+        stressDispatchCount++;
+        await Task.Delay(50);
+        AddLog("Stress Input", "DEBOUNCED", "bg-primary", $"stressText=\"{stressText}\" (#{stressDispatchCount})", isBaseline: false);
+    }
+
+    private void SetStressPreset()
+    {
+        stressText = "PRESET_VALUE";
+        AddLog("Stress Preset", "EXTERNAL", "bg-warning text-dark", "stressText=\"PRESET_VALUE\"", isBaseline: false);
+    }
+
+    private void ClearStressText()
+    {
+        stressText = string.Empty;
+        AddLog("Stress Clear", "EXTERNAL", "bg-warning text-dark", "stressText=\"\"", isBaseline: false);
+    }
+
+    private void ToggleBackgroundTimer()
+    {
+        if (backgroundTimerRunning)
+        {
+            backgroundTimer?.Dispose();
+            backgroundTimer = null;
+            backgroundTimerRunning = false;
+        }
+        else
+        {
+            backgroundTimerRunning = true;
+            backgroundTimer = new Timer(_ =>
+            {
+                _ = InvokeAsync(() =>
+                {
+                    backgroundTicks++;
+                    StateHasChanged();
+                });
+            }, null, 30, 30);
+        }
+    }
+
+    private void OnConditionalInput(ChangeEventArgs e)
+    {
+        conditionalDispatchCount++;
+        AddLog("Conditional", "DEBOUNCED", "bg-primary", $"value=\"{e.Value}\" (#{conditionalDispatchCount})", isBaseline: false);
+    }
+
+    private async Task ScheduleConditionalUnmount()
+    {
+        if (!showConditionalInput)
+        {
+            showConditionalInput = true;
+            return;
+        }
+
+        await Task.Delay(150);
+        showConditionalInput = false;
+    }
+
+    public void Dispose()
+    {
+        backgroundTimer?.Dispose();
+    }
+
+    private sealed class SearchFormModel
+    {
+        [Required(ErrorMessage = "Email is required.")]
+        [MinLength(5, ErrorMessage = "Email must be at least 5 characters.")]
+        public string Email { get; set; } = string.Empty;
     }
 
     private sealed record DiagnosticLogEntry(
