@@ -84,6 +84,69 @@ public class CircuitPersistenceManagerTest
     }
 
     [Fact]
+    public async Task PauseCircuitAsync_ResumePreservesLocalRouteActivityLink()
+    {
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == ComponentsActivitySource.Name,
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllData,
+        };
+        ActivitySource.AddActivityListener(listener);
+        var dataProtectionProvider = new EphemeralDataProtectionProvider();
+        var deserializer = CreateDeserializer(dataProtectionProvider);
+        var options = Options.Create(new CircuitOptions());
+        var components = new[]
+        {
+            (RootComponentType: typeof(RootComponent), Parameters: new Dictionary<string, object>())
+        };
+        await using var circuitHost = await CreateCircuitHostAsync(
+            options, dataProtectionProvider, deserializer, components, enableTracing: true);
+        var source = circuitHost.Services.GetRequiredService<ComponentsActivitySource>();
+        var navigationContext = await circuitHost.Renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var navigation = source.StartNavigateActivity(nameof(RootComponent), "/counter");
+            Assert.NotNull(navigation.Activity);
+            source.StopNavigateActivity(navigation, null);
+            return navigation.Activity.Context;
+        });
+        Assert.False(navigationContext.IsRemote);
+        var circuitPersistenceProvider = new TestCircuitPersistenceProvider();
+        var circuitPersistenceManager = new CircuitPersistenceManager(
+            options,
+            new ServerComponentSerializer(dataProtectionProvider),
+            circuitPersistenceProvider,
+            dataProtectionProvider);
+
+        await circuitPersistenceManager.PauseCircuitAsync(circuitHost);
+
+        var snapshot = circuitPersistenceProvider.State;
+        Assert.NotNull(snapshot);
+        Assert.Equal(2, snapshot.ApplicationState.Values.Count(value =>
+            Encoding.UTF8.GetString(value).Contains(navigationContext.SpanId.ToString(), StringComparison.Ordinal)));
+        var store = circuitPersistenceManager.ToComponentApplicationStore(new Dictionary<string, byte[]>(snapshot.ApplicationState));
+        await using var resumedHost = await CreateCircuitHostAsync(
+            options, dataProtectionProvider, deserializer, components, enableTracing: true, store: store, isRestore: true);
+        var persistenceManager = resumedHost.Services.GetRequiredService<ComponentStatePersistenceManager>();
+        Assert.Same(RestoreContext.LastSnapshot, persistenceManager.State.CurrentContext);
+        var resumedSource = resumedHost.Services.GetRequiredService<ComponentsActivitySource>();
+        var eventActivity = await resumedHost.Renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var activity = ComponentsActivitySource.StartHandleEventActivity(nameof(RootComponent), "OnClick", "onclick");
+            resumedSource.StopHandleEventActivity(activity, null);
+            return activity.Activity;
+        });
+
+        Assert.NotNull(eventActivity);
+        Assert.Equal("/counter", eventActivity.GetTagItem("aspnetcore.components.route"));
+        var link = Assert.Single(eventActivity.Links);
+        Assert.Equal(navigationContext.TraceId, link.Context.TraceId);
+        Assert.Equal(navigationContext.SpanId, link.Context.SpanId);
+        Assert.Equal(navigationContext.TraceFlags, link.Context.TraceFlags);
+        Assert.Equal(navigationContext.TraceState, link.Context.TraceState);
+        Assert.False(link.Context.IsRemote);
+    }
+
+    [Fact]
     public async Task PauseCircuitAsync_CanPersistMultipleComponents_WithTheirParameters()
     {
         // Arrange
@@ -384,7 +447,10 @@ public class CircuitPersistenceManagerTest
         EphemeralDataProtectionProvider dataProtectionProvider,
         ServerComponentDeserializer deserializer,
         (Type RootComponentType, Dictionary<string, object> Parameters)[] components = null,
-        CircuitClientProxy client = null)
+        CircuitClientProxy client = null,
+        bool enableTracing = false,
+        ProtectedPrerenderComponentApplicationStore store = null,
+        bool isRestore = false)
     {
         components ??= [];
         var circuitId = new CircuitIdFactory(dataProtectionProvider).CreateCircuitId();
@@ -394,7 +460,7 @@ public class CircuitPersistenceManagerTest
             Options.Create(new HubOptions<ComponentHub>()),
             NullLoggerFactory.Instance.CreateLogger<RemoteJSRuntime>());
 
-        var serviceProvider = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddSingleton(dataProtectionProvider)
             .AddSingleton<ServerComponentSerializer>()
             .AddSupplyValueFromPersistentComponentStateProvider()
@@ -404,8 +470,12 @@ public class CircuitPersistenceManagerTest
                     NullLoggerFactory.Instance.CreateLogger<ComponentStatePersistenceManager>(),
                     sp))
             .AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
-            .AddSingleton<IJSRuntime>(jsRuntime)
-            .BuildServiceProvider();
+            .AddSingleton<IJSRuntime>(jsRuntime);
+        if (enableTracing)
+        {
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+        }
+        var serviceProvider = services.BuildServiceProvider();
 
         var scope = serviceProvider.CreateAsyncScope();
 
@@ -447,11 +517,11 @@ public class CircuitPersistenceManagerTest
         default,
         default);
 
-        var store = new ProtectedPrerenderComponentApplicationStore(dataProtectionProvider);
+        store ??= new ProtectedPrerenderComponentApplicationStore(dataProtectionProvider);
         await circuitHost.UpdateRootComponents(
             CreateBatch(components, deserializer, dataProtectionProvider),
             store,
-            false,
+            isRestore,
             default);
 
         return circuitHost;

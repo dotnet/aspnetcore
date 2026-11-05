@@ -112,7 +112,8 @@ internal sealed class WebAssemblyComponentsActivityState(PersistentComponentStat
 {
     private readonly ComponentsActivityState _activityState = state.GetActivityState(logger);
 
-    [PersistentState(AllowUpdates = true)]
+    // Circuit snapshots contain both wrappers, but only SSR imports cross the browser boundary.
+    [PersistentState(AllowUpdates = true, RestoreBehavior = RestoreBehavior.SkipLastSnapshot)]
     public ComponentsActivityStateUpdate? ActivityState
     {
         get => _activityState.Capture();
