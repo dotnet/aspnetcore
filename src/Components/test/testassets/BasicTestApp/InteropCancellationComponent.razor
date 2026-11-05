@@ -1,0 +1,104 @@
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<button id="start-first" onclick="cancellationTests.start('first', 'cancel')">Start first</button>
+<button id="abort-first" onclick="cancellationTests.abort('first')">Abort first</button>
+<button id="abort-first-with-reason" onclick="cancellationTests.abortWithReason('first')">Abort with custom reason</button>
+<button id="start-second" onclick="cancellationTests.start('second', 'cancel')">Start second</button>
+<button id="abort-second" onclick="cancellationTests.abort('second')">Abort second</button>
+<button id="release-second" @onclick='() => Release("second")'>Complete second</button>
+<button id="start-ignored" onclick="cancellationTests.start('ignored', 'ignore')">Start ignoring cancellation</button>
+<button id="abort-ignored" onclick="cancellationTests.abort('ignored')">Abort ignored</button>
+<button id="release-ignored" @onclick='() => Release("ignored")'>Complete ignored</button>
+<button id="start-failure" onclick="cancellationTests.start('failure', 'fail')">Start failing call</button>
+<button id="release-failure" @onclick='() => Release("failure")'>Fail call</button>
+<button id="start-preaborted" onclick="cancellationTests.start('preaborted', 'cancel', true)">Already aborted</button>
+<button id="start-ordinary" onclick="cancellationTests.ordinary()">Ordinary invocation</button>
+<button id="start-static" onclick="cancellationTests.staticInvocation()">Static invocation</button>
+<p id="cancellation-ready">@(module is null ? "loading" : "ready")</p>
+@foreach (var id in new[] { "first", "second", "ignored", "failure", "preaborted", "ordinary", "static" })
+{
+    <p id="@($"{id}-managed")">@(states.GetValueOrDefault(id, "not started"))</p>
+    <p id="@($"{id}-js")"></p>
+    <p id="@($"{id}-listeners")"></p>
+}
+
+@code {
+    private readonly Dictionary<string, TaskCompletionSource> gates = new();
+    private readonly Dictionary<string, string> states = new();
+    private DotNetObjectReference<InteropCancellationComponent> reference;
+    private IJSObjectReference module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            reference = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/cancellation.js");
+            await module.InvokeVoidAsync("initialize", reference);
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public async Task<string> Run(string id, string behavior, CancellationToken cancellationToken)
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        gates.Add(id, gate);
+        states[id] = "running";
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            if (behavior == "ignore")
+            {
+                await gate.Task;
+            }
+            else
+            {
+                await gate.Task.WaitAsync(cancellationToken);
+            }
+
+            if (behavior == "fail")
+            {
+                throw new InvalidOperationException("Expected invocation failure");
+            }
+
+            states[id] = cancellationToken.IsCancellationRequested ? "completed after cancellation" : "completed";
+            return states[id];
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            states[id] = "canceled in .NET";
+            throw;
+        }
+        finally
+        {
+            gates.Remove(id);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    [JSInvokable]
+    public string Ordinary() => "ordinary result";
+
+    [JSInvokable]
+    public static string StaticToken(CancellationToken cancellationToken)
+        => cancellationToken.CanBeCanceled ? "static token supplied" : "missing token";
+
+    private void Release(string id) => gates[id].SetResult();
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var gate in gates.Values)
+        {
+            gate.TrySetCanceled();
+        }
+
+        reference?.Dispose();
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+}
