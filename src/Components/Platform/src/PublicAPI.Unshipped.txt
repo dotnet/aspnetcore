@@ -1,4 +1,30 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel.CloseAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel.GetNameAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel.PostMessageAsync(System.Text.Json.JsonElement message) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel.PostMessageAsync(string! message) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel.PostMessageAsync<T>(T message, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! jsonTypeInfo) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.BroadcastChannelConstructor
+Microsoft.AspNetCore.Components.Platform.BroadcastChannelConstructor.CreateAsync(string! name) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.BroadcastChannel!>
+Microsoft.AspNetCore.Components.Platform.MessageChannel
+Microsoft.AspNetCore.Components.Platform.MessageChannel.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.MessageChannel.Port1.get -> Microsoft.AspNetCore.Components.Platform.MessagePort!
+Microsoft.AspNetCore.Components.Platform.MessageChannel.Port2.get -> Microsoft.AspNetCore.Components.Platform.MessagePort!
+Microsoft.AspNetCore.Components.Platform.MessageChannelConstructor
+Microsoft.AspNetCore.Components.Platform.MessageChannelConstructor.CreateAsync() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.MessageChannel!>
+Microsoft.AspNetCore.Components.Platform.MessagePort
+Microsoft.AspNetCore.Components.Platform.MessagePort.CloseAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.MessagePort.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.MessagePort.PostMessageAsync(System.Text.Json.JsonElement message) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.MessagePort.PostMessageAsync(string! message) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.MessagePort.PostMessageAsync<T>(T message, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! jsonTypeInfo) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.MessagePort.StartAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.WindowMessagingExtensions
+Microsoft.AspNetCore.Components.Platform.WindowMessagingExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
+Microsoft.AspNetCore.Components.Platform.WindowMessagingExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).BroadcastChannel.get -> Microsoft.AspNetCore.Components.Platform.BroadcastChannelConstructor!
+Microsoft.AspNetCore.Components.Platform.WindowMessagingExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).MessageChannel.get -> Microsoft.AspNetCore.Components.Platform.MessageChannelConstructor!
 Microsoft.AspNetCore.Components.Platform.CookieInit
 Microsoft.AspNetCore.Components.Platform.CookieInit.CookieInit() -> void
 Microsoft.AspNetCore.Components.Platform.CookieInit.Domain.get -> string?
