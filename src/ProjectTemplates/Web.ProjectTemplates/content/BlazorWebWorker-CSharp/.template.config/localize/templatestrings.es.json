@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Trabajo de Blazor",
   "description": "Proyecto para crear una biblioteca de clases que ejecuta código .NET en un trabajo desde una aplicación web Blazor WebAssembly o Blazor.",
