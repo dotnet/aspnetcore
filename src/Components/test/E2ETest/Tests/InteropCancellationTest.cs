@@ -19,11 +19,11 @@ public class InteropCancellationTest(
     {
         Navigate(ServerPathBase);
         Browser.MountTestComponent<InteropCancellationComponent>();
-        Browser.Equal("ready", () => Browser.FindElement(By.Id("cancellation-ready")).Text);
+        Equal("cancellation-ready", "ready");
     }
 
     [Fact]
-    public void AbortCancelsRunningDotNetOperationWithoutCancelingAnotherCall()
+    public void SignalMapsToTokenWithoutChangingInvocationOutcomeOrOtherTokens()
     {
         Click("start-first");
         Equal("first-managed", "running");
@@ -31,81 +31,113 @@ public class InteropCancellationTest(
         Equal("second-managed", "running");
         Click("abort-first");
         Equal("first-managed", "canceled in .NET");
-        Equal("first-js", "AbortError");
-        Equal("first-listeners", "0");
+        Equal("first-js", "handler handled cancellation");
+        Equal("first-listeners", "1");
         Equal("second-managed", "running");
-        Equal("second-js", "pending");
-        Equal("second-listeners", "1");
-
         Click("release-second");
-        Equal("second-managed", "completed");
-        Equal("second-js", "completed");
-        Equal("second-listeners", "0");
-        Click("abort-second");
-        Equal("second-managed", "completed");
         Equal("second-js", "completed");
     }
 
     [Fact]
-    public void AbortReasonStaysInJavaScriptAndNeedNotBeSerializable()
-    {
-        Click("start-first");
-        Equal("first-managed", "running");
-        Click("abort-first-with-reason");
-        Equal("first-managed", "canceled in .NET");
-        Equal("first-js", "custom reason preserved");
-        Equal("first-listeners", "0");
-    }
-
-    [Fact]
-    public void AlreadyAbortedSignalDoesNotInvokeDotNet()
+    public void PreAbortedSignalStillInvokesMethodWithCanceledToken()
     {
         Click("start-preaborted");
-        Equal("preaborted-js", "AbortError");
-        Equal("preaborted-managed", "not started");
-        Equal("preaborted-listeners", "0");
-        Click("start-ordinary");
-        Equal("ordinary-js", "ordinary result");
+        Equal("preaborted-managed", "entered with canceled token");
+        Equal("preaborted-js", "pre-canceled result");
     }
 
     [Fact]
-    public void IgnoringCancellationCanCompleteWithoutSecondPromiseSettlement()
+    public void IgnoringTokenLeavesPromisePendingAndAllowsNormalCompletion()
     {
         Click("start-ignored");
         Equal("ignored-managed", "running");
         Click("abort-ignored");
-        Equal("ignored-js", "AbortError");
-        Equal("ignored-listeners", "0");
-        Equal("ignored-managed", "running");
+        Equal("ignored-js", "pending");
         Click("release-ignored");
+        Equal("ignored-js", "completed after cancellation");
         Equal("ignored-managed", "completed after cancellation");
-        Equal("ignored-js", "AbortError");
-        Click("start-ordinary");
-        Equal("ordinary-js", "ordinary result");
     }
 
     [Fact]
-    public void FailurePreservesInteropErrorAndRemovesAbortListener()
+    public void ReferenceCanOutliveInvocationAndBeReused()
+    {
+        Click("start-retained");
+        Equal("retained-js", "returned normally");
+        Equal("retained-listeners", "1");
+        Click("abort-retained");
+        Equal("retained-managed", "canceled after return");
+        Click("reuse-retained");
+        Equal("retained-js", "reused: true");
+        Click("dispose-retained");
+        Equal("retained-js", "reference disposed");
+        Equal("retained-listeners", "0");
+    }
+
+    [Fact]
+    public void IncomingReferenceDisposalRemovesListenerWithoutCancelingToken()
+    {
+        Click("start-retained");
+        Equal("retained-js", "returned normally");
+        Click("dispose-retained");
+        Equal("retained-js", "reference disposed");
+        Equal("retained-listeners", "0");
+        Click("abort-retained");
+        Equal("retained-managed", "retained");
+    }
+
+    [Fact]
+    public void FailureDoesNotEndReferenceLifetimeOrAlterInteropError()
     {
         Click("start-failure");
-        Equal("failure-managed", "running");
-        Click("release-failure");
         Browser.True(() =>
         {
             var message = Browser.FindElement(By.Id("failure-js")).Text;
             return message.Contains("Expected invocation failure", StringComparison.Ordinal)
-                || message.Contains("There was an exception invoking 'Run'", StringComparison.Ordinal);
+                || message.Contains("There was an exception invoking 'Receive'", StringComparison.Ordinal);
         });
-        Equal("failure-listeners", "0");
-        Click("start-ordinary");
-        Equal("ordinary-js", "ordinary result");
+        Equal("failure-listeners", "1");
     }
 
     [Fact]
-    public void StaticInvocationReceivesCancellationToken()
+    public void TokenMapsToNativeSignalThatOutlivesInvocation()
     {
-        Click("start-static");
-        Equal("static-js", "static token supplied");
+        Click("start-outgoing");
+        Equal("outgoing-js", "native signal retained");
+        Equal("outgoing-managed", "returned normally");
+        Click("cancel-outgoing");
+        Equal("outgoing-js", "aborted in JS");
+    }
+
+    [Fact]
+    public void PreCanceledTokenProducesAbortedSignalAcceptedByFetch()
+    {
+        Click("start-outgoing-pre");
+        Equal("outgoing-js", "aborted on entry");
+        Equal("outgoing-listeners", "AbortError");
+        Equal("outgoing-managed", "returned normally");
+    }
+
+    [Fact]
+    public void OutgoingReferenceDisposalDoesNotAbortSignal()
+    {
+        Click("start-outgoing");
+        Equal("outgoing-js", "native signal retained");
+        Click("dispose-outgoing");
+        Equal("outgoing-managed", "reference disposed");
+        Click("cancel-outgoing");
+        Equal("outgoing-js", "native signal retained");
+    }
+
+    [Fact]
+    public void InvocationControlTokenDoesNotBecomeSignalOrStopJavaScript()
+    {
+        Click("start-control");
+        Equal("control-js", "JS running with uncanceled signal");
+        Click("cancel-control");
+        Equal("control-managed", "managed wait canceled");
+        Equal("control-js", "JS running with uncanceled signal");
+        Click("release-control");
+        Equal("control-js", "JS completed normally");
     }
 
     private void Click(string id) => Browser.Exists(By.Id(id)).Click();

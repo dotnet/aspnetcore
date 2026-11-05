@@ -23,14 +23,13 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private readonly ConcurrentDictionary<long, IPendingAsyncCall> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
     private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
-    private readonly ConcurrentDictionary<string, DotNetInvocationCancellation> _pendingDotNetInvocations = new(StringComparer.Ordinal);
-    private int _dotNetInvocationsDisposed;
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
     /// <summary>
     /// Initializes a new instance of <see cref="JSRuntime"/>.
     /// </summary>
+    [DynamicDependency(nameof(JSCancellationTokenReference.Create), typeof(JSCancellationTokenReference))]
     protected JSRuntime()
     {
         JsonSerializerOptions = new JsonSerializerOptions
@@ -45,6 +44,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                     new JSStreamReferenceJsonConverter(this),
                     new DotNetStreamReferenceJsonConverter(this),
                     new ByteArrayJsonConverter(this),
+                    new CancellationTokenJsonConverter(this),
+                    new DotNetCancellationTokenReferenceJsonConverter(this),
                 }
         };
         JsonSerializerOptions.TypeInfoResolverChain.Add(JSInteropJsonTypeInfoResolver.Instance);
@@ -385,51 +386,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
     internal void ReleaseObjectReference(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
 
-    internal CancellationToken BeginDotNetInvocation(string callId)
-    {
-        var cancellation = new DotNetInvocationCancellation();
-        var token = cancellation.Token;
-        if (!_pendingDotNetInvocations.TryAdd(callId, cancellation))
-        {
-            cancellation.Dispose();
-            throw new InvalidOperationException($"There is already a cancellable invocation with ID '{callId}'.");
-        }
-
-        if (Volatile.Read(ref _dotNetInvocationsDisposed) != 0)
-        {
-            CompleteDotNetInvocation(callId);
-            throw new ObjectDisposedException(nameof(JSRuntime));
-        }
-
-        return token;
-    }
-
-    internal Task CancelDotNetInvocationAsync(string callId)
-    {
-        return _pendingDotNetInvocations.TryGetValue(callId, out var cancellation)
-            ? cancellation.CancelAsync()
-            : Task.CompletedTask;
-    }
-
-    internal void CompleteDotNetInvocation(string? callId)
-    {
-        if (callId is not null && _pendingDotNetInvocations.TryRemove(callId, out var cancellation))
-        {
-            cancellation.Dispose();
-        }
-    }
-
     /// <summary>
     /// Dispose the JSRuntime.
     /// </summary>
-    public void Dispose()
-    {
-        Interlocked.Exchange(ref _dotNetInvocationsDisposed, 1);
-        foreach (var callId in _pendingDotNetInvocations.Keys)
-        {
-            CompleteDotNetInvocation(callId);
-        }
-
-        ByteArraysToBeRevived.Dispose();
-    }
+    public void Dispose() => ByteArraysToBeRevived.Dispose();
 }

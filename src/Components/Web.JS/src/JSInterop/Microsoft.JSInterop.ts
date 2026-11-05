@@ -92,6 +92,133 @@ windowObject._cachedHandlers.set('import', { [JSCallType.FunctionCall]: (url: an
 
 let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 
+const abortSignalObservations = new WeakMap<AbortSignal, Promise<void>>();
+
+/**
+ * Owns a reference that supplies a CancellationToken to ordinary .NET interop parameters.
+ */
+export interface CancellationTokenReference {
+  /** Removes the signal listener and releases the references without requesting cancellation. */
+  disposeAsync(): Promise<void>;
+}
+
+/**
+ * Projects a browser signal to a reusable .NET cancellation token reference.
+ * @param signal The caller-owned signal to observe.
+ * @returns A reference to pass as an ordinary argument. Dispose it when .NET no longer needs the token.
+ */
+export async function createCancellationTokenReference(signal: AbortSignal): Promise<CancellationTokenReference> {
+  return await createCancellationTokenReferenceCore(getDefaultCallDispatcher(), signal);
+}
+
+async function createCancellationTokenReferenceCore(dispatcher: CallDispatcher, signal: AbortSignal): Promise<CancellationTokenReference> {
+  if (typeof signal?.aborted !== 'boolean' || typeof signal.addEventListener !== 'function' || typeof signal.removeEventListener !== 'function') {
+    throw new TypeError('An AbortSignal is required.');
+  }
+
+  const owner = new JSAbortSignalReference(signal);
+  const signalReference = createJSObjectReference(owner);
+  try {
+    const reference = await dispatcher.invokeDotNetStaticMethodAsync<DotNetObject>('Microsoft.JSInterop', 'CreateCancellationTokenReference', signalReference, signal.aborted);
+    await owner.initialize(reference);
+    return owner;
+  } catch (error) {
+    try {
+      await owner.disposeAsync();
+    } finally {
+      disposeJSObjectReference(signalReference);
+    }
+    throw error;
+  }
+}
+
+/** @internal Creates the native signal owned by a DotNetCancellationTokenReference. */
+export function createAbortSignal(reference: DotNetObject, isCancellationRequested: boolean): AbortSignal {
+  const controller = new AbortController();
+  if (isCancellationRequested) {
+    controller.abort();
+  }
+
+  const observation = reference.invokeMethodAsync<boolean>('WaitForCancellationAsync').then(canceled => {
+    if (canceled) {
+      controller.abort();
+    }
+  });
+  observation.catch(error => console.error(error));
+  abortSignalObservations.set(controller.signal, observation);
+  return controller.signal;
+}
+
+/** @internal Completes observation before the .NET object reference is released. */
+export async function disposeAbortSignal(signal: AbortSignal): Promise<void> {
+  const observation = abortSignalObservations.get(signal);
+  if (observation === undefined) {
+    throw new Error('The signal is not owned by a .NET cancellation token reference.');
+  }
+
+  try {
+    await observation;
+  } finally {
+    abortSignalObservations.delete(signal);
+  }
+}
+
+class JSAbortSignalReference implements CancellationTokenReference {
+  private _reference?: DotNetObject;
+
+  private _onAbort?: () => void;
+
+  private _notification: Promise<void> = Promise.resolve();
+
+  private _disposal?: Promise<void>;
+
+  // eslint-disable-next-line no-empty-function
+  constructor(private readonly _signal: AbortSignal) {
+  }
+
+  async initialize(reference: DotNetObject): Promise<void> {
+    this._reference = reference;
+    this._onAbort = () => {
+      this._notification = reference.invokeMethodAsync<void>('CancelAsync');
+      this._notification.catch(error => console.error(error));
+    };
+    this._signal.addEventListener('abort', this._onAbort, { once: true });
+    if (this._signal.aborted) {
+      this._onAbort();
+    }
+    await this._notification;
+  }
+
+  serializeAsArg() {
+    if (this._disposal || !this._reference) {
+      throw new Error('The cancellation token reference is not available.');
+    }
+    return this._reference.serializeAsArg();
+  }
+
+  dispose() {
+    if (this._onAbort) {
+      this._signal.removeEventListener('abort', this._onAbort);
+      this._onAbort = undefined;
+    }
+  }
+
+  disposeAsync(): Promise<void> {
+    return this._disposal ??= this.disposeCore();
+  }
+
+  private async disposeCore(): Promise<void> {
+    this.dispose();
+    try {
+      await this._notification;
+    } finally {
+      if (this._reference) {
+        await this._reference.invokeMethodAsync<void>('DisposeAsync');
+      }
+    }
+  }
+}
+
 /**
    * Creates a .NET call dispatcher to use for handling invocations between JavaScript and a .NET runtime.
    *
@@ -147,19 +274,6 @@ export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, 
 export function invokeMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
   const dispatcher = getDefaultCallDispatcher();
   return dispatcher.invokeDotNetStaticMethodAsync<T>(assemblyName, methodIdentifier, ...args);
-}
-
-/**
- * Invokes a .NET static method with cooperative cancellation.
- * @param assemblyName The short name of the assembly containing the method.
- * @param methodIdentifier The identifier of the JSInvokable method.
- * @param signal The signal that requests cancellation of this invocation.
- * @param args JSON-serializable arguments, excluding the method's final CancellationToken parameter.
- * @returns The result, or a rejection with signal.reason after cancellation is acknowledged.
- */
-export function invokeMethodAsyncWithCancellation<T>(assemblyName: string, methodIdentifier: string, signal: AbortSignal, ...args: any[]): Promise<T> {
-  const dispatcher = getDefaultCallDispatcher();
-  return dispatcher.invokeDotNetStaticMethodAsyncWithCancellation<T>(assemblyName, methodIdentifier, signal, ...args);
 }
 
 /**
@@ -388,16 +502,6 @@ export interface ICallDispatcher {
   invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T>;
 
   /**
-   * Invokes a .NET static method, supplying its final CancellationToken from an AbortSignal.
-   * @param assemblyName The short name of the assembly containing the method.
-   * @param methodIdentifier The identifier of the JSInvokable method.
-   * @param signal The signal that requests cancellation.
-   * @param args The ordinary JSON-serializable method arguments.
-   * @returns The result, or a rejection with signal.reason after cancellation is acknowledged.
-   */
-  invokeDotNetStaticMethodAsyncWithCancellation<T>(assemblyName: string, methodIdentifier: string, signal: AbortSignal, ...args: any[]): Promise<T>;
-
-  /**
      * Receives notification that a byte array is being transferred from .NET to JS.
      * @param id The identifier for the byte array used during revival.
      * @param data The byte array being transferred for eventual revival.
@@ -488,57 +592,6 @@ class CallDispatcher implements ICallDispatcher {
     return this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, null, args);
   }
 
-  invokeDotNetStaticMethodAsyncWithCancellation<T>(assemblyName: string, methodIdentifier: string, signal: AbortSignal, ...args: any[]): Promise<T> {
-    return this.invokeDotNetMethodAsyncWithCancellation<T>(assemblyName, methodIdentifier, null, signal, args);
-  }
-
-  invokeDotNetMethodAsyncWithCancellation<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, signal: AbortSignal, args: any[]): Promise<T> {
-    if (typeof signal?.aborted !== 'boolean' || typeof signal.addEventListener !== 'function' || typeof signal.removeEventListener !== 'function') {
-      return Promise.reject(new TypeError('An AbortSignal is required for a cancellable invocation.'));
-    }
-
-    if (signal.aborted) {
-      return Promise.reject(signal.reason);
-    }
-
-    // Reserve the existing invocation ID, not a separate consumer-owned cancellation ID.
-    const callId = this._nextAsyncCallId.toString();
-    let cancellationRequested = false;
-    let onAbort: () => void;
-    const result = new Promise<T>((resolve, reject) => {
-      onAbort = () => {
-        if (cancellationRequested) {
-          return;
-        }
-
-        cancellationRequested = true;
-        this.invokeDotNetMethodAsync<void>('Microsoft.JSInterop', '__CancelInvocation', null, [callId])
-          .then(() => reject(signal.reason), reject);
-      };
-
-      const invocation = this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, dotNetObjectId, args, callId);
-      invocation.then(
-        value => {
-          if (!cancellationRequested) {
-            resolve(value);
-          }
-        },
-        error => {
-          if (!cancellationRequested) {
-            reject(error);
-          }
-        }
-      );
-
-      signal.addEventListener('abort', onAbort, { once: true });
-      if (signal.aborted) {
-        onAbort();
-      }
-    });
-
-    return result.finally(() => signal.removeEventListener('abort', onAbort));
-  }
-
   invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
     if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
       const argsJson = stringifyArgs(this, args);
@@ -549,7 +602,7 @@ class CallDispatcher implements ICallDispatcher {
     throw new Error('The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.');
   }
 
-  invokeDotNetMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null, cancellationId?: string): Promise<T> {
+  invokeDotNetMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): Promise<T> {
     if (assemblyName && dotNetObjectId) {
       throw new Error(`For instance method calls, assemblyName should be null. Received '${assemblyName}'.`);
     }
@@ -560,7 +613,7 @@ class CallDispatcher implements ICallDispatcher {
     });
 
     try {
-      const argsJson = stringifyArgs(this, cancellationId === undefined ? args : { __dotNetCancellation: cancellationId, args });
+      const argsJson = stringifyArgs(this, args);
       this._dotNetCallDispatcher.beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
     } catch (ex) {
       // Synchronous failure
@@ -784,14 +837,12 @@ export class DotNetObject {
   }
 
   /**
-   * Invokes an instance method with cooperative cancellation.
-   * @param methodIdentifier The identifier of the JSInvokable method.
-   * @param signal The signal that requests cancellation of this invocation.
-   * @param args JSON-serializable arguments, excluding the method's final CancellationToken parameter.
-   * @returns The result, or a rejection with signal.reason after cancellation is acknowledged.
+   * Projects a browser signal to a reusable token reference in this object's .NET runtime.
+   * @param signal The caller-owned signal to observe.
+   * @returns A reference to pass as an ordinary argument. Dispose it when .NET no longer needs the token.
    */
-  public invokeMethodAsyncWithCancellation<T>(methodIdentifier: string, signal: AbortSignal, ...args: any[]): Promise<T> {
-    return this._callDispatcher.invokeDotNetMethodAsyncWithCancellation<T>(null, methodIdentifier, this._id, signal, args);
+  public createCancellationTokenReference(signal: AbortSignal): Promise<CancellationTokenReference> {
+    return createCancellationTokenReferenceCore(this._callDispatcher, signal);
   }
 
   public dispose() {
@@ -887,7 +938,7 @@ function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
 }
 
 let nextByteArrayIndex = 0;
-function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null | { __dotNetCancellation: string, args: any[] | null }) {
+function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null) {
   nextByteArrayIndex = 0;
   currentCallDispatcher = callDispatcher;
   const result = JSON.stringify(args, argReplacer);
@@ -909,7 +960,7 @@ function argReplacer(key: string, value: any) {
   if (value instanceof Element) {
     return { [dotNetElementRefKey]: getCaptureIdFromElement(value) };
   }
-  if (value instanceof DotNetObject) {
+  if (value instanceof DotNetObject || value instanceof JSAbortSignalReference) {
     return value.serializeAsArg();
   } else if (value instanceof Uint8Array) {
     const dotNetCallDispatcher = currentCallDispatcher!.getDotNetCallDispatcher();
