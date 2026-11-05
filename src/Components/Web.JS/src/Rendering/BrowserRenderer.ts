@@ -7,6 +7,7 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
+import { restoreFocusAfterPrerenderClear } from './FocusOnNavigate';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -63,7 +64,12 @@ export class BrowserRenderer {
     }
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
+    let focusedElementBeforePrerenderClear: Element | null = null;
     if (elementsToClearOnRootComponentRender.delete(element)) {
+      if (document.activeElement instanceof Element) {
+        focusedElementBeforePrerenderClear = document.activeElement;
+      }
+
       this.detachEventHandlersFromElement(element);
       emptyLogicalElement(element);
 
@@ -82,6 +88,10 @@ export class BrowserRenderer {
     // Try to restore focus in case it was lost due to an element move
     if ((activeElementBefore instanceof HTMLElement) && ownerDocument && ownerDocument.activeElement !== activeElementBefore) {
       activeElementBefore.focus();
+    }
+
+    if (focusedElementBeforePrerenderClear) {
+      restoreFocusAfterPrerenderClear(focusedElementBeforePrerenderClear);
     }
   }
 

@@ -1,6 +1,33 @@
 @page "/focus-on-navigate/interactive"
+@attribute [StreamRendering]
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 
 <h1>Interactively rendered element to focus</h1>
 
+<input type="text" id="other-focus-target" />
+
 <ComponentWithElementToFocus @rendermode="InteractiveServer" />
+
+<p id="streaming-status">@(_doneStreaming ? "Complete" : "Streaming...")</p>
+
+@code {
+    private static Task? s_streamingTask;
+
+    private bool _doneStreaming;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (s_streamingTask is not null)
+        {
+            await s_streamingTask;
+            s_streamingTask = null;
+        }
+
+        _doneStreaming = true;
+    }
+
+    public static void SetStreamingTask(Task task)
+    {
+        s_streamingTask = task;
+    }
+}

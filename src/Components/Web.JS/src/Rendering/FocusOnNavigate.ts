@@ -16,14 +16,6 @@ export function enableFocusOnNavigate(jsEventRegistry: JSEventRegistry) {
   jsEventRegistry.addEventListener('enhancednavigationstart', onEnhancedNavigationStart);
   jsEventRegistry.addEventListener('enhancednavigationend', onEnhancedNavigationEnd);
   document.addEventListener('focusin', onFocusIn);
-  document.addEventListener('focusout', onFocusOut);
-
-  const observer = new MutationObserver(() => {
-    if (focusedSelector && (!document.activeElement || document.activeElement === document.body)) {
-      tryApplyFocus();
-    }
-  });
-  observer.observe(document, { childList: true, subtree: true });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', onInitialPageLoad, { once: true });
@@ -66,29 +58,54 @@ function onEnhancedNavigationEnd() {
   }
 }
 
-function onFocusIn() {
+function onFocusIn(event: FocusEvent) {
   // If the user explicitly focuses a different element before a navigation completes,
   // don't move focus again.
   allowApplyFocusAfterEnhancedNavigation = false;
-  focusedSelector = null;
-}
 
-function onFocusOut(event: FocusEvent) {
-  if (!event.relatedTarget) {
-    queueMicrotask(() => {
-      if (event.target instanceof Node && event.target.isConnected) {
-        focusedSelector = null;
-      }
-    });
+  if (event.target === document.body) {
+    const navigationTarget = focusedSelector ? document.querySelector(focusedSelector) : null;
+    if (navigationTarget?.isConnected) {
+      focusedSelector = null;
+    }
+
+    return;
   }
+
+  focusedSelector = null;
 }
 
 function tryApplyFocus() {
   const selector = currentFocusOnNavigateElement?.getAttribute('selector');
-  if (selector) {
-    domFunctions.focusBySelector(selector);
-    focusedSelector = selector;
+  if (!selector) {
+    focusedSelector = null;
+    return;
   }
+
+  domFunctions.focusBySelector(selector);
+  const activeElement = document.activeElement;
+  focusedSelector = activeElement instanceof Element && activeElement.matches(selector)
+    ? selector
+    : null;
+}
+
+export function restoreFocusAfterPrerenderClear(previouslyActive: Element | null): void {
+  if (!focusedSelector || !(previouslyActive instanceof Element) || !previouslyActive.matches(focusedSelector)) {
+    return;
+  }
+
+  if (previouslyActive.isConnected) {
+    return;
+  }
+
+  if (document.activeElement && document.activeElement !== document.body) {
+    focusedSelector = null;
+    return;
+  }
+
+  const selector = focusedSelector;
+  focusedSelector = null;
+  domFunctions.focusBySelector(selector);
 }
 
 class FocusOnNavigateElement extends HTMLElement {

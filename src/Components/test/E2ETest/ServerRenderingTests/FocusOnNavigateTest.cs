@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
+using InteractivelyRenderedComponent = Components.TestServer.RazorComponents.Pages.FocusOnNavigate.InteractivelyRendered;
 using StreamRenderedComponent = Components.TestServer.RazorComponents.Pages.FocusOnNavigate.StreamRendered;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
@@ -81,12 +82,29 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [Fact]
     public void FocusIsPreserved_WhenUserFocusesAnotherElementBeforeInteractiveRender()
     {
-        Navigate($"{ServerPathBase}/focus-on-navigate/interactive?suppress-autostart");
-        Browser.Equal("static", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
+        var tcs = new TaskCompletionSource();
+        InteractivelyRenderedComponent.SetStreamingTask(tcs.Task);
 
-        Browser.Click(By.Id("call-blazor-start"));
-        Browser.Equal("interactive", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "call-blazor-start");
+        try
+        {
+            Navigate($"{ServerPathBase}/focus-on-navigate/interactive");
+            Browser.Equal("Streaming...", () => Browser.FindElement(By.Id("streaming-status")).Text);
+            Browser.Equal("loading", () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.document.readyState;"));
+            Browser.Equal("static", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
+
+            Browser.Click(By.Id("other-focus-target"));
+            Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "other-focus-target");
+
+            tcs.SetResult();
+
+            Browser.Equal("Complete", () => Browser.FindElement(By.Id("streaming-status")).Text);
+            Browser.Equal("interactive", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
+            Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "other-focus-target");
+        }
+        finally
+        {
+            tcs.TrySetResult();
+        }
     }
 
     [Fact]
