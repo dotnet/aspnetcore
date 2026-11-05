@@ -222,7 +222,7 @@ public static class DataProtectionCommonExtensions
     {
         var plaintextByteCount = EncodingUtil.SecureUtf8Encoding.GetByteCount(plaintext);
         var plaintextBuffer = ArrayPool<byte>.Shared.Rent(plaintextByteCount);
-        var destination = new ClearingPooledBufferWriter(plaintextByteCount + ProtectOverheadEstimate);
+        var destination = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
         try
         {
             var plaintextBytesWritten = EncodingUtil.SecureUtf8Encoding.GetBytes(plaintext, plaintextBuffer);
@@ -239,8 +239,8 @@ public static class DataProtectionCommonExtensions
 
     private static string UnprotectWithSpanProtector(ISpanDataProtector protector, byte[] protectedData)
     {
-        // The plaintext is never larger than the protected payload for the built-in protectors; the writer grows if needed.
-        var destination = new ClearingPooledBufferWriter(protectedData.Length);
+        Span<byte> initialBuffer = stackalloc byte[256];
+        var destination = new RefPooledArrayBufferWriter<byte>(initialBuffer);
         try
         {
             protector.Unprotect(protectedData, ref destination);
@@ -249,10 +249,9 @@ public static class DataProtectionCommonExtensions
         finally
         {
             destination.Dispose();
+            // The stack buffer may hold plaintext; the writer clears any rented buffer itself.
+            initialBuffer.Clear();
         }
     }
-
-    // Magic header + key id + key modifier + IV/nonce + padding + MAC/tag for the built-in encryptors.
-    private const int ProtectOverheadEstimate = 128;
 #endif
 }
