@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Domyślne ustawienia usługi Blazor WebAssembly",
   "description": "Szablon projektu służący do tworzenia biblioteki domyślnych ustawień usług dla aplikacji Blazor WebAssembly. Obejmuje obsługę integracji z OpenTelemetry, wykrywanie usług oraz zapewnienie odporności w ramach integracji z platformą Aspire.",
