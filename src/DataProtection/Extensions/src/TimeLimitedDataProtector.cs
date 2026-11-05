@@ -123,33 +123,38 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
 #if NET
     // The span-based paths produce and consume exactly the same payload as the byte[]-based paths below, but avoid
-    // allocating the intermediate { expiration || plaintext } array. The pooled buffers hold plaintext, so they are
-    // cleared before being returned to the pool and never escape this call.
+    // allocating the intermediate { expiration || plaintext } array. Buffers start on the stack and only rent from the
+    // pool when the payload doesn't fit. Rented buffers are cleared when returned to the pool, and the stack buffers
+    // that may hold plaintext are cleared before returning. Nothing pooled escapes this call.
     private static byte[] ProtectWithSpanProtector(ISpanDataProtector protector, byte[] plaintext, DateTimeOffset expiration)
     {
         var plaintextWithHeaderLength = checked(ExpirationTimeHeaderSize + plaintext.Length);
-        var plaintextWithHeader = ArrayPool<byte>.Shared.Rent(plaintextWithHeaderLength);
-        var destination = new ClearingPooledBufferWriter(plaintextWithHeaderLength + ProtectOverheadEstimate);
+        Span<byte> plaintextWithHeaderInitialBuffer = stackalloc byte[256];
+        using var plaintextWithHeader = new RefPooledArrayBufferWriter<byte>(plaintextWithHeaderInitialBuffer);
+        var destination = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
         try
         {
             // We prepend the expiration time (as a 64-bit UTC tick count) to the unprotected data.
-            BinaryPrimitives.WriteUInt64BigEndian(plaintextWithHeader, (ulong)expiration.UtcTicks);
-            plaintext.CopyTo(plaintextWithHeader.AsSpan(ExpirationTimeHeaderSize));
+            var span = plaintextWithHeader.GetSpan(plaintextWithHeaderLength);
+            BinaryPrimitives.WriteUInt64BigEndian(span, (ulong)expiration.UtcTicks);
+            plaintext.CopyTo(span.Slice(ExpirationTimeHeaderSize));
+            plaintextWithHeader.Advance(plaintextWithHeaderLength);
 
-            protector.Protect(plaintextWithHeader.AsSpan(0, plaintextWithHeaderLength), ref destination);
+            protector.Protect(plaintextWithHeader.WrittenSpan, ref destination);
             return destination.WrittenSpan.ToArray();
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(plaintextWithHeader, clearArray: true);
+            // 'destination' is passed by ref, so it can't be a 'using' variable (CS1657).
             destination.Dispose();
+            plaintextWithHeaderInitialBuffer.Clear();
         }
     }
 
     private static byte[] UnprotectWithSpanProtector(ISpanDataProtector protector, byte[] protectedData, DateTimeOffset now, out DateTimeOffset expiration)
     {
-        // The plaintext is never larger than the protected payload for the built-in protectors; the writer grows if needed.
-        var destination = new ClearingPooledBufferWriter(protectedData.Length);
+        Span<byte> initialBuffer = stackalloc byte[256];
+        var destination = new RefPooledArrayBufferWriter<byte>(initialBuffer);
         try
         {
             protector.Unprotect(protectedData, ref destination);
@@ -176,12 +181,11 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         }
         finally
         {
+            // 'destination' is passed by ref, so it can't be a 'using' variable (CS1657).
             destination.Dispose();
+            initialBuffer.Clear();
         }
     }
-
-    // Magic header + key id + key modifier + IV/nonce + padding + MAC/tag for the built-in encryptors.
-    private const int ProtectOverheadEstimate = 128;
 #endif
 
     /*

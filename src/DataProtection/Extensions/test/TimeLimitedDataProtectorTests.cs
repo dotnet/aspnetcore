@@ -274,6 +274,9 @@ public class TimeLimitedDataProtectorTests
     [InlineData(0)]
     [InlineData(5)]
     [InlineData(100)]
+    [InlineData(247)] // { expiration || plaintext } is 255 bytes: fits the 256-byte stack buffer
+    [InlineData(248)] // 256 bytes: exactly fills the stack buffer
+    [InlineData(249)] // 257 bytes: rents from the pool
     [InlineData(2048)]
     [InlineData(70000)]
     public void Protect_SpanInnerProtector_ProducesSamePayloadAsByteArrayPath(int length)
@@ -309,6 +312,31 @@ public class TimeLimitedDataProtectorTests
         Assert.Equal(plaintext, byteArrayProtector.UnprotectCore(actual, StringToDateTime("2020-01-01 00:00:00Z"), out var byteArrayExpiration));
         Assert.Equal(expiration, spanExpiration);
         Assert.Equal(expiration, byteArrayExpiration);
+    }
+
+    [Fact]
+    public void ProtectUnprotect_SpanInnerProtector_RoundTripsAcrossInitialBufferSize()
+    {
+        // Covers every payload size on both sides of the 256-byte initial stack buffer, for the plaintext buffer,
+        // the protected payload buffer and the unprotected payload buffer.
+        var inner = new EphemeralDataProtectionProvider().CreateProtector("purpose");
+        Assert.IsAssignableFrom<ISpanDataProtector>(inner);
+
+        var spanProtector = new TimeLimitedDataProtector(inner);
+        var byteArrayProtector = new TimeLimitedDataProtector(new NonSpanDataProtector(inner));
+        var expiration = StringToDateTime("2030-01-01 00:00:00Z");
+        var now = StringToDateTime("2020-01-01 00:00:00Z");
+
+        for (var length = 0; length <= 600; length++)
+        {
+            var plaintext = Enumerable.Range(0, length).Select(i => (byte)(i * 7 + 1)).ToArray();
+
+            var protectedData = spanProtector.Protect(plaintext, expiration);
+            Assert.Equal(plaintext, spanProtector.UnprotectCore(protectedData, now, out var spanExpiration));
+            Assert.Equal(plaintext, byteArrayProtector.UnprotectCore(protectedData, now, out var byteArrayExpiration));
+            Assert.Equal(expiration, spanExpiration);
+            Assert.Equal(expiration, byteArrayExpiration);
+        }
     }
 
     private sealed class CountingGenRandom : IManagedGenRandom
