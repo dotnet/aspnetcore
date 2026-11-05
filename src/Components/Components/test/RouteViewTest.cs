@@ -183,6 +183,42 @@ public class RouteViewTest
         Assert.Same(outgoingPage, Assert.Single(recorder.DisposedPages));
     }
 
+    [Fact]
+    public async Task ChangingReferenceParameterDoesNotReplayStaleValues()
+    {
+        var recorder = new PageInstanceRecorder();
+        using var services = new ServiceCollection().AddSingleton(recorder).BuildServiceProvider();
+        using var renderer = new TestRenderer(services);
+        var host = new CascadingRouteViewHost(recorder, isFixed: false);
+        var hostId = renderer.AssignRootComponentId(host);
+        var firstModel = new object();
+
+        await renderer.RenderRootComponentAsync(hostId, ReferenceRouteParameters(typeof(PageWithNestedLayout), firstModel));
+        var page = Assert.Single(recorder.Pages);
+        Assert.Same(firstModel, Assert.Single(page.ReceivedModels));
+
+        foreach (var nextModel in new[] { new object(), new object() })
+        {
+            page.ReceivedModels.Clear();
+            await renderer.RenderRootComponentAsync(hostId, ReferenceRouteParameters(typeof(PageWithNestedLayout), nextModel));
+
+            Assert.Same(page, Assert.Single(recorder.Pages));
+            Assert.Empty(recorder.DisposedPages);
+            Assert.Equal(2, page.ReceivedModels.Count);
+            Assert.All(page.ReceivedModels, model => Assert.Same(nextModel, model));
+            Assert.Same(nextModel, page.Model);
+        }
+    }
+
+    private static ParameterView ReferenceRouteParameters(Type pageType, object model)
+        => ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(RouteView.RouteData)] = new RouteData(pageType, new Dictionary<string, object>
+            {
+                [nameof(TrackedPage.Model)] = model,
+            })
+        });
+
     private static ParameterView RouteParameters(Type pageType, string message)
         => ParameterView.FromDictionary(new Dictionary<string, object>
         {
@@ -247,6 +283,19 @@ public class RouteViewTest
 
         [Parameter]
         public string Message { get; set; }
+
+        [Parameter]
+        public object Model { get; set; }
+
+        public List<object> ReceivedModels { get; } = [];
+
+        protected override void OnParametersSet()
+        {
+            if (Model is not null)
+            {
+                ReceivedModels.Add(Model);
+            }
+        }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
             => builder.AddContent(0, Message);

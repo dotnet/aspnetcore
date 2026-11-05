@@ -63,6 +63,27 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void SamePageNavigationDoesNotReplayStaleReferenceParameters()
+    {
+        SetUrlViaPushState("/route-view-layout-transition/reference/first");
+
+        var app = Browser.MountTestComponent<RouteViewLayoutTransitionApp>();
+        Browser.Equal("first", () => app.FindElement(By.Id("reference-customer")).Text);
+        var instanceId = app.FindElement(By.Id("reference-page-instance")).Text;
+
+        foreach (var nextCustomer in new[] { "second", "first" })
+        {
+            app.FindElement(By.Id("navigate-reference-customer")).Click();
+            Browser.Equal(nextCustomer, () => app.FindElement(By.Id("reference-customer")).Text);
+
+            var receivedCustomers = app.FindElements(By.CssSelector("#reference-parameter-log li"));
+            Assert.Equal(2, receivedCustomers.Count);
+            Assert.All(receivedCustomers, element => Assert.Equal(nextCustomer, element.Text));
+            Assert.Equal(instanceId, app.FindElement(By.Id("reference-page-instance")).Text);
+        }
+    }
+
+    [Fact]
     public void CanArriveAtDefaultPageWithoutTrailingSlash()
     {
         // This is a bit of a degenerate case because ideally devs would configure their

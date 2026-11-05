@@ -3,10 +3,34 @@
 <Router AppAssembly="@typeof(BasicTestApp.Program).Assembly">
     <Found Context="routeData">
         <CascadingStateProvider>
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(NestedLayout)" />
+            <RouteView RouteData="@PrepareRouteData(routeData)" DefaultLayout="@typeof(NestedLayout)" />
         </CascadingStateProvider>
     </Found>
     <NotFound>
         <p>Layout instantiation route not found.</p>
     </NotFound>
 </Router>
+
+@code {
+    private RouteData _referenceRoute;
+    private RouteData _referenceRouteSource;
+
+    private RouteData PrepareRouteData(RouteData routeData)
+    {
+        if (routeData.PageType != typeof(ReferenceParameterPage))
+        {
+            return routeData;
+        }
+
+        if (!ReferenceEquals(_referenceRouteSource, routeData))
+        {
+            _referenceRouteSource = routeData;
+            _referenceRoute = new RouteData(routeData.PageType, new Dictionary<string, object>
+            {
+                [nameof(ReferenceParameterPage.Model)] = new ReferenceParameterPage.CustomerModel((string)routeData.RouteValues["CustomerName"]),
+            });
+        }
+
+        return _referenceRoute;
+    }
+}

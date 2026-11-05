@@ -85,8 +85,15 @@ public class RouteView : IComponent
         builder.CloseComponent();
     }
 
-    private static void RenderPageWithParameters(RenderTreeBuilder builder, RouteData routeData)
+    private void RenderPageWithParameters(RenderTreeBuilder builder, RouteData routeData)
     {
+        // A retained page must receive current parameters even when its layout replays an older fragment.
+        // Keep the captured route for other page types so an outgoing layout cannot create the destination page.
+        if (routeData.PageType == RouteData.PageType)
+        {
+            routeData = RouteData;
+        }
+
         builder.OpenComponent(0, routeData.PageType);
 
         foreach (var kvp in routeData.RouteValues)
