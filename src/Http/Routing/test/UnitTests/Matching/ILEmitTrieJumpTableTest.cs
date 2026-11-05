@@ -221,6 +221,31 @@ public abstract class ILEmitTreeJumpTableTestBase : MultipleEntryJumpTableTest
         Assert.Equal(0, result);
     }
 
+    [Theory]
+    [InlineData("\u212A")]
+    [InlineData("\u212Aabc")]
+    [InlineData("ab\u212Ad")]
+    [InlineData("abcd\u212A")]
+    [InlineData("abcd\u212Axyz")]
+    public void GetDestination_NotFound_KelvinSignDoesNotMatchAsciiK(string kelvinEndpoint)
+    {
+        const int DefaultDestination = 0;
+        const int KelvinEndpointDestination = 1;
+        const int SiblingEndpointDestination = 2;
+        var siblingEndpoint = new string('z', kelvinEndpoint.Length);
+        var table = CreateTable(
+            DefaultDestination,
+            -1,
+            new[] { (kelvinEndpoint, KelvinEndpointDestination), (siblingEndpoint, SiblingEndpointDestination) });
+
+        var segment = new PathSegment(7, kelvinEndpoint.Length);
+
+        Assert.Equal(DefaultDestination, table.GetDestination("prefix/" + kelvinEndpoint.Replace('\u212A', 'k') + "/suffix", segment));
+        Assert.Equal(DefaultDestination, table.GetDestination("prefix/" + kelvinEndpoint.Replace('\u212A', 'K') + "/suffix", segment));
+        Assert.Equal(KelvinEndpointDestination, table.GetDestination("prefix/" + kelvinEndpoint + "/suffix", segment));
+        Assert.Equal(SiblingEndpointDestination, table.GetDestination("prefix/" + siblingEndpoint.ToUpperOrdinal() + "/suffix", segment));
+    }
+
     // Tests for correct branching in binary search
     [Theory]
     [InlineData("hello0 world", "hello1 world", "hello2 world", "hello1 world2")]
