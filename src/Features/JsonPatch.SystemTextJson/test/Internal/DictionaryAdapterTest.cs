@@ -388,4 +388,22 @@ public class DictionaryAdapterTest
         Assert.False(testStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
+
+    [Fact]
+    public void Test_ThrowsJsonPatchException_IfValueIsNullAndTestValueIsEmptyString()
+    {
+        // Arrange
+        var key = "Age";
+        var dictionary = new Dictionary<string, int?>();
+        dictionary[key] = null;
+        var dictionaryAdapter = new DictionaryAdapter<string, int?>();
+        var serializerOptions = JsonSerializerOptions.Default;
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, serializerOptions, "", out var errorMessage);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.False(string.IsNullOrEmpty(errorMessage), "Expected an error message");
+    }
 }

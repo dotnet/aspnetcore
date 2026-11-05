@@ -158,7 +158,11 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
             return false;
         }
 
-        if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue), JsonConvert.SerializeObject(convertedValue)))
+        // A null current value only matches a null test value. Compare the original test value, because
+        // converting it to the target type can turn a non-null value into null (for example an empty
+        // string converted to a Nullable<T>), which would make distinct values look equal.
+        var valueToCompare = currentValue == null ? value : convertedValue;
+        if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue), JsonConvert.SerializeObject(valueToCompare)))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);
             return false;
