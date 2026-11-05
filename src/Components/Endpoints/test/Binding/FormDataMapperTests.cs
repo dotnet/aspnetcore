@@ -435,7 +435,18 @@ public class FormDataMapperTests
 
         public required T Values { get; set; }
     }
+    [Fact]
+    public void Deserialize_Array_NoElements_ReturnsNull()
+    {
+        var data = new Dictionary<string, StringValues>() { };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
 
+        var result = FormDataMapper.Map<int[]>(reader, options);
+
+        Assert.Null(result);
+    }
     [Fact]
     public void Deserialize_Collections_SingleElement_ReturnsCollection()
     {

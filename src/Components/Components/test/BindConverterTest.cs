@@ -167,7 +167,21 @@ public class BindConverterTest
         // Assert
         Assert.Equal(expected, actual);
     }
+    [Fact]
+    public void FormatValue_Array_Null()
+    {
+        string[]? value = null;
+        var actual = BindConverter.FormatValue(value);
+        Assert.Null(actual);
+    }
 
+    [Fact]
+    public void FormatValue_Array_Null_Generic()
+    {
+        string[]? value = null;
+        var actual = BindConverter.FormatValue<string[]?>(value);
+        Assert.Null(actual);
+    }
     [Fact]
     public void FormatValue_DateTime_Format()
     {

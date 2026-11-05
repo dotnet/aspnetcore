@@ -212,7 +212,21 @@ public class InputSelectTest
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.Contains("The Number from attribute field is not valid.", validationMessages);
     }
+    [Fact]
+    public async Task RendersMultipleSelectWhenBoundArrayValueIsNull()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<string?[]?, TestInputSelect<string?[]?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NullableStringArray,
+        };
 
+        var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+        Assert.Contains(frames.Array, frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "multiple" && Equals(frame.AttributeValue, true));
+        Assert.DoesNotContain(frames.Array, frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "value");
+    }
     [Fact]
     public async Task InputElementIsAssignedSuccessfully()
     {
@@ -352,6 +366,8 @@ public class InputSelectTest
         public int NotNullableInt { get; set; }
 
         public int? NullableInt { get; set; }
+
+        public string?[]? NullableStringArray { get; set; }
 
         public string[] StringArray { get; set; }
     }
