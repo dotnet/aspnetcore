@@ -346,11 +346,13 @@ public class Http2KeepAliveTests : Http2TestBase
         await SendDataAsync(1, new byte[16383], false).DefaultTimeout();
 
         // Confirm the server has processed all preceding DATA frames before advancing fake time.
+        var pingFrameProcessedCount = Volatile.Read(ref _connection._pingFrameProcessedCount);
         await SendPingAsync(Http2PingFrameFlags.NONE).DefaultTimeout();
         await ExpectAsync(Http2FrameType.PING,
             withLength: 8,
             withFlags: (byte)Http2PingFrameFlags.ACK,
             withStreamId: 0).DefaultTimeout();
+        await WaitForPingFrameProcessingAsync(pingFrameProcessedCount).DefaultTimeout();
 
         // Heartbeat that exceeds interval
         TriggerTick(TimeSpan.FromSeconds(1.1));
@@ -380,5 +382,13 @@ public class Http2KeepAliveTests : Http2TestBase
         // Server could send RST_STREAM
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true).DefaultTimeout();
         AssertConnectionNoError();
+    }
+
+    private async Task WaitForPingFrameProcessingAsync(long pingFrameProcessedCount)
+    {
+        while (Volatile.Read(ref _connection._pingFrameProcessedCount) == pingFrameProcessedCount)
+        {
+            await Task.Yield();
+        }
     }
 }
