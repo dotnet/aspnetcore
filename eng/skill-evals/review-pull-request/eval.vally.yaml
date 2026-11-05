@@ -45,7 +45,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:DISCARDED_*\b.{0,4000}\bC1\b|\[DISCARDED\].{0,2000}Why discarded[`''"*_\s]*:)'
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*DISCARDED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[DISCARDED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why discarded[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -79,7 +79,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:UNRESOLVED_*\b.{0,4000}\bC1\b|\[UNRESOLVED\].{0,2000}Why unresolved[`''"*_\s]*:)'
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*UNRESOLVED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[UNRESOLVED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why unresolved[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -113,7 +113,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)NEW_FINDINGS_*\b.{0,4000}confidence[`''"*_\s]*[:=][`''"*_\s]*(?:verified|question)_*\b'
+          pattern: '(?is)(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*NEW_FINDINGS_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}confidence[`''"*_\s]*[:=][`''"*_\s]*(?:verified|question)_*\b'
       - type: prompt
         config:
           scoring: binary
@@ -147,7 +147,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:UNRESOLVED_*\b.{0,4000}\bC1\b|\[UNRESOLVED\].{0,2000}Why unresolved[`''"*_\s]*:)'
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*UNRESOLVED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[UNRESOLVED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why unresolved[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -181,7 +181,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?s)EXISTING_FEEDBACK_COVERAGE_*\b.{0,4000}PRRT_kwDOExampleThread1'
+          pattern: '(?s)(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*EXISTING_FEEDBACK_COVERAGE_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}PRRT_kwDOExampleThread1'
       - type: prompt
         config:
           scoring: binary
