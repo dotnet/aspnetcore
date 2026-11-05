@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Components.AI.Mcp;
 /// <summary>Configures SDK connections to negotiate support for hosted MCP Apps.</summary>
 public static class McpAppClientOptionsExtensions
 {
+    internal const string HtmlMimeType = "text/html;profile=mcp-app";
     /// <summary>Advertises HTML MCP Apps support before an SDK client connects.</summary>
     /// <param name="options">The options used to create the SDK client.</param>
     /// <remarks>
@@ -30,7 +31,7 @@ public static class McpAppClientOptionsExtensions
         options.Capabilities.Extensions ??= new Dictionary<string, object>(StringComparer.Ordinal);
         options.Capabilities.Extensions["io.modelcontextprotocol/ui"] = new JsonObject
         {
-            ["mimeTypes"] = new JsonArray(McpAppPolicy.HtmlMimeType),
+            ["mimeTypes"] = new JsonArray(HtmlMimeType),
         };
     }
 }

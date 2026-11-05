@@ -1,193 +1,230 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using ModelContextProtocol;
+using ModelContextProtocol.Protocol;
 
 namespace Microsoft.AspNetCore.Components.AI.Mcp.Tests;
 
 public class McpContentDispatcherTests
 {
     private const TaskCreationOptions CreationOptions = TaskCreationOptions.RunContinuationsAsynchronously;
-    private const string Request = """{"method":"tools/call","parameters":{"value":1}}""";
 
     [Fact]
-    public async Task DispatchPreservesMcpRequestAndResponse()
+    public async Task DispatchPreservesSdkRequestResponseAndIdentity()
     {
-        using var dispatcher = CreateDispatcher(static (request, _) =>
+        using var dispatcher = new McpContentDispatcher(static (request, _) =>
         {
-            Assert.Equal("tools/call", request.Method);
-            return ValueTask.FromResult(new McpAppResponse(request.Parameters));
+            Assert.Equal(RequestMethods.ToolsCall, request.Method);
+            return ValueTask.FromResult<JsonRpcMessage>(new JsonRpcResponse
+            {
+                Id = request.Id, Result = request.Params
+            });
         });
 
-        var json = await dispatcher.DispatchAsync("request", Request);
+        var json = await dispatcher.DispatchAsync(Request("request", new JsonObject { ["value"] = 1 }));
 
-        var response = JsonSerializer.Deserialize(json, McpAppJsonContext.Default.McpAppResponse)!;
-        Assert.Equal(1, response.Result!.Value.GetProperty("value").GetInt32());
-        Assert.Null(response.Error);
+        var response = Assert.IsType<JsonRpcResponse>(JsonSerializer.Deserialize<JsonRpcMessage>(json, McpJsonUtilities.DefaultOptions));
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Equal(new RequestId("request"), response.Id);
+        Assert.Equal(1, response.Result!["value"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task SdkErrorResponseRetainsCodeMessageDataAndId()
+    {
+        using var dispatcher = new McpContentDispatcher(static (request, _) =>
+            ValueTask.FromResult<JsonRpcMessage>(new JsonRpcError
+            {
+                Id = request.Id,
+                Error = new() { Code = -32601, Message = "Unsupported", Data = new JsonObject { ["method"] = request.Method } }
+            }));
+
+        var json = await dispatcher.DispatchAsync(Request("error"));
+
+        var response = Assert.IsType<JsonRpcError>(JsonSerializer.Deserialize<JsonRpcMessage>(json, McpJsonUtilities.DefaultOptions));
+        Assert.Equal(new RequestId("error"), response.Id);
+        Assert.Equal(-32601, response.Error.Code);
+        Assert.Equal("Unsupported", response.Error.Message);
+        Assert.Equal(RequestMethods.ToolsCall, Assert.IsType<JsonElement>(response.Error.Data).GetProperty("method").GetString());
     }
 
     [Fact]
     public async Task DuplicateIdentityDoesNotCancelOrRemoveOriginalOperation()
     {
         var entered = new TaskCompletionSource(CreationOptions);
-        var release = new TaskCompletionSource<McpAppResponse>(CreationOptions);
-        using var dispatcher = CreateDispatcher(async (_, token) =>
+        var release = new TaskCompletionSource(CreationOptions);
+        using var dispatcher = new McpContentDispatcher(async (request, token) =>
         {
             entered.TrySetResult();
-            return await release.Task.WaitAsync(token);
+            await release.Task.WaitAsync(token);
+            return Response(request, 17);
         });
-        var original = dispatcher.DispatchAsync("same", Request);
+        var original = dispatcher.DispatchAsync(Request("same"));
         await entered.Task;
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.DispatchAsync("same", Request));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(Request("same")));
         Assert.False(original.IsCompleted);
-        release.SetResult(new(McpAppPolicy.Wire(17)));
+        release.SetResult();
 
-        Assert.Equal(17, ReadResult(await original).GetInt32());
-        Assert.Equal(17, ReadResult(await dispatcher.DispatchAsync("same", Request)).GetInt32());
+        Assert.Equal(17, ReadResult(await original)!.GetValue<int>());
+        Assert.Equal(17, ReadResult(await dispatcher.DispatchAsync(Request("same")))!.GetValue<int>());
     }
 
     [Fact]
     public async Task CancellingOneOperationDoesNotCancelAnother()
     {
         var entered = new TaskCompletionSource(CreationOptions);
-        using var dispatcher = CreateDispatcher(async (request, token) =>
+        using var dispatcher = new McpContentDispatcher(async (request, token) =>
         {
-            if (request.Method == "tools/call")
+            if (request.Id == new RequestId("first"))
             {
                 entered.SetResult();
                 await Task.Delay(Timeout.Infinite, token);
             }
-            return new(McpAppPolicy.Wire(request.Method));
+            return Response(request, 2);
         });
-        var pending = dispatcher.DispatchAsync("first", Request);
+        var pending = dispatcher.DispatchAsync(Request("first"));
         await entered.Task;
 
-        dispatcher.Cancel("first");
-        dispatcher.Cancel("unknown");
+        dispatcher.Cancel(new("first"));
+        dispatcher.Cancel(new("unknown"));
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
-        Assert.Equal("tools/list", ReadResult(await dispatcher.DispatchAsync("second",
-            """{"method":"tools/list","parameters":{}}""")).GetString());
+        Assert.Equal(2, ReadResult(await dispatcher.DispatchAsync(Request("second")))!.GetValue<int>());
     }
 
     [Fact]
     public async Task ClosingCancelsPendingAndRejectsFutureWork()
     {
         var entered = new TaskCompletionSource(CreationOptions);
-        var dispatcher = CreateDispatcher(async (_, token) =>
+        var dispatcher = new McpContentDispatcher(async (request, token) =>
         {
             entered.SetResult();
             await Task.Delay(Timeout.Infinite, token);
-            return new();
+            return Response(request, 0);
         });
-        var pending = dispatcher.DispatchAsync("pending", Request);
+        var pending = dispatcher.DispatchAsync(Request("pending"));
         await entered.Task;
 
         dispatcher.Dispose();
         dispatcher.Dispose();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => dispatcher.DispatchAsync("late", Request));
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => dispatcher.DispatchAsync(Request("late")));
     }
 
     [Fact]
-    public async Task ConcurrencyLimitIsReleasedAfterCompletion()
+    public async Task ConcurrentOperationsAreNotLimitedToThirtyTwo()
     {
-        var entered = new TaskCompletionSource(CreationOptions);
-        var release = new TaskCompletionSource<McpAppResponse>(CreationOptions);
-        using var dispatcher = CreateDispatcher(async (_, token) =>
+        var release = new TaskCompletionSource(CreationOptions);
+        using var dispatcher = new McpContentDispatcher(async (request, token) =>
         {
-            entered.TrySetResult();
-            return await release.Task.WaitAsync(token);
-        }, options => options.MaximumPendingRequests = 1);
-        var first = dispatcher.DispatchAsync("first", Request);
-        await entered.Task;
+            await release.Task.WaitAsync(token);
+            return Response(request, 2);
+        });
+        var pending = Enumerable.Range(0, 33)
+            .Select(id => dispatcher.DispatchAsync(Request(id.ToString(System.Globalization.CultureInfo.InvariantCulture)))).ToArray();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.DispatchAsync("second", Request));
-        release.SetResult(new(McpAppPolicy.Wire(2)));
-        await first;
+        Assert.All(pending, operation => Assert.False(operation.IsCompleted));
+        release.SetResult();
+        await Task.WhenAll(pending);
 
-        Assert.Equal(2, ReadResult(await dispatcher.DispatchAsync("third", Request)).GetInt32());
+        Assert.Equal(2, ReadResult(await dispatcher.DispatchAsync(Request("next")))!.GetValue<int>());
     }
 
     [Theory]
     [InlineData(-1)]
     [InlineData(0)]
     [InlineData(1)]
-    public async Task RequestByteLimitIsInclusive(int allowance)
+    public async Task RequestSizeDoesNotImposeTwoMiBLimit(int allowance)
     {
-        using var dispatcher = CreateDispatcher(static (_, _) => ValueTask.FromResult(new McpAppResponse()),
-            options => options.MaximumMessageBytes = Encoding.UTF8.GetByteCount(Request) + allowance);
-
-        if (allowance < 0)
+        using var dispatcher = new McpContentDispatcher(static (request, _) =>
+            ValueTask.FromResult<JsonRpcMessage>(Response(request, 0)));
+        var empty = Request("request", new JsonObject { ["value"] = "" });
+        var json = Request("request", new JsonObject
         {
-            await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.DispatchAsync("request", Request));
-        }
-        else
-        {
-            Assert.Equal("{}", await dispatcher.DispatchAsync("request", Request));
-        }
-    }
-
-    [Fact]
-    public async Task OversizedResponseFailsRatherThanReturningTruncatedJson()
-    {
-        using var dispatcher = CreateDispatcher(static (_, _) =>
-            ValueTask.FromResult(new McpAppResponse(McpAppPolicy.Wire(new string('x', 100)))),
-            options => options.MaximumMessageBytes = Encoding.UTF8.GetByteCount(Request));
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.DispatchAsync("request", Request));
-    }
-
-    [Fact]
-    public async Task UncooperativeHandlerKeepsItsSlotAfterDeadline()
-    {
-        var release = new TaskCompletionSource<McpAppResponse>(CreationOptions);
-        using var dispatcher = CreateDispatcher((_, _) => new(release.Task), options =>
-        {
-            options.MaximumPendingRequests = 1;
-            options.OperationTimeout = TimeSpan.FromMilliseconds(20);
+            ["value"] = new string('x', 2 * 1024 * 1024 - Encoding.UTF8.GetByteCount(empty) + allowance)
         });
+        Assert.Equal(2 * 1024 * 1024 + allowance, Encoding.UTF8.GetByteCount(json));
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => dispatcher.DispatchAsync("first", Request));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.DispatchAsync("second", Request));
-
-        release.SetResult(new());
+        Assert.Equal(0, ReadResult(await dispatcher.DispatchAsync(json))!.GetValue<int>());
     }
 
     [Fact]
-    public async Task InvalidJsonDoesNotPoisonRequestIdentity()
+    public async Task LargeResponseIsReturnedIntact()
     {
-        using var dispatcher = CreateDispatcher(static (_, _) => ValueTask.FromResult(new McpAppResponse()));
+        using var dispatcher = new McpContentDispatcher(static (request, _) =>
+            ValueTask.FromResult<JsonRpcMessage>(new JsonRpcResponse
+            {
+                Id = request.Id, Result = JsonValue.Create(new string('x', 2 * 1024 * 1024 + 1))
+            }));
 
-        await Assert.ThrowsAsync<JsonException>(() => dispatcher.DispatchAsync("request", "{"));
-
-        Assert.Equal("{}", await dispatcher.DispatchAsync("request", Request));
+        Assert.Equal(new string('x', 2 * 1024 * 1024 + 1),
+            ReadResult(await dispatcher.DispatchAsync(Request("large")))!.GetValue<string>());
     }
 
     [Fact]
-    public void ProxyDocumentHasNoGenericHostDependency()
+    public async Task CancelledUncooperativeHandlerRetainsItsIdentityUntilCompletion()
     {
-        var html = McpAppProxy.CreateDocument(new("https://host.example/path"),
-            new("https://proxy.example"), null);
+        var release = new TaskCompletionSource(CreationOptions);
+        using var dispatcher = new McpContentDispatcher(async (request, _) =>
+        {
+            await release.Task;
+            return Response(request, 0);
+        });
+        var pending = dispatcher.DispatchAsync(Request("cancelled"));
+        dispatcher.Cancel(new("cancelled"));
 
-        Assert.Contains("\"https://host.example\"", html);
-        Assert.Contains("Microsoft.AspNetCore.Components.AI.Mcp/mcp-proxy.js", html);
-        Assert.DoesNotContain("host.example/path", html);
-        Assert.DoesNotContain("isolated-content", html);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(Request("cancelled")));
+        release.SetResult();
     }
 
-    private static JsonElement ReadResult(string json) =>
-        JsonSerializer.Deserialize(json, McpAppJsonContext.Default.McpAppResponse)!.Result!.Value;
-
-    private static McpContentDispatcher CreateDispatcher(
-        Func<McpAppRequest, CancellationToken, ValueTask<McpAppResponse>> handler,
-        Action<McpContentOptions>? configure = null)
+    [Fact]
+    public async Task OperationDoesNotExpireAfterThirtySeconds()
     {
-        var options = new McpContentOptions { ProxyUrl = new("https://proxy.example/proxy") };
-        configure?.Invoke(options);
-        return new(options, handler);
+        var release = new TaskCompletionSource(CreationOptions);
+        using var dispatcher = new McpContentDispatcher(async (request, token) =>
+        {
+            await release.Task.WaitAsync(token);
+            return Response(request, 17);
+        });
+        var pending = dispatcher.DispatchAsync(Request("delayed"));
+
+        await Task.Delay(TimeSpan.FromSeconds(31));
+        release.SetResult();
+
+        Assert.Equal(17, ReadResult(await pending)!.GetValue<int>());
     }
+
+    [Theory]
+    [InlineData("{")]
+    [InlineData("null")]
+    [InlineData("""{"jsonrpc":"1.0","id":"request","method":"tools/list","params":{}}""")]
+    public async Task InvalidJsonDoesNotPoisonRequestIdentity(string json)
+    {
+        using var dispatcher = new McpContentDispatcher(static (request, _) =>
+            ValueTask.FromResult<JsonRpcMessage>(Response(request, 0)));
+
+        await Assert.ThrowsAsync<JsonException>(() => dispatcher.DispatchAsync(json));
+
+        Assert.Equal(0, ReadResult(await dispatcher.DispatchAsync(Request("request")))!.GetValue<int>());
+    }
+
+    private static string Request(string id, JsonObject? parameters = null) =>
+        JsonSerializer.Serialize(new JsonRpcRequest
+        {
+            Id = new(id), Method = RequestMethods.ToolsCall, Params = parameters ?? new JsonObject()
+        }, McpJsonUtilities.DefaultOptions);
+
+    private static JsonRpcResponse Response(JsonRpcRequest request, int value) =>
+        new() { Id = request.Id, Result = JsonValue.Create(value) };
+
+    private static JsonNode? ReadResult(string json) =>
+        Assert.IsType<JsonRpcResponse>(JsonSerializer.Deserialize<JsonRpcMessage>(json, McpJsonUtilities.DefaultOptions)).Result;
 }

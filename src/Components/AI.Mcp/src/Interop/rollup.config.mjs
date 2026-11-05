@@ -5,7 +5,7 @@ import terser from '@rollup/plugin-terser';
 const production = !!process.env.production;
 
 export default {
-  input: ['mcp-host.js', 'mcp-proxy.js'],
+  input: ['mcp-host.js', 'mcp-sandbox.js'],
   output: {
     dir: `dist/${production ? 'Release' : 'Debug'}`,
     format: 'es',

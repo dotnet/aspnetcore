@@ -26,14 +26,18 @@ app.MapMcp("/mcp");
 app.MapGet("/state", (NoteStore store) => new
 {
     initialCalls = store.InitialCalls,
+    activeInitialCalls = store.ActiveInitialCalls,
+    cancelledInitialCalls = store.CancelledInitialCalls,
     savedCalls = store.SavedCalls,
     activeCalls = store.ActiveCalls,
     cancelledCalls = store.CancelledCalls,
     modelOnlyCalls = store.ModelOnlyCalls,
     assetRequests = store.AssetRequests,
     socketRequests = store.SocketRequests,
+    resourceReads = store.ResourceReads,
     message = store.Message,
 });
+app.MapPost("/release-resource", (NoteStore store) => store.ResourceRelease.TrySetResult());
 app.MapGet("/asset.svg", (NoteStore store) =>
 {
     Interlocked.Increment(ref store.AssetRequests);

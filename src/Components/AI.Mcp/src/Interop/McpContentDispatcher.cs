@@ -1,32 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using System.Text.Json;
+using ModelContextProtocol;
+using ModelContextProtocol.Protocol;
 
 namespace Microsoft.AspNetCore.Components.AI.Mcp;
 
 internal sealed class McpContentDispatcher : IDisposable
 {
     private readonly object _lock = new();
-    private readonly Dictionary<string, CancellationTokenSource> _pending = new(StringComparer.Ordinal);
+    private readonly Dictionary<RequestId, CancellationTokenSource> _pending = new();
     private readonly CancellationTokenSource _lifetime = new();
-    private readonly McpContentOptions _options;
-    private readonly Func<McpAppRequest, CancellationToken, ValueTask<McpAppResponse>> _handler;
+    private readonly Func<JsonRpcRequest, CancellationToken, ValueTask<JsonRpcMessage>> _handler;
     private bool _closed;
 
-    public McpContentDispatcher(McpContentOptions options,
-        Func<McpAppRequest, CancellationToken, ValueTask<McpAppResponse>> handler)
+    public McpContentDispatcher(Func<JsonRpcRequest, CancellationToken, ValueTask<JsonRpcMessage>> handler)
     {
-        options.Validate();
-        _options = options;
         _handler = handler;
     }
 
-    public async Task<string> DispatchAsync(string id, string json)
+    public async Task<string> DispatchAsync(string json)
     {
-        ArgumentException.ThrowIfNullOrEmpty(id);
-        CheckSize(json);
+        var request = JsonSerializer.Deserialize<JsonRpcRequest>(json, McpJsonUtilities.DefaultOptions)
+            ?? throw new JsonException("The MCP app request cannot be null.");
+        if (request.JsonRpc != "2.0")
+        {
+            throw new JsonException("The MCP app request must use JSON-RPC 2.0.");
+        }
+        var id = request.Id;
         CancellationTokenSource operation;
         lock (_lock)
         {
@@ -35,24 +37,16 @@ internal sealed class McpContentDispatcher : IDisposable
             {
                 throw new InvalidOperationException("The request identity is already pending.");
             }
-            if (_pending.Count >= _options.MaximumPendingRequests)
-            {
-                throw new InvalidOperationException("The MCP app request limit was reached.");
-            }
             operation = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
-            operation.CancelAfter(_options.OperationTimeout);
             _pending.Add(id, operation);
         }
 
-        Task<McpAppResponse>? handlerTask = null;
+        Task<JsonRpcMessage>? handlerTask = null;
         try
         {
-            var request = JsonSerializer.Deserialize(json, McpAppJsonContext.Default.McpAppRequest)
-                ?? throw new JsonException("The MCP app request cannot be null.");
             handlerTask = _handler(request, operation.Token).AsTask();
             var response = await handlerTask.WaitAsync(operation.Token);
-            var result = JsonSerializer.Serialize(response, McpAppJsonContext.Default.McpAppResponse);
-            CheckSize(result);
+            var result = JsonSerializer.Serialize(response, McpJsonUtilities.DefaultOptions);
             return result;
         }
         finally
@@ -72,7 +66,7 @@ internal sealed class McpContentDispatcher : IDisposable
         }
     }
 
-    private void Release(string id, CancellationTokenSource operation)
+    private void Release(RequestId id, CancellationTokenSource operation)
     {
         lock (_lock)
         {
@@ -81,7 +75,7 @@ internal sealed class McpContentDispatcher : IDisposable
         operation.Dispose();
     }
 
-    public void Cancel(string id)
+    public void Cancel(RequestId id)
     {
         lock (_lock)
         {
@@ -89,14 +83,6 @@ internal sealed class McpContentDispatcher : IDisposable
             {
                 operation.Cancel();
             }
-        }
-    }
-
-    private void CheckSize(string json)
-    {
-        if (Encoding.UTF8.GetByteCount(json) > _options.MaximumMessageBytes)
-        {
-            throw new InvalidOperationException("The MCP app message exceeds the configured byte limit.");
         }
     }
 

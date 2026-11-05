@@ -3,6 +3,8 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Linq;
+using ModelContextProtocol.Client;
 
 namespace Microsoft.AspNetCore.Components.AI.Mcp.Tests;
 
@@ -29,28 +31,55 @@ public class McpContentHostTests
     [InlineData(-1)]
     [InlineData(0)]
     [InlineData(1)]
-    public async Task HostContextByteLimitIsInclusiveBeforeAttachment(int allowance)
+    public async Task LargeHostContextReachesReadinessCheckWithoutSizeRejection(int allowance)
     {
-        const string json = """{"locale":"es-ES"}""";
-        await using var host = new TestHost(Encoding.UTF8.GetByteCount(json) + allowance);
+        var json = "{\"locale\":\"" + new string('x', 2 * 1024 * 1024 - 13 + allowance) + "\"}";
+        Assert.Equal(2 * 1024 * 1024 + allowance, Encoding.UTF8.GetByteCount(json));
+        await using var host = new TestHost();
         using var document = JsonDocument.Parse(json);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             host.UpdateAsync(document.RootElement).AsTask());
 
-        Assert.Equal(allowance < 0
-            ? "The MCP host-context update exceeds the configured byte limit."
-            : "The MCP app is not ready.", error.Message);
+        Assert.Equal("The MCP app is not ready.", error.Message);
     }
 
-    private sealed class TestHost(int maximumMessageBytes = 1024) : McpContentHost
+    [Fact]
+    public async Task LargeHostContextIsDeliveredWithoutSizeLimit()
     {
-        protected override McpContentOptions Options { get; } = new()
-        {
-            ProxyUrl = new("https://proxy.example/proxy"),
-            MaximumMessageBytes = maximumMessageBytes,
-        };
+        var server = new McpClientFixture("server");
+        await using var client = await McpClient.CreateAsync(server);
+        await using var host = new McpHostFixture(client, (await client.ListToolsAsync()).ToArray());
+        var locale = new string('x', 2 * 1024 * 1024 + 1);
+        var context = JsonSerializer.SerializeToElement(new { locale });
+        await host.InitializeAsync();
 
+        await host.Host.UpdateAsync(context);
+
+        Assert.Equal(locale, Assert.Single(host.Browser.Contexts).GetProperty("locale").GetString());
+    }
+
+    [Fact]
+    public async Task CleanupDoesNotExpireAfterFiveSeconds()
+    {
+        var server = new McpClientFixture("server");
+        await using var client = await McpClient.CreateAsync(server);
+        await using var host = new McpHostFixture(client, (await client.ListToolsAsync()).ToArray());
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await host.InitializeAsync();
+        host.Browser.DisposeCompletion = release.Task;
+        var closing = host.Host.DisposeAsync().AsTask();
+
+        await Task.Delay(TimeSpan.FromSeconds(6));
+        release.SetResult();
+
+        await closing;
+        await client.PingAsync();
+        Assert.False(server.Disposed);
+    }
+
+    private sealed class TestHost : McpContentHost
+    {
         public ValueTask UpdateAsync(JsonElement context) => UpdateHostContextAsync(context);
     }
 }

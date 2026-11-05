@@ -5,39 +5,28 @@
 @if (!IsClosed)
 {
     <section class="mcp-host">
-        <button class="mcp-theme" @onclick="ChangeThemeAsync">Toggle theme</button>
+        <button class="mcp-theme" disabled="@(!_ready)" @onclick="ChangeThemeAsync">Toggle theme</button>
         <button class="mcp-close" @onclick="async () => await CloseAsync()">Close app</button>
         <iframe @ref="Frame"
+                src="@(Configuration["SANDBOX_ORIGIN"] + "/mcp-sandbox")"
                 title="Application-configured MCP host"
                 sandbox="allow-scripts allow-same-origin"
                 allow="clipboard-write 'none'"
                 referrerpolicy="no-referrer"
-                style="width:100%;border:0">
+                style="display:block;width:100%;height:600px;border:0">
         </iframe>
     </section>
 }
 
 @code {
-    private McpContentOptions _options = default!;
     private string _theme = "light";
+    private bool _ready;
 
-    protected override McpContentOptions Options => _options;
-
-    protected override void OnInitialized()
+    protected override ValueTask OnReadyAsync(CancellationToken cancellationToken)
     {
-        _options = new()
-        {
-            ProxyUrl = new(Configuration["PROXY_URL"]
-                ?? throw new InvalidOperationException("PROXY_URL must be configured.")),
-            MaximumHeight = 900,
-        };
-        var serverUrl = new Uri(Configuration["MCP_SERVER_URL"]
-            ?? throw new InvalidOperationException("MCP_SERVER_URL must be configured."));
-        _options.BrowserPolicy.ResourceDomains.Add(serverUrl.GetLeftPart(UriPartial.Authority));
-        _options.BrowserPolicy.ConnectDomains.Add(new UriBuilder(serverUrl)
-        {
-            Scheme = serverUrl.Scheme == Uri.UriSchemeHttps ? "wss" : "ws",
-        }.Uri.GetLeftPart(UriPartial.Authority));
+        _ready = true;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
     }
 
     private async Task ChangeThemeAsync()

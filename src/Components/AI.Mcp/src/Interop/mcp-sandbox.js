@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { McpUiSandboxResourceReadyNotificationSchema } from "@modelcontextprotocol/ext-apps";
+import { buildAllowAttribute } from "@modelcontextprotocol/ext-apps/app-bridge";
 import { createTransport } from "./mcp-transport.js";
 
 function origins(values, protocols = /^https?:$/) {
@@ -14,50 +15,42 @@ function origins(values, protocols = /^https?:$/) {
     }).join(" ");
 }
 
-function loadDocument(html, csp, permissions) {
+function loadDocument(frame, html, csp, permissions) {
     const resources = origins(csp.resourceDomains ?? []);
     const connections = origins(csp.connectDomains ?? [], /^(https?|wss?):$/);
     const frames = origins(csp.frameDomains ?? []);
     const bases = origins(csp.baseUriDomains ?? []);
-    const policy = `default-src 'none'; script-src 'unsafe-inline' ${resources}; style-src 'unsafe-inline' ${resources}; img-src data: ${resources}; font-src ${resources}; media-src ${resources}; connect-src ${connections || "'none'"}; frame-src ${frames || "'none'"}; base-uri ${bases || "'none'"}; form-action 'none'`;
+    const policy = `default-src 'none'; script-src 'unsafe-inline' ${resources}; style-src 'unsafe-inline' ${resources}; img-src data: ${resources}; font-src ${resources || "'none'"}; media-src ${resources || "'none'"}; connect-src ${connections || "'none'"}; frame-src ${frames || "'none'"}; base-uri ${bases || "'self'"}; form-action 'none'`;
     const parsed = new DOMParser().parseFromString(html, "text/html");
     const meta = parsed.createElement("meta");
     meta.httpEquiv = "Content-Security-Policy";
     meta.content = policy;
     parsed.head.prepend(meta);
-    const frame = document.createElement("iframe");
-    frame.title = "MCP app document";
-    frame.setAttribute("sandbox", "allow-scripts");
-    frame.referrerPolicy = "no-referrer";
-    frame.allow = Object.keys(permissions).map(feature => {
-        const permission = feature === "clipboardWrite" ? "clipboard-write" : feature;
-        if (!/^[a-z][a-z-]*$/.test(permission)) throw new Error("Invalid browser feature grant.");
-        return `${permission} *`;
-    }).join("; ");
+    if (!frame.hasAttribute("allow")) frame.setAttribute("allow", buildAllowAttribute(permissions));
     frame.srcdoc = "<!doctype html>" + parsed.documentElement.outerHTML;
-    document.body.append(frame);
-    return frame;
 }
 
-export async function start(hostOrigin, options) {
-    if (window.parent === window || new URL(hostOrigin).origin !== hostOrigin || hostOrigin === location.origin) {
-        throw new Error("Invalid MCP app proxy parent origin.");
+export async function start(frame, hostOrigin) {
+    if (!(frame instanceof HTMLIFrameElement) || frame.id !== "mcp-app" ||
+        !frame.isConnected || document.querySelectorAll("#mcp-app").length !== 1) {
+        throw new Error("The MCP sandbox must render exactly one iframe with id=\"mcp-app\".");
     }
-    const transport = createTransport(parent, hostOrigin, options.maximumMessageBytes);
-    let inner;
+    const transport = createTransport(parent, hostOrigin);
+    let loaded = false;
     transport.onmessage = message => {
         if (message.method === "ui/notifications/sandbox-resource-ready") {
-            if (inner) throw new Error("The MCP app document is already attached.");
+            if (loaded) throw new Error("The MCP app document is already attached.");
             const { html, csp = {}, permissions = {} } = McpUiSandboxResourceReadyNotificationSchema.parse(message).params;
-            inner = loadDocument(html, csp, permissions);
-        } else if (inner && !message.method?.startsWith("ui/notifications/sandbox-")) {
-            inner.contentWindow.postMessage(message, "*");
+            loadDocument(frame, html, csp, permissions);
+            loaded = true;
+        } else if (loaded && !message.method?.startsWith("ui/notifications/sandbox-")) {
+            frame.contentWindow.postMessage(message, "*");
         } else {
             throw new Error("The MCP app document is not ready.");
         }
     };
     const receive = event => {
-        if (event.source === inner?.contentWindow && event.origin === "null") {
+        if (loaded && event.source === frame.contentWindow && event.origin === "null") {
             transport.send(event.data).catch(error => transport.onerror?.(error));
         }
     };

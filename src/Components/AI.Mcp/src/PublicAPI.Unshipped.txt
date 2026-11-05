@@ -1,81 +1,41 @@
 #nullable enable
-abstract Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Options.get -> Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions!
 Microsoft.AspNetCore.Components.AI.Mcp.McpAppClientOptionsExtensions
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppContentBlock
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppContentBlock.McpAppContentBlock() -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHost
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHost.BindTools(ModelContextProtocol.Client.McpClient! client, System.Collections.Generic.IEnumerable<ModelContextProtocol.Client.McpClientTool!>! tools) -> System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.AIFunction!>!
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHost.Configure(Microsoft.AspNetCore.Components.AI.UIAgentOptions! options) -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHost.Dispose() -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHost.McpAppHost(Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions! options) -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions.MaximumResultBytes.get -> int
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions.MaximumResultBytes.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions.MaximumRetainedCalls.get -> int
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions.MaximumRetainedCalls.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions.McpAppHostOptions() -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions.OperationTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions.OperationTimeout.set -> void
-Microsoft.AspNetCore.Builder.McpAppEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Builder.McpAppSandboxEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>
-Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Block.get -> Microsoft.AspNetCore.Components.AI.Mcp.McpAppContentBlock!
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Block.get -> Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock!
 Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Block.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Dispose() -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Host.get -> Microsoft.AspNetCore.Components.AI.Mcp.McpAppHost!
-Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Host.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Client.get -> ModelContextProtocol.Client.McpClient!
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Client.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.McpBlock() -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.UnavailableContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.UnavailableContent.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Tools.get -> System.Collections.Generic.IReadOnlyList<ModelContextProtocol.Client.McpClientTool!>!
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Tools.set -> void
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Block.get -> Microsoft.AspNetCore.Components.AI.Mcp.McpAppContentBlock!
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.AgentContext.get -> Microsoft.AspNetCore.Components.AI.AgentContext?
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.AgentContext.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Block.get -> Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock!
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Block.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Client.get -> ModelContextProtocol.Client.McpClient!
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Client.set -> void
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.CloseAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Frame.get -> Microsoft.AspNetCore.Components.ElementReference
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Frame.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Host.get -> Microsoft.AspNetCore.Components.AI.Mcp.McpAppHost!
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Host.set -> void
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.IsClosed.get -> bool
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.JS.get -> Microsoft.JSInterop.IJSRuntime!
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.JS.set -> void
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.McpContentHost() -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Tools.get -> System.Collections.Generic.IReadOnlyList<ModelContextProtocol.Client.McpClientTool!>!
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Tools.set -> void
 Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.UpdateHostContextAsync(System.Text.Json.JsonElement hostContext, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.AllowResourceRead.get -> System.Func<ModelContextProtocol.Client.McpClient!, string!, bool>?
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.AllowResourceRead.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.AllowToolCall.get -> System.Func<ModelContextProtocol.Client.McpClient!, string!, bool>?
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.AllowToolCall.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.BrowserPolicy.get -> Microsoft.AspNetCore.Components.AI.Mcp.McpContentPolicy!
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.InitializationTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.InitializationTimeout.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.MaximumDocumentBytes.get -> int
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.MaximumDocumentBytes.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.MaximumHeight.get -> int
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.MaximumHeight.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.MaximumMessageBytes.get -> int
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.MaximumMessageBytes.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.MaximumPendingRequests.get -> int
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.MaximumPendingRequests.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.McpContentOptions() -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.OperationTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.OperationTimeout.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.ProxyUrl.get -> System.Uri!
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.ProxyUrl.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.TeardownTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions.TeardownTimeout.set -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentPolicy
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentPolicy.BaseUriDomains.get -> System.Collections.Generic.IList<string!>!
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentPolicy.ConnectDomains.get -> System.Collections.Generic.IList<string!>!
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentPolicy.FrameDomains.get -> System.Collections.Generic.IList<string!>!
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentPolicy.McpContentPolicy() -> void
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentPolicy.Permissions.get -> System.Collections.Generic.IList<string!>!
-Microsoft.AspNetCore.Components.AI.Mcp.McpContentPolicy.ResourceDomains.get -> System.Collections.Generic.IList<string!>!
-Microsoft.Extensions.DependencyInjection.McpAppServiceCollectionExtensions
+Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase
+Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase.HostOrigin.get -> string!
+Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase.HostOrigin.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase.McpSandboxBase() -> void
 override Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.OnParametersSet() -> void
-static Microsoft.AspNetCore.Builder.McpAppEndpointRouteBuilderExtensions.MapMcpAppProxy(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Uri! hostOrigin, Microsoft.AspNetCore.Components.AI.Mcp.McpContentOptions? options = null) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.McpAppSandboxEndpointRouteBuilderExtensions.MapMcpAppSandbox<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Uri! hostOrigin, System.Uri! sandboxOrigin, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
 static Microsoft.AspNetCore.Components.AI.Mcp.McpAppClientOptionsExtensions.EnableMcpApps(this ModelContextProtocol.Client.McpClientOptions! options) -> void
-static Microsoft.Extensions.DependencyInjection.McpAppServiceCollectionExtensions.AddMcpAppHost(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.AI.Mcp.McpAppHostOptions? options = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-virtual Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.ModulePath.get -> string!
 virtual Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.OnClosedAsync() -> System.Threading.Tasks.ValueTask
 virtual Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.OnReadyAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void

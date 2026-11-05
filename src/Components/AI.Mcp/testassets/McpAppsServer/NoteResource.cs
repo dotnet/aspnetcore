@@ -14,8 +14,13 @@ public sealed class NoteResource(NoteStore store)
     private const string HtmlMimeType = "text/html;profile=mcp-app";
 
     [McpServerResource(UriTemplate = ResourceUri, Name = "note-app", MimeType = HtmlMimeType)]
-    public ReadResourceResult Read()
+    public async Task<ReadResourceResult> Read(CancellationToken cancellationToken)
     {
+        Interlocked.Increment(ref store.ResourceReads);
+        if (store.HoldResource)
+        {
+            await store.ResourceRelease.Task.WaitAsync(cancellationToken);
+        }
         using var stream = typeof(NoteResource).Assembly.GetManifestResourceStream("McpAppsServer.standard-app.js")
             ?? throw new InvalidOperationException("The standard app bundle was not built.");
         using var reader = new StreamReader(stream);
@@ -46,6 +51,9 @@ public sealed class NoteResource(NoteStore store)
                         <button id="slow">Start slow call</button><button id="cancel">Cancel slow call</button>
                         <button id="transport-failure">Wait for server failure</button>
                         <p id="status" role="status"></p><p id="error" role="alert"></p>
+                        <p id="document-padding" hidden>{{store.Payload}}</p>
+                        <button id="echo-payload">Echo document payload</button><p id="echo-length"></p><p id="echo-matches"></p>
+                        <button id="many-slow">Start concurrent calls</button>
                         <script type="module">{{script}}</script>
                         </body></html>
                         """,
@@ -58,6 +66,7 @@ public sealed class NoteResource(NoteStore store)
                                 ["resourceDomains"] = new JsonArray(origin),
                                 ["connectDomains"] = new JsonArray(store.SocketOrigin),
                             },
+                            ["permissions"] = new JsonObject { ["clipboardWrite"] = new JsonObject() },
                         },
                     },
                 },

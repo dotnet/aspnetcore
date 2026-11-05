@@ -5,17 +5,24 @@ const element = id => document.getElementById(id);
 let pending;
 let assetUrl;
 let socketUrl;
+let resultCount = 0;
 
 app.ontoolinput = ({ arguments: args }) => {
   element('arguments').textContent = JSON.stringify(args);
 };
 app.ontoolresult = result => {
-  element('title').textContent = result.structuredContent.title;
-  element('message').textContent = result.structuredContent.message;
-  element('metadata').textContent = result._meta?.viewOnly ?? '';
+  element('status').dataset.resultCount = String(++resultCount);
+  element('status').dataset.isError = String(result.isError === true);
+  element('status').dataset.contentTypes = result.content.map(content => content.type).join(',');
+  element('status').dataset.payloadLength = String(result._meta?.payload?.length ?? 0);
+  element('status').dataset.payloadMatches = String(result._meta?.payload === element('document-padding').textContent);
+  element('title').textContent = result.structuredContent?.title ?? 'Tool content';
+  element('message').textContent = result.structuredContent?.message ??
+    result.content.filter(content => content.type === 'text').map(content => content.text).join('\n');
+  element('metadata').textContent = result._meta?.viewOnly ?? result.content[0]?._meta?.contentOnly ?? '';
   element('status').textContent = 'Ready';
-  assetUrl = result.structuredContent.assetUrl;
-  socketUrl = result.structuredContent.socketUrl;
+  assetUrl = result.structuredContent?.assetUrl;
+  socketUrl = result.structuredContent?.socketUrl;
 };
 app.ontoolcancelled = () => { element('error').textContent = 'Initial call cancelled'; };
 app.onhostcontextchanged = () => {
@@ -40,6 +47,16 @@ async function call(name, args) {
 }
 
 element('save').addEventListener('click', () => call('save_note', { text: element('draft').value }));
+element('echo-payload').addEventListener('click', async () => {
+  try {
+    const payload = element('document-padding').textContent;
+    const result = await app.callServerTool({ name: 'echo_payload', arguments: { payload } });
+    element('echo-length').textContent = String(result.structuredContent.payload.length);
+    element('echo-matches').textContent = String(result.structuredContent.payload === payload && result.content[0].text === payload);
+  } catch (error) {
+    element('error').textContent = error.message;
+  }
+});
 element('model-only').addEventListener('click', () => call('model_only', {}));
 element('unknown').addEventListener('click', () => call('unknown_tool', {}));
 element('cross-server').addEventListener('click', () => call('other_show_note', { title: 'Wrong connection' }));
@@ -72,6 +89,20 @@ element('slow').addEventListener('click', async () => {
   }
 });
 element('cancel').addEventListener('click', () => pending?.abort());
+element('many-slow').addEventListener('click', async () => {
+  pending = new AbortController();
+  element('status').textContent = 'Waiting';
+  try {
+    await Promise.all(Array.from({ length: 33 }, () =>
+      app.callServerTool({ name: 'wait_for_cancellation', arguments: {} }, { signal: pending.signal })));
+    element('status').textContent = 'Completed';
+  } catch (error) {
+    element('status').textContent = pending.signal.aborted ? 'Cancelled' : 'Failed';
+    if (!pending.signal.aborted) element('error').textContent = error.message;
+  } finally {
+    pending = null;
+  }
+});
 
 await app.connect();
 element('theme').textContent = app.getHostContext().theme;

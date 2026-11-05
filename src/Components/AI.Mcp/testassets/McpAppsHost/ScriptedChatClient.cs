@@ -15,10 +15,11 @@ public sealed class ScriptedChatClient(HostState state) : IChatClient
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Interlocked.Increment(ref state.ModelRequests);
+        var requestNumber = Interlocked.Increment(ref state.ModelRequests);
         state.ModelToolNames = options?.Tools?.Select(tool => tool.Name).ToArray() ?? [];
         var history = messages.ToList();
-        var results = history.SelectMany(message => message.Contents).OfType<FunctionResultContent>().ToArray();
+        var latestUser = history.FindLastIndex(message => message.Role == ChatRole.User);
+        var results = history.Skip(latestUser + 1).SelectMany(message => message.Contents).OfType<FunctionResultContent>().ToArray();
         foreach (var result in results)
         {
             var value = result.Result switch
@@ -35,16 +36,39 @@ public sealed class ScriptedChatClient(HostState state) : IChatClient
 
         if (results.Length == 0)
         {
-            var tool = options?.Tools?.Single(tool => tool.Name == "show_note")
+            var prompt = history.Last(message => message.Role == ChatRole.User).Text;
+            var toolName = prompt switch
+            {
+                "Open the other note" => "other_show_note",
+                "Open a note and wait until I save" => "edit_note",
+                "Open a failing note" => "fail_note",
+                "Open text content" or "Open text and image content" => "show_content",
+                _ => "show_note",
+            };
+            var tool = options?.Tools?.Single(tool => tool.Name == toolName)
                 ?? throw new InvalidOperationException("The model-visible note tool is missing.");
             var calls = new List<AIContent>
             {
-                new FunctionCallContent("original-note-call", tool.Name, new Dictionary<string, object?> { ["title"] = "Original note" })
+                new FunctionCallContent($"original-note-call-{requestNumber}", tool.Name, new Dictionary<string, object?> { ["title"] = "Original note" })
             };
-            if (history.Last(message => message.Role == ChatRole.User).Text == "Open two notes")
+            if (toolName == "show_content")
             {
-                calls.Add(new FunctionCallContent("second-note-call", tool.Name,
+                calls[0] = new FunctionCallContent($"original-content-call-{requestNumber}", tool.Name,
+                    new Dictionary<string, object?>
+                    {
+                        ["title"] = "Converted SDK content",
+                        ["includeImage"] = prompt == "Open text and image content"
+                    });
+            }
+            if (prompt == "Open two notes")
+            {
+                calls.Add(new FunctionCallContent($"second-note-call-{requestNumber}", tool.Name,
                     new Dictionary<string, object?> { ["title"] = "Second note" }));
+            }
+            if (prompt == "Open a note and run the regular tool")
+            {
+                var regularTool = options!.Tools!.Single(tool => tool.Name == "model_only");
+                calls.Add(new FunctionCallContent($"regular-tool-call-{requestNumber}", regularTool.Name, new Dictionary<string, object?>()));
             }
 
             yield return new ChatResponseUpdate
