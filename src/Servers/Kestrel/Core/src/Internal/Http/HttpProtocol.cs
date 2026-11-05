@@ -429,7 +429,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         {
             _preventRequestAbortedCancellation = false;
 
-            // If the connection has already been aborted, allow that to be observed during the next request.
             if (!_connectionAborted && _abortedCts is not null)
             {
                 // _connectionAborted is terminal and only set inside the _abortLock, so if it isn't set here,
@@ -452,10 +451,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     protected abstract void OnReset();
 
     protected abstract void ApplicationAbort();
-
-    protected virtual void OnRequestProcessingEnding()
-    {
-    }
 
     protected virtual void OnRequestProcessingEnded()
     {
@@ -517,6 +512,11 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             }
 
             shouldScheduleCancellation = _abortedCts != null && !_preventRequestAbortedCancellation;
+
+            // Disable keep-alive before publishing the abort. The release write and acquire read of
+            // volatile _connectionAborted ensure that, when draining is skipped because of an abort,
+            // the next request-loop condition observes _keepAlive as false.
+            _keepAlive = false;
             _connectionAborted = true;
         }
 

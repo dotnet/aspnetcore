@@ -14,6 +14,8 @@ public sealed record InteropRequest(string Name, int Count);
 
 public sealed record InteropResponse(string Message, int Doubled);
 
+public readonly record struct AsyncInteropResult(string Source, int Value);
+
 public sealed class ResolverOrderPayload
 {
     public string SomeValue { get; set; } = "";

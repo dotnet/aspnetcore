@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Features" />
+    <ProjectReference Include="$(RepoRoot)src\Extensions\Features\src\Microsoft.Extensions.Features.csproj" />
   </ItemGroup>
 
 </Project>

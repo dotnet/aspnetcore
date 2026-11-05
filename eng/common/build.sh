@@ -254,7 +254,7 @@ function Build {
     properties+=("/p:Projects=$projects")
   fi
 
-  local bl=""
+  local bl=()
   if [[ "$binary_log" == true ]]; then
     local binary_log_path=""
     if [[ -z "$binary_log_name" ]]; then
@@ -266,7 +266,7 @@ function Build {
     fi
 
     mkdir -p "$(dirname "$binary_log_path")"
-    bl="/bl:\"$binary_log_path\""
+    bl=("/bl:$binary_log_path")
   fi
 
   local check=""
@@ -274,8 +274,8 @@ function Build {
     check="/check"
   fi
 
-  MSBuild $_InitializeToolset \
-    $bl \
+  MSBuild "$_InitializeToolset" \
+    ${bl[@]+"${bl[@]}"} \
     $check \
     /p:Configuration=$configuration \
     /p:RepoRoot="$repo_root" \
@@ -299,7 +299,7 @@ function Build {
 
 if [[ "$clean" == true ]]; then
   if [ -d "$artifacts_dir" ]; then
-    rm -rf $artifacts_dir
+    rm -rf "$artifacts_dir"
     echo "Artifacts directory deleted."
   fi
   exit 0

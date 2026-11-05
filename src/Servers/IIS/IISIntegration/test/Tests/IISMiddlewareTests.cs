@@ -17,7 +17,9 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -66,6 +68,7 @@ public class IISMiddlewareTests
     public async Task MiddlewareRejectsRequestIfTokenHeaderIsMissing()
     {
         var assertsExecuted = false;
+        var testSink = new TestSink(TestSink.EnableWithTypeName<IISMiddleware>);
 
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -87,6 +90,7 @@ public class IISMiddlewareTests
                     })
                     .UseTestServer();
             })
+            .ConfigureLogging(logging => logging.AddProvider(new TestLoggerProvider(testSink)))
             .Build();
 
         var server = host.GetTestServer();
@@ -97,6 +101,46 @@ public class IISMiddlewareTests
         var response = await server.CreateClient().SendAsync(req);
         Assert.False(assertsExecuted);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var log = Assert.Single(testSink.Writes);
+        Assert.Equal(LogLevel.Error, log.LogLevel);
+        Assert.Equal("'MS-ASPNETCORE-TOKEN' does not match the expected pairing token, request rejected.", log.Message);
+    }
+
+    [Fact]
+    public async Task MiddlewareRemovesPairingTokenBeforeCallingNextMiddleware()
+    {
+        var assertsExecuted = false;
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseSetting("TOKEN", "TestToken")
+                    .UseSetting("PORT", "12345")
+                    .UseSetting("APPL_PATH", "/")
+                    .UseIISIntegration()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            Assert.False(context.Request.Headers.ContainsKey("MS-ASPNETCORE-TOKEN"));
+                            assertsExecuted = true;
+                            return Task.CompletedTask;
+                        });
+                    })
+                    .UseTestServer();
+            })
+            .Build();
+
+        var server = host.GetTestServer();
+
+        await host.StartAsync();
+
+        var req = new HttpRequestMessage(HttpMethod.Get, "");
+        req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
+        var response = await server.CreateClient().SendAsync(req);
+        Assert.True(assertsExecuted);
+        response.EnsureSuccessStatusCode();
     }
 
     [Theory]

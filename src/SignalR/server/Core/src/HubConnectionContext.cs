@@ -39,6 +39,8 @@ public partial class HubConnectionContext
 
     private MessageBuffer? _messageBuffer;
     private StreamTracker? _streamTracker;
+    private ConcurrentDictionary<string, CancellationTokenSource>? _activeRequestCancellationSources;
+    private object? _activeRequestCancellationSourcesLock;
     private long _lastSendTick;
     private ReadOnlyMemory<byte> _cachedPingMessage;
     private bool _clientTimeoutActive;
@@ -65,7 +67,22 @@ public partial class HubConnectionContext
     // Tracks groups that the connection has been added to
     internal HashSet<string> GroupNames { get; } = new HashSet<string>();
 
-    internal Activity? OriginalActivity { get; set; }
+    private ActivityLink[]? _originalActivityLinks;
+
+    internal Activity? OriginalActivity
+    {
+        get;
+        set
+        {
+            field = value;
+            _originalActivityLinks = null;
+        }
+    }
+
+    // Links to OriginalActivity for hub invocation activities. The links are copied when an
+    // activity is created, so the same array can be used by every invocation on the connection.
+    internal ActivityLink[]? OriginalActivityLinks =>
+        OriginalActivity is { } originalActivity ? _originalActivityLinks ??= [new ActivityLink(originalActivity.Context)] : null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -246,7 +263,21 @@ public partial class HubConnectionContext
     public virtual IHubProtocol Protocol { get; set; } = default!;
 
     // Used to cancel hub invocations and streaming methods
-    internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
+    internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources =>
+        LazyInitializer.EnsureInitialized(ref _activeRequestCancellationSources, ref _activeRequestCancellationSourcesLock,
+            static () => new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal));
+
+    internal bool TryGetActiveRequestCancellationSource(string invocationId, [NotNullWhen(true)] out CancellationTokenSource? cancellationSource)
+    {
+        var cancellationSources = Volatile.Read(ref _activeRequestCancellationSources);
+        if (cancellationSources is not null)
+        {
+            return cancellationSources.TryGetValue(invocationId, out cancellationSource);
+        }
+
+        cancellationSource = null;
+        return false;
+    }
 
     /// <summary>
     /// Write a <see cref="HubMessage"/> to the connection.

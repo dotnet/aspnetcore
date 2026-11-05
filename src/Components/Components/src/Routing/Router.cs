@@ -417,10 +417,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 $"Ensure the route matches a component with a [Route] attribute.");
         }
 
-        builder.OpenComponent<RouteView>(0);
-        builder.AddAttribute(1, nameof(RouteView.RouteData),
-            new RouteData(componentType, new Dictionary<string, object>()));
-        builder.CloseComponent();
+        Found(new RouteData(componentType, new Dictionary<string, object>()))(builder);
     }
 
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
@@ -446,10 +443,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             if (NotFoundPage != null)
             {
-                builder.OpenComponent<RouteView>(0);
-                builder.AddAttribute(1, nameof(RouteView.RouteData),
-                    new RouteData(NotFoundPage, _emptyParametersDictionary));
-                builder.CloseComponent();
+                Found(new RouteData(NotFoundPage, _emptyParametersDictionary))(builder);
             }
 #pragma warning disable CS0618 // Type or member is obsolete
             else if (NotFound != null)

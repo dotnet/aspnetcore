@@ -4,6 +4,7 @@
 // Tests that a SignalR server can use typed clients in a trimmed app.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.SignalR;
@@ -16,6 +17,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 var builder = WebApplication.CreateSlimBuilder(args);
+builder.WebHost.UseUrls("http://127.0.0.1:0");
 builder.Services.AddSignalR();
 AppJsonSerializerContext.AddToJsonHubProtocol(builder.Services);
 
