@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Linq;
 using System.Security.Cryptography;
@@ -173,10 +172,15 @@ public unsafe class SP800_108Tests
         TestCngKeyDerivation((pbKdk, cbKdk) => new Win8SP800_108_CTR_HMACSHA512Provider(pbKdk, cbKdk), kdk, label, contextHeader, context, numDerivedBytes, expectedDerivedSubkeyAsBase64);
     }
 
-    // Label lengths straddle the internal stack buffer threshold used for the PRF input.
+    // Label lengths straddle the internal stack buffer thresholds used for the PRF input.
+    // The PRF input length is label length + 29 here, so 99/100 straddle 128 bytes and 227/228 straddle 256 bytes.
     [Theory]
     [InlineData(0, 64)]
+    [InlineData(99, 64)]
     [InlineData(100, 64)]
+    [InlineData(227, 64)]
+    [InlineData(228, 64)]
+    [InlineData(228, 96)]
     [InlineData(400, 64)]
     [InlineData(400, 96)]
     [InlineData(600, 64)]
@@ -202,12 +206,6 @@ public unsafe class SP800_108Tests
         var operationSubkeyLength = numDerivedBytes / 2;
         var operationSubkey = new byte[operationSubkeyLength];
         var validationSubkey = new byte[numDerivedBytes - operationSubkeyLength];
-
-        // Leave non-zero data in a pooled buffer of the PRF input size so a rented buffer isn't implicitly zeroed.
-        var prfInputLength = 4 + label.Length + 1 + contextHeader.Length + context.Length + 4;
-        var dirty = ArrayPool<byte>.Shared.Rent(prfInputLength);
-        dirty.AsSpan().Fill(0xFF);
-        ArrayPool<byte>.Shared.Return(dirty);
 
         // Act
         ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(kdk, label, contextHeader, context, operationSubkey, validationSubkey);

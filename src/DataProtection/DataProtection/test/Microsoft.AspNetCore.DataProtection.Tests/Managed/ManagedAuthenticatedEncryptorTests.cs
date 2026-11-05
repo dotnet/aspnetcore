@@ -3,7 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -219,6 +221,118 @@ public class ManagedAuthenticatedEncryptorTests
 
         var decrypted = encryptor.Decrypt(new ArraySegment<byte>(retVal, preBufferSize, payload.Length), aad);
         Assert.Equal(plaintext.AsSpan().ToArray(), decrypted);
+    }
+
+    [Fact]
+    public void Encrypt_KnownKey_ThroughAuthenticatedEncryptorExtensions_UsesOptimizedPath()
+    {
+        // Arrange
+        Secret kdk = new Secret(Encoding.UTF8.GetBytes("master key"));
+        var genRandom = new SequentialGenRandom();
+        IAuthenticatedEncryptor encryptor = new ManagedAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmFactory: Aes.Create,
+            symmetricAlgorithmKeySizeInBytes: 256 / 8,
+            validationAlgorithmFactory: () => new HMACSHA256(),
+            genRandom: genRandom);
+        Assert.IsAssignableFrom<IOptimizedAuthenticatedEncryptor>(encryptor);
+        genRandom.Reset();
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 2, 3);
+        ArraySegment<byte> aad = new ArraySegment<byte>(new byte[] { 7, 6, 5, 4, 3, 2, 1, 0 }, 1, 4);
+
+        // Same header size as KeyRingBasedDataProtector (magic + key id).
+        const int preBufferSize = sizeof(uint) + 16;
+        const int postBufferSize = 0;
+
+        // Act
+        byte[] retVal = AuthenticatedEncryptorExtensions.Encrypt(encryptor, plaintext, aad, preBufferSize, postBufferSize);
+
+        // Assert
+        Assert.Equal(preBufferSize + 80, retVal.Length);
+        Assert.True(retVal.AsSpan(0, preBufferSize).IndexOfAnyExcept((byte)0) < 0, "Pre-buffer must be left untouched.");
+        var payload = retVal.AsSpan(preBufferSize).ToArray();
+        Assert.Equal("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAA=", Convert.ToBase64String(payload));
+        Assert.Equal(plaintext.AsSpan().ToArray(), encryptor.Decrypt(new ArraySegment<byte>(retVal, preBufferSize, payload.Length), aad));
+    }
+
+    // The KDF input is AAD length + 91 bytes for AES-256-CBC + HMACSHA256 (66-byte context header),
+    // so 37/38 straddle 128 bytes and 165/166 straddle the 256-byte stack buffer.
+    [Theory]
+    [InlineData(0)]
+    [InlineData(37)]
+    [InlineData(38)]
+    [InlineData(100)]
+    [InlineData(165)]
+    [InlineData(166)]
+    [InlineData(300)]
+    [InlineData(2000)]
+    public void Encrypt_ThroughAuthenticatedEncryptorExtensions_RoundTrips_VariousAadLengths(int aadLength)
+    {
+        // Arrange
+        var kdkBytes = Enumerable.Range(0, 512 / 8).Select(i => (byte)(i + 1)).ToArray();
+        var genRandom = new SequentialGenRandom();
+        var managedEncryptor = new ManagedAuthenticatedEncryptor(new Secret(kdkBytes),
+            symmetricAlgorithmFactory: Aes.Create,
+            symmetricAlgorithmKeySizeInBytes: 256 / 8,
+            validationAlgorithmFactory: () => new HMACSHA256(),
+            genRandom: genRandom);
+        IAuthenticatedEncryptor encryptor = managedEncryptor;
+        genRandom.Reset();
+        var plaintext = Encoding.UTF8.GetBytes("plaintext payload");
+        var aad = Enumerable.Range(0, aadLength).Select(i => (byte)(i * 7)).ToArray();
+        const int preBufferSize = 20;
+        const int postBufferSize = 3;
+
+        // Act
+        byte[] retVal = AuthenticatedEncryptorExtensions.Encrypt(encryptor, new ArraySegment<byte>(plaintext), new ArraySegment<byte>(aad), preBufferSize, postBufferSize);
+
+        // Assert
+        var payload = new ArraySegment<byte>(retVal, preBufferSize, retVal.Length - preBufferSize - postBufferSize);
+        Assert.Equal(ComputeExpectedCbcHmacSha256Payload(kdkBytes, GetContextHeader(managedEncryptor), aad, plaintext), payload.AsSpan().ToArray());
+        Assert.Equal(plaintext, encryptor.Decrypt(payload, new ArraySegment<byte>(aad)));
+
+        var otherAad = aad.Append((byte)1).ToArray();
+        Assert.ThrowsAny<CryptographicException>(() => encryptor.Decrypt(payload, new ArraySegment<byte>(otherAad)));
+    }
+
+    private static byte[] GetContextHeader(ManagedAuthenticatedEncryptor encryptor)
+        => (byte[])typeof(ManagedAuthenticatedEncryptor).GetField("_contextHeader", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(encryptor)!;
+
+    // Independent reference for AES-256-CBC + HMACSHA256 with SequentialGenRandom output
+    // (key modifier = 00..0F, IV = 10..1F) and SP800-108 CTR HMACSHA512 key derivation.
+    private static byte[] ComputeExpectedCbcHmacSha256Payload(byte[] kdk, byte[] contextHeader, byte[] aad, byte[] plaintext)
+    {
+        var keyModifier = Enumerable.Range(0x00, 16).Select(i => (byte)i).ToArray();
+        var iv = Enumerable.Range(0x10, 16).Select(i => (byte)i).ToArray();
+
+        // PRF input := [i]_2 || label || 0x00 || context || [L]_2, with context := contextHeader || keyModifier.
+        const int subkeyLength = 32;
+        var derived = new byte[2 * subkeyLength];
+        using (var prf = new HMACSHA512(kdk))
+        {
+            for (uint i = 1, offset = 0; offset < derived.Length; i++)
+            {
+                var input = new byte[4 + aad.Length + 1 + contextHeader.Length + keyModifier.Length + 4];
+                BinaryPrimitives.WriteUInt32BigEndian(input, i);
+                aad.CopyTo(input, 4);
+                contextHeader.CopyTo(input, 4 + aad.Length + 1);
+                keyModifier.CopyTo(input, 4 + aad.Length + 1 + contextHeader.Length);
+                BinaryPrimitives.WriteUInt32BigEndian(input.AsSpan(input.Length - 4), (uint)derived.Length * 8);
+
+                var block = prf.ComputeHash(input);
+                var count = Math.Min(block.Length, derived.Length - (int)offset);
+                Buffer.BlockCopy(block, 0, derived, (int)offset, count);
+                offset += (uint)count;
+            }
+        }
+
+        using var aes = Aes.Create();
+        aes.Key = derived.AsSpan(0, subkeyLength).ToArray();
+        var ciphertext = aes.EncryptCbc(plaintext, iv);
+
+        var ivAndCiphertext = iv.Concat(ciphertext).ToArray();
+        var mac = HMACSHA256.HashData(derived.AsSpan(subkeyLength).ToArray(), ivAndCiphertext);
+
+        return keyModifier.Concat(ivAndCiphertext).Concat(mac).ToArray();
     }
 
     [Theory]
