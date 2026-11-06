@@ -4543,7 +4543,6 @@ public class RendererTest
     [Fact]
     public void ExceptionDuringFirstRender_LeavesRenderTreeEmpty_AndLaterRenderSucceeds()
     {
-        // Arrange
         var renderer = new TestRenderer { ShouldHandleExceptions = true };
         var exception = new InvalidTimeZoneException("Error during render");
         var shouldThrow = true;
@@ -4560,18 +4559,17 @@ public class RendererTest
         });
         var componentId = renderer.AssignRootComponentId(component);
 
-        // Act 1: The first render throws after producing partial output
+        // The first render throws after producing partial output
         renderer.RenderRootComponent(componentId);
 
-        // Assert 1: The partial output was discarded
+        // The partial output was discarded
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions));
         Assert.Equal(0, renderer.GetCurrentRenderTreeFrames(componentId).Count);
 
-        // Act 2: A later render succeeds, and is diffed against the empty tree
+        // A later render succeeds, and is diffed against the empty tree
         shouldThrow = false;
         component.TriggerRender();
 
-        // Assert 2
         AssertFrame.Element(renderer.GetCurrentRenderTreeFrames(componentId).Array[0], "partial", 1, 0);
         AssertFrame.Text(renderer.GetCurrentRenderTreeFrames(componentId).Array[1], "Hello", 1);
         var diff = renderer.Batches.Last().DiffsByComponentId[componentId].Single();
@@ -4587,10 +4585,9 @@ public class RendererTest
                 Assert.Equal(1, edit.SiblingIndex);
             });
 
-        // Act 3: A subsequent render is diffed against the previous output
+        // A subsequent render is diffed against the previous output
         component.TriggerRender();
 
-        // Assert 3
         Assert.Empty(renderer.Batches.Last().DiffsByComponentId[componentId].Single().Edits);
         Assert.Equal(2, renderer.GetCurrentRenderTreeFrames(componentId).Count);
     }
@@ -4598,7 +4595,6 @@ public class RendererTest
     [Fact]
     public async Task InvalidRenderTreeDuringFirstRender_LeavesRenderTreeEmpty()
     {
-        // Arrange
         var renderer = new TestRenderer();
         var component = new TestComponent(builder =>
         {
@@ -4606,7 +4602,6 @@ public class RendererTest
         });
         var componentId = renderer.AssignRootComponentId(component);
 
-        // Act/Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderRootComponentAsync(componentId));
         Assert.Equal(0, renderer.GetCurrentRenderTreeFrames(componentId).Count);
     }
