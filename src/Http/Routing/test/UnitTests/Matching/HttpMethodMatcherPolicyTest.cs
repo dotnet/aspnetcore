@@ -221,20 +221,17 @@ public class HttpMethodMatcherPolicyTest
     [Fact]
     public void GetEdges_CustomMethodsDifferingInCase_CreateSeparateEdgesInInsertionOrder()
     {
-        // Arrange
         var endpoints = new[]
         {
-                CreateEndpoint("/", new HttpMethodMetadata(new[] { "MERGE", })),
-                CreateEndpoint("/", new HttpMethodMetadata(new[] { "merge", })),
-                CreateEndpoint("/", new HttpMethodMetadata(new[] { "GET", "MERGE", })),
-            };
+            CreateEndpoint("/", new HttpMethodMetadata(new[] { "MERGE", })),
+            CreateEndpoint("/", new HttpMethodMetadata(new[] { "merge", })),
+            CreateEndpoint("/", new HttpMethodMetadata(new[] { "GET", "MERGE", })),
+        };
 
         var policy = CreatePolicy();
 
-        // Act
         var edges = policy.GetEdges(endpoints);
 
-        // Assert
         Assert.Collection(
             edges,
             e =>
