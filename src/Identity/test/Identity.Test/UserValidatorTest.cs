@@ -95,12 +95,10 @@ public class UserValidatorTest
     [Fact]
     public async Task UsesCurrentAllowedUserNameCharacters()
     {
-        // Setup
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
         var validator = new UserValidator<PocoUser>();
         var user = new PocoUser { UserName = "abc" };
 
-        // Act & Assert
         manager.Options.User.AllowedUserNameCharacters = "abc";
         IdentityResultAssert.IsSuccess(await validator.ValidateAsync(manager, user));
 
