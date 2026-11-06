@@ -22,8 +22,11 @@ applicable:
 - `changedLine`: the RIGHT-side changed line that causes the problem.
 - `trigger`: an in-repo caller or public/protected entry point that reaches it. When
   reaching `changedLine` or producing `effect` on the claimed repro input depends on a
-  concrete third-party package or external library method (not a caller-supplied
-  implementation of a public interface or extension hook) not rejecting, transforming,
+  concrete third-party package or external library method (neither a caller-supplied
+  implementation of a public interface or extension hook nor a standard attributed
+  source-generated partial declaration in frozen source, such as `[LoggerMessage]`,
+  whose standard generator semantics dispatch to one without requiring the generated
+  body) not rejecting, transforming,
   or deduplicating that input, do not assume pass-through unless established by an
   assigned version-bound contract, exact source, or validation artifact. An assigned,
   target-version-applicable stable BCL contract can establish its library edge without
