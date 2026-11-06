@@ -729,6 +729,36 @@ public class HtmlRendererTest
         });
     }
 
+    [Fact]
+    public async Task RenderComponentAsync_OmitsInternalDebounceAndThrottleAttributes()
+    {
+        var expectedHtml = new[]
+        {
+            "<", "input", " ", "id", "=", "\"", "search", "\"", " />",
+            "<", "button", ">", "Click", "</", "button", ">"
+        };
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "input");
+            rtb.AddAttribute(1, "id", "search");
+            rtb.AddEventDebounceAttribute(2, "oninput", 300);
+            rtb.CloseElement();
+
+            rtb.OpenElement(3, "button");
+            rtb.AddEventThrottleAttribute(4, "onclick", 500);
+            rtb.AddContent(5, "Click");
+            rtb.CloseElement();
+        })));
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            AssertHtmlContentEquals(expectedHtml, result);
+        });
+    }
+
     private class ComponentWithParameters : IComponent
     {
         public RenderHandle RenderHandle { get; private set; }

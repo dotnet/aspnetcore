@@ -14,6 +14,8 @@ const elementsToClearOnRootComponentRender = new Set<LogicalElement>();
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
+const eventDebounceAttributeNamePrefix = 'debounce_';
+const eventThrottleAttributeNamePrefix = 'throttle_';
 const interactiveRootComponentPropname = Symbol();
 const preserveContentOnDisposalPropname = Symbol();
 
@@ -91,6 +93,7 @@ export class BrowserRenderer {
       // no parent to remove that child), so we empty it to restore it to the state it was in before the root
       // component was added.
       const logicalElement = this.childComponentLocations[componentId];
+      this.detachEventHandlersFromElement(logicalElement);
       markAsInteractiveRootComponentElement(logicalElement, false);
 
       if (shouldPreserveContentOnInteractiveComponentDisposal(logicalElement)) {
@@ -145,6 +148,10 @@ export class BrowserRenderer {
         }
         case EditType.removeFrame: {
           const siblingIndex = editReader.siblingIndex(edit);
+          const childToRemove = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
+          if (childToRemove) {
+            this.detachEventHandlersFromElement(childToRemove);
+          }
           removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           break;
         }
@@ -384,6 +391,23 @@ export class BrowserRenderer {
       // Prevent default
       const eventName = stripOnPrefix(internalAttributeName.substring(eventPreventDefaultAttributeNamePrefix.length));
       this.eventDelegator.setPreventDefault(element, eventName, value !== null);
+    } else if (internalAttributeName.startsWith(eventDebounceAttributeNamePrefix)) {
+      // Debounce
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventDebounceAttributeNamePrefix.length));
+      const durationMs = value ? parseInt(value, 10) : 0;
+      this.eventDelegator.setDebounce(element, eventName, durationMs > 0 ? durationMs : 0);
+    } else if (internalAttributeName.startsWith(eventThrottleAttributeNamePrefix)) {
+      // Throttle
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventThrottleAttributeNamePrefix.length));
+      if (value) {
+        const separatorIndex = value.indexOf(':');
+        const durationText = separatorIndex >= 0 ? value.substring(0, separatorIndex) : value;
+        const trailing = separatorIndex >= 0 && value.substring(separatorIndex + 1) === 'trailing';
+        const durationMs = parseInt(durationText, 10);
+        this.eventDelegator.setThrottle(element, eventName, durationMs > 0 ? durationMs : 0, trailing);
+      } else {
+        this.eventDelegator.setThrottle(element, eventName, 0, false);
+      }
     } else {
       // The prefix makes this attribute name reserved, so any other usage is disallowed
       throw new Error(`Unsupported internal attribute '${internalAttributeName}'`);

@@ -30,6 +30,11 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(in
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithFragment(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string? fragment) -> string!
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
+Microsoft.AspNetCore.Components.EventHandlerAttribute.EventHandlerAttribute(string! attributeName, System.Type! eventArgsType, bool enableStopPropagation, bool enablePreventDefault, Microsoft.AspNetCore.Components.EventThrottleMode throttleMode) -> void
+Microsoft.AspNetCore.Components.EventHandlerAttribute.ThrottleMode.get -> Microsoft.AspNetCore.Components.EventThrottleMode
+Microsoft.AspNetCore.Components.EventThrottleMode
+Microsoft.AspNetCore.Components.EventThrottleMode.Leading = 0 -> Microsoft.AspNetCore.Components.EventThrottleMode
+Microsoft.AspNetCore.Components.EventThrottleMode.LeadingAndTrailing = 1 -> Microsoft.AspNetCore.Components.EventThrottleMode
 Microsoft.AspNetCore.Components.IComponentPropertyActivator
 Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.Type! componentType) -> System.Action<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>!
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void

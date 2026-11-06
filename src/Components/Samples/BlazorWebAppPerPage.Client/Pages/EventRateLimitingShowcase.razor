@@ -1,0 +1,925 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Diagnostics
+@implements IDisposable
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 p-3 bg-dark text-white rounded">
+    <div>
+        <h2 class="h4 mb-1">@Title</h2>
+        <div>
+            <span class="badge bg-info text-dark me-2" id="renderer-name">Renderer: @RendererInfo.Name</span>
+            <span class="badge @(RendererInfo.IsInteractive ? "bg-success" : "bg-secondary") me-2" id="renderer-interactive">
+                Interactive: @RendererInfo.IsInteractive
+            </span>
+            <span class="badge bg-warning text-dark" id="total-render-count">Component Renders: @renderCount</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2 mt-2 mt-md-0">
+        <a id="nav-server-link" href="event-rate-limiting" class="btn btn-sm @(ModeLabel == "Server" ? "btn-light fw-bold" : "btn-outline-light")">
+            Interactive Server
+        </a>
+        <a id="nav-wasm-link" href="event-rate-limiting-wasm" class="btn btn-sm @(ModeLabel == "WebAssembly" ? "btn-light fw-bold" : "btn-outline-light")">
+            Interactive WebAssembly
+        </a>
+        <a id="nav-auto-link" href="event-rate-limiting-auto" class="btn btn-sm @(ModeLabel == "Auto" ? "btn-light fw-bold" : "btn-outline-light")">
+            Interactive Auto
+        </a>
+        <a id="nav-static-weather-link" href="weather" class="btn btn-sm btn-outline-info">
+            Static SSR (Weather)
+        </a>
+        <button id="reset-all-btn" type="button" class="btn btn-sm btn-danger" @onclick="ResetAll">
+            Reset Counters &amp; Log
+        </button>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <!-- Scenario 1: Debounced vs Baseline Input -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>1. Text Input &amp; Live Search (<code>@("@oninput:debounce")</code> vs Baseline)</strong>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="small mb-0" for="debounce-ms-input">Interval (ms):</label>
+                    <input id="debounce-ms-input" type="number" class="form-control form-control-sm" style="width: 90px;" @bind="debounceMs" />
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-primary" for="isolated-debounced-input">
+                            With <code>@($"@oninput:debounce=\"{debounceMs}\"")</code> (Isolated)
+                        </label>
+                        <form @onsubmit="OnIsolatedSearchSubmit">
+                            <div class="input-group input-group-sm">
+                                <input id="isolated-debounced-input"
+                                       class="form-control"
+                                       placeholder="Type fast, or type + Enter..."
+                                       @bind="isolatedDebouncedText"
+                                       @bind:event="oninput"
+                                       @bind:after="OnIsolatedDebouncedInput"
+                                       @oninput:debounce="debounceMs" />
+                                <button id="isolated-submit-btn" type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                        <div class="small mt-1">
+                            Events: <strong id="isolated-debounced-count" class="text-primary">@isolatedDebouncedCount</strong> |
+                            Bound: <code id="isolated-debounced-value">@isolatedDebouncedText</code> |
+                            Submitted: <code id="isolated-submitted-value">@isolatedSubmittedText</code> (<span id="isolated-submit-count">@isolatedSubmitCount</span>)
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-secondary" for="isolated-baseline-input">
+                            Without Debounce (Baseline <code>@("@oninput")</code>)
+                        </label>
+                        <input id="isolated-baseline-input"
+                               class="form-control form-control-sm"
+                               placeholder="Type here to see every keystroke hit .NET..."
+                               @bind="isolatedBaselineText"
+                               @bind:event="oninput"
+                               @bind:after="OnIsolatedBaselineInput" />
+                        <div class="small mt-1">
+                            Events: <strong id="isolated-baseline-count" class="text-secondary">@isolatedBaselineCount</strong> |
+                            Bound: <code id="isolated-baseline-value">@isolatedBaselineText</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-top pt-2">
+                    <label class="form-label small fw-semibold mb-1" for="dual-compare-input">
+                        Simultaneous Comparison Input (Single input box: child is debounced, parent captures raw bubbling <code>oninput</code>):
+                    </label>
+                    <div @oninput="OnDualRawInput">
+                        <input id="dual-compare-input"
+                               class="form-control form-control-sm"
+                               placeholder="Type a sentence here to compare raw vs debounced events from the exact same typing..."
+                               @oninput="OnDualDebouncedInput"
+                               @oninput:debounce="debounceMs" />
+                    </div>
+                    <div class="d-flex flex-wrap gap-3 small mt-1">
+                        <span>Baseline (raw): <strong id="dual-raw-count" class="text-secondary">@dualRawInputCount</strong> (<code id="dual-raw-value">@dualRawInputText</code>)</span>
+                        <span>Debounced (@debounceMs ms): <strong id="dual-debounced-count" class="text-primary">@dualDebouncedInputCount</strong> (<code id="dual-debounced-value">@dualDebouncedInputText</code>)</span>
+                        @if (dualRawInputCount > 0)
+                        {
+                            <span class="badge bg-success">
+                                Reduction: @($"{(100.0 * (dualRawInputCount - dualDebouncedInputCount) / dualRawInputCount):F0}%")
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenario 2: Discrete Throttle (Click & Keydown) -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>2. Discrete Events — Leading-Only Throttle (<code>onclick</code> &amp; <code>onkeydown</code>)</strong>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="small mb-0" for="click-throttle-ms-input">Interval (ms):</label>
+                    <input id="click-throttle-ms-input" type="number" class="form-control form-control-sm" style="width: 90px;" @bind="discreteThrottleMs" />
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-md-6">
+                        <div class="p-2 border rounded bg-light" @onclick="OnDualRawClick">
+                            <button id="dual-throttled-click-btn"
+                                    type="button"
+                                    class="btn btn-sm btn-success w-100"
+                                    @onclick="OnDualThrottledClick"
+                                    @onclick:throttle="discreteThrottleMs">
+                                Click Rapidly (Simultaneous Raw vs Throttled)
+                            </button>
+                            <div class="d-flex justify-content-between small mt-2">
+                                <span>Baseline clicks: <strong id="dual-raw-click-count">@dualRawClickCount</strong></span>
+                                <span>Throttled clicks: <strong id="dual-throttled-click-count" class="text-success">@dualThrottledClickCount</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex gap-2">
+                            <button id="isolated-throttled-click-btn"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-success flex-fill"
+                                    @onclick="OnIsolatedThrottledClick"
+                                    @onclick:throttle="discreteThrottleMs">
+                                Throttled Only (<span id="isolated-throttled-click-count">@isolatedThrottledClickCount</span>)
+                            </button>
+                            <button id="isolated-baseline-click-btn"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary flex-fill"
+                                    @onclick="OnIsolatedBaselineClick">
+                                Baseline Only (<span id="isolated-baseline-click-count">@isolatedBaselineClickCount</span>)
+                            </button>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            Discrete throttle emits immediately on first click and ignores clicks during cooldown (no trailing click).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 border-top pt-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-success mb-1" for="throttled-keydown-input">
+                            Hold a key down — With <code>@($"@onkeydown:throttle=\"{discreteThrottleMs}\"")</code>:
+                        </label>
+                        <input id="throttled-keydown-input"
+                               class="form-control form-control-sm"
+                               placeholder="Hold down a key (resets on keyup)..."
+                               @onkeydown="OnThrottledKeyDown"
+                               @onkeydown:throttle="discreteThrottleMs" />
+                        <div class="small mt-1">
+                            Throttled keydown count: <strong id="throttled-keydown-count" class="text-success">@throttledKeyDownCount</strong> (Last key: <code id="throttled-last-key">@throttledLastKey</code>)
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary mb-1" for="baseline-keydown-input">
+                            Hold a key down — Without Throttle (Baseline <code>@("@onkeydown")</code>):
+                        </label>
+                        <input id="baseline-keydown-input"
+                               class="form-control form-control-sm"
+                               placeholder="Hold down a key..."
+                               @onkeydown="OnBaselineKeyDown" />
+                        <div class="small mt-1">
+                            Baseline keydown count: <strong id="baseline-keydown-count" class="text-secondary">@baselineKeyDownCount</strong> (Last key: <code id="baseline-last-key">@baselineLastKey</code>)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenario 3: Continuous Throttle (MouseMove & Range Slider) -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>3. Continuous Events — Leading + Trailing Throttle (<code>onmousemove</code> &amp; Range <code>oninput</code>)</strong>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="small mb-0" for="continuous-throttle-ms-input">Interval (ms):</label>
+                    <input id="continuous-throttle-ms-input" type="number" class="form-control form-control-sm" style="width: 90px;" @bind="continuousThrottleMs" />
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="dual-mousemove-outer"
+                     class="border rounded p-2 mb-3 bg-light"
+                     @onmousemove="OnDualRawMouseMove">
+                    <div id="dual-mousemove-pad"
+                         class="border border-primary rounded p-3 text-center bg-white"
+                         style="user-select: none; cursor: crosshair;"
+                         @onmousemove="OnDualThrottledMouseMove"
+                         @onmousemove:throttle="continuousThrottleMs">
+                        <div class="fw-semibold">Move mouse across this pad (Simultaneous Raw vs Throttled)</div>
+                        <div class="d-flex justify-content-around flex-wrap mt-2 small">
+                            <span>
+                                Baseline (Unthrottled):
+                                <strong id="raw-mouse-count" class="text-secondary">@rawMouseMoveCount</strong> events |
+                                Pos: <code id="raw-mouse-pos">@rawMousePos</code>
+                            </span>
+                            <span>
+                                Throttled (@continuousThrottleMs ms):
+                                <strong id="throttled-mouse-count" class="text-primary">@throttledMouseMoveCount</strong> events |
+                                Pos: <code id="throttled-mouse-pos">@throttledMousePos</code>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-primary mb-1" for="throttled-slider">
+                            Range Slider — With <code>@($"@oninput:throttle=\"{continuousThrottleMs}\"")</code>:
+                        </label>
+                        <input id="throttled-slider"
+                               type="range"
+                               class="form-range"
+                               min="0"
+                               max="100"
+                               @bind="throttledSliderValue"
+                               @bind:event="oninput"
+                               @bind:after="OnThrottledSliderInput"
+                               @oninput:throttle="continuousThrottleMs" />
+                        <div class="small">
+                            Value: <strong id="throttled-slider-value">@throttledSliderValue</strong> |
+                            Events: <strong id="throttled-slider-count" class="text-primary">@throttledSliderCount</strong>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary mb-1" for="baseline-slider">
+                            Range Slider — Without Throttle (Baseline <code>@("@oninput")</code>):
+                        </label>
+                        <input id="baseline-slider"
+                               type="range"
+                               class="form-range"
+                               min="0"
+                               max="100"
+                               @bind="baselineSliderValue"
+                               @bind:event="oninput"
+                               @bind:after="OnBaselineSliderInput" />
+                        <div class="small">
+                            Value: <strong id="baseline-slider-value">@baselineSliderValue</strong> |
+                            Events: <strong id="baseline-slider-count" class="text-secondary">@baselineSliderCount</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenario 4: Continuous Scroll Throttle -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>4. Scroll Events — Leading + Trailing Throttle (<code>@("@onscroll:throttle")</code> vs Baseline)</strong>
+                <button id="simulate-scroll-burst-btn"
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        onclick="
+                            const t = document.getElementById('throttled-scroll-box');
+                            const b = document.getElementById('baseline-scroll-box');
+                            for (let i = 1; i <= 10; i++) {
+                                t.scrollTop = i * 35;
+                                t.dispatchEvent(new Event('scroll'));
+                                b.scrollTop = i * 35;
+                                b.dispatchEvent(new Event('scroll'));
+                            }">
+                    Simulate 10 Rapid Scroll Events
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="small fw-semibold text-primary mb-1">
+                            With <code>@($"@onscroll:throttle=\"{continuousThrottleMs}\"")</code>
+                            (Events: <strong id="throttled-scroll-count">@throttledScrollCount</strong>)
+                        </div>
+                        <div id="throttled-scroll-box"
+                             class="border rounded p-2"
+                             style="height: 120px; overflow-y: scroll;"
+                             @onscroll="OnThrottledScroll"
+                             @onscroll:throttle="continuousThrottleMs">
+                            <div style="height: 600px; background: linear-gradient(180deg, #e7f1ff 0%, #9ec5fe 100%); padding: 8px;">
+                                Scroll here (throttled)...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="small fw-semibold text-secondary mb-1">
+                            Without Throttle (Baseline <code>@("@onscroll")</code>)
+                            (Events: <strong id="baseline-scroll-count">@baselineScrollCount</strong>)
+                        </div>
+                        <div id="baseline-scroll-box"
+                             class="border rounded p-2"
+                             style="height: 120px; overflow-y: scroll;"
+                             @onscroll="OnBaselineScroll">
+                            <div style="height: 600px; background: linear-gradient(180deg, #f8f9fa 0%, #ced4da 100%); padding: 8px;">
+                                Scroll here (unthrottled)...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenario 5: EditForm + Validation + Debounced Input + Immediate Submit Flush -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header">
+                <strong>5. <code>EditForm</code> Validation + Debounced Input + Immediate Submit/Blur Flush</strong>
+            </div>
+            <div class="card-body">
+                <EditForm EditContext="editContext" OnValidSubmit="HandleValidFormSubmit" OnInvalidSubmit="HandleInvalidFormSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-7">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Email (min 5 chars)</span>
+                                <input id="editform-debounced-email"
+                                       class="form-control"
+                                       placeholder="user@example.com"
+                                       @bind:event="oninput"
+                                       @bind:get="formModel.Email"
+                                       @bind:set="SetFormEmail"
+                                       @oninput:debounce="debounceMs" />
+                                <button id="editform-submit-btn" type="submit" class="btn btn-primary">Validate &amp; Submit</button>
+                            </div>
+                            <ValidationMessage For="@(() => formModel.Email)" />
+                        </div>
+                        <div class="col-md-5 small">
+                            <div>Model Email: <code id="editform-model-email">@formModel.Email</code></div>
+                            <div>
+                                Valid submits: <strong id="editform-valid-submits" class="text-success">@validFormSubmits</strong>
+                                (<code id="editform-last-valid-email">@lastValidSubmittedEmail</code>) |
+                                Invalid: <strong id="editform-invalid-submits" class="text-danger">@invalidFormSubmits</strong>
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+
+        <!-- Scenario 6: Combined @oninput:debounce + @onkeydown/@onkeyup (Autocomplete / Enter-to-Search) -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header">
+                <strong>6. Combined <code>@("@oninput:debounce")</code> + <code>@("@onkeydown")</code> / <code>@("@onkeyup")</code> (Autocomplete &amp; Enter-to-Search)</strong>
+            </div>
+            <div class="card-body">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-6">
+                        <input id="combo-key-input"
+                               class="form-control form-control-sm"
+                               placeholder="Type &amp; press Enter (or Escape to clear)..."
+                               @bind="comboQuery"
+                               @bind:event="oninput"
+                               @bind:after="OnComboInputAfter"
+                               @oninput:debounce="debounceMs"
+                               @onkeydown="OnComboKeyDown"
+                               @onkeyup="OnComboKeyUp" />
+                    </div>
+                    <div class="col-md-6 small">
+                        <div>
+                            Debounced inputs: <strong id="combo-input-count" class="text-primary">@comboInputCount</strong> |
+                            KeyDowns: <strong id="combo-keydown-count">@comboKeyDownCount</strong> |
+                            KeyUps: <strong id="combo-keyup-count">@comboKeyUpCount</strong>
+                        </div>
+                        <div>
+                            Bound: <code id="combo-bound-query">@comboQuery</code> |
+                            Enter-committed: <code id="combo-enter-query">@comboEnterCommittedQuery</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenario 7: Background Re-renders + Async Handler + Clear/Preset + Conditional Disposal -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>7. Stress Test: Background Re-renders, Async Handler, Clear/Preset &amp; Conditional Removal</strong>
+                <div class="d-flex gap-2">
+                    <button id="toggle-bg-timer-btn"
+                            type="button"
+                            class="btn btn-sm @(backgroundTimerRunning ? "btn-warning" : "btn-outline-secondary")"
+                            @onclick="ToggleBackgroundTimer">
+                        @(backgroundTimerRunning ? $"Stop 30ms Render Timer ({backgroundTicks})" : "Start 30ms Render Timer")
+                    </button>
+                    <button id="toggle-conditional-input-btn"
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            @onclick="ScheduleConditionalUnmount">
+                        @(showConditionalInput ? "Unmount in 150ms" : "Mount Conditional Input")
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold mb-1" for="stress-async-input">
+                            Manual <code>value</code> + Async <code>@("@oninput:debounce=\"200\"")</code> (50ms server delay):
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <input id="stress-async-input"
+                                   class="form-control"
+                                   value="@stressText"
+                                   @oninput="OnStressAsyncInput"
+                                   @oninput:debounce="200" />
+                            <button id="stress-preset-btn" type="button" class="btn btn-outline-primary" @onclick="SetStressPreset">Preset</button>
+                            <button id="stress-clear-btn" type="button" class="btn btn-outline-secondary" @onclick="ClearStressText">Clear</button>
+                        </div>
+                        <div class="small mt-1">
+                            Confirmed state: <code id="stress-confirmed-text">@stressText</code>
+                            (Dispatches: <strong id="stress-dispatch-count">@stressDispatchCount</strong>)
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="small fw-semibold mb-1">
+                            Conditional Element Removal (Dispatches: <strong id="conditional-dispatch-count">@conditionalDispatchCount</strong>):
+                        </div>
+                        @if (showConditionalInput)
+                        {
+                            <input id="conditional-debounced-input"
+                                   class="form-control form-control-sm"
+                                   placeholder="Type here then immediately click Unmount..."
+                                   @oninput="OnConditionalInput"
+                                   @oninput:debounce="400" />
+                        }
+                        else
+                        {
+                            <div id="conditional-unmounted-msg" class="text-muted small fst-italic">
+                                Conditional input is unmounted (any pending timer was cancelled).
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Live Diagnostic Event Log -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm sticky-lg-top" style="top: 1rem;">
+            <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                <strong>Diagnostic Event Log (<span id="log-entry-count">@logEntries.Count</span>)</strong>
+                <div class="form-check form-switch mb-0 small">
+                    <input id="toggle-baseline-log" class="form-check-input" type="checkbox" @bind="showBaselineInLog" />
+                    <label class="form-check-label" for="toggle-baseline-log">Show Baseline</label>
+                </div>
+            </div>
+            <div class="card-body p-0" style="max-height: 680px; overflow-y: auto;">
+                <table class="table table-sm table-striped mb-0 small">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>#</th>
+                            <th>Time (+Δ)</th>
+                            <th>Kind</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="diagnostic-log-body">
+                        @foreach (var entry in FilteredLogEntries)
+                        {
+                            <tr>
+                                <td class="text-muted">@entry.Id</td>
+                                <td class="text-nowrap">
+                                    @entry.Timestamp
+                                    <span class="text-muted">(@entry.DeltaMs ms)</span>
+                                </td>
+                                <td>
+                                    <span class="badge @entry.BadgeClass">@entry.Kind</span>
+                                </td>
+                                <td class="text-break">
+                                    <strong>@entry.Scenario:</strong> @entry.Detail
+                                </td>
+                            </tr>
+                        }
+                        @if (!FilteredLogEntries.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    Interact with the controls on the left to observe real-time .NET event dispatches.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Event Debounce & Throttle Comparison";
+
+    [Parameter]
+    public string ModeLabel { get; set; } = "Server";
+
+    private int renderCount;
+    private readonly Stopwatch stopwatch = Stopwatch.StartNew();
+    private long lastEventTimestampMs;
+    private int nextLogId;
+    private bool showBaselineInLog = true;
+    private readonly List<DiagnosticLogEntry> logEntries = new();
+
+    // Scenario 1 state
+    private int debounceMs = 300;
+    private string isolatedDebouncedText = string.Empty;
+    private int isolatedDebouncedCount;
+    private string isolatedSubmittedText = string.Empty;
+    private int isolatedSubmitCount;
+
+    private string isolatedBaselineText = string.Empty;
+    private int isolatedBaselineCount;
+
+    private string dualRawInputText = string.Empty;
+    private int dualRawInputCount;
+    private string dualDebouncedInputText = string.Empty;
+    private int dualDebouncedInputCount;
+
+    // Scenario 2 state
+    private int discreteThrottleMs = 400;
+    private int dualRawClickCount;
+    private int dualThrottledClickCount;
+    private int isolatedThrottledClickCount;
+    private int isolatedBaselineClickCount;
+
+    private int throttledKeyDownCount;
+    private string throttledLastKey = "-";
+    private int baselineKeyDownCount;
+    private string baselineLastKey = "-";
+
+    // Scenario 3 state
+    private int continuousThrottleMs = 150;
+    private int rawMouseMoveCount;
+    private string rawMousePos = "0, 0";
+    private int throttledMouseMoveCount;
+    private string throttledMousePos = "0, 0";
+
+    private int throttledSliderValue = 50;
+    private int throttledSliderCount;
+    private int baselineSliderValue = 50;
+    private int baselineSliderCount;
+
+    // Scenario 4 state
+    private int throttledScrollCount;
+    private int baselineScrollCount;
+
+    // Scenario 5 state (EditForm)
+    private SearchFormModel formModel = new();
+    private EditContext editContext = default!;
+    private int validFormSubmits;
+    private int invalidFormSubmits;
+    private string lastValidSubmittedEmail = string.Empty;
+
+    // Scenario 6 state (Combo key + debounce)
+    private string comboQuery = string.Empty;
+    private string comboEnterCommittedQuery = string.Empty;
+    private int comboInputCount;
+    private int comboKeyDownCount;
+    private int comboKeyUpCount;
+
+    // Scenario 7 state (Stress test & conditional removal)
+    private string stressText = "initial";
+    private int stressDispatchCount;
+    private bool backgroundTimerRunning;
+    private int backgroundTicks;
+    private Timer? backgroundTimer;
+    private bool showConditionalInput = true;
+    private int conditionalDispatchCount;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(formModel);
+    }
+
+    private IEnumerable<DiagnosticLogEntry> FilteredLogEntries =>
+        showBaselineInLog
+            ? logEntries
+            : logEntries.Where(e => !e.IsBaseline);
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        renderCount++;
+    }
+
+    private void AddLog(string scenario, string kind, string badgeClass, string detail, bool isBaseline)
+    {
+        var nowMs = stopwatch.ElapsedMilliseconds;
+        var deltaMs = lastEventTimestampMs == 0 ? 0 : nowMs - lastEventTimestampMs;
+        lastEventTimestampMs = nowMs;
+
+        logEntries.Insert(0, new DiagnosticLogEntry(
+            ++nextLogId,
+            DateTime.Now.ToString("HH:mm:ss.fff"),
+            deltaMs,
+            scenario,
+            kind,
+            badgeClass,
+            detail,
+            isBaseline));
+
+        if (logEntries.Count > 60)
+        {
+            logEntries.RemoveAt(logEntries.Count - 1);
+        }
+    }
+
+    private void ResetAll()
+    {
+        isolatedDebouncedText = string.Empty;
+        isolatedDebouncedCount = 0;
+        isolatedSubmittedText = string.Empty;
+        isolatedSubmitCount = 0;
+        isolatedBaselineText = string.Empty;
+        isolatedBaselineCount = 0;
+        dualRawInputText = string.Empty;
+        dualRawInputCount = 0;
+        dualDebouncedInputText = string.Empty;
+        dualDebouncedInputCount = 0;
+
+        dualRawClickCount = 0;
+        dualThrottledClickCount = 0;
+        isolatedThrottledClickCount = 0;
+        isolatedBaselineClickCount = 0;
+        throttledKeyDownCount = 0;
+        throttledLastKey = "-";
+        baselineKeyDownCount = 0;
+        baselineLastKey = "-";
+
+        rawMouseMoveCount = 0;
+        rawMousePos = "0, 0";
+        throttledMouseMoveCount = 0;
+        throttledMousePos = "0, 0";
+        throttledSliderValue = 50;
+        throttledSliderCount = 0;
+        baselineSliderValue = 50;
+        baselineSliderCount = 0;
+
+        throttledScrollCount = 0;
+        baselineScrollCount = 0;
+
+        formModel = new();
+        editContext = new EditContext(formModel);
+        validFormSubmits = 0;
+        invalidFormSubmits = 0;
+        lastValidSubmittedEmail = string.Empty;
+
+        comboQuery = string.Empty;
+        comboEnterCommittedQuery = string.Empty;
+        comboInputCount = 0;
+        comboKeyDownCount = 0;
+        comboKeyUpCount = 0;
+
+        stressText = "initial";
+        stressDispatchCount = 0;
+        showConditionalInput = true;
+        conditionalDispatchCount = 0;
+
+        logEntries.Clear();
+        lastEventTimestampMs = 0;
+        nextLogId = 0;
+    }
+
+    // Scenario 1 handlers
+    private void OnIsolatedDebouncedInput()
+    {
+        isolatedDebouncedCount++;
+        AddLog("Input (Isolated)", "DEBOUNCED", "bg-primary", $"value=\"{isolatedDebouncedText}\" (#{isolatedDebouncedCount})", isBaseline: false);
+    }
+
+    private void OnIsolatedSearchSubmit()
+    {
+        isolatedSubmittedText = isolatedDebouncedText;
+        isolatedSubmitCount++;
+        AddLog("Form Submit", "FLUSH/SUBMIT", "bg-warning text-dark", $"submitted=\"{isolatedSubmittedText}\" (#{isolatedSubmitCount})", isBaseline: false);
+    }
+
+    private void OnIsolatedBaselineInput()
+    {
+        isolatedBaselineCount++;
+        AddLog("Input (Baseline)", "BASELINE", "bg-secondary", $"value=\"{isolatedBaselineText}\" (#{isolatedBaselineCount})", isBaseline: true);
+    }
+
+    private void OnDualRawInput(ChangeEventArgs e)
+    {
+        dualRawInputText = e.Value?.ToString() ?? string.Empty;
+        dualRawInputCount++;
+        AddLog("Dual Input", "BASELINE", "bg-secondary", $"value=\"{dualRawInputText}\" (#{dualRawInputCount})", isBaseline: true);
+    }
+
+    private void OnDualDebouncedInput(ChangeEventArgs e)
+    {
+        dualDebouncedInputText = e.Value?.ToString() ?? string.Empty;
+        dualDebouncedInputCount++;
+        AddLog("Dual Input", "DEBOUNCED", "bg-primary", $"value=\"{dualDebouncedInputText}\" (#{dualDebouncedInputCount})", isBaseline: false);
+    }
+
+    // Scenario 2 handlers
+    private void OnDualRawClick()
+    {
+        dualRawClickCount++;
+        AddLog("Dual Click", "BASELINE", "bg-secondary", $"click #{dualRawClickCount}", isBaseline: true);
+    }
+
+    private void OnDualThrottledClick()
+    {
+        dualThrottledClickCount++;
+        AddLog("Dual Click", "THROTTLED", "bg-success", $"click #{dualThrottledClickCount} (leading)", isBaseline: false);
+    }
+
+    private void OnIsolatedThrottledClick()
+    {
+        isolatedThrottledClickCount++;
+        AddLog("Click (Isolated)", "THROTTLED", "bg-success", $"click #{isolatedThrottledClickCount}", isBaseline: false);
+    }
+
+    private void OnIsolatedBaselineClick()
+    {
+        isolatedBaselineClickCount++;
+        AddLog("Click (Baseline)", "BASELINE", "bg-secondary", $"click #{isolatedBaselineClickCount}", isBaseline: true);
+    }
+
+    private void OnThrottledKeyDown(KeyboardEventArgs e)
+    {
+        throttledKeyDownCount++;
+        throttledLastKey = e.Key;
+        AddLog("KeyDown", "THROTTLED", "bg-success", $"key=\"{e.Key}\" (#{throttledKeyDownCount})", isBaseline: false);
+    }
+
+    private void OnBaselineKeyDown(KeyboardEventArgs e)
+    {
+        baselineKeyDownCount++;
+        baselineLastKey = e.Key;
+        AddLog("KeyDown", "BASELINE", "bg-secondary", $"key=\"{e.Key}\" (#{baselineKeyDownCount})", isBaseline: true);
+    }
+
+    // Scenario 3 handlers
+    private void OnDualRawMouseMove(MouseEventArgs e)
+    {
+        rawMouseMoveCount++;
+        rawMousePos = $"{e.ClientX}, {e.ClientY}";
+        AddLog("MouseMove", "BASELINE", "bg-secondary", $"pos=({rawMousePos}) (#{rawMouseMoveCount})", isBaseline: true);
+    }
+
+    private void OnDualThrottledMouseMove(MouseEventArgs e)
+    {
+        throttledMouseMoveCount++;
+        throttledMousePos = $"{e.ClientX}, {e.ClientY}";
+        AddLog("MouseMove", "THROTTLED", "bg-info text-dark", $"pos=({throttledMousePos}) (#{throttledMouseMoveCount})", isBaseline: false);
+    }
+
+    private void OnThrottledSliderInput()
+    {
+        throttledSliderCount++;
+        AddLog("Slider", "THROTTLED", "bg-info text-dark", $"val={throttledSliderValue} (#{throttledSliderCount})", isBaseline: false);
+    }
+
+    private void OnBaselineSliderInput()
+    {
+        baselineSliderCount++;
+        AddLog("Slider", "BASELINE", "bg-secondary", $"val={baselineSliderValue} (#{baselineSliderCount})", isBaseline: true);
+    }
+
+    // Scenario 4 handlers
+    private void OnThrottledScroll()
+    {
+        throttledScrollCount++;
+        AddLog("Scroll", "THROTTLED", "bg-info text-dark", $"scroll event #{throttledScrollCount}", isBaseline: false);
+    }
+
+    private void OnBaselineScroll()
+    {
+        baselineScrollCount++;
+        AddLog("Scroll", "BASELINE", "bg-secondary", $"scroll event #{baselineScrollCount}", isBaseline: true);
+    }
+
+    // Scenario 5 handlers
+    private void SetFormEmail(string? value)
+    {
+        formModel.Email = value ?? string.Empty;
+        editContext.NotifyFieldChanged(editContext.Field(nameof(SearchFormModel.Email)));
+        AddLog("EditForm Input", "DEBOUNCED", "bg-primary", $"Email=\"{formModel.Email}\"", isBaseline: false);
+    }
+
+    private void HandleValidFormSubmit()
+    {
+        validFormSubmits++;
+        lastValidSubmittedEmail = formModel.Email;
+        AddLog("EditForm", "FLUSH/VALID", "bg-success", $"Submitted valid Email=\"{lastValidSubmittedEmail}\"", isBaseline: false);
+    }
+
+    private void HandleInvalidFormSubmit()
+    {
+        invalidFormSubmits++;
+        AddLog("EditForm", "INVALID", "bg-danger", $"Invalid Email=\"{formModel.Email}\"", isBaseline: false);
+    }
+
+    // Scenario 6 handlers
+    private void OnComboInputAfter()
+    {
+        comboInputCount++;
+        AddLog("Combo Input", "DEBOUNCED", "bg-primary", $"query=\"{comboQuery}\" (#{comboInputCount})", isBaseline: false);
+    }
+
+    private void OnComboKeyDown(KeyboardEventArgs e)
+    {
+        comboKeyDownCount++;
+        if (e.Key == "Enter")
+        {
+            comboEnterCommittedQuery = comboQuery;
+            AddLog("Combo Enter", "FLUSH/ENTER", "bg-warning text-dark", $"Committed=\"{comboEnterCommittedQuery}\"", isBaseline: false);
+        }
+        else if (e.Key == "Escape")
+        {
+            comboQuery = string.Empty;
+            AddLog("Combo Escape", "CLEAR", "bg-secondary", "Cleared comboQuery", isBaseline: false);
+        }
+    }
+
+    private void OnComboKeyUp(KeyboardEventArgs e)
+    {
+        comboKeyUpCount++;
+    }
+
+    // Scenario 7 handlers
+    private async Task OnStressAsyncInput(ChangeEventArgs e)
+    {
+        var incoming = e.Value?.ToString() ?? string.Empty;
+        stressText = incoming;
+        stressDispatchCount++;
+        await Task.Delay(50);
+        AddLog("Stress Input", "DEBOUNCED", "bg-primary", $"stressText=\"{stressText}\" (#{stressDispatchCount})", isBaseline: false);
+    }
+
+    private void SetStressPreset()
+    {
+        stressText = "PRESET_VALUE";
+        AddLog("Stress Preset", "EXTERNAL", "bg-warning text-dark", "stressText=\"PRESET_VALUE\"", isBaseline: false);
+    }
+
+    private void ClearStressText()
+    {
+        stressText = string.Empty;
+        AddLog("Stress Clear", "EXTERNAL", "bg-warning text-dark", "stressText=\"\"", isBaseline: false);
+    }
+
+    private void ToggleBackgroundTimer()
+    {
+        if (backgroundTimerRunning)
+        {
+            backgroundTimer?.Dispose();
+            backgroundTimer = null;
+            backgroundTimerRunning = false;
+        }
+        else
+        {
+            backgroundTimerRunning = true;
+            backgroundTimer = new Timer(_ =>
+            {
+                _ = InvokeAsync(() =>
+                {
+                    backgroundTicks++;
+                    StateHasChanged();
+                });
+            }, null, 30, 30);
+        }
+    }
+
+    private void OnConditionalInput(ChangeEventArgs e)
+    {
+        conditionalDispatchCount++;
+        AddLog("Conditional", "DEBOUNCED", "bg-primary", $"value=\"{e.Value}\" (#{conditionalDispatchCount})", isBaseline: false);
+    }
+
+    private async Task ScheduleConditionalUnmount()
+    {
+        if (!showConditionalInput)
+        {
+            showConditionalInput = true;
+            return;
+        }
+
+        await Task.Delay(150);
+        showConditionalInput = false;
+    }
+
+    public void Dispose()
+    {
+        backgroundTimer?.Dispose();
+    }
+
+    private sealed class SearchFormModel
+    {
+        [Required(ErrorMessage = "Email is required.")]
+        [MinLength(5, ErrorMessage = "Email must be at least 5 characters.")]
+        public string Email { get; set; } = string.Empty;
+    }
+
+    private sealed record DiagnosticLogEntry(
+        int Id,
+        string Timestamp,
+        long DeltaMs,
+        string Scenario,
+        string Kind,
+        string BadgeClass,
+        string Detail,
+        bool IsBaseline);
+}
