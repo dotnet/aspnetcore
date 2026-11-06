@@ -217,6 +217,7 @@ public class AuthorizationPolicy
                 var rolesSplit = authorizeDatum.Roles?.Split(',');
                 if (rolesSplit?.Length > 0)
                 {
+                    // .ToArray() avoids re-processing all roles on every request
                     var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim()).ToArray();
                     policyBuilder.RequireRole(trimmedRolesSplit);
                     useDefaultPolicy = false;
