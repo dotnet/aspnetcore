@@ -19,7 +19,7 @@
             {
                 <a class="go-first" href="@GetPageUrl(0)" title="Go to first page" aria-label="Go to first page" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">«</a>
                 <a class="go-previous" href="@GetPageUrl(Math.Max(0, State.CurrentPageIndex - 1))" title="Go to previous page" aria-label="Go to previous page" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">‹</a>
-                <div class="pagination-text">
+                <div class="pagination-text" aria-live="polite" aria-atomic="true">
                     Page <strong>@(State.CurrentPageIndex + 1)</strong>
                     of <strong>@(State.LastPageIndex + 1)</strong>
                 </div>
@@ -30,7 +30,7 @@
             {
                 <button class="go-first" type="button" @onclick="GoFirstAsync" disabled="@(!CanGoBack)" title="Go to first page" aria-label="Go to first page"></button>
                 <button class="go-previous" type="button" @onclick="GoPreviousAsync" disabled="@(!CanGoBack)" title="Go to previous page" aria-label="Go to previous page"></button>
-                <div class="pagination-text">
+                <div class="pagination-text" aria-live="polite" aria-atomic="true">
                     Page <strong>@(State.CurrentPageIndex + 1)</strong>
                     of <strong>@(State.LastPageIndex + 1)</strong>
                 </div>
