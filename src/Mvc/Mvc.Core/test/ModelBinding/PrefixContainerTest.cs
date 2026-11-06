@@ -194,7 +194,6 @@ public class PrefixContainerTest
     [InlineData(16)]
     public void ContainsPrefix_MatchesExpected_ForSmallAndLargeCollections(int fillerCount)
     {
-        // Arrange
         // Small collections are searched without sorting and large ones with a binary search; both must agree.
         // "OrderId" and "productId" are partial matches that sort next to the delimited keys, so the sorted path must fall
         // back from its binary search hit to find "Order.Lines[2].Sku" and "product[0]".
@@ -206,7 +205,6 @@ public class PrefixContainerTest
 
         var container = new PrefixContainer(keys);
 
-        // Act & Assert
         Assert.True(container.ContainsPrefix(""));
         Assert.True(container.ContainsPrefix("zeta"));
         Assert.True(container.ContainsPrefix("ZETA"));
@@ -236,7 +234,6 @@ public class PrefixContainerTest
     [InlineData(20)]
     public void ContainsPrefix_UsesSnapshotOfValues(int count)
     {
-        // Arrange
         var keys = new List<string>();
         for (var i = 0; i < count; i++)
         {
@@ -245,11 +242,9 @@ public class PrefixContainerTest
 
         var container = new PrefixContainer(keys);
 
-        // Act
         keys.Clear();
         keys.Add("other");
 
-        // Assert
         Assert.True(container.ContainsPrefix("key0"));
         Assert.False(container.ContainsPrefix("other"));
     }
