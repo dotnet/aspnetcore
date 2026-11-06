@@ -132,7 +132,7 @@ public class SecureDataFormat<TData> : ISecureDataFormat<TData>
     private static byte[]? Unprotect(IDataProtector protector, string protectedText)
     {
         var protectedData = Base64UrlTextEncoder.Decode(protectedText);
-        if (protectedData == null)
+        if (protectedData is null)
         {
             return null;
         }
