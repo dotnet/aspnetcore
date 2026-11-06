@@ -13,7 +13,7 @@ import { Blazor } from '../../GlobalExports';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
 import { JSInitializer } from '../../JSInitializers/JSInitializers';
 import { GlobalizationMode } from '@microsoft/dotnet-runtime';
-import type { DotnetModuleConfig, MonoConfig, ModuleAPI, RuntimeAPI } from '@microsoft/dotnet-runtime';
+import type { DotnetModuleConfig, LoaderConfig, ModuleAPI, RuntimeAPI } from '@microsoft/dotnet-runtime';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let dispatcher: DotNet.ICallDispatcher = undefined as any;
@@ -31,7 +31,7 @@ export function getInitializer() {
 }
 
 export const monoPlatform: Platform = {
-  load: function load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
+  load: function load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: LoaderConfig) => void, justDownload?: boolean): Promise<void> {
     return createRuntimeInstance(options, onConfigLoaded, justDownload);
   },
 
@@ -143,10 +143,10 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
   return await import(/* webpackIgnore: true */ './dotnet.js');
 }
 
-async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
+async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: LoaderConfig) => void, justDownload?: boolean): Promise<void> {
   const module = await importDotnetJs(options);
   dotnet = module.dotnet;
-  const config: MonoConfig = {
+  const config: LoaderConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
   };
@@ -173,7 +173,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
   const anyDotnet = (dotnet as any);
   anyDotnet.withModuleConfig(moduleConfig);
 
-  dotnet.withConfigLoaded(async (loadedConfig: MonoConfig) => {
+  dotnet.withConfigLoaded(async (loadedConfig: LoaderConfig) => {
     if (!loadedConfig.environmentVariables) {
       loadedConfig.environmentVariables = {};
     }
