@@ -513,6 +513,8 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
         await page.GotoAsync($"{listeningUri}Account/Manage/Passkeys", new() { WaitUntil = WaitUntilState.NetworkIdle });
         await page.WaitForSelectorAsync("text=Confirm it's you");
+        Assert.Equal(await page.EvaluateAsync<string>("getComputedStyle(document.body).color"),
+            await page.Locator("p", new() { HasText = "Adding a passkey creates a new way to sign in to your account." }).EvaluateAsync<string>("p => getComputedStyle(p).color"));
         Assert.Equal(400, await GetPasskeyCreationOptionsStatusAsync(page));
 
         await page.FillAsync("[name=\"Input.Password\"]", password);
@@ -535,6 +537,10 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
         await page.GotoAsync($"{listeningUri}Account/Manage/SetPassword", new() { WaitUntil = WaitUntilState.NetworkIdle });
         await page.WaitForSelectorAsync("text=Confirm it's you");
+        Assert.Equal(await page.EvaluateAsync<string>("getComputedStyle(document.body).color"),
+            await page.Locator("p", new() { HasText = "Setting a password creates a new way to sign in to your account." }).EvaluateAsync<string>("p => getComputedStyle(p).color"));
+        Assert.Equal(await page.EvaluateAsync<string>("getComputedStyle(document.body).color"),
+            await page.Locator("p", new() { HasText = "You do not have a local username/password for this site." }).EvaluateAsync<string>("p => getComputedStyle(p).color"));
         Assert.Equal(0, await page.Locator("button:has-text(\"Set password\")").CountAsync());
 
         var newPassword = "[PLACEHOLDER]-2b";

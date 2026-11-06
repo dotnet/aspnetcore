@@ -14,6 +14,7 @@ public class SetPassword : DefaultUIPage
         : base(client, setPassword, context)
     {
         _setPasswordForm = HtmlAssert.HasForm("#set-password-form", setPassword);
+        Assert.DoesNotContain("text-info", HtmlAssert.HasElement("h3 ~ p", Document).ClassList);
     }
 
     public async Task<SetPassword> SetPasswordAsync(string newPassword)
