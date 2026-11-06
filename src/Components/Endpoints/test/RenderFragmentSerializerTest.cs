@@ -141,21 +141,55 @@ public class RenderFragmentSerializerTest
     }
 
     [Fact]
-    public void Serialize_Region_IsTransparent()
+    public void Roundtrip_FragmentReplay_PreservesKeyAndInvocationIsolation()
     {
         RenderFragment fragment = builder =>
         {
             builder.OpenRegion(0);
-            builder.AddContent(1, "inside region");
+            builder.OpenComponent<TestComponent>(0);
+            builder.SetKey("route-page-with-body");
+            builder.CloseComponent();
             builder.CloseRegion();
         };
 
         var result = SerializeFragment(fragment);
 
-        // Region is transparent — its children are inlined
         var node = Assert.Single(result);
-        Assert.Equal("text", node.Type);
-        Assert.Equal("inside region", node.Content);
+        Assert.Equal("region", node.Type);
+        var pageNode = Assert.Single(node.Children!);
+        Assert.Equal("component", pageNode.Type);
+        Assert.Equal("route-page-with-body", pageNode.Key);
+
+        var json = JsonSerializer.Serialize(result, _jsonOptions);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, _jsonOptions)!;
+        var replayedFragment = RenderFragmentSerializer.Deserialize(deserialized, _jsonOptions, _typeCache);
+
+        using var replayBuilder = new RenderTreeBuilder();
+        replayedFragment(replayBuilder);
+        replayedFragment(replayBuilder);
+        var frames = replayBuilder.GetFrames();
+
+        Assert.Collection(frames.Array.Take(frames.Count),
+            frame =>
+            {
+                Assert.Equal(RenderTreeFrameType.Region, frame.FrameType);
+                Assert.Equal(2, frame.RegionSubtreeLength);
+            },
+            frame =>
+            {
+                Assert.Equal(RenderTreeFrameType.Component, frame.FrameType);
+                Assert.Equal("route-page-with-body", frame.ComponentKey);
+            },
+            frame =>
+            {
+                Assert.Equal(RenderTreeFrameType.Region, frame.FrameType);
+                Assert.Equal(2, frame.RegionSubtreeLength);
+            },
+            frame =>
+            {
+                Assert.Equal(RenderTreeFrameType.Component, frame.FrameType);
+                Assert.Equal("route-page-with-body", frame.ComponentKey);
+            });
     }
 
     [Fact]

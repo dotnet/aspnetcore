@@ -1,0 +1,19 @@
+@page "/custom-routable-layout"
+@layout RouterTestLayout
+
+<section class="routable-layout">
+    <h1>Custom routable layout</h1>
+    <a id="routable-layout-parent" href="custom-routable-layout">Parent</a>
+    <a id="routable-layout-child" href="custom-routable-layout/child">Child</a>
+
+    @if (Body is null)
+    {
+        <p id="test-info">Parent page</p>
+    }
+
+    @Body
+</section>
+
+@code {
+    [Parameter] public RenderFragment Body { get; set; }
+}
