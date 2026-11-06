@@ -75,6 +75,35 @@ public class GlobalInteractivityTest(
         Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
     }
 
+    [Fact]
+    public void UsesCurrentHistoryEntryStateAfterWebAssemblyStartupWithoutLocationChange()
+    {
+        Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
+        var expectedUri = Browser.Url;
+
+        // Native history state can change without a navigation or a location-changed notification.
+        js.ExecuteScript("history.replaceState({ ...history.state, userState: 'startup-state' }, '', location.href)");
+        Assert.Equal(expectedUri, Browser.Url);
+        Assert.Equal("startup-state", js.ExecuteScript("return history.state.userState"));
+
+        js.ExecuteScript("window.webAssemblyStartup.release()");
+
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal("Home", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(expectedUri, () => Browser.Exists(By.Id("navigation-uri")).Text);
+        Browser.Equal("startup-state", () => Browser.Exists(By.Id("history-entry-state")).Text);
+
+        Browser.Click(By.Id("increment"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
+
+        Browser.Click(By.Id("next-page"));
+        Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+    }
+
     [Theory]
     [InlineData("server", false)]
     [InlineData("webassembly", false)]
