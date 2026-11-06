@@ -189,7 +189,7 @@ public class ForwardedHeadersMiddleware
         var connection = context.Connection;
         var originalRemoteIpAddress = connection.RemoteIpAddress;
         var originalRemotePort = connection.RemotePort;
-        if (originalRemoteIpAddress != null && (uint)originalRemotePort > IPEndPoint.MaxPort)
+        if (originalRemoteIpAddress is not null && (uint)originalRemotePort > IPEndPoint.MaxPort)
         {
             // Preserve the exception previously thrown when capturing the initial remote endpoint.
             _ = new IPEndPoint(originalRemoteIpAddress, originalRemotePort);
@@ -329,9 +329,9 @@ public class ForwardedHeadersMiddleware
 
         if (applyChanges)
         {
-            if (checkFor && currentRemoteIpAddress != null)
+            if (checkFor && currentRemoteIpAddress is not null)
             {
-                if (originalRemoteIpAddress != null)
+                if (originalRemoteIpAddress is not null)
                 {
                     // Save the original
                     requestHeaders[_options.OriginalForHeaderName] = new IPEndPoint(originalRemoteIpAddress, originalRemotePort).ToString();
