@@ -284,11 +284,11 @@ internal sealed class HostingApplicationDiagnostics
 
     private static bool TryGetItem(HttpContext httpContext, object key, out object? value)
     {
-        if (httpContext.GetType() == typeof(DefaultHttpContext))
+        if (httpContext is DefaultHttpContext defaultHttpContext)
         {
             // DefaultHttpContext.Items is backed by IItemsFeature and creates it on first access.
-            // Read the feature directly so a request that never used Items doesn't allocate it here.
-            if (httpContext.Features.Get<IItemsFeature>() is not { } itemsFeature)
+            // Read the cached feature without creating it so a request that never used Items doesn't allocate it here.
+            if (defaultHttpContext.ItemsFeatureIfExists is not { } itemsFeature)
             {
                 value = null;
                 return false;

@@ -28,6 +28,19 @@ public class HostingApplicationBenchmark
     [Params(false, true)]
     public bool EndpointMatched { get; set; }
 
+    [Params(ItemsUsage.Unused, ItemsUsage.Used, ItemsUsage.CustomFeature)]
+    public ItemsUsage Items { get; set; }
+
+    public enum ItemsUsage
+    {
+        // Nothing in the pipeline touches HttpContext.Items.
+        Unused,
+        // Middleware writes to HttpContext.Items, like authorization and CORS do for matched endpoints.
+        Used,
+        // The server provides its own IItemsFeature, which the pipeline doesn't touch.
+        CustomFeature,
+    }
+
     [GlobalSetup]
     public void Setup()
     {
@@ -46,7 +59,7 @@ public class HostingApplicationBenchmark
             _meterListener.Start();
         }
 
-        _server = new BenchmarkServer();
+        _server = new BenchmarkServer(Items == ItemsUsage.CustomFeature);
         _host = new HostBuilder()
             .ConfigureLogging(logging => logging.ClearProviders())
             .ConfigureWebHost(webHost =>
@@ -61,6 +74,16 @@ public class HostingApplicationBenchmark
                         app.Use((context, next) =>
                         {
                             context.SetEndpoint(endpoint);
+                            return next(context);
+                        });
+                    }
+
+                    if (Items == ItemsUsage.Used)
+                    {
+                        var key = new object();
+                        app.Use((context, next) =>
+                        {
+                            context.Items[key] = true;
                             return next(context);
                         });
                     }
@@ -84,7 +107,13 @@ public class HostingApplicationBenchmark
 
     private sealed class BenchmarkServer : IServer
     {
+        private readonly bool _customItemsFeature;
         private IRequestRunner _runner;
+
+        public BenchmarkServer(bool customItemsFeature)
+        {
+            _customItemsFeature = customItemsFeature;
+        }
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
@@ -92,7 +121,7 @@ public class HostingApplicationBenchmark
 
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
         {
-            _runner = new RequestRunner<TContext>(application);
+            _runner = new RequestRunner<TContext>(application, _customItemsFeature);
             return Task.CompletedTask;
         }
 
@@ -111,11 +140,12 @@ public class HostingApplicationBenchmark
     private sealed class RequestRunner<TContext> : IRequestRunner where TContext : notnull
     {
         private readonly IHttpApplication<TContext> _application;
-        private readonly RequestFeatures<TContext> _features = new();
+        private readonly RequestFeatures<TContext> _features;
 
-        public RequestRunner(IHttpApplication<TContext> application)
+        public RequestRunner(IHttpApplication<TContext> application, bool customItemsFeature)
         {
             _application = application;
+            _features = new(customItemsFeature);
         }
 
         public async Task ProcessRequestAsync()
@@ -142,7 +172,13 @@ public class HostingApplicationBenchmark
         private readonly HttpResponseFeature _response = new();
         private readonly StreamResponseBodyFeature _responseBody = new(Stream.Null);
         private readonly Dictionary<Type, object> _perRequest = new();
+        private readonly ItemsFeature _itemsFeature;
         private int _revision;
+
+        public RequestFeatures(bool customItemsFeature)
+        {
+            _itemsFeature = customItemsFeature ? new ItemsFeature { Items = new Dictionary<object, object>() } : null;
+        }
 
         public TContext HostContext { get; set; }
 
@@ -156,6 +192,11 @@ public class HostingApplicationBenchmark
             _response.StatusCode = StatusCodes.Status200OK;
             _response.Headers.Clear();
             _perRequest.Clear();
+            if (_itemsFeature is not null)
+            {
+                _itemsFeature.Items.Clear();
+                _perRequest[typeof(IItemsFeature)] = _itemsFeature;
+            }
             _revision++;
         }
 

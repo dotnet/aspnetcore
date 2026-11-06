@@ -119,6 +119,83 @@ public class DefaultHttpContextTests
     }
 
     [Fact]
+    public void ItemsFeatureIfExists_ItemsNotUsed_ReturnsNullWithoutAddingFeature()
+    {
+        var features = new FeatureCollection();
+        var context = new DefaultHttpContext(features);
+        var revision = features.Revision;
+
+        Assert.Null(context.ItemsFeatureIfExists);
+        Assert.Null(context.ItemsFeatureIfExists);
+
+        Assert.Null(features.Get<IItemsFeature>());
+        Assert.Equal(revision, features.Revision);
+    }
+
+    [Fact]
+    public void ItemsFeatureIfExists_ItemsUsed_ReturnsItemsFeature()
+    {
+        var features = new FeatureCollection();
+        var context = new DefaultHttpContext(features);
+        context.Items["foo"] = "bar";
+
+        var itemsFeature = context.ItemsFeatureIfExists;
+
+        Assert.NotNull(itemsFeature);
+        Assert.Same(features.Get<IItemsFeature>(), itemsFeature);
+        Assert.Same(context.Items, itemsFeature.Items);
+    }
+
+    [Fact]
+    public void ItemsFeatureIfExists_CustomFeature_ReturnsCustomFeature()
+    {
+        var features = new FeatureCollection();
+        var customFeature = new ItemsFeature();
+        features.Set<IItemsFeature>(customFeature);
+        var context = new DefaultHttpContext(features);
+
+        Assert.Same(customFeature, context.ItemsFeatureIfExists);
+        Assert.Same(customFeature.Items, context.Items);
+        Assert.Same(customFeature, context.ItemsFeatureIfExists);
+    }
+
+    [Fact]
+    public void ItemsFeatureIfExists_FeatureReplacedOrRemoved_HonorsRevisionChange()
+    {
+        var features = new FeatureCollection();
+        var context = new DefaultHttpContext(features);
+        _ = context.Items;
+        var defaultFeature = context.ItemsFeatureIfExists;
+        Assert.NotNull(defaultFeature);
+
+        var replacement = new ItemsFeature();
+        features.Set<IItemsFeature>(replacement);
+        Assert.Same(replacement, context.ItemsFeatureIfExists);
+        Assert.Same(replacement.Items, context.Items);
+
+        features.Set<IItemsFeature>(null);
+        var revision = features.Revision;
+        Assert.Null(context.ItemsFeatureIfExists);
+        Assert.Null(features.Get<IItemsFeature>());
+        Assert.Equal(revision, features.Revision);
+    }
+
+    [Fact]
+    public void ItemsFeatureIfExists_AfterReinitialize_DoesNotReturnPreviousRequestFeature()
+    {
+        var context = new DefaultHttpContext(new FeatureCollection());
+        context.Items["foo"] = "bar";
+        Assert.NotNull(context.ItemsFeatureIfExists);
+
+        context.Uninitialize();
+        var features = new FeatureCollection();
+        context.Initialize(features);
+
+        Assert.Null(context.ItemsFeatureIfExists);
+        Assert.Null(features.Get<IItemsFeature>());
+    }
+
+    [Fact]
     public void GetItems_DefaultRequestIdentifierAvailable()
     {
         var context = new DefaultHttpContext(new FeatureCollection());

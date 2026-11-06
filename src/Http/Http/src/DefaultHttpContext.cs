@@ -117,6 +117,23 @@ public sealed class DefaultHttpContext : HttpContext
     private IItemsFeature ItemsFeature =>
         _features.Fetch(ref _features.Cache.Items, _newItemsFeature)!;
 
+    // Returns the IItemsFeature cached by Items when it's still current, otherwise reads it from the collection.
+    // Unlike Items, this never creates or adds the feature. Fetch with a null factory isn't used because it calls
+    // IFeatureCollection.Set, which can bump the collection revision.
+    internal IItemsFeature? ItemsFeatureIfExists
+    {
+        get
+        {
+            var features = Features;
+            if (_features.Revision == features.Revision && _features.Cache.Items is { } cached)
+            {
+                return cached;
+            }
+
+            return features.Get<IItemsFeature>();
+        }
+    }
+
     private IServiceProvidersFeature ServiceProvidersFeature =>
         _features.Fetch(ref _features.Cache.ServiceProviders, this, _newServiceProvidersFeature)!;
 

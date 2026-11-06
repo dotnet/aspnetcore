@@ -307,6 +307,112 @@ public class HostingMetricsTests
         Assert.Null(httpContext.Features.Get<IItemsFeature>());
     }
 
+    [Fact]
+    public void RequestDuration_ItemsAlreadyUsed_UnhandledAndRouteTagsSet()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        context.HttpContext.Items["Other"] = new object();
+        context.HttpContext.Items["__RequestUnhandled"] = true;
+        context.HttpContext.Items["__OriginalEndpoint"] = CreateRouteEndpoint("/items/{id}");
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        var measurement = Assert.Single(requestDurationCollector.GetMeasurementSnapshot());
+        Assert.Equal("/items/{id}", (string)measurement.Tags["http.route"]);
+        Assert.True((bool)measurement.Tags["aspnetcore.request.is_unhandled"]);
+    }
+
+    [Fact]
+    public void RequestDuration_CustomItemsFeature_IsUsed()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+        var itemsFeature = new TestItemsFeature();
+        itemsFeature.Items["__RequestUnhandled"] = true;
+        itemsFeature.Items["__OriginalEndpoint"] = CreateRouteEndpoint("/custom/{id}");
+        httpContext.Features.Set<IItemsFeature>(itemsFeature);
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        var measurement = Assert.Single(requestDurationCollector.GetMeasurementSnapshot());
+        Assert.Equal("/custom/{id}", (string)measurement.Tags["http.route"]);
+        Assert.True((bool)measurement.Tags["aspnetcore.request.is_unhandled"]);
+        Assert.Same(itemsFeature, httpContext.Features.Get<IItemsFeature>());
+    }
+
+    [Fact]
+    public void RequestDuration_ItemsFeatureReplacedAfterItemsUsed_ReplacementIsUsed()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        // Populate the cached default items feature, then replace it. This changes the feature collection revision.
+        context.HttpContext.Items["__OriginalEndpoint"] = CreateRouteEndpoint("/stale/{id}");
+        var itemsFeature = new TestItemsFeature();
+        itemsFeature.Items["__RequestUnhandled"] = true;
+        itemsFeature.Items["__OriginalEndpoint"] = CreateRouteEndpoint("/replaced/{id}");
+        context.HttpContext.Features.Set<IItemsFeature>(itemsFeature);
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        var measurement = Assert.Single(requestDurationCollector.GetMeasurementSnapshot());
+        Assert.Equal("/replaced/{id}", (string)measurement.Tags["http.route"]);
+        Assert.True((bool)measurement.Tags["aspnetcore.request.is_unhandled"]);
+    }
+
+    [Fact]
+    public void RequestDuration_ItemsFeatureRemovedAfterItemsUsed_NotRecreated()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        context.HttpContext.Items["__RequestUnhandled"] = true;
+        context.HttpContext.Features.Set<IItemsFeature>(null);
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        var measurement = Assert.Single(requestDurationCollector.GetMeasurementSnapshot());
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.request.is_unhandled"));
+        Assert.Null(httpContext.Features.Get<IItemsFeature>());
+    }
+
+    private static Endpoint CreateRouteEndpoint(string route) => new Endpoint(
+        c => Task.CompletedTask,
+        new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata(route)),
+        "Test endpoint");
+
+    private sealed class TestItemsFeature : IItemsFeature
+    {
+        public IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
+    }
+
     private sealed class TestRouteDiagnosticsMetadata(string route) : Http.Metadata.IRouteDiagnosticsMetadata
     {
         public string Route { get; } = route;
