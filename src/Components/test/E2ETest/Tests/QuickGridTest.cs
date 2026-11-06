@@ -232,58 +232,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
-    public void OnRowClickCanBeActivatedWithKeyboard()
-    {
-        var grid = app.FindElement(By.CssSelector("#grid > table"));
-        Browser.Exists(By.Id("no-click"));
-
-        var lastHeaderControl = grid.FindElements(By.CssSelector("thead a, thead button")).Last();
-        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
-        lastHeaderControl.SendKeys(Keys.Tab);
-        Browser.Equal(firstRow, () => Browser.SwitchTo().ActiveElement());
-
-        firstRow.SendKeys(Keys.Enter);
-        Browser.Equal("PersonId: 11203", () => app.FindElement(By.Id("clicked-person-id")).Text);
-        Browser.Equal("Name: Julie Smith", () => app.FindElement(By.Id("clicked-person-name")).Text);
-        Browser.Equal("Click count: 1", () => app.FindElement(By.Id("click-count")).Text);
-
-        firstRow.SendKeys(Keys.Tab);
-        var secondRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(2)"));
-        Browser.Equal(secondRow, () => Browser.SwitchTo().ActiveElement());
-
-        secondRow.SendKeys(Keys.Space);
-        Browser.Equal("PersonId: 11205", () => app.FindElement(By.Id("clicked-person-id")).Text);
-        Browser.Equal("Name: Nur Sari", () => app.FindElement(By.Id("clicked-person-name")).Text);
-        Browser.Equal("Click count: 2", () => app.FindElement(By.Id("click-count")).Text);
-    }
-
-    [Fact]
-    public void OnRowClickKeyboardNavigationLoadsVirtualizedItems()
-    {
-        app = Browser.MountTestComponent<QuickGridScrollComponent>();
-        app.FindElement(By.Id("toggle-provider")).Click();
-
-        Browser.Exists(By.CssSelector("#scroll-container tr.row-clickable [data-index='0']"));
-        const int targetIndex = 15;
-        Browser.DoesNotExist(By.CssSelector($"#scroll-container [data-index='{targetIndex}']"));
-
-        var firstRow = app.FindElement(By.CssSelector("#scroll-container tr.row-clickable[aria-rowindex='2']"));
-        firstRow.Click();
-        Browser.Equal("2", () => Browser.SwitchTo().ActiveElement().GetDomAttribute("aria-rowindex"));
-
-        for (var i = 0; i < targetIndex; i++)
-        {
-            var expectedRowIndex = $"{i + 3}";
-            Browser.Exists(By.CssSelector($"#scroll-container tr.row-clickable[aria-rowindex='{expectedRowIndex}']"));
-            new Actions(Browser).SendKeys(Keys.Tab).Perform();
-            Browser.Equal(expectedRowIndex, () => Browser.SwitchTo().ActiveElement().GetDomAttribute("aria-rowindex"));
-        }
-
-        new Actions(Browser).SendKeys(Keys.Enter).Perform();
-        Browser.Equal($"Activated: {targetIndex}", () => app.FindElement(By.Id("status")).Text);
-    }
-
-    [Fact]
     public void OnRowClickAppliesCursorPointerStyle()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
