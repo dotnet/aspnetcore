@@ -298,7 +298,6 @@ public class DefaultObjectResultExecutorTest
     [Fact]
     public void SelectFormatter_WithMultipleAcceptHeaderValues_SelectsHighestQualityAcrossValues()
     {
-        // Arrange
         var formatters = new List<IOutputFormatter>
             {
                 new TestXmlOutputFormatter(),
@@ -314,13 +313,11 @@ public class DefaultObjectResultExecutorTest
 
         context.HttpContext.Request.Headers.Accept = new StringValues(new[] { "application/xml;q=0.5", "", "text/plain, application/json" });
 
-        // Act
         var formatter = selector.SelectFormatter(
             context,
             Array.Empty<IOutputFormatter>(),
             new MediaTypeCollection());
 
-        // Assert
         Assert.Same(formatters[1], formatter);
         Assert.Equal(new StringSegment("application/json"), context.ContentType);
     }
@@ -328,7 +325,6 @@ public class DefaultObjectResultExecutorTest
     [Fact]
     public void SelectFormatter_WithEmptyAcceptHeaderValue_ChoosesFirstFormatterThatCanWrite()
     {
-        // Arrange
         var formatters = new List<IOutputFormatter>
             {
                 new CannotWriteFormatter(),
@@ -345,13 +341,11 @@ public class DefaultObjectResultExecutorTest
 
         context.HttpContext.Request.Headers.Accept = "";
 
-        // Act
         var formatter = selector.SelectFormatter(
             context,
             Array.Empty<IOutputFormatter>(),
             new MediaTypeCollection());
 
-        // Assert
         Assert.Same(formatters[1], formatter);
         Assert.Equal(new StringSegment("application/json"), context.ContentType);
     }

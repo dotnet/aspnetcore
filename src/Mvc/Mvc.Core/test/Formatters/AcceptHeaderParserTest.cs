@@ -122,7 +122,6 @@ public class AcceptHeaderParserTest
     [Fact]
     public void ParseAcceptHeader_StringValues_ParsesMultipleHeaderValues()
     {
-        // Arrange
         var expected = new List<MediaTypeSegmentWithQuality>
             {
                 new MediaTypeSegmentWithQuality(new StringSegment("application/json"), 1.0),
@@ -131,25 +130,20 @@ public class AcceptHeaderParserTest
             };
         var parsed = new List<MediaTypeSegmentWithQuality>();
 
-        // Act
         AcceptHeaderParser.ParseAcceptHeader(
             new StringValues(new[] { "application/json, text/plain;q=0.9", "", null, "application/xml;q=0.8" }),
             parsed);
 
-        // Assert
         Assert.Equal(expected, parsed);
     }
 
     [Fact]
     public void ParseAcceptHeader_StringValues_Empty_ParsesNothing()
     {
-        // Arrange
         var parsed = new List<MediaTypeSegmentWithQuality>();
 
-        // Act
         AcceptHeaderParser.ParseAcceptHeader(StringValues.Empty, parsed);
 
-        // Assert
         Assert.Empty(parsed);
     }
 
