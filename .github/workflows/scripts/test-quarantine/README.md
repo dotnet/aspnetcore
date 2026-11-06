@@ -130,12 +130,36 @@ target remains ambiguous.
 Unresolved historical inheritance is unproven, not evidence that a test was
 never inherited.
 
+Project history follows proven project-file renames across directory moves and
+stops at a copy or initial addition. Historical source and assembly ownership use
+the project's location at each commit, preserving earlier re-quarantines without
+borrowing a copied project's history. A verified predecessor hint covers the
+heavily rewritten E2E project move; other weak rename matches remain unproven.
+Method identity checks ignore namespace and
+type changes that predate the method, but still reject possible renames of an
+existing target. Freshness follows changes to the exact method and its declaring
+type header and attributes, constructor/setup helpers, and explicitly delegated
+base implementations, plus inherited runner setup. Unrelated sibling edits and
+pure file moves do not discard otherwise fresh failures.
+Historical runner absence is proven from type declarations, not missing method
+names. Existing runners with unresolved bases or source ownership remain
+unproven, including during type-only history scans.
+Proven sibling inheritance branches do not contribute unrelated type quarantines
+through an unresolved external base.
+
 Shared sources with conditional namespaces or quarantine attributes
 are resolved separately for each consuming project using literal
 `DefineConstants` and `Compile` item paths,
 including exclusions and removals. Inactive branches are masked without moving
 source lines. Literal `Compile` items are evaluated in document order, so a later
 include can restore a removed file; unresolved membership remains unproven.
+For local sources without C# preprocessor conditions or assembly quarantines,
+literal comparisons against one MSBuild property are evaluated across all
+possible comparison outcomes. A file included in a proven configuration can
+contribute its unchanged identity, including inherited server runners selected by
+`UseMonoRuntime`. Linked sources and context-sensitive annotations still require
+exact ownership; complementary removals that exclude every configuration do not
+make a source candidate.
 Historical scans use the same project context at each commit and
 include project-only symbol/item changes when identifying quarantine transitions.
 Unsupported dynamic or conditional ownership is not treated as exact; this is
