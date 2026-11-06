@@ -8,12 +8,10 @@ public class ValidationStateDictionaryTest
     [Fact]
     public void EmptyDictionary_ReadOperations_WithoutBackingDictionary()
     {
-        // Arrange
         // Only members that do not create the backing dictionary are used here.
         var dictionary = new ValidationStateDictionary();
         var model = new object();
 
-        // Act & Assert
         Assert.True(dictionary.Count == 0);
         Assert.False(dictionary.ContainsKey(model));
         Assert.False(dictionary.TryGetValue(model, out var entry));
@@ -27,11 +25,9 @@ public class ValidationStateDictionaryTest
     [Fact]
     public void EmptyDictionary_ReadOperations()
     {
-        // Arrange
         var dictionary = new ValidationStateDictionary();
         var model = new object();
 
-        // Act & Assert
         Assert.Empty(dictionary);
         Assert.False(dictionary.IsReadOnly);
         Assert.False(dictionary.Remove(model));
@@ -46,10 +42,8 @@ public class ValidationStateDictionaryTest
     [Fact]
     public void EmptyDictionary_NullKey_Throws()
     {
-        // Arrange
         var dictionary = new ValidationStateDictionary();
 
-        // Act & Assert
         // Before any entry is added, the backing dictionary does not exist yet.
         Assert.Throws<ArgumentNullException>("key", () => dictionary.ContainsKey(null));
         Assert.Throws<ArgumentNullException>("key", () => dictionary.TryGetValue(null, out _));
@@ -64,17 +58,14 @@ public class ValidationStateDictionaryTest
     [Fact]
     public void KeysAndValues_ReflectEntriesAddedLater()
     {
-        // Arrange
         var dictionary = new ValidationStateDictionary();
         var keys = dictionary.Keys;
         var values = dictionary.Values;
         var model = new object();
         var entry = new ValidationStateEntry();
 
-        // Act
         dictionary[model] = entry;
 
-        // Assert
         Assert.Same(model, Assert.Single(keys));
         Assert.Same(entry, Assert.Single(values));
         Assert.Same(entry, dictionary[model]);
@@ -85,16 +76,13 @@ public class ValidationStateDictionaryTest
     [Fact]
     public void UsesReferenceEquality()
     {
-        // Arrange
         var dictionary = new ValidationStateDictionary();
         var model = "value";
         var equalModel = new string("value".AsSpan());
         var entry = new ValidationStateEntry();
 
-        // Act
         dictionary.Add(model, entry);
 
-        // Assert
         Assert.True(dictionary.ContainsKey(model));
         Assert.False(dictionary.ContainsKey(equalModel));
     }

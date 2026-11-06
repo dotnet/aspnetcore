@@ -61,13 +61,11 @@ public class ValidationStackTest
     [Fact]
     public void PushAndPop_TransitionsFromSingleModelToList()
     {
-        // Arrange
         var validationStack = new TestValidationStack();
         var first = new Model { Position = 0 };
         var second = new Model { Position = 1 };
         var third = new Model { Position = 2 };
 
-        // Act & Assert
         Assert.Equal(0, validationStack.Count);
 
         Assert.True(validationStack.Push(first));
@@ -99,15 +97,12 @@ public class ValidationStackTest
     [Fact]
     public void Pop_DoesNotThrowIfValueIsNull_WithSingleModel()
     {
-        // Arrange
         var validationStack = new TestValidationStack();
         var model = new Model();
         validationStack.Push(model);
 
-        // Act
         validationStack.Pop(null);
 
-        // Assert
         Assert.Equal(1, validationStack.Count);
         Assert.True(validationStack.Contains(model));
     }
@@ -164,7 +159,7 @@ public class ValidationStackTest
             {
                 return HashSet.Contains(model);
             }
-            else if (List != null)
+            else if (List is not null)
             {
                 return List.Contains(model);
             }

@@ -32,9 +32,9 @@ internal class ValidationStack
             return HashSet.Add(model);
         }
 
-        if (List == null)
+        if (List is null)
         {
-            if (First == null)
+            if (First is null)
             {
                 First = model;
                 return true;
@@ -73,7 +73,7 @@ internal class ValidationStack
         {
             if (model != null)
             {
-                if (List == null)
+                if (List is null)
                 {
                     Debug.Assert(ReferenceEquals(First, model));
                     First = null;
@@ -89,7 +89,7 @@ internal class ValidationStack
 
     private bool ListContains(object model)
     {
-        Debug.Assert(List != null);
+        Debug.Assert(List is not null);
 
         for (var i = 0; i < List.Count; i++)
         {
