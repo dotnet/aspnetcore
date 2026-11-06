@@ -132,7 +132,8 @@ public class CacheTagKey : IEquatable<CacheTagKey>
         var characterCount = GetStringLength(_prefix) +
             GetStringLength(Key) +
             GetStringLength(_varyBy) +
-            GetStringLength(_username) +
+            GetStringLength(_userIdentifierName) +
+            GetStringLength(_userIdentifier) +
             GetStringLength(_requestCulture?.Name) +
             GetStringLength(_requestUICulture?.Name) +
             GetStringCollectionLength(_cookies) +

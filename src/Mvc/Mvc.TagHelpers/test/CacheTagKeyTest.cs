@@ -558,7 +558,7 @@ public class CacheTagKeyTest
         cacheTagHelper.ViewContext.HttpContext.Request.Headers["header-name"] = "header-value";
         cacheTagHelper.ViewContext.HttpContext.Request.QueryString = new QueryString("?query-name=query-value");
         cacheTagHelper.ViewContext.RouteData.Values["route-name"] = "route-value";
-        var identity = new ClaimsIdentity(new[] { new Claim(ClaimsIdentity.DefaultNameClaimType, "user-name") });
+        var identity = new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "user-id")], "Test");
         cacheTagHelper.ViewContext.HttpContext.User = new ClaimsPrincipal(identity);
         var expectedCharacterCount = CacheTagHelper.CacheKeyPrefix.Length +
             "testid".Length +
@@ -571,7 +571,8 @@ public class CacheTagKeyTest
             "query-value".Length +
             "route-name".Length +
             "route-value".Length +
-            "user-name".Length +
+            "Identifier".Length +
+            44 +
             "fr-FR".Length +
             "es-ES".Length;
 
