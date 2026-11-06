@@ -14,8 +14,9 @@ public sealed class Window : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly ILoggerFactory _loggerFactory;
-    private JSCallbackFactory? _callbackFactory;
-    private EventListenerCollection? _listeners;
+    // Typed as the interface, so that disposal does not keep these types in an app that never adds a listener.
+    private IInternalAsyncDisposal? _callbackFactory;
+    private IInternalAsyncDisposal? _listeners;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
     private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
@@ -67,16 +68,16 @@ public sealed class Window : IInternalAsyncDisposal
 
         // The collection and the module loader are created here, so an app that adds no listener pays nothing.
         ObjectDisposedException.ThrowIf(_disposed, this);
-        _listeners ??= CreateEventListenerCollection();
+        var listeners = (EventListenerCollection)(_listeners ??= CreateEventListenerCollection());
 
-        return await type.AddListenerAsync(_listeners, window, this, listener, cancellationToken);
+        return await type.AddListenerAsync(listeners, window, this, listener, cancellationToken);
     }
 
     /// <summary>
     /// Creates the collection that a projection uses to add event listeners to its JavaScript object.
     /// </summary>
     internal EventListenerCollection CreateEventListenerCollection()
-        => new(_callbackFactory ??= new JSCallbackFactory(_jsRuntime), _loggerFactory.CreateLogger<EventListenerCollection>());
+        => new((JSCallbackFactory)(_callbackFactory ??= new JSCallbackFactory(_jsRuntime)), _loggerFactory.CreateLogger<EventListenerCollection>());
 
     private Task<IJSObjectReference> GetReferenceAsync()
     {
@@ -149,7 +150,7 @@ public sealed class Window : IInternalAsyncDisposal
         // Listeners need the window reference to remove themselves, so they go first.
         if (_listeners is not null)
         {
-            await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync();
+            await _listeners.InternalDisposeAsync();
         }
 
         // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
@@ -172,7 +173,7 @@ public sealed class Window : IInternalAsyncDisposal
         // Features remove their listeners first, so the module is no longer needed.
         if (_callbackFactory is not null)
         {
-            await ((IInternalAsyncDisposal)_callbackFactory).InternalDisposeAsync();
+            await _callbackFactory.InternalDisposeAsync();
         }
     }
 }
