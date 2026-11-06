@@ -166,6 +166,16 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
+    public void VirtualizedRowCountIncludesHeaderAfterLoading()
+    {
+        Navigate($"{ServerPathBase}/?TestConfiguration=no-provider-render");
+        app = Browser.MountTestComponent<QuickGridVirtualizeComponent>();
+        Browser.Exists(By.CssSelector("#grid tr[aria-rowindex='2']"));
+        Browser.Equal("101", () => app.FindElement(By.CssSelector("#grid table")).GetDomAttribute("aria-rowcount"));
+        Browser.Equal("0", () => app.FindElement(By.Id("items-provider-call-count")).Text);
+    }
+
+    [Fact]
     public void FilterUsingSetCurrentPageDoesNotCauseExtraRefresh()
     {
         app = Browser.MountTestComponent<QuickGridFilterComponent>();
