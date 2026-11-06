@@ -28,10 +28,11 @@ stimuli:
       manifest bundle. If review-pull-request is available, invoke it and apply its
       candidate adjudication rules at this boundary. Do not bootstrap, request a
       manifest, delegate, fetch, execute target code, or edit/create files.
-      Return NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED,
-      naming C1 and citing source roles and file:line evidence for its disposition.
-      Include confidence for every NEW_FINDINGS entry and explain any missing
-      contract or implementation evidence. Do not invent unavailable behavior.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
     agent_environment:
       files:
         - src: fixtures/preexisting-collaborator.txt
@@ -45,7 +46,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*DISCARDED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[DISCARDED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why discarded[`''"*_\s]*:)'
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*DISCARDED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[DISCARDED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why discarded[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -62,10 +63,11 @@ stimuli:
       manifest bundle. If review-pull-request is available, invoke it and apply its
       candidate adjudication rules at this boundary. Do not bootstrap, request a
       manifest, delegate, fetch, execute target code, or edit/create files.
-      Return NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED,
-      naming C1 and citing source roles and file:line evidence for its disposition.
-      Include confidence for every NEW_FINDINGS entry and explain any missing
-      contract or implementation evidence. Do not invent unavailable behavior.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
     agent_environment:
       files:
         - src: fixtures/external-collaborator.txt
@@ -79,7 +81,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*UNRESOLVED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[UNRESOLVED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why unresolved[`''"*_\s]*:)'
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*UNRESOLVED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[UNRESOLVED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why unresolved[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -96,10 +98,11 @@ stimuli:
       manifest bundle. If review-pull-request is available, invoke it and apply its
       candidate adjudication rules at this boundary. Do not bootstrap, request a
       manifest, delegate, fetch, execute target code, or edit/create files.
-      Return NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED,
-      naming C1 and citing source roles and file:line evidence for its disposition.
-      Include confidence for every NEW_FINDINGS entry and explain any missing
-      contract or implementation evidence. Do not invent unavailable behavior.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
     agent_environment:
       files:
         - src: fixtures/head-test-different-layer.txt
@@ -113,7 +116,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*NEW_FINDINGS_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}confidence[`''"*_\s]*[:=][`''"*_\s]*(?:verified|question)_*\b'
+          pattern: '(?is)(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*NEW_FINDINGS_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}confidence[`''"*_\s]*[:=][`''"*_\s]*(?:verified|question)_*\b'
       - type: prompt
         config:
           scoring: binary
@@ -130,10 +133,11 @@ stimuli:
       manifest bundle. If review-pull-request is available, invoke it and apply its
       candidate adjudication rules at this boundary. Do not bootstrap, request a
       manifest, delegate, fetch, execute target code, or edit/create files.
-      Return NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED,
-      naming C1 and citing source roles and file:line evidence for its disposition.
-      Include confidence for every NEW_FINDINGS entry and explain any missing
-      contract or implementation evidence. Do not invent unavailable behavior.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
     agent_environment:
       files:
         - src: fixtures/secondary-failure.txt
@@ -147,7 +151,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*UNRESOLVED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[UNRESOLVED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why unresolved[`''"*_\s]*:)'
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*UNRESOLVED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[UNRESOLVED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why unresolved[`''"*_\s]*:)'
       - type: prompt
         config:
           scoring: binary
@@ -164,10 +168,11 @@ stimuli:
       manifest bundle. If review-pull-request is available, invoke it and apply its
       candidate adjudication rules at this boundary. Do not bootstrap, request a
       manifest, delegate, fetch, execute target code, or edit/create files.
-      Return NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED,
-      naming C1 and citing source roles and file:line evidence for its disposition.
-      Include confidence for every NEW_FINDINGS entry and explain any missing
-      contract or implementation evidence. Do not invent unavailable behavior.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
     agent_environment:
       files:
         - src: fixtures/existing-thread.txt
@@ -181,7 +186,7 @@ stimuli:
           disallowed: [edit, create]
       - type: output-matches
         config:
-          pattern: '(?s)(?:^|\r?\n)[ \t]*(?:#+[ \t]*)?[`''"*_]*EXISTING_FEEDBACK_COVERAGE_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}PRRT_kwDOExampleThread1'
+          pattern: '(?s)(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*EXISTING_FEEDBACK_COVERAGE_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}PRRT_kwDOExampleThread1'
       - type: prompt
         config:
           scoring: binary
