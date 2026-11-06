@@ -193,9 +193,9 @@ graceful-fs@^4.1.6, graceful-fs@^4.2.0:
   integrity sha1-QYPk6L8Iu24Fu7L30uDI9xLKQOM=
 
 http-cache-semantics@^4.0.0:
-  version "4.2.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/http-cache-semantics/-/http-cache-semantics-4.2.0.tgz#205f4db64f8562b76a4ff9235aa5279839a09dd5"
-  integrity sha1-IF9Ntk+FYrdqT/kjWqUnmDmgndU=
+  version "4.3.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/http-cache-semantics/-/http-cache-semantics-4.3.0.tgz#09eead3b16c6d85552857cc3fbd888d8353a2aaf"
+  integrity sha512-M5t5LlJpS1UHMjvwRQVdFHvPISGeLAxNcrWuJkeGh0KxsqCHZ1O3NXZU/8x7cD0BDcGW8kapxMKTvwlqrNkHkA==
 
 http2-wrapper@^1.0.0-beta.5.2:
   version "1.0.3"

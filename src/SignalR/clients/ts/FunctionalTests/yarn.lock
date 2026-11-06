@@ -2039,9 +2039,9 @@ http-cache-semantics@3.8.1:
   integrity sha1-ObDhat2bYFvwqe89nar0hDtMrNI=
 
 http-cache-semantics@^4.0.0:
-  version "4.1.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/http-cache-semantics/-/http-cache-semantics-4.1.1.tgz#abe02fcb2985460bf0323be664436ec3476a6d5a"
-  integrity sha1-q+AvyymFRgvwMjvmZENuw0dqbVo=
+  version "4.3.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/http-cache-semantics/-/http-cache-semantics-4.3.0.tgz#09eead3b16c6d85552857cc3fbd888d8353a2aaf"
+  integrity sha512-M5t5LlJpS1UHMjvwRQVdFHvPISGeLAxNcrWuJkeGh0KxsqCHZ1O3NXZU/8x7cD0BDcGW8kapxMKTvwlqrNkHkA==
 
 http-errors@~2.0.1:
   version "2.0.1"
