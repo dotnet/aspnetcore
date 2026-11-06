@@ -329,7 +329,7 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
             writer.WriteBoolean(false);
         }
 
-        if (identity.Actor != null)
+        if (identity.Actor is not null)
         {
             writer.WriteBoolean(true);
             WriteIdentity(ref writer, identity.Actor);
