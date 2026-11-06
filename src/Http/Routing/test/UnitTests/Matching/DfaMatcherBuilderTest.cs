@@ -3469,7 +3469,6 @@ public class DfaMatcherBuilderTest
     [Fact]
     public void Build_EndpointInMultipleStates_SharesCandidateData()
     {
-        // Arrange
         var literal = CreateEndpoint("/a/x");
         var parameter = CreateEndpoint("/{p:minlength(1)}/x");
 
@@ -3477,10 +3476,8 @@ public class DfaMatcherBuilderTest
         builder.AddEndpoint(literal);
         builder.AddEndpoint(parameter);
 
-        // Act
         var matcher = Assert.IsType<DfaMatcher>(builder.Build());
 
-        // Assert
         var fromLiteralState = Assert.Single(FindCandidates(matcher, "/a/x"), c => ReferenceEquals(c.Endpoint, parameter));
         var fromParameterState = Assert.Single(FindCandidates(matcher, "/b/x"), c => ReferenceEquals(c.Endpoint, parameter));
 
@@ -3494,7 +3491,6 @@ public class DfaMatcherBuilderTest
     [Fact]
     public void Build_EndpointInMultipleStates_NonCacheableConstraint_DoesNotShareConstraints()
     {
-        // Arrange
         var literal = CreateEndpoint("/a/x");
         var parameter = CreateEndpoint("/{p:stateful}/x");
 
@@ -3502,10 +3498,8 @@ public class DfaMatcherBuilderTest
         builder.AddEndpoint(literal);
         builder.AddEndpoint(parameter);
 
-        // Act
         var matcher = Assert.IsType<DfaMatcher>(builder.Build());
 
-        // Assert
         var fromLiteralState = Assert.Single(FindCandidates(matcher, "/a/x"), c => ReferenceEquals(c.Endpoint, parameter));
         var fromParameterState = Assert.Single(FindCandidates(matcher, "/b/x"), c => ReferenceEquals(c.Endpoint, parameter));
 
@@ -3518,7 +3512,6 @@ public class DfaMatcherBuilderTest
     [Fact]
     public void Build_EndpointInMultipleStates_SuppliedConstraintInstance_SharesConstraints()
     {
-        // Arrange
         var constraint = new StatefulRouteConstraint();
         var literal = CreateEndpoint("/a/x");
         var parameter = CreateEndpoint("/{p}/x", constraints: new { p = constraint });
@@ -3527,10 +3520,8 @@ public class DfaMatcherBuilderTest
         builder.AddEndpoint(literal);
         builder.AddEndpoint(parameter);
 
-        // Act
         var matcher = Assert.IsType<DfaMatcher>(builder.Build());
 
-        // Assert
         var fromLiteralState = Assert.Single(FindCandidates(matcher, "/a/x"), c => ReferenceEquals(c.Endpoint, parameter));
         var fromParameterState = Assert.Single(FindCandidates(matcher, "/b/x"), c => ReferenceEquals(c.Endpoint, parameter));
 
@@ -3541,7 +3532,6 @@ public class DfaMatcherBuilderTest
     [Fact]
     public void Build_EndpointInMultipleStates_FactoryReturnsNewInstanceForSuppliedConstraint_DoesNotShareConstraints()
     {
-        // Arrange
         var literal = CreateEndpoint("/a/x");
         var parameter = CreateEndpoint("/{p}/x", constraints: new { p = new StatefulRouteConstraint() });
 
@@ -3553,10 +3543,8 @@ public class DfaMatcherBuilderTest
         builder.AddEndpoint(literal);
         builder.AddEndpoint(parameter);
 
-        // Act
         var matcher = Assert.IsType<DfaMatcher>(builder.Build());
 
-        // Assert
         var fromLiteralState = Assert.Single(FindCandidates(matcher, "/a/x"), c => ReferenceEquals(c.Endpoint, parameter));
         var fromParameterState = Assert.Single(FindCandidates(matcher, "/b/x"), c => ReferenceEquals(c.Endpoint, parameter));
 
@@ -3569,7 +3557,6 @@ public class DfaMatcherBuilderTest
     [Fact]
     public void Build_EndpointInMultipleStates_FactoryReturnsOptionalRouteConstraintSubclass_DoesNotShareConstraints()
     {
-        // Arrange
         var constraint = new StatefulRouteConstraint();
         var literal = CreateEndpoint("/x/a");
         var parameter = CreateEndpoint("/x/{p?}", constraints: new { p = constraint });
@@ -3582,10 +3569,8 @@ public class DfaMatcherBuilderTest
         builder.AddEndpoint(literal);
         builder.AddEndpoint(parameter);
 
-        // Act
         var matcher = Assert.IsType<DfaMatcher>(builder.Build());
 
-        // Assert
         var fromLiteralState = Assert.Single(FindCandidates(matcher, "/x/a"), c => ReferenceEquals(c.Endpoint, parameter));
         var fromParameterState = Assert.Single(FindCandidates(matcher, "/x/b"), c => ReferenceEquals(c.Endpoint, parameter));
 
