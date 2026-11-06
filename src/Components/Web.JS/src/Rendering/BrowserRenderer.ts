@@ -7,7 +7,6 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
-import { restoreFocusAfterPrerenderClear } from './FocusOnNavigate';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -57,7 +56,7 @@ export class BrowserRenderer {
     elementsToClearOnRootComponentRender.add(element);
   }
 
-  public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
+  public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): Element | null {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
@@ -90,9 +89,7 @@ export class BrowserRenderer {
       activeElementBefore.focus();
     }
 
-    if (focusedElementBeforePrerenderClear) {
-      restoreFocusAfterPrerenderClear(focusedElementBeforePrerenderClear);
-    }
+    return focusedElementBeforePrerenderClear;
   }
 
   public disposeComponent(componentId: number): void {

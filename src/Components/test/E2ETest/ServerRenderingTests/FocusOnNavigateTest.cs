@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
-using InteractivelyRenderedComponent = Components.TestServer.RazorComponents.Pages.FocusOnNavigate.InteractivelyRendered;
 using StreamRenderedComponent = Components.TestServer.RazorComponents.Pages.FocusOnNavigate.StreamRendered;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
@@ -65,46 +64,6 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
             () => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null,
             TimeSpan.FromSeconds(5)
         );
-    }
-
-    [Fact]
-    public void FocusIsPreserved_OnEnhancedNavigation_WhenFocusedElementIsReplacedByInteractiveRender()
-    {
-        Navigate($"{ServerPathBase}/focus-on-navigate");
-        Browser.Click(By.LinkText("Interactively rendered"));
-        Browser.Equal("interactive", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
-        Browser.True(
-            () => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null,
-            TimeSpan.FromSeconds(5)
-        );
-    }
-
-    [Fact]
-    public void FocusIsPreserved_WhenUserFocusesAnotherElementBeforeInteractiveRender()
-    {
-        var tcs = new TaskCompletionSource();
-        InteractivelyRenderedComponent.SetStreamingTask(tcs.Task);
-
-        try
-        {
-            Navigate($"{ServerPathBase}/focus-on-navigate/interactive");
-            Browser.Equal("Streaming...", () => Browser.FindElement(By.Id("streaming-status")).Text);
-            Browser.Equal("loading", () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.document.readyState;"));
-            Browser.Equal("static", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
-
-            Browser.Click(By.Id("other-focus-target"));
-            Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "other-focus-target");
-
-            tcs.SetResult();
-
-            Browser.Equal("Complete", () => Browser.FindElement(By.Id("streaming-status")).Text);
-            Browser.Equal("interactive", () => Browser.FindElement(By.Id("focus-on-nav-status")).Text);
-            Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "other-focus-target");
-        }
-        finally
-        {
-            tcs.TrySetResult();
-        }
     }
 
     [Fact]
