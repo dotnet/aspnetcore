@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Buffers.Text;
+using System.Diagnostics;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -14,6 +15,12 @@ namespace Microsoft.AspNetCore.Authentication;
 /// <typeparam name="TData"></typeparam>
 public class SecureDataFormat<TData> : ISecureDataFormat<TData>
 {
+    // Size of the stack buffer used for payloads small enough to avoid renting from the pool.
+    private const int StackBufferSize = 256;
+
+    // Upper bound for the built-in encryptors' overhead: magic header and key id (20), IV (16), padding (16) and HMACSHA512 (64).
+    private const int ProtectOverhead = 128;
+
     private readonly IDataSerializer<TData> _serializer;
     private readonly IDataProtector _protector;
 
@@ -47,17 +54,30 @@ public class SecureDataFormat<TData> : ISecureDataFormat<TData>
 
         if (protector is ISpanDataProtector spanProtector)
         {
-            return ProtectWithSpans(spanProtector, userData);
+            try
+            {
+                return SpanProtect(spanProtector, userData);
+            }
+            catch (UnreachableException)
+            {
+                // RefPooledArrayBufferWriter does not support GetMemory, so use the array API for protectors that need it.
+            }
         }
 
         var protectedData = protector.Protect(userData);
         return Base64UrlTextEncoder.Encode(protectedData);
     }
 
-    private static string ProtectWithSpans(ISpanDataProtector protector, byte[] userData)
+    private static string SpanProtect(ISpanDataProtector protector, byte[] userData)
     {
         // The protected payload is the plaintext plus a small fixed overhead (header, IV, padding and MAC).
-        var writer = new PooledByteBufferWriter(userData.Length + 256);
+        var estimatedLength = userData.Length + ProtectOverhead;
+        byte[]? rentedBuffer = null;
+        var initialBuffer = estimatedLength <= StackBufferSize
+            ? stackalloc byte[StackBufferSize]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(estimatedLength));
+
+        var writer = new RefPooledArrayBufferWriter<byte>(initialBuffer);
         try
         {
             protector.Protect(userData, ref writer);
@@ -66,6 +86,7 @@ public class SecureDataFormat<TData> : ISecureDataFormat<TData>
         finally
         {
             writer.Dispose();
+            ReturnBuffer(initialBuffer, rentedBuffer);
         }
     }
 
@@ -92,8 +113,8 @@ public class SecureDataFormat<TData> : ISecureDataFormat<TData>
             }
 
             var userData = protector is ISpanDataProtector spanProtector
-                ? UnprotectWithSpans(spanProtector, protectedText)
-                : UnprotectWithArrays(protector, protectedText);
+                ? SpanUnprotect(spanProtector, protectedText)
+                : Unprotect(protector, protectedText);
             if (userData == null)
             {
                 return default(TData);
@@ -108,7 +129,7 @@ public class SecureDataFormat<TData> : ISecureDataFormat<TData>
         }
     }
 
-    private static byte[]? UnprotectWithArrays(IDataProtector protector, string protectedText)
+    private static byte[]? Unprotect(IDataProtector protector, string protectedText)
     {
         var protectedData = Base64UrlTextEncoder.Decode(protectedText);
         if (protectedData == null)
@@ -119,7 +140,7 @@ public class SecureDataFormat<TData> : ISecureDataFormat<TData>
         return protector.Unprotect(protectedData);
     }
 
-    private static byte[]? UnprotectWithSpans(ISpanDataProtector protector, string protectedText)
+    private static byte[]? SpanUnprotect(ISpanDataProtector protector, string protectedText)
     {
         var protectedBuffer = ArrayPool<byte>.Shared.Rent(Base64Url.GetMaxDecodedLength(protectedText.Length));
         try
@@ -127,19 +148,30 @@ public class SecureDataFormat<TData> : ISecureDataFormat<TData>
             if (Base64Url.DecodeFromChars(protectedText, protectedBuffer, out _, out var protectedLength) != OperationStatus.Done)
             {
                 // Base64UrlTextEncoder.Decode also accepts standard base64, so let it handle anything that isn't strict base64url.
-                return UnprotectWithArrays(protector, protectedText);
+                return Unprotect(protector, protectedText);
             }
 
             // The plaintext is never larger than the protected payload.
-            var writer = new PooledByteBufferWriter(protectedLength);
+            byte[]? rentedBuffer = null;
+            var initialBuffer = protectedLength <= StackBufferSize
+                ? stackalloc byte[StackBufferSize]
+                : (rentedBuffer = ArrayPool<byte>.Shared.Rent(protectedLength));
+
+            var writer = new RefPooledArrayBufferWriter<byte>(initialBuffer);
             try
             {
                 protector.Unprotect(protectedBuffer.AsSpan(0, protectedLength), ref writer);
                 return writer.WrittenSpan.ToArray();
             }
+            catch (UnreachableException)
+            {
+                // RefPooledArrayBufferWriter does not support GetMemory, so use the array API for protectors that need it.
+                return protector.Unprotect(protectedBuffer.AsSpan(0, protectedLength).ToArray());
+            }
             finally
             {
                 writer.Dispose();
+                ReturnBuffer(initialBuffer, rentedBuffer);
             }
         }
         finally
@@ -148,62 +180,16 @@ public class SecureDataFormat<TData> : ISecureDataFormat<TData>
         }
     }
 
-    // A pooled IBufferWriter that supports both GetSpan and GetMemory, so any ISpanDataProtector implementation can write to it.
-    // The buffer only lives for the duration of a single Protect/Unprotect call and is cleared when returned to the pool.
-    private struct PooledByteBufferWriter : IBufferWriter<byte>
+    // The initial buffer can hold plaintext, so it is always cleared before it goes out of scope or back to the pool.
+    private static void ReturnBuffer(Span<byte> initialBuffer, byte[]? rentedBuffer)
     {
-        private byte[] _buffer;
-        private int _written;
-
-        public PooledByteBufferWriter(int initialCapacity)
+        if (rentedBuffer is null)
         {
-            _buffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
+            initialBuffer.Clear();
         }
-
-        public readonly ReadOnlySpan<byte> WrittenSpan => _buffer.AsSpan(0, _written);
-
-        public void Advance(int count)
+        else
         {
-            ArgumentOutOfRangeException.ThrowIfNegative(count);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(count, _buffer.Length - _written);
-            _written += count;
-        }
-
-        public Memory<byte> GetMemory(int sizeHint = 0)
-        {
-            EnsureCapacity(sizeHint);
-            return _buffer.AsMemory(_written);
-        }
-
-        public Span<byte> GetSpan(int sizeHint = 0)
-        {
-            EnsureCapacity(sizeHint);
-            return _buffer.AsSpan(_written);
-        }
-
-        public void Dispose()
-        {
-            var buffer = _buffer;
-            _buffer = [];
-            _written = 0;
-            ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
-        }
-
-        private void EnsureCapacity(int sizeHint)
-        {
-            ArgumentOutOfRangeException.ThrowIfNegative(sizeHint);
-            if (sizeHint == 0)
-            {
-                sizeHint = 1;
-            }
-
-            if (sizeHint > _buffer.Length - _written)
-            {
-                var newBuffer = ArrayPool<byte>.Shared.Rent(Math.Max(checked(_written + sizeHint), checked(_buffer.Length * 2)));
-                _buffer.AsSpan(0, _written).CopyTo(newBuffer);
-                ArrayPool<byte>.Shared.Return(_buffer, clearArray: true);
-                _buffer = newBuffer;
-            }
+            ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
         }
     }
 }
