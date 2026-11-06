@@ -1800,11 +1800,9 @@ public class SignInManagerTest
         // Metrics (meter and instruments) are created once per factory and shared by both managers.
         Assert.Equal(1, countingMeterFactory.CreateCount - createCountBeforeSignInManagers);
 
-        // Act
         await helper1.SignOutAsync();
         await helper2.SignOutAsync();
 
-        // Assert
         Assert.Equal(2, signOutUserPrincipal.GetMeasurementSnapshot().Count);
         Assert.Single(testMeterFactory.Meters);
     }

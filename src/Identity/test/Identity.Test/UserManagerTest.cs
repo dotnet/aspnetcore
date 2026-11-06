@@ -167,11 +167,9 @@ public class UserManagerTest
         // Metrics (meter and instruments) are created once per factory and shared by both managers.
         Assert.Equal(1, countingMeterFactory.CreateCount);
 
-        // Act
         await userManager1.DeleteAsync(user);
         await userManager2.DeleteAsync(user);
 
-        // Assert
         Assert.Equal(2, deleteUser.GetMeasurementSnapshot().Count);
         Assert.Single(testMeterFactory.Meters);
     }
@@ -191,12 +189,10 @@ public class UserManagerTest
         var userManager1 = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory1);
         var userManager2 = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory2);
 
-        // Act
         await userManager1.DeleteAsync(user);
         await userManager2.DeleteAsync(user);
         await userManager2.DeleteAsync(user);
 
-        // Assert
         Assert.Single(deleteUser1.GetMeasurementSnapshot());
         Assert.Equal(2, deleteUser2.GetMeasurementSnapshot().Count);
     }
