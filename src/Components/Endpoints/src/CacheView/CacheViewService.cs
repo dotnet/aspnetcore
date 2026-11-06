@@ -310,8 +310,9 @@ internal sealed partial class CacheViewService : IDisposable
                 state.IsCacheHit = true;
                 var cachedPayload = await inflight;
                 // Successfully restored content replaces the original ChildContent.
-                // Checks inside that content do not run again. Include values that affect
-                // the output in the cache key, or run the checks outside the cached subtree.
+                // Checks in the original fragment and components restored as cached markup do not run again.
+                // Live components rerender and rerun their checks, but receive cached parameter values.
+                // Include values that affect the output in the cache key, or run the checks outside the cached subtree.
                 state.Content = DeserializeCachedContent(cachedPayload) ?? cacheView.ChildContent;
                 resolution.TrySetResult(cachedPayload);
             }
