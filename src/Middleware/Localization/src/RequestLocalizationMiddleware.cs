@@ -152,7 +152,7 @@ public class RequestLocalizationMiddleware
         foreach (var cultureName in cultureNames)
         {
             var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures);
-            if (cultureInfo != null)
+            if (cultureInfo is not null)
             {
                 return cultureInfo;
             }
@@ -169,7 +169,7 @@ public class RequestLocalizationMiddleware
         foreach (var cultureName in cultureNames)
         {
             var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures);
-            if (cultureInfo != null)
+            if (cultureInfo is not null)
             {
                 return cultureInfo;
             }
