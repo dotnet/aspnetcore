@@ -181,6 +181,8 @@ public sealed class CookieStore : IInternalAsyncDisposal
     /// Adds a listener that is called each time the specified event fires on the cookie store.
     /// Other listeners, including those added by JavaScript code of the page, are not affected.
     /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Each call creates an independent registration, even for the same listener;
+    /// disposing the returned object removes only that registration.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event object.</typeparam>
     /// <param name="type">The event to listen for, such as <see cref="ChangeEvent"/>.</param>
@@ -195,6 +197,8 @@ public sealed class CookieStore : IInternalAsyncDisposal
     /// Adds a listener that is called each time the specified event fires on the cookie store.
     /// Other listeners, including those added by JavaScript code of the page, are not affected.
     /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Each call creates an independent registration, even for the same listener;
+    /// disposing the returned object removes only that registration.
     /// Canceling <paramref name="cancellationToken"/> removes the listener, as disposing the returned object does.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event object.</typeparam>

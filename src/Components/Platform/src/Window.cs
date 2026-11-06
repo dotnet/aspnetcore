@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Components.Platform;
 public sealed class Window : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
-    private readonly JSCallbackFactory _callbackFactory;
-    private readonly ILogger _eventListenerLogger;
-    private readonly EventListenerCollection _listeners;
+    private readonly ILoggerFactory _loggerFactory;
+    private JSCallbackFactory? _callbackFactory;
+    private EventListenerCollection? _listeners;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
     private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
@@ -23,15 +23,15 @@ public sealed class Window : IInternalAsyncDisposal
     internal Window(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
     {
         _jsRuntime = jsRuntime;
-        _callbackFactory = new JSCallbackFactory(jsRuntime);
-        _eventListenerLogger = loggerFactory.CreateLogger<EventListenerCollection>();
-        _listeners = CreateEventListenerCollection();
+        _loggerFactory = loggerFactory;
     }
 
     /// <summary>
     /// Adds a listener that is called each time the specified event fires on the window.
     /// Other listeners, including those added by JavaScript code of the page, are not affected.
     /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Each call creates an independent registration, even for the same listener;
+    /// disposing the returned object removes only that registration.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event object.</typeparam>
     /// <param name="type">The event to listen for, such as <c>Window.StorageEvent</c>.</param>
@@ -45,6 +45,8 @@ public sealed class Window : IInternalAsyncDisposal
     /// Adds a listener that is called each time the specified event fires on the window.
     /// Other listeners, including those added by JavaScript code of the page, are not affected.
     /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Each call creates an independent registration, even for the same listener;
+    /// disposing the returned object removes only that registration.
     /// Canceling <paramref name="cancellationToken"/> removes the listener, as disposing the returned object does.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event object.</typeparam>
@@ -63,6 +65,10 @@ public sealed class Window : IInternalAsyncDisposal
         // Adding and removing listeners changes unlocked state, so these awaits keep the renderer's synchronization context.
         var window = await GetReferenceAsync();
 
+        // The collection and the module loader are created here, so an app that adds no listener pays nothing.
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        _listeners ??= CreateEventListenerCollection();
+
         return await type.AddListenerAsync(_listeners, window, this, listener, cancellationToken);
     }
 
@@ -70,7 +76,7 @@ public sealed class Window : IInternalAsyncDisposal
     /// Creates the collection that a projection uses to add event listeners to its JavaScript object.
     /// </summary>
     internal EventListenerCollection CreateEventListenerCollection()
-        => new(_callbackFactory, _eventListenerLogger);
+        => new(_callbackFactory ??= new JSCallbackFactory(_jsRuntime), _loggerFactory.CreateLogger<EventListenerCollection>());
 
     private Task<IJSObjectReference> GetReferenceAsync()
     {
@@ -141,7 +147,10 @@ public sealed class Window : IInternalAsyncDisposal
         _disposed = true;
 
         // Listeners need the window reference to remove themselves, so they go first.
-        await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync();
+        if (_listeners is not null)
+        {
+            await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync();
+        }
 
         // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
         if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
@@ -161,6 +170,9 @@ public sealed class Window : IInternalAsyncDisposal
         }
 
         // Features remove their listeners first, so the module is no longer needed.
-        await ((IInternalAsyncDisposal)_callbackFactory).InternalDisposeAsync();
+        if (_callbackFactory is not null)
+        {
+            await ((IInternalAsyncDisposal)_callbackFactory).InternalDisposeAsync();
+        }
     }
 }
