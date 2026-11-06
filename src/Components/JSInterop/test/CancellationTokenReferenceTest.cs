@@ -79,6 +79,76 @@ public class CancellationTokenReferenceTest
     }
 
     [Fact]
+    public async Task DisposalAfterPendingCancellationResumesOnOwningSynchronizationContext()
+    {
+        var context = new Mock<SynchronizationContext>();
+        var posted = new TaskCompletionSource<(SendOrPostCallback Callback, object? State)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        context.Setup(x => x.Post(It.IsAny<SendOrPostCallback>(), It.IsAny<object?>()))
+            .Callback((SendOrPostCallback callback, object? state) => posted.SetResult((callback, state)));
+        var signal = CreateSignal();
+        SynchronizationContext? disposalContext = null;
+        signal.Setup(x => x.InvokeAsync<IJSVoidResult>("dispose", It.IsAny<object?[]?>()))
+            .Callback(() => disposalContext = SynchronizationContext.Current)
+            .ReturnsAsync(Mock.Of<IJSVoidResult>());
+        var reference = JSCancellationTokenReference.Create(signal.Object, false);
+        var owner = reference.Value;
+        var callbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var releaseCallback = new ManualResetEventSlim();
+        using var registration = owner.Token.Register(() =>
+        {
+            callbackStarted.SetResult();
+            Assert.True(releaseCallback.Wait(TimeSpan.FromSeconds(10)));
+        });
+
+        Task cancellation;
+        Task disposal;
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(context.Object);
+        try
+        {
+            cancellation = owner.CancelAsync();
+            Assert.Same(cancellation, owner.CancelAsync());
+            disposal = owner.DisposeAsync().AsTask();
+            Assert.Same(disposal, owner.DisposeAsync().AsTask());
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        try
+        {
+            await callbackStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(disposal.IsCompleted);
+            signal.Verify(x => x.InvokeAsync<IJSVoidResult>("dispose", It.IsAny<object?[]?>()), Times.Never);
+        }
+        finally
+        {
+            releaseCallback.Set();
+        }
+
+        await cancellation.WaitAsync(TimeSpan.FromSeconds(10));
+        await Task.WhenAny(posted.Task, disposal).WaitAsync(TimeSpan.FromSeconds(10));
+        if (posted.Task.IsCompletedSuccessfully)
+        {
+            var work = await posted.Task;
+            SynchronizationContext.SetSynchronizationContext(context.Object);
+            try
+            {
+                work.Callback(work.State);
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(previous);
+            }
+        }
+
+        await disposal.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Same(context.Object, disposalContext);
+        signal.Verify(x => x.DisposeAsync(), Times.Once);
+    }
+
+    [Fact]
     public async Task IndependentReferencesDoNotShareCancellation()
     {
         var first = JSCancellationTokenReference.Create(CreateSignal().Object, false);
