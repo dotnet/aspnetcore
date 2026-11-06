@@ -117,7 +117,7 @@ public static class QueryHelpers
             builder.Append(uriToBeAppended);
             foreach (var parameter in queryString)
             {
-                if (parameter.Value == null)
+                if (parameter.Value is null)
                 {
                     continue;
                 }

@@ -138,7 +138,7 @@ public class QueryHelperTests
         var sb = new System.Text.StringBuilder(baseUri);
         foreach (var parameter in queryString)
         {
-            if (parameter.Value == null)
+            if (parameter.Value is null)
             {
                 continue;
             }
