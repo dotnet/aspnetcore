@@ -184,7 +184,7 @@ internal sealed class DynamicHPackEncoder
         if ((uint)staticTableIndex < (uint)cache.Length)
         {
             NameHash? cached = cache[staticTableIndex];
-            if (cached != null && ReferenceEquals(cached.Name, name))
+            if (cached is not null && ReferenceEquals(cached.Name, name))
             {
                 return cached.Hash;
             }
