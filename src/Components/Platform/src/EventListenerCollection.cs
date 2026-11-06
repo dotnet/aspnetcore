@@ -66,6 +66,9 @@ internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
             cancellationToken.ThrowIfCancellationRequested();
         }
 
+        // Scope disposal can run while addEventListener is on its way, and it has already removed this listener.
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
         eventListener.RemoveWhenCanceled();
         return eventListener;
     }
