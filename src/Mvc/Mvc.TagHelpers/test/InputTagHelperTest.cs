@@ -2387,7 +2387,6 @@ public class InputTagHelperTest
         string expectedInputType,
         string expectedHint)
     {
-        // Arrange
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForProperty<InputTypeModel>(propertyName).DisplayDetails(dd =>
         {
@@ -2398,10 +2397,8 @@ public class InputTagHelperTest
         var modelExplorer = new ModelExplorer(metadataProvider, metadata, model: null);
         var tagHelper = new TestableInputTagHelper(new TestableHtmlGenerator(metadataProvider));
 
-        // Act
         var inputType = tagHelper.GetInputTypeForTest(modelExplorer, out var hint);
 
-        // Assert
         Assert.Equal(expectedInputType, inputType);
         Assert.Equal(expectedHint, hint);
     }

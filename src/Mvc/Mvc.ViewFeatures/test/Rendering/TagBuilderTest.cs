@@ -43,7 +43,6 @@ public class TagBuilderTest
     [InlineData(true)]
     public void MergeAttributes_Dictionary_MatchesOtherDictionaryTypes(bool replaceExisting)
     {
-        // Arrange
         var entries = new KeyValuePair<string, object>[]
         {
             new("class", "new-class"),
@@ -67,11 +66,9 @@ public class TagBuilderTest
         expectedTagBuilder.Attributes["class"] = "existing-class";
         expectedTagBuilder.Attributes["id"] = "existing-id";
 
-        // Act
         tagBuilder.MergeAttributes(dictionary, replaceExisting);
         expectedTagBuilder.MergeAttributes(sortedList, replaceExisting);
 
-        // Assert
         Assert.Equal(expectedTagBuilder.Attributes, tagBuilder.Attributes);
         Assert.Equal(replaceExisting ? "new-class" : "existing-class", tagBuilder.Attributes["class"]);
         Assert.Equal(replaceExisting ? "new-id" : "existing-id", tagBuilder.Attributes["id"]);
