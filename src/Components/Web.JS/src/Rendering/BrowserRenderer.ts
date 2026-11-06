@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
+import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, RenderTreeDiff, EditType, FrameType, ArrayValues, countDescendantFrames } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, getLogicalRootDescriptor, adoptLogicalChild } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
+import { applyAnyDeferredValue, tryApplySpecialProperty, rememberDeferredValue } from './DomSpecialPropertyUtil';
+import { PrerenderedDom, PrerenderedFramesForRendering } from './PrerenderedDom';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -16,6 +17,8 @@ const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 const interactiveRootComponentPropname = Symbol();
 const preserveContentOnDisposalPropname = Symbol();
+const previouslyAttachedRoots = new WeakSet<LogicalElement>();
+const prerenderedRoots = new WeakSet<LogicalElement>();
 
 export class BrowserRenderer {
   public eventDelegator: EventDelegator;
@@ -23,6 +26,12 @@ export class BrowserRenderer {
   private rootComponentIds = new Set<number>();
 
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
+
+  private pendingPrerenderedComponents = new Set<number>();
+
+  private prerenderedRootPlans = new Map<number, PrerenderedDom>();
+
+  private framesForRendering: PrerenderedFramesForRendering = new Map();
 
   public constructor(browserRendererId: number) {
     this.eventDelegator = new EventDelegator(browserRendererId);
@@ -53,7 +62,44 @@ export class BrowserRenderer {
     this.attachComponentToElement(componentId, element);
     this.rootComponentIds.add(componentId);
 
+    if (getLogicalRootDescriptor(element)?.end && !previouslyAttachedRoots.has(element)) {
+      prerenderedRoots.add(element);
+      this.pendingPrerenderedComponents.add(componentId);
+    }
+    previouslyAttachedRoots.add(element);
     elementsToClearOnRootComponentRender.add(element);
+  }
+
+  public beginBatch(batch: RenderBatch): void {
+    if (!this.pendingPrerenderedComponents.size) {
+      return;
+    }
+    const range = batch.updatedComponents();
+    const values = batch.arrayRangeReader.values(range);
+    const diffs = new Map<number, RenderTreeDiff | undefined>();
+    for (let i = 0; i < batch.arrayRangeReader.count(range); i++) {
+      const diff = batch.updatedComponentsEntry(values, i);
+      const componentId = batch.diffReader.componentId(diff);
+      diffs.set(componentId, diffs.has(componentId) ? undefined : diff);
+    }
+    for (const componentId of this.pendingPrerenderedComponents) {
+      if (!diffs.has(componentId)) {
+        continue;
+      }
+      this.pendingPrerenderedComponents.delete(componentId);
+      const element = this.childComponentLocations[componentId];
+      if (prerenderedRoots.delete(element)) {
+        const rootPlan = new PrerenderedDom(batch, diffs, parseMarkup);
+        if (rootPlan.tryPlanRoot(componentId, element)) {
+          this.prerenderedRootPlans.set(componentId, rootPlan);
+        }
+      }
+    }
+  }
+
+  public endBatch(): void {
+    this.prerenderedRootPlans.clear();
+    this.framesForRendering.clear();
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
@@ -64,8 +110,13 @@ export class BrowserRenderer {
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
     if (elementsToClearOnRootComponentRender.delete(element)) {
-      this.detachEventHandlersFromElement(element);
-      emptyLogicalElement(element);
+      const rootPlan = this.prerenderedRootPlans.get(componentId);
+      if (rootPlan) {
+        rootPlan.applyRootPlan(element, this.framesForRendering);
+      } else {
+        this.detachEventHandlersFromElement(element);
+        emptyLogicalElement(element);
+      }
 
       if (element instanceof Comment) {
         // We sanitize start comments by removing all the information from it now that we don't need it anymore
@@ -86,6 +137,7 @@ export class BrowserRenderer {
   }
 
   public disposeComponent(componentId: number): void {
+    this.pendingPrerenderedComponents.delete(componentId);
     if (this.rootComponentIds.delete(componentId)) {
       // When disposing a root component, the container element won't be removed from the DOM (because there's
       // no parent to remove that child), so we empty it to restore it to the state it was in before the root
@@ -235,12 +287,12 @@ export class BrowserRenderer {
         this.insertElement(batch, componentId, parent, childIndex, frames, frame, frameIndex);
         return 1;
       case FrameType.text:
-        this.insertText(batch, parent, childIndex, frame);
+        this.insertText(batch, parent, childIndex, frame, frameIndex);
         return 1;
       case FrameType.attribute:
         throw new Error('Attribute frames should only be present as leading children of element frames.');
       case FrameType.component:
-        this.insertComponent(batch, parent, childIndex, frame);
+        this.insertComponent(batch, parent, childIndex, frame, frameIndex);
         return 1;
       case FrameType.region:
         return this.insertFrameRange(batch, componentId, parent, childIndex, frames, frameIndex + 1, frameIndex + frameReader.subtreeLength(frame));
@@ -252,7 +304,7 @@ export class BrowserRenderer {
           throw new Error('Reference capture frames can only be children of element frames.');
         }
       case FrameType.markup:
-        this.insertMarkup(batch, parent, childIndex, frame);
+        this.insertMarkup(batch, parent, childIndex, frame, frameIndex);
         return 1;
       case FrameType.namedEvent: // Not used on the JS side
         return 0;
@@ -267,44 +319,53 @@ export class BrowserRenderer {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
 
-    let newDomElementRaw: Element;
-    if (tagName === 'svg' || isSvgElement(parent)) {
-      newDomElementRaw = document.createElementNS('http://www.w3.org/2000/svg', tagName);
+    const plannedNode = this.framesForRendering.get(frameIndex)?.nodes[0];
+    const isPreservedElement = plannedNode instanceof Element;
+    let domElement: Element;
+    if (isPreservedElement) {
+      domElement = plannedNode;
+      adoptLogicalChild(domElement, parent, childIndex);
+    } else if (tagName === 'svg' || isSvgElement(parent)) {
+      domElement = document.createElementNS('http://www.w3.org/2000/svg', tagName);
     } else if (tagName === 'math' || isMathMLElement(parent)) {
-      newDomElementRaw = document.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
+      domElement = document.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
     } else {
-      newDomElementRaw = document.createElement(tagName);
+      domElement = document.createElement(tagName);
     }
-    const newElement = toLogicalElement(newDomElementRaw);
+    const logicalElement = toLogicalElement(domElement);
 
-    let inserted = false;
-
-    // Apply attributes
     const descendantsEndIndexExcl = frameIndex + frameReader.subtreeLength(frame);
-    for (let descendantIndex = frameIndex + 1; descendantIndex < descendantsEndIndexExcl; descendantIndex++) {
+    let descendantIndex = frameIndex + 1;
+    for (; descendantIndex < descendantsEndIndexExcl; descendantIndex++) {
       const descendantFrame = batch.referenceFramesEntry(frames, descendantIndex);
-      if (frameReader.frameType(descendantFrame) === FrameType.attribute) {
-        this.applyAttribute(batch, componentId, newDomElementRaw, descendantFrame);
-      } else {
-        insertLogicalChild(newDomElementRaw, parent, childIndex);
-        inserted = true;
-        // As soon as we see a non-attribute child, all the subsequent child frames are
-        // not attributes, so bail out and insert the remnants recursively
-        this.insertFrameRange(batch, componentId, newElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
+      if (frameReader.frameType(descendantFrame) !== FrameType.attribute) {
         break;
       }
+      this.applyAttribute(batch, componentId, domElement, descendantFrame, isPreservedElement);
     }
 
-    // this element did not have any children, so it's not inserted yet.
-    if (!inserted) {
-      insertLogicalChild(newDomElementRaw, parent, childIndex);
+    if (!isPreservedElement) {
+      if (plannedNode) {
+        plannedNode.parentNode!.replaceChild(domElement, plannedNode);
+        adoptLogicalChild(domElement, parent, childIndex);
+      } else {
+        insertLogicalChild(domElement, parent, childIndex);
+      }
     }
-
-    applyAnyDeferredValue(newDomElementRaw);
+    if (descendantIndex < descendantsEndIndexExcl) {
+      this.insertFrameRange(batch, componentId, logicalElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
+    }
+    if (!isPreservedElement) {
+      applyAnyDeferredValue(domElement);
+    }
   }
 
-  private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
-    const containerElement = createAndInsertLogicalContainer(parent, childIndex);
+  private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame, frameIndex: number) {
+    const plannedContainer = this.framesForRendering.get(frameIndex)?.nodes[0];
+    const containerElement = plannedContainer ? toLogicalElement(plannedContainer) : createAndInsertLogicalContainer(parent, childIndex);
+    if (plannedContainer) {
+      adoptLogicalChild(plannedContainer, parent, childIndex);
+    }
 
     // All we have to do is associate the child component ID with its location. We don't actually
     // do any rendering here, because the diff for the child will appear later in the render batch.
@@ -312,13 +373,30 @@ export class BrowserRenderer {
     this.attachComponentToElement(childComponentId, containerElement);
   }
 
-  private insertText(batch: RenderBatch, parent: LogicalElement, childIndex: number, textFrame: RenderTreeFrame) {
+  private insertText(batch: RenderBatch, parent: LogicalElement, childIndex: number, textFrame: RenderTreeFrame, frameIndex: number) {
+    const plannedTextNode = this.framesForRendering.get(frameIndex)?.nodes[0];
+    if (plannedTextNode) {
+      adoptLogicalChild(plannedTextNode, parent, childIndex);
+      return;
+    }
     const textContent = batch.frameReader.textContent(textFrame)!;
     const newTextNode = document.createTextNode(textContent);
     insertLogicalChild(newTextNode, parent, childIndex);
   }
 
-  private insertMarkup(batch: RenderBatch, parent: LogicalElement, childIndex: number, markupFrame: RenderTreeFrame) {
+  private insertMarkup(batch: RenderBatch, parent: LogicalElement, childIndex: number, markupFrame: RenderTreeFrame, frameIndex?: number) {
+    const markupPlan = frameIndex === undefined ? undefined : this.framesForRendering.get(frameIndex);
+    const fragmentNodes = markupPlan?.nodes;
+    if (fragmentNodes) {
+      adoptLogicalChild(fragmentNodes[0], parent, childIndex);
+      const markupContainer = toLogicalElement(fragmentNodes[0]);
+      markupPlan?.replaceElementPlaceholders?.();
+      markupPlan?.rebuildMarkupLogicalChildren?.();
+      for (let index = 1; index < fragmentNodes.length; index++) {
+        adoptLogicalChild(fragmentNodes[index], markupContainer, index - 1);
+      }
+      return;
+    }
     const markupContainer = createAndInsertLogicalContainer(parent, childIndex);
 
     const markupContent = batch.frameReader.markupContent(markupFrame);
@@ -329,7 +407,7 @@ export class BrowserRenderer {
     }
   }
 
-  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame) {
+  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame, preserveExistingAttributes = false) {
     const frameReader = batch.frameReader;
     const attributeName = frameReader.attributeName(attributeFrame)!;
     const eventHandlerId = frameReader.attributeEventHandlerId(attributeFrame);
@@ -340,8 +418,17 @@ export class BrowserRenderer {
       return;
     }
 
-    const value = frameReader.attributeValue(attributeFrame);
-    this.setOrRemoveAttributeOrProperty(toDomElement, attributeName, value);
+    if (preserveExistingAttributes && !attributeName.startsWith(internalAttributeNamePrefix)) {
+      if (attributeName === 'value') {
+        rememberDeferredValue(toDomElement, frameReader.attributeValue(attributeFrame));
+      }
+    } else {
+      const value = frameReader.attributeValue(attributeFrame);
+      this.setOrRemoveAttributeOrProperty(toDomElement, attributeName, value);
+      if (preserveExistingAttributes) {
+        toDomElement.removeAttribute(attributeName);
+      }
+    }
   }
 
   private insertFrameRange(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, startIndex: number, endIndexExcl: number): number {
@@ -404,6 +491,7 @@ export function setShouldPreserveContentOnInteractiveComponentDisposal(element: 
 }
 
 export function setClearContentOnRootComponentRerender(element: LogicalElement): void {
+  prerenderedRoots.delete(element);
   elementsToClearOnRootComponentRender.add(element);
 }
 
@@ -448,21 +536,6 @@ function parseMarkup(markup: string, isSvg: boolean, isMathML: boolean) {
     });
 
     return sharedTemplateElemForParsing.content;
-  }
-}
-
-function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): number {
-  const frameReader = batch.frameReader;
-  switch (frameReader.frameType(frame)) {
-    // The following frame types have a subtree length. Other frames may use that memory slot
-    // to mean something else, so we must not read it. We should consider having nominal subtypes
-    // of RenderTreeFramePointer that prevent access to non-applicable fields.
-    case FrameType.component:
-    case FrameType.element:
-    case FrameType.region:
-      return frameReader.subtreeLength(frame) - 1;
-    default:
-      return 0;
   }
 }
 

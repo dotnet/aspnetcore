@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using TestServer;
 using Xunit.Abstractions;
 
@@ -26,6 +27,602 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
+
+    [Theory]
+    [InlineData("server", "")]
+    [InlineData("wasm", "")]
+    [InlineData("auto", "")]
+    [InlineData("server", "text")]
+    [InlineData("wasm", "text")]
+    [InlineData("auto", "text")]
+    [InlineData("server", "attribute")]
+    [InlineData("wasm", "attribute")]
+    [InlineData("server", "element")]
+    [InlineData("wasm", "element")]
+    [InlineData("server", "extra")]
+    [InlineData("wasm", "extra")]
+    [InlineData("server", "missing")]
+    [InlineData("wasm", "missing")]
+    [InlineData("server", "markup")]
+    [InlineData("wasm", "markup")]
+    [InlineData("server", "namespace")]
+    [InlineData("wasm", "namespace")]
+    [InlineData("server", "order")]
+    [InlineData("wasm", "order")]
+    [InlineData("server", "attribute-order")]
+    [InlineData("wasm", "attribute-order")]
+    [InlineData("server", "root-attribute")]
+    [InlineData("wasm", "root-attribute")]
+    public void PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches(string platform, string mismatch)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&mismatch={mismatch}");
+        var root = Browser.Exists(By.Id("dom-first-root"));
+        var secondRoot = Browser.Exists(By.Id("dom-second-root"));
+        var input = Browser.Exists(By.Id("dom-first-input"));
+        input.Clear();
+        input.SendKeys("Before activation");
+        var textarea = Browser.Exists(By.Id("dom-first-textarea"));
+        textarea.Clear();
+        textarea.SendKeys("Edited textarea");
+        Browser.Exists(By.Id("dom-first-checkbox")).Click();
+        new SelectElement(Browser.Exists(By.Id("dom-first-select"))).SelectByValue("second");
+        var secondInput = Browser.Exists(By.Id("dom-second-input"));
+        secondInput.Clear();
+        secondInput.SendKeys("Other root");
+        var inputBound = Browser.Exists(By.Id("dom-first-input-bound"));
+        inputBound.Clear();
+        inputBound.SendKeys("Before input");
+        input.Click();
+
+        var js = (IJavaScriptExecutor)Browser;
+        if (mismatch == "namespace")
+        {
+            js.ExecuteScript("""
+                const original = document.querySelector('#dom-first-root svg text');
+                const replacement = document.createElementNS('http://www.w3.org/1999/xhtml', 'text');
+                replacement.textContent = original.textContent;
+                original.replaceWith(replacement);
+                """);
+        }
+        else if (mismatch == "attribute-order")
+        {
+            js.ExecuteScript("""
+                const root = arguments[0];
+                const id = root.id;
+                root.removeAttribute('id');
+                root.setAttribute('id', id);
+                """, root);
+        }
+        // WebDriver cannot set a selection range or observe synchronous removal records.
+        js.ExecuteScript("""
+            arguments[0].setSelectionRange(2, 7);
+            document.getElementById('dom-first-scroll').scrollTop = 90;
+            if (!customElements.get('prerendered-dom-probe')) {
+                customElements.define('prerendered-dom-probe', class extends HTMLElement {
+                    connectedCallback() { this.connectionCount = (this.connectionCount || 0) + 1; }
+                });
+            }
+            window.prerenderedDomAnimation = document.getElementById('dom-first-animation').getAnimations()[0];
+            window.prerenderedDomStylesheet = document.getElementById('dom-first-stylesheet').sheet;
+            window.prerenderedDomRemovals = 0;
+            window.prerenderedDomObserver = new MutationObserver(records => {
+                for (const record of records) {
+                    for (const removed of record.removedNodes) {
+                        if (removed === arguments[1] || removed.contains(arguments[1])) {
+                            window.prerenderedDomRemovals++;
+                        }
+                    }
+                }
+            });
+            window.prerenderedDomObserver.observe(document, { childList: true, subtree: true });
+            """, input, root);
+
+        // Clicking the start button would itself move focus out of the input.
+        js.ExecuteScript("callBlazorStart()");
+        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+        Browser.True(() => Browser.FindElement(By.Id("dom-second-ready")).Text is "Server" or "WebAssembly");
+
+        var shouldPreserveRoot = mismatch is "" or "attribute-order";
+        var currentRoot = Browser.FindElement(By.Id("dom-first-root"));
+        Assert.Equal(shouldPreserveRoot, root.Equals(currentRoot));
+        Assert.Equal(shouldPreserveRoot, input.Equals(Browser.FindElement(By.Id("dom-first-input"))));
+        Assert.Equal(shouldPreserveRoot ? "Before activation" : "Initial", Browser.FindElement(By.Id("dom-first-input")).GetDomProperty("value"));
+        Assert.Equal(shouldPreserveRoot ? "Edited textarea" : "Initial", Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
+        Assert.Equal(shouldPreserveRoot, Browser.FindElement(By.Id("dom-first-checkbox")).Selected);
+        Assert.Equal(shouldPreserveRoot ? "second" : "first", new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Assert.Equal(shouldPreserveRoot ? 90L : 0L, js.ExecuteScript("return document.getElementById('dom-first-scroll').scrollTop"));
+        Assert.Equal(shouldPreserveRoot ? 0L : 1L, js.ExecuteScript("return window.prerenderedDomRemovals"));
+        Assert.Equal(shouldPreserveRoot ? 2L : 3L, js.ExecuteScript("return window.prerenderedDomScriptRuns"));
+        Assert.Equal("Initial", Browser.FindElement(By.Id("dom-first-model")).Text);
+        Assert.Equal("Initial", Browser.FindElement(By.Id("dom-first-input-model")).Text);
+        Assert.Equal(shouldPreserveRoot ? "Before input" : "Initial", Browser.FindElement(By.Id("dom-first-input-bound")).GetDomProperty("value"));
+        Assert.Equal(secondRoot, Browser.FindElement(By.Id("dom-second-root")));
+        Assert.Equal("Other root", secondInput.GetDomProperty("value"));
+
+        if (shouldPreserveRoot)
+        {
+            Assert.Equal(input, Browser.SwitchTo().ActiveElement());
+            Assert.Equal("2", input.GetDomProperty("selectionStart"));
+            Assert.Equal("7", input.GetDomProperty("selectionEnd"));
+            Assert.Equal("1", Browser.FindElement(By.Id("dom-first-custom")).GetDomProperty("connectionCount"));
+            Assert.Equal(true, js.ExecuteScript("return window.prerenderedDomAnimation === document.getElementById('dom-first-animation').getAnimations()[0]"));
+            Assert.Equal(true, js.ExecuteScript("return !!window.prerenderedDomStylesheet && window.prerenderedDomStylesheet === document.getElementById('dom-first-stylesheet').sheet"));
+        }
+        js.ExecuteScript("window.prerenderedDomObserver.disconnect()");
+
+        AssertNormalRenderingAndBindingAfterActivation(expectedSelectedValue: shouldPreserveRoot ? "second" : "first");
+    }
+
+    private void AssertNormalRenderingAndBindingAfterActivation(string expectedSelectedValue)
+    {
+        Browser.Click(By.Id("dom-first-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("dom-first-count")).Text);
+        Browser.Equal("Hello 1 world", () => Browser.FindElement(By.Id("dom-first-adjacent")).Text);
+        Browser.Equal("Nested 1", () => Browser.FindElement(By.Id("dom-first-child")).Text);
+        Browser.Click(By.Id("dom-first-add-option"));
+        Assert.Equal(expectedSelectedValue, new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Browser.Click(By.Id("dom-first-select-third"));
+        Browser.Equal("third", () => new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Browser.Click(By.Id("dom-first-stop-propagation"));
+        Browser.Equal("1/0", () => Browser.FindElement(By.Id("dom-first-events")).Text);
+        Browser.Click(By.Id("dom-first-focus"));
+        Browser.Equal(Browser.FindElement(By.Id("dom-first-input")), () => Browser.SwitchTo().ActiveElement());
+        var currentInput = Browser.FindElement(By.Id("dom-first-input"));
+        currentInput.Clear();
+        currentInput.SendKeys("After activation" + Keys.Tab);
+        Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-model")).Text);
+        Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
+        var inputBound = Browser.FindElement(By.Id("dom-first-input-bound"));
+        inputBound.Clear();
+        inputBound.SendKeys("After input");
+        Browser.Equal("After input", () => Browser.FindElement(By.Id("dom-first-input-model")).Text);
+        Browser.Click(By.Id("dom-first-toggle"));
+        Browser.DoesNotExist(By.Id("dom-first-child"));
+        Browser.Click(By.Id("dom-first-toggle"));
+        Browser.Equal("Nested 1", () => Browser.FindElement(By.Id("dom-first-child")).Text);
+    }
+
+    [Theory]
+    [InlineData("server", "select-text-options", false, "45 min")]
+    [InlineData("wasm", "select-text-options", false, "45 min")]
+    [InlineData("server", "select-text-options-matching", true, "30 min")]
+    [InlineData("wasm", "select-text-options-matching", true, "30 min")]
+    [InlineData("server", "select-dynamic-options", true, "30 min")]
+    [InlineData("wasm", "select-dynamic-options", true, "30 min")]
+    [InlineData("server", "select-selected-option", true, "30 min")]
+    [InlineData("wasm", "select-selected-option", true, "30 min")]
+    [InlineData("server", "select-listbox", false, "45 min")]
+    [InlineData("wasm", "select-listbox", false, "45 min")]
+    [InlineData("server", "select-empty-value", false, "")]
+    [InlineData("wasm", "select-empty-value", false, "")]
+    [InlineData("server", "select-unmatched-value", false, "")]
+    [InlineData("wasm", "select-unmatched-value", false, "")]
+    [InlineData("server", "select-no-value", true, "30 min")]
+    [InlineData("wasm", "select-no-value", true, "30 min")]
+    [InlineData("server", "select-disabled", true, "5 min")]
+    [InlineData("wasm", "select-disabled", true, "5 min")]
+    [InlineData("server", "select-disabled-optgroup", true, "30 min")]
+    [InlineData("wasm", "select-disabled-optgroup", true, "30 min")]
+    [InlineData("server", "select-multiple", false, "5 min,45 min")]
+    [InlineData("wasm", "select-multiple", false, "5 min,45 min")]
+    [InlineData("server", "select-multiple-matching", true, "30 min")]
+    [InlineData("wasm", "select-multiple-matching", true, "30 min")]
+    [InlineData("server", "select-duplicate-values", false, "45 min")]
+    [InlineData("wasm", "select-duplicate-values", false, "45 min")]
+    public void PrerenderedDom_ChecksSelectDefaultsBeforePreservingUserSelection(string platform, string scenario, bool shouldPreserveSelect, string expectedValues)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&scenario={scenario}");
+        var root = Browser.Exists(By.Id("position-root"));
+        var select = Browser.Exists(By.Id("position-select"));
+        var note = Browser.Exists(By.Id("position-note"));
+        if (select.Enabled)
+        {
+            var selection = new SelectElement(select);
+            if (selection.IsMultiple)
+            {
+                selection.DeselectAll();
+            }
+            selection.SelectByText("30 min");
+        }
+        note.Clear();
+        note.SendKeys("Before activation");
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("callBlazorStart()");
+        Browser.True(() => Browser.FindElement(By.Id("position-ready")).Text is "Server" or "WebAssembly");
+
+        Assert.Equal(expectedValues, GetSelectedValues());
+        Assert.Equal(shouldPreserveSelect, select.Equals(Browser.FindElement(By.Id("position-select"))));
+        Assert.Equal(root, Browser.FindElement(By.Id("position-root")));
+        Assert.Equal(note, Browser.FindElement(By.Id("position-note")));
+        Assert.Equal("Before activation", note.GetDomProperty("value"));
+        if (scenario == "select-duplicate-values")
+        {
+            Assert.Equal("First 45 min", new SelectElement(Browser.FindElement(By.Id("position-select"))).SelectedOption.Text);
+        }
+
+        Browser.Click(By.Id("position-select-update"));
+        Browser.Equal("15 min", GetSelectedValues);
+        Browser.Click(By.Id("position-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("position-increment")).Text);
+
+        string GetSelectedValues() => string.Join(",", new SelectElement(Browser.FindElement(By.Id("position-select")))
+            .AllSelectedOptions.Select(option => option.GetDomProperty("value")));
+    }
+
+    [Theory]
+    [InlineData("server", "nested")]
+    [InlineData("wasm", "nested")]
+    [InlineData("server", "input-default")]
+    [InlineData("wasm", "input-default")]
+    [InlineData("server", "textarea-default")]
+    [InlineData("wasm", "textarea-default")]
+    [InlineData("server", "textarea-text")]
+    [InlineData("wasm", "textarea-text")]
+    [InlineData("server", "textarea-text-matching")]
+    [InlineData("wasm", "textarea-text-matching")]
+    [InlineData("server", "markup-textarea")]
+    [InlineData("wasm", "markup-textarea")]
+    [InlineData("server", "remove-leading")]
+    [InlineData("wasm", "remove-leading")]
+    [InlineData("server", "add-leading")]
+    [InlineData("wasm", "add-leading")]
+    [InlineData("server", "remove-middle")]
+    [InlineData("wasm", "remove-middle")]
+    [InlineData("server", "insert-middle")]
+    [InlineData("wasm", "insert-middle")]
+    [InlineData("server", "text")]
+    [InlineData("wasm", "text")]
+    [InlineData("server", "component")]
+    [InlineData("wasm", "component")]
+    [InlineData("server", "empty-component")]
+    [InlineData("wasm", "empty-component")]
+    [InlineData("server", "markup-tree")]
+    [InlineData("wasm", "markup-tree")]
+    [InlineData("server", "markup-siblings")]
+    [InlineData("wasm", "markup-siblings")]
+    [InlineData("server", "table")]
+    [InlineData("wasm", "table")]
+    public void PrerenderedDom_ReplacesOnlyMismatchedPositions(string platform, string scenario)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&scenario={scenario}");
+        var root = Browser.Exists(By.Id("position-root"));
+        var scope = Browser.Exists(By.Id("position-scope"));
+        var note = Browser.Exists(By.Id("position-note"));
+        var footer = Browser.Exists(By.Id("position-footer"));
+        Browser.Exists(By.Id("position-footer-note")).SendKeys("Bob");
+        note.Clear();
+        note.SendKeys("Bob");
+        IWebElement item = null;
+        IWebElement lastItem = null;
+        IWebElement nestedNote = null;
+        if (scenario is "remove-middle" or "insert-middle")
+        {
+            item = Browser.Exists(By.Id("position-item-1"));
+            lastItem = Browser.Exists(By.Id("position-item-3"));
+        }
+        if (scenario is "input-default" or "textarea-default" or "textarea-text" or "textarea-text-matching" or "markup-textarea")
+        {
+            nestedNote = Browser.Exists(By.Id("position-changed-input"));
+            nestedNote.Clear();
+            nestedNote.SendKeys("Bob");
+        }
+        else if (scenario is "markup-tree" or "markup-siblings" or "component")
+        {
+            nestedNote = Browser.Exists(By.Id(scenario == "component" ? "position-child-note" : "position-markup-note"));
+            nestedNote.Clear();
+            nestedNote.SendKeys("Bob");
+        }
+        IWebElement[] combinedNotes = [];
+        if (scenario == "component")
+        {
+            combinedNotes = [Browser.Exists(By.Id("position-combined-note-True")), Browser.Exists(By.Id("position-combined-note-False"))];
+            foreach (var combinedNote in combinedNotes)
+            {
+                combinedNote.Clear();
+                combinedNote.SendKeys("Bob");
+            }
+        }
+        note.Click();
+        var js = (IJavaScriptExecutor)Browser;
+        // WebDriver cannot start activation without moving focus or compare a replaced text node.
+        js.ExecuteScript("""
+            window.prerenderedPositionText = document.getElementById('position-scope').firstChild;
+            callBlazorStart();
+            """);
+        Browser.True(() => Browser.FindElement(By.Id("position-ready")).Text is "Server" or "WebAssembly");
+        Assert.Equal(root, Browser.FindElement(By.Id("position-root")));
+        Assert.Equal(scope, Browser.FindElement(By.Id("position-scope")));
+        Assert.Equal(footer, Browser.FindElement(By.Id("position-footer")));
+        Assert.Equal("AliceBob", Browser.FindElement(By.Id("position-footer-note")).GetDomProperty("value"));
+        var currentNote = Browser.FindElement(By.Id("position-note"));
+        var preservesNote = scenario is not ("remove-leading" or "add-leading" or "empty-component");
+        Assert.Equal(preservesNote, note.Equals(currentNote));
+        Assert.Equal(preservesNote ? "Bob" : "Alice", currentNote.GetDomProperty("value"));
+        if (preservesNote)
+        {
+            Assert.Equal(note, Browser.SwitchTo().ActiveElement());
+        }
+        if (scenario is "remove-middle" or "insert-middle")
+        {
+            Assert.Equal(item, Browser.FindElement(By.Id("position-item-1")));
+            Assert.NotEqual(lastItem, Browser.FindElement(By.Id("position-item-3")));
+            Assert.Equal(scenario == "remove-middle" ? 2 : 3, Browser.FindElements(By.CssSelector("#position-list > span")).Count);
+        }
+        if (scenario is "input-default" or "textarea-default" or "textarea-text" or "markup-textarea")
+        {
+            var changedInput = Browser.FindElement(By.Id("position-changed-input"));
+            Assert.NotEqual(nestedNote, changedInput);
+            Assert.Equal("Carol", changedInput.GetDomProperty("value"));
+        }
+        else if (nestedNote is not null)
+        {
+            var currentNestedNote = Browser.FindElement(By.Id(scenario switch
+            {
+                "component" => "position-child-note",
+                "textarea-text-matching" => "position-changed-input",
+                _ => "position-markup-note"
+            }));
+            Assert.Equal(nestedNote, currentNestedNote);
+            Assert.Equal("Bob", currentNestedNote.GetDomProperty("value"));
+        }
+        if (scenario == "text")
+        {
+            Assert.Contains("Hello Carol", scope.Text);
+            Assert.Equal(false, js.ExecuteScript("return window.prerenderedPositionText === document.getElementById('position-scope').firstChild"));
+        }
+        if (scenario == "nested")
+        {
+            Browser.Equal("Ready", () => Browser.FindElement(By.CssSelector("strong#position-change")).Text);
+        }
+        if (scenario == "component")
+        {
+            Browser.Exists(By.CssSelector("strong#position-child-change"));
+            Browser.Equal("Before Carol after", () => Browser.FindElement(By.Id("position-combined-True")).Text);
+            Browser.Equal("Before Alice after", () => Browser.FindElement(By.Id("position-combined-False")).Text);
+            foreach (var combinedNote in combinedNotes)
+            {
+                Assert.Equal(combinedNote, Browser.FindElement(By.Id(combinedNote.GetDomProperty("id"))));
+                Assert.Equal("Bob", combinedNote.GetDomProperty("value"));
+            }
+            Browser.Click(By.Id("position-child-increment"));
+            Browser.Equal("Child: 1", () => Browser.FindElement(By.Id("position-child-increment")).Text);
+        }
+        if (scenario == "table")
+        {
+            Browser.Exists(By.CssSelector("#position-table > tr"));
+        }
+        Browser.Click(By.Id("position-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("position-increment")).Text);
+        Browser.Click(By.Id("position-toggle"));
+        Browser.DoesNotExist(By.Id("position-scope"));
+        Assert.Equal(footer, Browser.FindElement(By.Id("position-footer")));
+        Browser.Click(By.Id("position-toggle"));
+        Browser.Equal("Alice", () => Browser.FindElement(By.Id("position-note")).GetDomProperty("value"));
+        Assert.Equal("AliceBob", Browser.FindElement(By.Id("position-footer-note")).GetDomProperty("value"));
+    }
+
+    [Theory]
+    [InlineData("server", "script-order")]
+    [InlineData("wasm", "script-order")]
+    [InlineData("server", "unchanged-script-changed-target")]
+    [InlineData("wasm", "unchanged-script-changed-target")]
+    [InlineData("server", "custom-element-order")]
+    [InlineData("wasm", "custom-element-order")]
+    [InlineData("server", "unchanged-custom-element-changed-target")]
+    [InlineData("wasm", "unchanged-custom-element-changed-target")]
+    [InlineData("server", "nested-script-order")]
+    [InlineData("wasm", "nested-script-order")]
+    [InlineData("server", "unchanged-nested-script-changed-target")]
+    [InlineData("wasm", "unchanged-nested-script-changed-target")]
+    public void PrerenderedDom_InitializersBindToCurrentNodes(string platform, string scenario)
+    {
+        VerifyPrerenderedDomInitializer(platform, scenario,
+            shouldPreserveRoot: scenario is not ("unchanged-script-changed-target" or "unchanged-custom-element-changed-target" or "unchanged-nested-script-changed-target"));
+    }
+
+    [Theory]
+    [InlineData("server", "matching-script")]
+    [InlineData("wasm", "matching-script")]
+    [InlineData("server", "matching-custom-element")]
+    [InlineData("wasm", "matching-custom-element")]
+    [InlineData("server", "nested-script-subtree")]
+    [InlineData("wasm", "nested-script-subtree")]
+    public void PrerenderedDom_InitializerControlsKeepMatchingNodes(string platform, string scenario)
+    {
+        VerifyPrerenderedDomInitializer(platform, scenario, shouldPreserveRoot: true);
+    }
+
+    private void VerifyPrerenderedDomInitializer(string platform, string scenario, bool shouldPreserveRoot)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&scenario={scenario}");
+        var root = Browser.Exists(By.Id("position-root"));
+        var footer = Browser.Exists(By.Id("position-footer"));
+        Browser.Exists(By.Id("position-footer-note")).SendKeys("Bob");
+        var js = (IJavaScriptExecutor)Browser;
+        // WebDriver cannot register a custom-element lifecycle callback or compare captured DOM references.
+        js.ExecuteScript("""
+            if (!customElements.get('prerendered-position-connector')) {
+                customElements.define('prerendered-position-connector', class extends HTMLElement {
+                    connectedCallback() {
+                        window.prerenderedPositionInitializerRuns = (window.prerenderedPositionInitializerRuns || 0) + 1;
+                        const target = document.getElementById('position-target');
+                        window.prerenderedPositionInitializedTarget = target;
+                        target.addEventListener('click', function () {
+                            window.prerenderedPositionNativeClicks = (window.prerenderedPositionNativeClicks || 0) + 1;
+                            document.getElementById('position-native-status').textContent = 'Clicked';
+                        });
+                    }
+                });
+            }
+            callBlazorStart();
+            """);
+        Browser.True(() => Browser.FindElement(By.Id("position-ready")).Text is "Server" or "WebAssembly");
+        Browser.Exists(By.Id("position-target")).Click();
+        Assert.Equal("Clicked", Browser.FindElement(By.Id("position-native-status")).Text);
+        Assert.Equal(1L, js.ExecuteScript("return window.prerenderedPositionNativeClicks"));
+        Assert.Equal(true, js.ExecuteScript("return window.prerenderedPositionInitializedTarget === document.getElementById('position-target')"));
+        Assert.Equal(shouldPreserveRoot, root.Equals(Browser.FindElement(By.Id("position-root"))));
+        var currentFooter = Browser.FindElement(By.Id("position-footer"));
+        Assert.Equal(shouldPreserveRoot, footer.Equals(currentFooter));
+        Assert.Equal(shouldPreserveRoot ? "AliceBob" : "Alice", Browser.FindElement(By.Id("position-footer-note")).GetDomProperty("value"));
+        var expectedInitializationCount = scenario is "matching-script" or "matching-custom-element" or "custom-element-order" ? 1L : 2L;
+        Assert.Equal(expectedInitializationCount, js.ExecuteScript("return window.prerenderedPositionInitializerRuns"));
+
+        Browser.Click(By.Id("position-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("position-increment")).Text);
+        Browser.Click(By.Id("position-toggle"));
+        Browser.DoesNotExist(By.Id("position-scope"));
+        Assert.Equal(currentFooter, Browser.FindElement(By.Id("position-footer")));
+        Browser.Click(By.Id("position-toggle"));
+        Browser.Exists(By.Id("position-target")).Click();
+        Assert.Equal("Clicked", Browser.FindElement(By.Id("position-native-status")).Text);
+        Assert.Equal(2L, js.ExecuteScript("return window.prerenderedPositionNativeClicks"));
+        Assert.Equal(currentFooter, Browser.FindElement(By.Id("position-footer")));
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    [InlineData("auto")]
+    public void PrerenderedDom_WithoutPrerenderingUsesNormalRendering(string platform)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&noPrerender=true");
+        Browser.DoesNotExist(By.Id("dom-first-root"));
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+        Browser.Click(By.Id("dom-first-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("dom-first-count")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    [InlineData("auto")]
+    public void PrerenderedDom_PreservesDocumentSelectionAcrossTextFrames(string platform)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}");
+        Browser.Exists(By.Id("dom-first-selection"));
+        var js = (IJavaScriptExecutor)Browser;
+        // WebDriver cannot select an exact range spanning text-frame boundaries.
+        js.ExecuteScript("""
+            const text = document.getElementById('dom-first-selection').firstChild;
+            const range = document.createRange();
+            range.setStart(text, 2);
+            range.setEnd(text, 10);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            callBlazorStart();
+            """);
+        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+        Assert.Equal("llo 0 wo", js.ExecuteScript("return window.getSelection().toString()"));
+    }
+
+    [Theory]
+    [InlineData("server", true)]
+    [InlineData("wasm", false)]
+    public void PrerenderedDom_EditFormRetainsNormalBindingAndSubmission(string platform, bool shouldPreserveInput)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&includeForm=true");
+        var root = Browser.Exists(By.Id("dom-first-root"));
+        var form = root.FindElement(By.TagName("form"));
+        Assert.Equal("post", form.GetDomAttribute("method"));
+        var outsideInput = Browser.Exists(By.Id("dom-first-input"));
+        outsideInput.Clear();
+        outsideInput.SendKeys("Outside the form");
+        var input = Browser.Exists(By.Id("dom-first-nested-input"));
+        var prerenderedName = input.GetDomAttribute("name");
+        Assert.False(string.IsNullOrEmpty(prerenderedName));
+        input.Clear();
+        input.SendKeys("Before activation");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("callBlazorStart()");
+        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+        Assert.Equal(root, Browser.FindElement(By.Id("dom-first-root")));
+        var currentForm = Browser.FindElement(By.Id("dom-first-root")).FindElement(By.TagName("form"));
+        Assert.Equal(shouldPreserveInput, form.Equals(currentForm));
+        Assert.Equal(shouldPreserveInput ? "post" : null, currentForm.GetDomAttribute("method"));
+        Assert.Equal(outsideInput, Browser.FindElement(By.Id("dom-first-input")));
+        Assert.Equal("Outside the form", outsideInput.GetDomProperty("value"));
+        Assert.Equal(shouldPreserveInput, input.Equals(Browser.FindElement(By.Id("dom-first-nested-input"))));
+        input = Browser.FindElement(By.Id("dom-first-nested-input"));
+        Assert.Equal(shouldPreserveInput ? prerenderedName : null, input.GetDomAttribute("name"));
+        Assert.Equal(shouldPreserveInput ? "Before activation" : "Nested", input.GetDomProperty("value"));
+        input.Clear();
+        input.SendKeys("After activation" + Keys.Tab);
+        Browser.Click(By.Id("dom-first-submit"));
+        Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-submitted")).Text);
+    }
+
+    [Fact]
+    public void PrerenderedDom_AutoPreservesNodesBeforeWebAssemblyResourcesAreAvailable()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        BlockWebAssemblyResourceLoad();
+        try
+        {
+            PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches("auto", "");
+            Browser.Equal("Server", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
+        }
+        finally
+        {
+            UnblockWebAssemblyResourceLoad();
+        }
+    }
+
+    [Fact]
+    public void PrerenderedDom_AutoPreservesNodesWhenWebAssemblyIsCached()
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?platform=wasm");
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
+        PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches("auto", "");
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    [InlineData("auto")]
+    public void PrerenderedDom_PreservesPlayingVideo(string platform)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}");
+        var video = Browser.Exists(By.Id("dom-first-video"));
+        var js = (IJavaScriptExecutor)Browser;
+        // A browser-produced video stream avoids a codec or external media-file dependency.
+        Assert.Null(js.ExecuteAsyncScript("""
+            const done = arguments[arguments.length - 1];
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 16;
+            const context = canvas.getContext('2d');
+            let frame = 0;
+            function draw() {
+                context.fillStyle = frame++ % 2 ? 'red' : 'blue';
+                context.fillRect(0, 0, 16, 16);
+                window.prerenderedDomVideoFrame = requestAnimationFrame(draw);
+            }
+            draw();
+            const video = document.getElementById('dom-first-video');
+            window.prerenderedDomVideoStream = canvas.captureStream(30);
+            video.srcObject = window.prerenderedDomVideoStream;
+            video.play().then(() => done(null), error => done(error.message));
+            """));
+        try
+        {
+            Browser.True(() => (bool)js.ExecuteScript("return document.getElementById('dom-first-video').currentTime > 0"));
+            var before = js.ExecuteScript("return document.getElementById('dom-first-video').currentTime");
+            js.ExecuteScript("callBlazorStart()");
+            Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
+            Assert.Equal(video, Browser.FindElement(By.Id("dom-first-video")));
+            Assert.False(bool.Parse(video.GetDomProperty("paused")));
+            Browser.True(() => (bool)js.ExecuteScript("return document.getElementById('dom-first-video').currentTime > arguments[0]", before));
+        }
+        finally
+        {
+            js.ExecuteScript("""
+                cancelAnimationFrame(window.prerenderedDomVideoFrame);
+                window.prerenderedDomVideoStream.getTracks().forEach(track => track.stop());
+                """);
+        }
+    }
 
     [Fact]
     public void CanRenderInteractiveServerComponent()

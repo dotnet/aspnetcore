@@ -1,0 +1,29 @@
+@if (TextOnly)
+{
+    @(Changed ? "Carol" : "Alice")
+}
+else if (!Empty)
+{
+    @if (Changed)
+    {
+        <strong id="@("position-child-change")">Ready</strong>
+    }
+    else
+    {
+        <span id="@("position-child-change")">Preparing</span>
+    }
+    <input id="position-child-note" value="Alice" />
+    <button id="position-child-increment" @onclick="() => count++">Child: @count</button>
+    @foreach (var changes in new[] { true, false })
+    {
+        <div id="@($"position-combined-{changes}")">@("Before ")<PrerenderedDomPositionChild TextOnly="true" Changed="@(changes && Changed)" />@((MarkupString)" after")<input id="@($"position-combined-note-{changes}")" value="Alice" /></div>
+    }
+}
+
+@code {
+    [Parameter] public bool Changed { get; set; }
+    [Parameter] public bool Empty { get; set; }
+    [Parameter] public bool TextOnly { get; set; }
+
+    private int count;
+}

@@ -21,6 +21,18 @@ public class GlobalInteractivityTest(
     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
 
+    [Fact]
+    public void PrerenderedDom_IsPreservedWithInteractiveRouter()
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom-global");
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-global-ready")).Text);
+        // WebDriver cannot retrieve a disconnected prerendered element as a new element handle.
+        Assert.True((bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.globalPrerenderedDomRoot === document.getElementById('dom-global-root')"));
+        Assert.Equal("present", ((IJavaScriptExecutor)Browser).ExecuteScript("return getComputedStyle(document.getElementById('dom-global-root')).getPropertyValue('--prerendered-dom-head').trim()"));
+        Browser.Click(By.Id("dom-global-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("dom-global-count")).Text);
+    }
+
     [Theory]
     [InlineData("server", false)]
     [InlineData("webassembly", false)]

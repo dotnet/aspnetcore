@@ -1,0 +1,121 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<section id="@Id("root")" class="@(Mismatch == "root-attribute" && RendererInfo.IsInteractive ? "prerendered-dom-changed" : "prerendered-dom")">
+    <h2>Prerendered DOM</h2>
+    <p id="@Id("count")">Count: @count</p>
+    <input id="@Id("input")" @bind="text" @ref="input" />
+    <input id="@Id("input-bound")" @bind="inputText" @bind:event="oninput" />
+    <output id="@Id("input-model")">@inputText</output>
+    <textarea id="@Id("textarea")" @bind="text"></textarea>
+    <input id="@Id("checkbox")" type="checkbox" @bind="isChecked" />
+    <select id="@Id("select")" @bind="choice">
+        <option value="first">First</option>
+        <option value="second">Second</option>
+        @if (showThirdOption)
+        {
+            <option value="third">Third</option>
+        }
+    </select>
+    <button id="@Id("add-option")" @onclick="() => showThirdOption = true">Add option</button>
+    <button id="@Id("select-third")" @onclick="@(() => choice = "third")">Select third</button>
+    <output id="@Id("model")">@text</output>
+    <div id="@Id("scroll")" style="height: 60px; overflow: auto">
+        <div style="height: 600px">Scrollable content</div>
+    </div>
+    <button id="@Id("increment")" @onclick="() => count++">Increment</button>
+    <button id="@Id("focus")" @onclick="async () => await input.FocusAsync()">Focus input</button>
+    <button id="@Id("toggle")" @onclick="() => showChild = !showChild">Toggle child</button>
+    <div id="@Id("adjacent")">@("Hello ")@count@(" world")</div>
+    <div id="@Id("selection")" contenteditable="true">@("Hello ")@count@(" world")</div>
+    @* Form scenarios isolate positional reuse from initializer fallback. *@
+    @if (!IncludeForm)
+    {
+        <prerendered-dom-probe id="@Id("custom")"></prerendered-dom-probe>
+    }
+    @((MarkupString)"<style>@keyframes prerendered-dom { from { opacity: 0.5; } to { opacity: 1; } }</style>")
+    <div id="@Id("animation")" style="animation: prerendered-dom 60s linear infinite">Animated content</div>
+    <video id="@Id("video")" muted playsinline></video>
+    <link id="@Id("stylesheet")" rel="stylesheet" href="data:text/css,.prerendered-dom%20%7B%20--prerendered-dom%3A%20present%3B%20%7D" />
+    <div @onclick="() => parentClicks++">
+        <button id="@Id("stop-propagation")" @onclick="() => childClicks++" @onclick:stopPropagation>Child event</button>
+    </div>
+    <output id="@Id("events")">@childClicks/@parentClicks</output>
+    <svg xmlns="http://www.w3.org/2000/svg"><text>@count</text></svg>
+    @if (showChild)
+    {
+        <PrerenderedDomChild Id="@Id("child")" Count="count" />
+    }
+    @if (IncludeForm)
+    {
+        <EditForm Model="model" OnSubmit="() => submitted = true">
+            <InputText id="@Id("nested-input")" @bind-Value="model.Text" />
+            <button id="@Id("submit")" type="submit">Submit</button>
+        </EditForm>
+        <output id="@Id("submitted")">@(submitted ? model.Text : "Not submitted")</output>
+    }
+    @if (!IncludeForm)
+    {
+        @((MarkupString)"<script>window.prerenderedDomScriptRuns = (window.prerenderedDomScriptRuns || 0) + 1;</script>")
+    }
+    @if (Mismatch != "missing" || !RendererInfo.IsInteractive)
+    {
+        @if (Mismatch == "element" && RendererInfo.IsInteractive)
+        {
+            <em>Late mismatch</em>
+        }
+        else
+        {
+            <span data-state="@(Mismatch == "attribute" && RendererInfo.IsInteractive ? "different" : "same")">@(Mismatch == "text" && RendererInfo.IsInteractive ? "Different" : "Same")</span>
+        }
+    }
+    @if (Mismatch == "extra" && RendererInfo.IsInteractive)
+    {
+        <span>Extra content</span>
+    }
+    @((MarkupString)(Mismatch == "markup" && RendererInfo.IsInteractive ? "<b>Different markup</b>" : "<b>Same markup</b>"))
+    @if (Mismatch == "order" && RendererInfo.IsInteractive)
+    {
+        <span>Second</span><span>First</span>
+    }
+    else
+    {
+        <span>First</span><span>Second</span>
+    }
+    <span id="@Id("ready")">@ready</span>
+</section>
+
+@code {
+    [Parameter] public string IdSuffix { get; set; }
+    [Parameter] public string Mismatch { get; set; }
+    [Parameter] public bool IncludeForm { get; set; }
+
+    private int count;
+    private string text = "Initial";
+    private string inputText = "Initial";
+    private bool isChecked;
+    private string choice = "first";
+    private bool showChild = true;
+    private bool submitted;
+    private bool showThirdOption;
+    private int parentClicks;
+    private int childClicks;
+    private string ready = "";
+    private ElementReference input;
+    private readonly FormModel model = new();
+
+    private string Id(string name) => $"dom-{IdSuffix}-{name}";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ready = RendererInfo.Name;
+            StateHasChanged();
+        }
+    }
+
+    private sealed class FormModel
+    {
+        public string Text { get; set; } = "Nested";
+    }
+}

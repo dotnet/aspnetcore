@@ -133,6 +133,20 @@ export function emptyLogicalElement(element: LogicalElement): void {
   }
 }
 
+export function resetLogicalChildren(element: LogicalElement): void {
+  const children = getLogicalChildrenArray(element);
+  for (const child of children) {
+    delete child[logicalParentPropname];
+  }
+  children.length = 0;
+}
+
+export function adoptLogicalChild(child: Node, parent: LogicalElement, childIndex: number): void {
+  const logicalChild = toLogicalElement(child, true);
+  getLogicalChildrenArray(parent).splice(childIndex, 0, logicalChild);
+  logicalChild[logicalParentPropname] = parent;
+}
+
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
   const containerElement = document.createComment('!');
   insertLogicalChild(containerElement, parent, childIndex);
@@ -250,19 +264,19 @@ export function getLogicalRootDescriptor(element: LogicalElement): ComponentDesc
 // browsers will fail to render the foreign object content. Here, we ensure that if
 // we encounter a `foreignObject` in the SVG, then all its children will be placed
 // under the XHTML namespace.
-export function isSvgElement(element: LogicalElement): boolean {
+export function isSvgElement(element: LogicalElement | Element): boolean {
   // Note: This check is intentionally case-sensitive since we expect this element
   // to appear as a child of an SVG element and SVGs are case-sensitive.
-  const closestElement = getClosestDomElement(element) as any;
-  return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
+  const closestElement = element instanceof Element ? element : getClosestDomElement(element);
+  return closestElement instanceof Element && closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement.tagName !== 'foreignObject';
 }
 
 // MathML elements need to be created with the MathML namespace to render correctly.
 // Similar to SVG, MathML has its own namespace (http://www.w3.org/1998/Math/MathML)
 // and elements created without this namespace will not render properly in browsers.
-export function isMathMLElement(element: LogicalElement): boolean {
-  const closestElement = getClosestDomElement(element) as any;
-  return closestElement.namespaceURI === 'http://www.w3.org/1998/Math/MathML';
+export function isMathMLElement(element: LogicalElement | Element): boolean {
+  const closestElement = element instanceof Element ? element : getClosestDomElement(element);
+  return closestElement instanceof Element && closestElement.namespaceURI === 'http://www.w3.org/1998/Math/MathML';
 }
 
 export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {
