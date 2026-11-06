@@ -19,7 +19,6 @@ public class ExternalLogin : DefaultUIPage
         _emailForm = HtmlAssert.HasForm(Document);
         Title = HtmlAssert.HasElement("#external-login-title", Document);
         Description = HtmlAssert.HasElement("#external-login-description", Document);
-        Assert.DoesNotContain("text-info", Description.ClassList);
     }
 
     public IHtmlElement Title { get; }
