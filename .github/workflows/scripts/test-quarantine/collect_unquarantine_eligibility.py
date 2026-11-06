@@ -267,6 +267,9 @@ def collect(root, history, history_bytes, closed_prs, blocked_issues, requaranti
         target = current.get(target_key(historical))
         if target is None:
             raise ValueError("History receipt contains a missing current target")
+        if target.get("source_ambiguous"):
+            exclusions["source-consumers-unproven"] += 1
+            continue
         reasons = []
         introduced = historical.get("introduced_utc")
         if (

@@ -914,6 +914,60 @@ public class KeyRingBasedDataProtectorTests
         mockKeyRingProvider.Verify(o => o.GetCurrentKeyRing(), Times.Never);
     }
 
+    // The AAD is also the KDF label. With the default managed algorithms the KDF input is 116 + purpose length bytes
+    // (117 + length once the length prefix takes two bytes), so 12/13 straddle 128 bytes and 139/140 straddle 256 bytes.
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(12, 32)]
+    [InlineData(13, 5)]
+    [InlineData(80, 100)]
+    [InlineData(139, 17)]
+    [InlineData(140, 16)]
+    [InlineData(200, 1000)]
+    [InlineData(1000, 64)]
+    public void Protect_Unprotect_RoundTrip_ManagedCbcEncryptor(int purposeLength, int plaintextLength)
+    {
+        // Arrange
+        var keyId = Guid.NewGuid();
+        var descriptor = new ManagedAuthenticatedEncryptorConfiguration().CreateNewDescriptor();
+        var key = new Key(keyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, descriptor, new[] { new ManagedAuthenticatedEncryptorFactory(NullLoggerFactory.Instance) });
+        var encryptor = key.CreateEncryptor();
+        Assert.IsType<ManagedAuthenticatedEncryptor>(encryptor);
+#if NET
+        Assert.IsAssignableFrom<IOptimizedAuthenticatedEncryptor>(encryptor);
+#endif
+
+        var keyRing = new KeyRing(key, new[] { key });
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+        var purpose = new string(Enumerable.Range(0, purposeLength).Select(i => (char)('a' + (i % 26))).ToArray());
+        var plaintext = Enumerable.Range(0, plaintextLength).Select(i => (byte)(i * 31)).ToArray();
+
+        IDataProtector protector = new KeyRingBasedDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: purpose);
+
+        // Act
+        var protectedData = protector.Protect(plaintext);
+
+        // Assert
+        // The 20-byte header (magic + key id) is written into the encryptor's pre-buffer.
+        Assert.Equal(BuildProtectedDataFromCiphertext(keyId, Array.Empty<byte>()), protectedData.Take(20).ToArray());
+
+        // The payload after the header must decrypt with the expected AAD.
+        var aad = BuildAadFromPurposeStrings(keyId, purpose);
+        var decrypted = encryptor.Decrypt(new ArraySegment<byte>(protectedData, 20, protectedData.Length - 20), new ArraySegment<byte>(aad));
+        Assert.Equal(plaintext, decrypted);
+
+        Assert.Equal(plaintext, protector.Unprotect(protectedData));
+
+        var otherProtector = new KeyRingBasedDataProtector(mockKeyRingProvider.Object, GetLogger(), originalPurposes: null, newPurpose: purpose + "x");
+        ExceptionAssert2.ThrowsCryptographicException(() => otherProtector.Unprotect(protectedData));
+    }
+
     private static byte[] BuildAadFromPurposeStrings(Guid keyId, params string[] purposes)
     {
         var expectedAad = new byte[] { 0x09, 0xF0, 0xC9, 0xF0 } // magic header

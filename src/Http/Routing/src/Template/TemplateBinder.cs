@@ -159,6 +159,26 @@ public class TemplateBinder
     /// <returns>A <see cref="TemplateValuesResult"/> instance. Can be null.</returns>
     public TemplateValuesResult? GetValues(RouteValueDictionary? ambientValues, RouteValueDictionary values)
     {
+        var acceptedValues = GetAcceptedValues(ambientValues, values);
+        if (acceptedValues == null)
+        {
+            return null;
+        }
+
+        return new TemplateValuesResult()
+        {
+            AcceptedValues = acceptedValues,
+            CombinedValues = GetCombinedValues(ambientValues, acceptedValues),
+        };
+    }
+
+    // True if there are constraints that need to be evaluated by TryProcessConstraints.
+    internal bool HasConstraints => _constraints.Length > 0;
+
+    // Computes the accepted values only. The combined values (needed only for constraints) can be
+    // computed separately with GetCombinedValues, which avoids copying the dictionary when there are no constraints.
+    internal RouteValueDictionary? GetAcceptedValues(RouteValueDictionary? ambientValues, RouteValueDictionary values)
+    {
         // Make a new copy of the slots array, we'll use this as 'scratch' space
         // and then the RVD will take ownership of it.
         var slots = new KeyValuePair<string, object?>[_slots.Length];
@@ -402,6 +422,11 @@ public class TemplateBinder
             }
         }
 
+        return acceptedValues;
+    }
+
+    internal RouteValueDictionary GetCombinedValues(RouteValueDictionary? ambientValues, RouteValueDictionary acceptedValues)
+    {
         // Currently this copy is required because BindValues will mutate the accepted values :(
         var combinedValues = new RouteValueDictionary(acceptedValues);
 
@@ -412,11 +437,7 @@ public class TemplateBinder
             acceptedValues: acceptedValues,
             combinedValues: combinedValues);
 
-        return new TemplateValuesResult()
-        {
-            AcceptedValues = acceptedValues,
-            CombinedValues = combinedValues,
-        };
+        return combinedValues;
     }
 
     // Step 1.5: Process constraints

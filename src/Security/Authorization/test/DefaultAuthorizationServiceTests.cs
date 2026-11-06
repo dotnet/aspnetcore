@@ -329,6 +329,113 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
+    [Theory]
+    [InlineData("Permission", "CanViewPage", true)]
+    [InlineData("permission", "CanViewPage", true)]
+    [InlineData("Permission", "canviewpage", false)]
+    [InlineData("Other", "CanViewPage", false)]
+    public async Task Authorize_RequireClaim_SearchesAllIdentities(string claimType, string claimValue, bool expected)
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy => policy.RequireClaim("Permission", "CanViewPage")));
+        var user = new ClaimsPrincipal();
+        user.AddIdentity(new ClaimsIdentity(new[] { new Claim("Name", "Bob") }, "First"));
+        user.AddIdentity(new ClaimsIdentity());
+        user.AddIdentity(new ClaimsIdentity(new[] { new Claim("Name", "Alice"), new Claim(claimType, claimValue) }, "Third"));
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.Equal(expected, allowed.Succeeded);
+    }
+
+    [Theory]
+    [InlineData("permission", true)]
+    [InlineData("Other", false)]
+    public async Task Authorize_RequireClaimWithNoValues_SearchesAllIdentities(string claimType, bool expected)
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy => policy.RequireClaim("Permission")));
+        var user = new ClaimsPrincipal();
+        user.AddIdentity(new ClaimsIdentity(new[] { new Claim("Name", "Bob") }, "First"));
+        user.AddIdentity(new ClaimsIdentity(new[] { new Claim(claimType, "anything") }, "Second"));
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.Equal(expected, allowed.Succeeded);
+    }
+
+    [Fact]
+    public async Task Authorize_RequireClaim_UsesOverriddenPrincipalClaims()
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy => policy.RequireClaim("Permission", "CanViewPage")));
+        var user = new ClaimsOverridingPrincipal(
+            new ClaimsIdentity(new[] { new Claim("Permission", "CanViewPage") }, "Basic"),
+            new[] { new Claim("Name", "Bob") });
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.False(allowed.Succeeded);
+        Assert.True(user.ClaimsAccessed);
+    }
+
+    [Fact]
+    public async Task Authorize_RequireClaim_UsesOverriddenIdentityClaims()
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy => policy.RequireClaim("Permission", "CanViewPage")));
+        var user = new ClaimsPrincipal(new ClaimsOverridingIdentity(new[] { new Claim("Permission", "CanViewPage") }));
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.True(allowed.Succeeded);
+    }
+
+    private sealed class ClaimsOverridingPrincipal : ClaimsPrincipal
+    {
+        private readonly IEnumerable<Claim> _claims;
+
+        public ClaimsOverridingPrincipal(ClaimsIdentity identity, IEnumerable<Claim> claims) : base(identity)
+        {
+            _claims = claims;
+        }
+
+        public bool ClaimsAccessed { get; private set; }
+
+        public override IEnumerable<Claim> Claims
+        {
+            get
+            {
+                ClaimsAccessed = true;
+                return _claims;
+            }
+        }
+    }
+
+    private sealed class ClaimsOverridingIdentity : ClaimsIdentity
+    {
+        private readonly IEnumerable<Claim> _claims;
+
+        public ClaimsOverridingIdentity(IEnumerable<Claim> claims) : base("Custom")
+        {
+            _claims = claims;
+        }
+
+        public override IEnumerable<Claim> Claims => _claims;
+    }
+
     [Fact]
     public async Task Authorize_ThrowsWithUnknownPolicy()
     {
