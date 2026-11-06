@@ -483,9 +483,8 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    // ReceiveJSDataChunk is used in a fire-and-forget context, so it's responsible for its own
-    // error handling.
-    internal async Task<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
+    // ReceiveJSDataChunk is responsible for reporting protocol errors to the client.
+    internal async Task<RemoteJSDataStreamResult> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
     {
         AssertInitialized();
         AssertNotDisposed();
@@ -504,7 +503,7 @@ internal partial class CircuitHost : IAsyncDisposable
             Log.ReceiveJSDataChunkException(_logger, streamId, ex);
             await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Invalid chunk supplied to stream."));
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            return false;
+            return RemoteJSDataStreamResult.StreamDisposed;
         }
     }
 
