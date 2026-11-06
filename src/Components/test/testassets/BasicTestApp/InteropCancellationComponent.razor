@@ -13,12 +13,21 @@
 <button id="start-retained" onclick="cancellationTests.start('retained', 'retain')">Retain token</button>
 <button id="abort-retained" onclick="cancellationTests.abort('retained')">Abort retained signal</button>
 <button id="reuse-retained" onclick="cancellationTests.reuse('retained')">Reuse token reference</button>
-<button id="dispose-retained" onclick="cancellationTests.dispose('retained')">Dispose incoming reference</button>
+<button id="drop-retained" onclick="cancellationTests.drop('retained')">Drop incoming signal</button>
 <button id="start-failure" onclick="cancellationTests.start('failure', 'fail')">Fail normally</button>
 <button id="start-outgoing" @onclick="SendToken">Pass token to JS</button>
 <button id="start-outgoing-pre" @onclick="SendCanceledToken">Pass canceled token</button>
 <button id="cancel-outgoing" @onclick="() => outgoingSource.Cancel()">Cancel outgoing token</button>
-<button id="dispose-outgoing" @onclick="DisposeOutgoing">Dispose outgoing reference</button>
+<button id="drop-outgoing" onclick="cancellationTests.dropOutgoing()">Drop outgoing signal</button>
+<button id="start-static" onclick="cancellationTests.staticInvocation(false)">Static raw signal</button>
+<button id="start-static-pre" onclick="cancellationTests.staticInvocation(true)">Static aborted signal</button>
+<button id="start-snapshot" onclick="cancellationTests.snapshot()">Snapshot arguments</button>
+<button id="start-concurrent" onclick="cancellationTests.concurrent()">Concurrent shared signal</button>
+<button id="start-wrapped" onclick="cancellationTests.wrapped()">Generic signal reference</button>
+<p id="static-js"></p>
+<p id="snapshot-js"></p>
+<p id="concurrent-js"></p>
+<p id="wrapped-js"></p>
 <button id="start-control" @onclick="StartControlCall">Use invocation control token</button>
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
@@ -37,7 +46,6 @@
     private readonly CancellationTokenSource outgoingSource = new();
     private readonly CancellationTokenSource controlSource = new();
     private DotNetObjectReference<InteropCancellationComponent> reference;
-    private DotNetCancellationTokenReference outgoing;
     private IJSObjectReference module;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -111,12 +119,47 @@
     [JSInvokable]
     public bool Inspect(CancellationToken cancellationToken) => cancellationToken.IsCancellationRequested;
 
+    [JSInvokable]
+    public bool SameTokens(CancellationToken first, CancellationToken second) => first == second;
+
+    [JSInvokable]
+    public async Task<bool> ReceiveReference(IJSObjectReference reference)
+        => await reference.GetValueAsync<bool>("aborted");
+
+    [JSInvokable]
+    public static string StaticYolo(CancellationToken cancellationToken, string value)
+        => $"{value}:{cancellationToken.CanBeCanceled}:{cancellationToken.IsCancellationRequested}";
+
+    [JSInvokable]
+    public int AutomaticProjectionCount()
+    {
+        var field = typeof(JSRuntime).GetField("_automaticCancellationReferences",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        return ((System.Collections.Concurrent.ConcurrentDictionary<long, Action>)field.GetValue(JS)).Count;
+    }
+
+    [JSInvokable]
+    public string Snapshot(AutomaticArguments value)
+        => $"{value.Token.CanBeCanceled}:{string.Join(',', value.Bytes)}:{value.Value}:{value.Metadata.__abortSignalArgument}";
+
+    public sealed class AutomaticArguments
+    {
+        public CancellationToken Token { get; set; }
+        public byte[] Bytes { get; set; }
+        public string Value { get; set; }
+        public MetadataValue Metadata { get; set; }
+    }
+
+    public sealed class MetadataValue
+    {
+        public int __abortSignalArgument { get; set; }
+    }
+
     private void Release(string id) => gates[id].SetResult();
 
     private async Task SendToken()
     {
-        outgoing = await DotNetCancellationTokenReference.CreateAsync(JS, outgoingSource.Token);
-        states["outgoing"] = await module.InvokeAsync<string>("receive", "outgoing", outgoing);
+        states["outgoing"] = await module.InvokeAsync<string>("receive", "outgoing", outgoingSource.Token);
     }
 
     private async Task SendCanceledToken()
@@ -125,18 +168,11 @@
         await SendToken();
     }
 
-    private async Task DisposeOutgoing()
-    {
-        await outgoing.DisposeAsync();
-        states["outgoing"] = "reference disposed";
-    }
-
     private async Task StartControlCall()
     {
-        outgoing = await DotNetCancellationTokenReference.CreateAsync(JS, outgoingSource.Token);
         try
         {
-            states["control"] = await module.InvokeAsync<string>("waitIgnoringSignal", controlSource.Token, ["control", outgoing]);
+            states["control"] = await module.InvokeAsync<string>("waitIgnoringSignal", controlSource.Token, ["control", outgoingSource.Token]);
         }
         catch (OperationCanceledException) when (controlSource.IsCancellationRequested)
         {
@@ -161,11 +197,6 @@
             try
             {
                 await module.InvokeVoidAsync("disposeAll");
-                if (outgoing is not null)
-                {
-                    await outgoing.DisposeAsync();
-                }
-
                 await module.DisposeAsync();
             }
             catch (JSDisconnectedException)

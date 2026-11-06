@@ -1,7 +1,4 @@
 #nullable enable
-Microsoft.JSInterop.DotNetCancellationTokenReference
-Microsoft.JSInterop.DotNetCancellationTokenReference.DisposeAsync() -> System.Threading.Tasks.ValueTask
-static Microsoft.JSInterop.DotNetCancellationTokenReference.CreateAsync(Microsoft.JSInterop.IJSRuntime! jsRuntime, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.DotNetCancellationTokenReference!>
 Microsoft.JSInterop.JSCancellationTokenReference
 Microsoft.JSInterop.JSCancellationTokenReference.CancelAsync() -> System.Threading.Tasks.Task!
 Microsoft.JSInterop.JSCancellationTokenReference.DisposeAsync() -> System.Threading.Tasks.ValueTask

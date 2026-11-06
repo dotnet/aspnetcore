@@ -25,72 +25,83 @@ Since `Microsoft.JSInterop.JS` is platform-independent, runtime environments suc
 
 ## Experimental cancellation parameter projections
 
-Cancellation is a parameter value, not an invocation mode. Explicit references map
-browser `AbortSignal` values to .NET `CancellationToken` parameters and .NET tokens
-to native browser signals. Ordinary invocation APIs and their completion/error
-semantics are unchanged.
+Cancellation is a parameter value, not an invocation mode. The runtimes automatically
+project raw browser `AbortSignal` arguments to .NET `CancellationToken` parameters
+and raw .NET token arguments to native browser signals. Application code does not
+create, wrap, or dispose interop cancellation references.
 
 ### JavaScript signal to .NET token
 
 ```javascript
 const controller = new AbortController();
-const reference = await dotNetObject.createCancellationTokenReference(controller.signal);
-try {
-    const result = await dotNetObject.invokeMethodAsync("Load", reference, query);
-} finally {
-    await reference.disposeAsync();
-}
+const result = await dotnetObject.invokeMethodAsync("Yolo", controller.signal);
+
+// Static methods need no application DotNetObjectReference.
+const staticResult = await DotNet.invokeMethodAsync("MyApp", "YoloStatic", controller.signal);
 ```
 
 ```csharp
 [JSInvokable]
-public Task<SearchResult> Load(CancellationToken cancellationToken, string query);
+public Task<string> Yolo(CancellationToken cancellationToken);
+
+[JSInvokable]
+public static Task<string> YoloStatic(CancellationToken cancellationToken);
 ```
 
-The instance factory targets that object's runtime. For static interop with one
-unambiguous default runtime, `DotNet.createCancellationTokenReference(signal)` is
-also available. The token occupies an ordinary argument position; it need not be last. The
-reference can be retained and reused after an invocation returns. Abort signals
-cancel the projected token, not the interop promise: an ignoring handler remains
+The instance call selects that object's runtime. Static calls retain their existing
+default-dispatcher requirements. Tokens occupy ordinary argument positions and can
+also occur in serialized objects. The token can be retained and the signal reused
+after an invocation returns. Abort signals cancel the token, not the interop promise: an ignoring handler remains
 pending or returns normally, and a handler that catches cancellation can return a
 normal result. An already-aborted signal still invokes the method with an already
 canceled token. Browser abort reasons are not translated into .NET exceptions.
 
-The factory wraps the browser subscription in a `JSObjectReference` and the managed
-source in a `DotNetObjectReference`. Disposing the returned reference removes the
-listener and releases both references without requesting cancellation. The owner
-must keep it alive as long as .NET needs to observe the signal. Asynchronous abort
-notification failures are reported to the browser console and through disposal.
+The async invocation pipeline establishes any needed reference bridge before
+dispatching the application call. Repeated and concurrent uses of one signal share
+its projection in that runtime. Application getters and `toJSON` run once; byte-array
+snapshots are transmitted only after asynchronous preparation, immediately before
+the application invocation. Explicit generic `createJSObjectReference(signal)` values
+remain generic references, rather than implicitly changing their target type.
 
 ### .NET token to JavaScript signal
 
 ```csharp
-await using var reference =
-    await DotNetCancellationTokenReference.CreateAsync(jsRuntime, cancellationToken);
-await jsRuntime.InvokeVoidAsync("receiveSignal", reference);
+using var cts = new CancellationTokenSource();
+var pending = jsRuntime.InvokeAsync<string>("yolo", args: [cts.Token]);
+cts.Cancel();
+var result = await pending;
 ```
 
 ```javascript
-function receiveSignal(signal) {
-    return fetch("/data", { signal });
+globalThis.yolo = async function (signal) {
+    const response = await fetch("/data", { signal });
+    return await response.text();
 }
 ```
 
 JavaScript receives a native `AbortSignal`, not a JSON token or a promise wrapper.
-The reference owns a managed token observer through `DotNetObjectReference` and the
-native signal through `JSObjectReference`. A pre-canceled token produces an aborted
-signal before the JavaScript function starts. A reference can span multiple calls;
-dispose it only when JavaScript no longer needs the signal. Disposal ends observation
-without aborting the signal or canceling the original token. Raw outgoing tokens
-require this explicit lifetime owner instead of implicit serialization.
+A pre-canceled token produces an aborted signal before the JavaScript function
+starts. A signal can be retained after the call returns. `CancellationToken.None`
+and already-canceled tokens need no live bridge. Each live serialized token occurrence
+has its own observer, so an earlier signal's cleanup cannot revoke a later in-flight
+projection of the same token.
+
+The runtimes own cleanup. Incoming links are released after abort notification and
+outstanding argument uses; outgoing observers are released after notification.
+`WeakRef` and `FinalizationRegistry` also release links when the browser signal is
+collected without cancellation. Collection is nondeterministic and does not request
+cancellation. Live signals can retain their registrations and interop references.
+Managed runtime disposal clears remaining automatic references. Browser cleanup after
+transport loss or runtime teardown needs separate host/lifecycle validation.
 
 The `CancellationToken` controlling `IJSRuntime.InvokeAsync` is separate from these
-arguments: it still cancels only the managed wait and does not become an AbortSignal
-or stop the JavaScript function. No call-ID cancellation registry, argument envelope,
-reserved cancel invocation, automatic promise rejection, or call-completion cleanup
-is involved in these projections.
+arguments: `args: [cts.Token]` is intentional. The separate invocation-control token
+still cancels only the managed wait and does not become an AbortSignal or stop the
+JavaScript function. There is no operation-cancellation mode, forced promise rejection,
+or application-owned reference lifetime. Async bridge notification/cleanup failures
+are reported to the browser console; setup failures reject the invocation normally.
 
-The public reference APIs are experimental and require API review.
+The marshalling convention and framework callback surface are experimental and require API review.
 Both directions have Server and WebAssembly browser scenarios in `InteropCancellationTest`.
 WebView, Native AOT/trimming, multithreaded WebAssembly, multiple attached runtimes,
 Auto activation transitions, and circuit reconnect/resumption require separate

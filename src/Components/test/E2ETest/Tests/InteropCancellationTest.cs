@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -32,7 +33,7 @@ public class InteropCancellationTest(
         Click("abort-first");
         Equal("first-managed", "canceled in .NET");
         Equal("first-js", "handler handled cancellation");
-        Equal("first-listeners", "1");
+        Equal("first-listeners", "0");
         Equal("second-managed", "running");
         Click("release-second");
         Equal("second-js", "completed");
@@ -68,20 +69,18 @@ public class InteropCancellationTest(
         Equal("retained-managed", "canceled after return");
         Click("reuse-retained");
         Equal("retained-js", "reused: true");
-        Click("dispose-retained");
-        Equal("retained-js", "reference disposed");
         Equal("retained-listeners", "0");
     }
 
     [Fact]
-    public void IncomingReferenceDisposalRemovesListenerWithoutCancelingToken()
+    public void UnreachableInputSignalReleasesAutomaticReferencesWithoutCancelingToken()
     {
         Click("start-retained");
         Equal("retained-js", "returned normally");
-        Click("dispose-retained");
-        Equal("retained-js", "reference disposed");
-        Equal("retained-listeners", "0");
-        Click("abort-retained");
+        Browser.Equal(1, ProjectionCount);
+        Click("drop-retained");
+        CollectGarbage();
+        Browser.Equal(0, ProjectionCount);
         Equal("retained-managed", "retained");
     }
 
@@ -118,14 +117,50 @@ public class InteropCancellationTest(
     }
 
     [Fact]
-    public void OutgoingReferenceDisposalDoesNotAbortSignal()
+    public void UnreachableOutputSignalReleasesAutomaticReferences()
     {
         Click("start-outgoing");
         Equal("outgoing-js", "native signal retained");
-        Click("dispose-outgoing");
-        Equal("outgoing-managed", "reference disposed");
+        Browser.Equal(1, ProjectionCount);
+        Click("drop-outgoing");
+        CollectGarbage();
+        Browser.Equal(0, ProjectionCount);
         Click("cancel-outgoing");
         Equal("outgoing-js", "native signal retained");
+    }
+
+    [Theory]
+    [InlineData("start-static", "static:True:False")]
+    [InlineData("start-static-pre", "static:True:True")]
+    public void StaticMethodsReceiveRawSignalsWithoutInstanceReference(string button, string expected)
+    {
+        Click(button);
+        Equal("static-js", expected);
+        Browser.Equal(0, ProjectionCount);
+    }
+
+    [Fact]
+    public void SignalPreparationPreservesByteArraysAndEvaluatesApplicationSerializationOnce()
+    {
+        Click("start-snapshot");
+        Equal("snapshot-js", "True:1,2,3:snapshot:12:1:1");
+        Browser.Equal(0, ProjectionCount);
+    }
+
+    [Fact]
+    public void ConcurrentAndRepeatedSignalArgumentsShareOneProjection()
+    {
+        Click("start-concurrent");
+        Equal("concurrent-js", "false:false:true:1");
+        Browser.Equal(0, ProjectionCount);
+    }
+
+    [Fact]
+    public void ExistingGenericJSObjectReferenceIsNotReinterpretedAsToken()
+    {
+        Click("start-wrapped");
+        Equal("wrapped-js", "false");
+        Browser.Equal(0, ProjectionCount);
     }
 
     [Fact]
@@ -143,4 +178,12 @@ public class InteropCancellationTest(
     private void Click(string id) => Browser.Exists(By.Id(id)).Click();
 
     private void Equal(string id, string expected) => Browser.Equal(expected, () => Browser.FindElement(By.Id(id)).Text);
+
+    private int ProjectionCount()
+        => Convert.ToInt32(((IJavaScriptExecutor)Browser).ExecuteAsyncScript(
+            "const done = arguments[0]; cancellationTests.count().then(done, error => done(error.message));"),
+            System.Globalization.CultureInfo.InvariantCulture);
+
+    private void CollectGarbage()
+        => ((ChromeDriver)Browser).ExecuteCdpCommand("HeapProfiler.collectGarbage", new Dictionary<string, object>());
 }
