@@ -281,9 +281,9 @@ Prerendering and interactive rendering are separate executions. Prerendering cre
 
 Activation information in the HTML identifies interactive roots and supplies the data needed to create them. It does not transfer ownership of the prerendered component instances. Any state required to avoid recomputation or preserve continuity must be captured during prerendering and restored by the interactive instance.
 
-For the first interactive render of a prerendered root, `Web.JS` checks the complete initial output against the existing DOM before changing it. An ordered match reuses the connected nodes, reconstructs their logical component ownership, and attaches interactive event handlers and element captures. Live control values, focus, selection, and scrolling are not reset, and matching scripts are not executed again. Preserving browser state does not update the component's model or replay events.
+On the first interactive render, `Web.JS` compares prerendered DOM nodes with the new output in sibling order. Matching nodes stay in place; changed nodes are replaced, missing nodes added, and extra nodes removed. There is no search-ahead or reordering. The whole root is replaced for unsupported output, or if any output differs while a script or custom element would otherwise be kept.
 
-If any part of the root differs or cannot be matched, the renderer replaces that root's contents using its normal insertion path. It does not partially adopt the root, search ahead, or merge changed output. Roots are considered independently, and the temporary matching data is discarded after the batch. Subsequent renders, explicit root clearing, circuit restoration, and enhanced-navigation document merging retain their existing mechanisms.
+Matching uses rendered defaults, not live user edits. Kept nodes retain input, focus, selection, and scroll state without updating the component model or replaying events. Each root is handled independently. Later renders, circuit restoration, and enhanced navigation are unchanged.
 
 A statically rendered parent can establish interactive roots, but the selected render mode defines an execution boundary. Components within an interactive hierarchy execute in the runtime that owns that hierarchy unless another independently activated root is established at an allowed boundary.
 

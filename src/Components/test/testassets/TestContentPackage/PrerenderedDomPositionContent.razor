@@ -66,6 +66,55 @@
                 case "table":
                     <table id="position-table"><tr><td>@Scenario</td></tr></table>
                     break;
+                case string selectScenario when selectScenario.StartsWith("select-", StringComparison.Ordinal):
+                    <select id="position-select"
+                            multiple="@(Scenario.StartsWith("select-multiple", StringComparison.Ordinal))"
+                            size="@(Scenario == "select-listbox" ? "3" : null)"
+                            disabled="@(Scenario == "select-disabled")"
+                            value="@SelectValue">
+                        @if (Scenario == "select-dynamic-options")
+                        {
+                            @foreach (var value in new[] { "5 min", "15 min", "30 min", "45 min", "60+ min" })
+                            {
+                                <option value="@value">@value</option>
+                            }
+                        }
+                        else if (Scenario is "select-selected-option" or "select-multiple-matching")
+                        {
+                            <option selected="@(Scenario == "select-multiple-matching")">5 min</option>
+                            <option>15 min</option>
+                            <option>30 min</option>
+                            <option selected>45 min</option>
+                            <option>60+ min</option>
+                        }
+                        else if (Scenario == "select-disabled-optgroup")
+                        {
+                            <optgroup disabled><option>5 min</option></optgroup>
+                            <option>45 min</option>
+                            <option>15 min</option>
+                            <option>30 min</option>
+                        }
+                        else if (Scenario == "select-duplicate-values")
+                        {
+                            @((MarkupString)"""
+                                <option>5 min</option>
+                                <option>15 min</option>
+                                <option>30 min</option>
+                                <option value="45 min" selected>First 45 min</option>
+                                <option value="45 min" selected>Second 45 min</option>
+                                """)
+                        }
+                        else
+                        {
+                            <option>5 min</option>
+                            <option>15 min</option>
+                            <option>30 min</option>
+                            <option>45 min</option>
+                            <option>60+ min</option>
+                        }
+                    </select>
+                    <button id="position-select-update" @onclick="UpdateSelectValue">Select 15 min</button>
+                    break;
                 case "script-order":
                 case "unchanged-script-changed-target":
                 case "matching-script":
@@ -112,6 +161,20 @@
     private bool show = true;
     private ElementReference textarea;
     private string ready = "";
+    private string selectValue;
+
+    private string SelectValue => selectValue ?? (Scenario switch
+    {
+        "select-text-options-matching" or "select-disabled" => "5 min",
+        "select-empty-value" => "",
+        "select-unmatched-value" => "99 min",
+        "select-no-value" => null,
+        "select-multiple" or "select-multiple-matching" => "[\"5 min\",\"45 min\"]",
+        _ => "45 min",
+    });
+
+    private void UpdateSelectValue()
+        => selectValue = Scenario.StartsWith("select-multiple", StringComparison.Ordinal) ? "[\"15 min\"]" : "15 min";
 
     private string RenderPhase => Scenario is "matching-script" or "matching-custom-element" ? "same" : RendererInfo.Name;
 

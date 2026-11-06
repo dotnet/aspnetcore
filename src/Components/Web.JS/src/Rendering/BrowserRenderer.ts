@@ -7,7 +7,7 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty, rememberDeferredValue } from './DomSpecialPropertyUtil';
-import { PrerenderedDom, PrerenderedFramePlans } from './PrerenderedDom';
+import { PrerenderedDom, PrerenderedFramesForRendering } from './PrerenderedDom';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -29,9 +29,9 @@ export class BrowserRenderer {
 
   private pendingPrerenderedComponents = new Set<number>();
 
-  private prerenderedDom = new Map<number, PrerenderedDom>();
+  private prerenderedRootPlans = new Map<number, PrerenderedDom>();
 
-  private framePlans: PrerenderedFramePlans = new Map();
+  private framesForRendering: PrerenderedFramesForRendering = new Map();
 
   public constructor(browserRendererId: number) {
     this.eventDelegator = new EventDelegator(browserRendererId);
@@ -89,17 +89,17 @@ export class BrowserRenderer {
       this.pendingPrerenderedComponents.delete(componentId);
       const element = this.childComponentLocations[componentId];
       if (prerenderedRoots.delete(element)) {
-        const candidate = new PrerenderedDom(batch, diffs, parseMarkup);
-        if (candidate.tryPlanRoot(componentId, element)) {
-          this.prerenderedDom.set(componentId, candidate);
+        const rootPlan = new PrerenderedDom(batch, diffs, parseMarkup);
+        if (rootPlan.tryPlanRoot(componentId, element)) {
+          this.prerenderedRootPlans.set(componentId, rootPlan);
         }
       }
     }
   }
 
   public endBatch(): void {
-    this.prerenderedDom.clear();
-    this.framePlans.clear();
+    this.prerenderedRootPlans.clear();
+    this.framesForRendering.clear();
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
@@ -110,9 +110,9 @@ export class BrowserRenderer {
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
     if (elementsToClearOnRootComponentRender.delete(element)) {
-      const prerendered = this.prerenderedDom.get(componentId);
-      if (prerendered) {
-        prerendered.prepareRootForRendering(element, this.framePlans);
+      const rootPlan = this.prerenderedRootPlans.get(componentId);
+      if (rootPlan) {
+        rootPlan.applyRootPlan(element, this.framesForRendering);
       } else {
         this.detachEventHandlersFromElement(element);
         emptyLogicalElement(element);
@@ -319,12 +319,11 @@ export class BrowserRenderer {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
 
-    const framePlan = this.framePlans.get(frameIndex);
-    const preservedElement = framePlan?.replace ? undefined : framePlan?.nodes[0];
-    const isPreservedElement = preservedElement instanceof Element;
+    const plannedNode = this.framesForRendering.get(frameIndex)?.nodes[0];
+    const isPreservedElement = plannedNode instanceof Element;
     let domElement: Element;
     if (isPreservedElement) {
-      domElement = preservedElement;
+      domElement = plannedNode;
       adoptLogicalChild(domElement, parent, childIndex);
     } else if (tagName === 'svg' || isSvgElement(parent)) {
       domElement = document.createElementNS('http://www.w3.org/2000/svg', tagName);
@@ -346,7 +345,12 @@ export class BrowserRenderer {
     }
 
     if (!isPreservedElement) {
-      this.insertElementNode(domElement, parent, childIndex, frameIndex);
+      if (plannedNode) {
+        plannedNode.parentNode!.replaceChild(domElement, plannedNode);
+        adoptLogicalChild(domElement, parent, childIndex);
+      } else {
+        insertLogicalChild(domElement, parent, childIndex);
+      }
     }
     if (descendantIndex < descendantsEndIndexExcl) {
       this.insertFrameRange(batch, componentId, logicalElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
@@ -356,19 +360,8 @@ export class BrowserRenderer {
     }
   }
 
-  private insertElementNode(element: Element, parent: LogicalElement, childIndex: number, frameIndex: number): void {
-    const framePlan = this.framePlans.get(frameIndex);
-    if (framePlan?.replace) {
-      const placeholder = framePlan.nodes[0];
-      placeholder.parentNode!.replaceChild(element, placeholder);
-      adoptLogicalChild(element, parent, childIndex);
-    } else {
-      insertLogicalChild(element, parent, childIndex);
-    }
-  }
-
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame, frameIndex: number) {
-    const plannedContainer = this.framePlans.get(frameIndex)?.nodes[0];
+    const plannedContainer = this.framesForRendering.get(frameIndex)?.nodes[0];
     const containerElement = plannedContainer ? toLogicalElement(plannedContainer) : createAndInsertLogicalContainer(parent, childIndex);
     if (plannedContainer) {
       adoptLogicalChild(plannedContainer, parent, childIndex);
@@ -381,7 +374,7 @@ export class BrowserRenderer {
   }
 
   private insertText(batch: RenderBatch, parent: LogicalElement, childIndex: number, textFrame: RenderTreeFrame, frameIndex: number) {
-    const plannedTextNode = this.framePlans.get(frameIndex)?.nodes[0];
+    const plannedTextNode = this.framesForRendering.get(frameIndex)?.nodes[0];
     if (plannedTextNode) {
       adoptLogicalChild(plannedTextNode, parent, childIndex);
       return;
@@ -392,13 +385,13 @@ export class BrowserRenderer {
   }
 
   private insertMarkup(batch: RenderBatch, parent: LogicalElement, childIndex: number, markupFrame: RenderTreeFrame, frameIndex?: number) {
-    const markupPlan = frameIndex === undefined ? undefined : this.framePlans.get(frameIndex);
+    const markupPlan = frameIndex === undefined ? undefined : this.framesForRendering.get(frameIndex);
     const fragmentNodes = markupPlan?.nodes;
     if (fragmentNodes) {
       adoptLogicalChild(fragmentNodes[0], parent, childIndex);
       const markupContainer = toLogicalElement(fragmentNodes[0]);
-      markupPlan?.insertNewElements?.();
-      markupPlan?.updateChildLists?.();
+      markupPlan?.replaceElementPlaceholders?.();
+      markupPlan?.rebuildMarkupLogicalChildren?.();
       for (let index = 1; index < fragmentNodes.length; index++) {
         adoptLogicalChild(fragmentNodes[index], markupContainer, index - 1);
       }

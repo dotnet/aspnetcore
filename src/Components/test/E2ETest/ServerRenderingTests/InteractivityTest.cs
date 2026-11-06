@@ -53,7 +53,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [InlineData("wasm", "attribute-order")]
     [InlineData("server", "root-attribute")]
     [InlineData("wasm", "root-attribute")]
-    public void PrerenderedDom_PreservesMatchingNodesAcrossInitialOutput(string platform, string mismatch)
+    public void PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches(string platform, string mismatch)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&mismatch={mismatch}");
         var root = Browser.Exists(By.Id("dom-first-root"));
@@ -122,24 +122,24 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
         Browser.True(() => Browser.FindElement(By.Id("dom-second-ready")).Text is "Server" or "WebAssembly");
 
-        var shouldPreserve = mismatch is "" or "attribute-order";
+        var shouldPreserveRoot = mismatch is "" or "attribute-order";
         var currentRoot = Browser.FindElement(By.Id("dom-first-root"));
-        Assert.Equal(shouldPreserve, root.Equals(currentRoot));
-        Assert.Equal(shouldPreserve, input.Equals(Browser.FindElement(By.Id("dom-first-input"))));
-        Assert.Equal(shouldPreserve ? "Before activation" : "Initial", Browser.FindElement(By.Id("dom-first-input")).GetDomProperty("value"));
-        Assert.Equal(shouldPreserve ? "Edited textarea" : "Initial", Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
-        Assert.Equal(shouldPreserve, Browser.FindElement(By.Id("dom-first-checkbox")).Selected);
-        Assert.Equal(shouldPreserve ? "second" : "first", new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
-        Assert.Equal(shouldPreserve ? 90L : 0L, js.ExecuteScript("return document.getElementById('dom-first-scroll').scrollTop"));
-        Assert.Equal(shouldPreserve ? 0L : 1L, js.ExecuteScript("return window.prerenderedDomRemovals"));
-        Assert.Equal(shouldPreserve ? 2L : 3L, js.ExecuteScript("return window.prerenderedDomScriptRuns"));
+        Assert.Equal(shouldPreserveRoot, root.Equals(currentRoot));
+        Assert.Equal(shouldPreserveRoot, input.Equals(Browser.FindElement(By.Id("dom-first-input"))));
+        Assert.Equal(shouldPreserveRoot ? "Before activation" : "Initial", Browser.FindElement(By.Id("dom-first-input")).GetDomProperty("value"));
+        Assert.Equal(shouldPreserveRoot ? "Edited textarea" : "Initial", Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
+        Assert.Equal(shouldPreserveRoot, Browser.FindElement(By.Id("dom-first-checkbox")).Selected);
+        Assert.Equal(shouldPreserveRoot ? "second" : "first", new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Assert.Equal(shouldPreserveRoot ? 90L : 0L, js.ExecuteScript("return document.getElementById('dom-first-scroll').scrollTop"));
+        Assert.Equal(shouldPreserveRoot ? 0L : 1L, js.ExecuteScript("return window.prerenderedDomRemovals"));
+        Assert.Equal(shouldPreserveRoot ? 2L : 3L, js.ExecuteScript("return window.prerenderedDomScriptRuns"));
         Assert.Equal("Initial", Browser.FindElement(By.Id("dom-first-model")).Text);
         Assert.Equal("Initial", Browser.FindElement(By.Id("dom-first-input-model")).Text);
-        Assert.Equal(shouldPreserve ? "Before input" : "Initial", Browser.FindElement(By.Id("dom-first-input-bound")).GetDomProperty("value"));
+        Assert.Equal(shouldPreserveRoot ? "Before input" : "Initial", Browser.FindElement(By.Id("dom-first-input-bound")).GetDomProperty("value"));
         Assert.Equal(secondRoot, Browser.FindElement(By.Id("dom-second-root")));
         Assert.Equal("Other root", secondInput.GetDomProperty("value"));
 
-        if (shouldPreserve)
+        if (shouldPreserveRoot)
         {
             Assert.Equal(input, Browser.SwitchTo().ActiveElement());
             Assert.Equal("2", input.GetDomProperty("selectionStart"));
@@ -150,12 +150,17 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
         js.ExecuteScript("window.prerenderedDomObserver.disconnect()");
 
+        AssertNormalRenderingAndBindingAfterActivation(expectedSelectedValue: shouldPreserveRoot ? "second" : "first");
+    }
+
+    private void AssertNormalRenderingAndBindingAfterActivation(string expectedSelectedValue)
+    {
         Browser.Click(By.Id("dom-first-increment"));
         Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("dom-first-count")).Text);
         Browser.Equal("Hello 1 world", () => Browser.FindElement(By.Id("dom-first-adjacent")).Text);
         Browser.Equal("Nested 1", () => Browser.FindElement(By.Id("dom-first-child")).Text);
         Browser.Click(By.Id("dom-first-add-option"));
-        Assert.Equal(shouldPreserve ? "second" : "first", new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Assert.Equal(expectedSelectedValue, new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
         Browser.Click(By.Id("dom-first-select-third"));
         Browser.Equal("third", () => new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
         Browser.Click(By.Id("dom-first-stop-propagation"));
@@ -167,7 +172,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         currentInput.SendKeys("After activation" + Keys.Tab);
         Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-model")).Text);
         Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
-        inputBound = Browser.FindElement(By.Id("dom-first-input-bound"));
+        var inputBound = Browser.FindElement(By.Id("dom-first-input-bound"));
         inputBound.Clear();
         inputBound.SendKeys("After input");
         Browser.Equal("After input", () => Browser.FindElement(By.Id("dom-first-input-model")).Text);
@@ -175,6 +180,73 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.DoesNotExist(By.Id("dom-first-child"));
         Browser.Click(By.Id("dom-first-toggle"));
         Browser.Equal("Nested 1", () => Browser.FindElement(By.Id("dom-first-child")).Text);
+    }
+
+    [Theory]
+    [InlineData("server", "select-text-options", false, "45 min")]
+    [InlineData("wasm", "select-text-options", false, "45 min")]
+    [InlineData("server", "select-text-options-matching", true, "30 min")]
+    [InlineData("wasm", "select-text-options-matching", true, "30 min")]
+    [InlineData("server", "select-dynamic-options", true, "30 min")]
+    [InlineData("wasm", "select-dynamic-options", true, "30 min")]
+    [InlineData("server", "select-selected-option", true, "30 min")]
+    [InlineData("wasm", "select-selected-option", true, "30 min")]
+    [InlineData("server", "select-listbox", false, "45 min")]
+    [InlineData("wasm", "select-listbox", false, "45 min")]
+    [InlineData("server", "select-empty-value", false, "")]
+    [InlineData("wasm", "select-empty-value", false, "")]
+    [InlineData("server", "select-unmatched-value", false, "")]
+    [InlineData("wasm", "select-unmatched-value", false, "")]
+    [InlineData("server", "select-no-value", true, "30 min")]
+    [InlineData("wasm", "select-no-value", true, "30 min")]
+    [InlineData("server", "select-disabled", true, "5 min")]
+    [InlineData("wasm", "select-disabled", true, "5 min")]
+    [InlineData("server", "select-disabled-optgroup", true, "30 min")]
+    [InlineData("wasm", "select-disabled-optgroup", true, "30 min")]
+    [InlineData("server", "select-multiple", false, "5 min,45 min")]
+    [InlineData("wasm", "select-multiple", false, "5 min,45 min")]
+    [InlineData("server", "select-multiple-matching", true, "30 min")]
+    [InlineData("wasm", "select-multiple-matching", true, "30 min")]
+    [InlineData("server", "select-duplicate-values", false, "45 min")]
+    [InlineData("wasm", "select-duplicate-values", false, "45 min")]
+    public void PrerenderedDom_ChecksSelectDefaultsBeforePreservingUserSelection(string platform, string scenario, bool shouldPreserveSelect, string expectedValues)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&scenario={scenario}");
+        var root = Browser.Exists(By.Id("position-root"));
+        var select = Browser.Exists(By.Id("position-select"));
+        var note = Browser.Exists(By.Id("position-note"));
+        if (select.Enabled)
+        {
+            var selection = new SelectElement(select);
+            if (selection.IsMultiple)
+            {
+                selection.DeselectAll();
+            }
+            selection.SelectByText("30 min");
+        }
+        note.Clear();
+        note.SendKeys("Before activation");
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("callBlazorStart()");
+        Browser.True(() => Browser.FindElement(By.Id("position-ready")).Text is "Server" or "WebAssembly");
+
+        Assert.Equal(expectedValues, GetSelectedValues());
+        Assert.Equal(shouldPreserveSelect, select.Equals(Browser.FindElement(By.Id("position-select"))));
+        Assert.Equal(root, Browser.FindElement(By.Id("position-root")));
+        Assert.Equal(note, Browser.FindElement(By.Id("position-note")));
+        Assert.Equal("Before activation", note.GetDomProperty("value"));
+        if (scenario == "select-duplicate-values")
+        {
+            Assert.Equal("First 45 min", new SelectElement(Browser.FindElement(By.Id("position-select"))).SelectedOption.Text);
+        }
+
+        Browser.Click(By.Id("position-select-update"));
+        Browser.Equal("15 min", GetSelectedValues);
+        Browser.Click(By.Id("position-increment"));
+        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("position-increment")).Text);
+
+        string GetSelectedValues() => string.Join(",", new SelectElement(Browser.FindElement(By.Id("position-select")))
+            .AllSelectedOptions.Select(option => option.GetDomProperty("value")));
     }
 
     [Theory]
@@ -488,7 +560,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         BlockWebAssemblyResourceLoad();
         try
         {
-            PrerenderedDom_PreservesMatchingNodesAcrossInitialOutput("auto", "");
+            PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches("auto", "");
             Browser.Equal("Server", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
         }
         finally
@@ -502,7 +574,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     {
         Navigate($"{ServerPathBase}/prerendered-dom?platform=wasm");
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
-        PrerenderedDom_PreservesMatchingNodesAcrossInitialOutput("auto", "");
+        PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches("auto", "");
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
     }
 
