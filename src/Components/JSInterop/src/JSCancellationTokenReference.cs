@@ -6,10 +6,12 @@ namespace Microsoft.JSInterop;
 /// <summary>
 /// Owns a cancellation token projected from a JavaScript <c>AbortSignal</c>.
 /// </summary>
-/// <remarks>This type supports runtime-owned marshalling of JavaScript signal arguments.</remarks>
+/// <remarks>
+/// This type supports runtime-owned marshalling of JavaScript signal arguments.
+/// Operations must run on the owning runtime's dispatcher or synchronization context.
+/// </remarks>
 public sealed class JSCancellationTokenReference : IAsyncDisposable
 {
-    private readonly object _lock = new();
     private readonly CancellationTokenSource _source = new();
     private readonly IJSObjectReference _signal;
     private readonly DotNetObjectReference<JSCancellationTokenReference> _reference;
@@ -51,11 +53,8 @@ public sealed class JSCancellationTokenReference : IAsyncDisposable
     [JSInvokable]
     public Task CancelAsync()
     {
-        lock (_lock)
-        {
-            ObjectDisposedException.ThrowIf(_disposal is not null, this);
-            return _cancellation ??= _source.CancelAsync();
-        }
+        ObjectDisposedException.ThrowIf(_disposal is not null, this);
+        return _cancellation ??= _source.CancelAsync();
     }
 
     /// <summary>
@@ -65,17 +64,14 @@ public sealed class JSCancellationTokenReference : IAsyncDisposable
     [JSInvokable]
     public ValueTask DisposeAsync()
     {
-        lock (_lock)
-        {
-            return new(_disposal ??= DisposeCoreAsync(_cancellation ?? Task.CompletedTask));
-        }
+        return new(_disposal ??= DisposeCoreAsync(_cancellation ?? Task.CompletedTask));
     }
 
     private async Task DisposeCoreAsync(Task cancellation)
     {
         try
         {
-            await cancellation.ConfigureAwait(false);
+            await cancellation;
         }
         finally
         {
