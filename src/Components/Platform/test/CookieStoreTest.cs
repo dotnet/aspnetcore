@@ -4,7 +4,9 @@
 #nullable enable
 #pragma warning disable ASP0040 // Partitioned is experimental.
 
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Xunit;
@@ -223,6 +225,106 @@ public class CookieStoreTest
         Assert.False(jsRuntime.ObjectReference.Disposed);
     }
 
+    [Fact]
+    public async Task AddEventListenerAsync_AddsAFunctionThatDeliversTheChangeEvent()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        CookieChangeEvent? received = null;
+
+        await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, changeEvent =>
+        {
+            received = changeEvent;
+            return Task.CompletedTask;
+        });
+        var result = await jsRuntime.InvokeLastCallbackAsync(
+            """[{"changed":[{"name":"a","value":"1"}],"deleted":[{"name":"b"}]}]""");
+
+        // The cookie store is object 1, the module is object 2, and the function is object 3.
+        using var createCallbackArgs = JsonDocument.Parse(Assert.Single(jsRuntime.CallsTo("createCallback")).ArgsJson);
+        Assert.Equal("""[{"changed":null,"deleted":null}]""", createCallbackArgs.RootElement[1].GetString());
+        var addition = Assert.Single(jsRuntime.CallsTo("addEventListener"));
+        Assert.Equal((JSCallType.FunctionCall, 1, """["change",{"__jsObjectId":3}]"""), (addition.CallType, addition.TargetInstanceId, addition.ArgsJson));
+        Assert.True(result.Success, result.Exception?.ToString());
+        Assert.Equal(("a", "1"), (Assert.Single(received!.Changed).Name, received.Changed[0].Value));
+        Assert.Equal(("b", null), (Assert.Single(received.Deleted).Name, received.Deleted[0].Value));
+    }
+
+    [Fact]
+    public async Task AddEventListenerAsync_KeepsListenersIndependent()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        var calls = new List<string>();
+
+        var first = await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => { calls.Add("first"); return Task.CompletedTask; });
+        await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => { calls.Add("second"); return Task.CompletedTask; });
+        await jsRuntime.InvokeCallbackAsync(0, EmptyChange);
+        await jsRuntime.InvokeCallbackAsync(1, EmptyChange);
+        await first.DisposeAsync();
+        await first.DisposeAsync();
+        var afterRemoval = await jsRuntime.InvokeCallbackAsync(0, EmptyChange);
+        await jsRuntime.InvokeCallbackAsync(1, EmptyChange);
+
+        // The module is object 2, and the functions are objects 3 and 4.
+        Assert.Equal(["first", "second", "second"], calls);
+        Assert.False(afterRemoval.Success);
+        Assert.Single(jsRuntime.CallsTo("import"));
+        var removal = Assert.Single(jsRuntime.CallsTo("removeEventListener"));
+        Assert.Equal((1, """["change",{"__jsObjectId":3}]"""), (removal.TargetInstanceId, removal.ArgsJson));
+        Assert.Equal(["[3]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+    }
+
+    [Fact]
+    public async Task AddEventListenerAsync_LogsAnExceptionFromTheListener()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        var loggerFactory = new RecordingLoggerFactory();
+        await using var provider = CreateServiceProvider(jsRuntime, loggerFactory);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => throw new InvalidOperationException("Listener failed."));
+        var result = await jsRuntime.InvokeLastCallbackAsync(EmptyChange);
+
+        Assert.True(result.Success, result.Exception?.ToString());
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal((LogLevel.Error, "ListenerThrew"), (entry.Level, entry.EventId.Name));
+        Assert.Equal("Listener failed.", Assert.IsType<InvalidOperationException>(entry.Exception).Message);
+    }
+
+    [Fact]
+    public async Task AddEventListenerAsync_ThrowsForNullArguments()
+    {
+        await using var provider = CreateServiceProvider(new BrowserJSRuntime());
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            () => cookieStore.AddEventListenerAsync<CookieChangeEvent>(null!, _ => Task.CompletedTask).AsTask());
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            () => cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, null!).AsTask());
+    }
+
+    [Fact]
+    public async Task ScopeDisposal_RemovesListeners()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        var listener = await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => Task.CompletedTask);
+
+        await provider.DisposeAsync();
+        await listener.DisposeAsync();
+
+        Assert.Single(jsRuntime.CallsTo("removeEventListener"));
+        Assert.Equal(
+            ["[3]", "[1]", "[2]"],
+            jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+        await Assert.ThrowsAsync<ObjectDisposedException>(
+            () => cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => Task.CompletedTask).AsTask());
+    }
+
     // A mock IJSRuntime records arguments before serialization, so the tests below check the JSON the browser receives.
     [Fact]
     public async Task SetAsync_SendsCookieInitWithoutNullMembers()
@@ -343,11 +445,18 @@ public class CookieStoreTest
         Assert.Null(missing);
     }
 
-    private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime)
+    private const string EmptyChange = """[{"changed":[],"deleted":[]}]""";
+
+    private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime, ILoggerFactory? loggerFactory = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(jsRuntime);
         services.AddBrowserPlatform();
+
+        if (loggerFactory is not null)
+        {
+            services.AddSingleton(loggerFactory);
+        }
 
         return services.BuildServiceProvider();
     }
