@@ -223,7 +223,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await page.FillAsync("[name=\"Input.Password\"]", password);
 
         var shouldSignal = persistenceOutcome is "Failure" or "DatabaseFailure";
-        string? redisplayedPage = null;
+        string redisplayedPage = null;
         if (shouldSignal)
         {
             await page.RouteAsync(url => new Uri(url).AbsolutePath == "/Account/PasskeyUpgrade", async route =>
