@@ -4501,6 +4501,33 @@ def test_external_historical_base_remains_ambiguous(module=None):
         assert result["status"] == "unproven", result
         assert "quarantine-history-ambiguous" in result["reasons"], result
 
+        for day, quarantine in (("04", QUARANTINE_ATTRIBUTE), ("05", "")):
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+                members=method_member(quarantine=quarantine).replace(
+                    "public void", "public override void",
+                ),
+            ), encoding="utf-8")
+            commit(root, "Change the proven local method quarantine", f"2026-08-{day}T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["case_b_eligible"] is True, result
+        assert result["case_b_issue"] == 1, result
+
+        for day, quarantine in (("06", QUARANTINE_ATTRIBUTE), ("07", "")):
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+                type_quarantine=quarantine,
+            ), encoding="utf-8")
+            commit(root, "Change the unresolved inherited quarantine", f"2026-08-{day}T00:00:00Z")
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+            members=method_member().replace("public void", "public override void"),
+        ), encoding="utf-8")
+        commit(root, "Restore the local override", "2026-08-08T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "unproven", result
+        assert "quarantine-history-ambiguous" in result["reasons"], result
+
 
 def test_sibling_quarantine_with_unresolved_base_is_unrelated(module=None):
     module = module or MODULE

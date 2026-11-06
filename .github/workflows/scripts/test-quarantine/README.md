@@ -146,6 +146,9 @@ names. Existing runners with unresolved bases or source ownership remain
 unproven, including during type-only history scans.
 Proven sibling inheritance branches do not contribute unrelated type quarantines
 through an unresolved external base.
+For a verified latest method/data unquarantine, type history checks that commit
+and newer first-parent commits; older ambiguity cannot replace that proven
+removal. New-quarantine and first-quarantine checks still use complete histories.
 
 Shared sources with conditional namespaces or quarantine attributes
 are resolved separately for each consuming project using literal

@@ -1985,6 +1985,8 @@ def type_quarantine_transition(
     history_cache,
     source_cache,
     content_cache,
+    *,
+    stop_commit=None,
 ):
     root = pathlib.Path(root)
     relative_project_root = str(
@@ -2003,8 +2005,9 @@ def type_quarantine_transition(
                 "tests": {},
             }
     cached_history = history_cache[relative_project_root]
-    if test_name in cached_history["tests"]:
-        return cached_history["tests"][test_name]
+    target_key = (test_name, stop_commit)
+    if target_key in cached_history["tests"]:
+        return cached_history["tests"][target_key]
     history = cached_history["lines"]
     if history is None:
         return {"status": "ambiguous"}
@@ -2041,7 +2044,7 @@ def type_quarantine_transition(
                 "commit": sha,
                 "utc": timestamp,
             }
-            cached_history["tests"][test_name] = result
+            cached_history["tests"][target_key] = result
             return result
         current_types = current_index["type_quarantines"]
         parent_types = parent_index["type_quarantines"]
@@ -2088,6 +2091,8 @@ def type_quarantine_transition(
                     for changed_type in matching_types
                 )
         if not applicable_changes:
+            if sha == stop_commit:
+                break
             continue
         if (
             len(applicable_changes) != 1
@@ -2099,7 +2104,7 @@ def type_quarantine_transition(
                 "commit": sha,
                 "utc": timestamp,
             }
-            cached_history["tests"][test_name] = result
+            cached_history["tests"][target_key] = result
             return result
         result = {
             "status": applicable_changes[0][0],
@@ -2109,10 +2114,10 @@ def type_quarantine_transition(
             "type": applicable_changes[0][1],
             "issue": applicable_changes[0][2],
         }
-        cached_history["tests"][test_name] = result
+        cached_history["tests"][target_key] = result
         return result
     result = {"status": "none"}
-    cached_history["tests"][test_name] = result
+    cached_history["tests"][target_key] = result
     return result
 
 
@@ -3984,6 +3989,19 @@ def collect(
             transitions.append(
                 events[0] if events else {"status": "none"}
             )
+        known_transitions = [
+            item for item in transitions
+            if item["status"] in ("added", "removed") and item.get("commit") in history_order
+        ]
+        latest_known = (
+            newest_history_item(known_transitions, history_order)
+            if known_transitions else {}
+        )
+        type_history_stop = (
+            latest_known["commit"]
+            if not quarantined and latest_known.get("status") == "removed"
+            else None
+        )
         transitions.append(type_quarantine_transition(
             root,
             source["assembly_project_root"],
@@ -3992,6 +4010,7 @@ def collect(
             type_history_cache,
             historical_source_cache,
             historical_content_cache,
+            stop_commit=type_history_stop,
         ))
         transitions.append(assembly_quarantine_transition(
             root,
