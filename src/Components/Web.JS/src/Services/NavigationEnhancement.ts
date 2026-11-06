@@ -39,6 +39,7 @@ let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
 let clickListenerReorderPending = false;
+const capturedClickEvents = new Set<MouseEvent>();
 
 // This gets initialized to the current URL when we load.
 // After that, it gets updated every time we successfully complete a navigation.
@@ -62,6 +63,7 @@ export function hasNeverStartedAnyEnhancedPageLoad() {
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
   navigationEnhancementCallbacks = callbacks;
   setClickListenerRegisteredCallback(onClickListenerRegistered);
+  window.addEventListener('click', onClickCapture, true);
   document.addEventListener('click', onDocumentClick);
   document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
@@ -72,6 +74,8 @@ export function attachProgressivelyEnhancedNavigationListener(callbacks: Navigat
 export function detachProgressivelyEnhancedNavigationListener() {
   setClickListenerRegisteredCallback(undefined);
   clickListenerReorderPending = false;
+  window.removeEventListener('click', onClickCapture, true);
+  capturedClickEvents.clear();
   document.removeEventListener('click', onDocumentClick);
   document.removeEventListener('submit', onDocumentSubmit);
   window.removeEventListener('popstate', onPopState);
@@ -93,9 +97,26 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
 }
 
-function onClickListenerRegistered(isDispatchingClick: boolean) {
+function onClickCapture(event: MouseEvent) {
+  // Window capture observes even native document listeners registered before Blazor starts.
+  capturedClickEvents.add(event);
+  // Microtasks can run between browser-invoked listeners, so release the event after the dispatch task.
+  setTimeout(() => capturedClickEvents.delete(event), 0);
+}
+
+function isDispatchingBrowserClick(except?: MouseEvent): boolean {
+  for (const event of capturedClickEvents) {
+    if (event !== except && event.eventPhase !== Event.NONE) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function onClickListenerRegistered(isDispatchingClick: boolean, currentClick?: MouseEvent) {
   // Removing a listener during dispatch skips it for that click. Let it run before reordering.
-  if (isDispatchingClick) {
+  if (isDispatchingClick || isDispatchingBrowserClick(currentClick)) {
     clickListenerReorderPending = true;
     return;
   }
@@ -108,7 +129,7 @@ function onClickListenerRegistered(isDispatchingClick: boolean) {
 function onDocumentClick(event: MouseEvent) {
   // A nested click must not remove this listener from an outer click's dispatch.
   if (clickListenerReorderPending && !isDispatchingClick()) {
-    onClickListenerRegistered(false);
+    onClickListenerRegistered(false, event);
   }
 
   if (hasInteractiveRouter()) {

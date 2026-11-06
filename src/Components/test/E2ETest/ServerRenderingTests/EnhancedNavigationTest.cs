@@ -268,6 +268,36 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
+    [InlineData("server", false)]
+    [InlineData("server", true)]
+    [InlineData("webassembly", false)]
+    [InlineData("webassembly", true)]
+    public void ProgrammaticNavigationFromLinkRespectsDefaultActionOrdering(string renderMode, bool preventDefault)
+    {
+        Navigate($"{ServerPathBase}/nav/interactive-component-navigation/{renderMode}");
+        Browser.Equal(renderMode == "server" ? "Server" : "WebAssembly", () => Browser.Exists(By.Id("navigation-runtime")).Text);
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        InstallDocumentClickProbe(stopPropagation: false);
+        try
+        {
+            Browser.Exists(By.Id(preventDefault ? "navigate-with-prevented-href" : "navigate-with-href")).Click();
+
+            // WASM handlers run before the unprevented link action; Server handlers arrive asynchronously.
+            var followsHref = renderMode == "webassembly" && !preventDefault;
+            Browser.Equal(followsHref ? "Other" : "Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.EndsWith(followsHref ? "/nav/other" : "/nav", Browser.Url);
+            Assert.False(originalDocument.IsStale());
+            Assert.Equal(preventDefault ? 1L : 2L,
+                (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.documentClickProbe.historyCalls"));
+        }
+        finally
+        {
+            RemoveDocumentClickProbe();
+        }
+    }
+
+    [Theory]
     [InlineData("server", "refresh-with-navigate-to")]
     [InlineData("webassembly", "refresh-with-navigate-to")]
     [InlineData("server", "refresh-with-refresh")]
@@ -1055,6 +1085,44 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             Assert.True((bool)jsExecutor.ExecuteScript("return window.documentClickProbe.nestedClickDefaultPrevented"));
             Assert.Equal(0L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.nestedHistoryCalls"));
             Assert.Equal(1L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.historyCalls"));
+        }
+        finally
+        {
+            RemoveDocumentClickProbe();
+        }
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public void EnhancedNavigationWorksWhenNativeDocumentClickAttachesRenderer(bool prerender, bool nestedClick)
+    {
+        Navigate($"{ServerPathBase}/nav/prevent-default/wasm?prerender={prerender}&deferredRegistration=true&nativeClick=true&nativeNestedClick={nestedClick}");
+        Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("deferred-runtime")).Text);
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)jsExecutor.ExecuteScript("return !!window.nativeDocumentClickProbe.component"));
+        Browser.Exists(By.Id("deferred-prevented")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("deferred-count")).Text);
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        InstallDocumentClickProbe(stopPropagation: false);
+        try
+        {
+            Browser.Exists(By.Id("native-register-and-navigate-wasm")).Click();
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.False(originalDocument.IsStale());
+            Assert.Equal(1L, (long)jsExecutor.ExecuteScript("return window.nativeDocumentClickProbe.calls"));
+            Assert.True((long)jsExecutor.ExecuteScript("return window.documentClickProbe.reentrantRegistrations") > 0);
+            Assert.Equal(2L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.registrations"));
+            Assert.Equal(1L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.historyCalls"));
+            if (nestedClick)
+            {
+                Assert.Equal(1L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.nestedClicksDuringOuterClick"));
+                Assert.True((bool)jsExecutor.ExecuteScript("return window.documentClickProbe.nestedClickDefaultPrevented"));
+                Assert.Equal(0L, (long)jsExecutor.ExecuteScript("return window.documentClickProbe.nestedHistoryCalls"));
+            }
         }
         finally
         {

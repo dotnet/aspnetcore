@@ -41,7 +41,7 @@
 {
     @if (DeferredRegistration)
     {
-        <TestContentPackage.DeferredClickRegistration @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+        <TestContentPackage.DeferredClickRegistration NativeClick="NativeClick" NativeNestedClick="NativeNestedClick" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
     }
     else
     {
@@ -65,4 +65,7 @@
 
     [SupplyParameterFromQuery]
     public bool DeferredRegistration { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool NativeNestedClick { get; set; }
 }

@@ -11,11 +11,19 @@
 <p id="deferred-runtime">@RendererInfo.Name</p>
 <p id="deferred-count">@_count</p>
 <a id="deferred-register-and-navigate" href="nav/other" @onclick="AttachRendererAndClick">Attach another renderer and navigate</a>
+<a id="native-register-and-navigate-wasm" href="nav/other">Attach another renderer from a native listener and navigate</a>
 <a id="deferred-prevented" href="nav/other" @onclick="Increment" @onclick:preventDefault>Nested prevented link</a>
 <div id="deferred-renderer-root"></div>
 
 @code {
+    [Parameter]
+    public bool NativeClick { get; set; }
+
+    [Parameter]
+    public bool NativeNestedClick { get; set; }
+
     private RegistrationRenderer _renderer;
+    private DotNetObjectReference<DeferredClickRegistration> _nativeClickReference;
     private int _count;
 
     private void AttachRendererAndClick()
@@ -30,8 +38,34 @@
         _count++;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && NativeClick)
+        {
+            _nativeClickReference = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("nativeDocumentClickProbe.setComponent", _nativeClickReference);
+        }
+    }
+
+    [JSInvokable]
+    public void RevealFromNativeClick()
+    {
+        _renderer = new RegistrationRenderer(Services, LoggerFactory, (IJSInProcessRuntime)JSRuntime);
+        _renderer.AttachRoot();
+        if (NativeNestedClick)
+        {
+            ((IJSInProcessRuntime)JSRuntime).InvokeVoid("documentClickProbe.clickNested", "deferred-prevented");
+        }
+    }
+
     public void Dispose()
     {
+        if (_nativeClickReference is not null)
+        {
+            ((IJSInProcessRuntime)JSRuntime).InvokeVoid("nativeDocumentClickProbe.dispose");
+            _nativeClickReference.Dispose();
+        }
+
         _renderer?.Dispose();
     }
 
