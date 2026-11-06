@@ -6,7 +6,7 @@ namespace Microsoft.JSInterop;
 /// <summary>
 /// Owns a cancellation token projected from a JavaScript <c>AbortSignal</c>.
 /// </summary>
-/// <remarks>JavaScript creates and disposes this reference through <c>DotNet.createCancellationTokenReference</c>.</remarks>
+/// <remarks>This type supports runtime-owned marshalling of JavaScript signal arguments.</remarks>
 public sealed class JSCancellationTokenReference : IAsyncDisposable
 {
     private readonly object _lock = new();
@@ -89,10 +89,12 @@ public sealed class JSCancellationTokenReference : IAsyncDisposable
             }
             finally
             {
-                _source.Dispose();
+                // Tokens retained by application code outlive the interop references.
                 _reference.Dispose();
                 await _signal.DisposeAsync();
             }
         }
     }
+
+    internal void DisposeManaged() => _reference.Dispose();
 }

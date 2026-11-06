@@ -23,6 +23,9 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private readonly ConcurrentDictionary<long, IPendingAsyncCall> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
     private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
+    private readonly ConcurrentDictionary<long, Action> _automaticCancellationReferences = new();
+    private readonly AsyncLocal<List<CancellationTokenObserver>?> _serializingCancellationReferences = new();
+    private int _automaticCancellationReferencesDisposed;
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
@@ -45,7 +48,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                     new DotNetStreamReferenceJsonConverter(this),
                     new ByteArrayJsonConverter(this),
                     new CancellationTokenJsonConverter(this),
-                    new DotNetCancellationTokenReferenceJsonConverter(this),
                 }
         };
         JsonSerializerOptions.TypeInfoResolverChain.Add(JSInteropJsonTypeInfoResolver.Instance);
@@ -154,6 +156,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         }
         _pendingTasks[taskId] = pendingCall;
 
+        List<CancellationTokenObserver>? argumentCancellationReferences = null;
         try
         {
             if (cancellationToken.IsCancellationRequested)
@@ -164,7 +167,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 return new ValueTask<TValue>(pendingCall.Task);
             }
 
-            var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
+            var argsJson = args is not null && args.Length != 0 ? SerializeArguments(args, out argumentCancellationReferences) : "[]";
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
             var invocationInfo = new JSInvocationInfo
             {
@@ -183,6 +186,13 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         catch
         {
             CleanupTasksAndRegistrations(taskId);
+            if (argumentCancellationReferences is not null)
+            {
+                foreach (var reference in argumentCancellationReferences)
+                {
+                    reference.Dispose();
+                }
+            }
             throw;
         }
     }
@@ -194,6 +204,38 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             registration.Dispose();
         }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Interop arguments are required to be linker friendly.")]
+    private string SerializeArguments(object?[] args, out List<CancellationTokenObserver> references)
+    {
+        var previous = _serializingCancellationReferences.Value;
+        references = new List<CancellationTokenObserver>();
+        _serializingCancellationReferences.Value = references;
+        try
+        {
+            return JsonSerializer.Serialize(args, JsonSerializerOptions);
+        }
+        catch
+        {
+            foreach (var reference in references)
+            {
+                reference.Dispose();
+            }
+
+            throw;
+        }
+        finally
+        {
+            _serializingCancellationReferences.Value = previous;
+        }
+    }
+
+    internal CancellationTokenObserver CreateCancellationTokenObserver(CancellationToken token)
+    {
+        var observer = new CancellationTokenObserver(token);
+        _serializingCancellationReferences.Value?.Add(observer);
+        return observer;
     }
 
     /// <summary>
@@ -361,6 +403,21 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             dotNetObjectReference.ObjectId = dotNetObjectId;
 
             _trackedRefsById[dotNetObjectId] = dotNetObjectReference;
+            if (dotNetObjectReference.Value is CancellationTokenObserver observer)
+            {
+                _automaticCancellationReferences[dotNetObjectId] = observer.Dispose;
+            }
+            else if (dotNetObjectReference.Value is JSCancellationTokenReference signal)
+            {
+                _automaticCancellationReferences[dotNetObjectId] = signal.DisposeManaged;
+            }
+
+            if (Volatile.Read(ref _automaticCancellationReferencesDisposed) != 0
+                && _automaticCancellationReferences.TryGetValue(dotNetObjectId, out var dispose))
+            {
+                dispose();
+                throw new ObjectDisposedException(nameof(JSRuntime));
+            }
         }
         else if (!ReferenceEquals(this, jsRuntime))
         {
@@ -384,10 +441,23 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// This may be invoked either by disposing a DotNetObjectRef in .NET code, or via JS interop by calling "dispose" on the corresponding instance in JavaScript code
     /// </summary>
     /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
-    internal void ReleaseObjectReference(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
+    internal void ReleaseObjectReference(long dotNetObjectId)
+    {
+        _trackedRefsById.TryRemove(dotNetObjectId, out _);
+        _automaticCancellationReferences.TryRemove(dotNetObjectId, out _);
+    }
 
     /// <summary>
     /// Dispose the JSRuntime.
     /// </summary>
-    public void Dispose() => ByteArraysToBeRevived.Dispose();
+    public void Dispose()
+    {
+        Interlocked.Exchange(ref _automaticCancellationReferencesDisposed, 1);
+        foreach (var dispose in _automaticCancellationReferences.Values)
+        {
+            dispose();
+        }
+
+        ByteArraysToBeRevived.Dispose();
+    }
 }
