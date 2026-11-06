@@ -1281,6 +1281,7 @@ public class DefaultAuthorizationServiceTests
 
         // Assert
     }
+
     public static TheoryData<string> RequirementCollectionKinds => new() { "ReadOnlyCollection", "List", "Array", "Enumerable" };
 
     private static IEnumerable<IAuthorizationRequirement> CreateRequirements(string kind, params IAuthorizationRequirement[] requirements)
@@ -1297,7 +1298,6 @@ public class DefaultAuthorizationServiceTests
     [MemberData(nameof(RequirementCollectionKinds))]
     public async Task Authorize_InvokesTypedHandlersForEachMatchingRequirement(string kind)
     {
-        // Arrange
         var counter = new CountingRequirementHandler();
         var authorizationService = BuildAuthorizationService(services =>
         {
@@ -1313,11 +1313,9 @@ public class DefaultAuthorizationServiceTests
             new DenyAnonymousAuthorizationRequirement(),
             counted);
 
-        // Act
         var allowed = await authorizationService.AuthorizeAsync(user, "resource", requirements);
         var deniedForWrongResource = await authorizationService.AuthorizeAsync(user, 42, requirements);
 
-        // Assert
         Assert.True(allowed.Succeeded);
         Assert.False(deniedForWrongResource.Succeeded);
         Assert.Equal(4, counter.Invocations);
@@ -1327,17 +1325,14 @@ public class DefaultAuthorizationServiceTests
     [MemberData(nameof(RequirementCollectionKinds))]
     public async Task Authorize_PassThroughHandlerStopsAfterFailure(string kind)
     {
-        // Arrange
         var authorizationService = BuildAuthorizationService(services =>
             services.Configure<AuthorizationOptions>(options => options.InvokeHandlersAfterFailure = false));
         var user = new ClaimsPrincipal(new ClaimsIdentity());
         var after = new SelfHandlingRecordingRequirement(fail: false);
         var requirements = CreateRequirements(kind, new SelfHandlingRecordingRequirement(fail: true), after);
 
-        // Act
         var result = await authorizationService.AuthorizeAsync(user, null, requirements);
 
-        // Assert
         Assert.False(result.Succeeded);
         Assert.False(after.Invoked);
     }
