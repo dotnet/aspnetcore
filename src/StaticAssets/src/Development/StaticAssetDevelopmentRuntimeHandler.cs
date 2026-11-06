@@ -74,7 +74,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
                 // Conditional requests use the build-time validators from the descriptor. If we leave them intact,
                 // the invoker can short-circuit to 304 Not Modified before we get a chance to replace the body and
                 // response validators with values computed from the updated file.
-               ClearConditionalRequestHeaders(context.Request.Headers);
+                ClearCacheRevalidationHeaders(context.Request.Headers);
 
                 // In case we were dealing with a compressed asset, we are going to wrap the response body feature to re-compress the asset on the fly.
                 // and write that to the response instead.
@@ -113,14 +113,11 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
 
         return null;
     }
-   private static void ClearConditionalRequestHeaders(IHeaderDictionary headers)
+    private static void ClearCacheRevalidationHeaders(IHeaderDictionary headers)
     {
-        headers.Remove(HeaderNames.IfMatch);
         headers.Remove(HeaderNames.IfModifiedSince);
         headers.Remove(HeaderNames.IfNoneMatch);
-        headers.Remove(HeaderNames.IfRange);
-        headers.Remove(HeaderNames.IfUnmodifiedSince);
-    } 
+    }
     private void CreateDescriptorMap(List<StaticAssetDescriptor> descriptors)
     {
         for (var i = 0; i < descriptors.Count; i++)
