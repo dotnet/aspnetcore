@@ -122,7 +122,8 @@
   <!-- Input files for incremental build check -->
   <ItemGroup>
     <!-- Source files -->
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.ts" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.ts" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);$(NpmWorkspaceRoot)\src\Components\dotnet-runtime-js\dotnet.d.ts" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\Components\dotnet-runtime-js\dotnet.d.ts" />
     <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.js" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);**\samples\**\wwwroot\lib\**\*;**\FunctionalTests\wwwroot\lib\**\*;$(NpmWorkspaceRoot)\src\**\dist\**\*" />
     <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.mjs" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);$(NpmWorkspaceRoot)\src\**\dist\**\*" />
 
@@ -139,7 +140,11 @@
   </ItemGroup>
 
 
-  <Target Name="Restore" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
+  <Target Name="RestoreRuntimeJavaScriptDefinitions" Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)tools\GenerateFiles\GenerateFiles.csproj" Targets="Restore" />
+  </Target>
+
+  <Target Name="Restore" DependsOnTargets="RestoreRuntimeJavaScriptDefinitions" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
     <Message Text="Restoring NPM packages..." Importance="high" />
 
     <!-- Run 'npm ci' through a retry wrapper to tolerate transient network
