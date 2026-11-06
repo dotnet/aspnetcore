@@ -267,6 +267,18 @@ public class CancellationTokenReferenceTest
     }
 
     [Fact]
+    public void SerializationRollbackUsesRuntimeScopeAcrossExecutionContexts()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        using var context = ExecutionContext.Capture();
+        Assert.NotNull(context);
+        Assert.Throws<InvalidOperationException>(() => runtime.InvokeAsync<string>(
+            "receive", CancellationToken.None, [new ExecutionContextThrowingValue(runtime, source.Token, context)]));
+        Assert.Equal(0, AutomaticReferenceCount(runtime));
+    }
+
+    [Fact]
     public void DisposedRuntimeCannotAllocateAnotherAutomaticProjection()
     {
         var runtime = new ReferenceRuntime();
@@ -327,6 +339,22 @@ public class CancellationTokenReferenceTest
                 var call = runtime.InvokeVoidAsync("receive", CancellationToken.None, token);
                 Assert.True(call.IsCompletedSuccessfully);
                 throw new InvalidOperationException("outer serialization failure");
+            }
+        }
+    }
+
+    private sealed class ExecutionContextThrowingValue(ReferenceRuntime runtime, CancellationToken token, ExecutionContext context)
+    {
+        public string Value
+        {
+            get
+            {
+                ExecutionContext.Run(context, _ =>
+                {
+                    JsonSerializer.Serialize(token, runtime.JsonSerializerOptions);
+                    Assert.Equal(1, AutomaticReferenceCount(runtime));
+                }, null);
+                throw new InvalidOperationException("serialization failure");
             }
         }
     }

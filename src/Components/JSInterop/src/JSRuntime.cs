@@ -24,7 +24,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
     private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
     private readonly ConcurrentDictionary<long, Action> _automaticCancellationReferences = new();
-    private readonly AsyncLocal<List<CancellationTokenObserver>?> _serializingCancellationReferences = new();
+    // Serialization is synchronous on the owning dispatcher; nested calls restore the previous scope.
+    private List<CancellationTokenObserver>? _serializingCancellationReferences;
     private int _automaticCancellationReferencesDisposed;
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
@@ -209,9 +210,9 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Interop arguments are required to be linker friendly.")]
     private string SerializeArguments(object?[] args, out List<CancellationTokenObserver> references)
     {
-        var previous = _serializingCancellationReferences.Value;
+        var previous = _serializingCancellationReferences;
         references = new List<CancellationTokenObserver>();
-        _serializingCancellationReferences.Value = references;
+        _serializingCancellationReferences = references;
         try
         {
             return JsonSerializer.Serialize(args, JsonSerializerOptions);
@@ -227,14 +228,14 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         }
         finally
         {
-            _serializingCancellationReferences.Value = previous;
+            _serializingCancellationReferences = previous;
         }
     }
 
     internal CancellationTokenObserver CreateCancellationTokenObserver(CancellationToken token)
     {
         var observer = new CancellationTokenObserver(token);
-        _serializingCancellationReferences.Value?.Add(observer);
+        _serializingCancellationReferences?.Add(observer);
         return observer;
     }
 
