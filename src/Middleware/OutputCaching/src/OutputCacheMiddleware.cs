@@ -233,7 +233,7 @@ internal sealed class OutputCacheMiddleware
 
         var attribute = metadata?.GetMetadata<OutputCacheAttribute>();
 
-        var count = basePoliciesCount + (policy != null ? 1 : 0) + (attribute != null ? 1 : 0);
+        var count = basePoliciesCount + (policy is not null ? 1 : 0) + (attribute is not null ? 1 : 0);
         if (count == 0)
         {
             return false;
@@ -247,12 +247,12 @@ internal sealed class OutputCacheMiddleware
             result[index++] = basePolicies[i];
         }
 
-        if (policy != null)
+        if (policy is not null)
         {
             result[index++] = policy;
         }
 
-        if (attribute != null)
+        if (attribute is not null)
         {
             result[index++] = attribute.BuildPolicy();
         }
