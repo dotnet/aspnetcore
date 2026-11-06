@@ -86,7 +86,7 @@ internal sealed class CacheViewTextWriter : TextWriter
         _validateOnly = true;
     }
 
-    public void CreateLiveCachedComponent(Type componentType, IComponentRenderMode? renderMode, RenderFragmentCapture capture, ILogger renderFragmentSerializationLogger)
+    public void CreateLiveCachedComponent(Type componentType, RenderFragmentCapture capture, ILogger renderFragmentSerializationLogger)
     {
         ThrowIfLiveCachedComponentHasRenderFragmentParameter(componentType, capture);
 
@@ -104,16 +104,6 @@ internal sealed class CacheViewTextWriter : TextWriter
         {
             throw new InvalidOperationException(
                 $"CacheView could not serialize the live cached component '{componentType.FullName}' from its parent's render tree.");
-        }
-
-        // The serializer fills RenderModeName from an inline @rendermode frame. For components that
-        // declare their render mode via [RenderModeAttribute] instead, the capture has no render-mode
-        // frame, so patch it from the boundary's runtime render mode.
-        var renderModeName = RenderFragmentSerializer.GetRenderModeName(renderMode);
-        if (renderModeName is not null && liveCachedComponentNode.RenderModeName is null)
-        {
-            liveCachedComponentNode.RenderModeName = renderModeName;
-            liveCachedComponentNode.Prerender = RenderFragmentSerializer.GetRenderModePrerender(renderMode);
         }
 
         _entries.Add(CacheCaptureEntry.LiveCachedComponent(liveCachedComponentNode));

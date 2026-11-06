@@ -9,8 +9,10 @@ namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// A component that caches the rendered HTML of its child content during
-/// server-side rendering (SSR). On cache hit, child components are not
-/// instantiated or rendered.
+/// server-side rendering (SSR). On cache hit, cached child components are not
+/// instantiated or rendered. Components with <see cref="CacheBehavior.Rerender"/>,
+/// including interactive render-mode boundaries, render on every request using
+/// their cached parameter values.
 /// </summary>
 public sealed class CacheView : IComponent, IDisposable
 {

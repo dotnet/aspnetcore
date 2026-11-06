@@ -315,8 +315,7 @@ internal partial class EndpointHtmlRenderer
             if (!captureWriter.IsValidationOnly)
             {
                 // An interactive live cached component is wrapped in an SSRRenderModeBoundary that owns the inner
-                // component type and render mode; a plain live cached component is the component
-                // itself with no render mode.
+                // component type; a plain live cached component is the component itself.
                 var liveCachedComponentBoundary = componentState.Component as SSRRenderModeBoundary;
                 var liveCachedComponentType = liveCachedComponentBoundary?.ComponentType ?? componentState.Component.GetType();
 
@@ -324,7 +323,7 @@ internal partial class EndpointHtmlRenderer
                     ?? throw new InvalidOperationException(
                         $"CacheView could not locate the live cached component '{liveCachedComponentType.FullName}' in its parent's render tree.");
 
-                captureWriter.CreateLiveCachedComponent(liveCachedComponentType, liveCachedComponentBoundary?.RenderMode, liveCachedComponentCapture, GetRenderFragmentSerializationLogger());
+                captureWriter.CreateLiveCachedComponent(liveCachedComponentType, liveCachedComponentCapture, GetRenderFragmentSerializationLogger());
             }
         }
 
