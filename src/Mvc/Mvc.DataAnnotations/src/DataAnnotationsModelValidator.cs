@@ -155,10 +155,10 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
 
     private string? ResolveErrorMessage(ModelValidationContext validationContext, string? defaultErrorMessage)
     {
-        if (_stringLocalizer != null &&
+        if (_stringLocalizer is not null &&
             !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
             string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
-            Attribute.ErrorMessageResourceType == null)
+            Attribute.ErrorMessageResourceType is null)
         {
             return GetErrorMessage(validationContext) ?? defaultErrorMessage;
         }

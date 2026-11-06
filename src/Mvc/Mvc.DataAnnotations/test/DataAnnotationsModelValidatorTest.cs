@@ -290,7 +290,6 @@ public class DataAnnotationsModelValidatorTest
     [MemberData(nameof(Validate_BuiltInAttributes_Data))]
     public void Validate_BuiltInAttributes_ReturnsExpectedResults(ValidationAttribute attribute, object model, bool isValid)
     {
-        // Arrange
         var metadata = _metadataProvider.GetMetadataForProperty(typeof(SampleModel), nameof(SampleModel.Name));
         var validator = new DataAnnotationsModelValidator(
             new ValidationAttributeAdapterProvider(),
@@ -303,10 +302,8 @@ public class DataAnnotationsModelValidatorTest
             container: new SampleModel(),
             model: model);
 
-        // Act
         var results = validator.Validate(validationContext);
 
-        // Assert
         if (isValid)
         {
             Assert.Empty(results);
@@ -322,7 +319,6 @@ public class DataAnnotationsModelValidatorTest
     [Fact]
     public void Validate_DerivedBuiltInAttribute_ReceivesValidationContext()
     {
-        // Arrange
         var attribute = new DerivedRequiredAttribute();
         var metadata = _metadataProvider.GetMetadataForProperty(typeof(SampleModel), nameof(SampleModel.Name));
         var container = new SampleModel();
@@ -337,10 +333,8 @@ public class DataAnnotationsModelValidatorTest
             container: container,
             model: "value");
 
-        // Act
         var results = validator.Validate(validationContext);
 
-        // Assert
         var result = Assert.Single(results);
         Assert.Equal("Context error", result.Message);
         Assert.Same(container, attribute.ValidationContext.ObjectInstance);
