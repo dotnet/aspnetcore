@@ -3,12 +3,12 @@
 
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Time.Testing;
@@ -28,7 +28,9 @@ public class Http3ConnectionSetupBenchmark
 
     private sealed class DefaultTimeoutHandler : ITimeoutHandler
     {
-        public void OnTimeout(TimeoutReason reason) { }
+        public void OnTimeout(TimeoutReason reason)
+        {
+        }
     }
 
     [GlobalSetup]
@@ -68,7 +70,7 @@ public class Http3ConnectionSetupBenchmark
         _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
         var stream = await http3.CreateRequestStream(_requestHeadersEnumerator, _headerHandler, endStream: true);
 
-        while (await stream.ReceiveFrameAsync(allowEnd: true, frame: _httpFrame) != null)
+        while (await stream.ReceiveFrameAsync(allowEnd: true, frame: _httpFrame) is not null)
         {
         }
 
