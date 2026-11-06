@@ -169,11 +169,9 @@ public class DefaultModelBindingContextTest
     [Fact]
     public void DisposingNestedScope_WithoutEnteringNestedScope_Throws()
     {
-        // Arrange
         var bindingContext = new DefaultModelBindingContext();
         var scope = new ModelBindingContext.NestedScope(bindingContext);
 
-        // Act & Assert
         Assert.Throws<InvalidOperationException>(() => scope.Dispose());
     }
 
