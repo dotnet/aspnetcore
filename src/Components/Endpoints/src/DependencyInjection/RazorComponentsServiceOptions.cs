@@ -23,6 +23,16 @@ public sealed class RazorComponentsServiceOptions
     public bool DetailedErrors { get; set; }
 
     /// <summary>
+    /// Gets or sets a value that determines whether client-side validation is disabled for all
+    /// forms rendered with static server-side rendering. When <see langword="false"/> (the default),
+    /// forms using <see cref="Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator"/> emit
+    /// client-side validation rules so user errors can be reported without a round trip to the
+    /// server. When <see langword="true"/>, no client-side validation rules are emitted and only
+    /// server-side validation runs.
+    /// </summary>
+    public bool DisableClientValidation { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum number of elements allowed in a form collection.
     /// </summary>
     public int MaxFormMappingCollectionSize
@@ -106,29 +116,29 @@ public sealed class RazorComponentsServiceOptions
     public TempDataProviderType TempDataProviderType { get; set; } = TempDataProviderType.Cookie;
 
     /// <summary>
-    /// Gets or sets the maximum size, in bytes, of the in-memory cache used by <see cref="CacheBoundary"/>
+    /// Gets or sets the maximum size, in bytes, of the in-memory cache used by <see cref="CacheView"/>
     /// for server-side rendering. When the limit is reached, no new entries are cached until
     /// existing entries expire. Defaults to 100 MB. A value of 0 configures a zero-byte
     /// cache size limit, so entries are not cached.
     /// </summary>
-    public long CacheBoundarySizeLimit
+    public long CacheViewSizeLimit
     {
-        get => _cacheBoundarySizeLimit;
+        get => _cacheViewSizeLimit;
         set
         {
             ArgumentOutOfRangeException.ThrowIfNegative(value);
-            _cacheBoundarySizeLimit = value;
+            _cacheViewSizeLimit = value;
         }
     }
 
-    private long _cacheBoundarySizeLimit = 100 * 1024 * 1024;
+    private long _cacheViewSizeLimit = 100 * 1024 * 1024;
 
     /// <summary>
-    /// Gets or sets the <see cref="HybridCache"/> used by <see cref="CacheBoundary"/> for server-side
+    /// Gets or sets the <see cref="HybridCache"/> used by <see cref="CacheView"/> for server-side
     /// rendering. When left unset, the registered <see cref="HybridCache"/> service is used if one is
     /// available; otherwise the in-memory store is used.
     /// </summary>
-    public HybridCache? CacheBoundaryHybridCache { get; set; }
+    public HybridCache? CacheViewHybridCache { get; set; }
 
-    internal static readonly TimeSpan DefaultCacheBoundaryExpiration = TimeSpan.FromSeconds(30);
+    internal static readonly TimeSpan DefaultCacheViewExpiration = TimeSpan.FromSeconds(30);
 }

@@ -13,7 +13,7 @@
   "description": "A project for creating a class library that runs .NET code on a web worker from a Blazor WebAssembly or Blazor Web app.",
   "groupIdentity": "Microsoft.Web.Blazor.WebWorker",
   "precedence": "10000",
-  "identity": "Microsoft.Web.Blazor.WebWorker.Library.CSharp.11.0",
+  "identity": "Microsoft.Web.Blazor.WebWorker.Library.CSharp.12.0",
   "shortName": "blazorwebworker",
   "tags": {
     "language": "C#",
@@ -28,11 +28,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net11.0"
+          "choice": "net12.0"
         }
       ],
-      "replaces": "net11.0",
-      "defaultValue": "net11.0"
+      "replaces": "net12.0",
+      "defaultValue": "net12.0"
     },
     "HostIdentifier": {
       "type": "bind",

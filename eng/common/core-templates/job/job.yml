@@ -28,6 +28,7 @@ parameters:
   enablePublishTestResults: false
   enablePublishing: false
   enableBuildRetry: false
+  enableAstred: false
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
@@ -119,7 +120,14 @@ jobs:
         - name: ${{ pair.key }}
           value: ${{ pair.value }}
 
-  # DotNet-HelixApi-Access provides 'HelixApiAccessToken' for internal builds
+  - ${{ if and(eq(parameters.enableAstred, true), eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - name: MSBUILDDEBUGENGINE
+      value: 1
+    - name: MSBUILDDEBUGPATH
+      value: $(Build.ArtifactStagingDirectory)/AstredCapture/binlogs
+
+  # DotNet-HelixApi-Access provides 'HelixApiAccessToken' for internal builds.
+  # Entra-enabled Helix templates do not forward this value to their processes.
   - ${{ if and(eq(parameters.enableTelemetry, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: DotNet-HelixApi-Access
 
@@ -236,3 +244,8 @@ jobs:
       condition: always()
   - ${{ each step in parameters.artifactPublishSteps }}:
     - ${{ step }}
+
+  - ${{ if and(eq(parameters.enableAstred, true), eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - template: /eng/common/core-templates/steps/astred-artifacts.yml
+      parameters:
+        binlogDir: $(MSBUILDDEBUGPATH)

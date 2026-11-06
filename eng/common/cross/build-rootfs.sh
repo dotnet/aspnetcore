@@ -8,8 +8,8 @@ usage()
     echo "BuildArch can be: arm(default), arm64, loongarch64, ppc64le, riscv64, s390x, x64, x86"
     echo "CodeName - optional, Code name for Linux, can be: xenial(default), zesty, bionic, alpine"
     echo "                               for alpine can be specified with version: alpineX.YY or alpineedge"
-    echo "                               for FreeBSD can be: freebsd13, freebsd14"
-    echo "                               for OpenBSD can be: openbsd"
+    echo "                               for FreeBSD can be: freebsd14, freebsd15"
+    echo "                               for OpenBSD can be: openbsd7.8, openbsd7.9"
     echo "                               for illumos can be: illumos"
     echo "                               for Haiku can be: haiku."
     echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FreeBSD"
@@ -18,7 +18,10 @@ usage()
     echo "--skipsigcheck - optional, will skip package signature checks (allowing untrusted packages)."
     echo "--skipemulation - optional, will skip qemu and debootstrap requirement when building environment for debian based systems."
     echo "--use-mirror - optional, use mirror URL to fetch resources, when available."
-    echo "--jobs N - optional, restrict to N jobs."
+    echo "--ubuntu-repo <url> - optional, override the Ubuntu apt repository base URL."
+    echo "--debian-repo <url> - optional, override the Debian apt repository base URL."
+    echo "--alpine-repo <url> - optional, override the Alpine Linux repository base URL."
+    echo "--jobs N (or --use-jobs N) - optional, restrict to N jobs."
     exit 1
 }
 
@@ -75,9 +78,9 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="13.5-RELEASE"
-__FreeBSDPkg="2.7.5"
-__FreeBSDABI="13"
+__FreeBSDBase="14.4-RELEASE"
+__FreeBSDPkg="2.8.0"
+__FreeBSDABI="14"
 __FreeBSDPackages="libunwind"
 __FreeBSDPackages+=" icu"
 __FreeBSDPackages+=" libinotify"
@@ -144,6 +147,9 @@ __KeyringFile="/usr/share/keyrings/ubuntu-archive-keyring.gpg"
 __SkipSigCheck=0
 __SkipEmulation=0
 __UseMirror=0
+__UbuntuRepoOverride=
+__DebianRepoOverride=
+__AlpineRepoOverride=
 
 __UnprocessedBuildArgs=
 while :; do
@@ -181,17 +187,14 @@ while :; do
             __AlpineArch=loongarch64
             __QEMUArch=loongarch64
             __UbuntuArch=loong64
-            __UbuntuSuites=unreleased
             __LLDB_Package="liblldb-19-dev"
             ;;
         riscv64)
             __BuildArch=riscv64
             __AlpineArch=riscv64
-            __AlpinePackages="${__AlpinePackages// lldb-dev/}"
             __QEMUArch=riscv64
             __UbuntuArch=riscv64
-            __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
-            unset __LLDB_Package
+            __LLDB_Package="liblldb-19-dev"
             ;;
         ppc64le)
             __BuildArch=ppc64le
@@ -285,6 +288,10 @@ while :; do
             __CodeName=noble
             __LLDB_Package="liblldb-19-dev"
             ;;
+        resolute) # Ubuntu 26.04
+            __CodeName=resolute
+            __LLDB_Package="liblldb-21-dev"
+            ;;
         stretch) # Debian 9
             __CodeName=stretch
             __LLDB_Package="liblldb-6.0-dev"
@@ -325,7 +332,7 @@ while :; do
 
             # Debian-Ports architectures need different values
             case "$__UbuntuArch" in
-            amd64|arm64|armhf|i386|mips64el|ppc64el|riscv64|s390x)
+            amd64|arm64|armhf|i386|mips64el|ppc64el|riscv64|loong64|s390x)
                 __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
                 if [[ -z "$__UbuntuRepo" ]]; then
@@ -359,18 +366,27 @@ while :; do
                 __AlpineVersion="$__AlpineMajorVersion.$__AlpineMinorVersion"
             fi
             ;;
-        freebsd13)
+        freebsd14)
             __CodeName=freebsd
             __SkipUnmount=1
             ;;
-        freebsd14)
+        freebsd15)
             __CodeName=freebsd
-            __FreeBSDBase="14.3-RELEASE"
-            __FreeBSDABI="14"
+            __FreeBSDBase="15.1-RELEASE"
+            __FreeBSDABI="15"
             __SkipUnmount=1
             ;;
         openbsd)
             __CodeName=openbsd
+            __SkipUnmount=1
+            ;;
+        openbsd7.8)
+            __CodeName=openbsd
+            __SkipUnmount=1
+            ;;
+        openbsd7.9)
+            __CodeName=openbsd
+            __OpenBSDVersion="7.9"
             __SkipUnmount=1
             ;;
         illumos)
@@ -397,6 +413,31 @@ while :; do
         --use-mirror)
             __UseMirror=1
             ;;
+        --ubuntu-repo|-ubuntu-repo)
+            shift
+            if [[ "$#" -le 0 ]]; then
+                echo "ERROR: --ubuntu-repo requires a URL argument."
+                usage
+            fi
+            __UbuntuRepoOverride="$1"
+            ;;
+        --debian-repo|-debian-repo)
+            shift
+            if [[ "$#" -le 0 ]]; then
+                echo "ERROR: --debian-repo requires a URL argument."
+                usage
+            fi
+            __DebianRepoOverride="$1"
+            ;;
+        --alpine-repo|-alpine-repo)
+            shift
+            if [[ "$#" -le 0 ]]; then
+                echo "ERROR: --alpine-repo requires a URL argument."
+                usage
+            fi
+            __AlpineRepoOverride="$1"
+            ;;
+        # Removed duplicate/invalid option handling block (was breaking case statement parsing).
         --use-jobs)
             shift
             MAXJOBS=$1
@@ -422,9 +463,12 @@ case "$__AlpineVersion" in
         elif [[ "$__AlpineArch" == "x86" ]]; then
             __AlpineVersion=3.17 # minimum version that supports lldb-dev
             __AlpinePackages+=" llvm15-libs"
-        elif [[ "$__AlpineArch" == "riscv64" || "$__AlpineArch" == "loongarch64" ]]; then
+        elif [[ "$__AlpineArch" == "loongarch64" ]]; then
             __AlpineVersion=3.21 # minimum version that supports lldb-dev
             __AlpinePackages+=" llvm19-libs"
+        elif [[ "$__AlpineArch" == "riscv64" ]]; then
+            __AlpineVersion=3.22 # lldb-dev requires 3.21+, but 3.22+ provides the newer linux-headers needed for RISC-V extension probes
+            __AlpinePackages+=" llvm20-libs"
         elif [[ -n "$__AlpineMajorVersion" ]]; then
             # use whichever alpine version is provided and select the latest toolchain libs
             __AlpineLlvmLibsLookup=1
@@ -444,6 +488,12 @@ __UbuntuPackages+=" ${__LLDB_Package:-}"
 
 if [[ -z "$__UbuntuRepo" ]]; then
     __UbuntuRepo="https://ports.ubuntu.com/"
+fi
+
+if [[ -n "$__UbuntuRepoOverride" && "$__KeyringFile" == *ubuntu* ]]; then
+    __UbuntuRepo="$__UbuntuRepoOverride"
+elif [[ -n "$__DebianRepoOverride" && "$__KeyringFile" == *debian* ]]; then
+    __UbuntuRepo="$__DebianRepoOverride"
 fi
 
 if [[ -n "$__LLVM_MajorVersion" ]]; then
@@ -482,26 +532,33 @@ ensureDownloadTool()
 }
 
 if [[ "$__CodeName" == "alpine" ]]; then
-    __ApkToolsVersion=2.12.11
+    __ApkToolsVersion=3.0.8-r0
     __ApkToolsDir="$(mktemp -d)"
     __ApkKeysDir="$(mktemp -d)"
     arch="$(uname -m)"
+    __AlpineRepo="${__AlpineRepoOverride:-https://dl-cdn.alpinelinux.org/alpine}"
 
     ensureDownloadTool
+    __ApkToolsPackage="$__ApkToolsDir/apk-tools-static.apk"
+    __ApkToolsUrl="$__AlpineRepo/v3.24/main/$arch/apk-tools-static-$__ApkToolsVersion.apk"
 
     if [[ "$__hasWget" == 1 ]]; then
-        wget -P "$__ApkToolsDir" "https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v$__ApkToolsVersion/$arch/apk.static"
+        wget -O "$__ApkToolsPackage" "$__ApkToolsUrl"
     else
-        curl -SLO --create-dirs --output-dir "$__ApkToolsDir" "https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v$__ApkToolsVersion/$arch/apk.static"
+        curl -fSL -o "$__ApkToolsPackage" "$__ApkToolsUrl"
     fi
+
     if [[ "$arch" == "x86_64" ]]; then
-      __ApkToolsSHA512SUM="53e57b49230da07ef44ee0765b9592580308c407a8d4da7125550957bb72cb59638e04f8892a18b584451c8d841d1c7cb0f0ab680cc323a3015776affaa3be33"
+        __ApkToolsSHA512SUM="6ab4f5e521efbfff75a4b0ecc6a028b4df0c22eadc46c18a30fa03faca0f6efd6c546b3682a856e66865f0152993a9cc843c15633a7d01b6e0f9d225b1e31ef8"
     elif [[ "$arch" == "aarch64" ]]; then
-      __ApkToolsSHA512SUM="9e2b37ecb2b56c05dad23d379be84fd494c14bd730b620d0d576bda760588e1f2f59a7fcb2f2080577e0085f23a0ca8eadd993b4e61c2ab29549fdb71969afd0"
+        __ApkToolsSHA512SUM="c592bfefe3b3bc73d56fef5293a2c5c27a71d0555df7ca7db638a70c7ac81be6509f6348f28fe7474ae9adbda6f21c00a8c20d8a6ba6d5579f2ffa78d55184d2"
     else
-      echo "WARNING: add missing hash for your host architecture. To find the value, use: 'find /tmp -name apk.static -exec sha512sum {} \;'"
+        >&2 echo "ERROR: Unsupported apk-tools-static host architecture '$arch'."
+        exit 1
     fi
-    echo "$__ApkToolsSHA512SUM $__ApkToolsDir/apk.static" | sha512sum -c
+    echo "$__ApkToolsSHA512SUM $__ApkToolsPackage" | sha512sum -c
+    tar -xzf "$__ApkToolsPackage" -C "$__ApkToolsDir" --strip-components=1 sbin/apk.static
+    rm "$__ApkToolsPackage"
     chmod +x "$__ApkToolsDir/apk.static"
 
     if [[ "$__AlpineVersion" == "edge" ]]; then
@@ -530,15 +587,15 @@ if [[ "$__CodeName" == "alpine" ]]; then
     # initialize DB
     # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
-        -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
-        -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
+        -X "$__AlpineRepo/$version/main" \
+        -X "$__AlpineRepo/$version/community" \
         -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" --initdb add
 
     if [[ "$__AlpineLlvmLibsLookup" == 1 ]]; then
         # shellcheck disable=SC2086
         __AlpinePackages+=" $("$__ApkToolsDir/apk.static" \
-            -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
-            -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
+            -X "$__AlpineRepo/$version/main" \
+            -X "$__AlpineRepo/$version/community" \
             -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" \
             search 'llvm*-libs' | grep -E '^llvm' | sort | tail -1 | sed 's/-[^-]*//2g')"
     fi
@@ -546,8 +603,8 @@ if [[ "$__CodeName" == "alpine" ]]; then
     # install all packages in one go
     # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
-        -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
-        -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
+        -X "$__AlpineRepo/$version/main" \
+        -X "$__AlpineRepo/$version/community" \
         -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" $__NoEmulationArg \
         add $__AlpinePackages
 

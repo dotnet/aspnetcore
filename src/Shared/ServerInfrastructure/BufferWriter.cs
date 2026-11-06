@@ -69,6 +69,7 @@ internal ref struct BufferWriter<T> where T : IBufferWriter<byte>
             _bytesCommitted += buffered;
             _buffered = 0;
             _output.Advance(buffered);
+            _span = default;
         }
     }
 
@@ -90,6 +91,11 @@ internal ref struct BufferWriter<T> where T : IBufferWriter<byte>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Write(ReadOnlySpan<byte> source)
     {
+        if (_span.IsEmpty && !source.IsEmpty)
+        {
+            EnsureMore();
+        }
+
         if (_span.Length >= source.Length)
         {
             source.CopyTo(_span);

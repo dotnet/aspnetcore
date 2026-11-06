@@ -85,11 +85,11 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="$(IIS-Setup)iisca\lib\iisca.vcxproj">
-      <Project>{7324770c-0871-4d73-be3d-5e2f3e9e1b1e}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(IIS-Common)lib\IISSetup.CommonLib.vcxproj">
       <Project>{b54a8f61-60de-4ad9-87ca-d102f230678e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(IIS-Setup)iisca\lib\iisca.vcxproj">
+      <Project>{7324770c-0871-4d73-be3d-5e2f3e9e1b1e}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,0 +1,9 @@
+html,
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body > h1 {
+    padding-inline: 1.5rem;
+}

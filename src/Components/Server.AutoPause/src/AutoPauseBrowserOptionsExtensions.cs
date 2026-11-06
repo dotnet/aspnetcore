@@ -33,8 +33,8 @@ public static class AutoPauseBrowserOptionsExtensions
         }
 
         // Flat keys follow the existing browser-config convention (see InteractiveServerBrowserOptions).
-        options.Server.Extensions["autoPauseEnabled"] = JsonSerializer.SerializeToElement(settings.Enabled, AutoPauseJsonContext.Default.Boolean);
-        options.Server.Extensions["autoPauseHiddenDelayMilliseconds"] = JsonSerializer.SerializeToElement((long)delayMilliseconds, AutoPauseJsonContext.Default.Int64);
+        options.InteractiveServer.Extensions["autoPauseEnabled"] = JsonSerializer.SerializeToElement(settings.Enabled, AutoPauseJsonContext.Default.Boolean);
+        options.InteractiveServer.Extensions["autoPauseHiddenDelayMilliseconds"] = JsonSerializer.SerializeToElement((long)delayMilliseconds, AutoPauseJsonContext.Default.Int64);
 
         return options;
     }

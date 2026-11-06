@@ -386,6 +386,71 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Fact]
+    public async Task SignOutClearsSessionKeySoSubsequentSignInGeneratesNewKey()
+    {
+        var sessionStore = new TestTicketStore();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.TimeProvider = _timeProvider;
+                o.SessionStore = sessionStore;
+            });
+        }, async context =>
+        {
+            if (context.Request.Query.ContainsKey("signoutfirst"))
+            {
+                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                // Sign back in as a different principal to mirror the privilege-rotation
+                // scenario from https://github.com/dotnet/aspnetcore/issues/47503.
+                var bob = new ClaimsIdentity(new GenericIdentity("Bob", "Cookies"));
+                await context.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(bob),
+                    new AuthenticationProperties());
+            }
+            else
+            {
+                await SignInAsAlice(context);
+            }
+        });
+
+        using var server = host.GetTestServer();
+
+        // Establish an initial session as Alice with one key in the store.
+        var transaction1 = await SendAsync(server, "http://example.com/testpath");
+        var key1 = Assert.Single(sessionStore.Store.Keys);
+
+        // In the same request, sign out and then sign back in as Bob while attaching the
+        // existing cookie. SignOutAsync must clear the cached session key so that the
+        // subsequent SignInAsync generates a fresh key via StoreAsync rather than reusing
+        // the just-removed key via RenewAsync.
+        // See https://github.com/dotnet/aspnetcore/issues/47503.
+        //
+        // Same-request SignOut + SignIn emits two Set-Cookie headers (the sign-out
+        // delete-cookie followed by the sign-in auth-cookie), so the shared SendAsync
+        // helper's SingleOrDefault on Set-Cookie can't be used here. Extract the
+        // auth-cookie (the last Set-Cookie value) manually.
+        var request2 = new HttpRequestMessage(HttpMethod.Get, "http://example.com/testpath?signoutfirst=1");
+        request2.Headers.Add("Cookie", transaction1.CookieNameValue);
+        using var response2 = await server.CreateClient().SendAsync(request2);
+        Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
+
+        var key2 = Assert.Single(sessionStore.Store.Keys);
+        Assert.NotEqual(key1, key2);
+
+        var setCookies = response2.Headers.GetValues("Set-Cookie").ToArray();
+        Assert.Equal(2, setCookies.Length);
+        var authCookieNameValue = setCookies[^1].Split(';', 2)[0];
+
+        // The new cookie must actually authenticate, and it must resolve to Bob rather
+        // than the pre-signout Alice identity.
+        var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", authCookieNameValue);
+        Assert.Equal("Bob", FindClaimValue(transaction3, ClaimTypes.Name));
+    }
+
+    [Fact]
     public async Task CustomAuthSchemeEncodesCookieName()
     {
         var schemeName = "With spaces and 界";

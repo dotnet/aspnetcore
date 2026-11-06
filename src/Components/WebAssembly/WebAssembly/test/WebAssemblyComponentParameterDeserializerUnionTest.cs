@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Prerendering;
 
@@ -39,23 +40,58 @@ public class WebAssemblyComponentParameterDeserializerUnionTest
         Assert.Equal(new UnionIntString("hi"), parameters["Value"]);
     }
 
+    [Fact]
+    public void NullParameter_RoundTripsThroughPrerenderParameters()
+    {
+        var parameters = RoundTrip<string?>(null);
+
+        Assert.Null(parameters["Value"]);
+    }
+
+    [Theory]
+    [InlineData(typeof(string))]
+    [InlineData(typeof(int?))]
+    public void DeserializeParameters_RejectsTypedNullForNonUnion(Type parameterType)
+    {
+        var definition = new ComponentParameter
+        {
+            Name = "Value",
+            TypeName = parameterType.FullName,
+            Assembly = parameterType.Assembly.GetName().Name,
+        };
+        var wireValues = WebAssemblyComponentParameterDeserializer.GetParameterValues("[null]");
+        var deserializer = new WebAssemblyComponentParameterDeserializer(
+            new ComponentParametersTypeCache(),
+            WebAssemblyComponentSerializationSettings.CreateOptions());
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            deserializer.DeserializeParameters([definition], wireValues));
+
+        Assert.Equal(
+            $"Could not parse the parameter value for parameter '{definition.Name}' of type '{definition.TypeName}' and assembly '{definition.Assembly}'.",
+            exception.Message);
+    }
+
     private static IReadOnlyDictionary<string, object?> RoundTrip<T>(T value)
     {
         var (definitions, values) = ComponentParameter.FromParameterView(
             ParameterView.FromDictionary(new Dictionary<string, object?> { ["Value"] = value }));
 
-        // Mirror the marker marshalling: parameter values are serialized to JSON and read back as an
-        // object list, so a union active case that serializes to JSON null becomes a CLR null here.
-        var json = JsonSerializer.Serialize(values, WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+        // Prerendering and WebAssembly run in separate runtimes. Keep both options fresh and separate
+        // so neither producer serialization nor another test can initialize the reader's options.
+        var producerOptions = WebAssemblyComponentSerializationSettings.CreateOptions();
+        var readerOptions = WebAssemblyComponentSerializationSettings.CreateOptions();
+        var deserializer = new WebAssemblyComponentParameterDeserializer(
+            new ComponentParametersTypeCache(),
+            readerOptions);
+        var json = JsonSerializer.Serialize(values, producerOptions);
         var wireValues = WebAssemblyComponentParameterDeserializer.GetParameterValues(json);
 
-        return WebAssemblyComponentParameterDeserializer.Instance
+        return deserializer
             .DeserializeParameters(definitions, wireValues)
             .ToDictionary();
     }
 }
-
-// --- Test union types (kept together, mirroring SharedTypes.Unions.cs) ---
 
 // Unambiguous primitive-paired union: int and string serialize to distinct JSON tokens.
 public union UnionIntString(int, string);

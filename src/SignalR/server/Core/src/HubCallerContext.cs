@@ -19,6 +19,10 @@ public abstract class HubCallerContext
     /// <summary>
     /// Gets the user identifier.
     /// </summary>
+    /// <remarks>
+    /// The identifier is established when the connection starts and is not changed by authentication
+    /// refresh. Reconnect the client to change its SignalR user-routing identifier.
+    /// </remarks>
     public abstract string? UserIdentifier { get; }
 
     /// <summary>

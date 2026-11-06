@@ -20,11 +20,10 @@
     <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
     <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
 
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" VersionOverride="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -249,9 +249,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
     }
 
-    private bool GetIsConfigureHostApplicationBuilderOverridden()
+    private bool GetIsConfigureWebApplicationBuilderOverridden()
     {
-        var method = this.GetType().GetMethod(nameof(ConfigureHostApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(IHostApplicationBuilder)]);
+        var method = this.GetType().GetMethod(nameof(ConfigureWebApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(IHostApplicationBuilder)]);
         var declaringType = method!.DeclaringType;
         if (declaringType!.IsGenericType)
         {
@@ -273,7 +273,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
 
         var receivedBuilderConstructed = false;
-        var isOverridden = GetIsConfigureHostApplicationBuilderOverridden();
+        var isOverridden = GetIsConfigureWebApplicationBuilderOverridden();
 
         EnsureDepsFile();
 
@@ -282,7 +282,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             if (isOverridden)
             {
-                throw new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
+                throw new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
             }
 
             ConfigureHostBuilder(hostBuilder);
@@ -308,10 +308,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
             var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
             {
-                { "HostApplicationBuilderConstructed", hostApplicationBuilder =>
+                { "WebApplicationBuilderConstructed", hostApplicationBuilder =>
                     {
                         receivedBuilderConstructed = true;
-                        ConfigureHostApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!);
+                        ConfigureWebApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!);
                     }
                 }
             };
@@ -324,7 +324,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                     {
                         if (isOverridden && !receivedBuilderConstructed)
                         {
-                            ex = new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
+                            ex = new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
                         }
 
                         deferredHostBuilder.EntryPointCompleted(ex);
@@ -353,7 +353,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             if (isOverridden)
             {
-                throw new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
+                throw new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
             }
 
             SetContentRoot(builder);
@@ -679,7 +679,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// This method will be called very early, during the entrypoint's call to WebApplication.CreateBuilder.
     /// </summary>
     /// <param name="hostApplicationBuilder">The host application builder to configure.</param>
-    protected virtual void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
+    protected virtual void ConfigureWebApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
     {
     }
 

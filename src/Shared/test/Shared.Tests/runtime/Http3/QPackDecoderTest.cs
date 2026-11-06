@@ -80,6 +80,36 @@ namespace System.Net.Http.Unit.Tests.QPack
             Assert.Equal("GET", _handler.DecodedStaticHeaders[H3StaticTable.MethodGet].Value);
         }
 
+        [Theory]
+        [InlineData(new byte[] { 0xc0 }, 0, ":authority", "")]
+        [InlineData(new byte[] { 0xff, 0x23 }, 98, "x-frame-options", "sameorigin")]
+        public void DecodesIndexedHeaderField_StaticTableBoundaries(byte[] encoded, int index, string expectedHeaderName, string expectedHeaderValue)
+        {
+            _decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded, endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.Equal(expectedHeaderValue, _handler.DecodedHeaders[expectedHeaderName]);
+            Assert.Single(_handler.DecodedStaticHeaders);
+            Assert.Equal(new KeyValuePair<string, string>(expectedHeaderName, expectedHeaderValue), _handler.DecodedStaticHeaders[index]);
+        }
+
+        [Theory]
+        [InlineData(new byte[] { 0x50 }, 0, ":authority")]
+        [InlineData(new byte[] { 0x5f, 0x53 }, 98, "x-frame-options")]
+        public void DecodesLiteralHeaderFieldWithNameReference_StaticTableBoundaries(byte[] prefix, int index, string expectedHeaderName)
+        {
+            byte[] encoded = prefix.Concat(_headerValue).ToArray();
+
+            _decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded, endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.Equal(_headerValueString, _handler.DecodedHeaders[expectedHeaderName]);
+            Assert.Single(_handler.DecodedStaticHeaders);
+            Assert.Equal(new KeyValuePair<string, string>(expectedHeaderName, _headerValueString), _handler.DecodedStaticHeaders[index]);
+        }
+
         [Fact]
         public void DecodesIndexedHeaderField_StaticTableLiteralValue()
         {
@@ -337,6 +367,20 @@ namespace System.Net.Http.Unit.Tests.QPack
         {
             QPackDecodingException exception = Assert.Throws<QPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
             Assert.Equal(SR.net_http_hpack_incomplete_header_block, exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+        }
+
+        [Theory]
+        // Indexed Field Line - Static Table - Index 99 (out of range)
+        [InlineData(new byte[] { 0xff, 0x24 }, 99)]
+        // Literal Header Field With Name Reference - Static Table - Index 99 (out of range)
+        [InlineData(new byte[] { 0x5f, 0x54, 0x01, 0x61 }, 99)]
+        public void DecodesIndexOutsideStaticTable_Error(byte[] encoded, int index)
+        {
+            _decoder.Decode([0x00, 0x00], endHeaders: false, handler: _handler);
+
+            var exception = Assert.Throws<QPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_qpack_invalid_index, index), exception.Message);
             Assert.Empty(_handler.DecodedHeaders);
         }
 

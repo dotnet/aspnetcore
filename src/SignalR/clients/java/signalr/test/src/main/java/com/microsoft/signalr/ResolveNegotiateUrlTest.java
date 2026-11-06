@@ -19,7 +19,9 @@ class ResolveNegotiateUrlTest {
                 Arguments.of("http://example.com/endpoint?q=my/Data", 0, "http://example.com/endpoint/negotiate?q=my/Data&negotiateVersion=0"),
                 Arguments.of("http://example.com/endpoint/?q=my/Data", 1, "http://example.com/endpoint/negotiate?q=my/Data&negotiateVersion=1"),
                 Arguments.of("http://example.com/endpoint/path/more?q=my/Data", 0, "http://example.com/endpoint/path/more/negotiate?q=my/Data&negotiateVersion=0"),
-                Arguments.of("http://example.com/hub/?negotiateVersion=2", 0, "http://example.com/hub/negotiate?negotiateVersion=2"));
+                Arguments.of("http://example.com/hub/?negotiateVersion=2", 0, "http://example.com/hub/negotiate?negotiateVersion=2"),
+                Arguments.of("http://example.com/hub/?q=negotiateVersion", 1, "http://example.com/hub/negotiate?q=negotiateVersion&negotiateVersion=1"),
+                Arguments.of("http://example.com/endpoint?q=negotiateVersionValue&negotiateVersion=2", 1, "http://example.com/endpoint/negotiate?q=negotiateVersionValue&negotiateVersion=2"));
     }
 
     @ParameterizedTest

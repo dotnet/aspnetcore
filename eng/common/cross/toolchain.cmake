@@ -6,6 +6,7 @@ unset(FREEBSD)
 unset(OPENBSD)
 unset(ILLUMOS)
 unset(ANDROID)
+unset(OPENHARMONY)
 unset(TIZEN)
 unset(HAIKU)
 
@@ -35,6 +36,8 @@ if(EXISTS ${CROSS_ROOTFS}/etc/tizen-release)
   set(TIZEN 1)
 elseif(EXISTS ${CROSS_ROOTFS}/android_platform)
   set(ANDROID 1)
+elseif(EXISTS ${CROSS_ROOTFS}/../build/cmake/ohos.toolchain.cmake)
+  set(OPENHARMONY 1)
 endif()
 
 if(TARGET_ARCH_NAME STREQUAL "arm")
@@ -87,6 +90,8 @@ elseif(TARGET_ARCH_NAME STREQUAL "ppc64le")
   set(CMAKE_SYSTEM_PROCESSOR ppc64le)
   if(EXISTS ${CROSS_ROOTFS}/usr/lib/gcc/powerpc64le-alpine-linux-musl)
     set(TOOLCHAIN "powerpc64le-alpine-linux-musl")
+  elseif(FREEBSD)
+    set(TOOLCHAIN "powerpc64le-unknown-freebsd14")
   else()
     set(TOOLCHAIN "powerpc64le-linux-gnu")
   endif()
@@ -202,6 +207,17 @@ if(ANDROID)
 
     # include official NDK toolchain script
     include(${CROSS_ROOTFS}/../build/cmake/android.toolchain.cmake)
+elseif(OPENHARMONY)
+    if(TARGET_ARCH_NAME STREQUAL "arm")
+        set(OHOS_ARCH armeabi-v7a)
+    elseif(TARGET_ARCH_NAME STREQUAL "arm64")
+        set(OHOS_ARCH arm64-v8a)
+    elseif(TARGET_ARCH_NAME STREQUAL "x64")
+        set(OHOS_ARCH x86_64)
+    endif()
+
+    # include official OHOS NDK toolchain script
+    include(${CROSS_ROOTFS}/../build/cmake/ohos.toolchain.cmake)
 elseif(FREEBSD OR OPENBSD)
     # we cross-compile by instructing clang
     set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN})
@@ -306,7 +322,7 @@ endif()
 
 # Specify compile options
 
-if((TARGET_ARCH_NAME MATCHES "^(arm|arm64|armel|armv6|loongarch64|ppc64le|riscv64|s390x|x64|x86)$" AND NOT ANDROID AND NOT FREEBSD AND NOT OPENBSD) OR ILLUMOS OR HAIKU)
+if((TARGET_ARCH_NAME MATCHES "^(arm|arm64|armel|armv6|loongarch64|ppc64le|riscv64|s390x|x64|x86)$" AND NOT ANDROID AND NOT OPENHARMONY AND NOT FREEBSD AND NOT OPENBSD) OR ILLUMOS OR HAIKU)
   set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_CXX_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_ASM_COMPILER_TARGET ${TOOLCHAIN})
