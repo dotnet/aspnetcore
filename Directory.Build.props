@@ -171,14 +171,6 @@
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
   </PropertyGroup>
 
-  <!-- Temporary until dotnet/arcade#17723 flows into eng/common: the vendored
-       NativeAotSupported.props does not exclude openharmony yet. This only affects the repo's
-       bundled tools and E2E AOT harnesses, not user AOT publishing (which uses the runtime
-       ILCompiler pack). Remove this override after the Arcade update. -->
-  <PropertyGroup Condition="'$(TargetOsName)' == 'openharmony' or $(RuntimeIdentifier.StartsWith('openharmony-')) or $(TargetRuntimeIdentifier.StartsWith('openharmony-'))">
-    <NativeAotSupported>false</NativeAotSupported>
-  </PropertyGroup>
-
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
