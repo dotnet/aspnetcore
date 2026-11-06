@@ -235,7 +235,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 }
 
                 await using var response = await route.FetchAsync(new() { MaxRedirects = 0 });
-                // Retain the HTML before delivering it, since it automatically submits the continuation form.
+                // Retain the HTML before delivering it since it automatically submits the continuation form.
                 redisplayedPage = await response.TextAsync();
                 await route.FulfillAsync(new() { Response = response });
             });
