@@ -16,7 +16,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
     private const char KeyDelimiter = '\x1e';
     // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
     private const char KeySubDelimiter = '\x1f';
-    // Use the group separator for delimiting a name from its value to avoid possible collisions.
+    // Use the group separator for delimiting a name from its value and representing empty values to avoid possible collisions.
     // A literal '=' cannot be used because it can legitimately appear in decoded header/query names and values.
     private const char KeyNameValueDelimiter = '\x1d';
 
@@ -177,7 +177,6 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                     .Append(KeyNameValueDelimiter);
 
                 var headerValuesArray = headerValues.ToArray();
-                Array.Sort(headerValuesArray, StringComparer.Ordinal);
 
                 for (var j = 0; j < headerValuesArray.Length; j++)
                 {
@@ -186,12 +185,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                         builder.Append(KeySubDelimiter);
                     }
 
-                    if (ContainsDelimiters(headerValuesArray[j]))
+                    if (!TryAppendValue(builder, headerValuesArray[j]))
                     {
                         return false;
                     }
-
-                    builder.Append(headerValuesArray[j]);
                 }
             }
         }
@@ -224,7 +221,6 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                         .Append(KeyNameValueDelimiter);
 
                     var queryValueArray = queryArray[i].Value.ToArray();
-                    Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                     for (var j = 0; j < queryValueArray.Length; j++)
                     {
@@ -233,12 +229,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                             builder.Append(KeySubDelimiter);
                         }
 
-                        if (ContainsDelimiters(queryValueArray[j]))
+                        if (!TryAppendValue(builder, queryValueArray[j]))
                         {
                             return false;
                         }
-
-                        builder.Append(queryValueArray[j]);
                     }
                 }
             }
@@ -258,7 +252,6 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                         .Append(KeyNameValueDelimiter);
 
                     var queryValueArray = queryKeyValues.ToArray();
-                    Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                     for (var j = 0; j < queryValueArray.Length; j++)
                     {
@@ -267,12 +260,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                             builder.Append(KeySubDelimiter);
                         }
 
-                        if (ContainsDelimiters(queryValueArray[j]))
+                        if (!TryAppendValue(builder, queryValueArray[j]))
                         {
                             return false;
                         }
-
-                        builder.Append(queryValueArray[j]);
                     }
                 }
             }
@@ -342,6 +333,25 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                     .Append(KeyNameValueDelimiter)
                     .Append(value);
             }
+        }
+
+        return true;
+    }
+
+    private static bool TryAppendValue(StringBuilder builder, string? value)
+    {
+        if (ContainsDelimiters(value))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(value))
+        {
+            builder.Append(KeyNameValueDelimiter);
+        }
+        else
+        {
+            builder.Append(value);
         }
 
         return true;

@@ -7,7 +7,7 @@ import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { setWebAssemblyOptions, startWebAssembly } from './Boot.WebAssembly.Common';
 import { WebAssemblyComponentDescriptor, discoverComponents, discoverWebAssemblyOptions } from './Services/ComponentDescriptorDiscovery';
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from './JSInterop/Microsoft.JSInterop';
 import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { printErr } from './Platform/Mono/MonoPlatform';

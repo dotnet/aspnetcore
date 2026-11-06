@@ -15,7 +15,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     private const char KeyDelimiter = '\x1e';
     // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
     private const char KeySubDelimiter = '\x1f';
-    // Use the group separator for delimiting a name from its value to avoid possible collisions.
+    // Use the group separator for delimiting a name from its value and representing empty values to avoid possible collisions.
     // A literal '=' cannot be used because it can legitimately appear in decoded header/query names and values.
     private const char KeyNameValueDelimiter = '\x1d';
 
@@ -122,7 +122,6 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                         .Append(KeyNameValueDelimiter);
 
                     var headerValuesArray = headerValues.ToArray();
-                    Array.Sort(headerValuesArray, StringComparer.Ordinal);
 
                     for (var j = 0; j < headerValuesArray.Length; j++)
                     {
@@ -131,8 +130,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                             builder.Append(KeySubDelimiter);
                         }
 
-                        ThrowIfContainsDelimiters(headerValuesArray[j]);
-                        builder.Append(headerValuesArray[j]);
+                        AppendValue(builder, headerValuesArray[j]);
                     }
                 }
             }
@@ -160,7 +158,6 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                             .Append(KeyNameValueDelimiter);
 
                         var queryValueArray = queryArray[i].Value.ToArray();
-                        Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                         for (var j = 0; j < queryValueArray.Length; j++)
                         {
@@ -169,8 +166,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                                 builder.Append(KeySubDelimiter);
                             }
 
-                            ThrowIfContainsDelimiters(queryValueArray[j]);
-                            builder.Append(queryValueArray[j]);
+                            AppendValue(builder, queryValueArray[j]);
                         }
                     }
                 }
@@ -185,7 +181,6 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                             .Append(KeyNameValueDelimiter);
 
                         var queryValueArray = queryKeyValues.ToArray();
-                        Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                         for (var j = 0; j < queryValueArray.Length; j++)
                         {
@@ -194,8 +189,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                                 builder.Append(KeySubDelimiter);
                             }
 
-                            ThrowIfContainsDelimiters(queryValueArray[j]);
-                            builder.Append(queryValueArray[j]);
+                            AppendValue(builder, queryValueArray[j]);
                         }
                     }
                 }
@@ -206,6 +200,19 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         finally
         {
             _builderPool.Return(builder);
+        }
+    }
+
+    private static void AppendValue(StringBuilder builder, string? value)
+    {
+        ThrowIfContainsDelimiters(value);
+        if (string.IsNullOrEmpty(value))
+        {
+            builder.Append(KeyNameValueDelimiter);
+        }
+        else
+        {
+            builder.Append(value);
         }
     }
 

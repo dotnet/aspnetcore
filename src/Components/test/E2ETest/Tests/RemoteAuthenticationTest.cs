@@ -22,6 +22,19 @@ public class RemoteAuthenticationTest :
     }
 
     [Fact]
+    public void ConcurrentMsalInitialization_UsesSingleInitializedClient()
+    {
+        Navigate("/subdir/msal-initialization.html");
+
+        var result = Browser.Exists(By.Id("result"));
+        Browser.Equal("PASS", () => result.GetDomAttribute("data-status"));
+
+        Browser.Navigate().Refresh();
+        result = Browser.Exists(By.Id("result"));
+        Browser.Equal("PASS", () => result.GetDomAttribute("data-status"));
+    }
+
+    [Fact]
     public void NavigateToLogin_PreservesExtraQueryParams()
     {
         // If the preservedExtraQueryParams passed to NavigateToLogin by RedirectToLogin gets trimmed,

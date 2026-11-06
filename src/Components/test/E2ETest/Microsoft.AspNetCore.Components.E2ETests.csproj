@@ -54,59 +54,59 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <Reference Include="Microsoft.AspNetCore.HostFiltering" />
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Cors" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
-    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Cors\src\Microsoft.AspNetCore.Mvc.Cors.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.DataAnnotations\src\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.TagHelpers\src\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.NamedPipes\src\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\Components.TestServer\Components.TestServer.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedApps)' != 'true'">
-    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
-    <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedApps)' == 'true'">
-    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
+    <ProjectReference Include="$(RepoRoot)src\Components\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
 
-    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\BasicTestApp\BasicTestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\" />
 
-    <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
 
-    <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
 
-    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
 
-    <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;_SkipReferencedProjectPublishAssets=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Components.TestServer\;" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\Components.TestServer\Components.TestServer.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;_SkipReferencedProjectPublishAssets=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Components.TestServer\;" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

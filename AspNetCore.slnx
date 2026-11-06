@@ -86,6 +86,13 @@
     <Project Path="src/Components/Media/src/Microsoft.AspNetCore.Components.Media.csproj" />
     <Project Path="src/Components/Media/test/Microsoft.AspNetCore.Components.Media.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Components/Platform/">
+    <Project Path="src/Components/Platform/src/Microsoft.AspNetCore.Components.Platform.csproj" />
+    <Project Path="src/Components/Platform/test/Microsoft.AspNetCore.Components.Platform.Tests.csproj" />
+    <Project Path="src/Components/Platform/testassets/PlatformTestApp.Client/PlatformTestApp.Client.csproj" />
+    <Project Path="src/Components/Platform/testassets/PlatformTestApp.E2E.Tests/PlatformTestApp.E2E.Tests.csproj" />
+    <Project Path="src/Components/Platform/testassets/PlatformTestApp/PlatformTestApp.csproj" />
+  </Folder>
   <Folder Name="/src/Components/Endpoints/">
     <Project Path="src/Components/Endpoints/src/Microsoft.AspNetCore.Components.Endpoints.csproj" />
     <Project Path="src/Components/Endpoints/test/Microsoft.AspNetCore.Components.Endpoints.Tests.csproj" />
@@ -93,6 +100,10 @@
   <Folder Name="/src/Components/Forms/">
     <Project Path="src/Components/Forms/src/Microsoft.AspNetCore.Components.Forms.csproj" />
     <Project Path="src/Components/Forms/test/Microsoft.AspNetCore.Components.Forms.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/JSInterop/">
+    <Project Path="src/Components/JSInterop/src/Microsoft.JSInterop.csproj" />
+    <Project Path="src/Components/JSInterop/test/Microsoft.JSInterop.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/Samples/">
     <Project Path="src/Components/Samples/BlazorWebAppGlobal.Client/BlazorWebAppGlobal.Client.csproj" />
@@ -309,6 +320,7 @@
     <Project Path="src/Hosting/Abstractions/src/Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
   </Folder>
   <Folder Name="/src/Hosting/Hosting/">
+    <Project Path="src/Hosting/Hosting/perf/Microbenchmarks/Microsoft.AspNetCore.Hosting.Microbenchmarks.csproj" />
     <Project Path="src/Hosting/Hosting/src/Microsoft.AspNetCore.Hosting.csproj" />
     <Project Path="src/Hosting/Hosting/test/Microsoft.AspNetCore.Hosting.Tests.csproj" />
   </Folder>
@@ -484,11 +496,6 @@
       <Build Solution="Debug|arm64" Project="false" />
       <Deploy Solution="*|x86" />
     </Project>
-  </Folder>
-  <Folder Name="/src/JSInterop/" />
-  <Folder Name="/src/JSInterop/Microsoft.JSInterop/">
-    <Project Path="src/JSInterop/Microsoft.JSInterop/src/Microsoft.JSInterop.csproj" />
-    <Project Path="src/JSInterop/Microsoft.JSInterop/test/Microsoft.JSInterop.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Localization/">
     <Project Path="src/Localization/Abstractions/src/Microsoft.Extensions.Localization.Abstractions.csproj" />
@@ -824,12 +831,6 @@
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSample/CookieSample.csproj" />
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSessionSample/CookieSessionSample.csproj" />
   </Folder>
-  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/">
-    <Project Path="src/Security/Authentication/DeviceBoundSessions/src/Microsoft.AspNetCore.Authentication.DeviceBoundSessions.csproj" />
-  </Folder>
-  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/samples/">
-    <Project Path="src/Security/Authentication/DeviceBoundSessions/samples/DbscDebugServer/DbscDebugServer.csproj" />
-  </Folder>
   <Folder Name="/src/Security/Authentication/Core/">
     <Project Path="src/Security/Authentication/Core/src/Microsoft.AspNetCore.Authentication.csproj" />
   </Folder>
@@ -1064,7 +1065,6 @@
     <Project Path="src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj" />
   </Folder>
   <Folder Name="/src/Servers/Kestrel/samples/">
-    <Project Path="src/Servers/Kestrel/samples/DirectTlsTransportApp/DirectTlsTransportApp.csproj" />
     <Project Path="src/Servers/Kestrel/samples/http2cat/http2cat.csproj" />
     <Project Path="src/Servers/Kestrel/samples/Http2SampleApp/Http2SampleApp.csproj" />
     <Project Path="src/Servers/Kestrel/samples/Http3SampleApp/Http3SampleApp.csproj" />
@@ -1082,10 +1082,6 @@
   </Folder>
   <Folder Name="/src/Servers/Kestrel/tools/">
     <Project Path="src/Servers/Kestrel/tools/CodeGenerator/CodeGenerator.csproj" />
-  </Folder>
-  <Folder Name="/src/Servers/Kestrel/Transport.DirectTls/">
-    <Project Path="src/Servers/Kestrel/Transport.DirectTls/src/Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.csproj" />
-    <Project Path="src/Servers/Kestrel/Transport.DirectTls/test/Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Servers/Kestrel/Transport.Quic/">
     <Project Path="src/Servers/Kestrel/Transport.Quic/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
@@ -1304,6 +1300,7 @@
     <Build Solution="*|Any CPU" Project="false" />
     <Build Solution="*|arm64" Project="false" />
   </Project>
+  <Project Path="src/StaticAssets/perf/Microbenchmarks/Microsoft.AspNetCore.StaticAssets.Microbenchmarks.csproj" />
   <Project Path="src/StaticAssets/src/Microsoft.AspNetCore.StaticAssets.csproj" />
   <Project Path="src/StaticAssets/test/Microsoft.AspNetCore.StaticAssets.Tests.csproj" />
   <Project Path="src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj" />

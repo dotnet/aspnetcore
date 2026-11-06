@@ -45,6 +45,9 @@
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
+    [SupplyParameterFromTempData(Name = PasskeyUpgradeManager.CreationOptionsKey)]
+    private string? PasskeyUpgradeCreationOptions { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();
@@ -65,6 +68,16 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", userId);
+            PasskeyUpgradeCreationOptions = await PasskeyUpgradeManager.TryMakeCreationOptionsAsync(
+                UserManager,
+                SignInManager,
+                user);
+            if (PasskeyUpgradeCreationOptions is not null)
+            {
+                RedirectManager.RedirectTo("Account/PasskeyUpgrade", new() { ["returnUrl"] = ReturnUrl });
+                return;
+            }
+
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.IsLockedOut)
