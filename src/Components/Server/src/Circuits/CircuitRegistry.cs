@@ -92,10 +92,12 @@ internal partial class CircuitRegistry
         Log.CircuitDisconnectStarted(_logger, circuitHost.CircuitId, connectionId);
 
         Task circuitHandlerTask;
+        Action completePendingTasks;
         lock (CircuitRegistryLock)
         {
             if (DisconnectCore(circuitHost, connectionId))
             {
+                completePendingTasks = circuitHost.JSRuntime.CapturePendingTasksForDisconnect();
                 circuitHandlerTask = circuitHost.Renderer.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
             }
             else
@@ -107,6 +109,8 @@ internal partial class CircuitRegistry
                 return Task.CompletedTask;
             }
         }
+
+        completePendingTasks();
 
         return circuitHandlerTask;
     }
@@ -175,6 +179,7 @@ internal partial class CircuitRegistry
 
         CircuitHost circuitHost;
         bool previouslyConnected;
+        Action completePendingTasks;
 
         Task circuitHandlerTask;
 
@@ -184,7 +189,7 @@ internal partial class CircuitRegistry
             // Transition the host from disconnected to connected if it's available. In this critical section, we return
             // an existing host if it's currently considered connected or transition a disconnected host to connected.
             // Transferring also wires up the client to the new set.
-            (circuitHost, previouslyConnected) = ConnectCore(circuitId, clientProxy, connectionId);
+            (circuitHost, previouslyConnected, completePendingTasks) = ConnectCore(circuitId, clientProxy, connectionId);
 
             if (circuitHost == null)
             {
@@ -214,6 +219,7 @@ internal partial class CircuitRegistry
 
         try
         {
+            completePendingTasks();
             await circuitHandlerTask;
             Log.ReconnectionSucceeded(_logger, circuitHost.CircuitId);
             return circuitHost;
@@ -228,7 +234,7 @@ internal partial class CircuitRegistry
         }
     }
 
-    protected virtual (CircuitHost circuitHost, bool previouslyConnected) ConnectCore(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId)
+    protected virtual (CircuitHost circuitHost, bool previouslyConnected, Action completePendingTasks) ConnectCore(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId)
     {
         if (ConnectedCircuits.TryGetValue(circuitId, out var connectedCircuitHost))
         {
@@ -236,8 +242,11 @@ internal partial class CircuitRegistry
 
             // The host is still active i.e. the server hasn't detected the client disconnect.
             // However the client reconnected establishing a new connection.
+            // Stop new calls from using the old connection while its pending calls are captured.
+            connectedCircuitHost.Client.SetDisconnected();
+            var completePendingTasks = connectedCircuitHost.JSRuntime.CapturePendingTasksForDisconnect();
             connectedCircuitHost.Client.Transfer(clientProxy, connectionId);
-            return (connectedCircuitHost, true);
+            return (connectedCircuitHost, true, completePendingTasks);
         }
 
         if (DisconnectedCircuits.TryGetValue(circuitId.Secret, out DisconnectedCircuitEntry disconnectedEntry))
@@ -251,8 +260,9 @@ internal partial class CircuitRegistry
             DisconnectedCircuits.Remove(circuitId.Secret);
             ConnectedCircuits.TryAdd(circuitId, disconnectedEntry.CircuitHost);
 
+            var completePendingTasks = disconnectedEntry.CircuitHost.JSRuntime.CapturePendingTasksForDisconnect();
             disconnectedEntry.CircuitHost.Client.Transfer(clientProxy, connectionId);
-            return (disconnectedEntry.CircuitHost, false);
+            return (disconnectedEntry.CircuitHost, false, completePendingTasks);
         }
 
         return default;

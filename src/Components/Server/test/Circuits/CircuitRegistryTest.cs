@@ -609,7 +609,7 @@ public class CircuitRegistryTest
         public Action OnAfterEntryEvicted { get; set; }
         public TaskCompletionSource PauseInvoked { get; internal set; }
 
-        protected override (CircuitHost, bool) ConnectCore(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId)
+        protected override (CircuitHost, bool, Action) ConnectCore(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId)
         {
             if (BeforeConnect != null)
             {
