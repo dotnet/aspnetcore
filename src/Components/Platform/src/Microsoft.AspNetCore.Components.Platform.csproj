@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Platform.Tests" />
+    <InternalsVisibleTo Include="PlatformTestApp.Client" />
   </ItemGroup>
 
   <!-- The JS module (src/js/Platform.ts) is bundled by rollup into js/dist/$(Configuration)
