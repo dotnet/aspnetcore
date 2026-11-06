@@ -6,6 +6,7 @@ import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
+import { attachEnhancedNavigationClickHandlerToEventDelegator } from '../Services/NavigationEnhancement';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -31,6 +32,11 @@ export class BrowserRenderer {
     // we wire up the navigation manager to the event delegator so it has the option to participate
     // in the synthetic event bubbling process later
     attachNavigationManagerToEventDelegator(this.eventDelegator);
+
+    // Similarly, wire up enhanced navigation so that @onclick:preventDefault can be respected.
+    // This ensures enhanced navigation click handling runs after EventDelegator processes Blazor event handlers.
+    // See https://github.com/dotnet/aspnetcore/issues/52514
+    attachEnhancedNavigationClickHandlerToEventDelegator(this.eventDelegator.notifyAfterClick.bind(this.eventDelegator));
   }
 
   public getRootComponentCount(): number {

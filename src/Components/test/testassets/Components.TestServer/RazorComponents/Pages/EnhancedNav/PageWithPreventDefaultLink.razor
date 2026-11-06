@@ -1,0 +1,45 @@
+@page "/nav/prevent-default-link"
+@rendermode RenderMode.InteractiveServer
+
+<PageTitle>PreventDefault Link Test</PageTitle>
+
+<h1>PreventDefault Link Test</h1>
+
+<p>
+    This page tests whether <code>@@onclick:preventDefault</code> works correctly with enhanced navigation.
+    See <a href="https://github.com/dotnet/aspnetcore/issues/52514">issue #52514</a>.
+</p>
+
+<h3>Current Count: <span id="current-count">@currentCount</span></h3>
+
+<h4>Test Case 1: Link with preventDefault</h4>
+<p>Click the link below. The counter should increment and you should NOT navigate away.</p>
+<p>
+    <a id="prevent-default-link" href="#" @onclick="IncrementCount" @onclick:preventDefault>
+        Click me (with preventDefault)
+    </a>
+</p>
+
+<h4>Test Case 2: Link with preventDefault AND data-enhance-nav="false" (Workaround)</h4>
+<p>Click the link below. This uses the known workaround.</p>
+<p>
+    <a id="prevent-default-link-with-workaround" href="#" @onclick="IncrementCount" @onclick:preventDefault data-enhance-nav="false">
+        Click me (with workaround)
+    </a>
+</p>
+
+<h4>Test Case 3: Button (Reference)</h4>
+<p>
+    <button id="increment-button" @onclick="IncrementCount">Click me (button)</button>
+</p>
+
+<p id="current-url">Current URL should stay at /nav/prevent-default-link</p>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
