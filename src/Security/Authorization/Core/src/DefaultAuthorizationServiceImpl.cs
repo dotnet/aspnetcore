@@ -33,10 +33,16 @@ internal sealed class DefaultAuthorizationServiceImpl(
             {
                 metrics.AuthorizeAttemptCompleted(user, policyName: null, task.Result, exception: null);
             }
+            catch (OperationCanceledException ex)
+            {
+                // An async method transitions to Canceled (not Faulted) for OperationCanceledException while
+                // preserving the exception instance. Task.FromException/FromCanceled can't do both, so use an async helper.
+                return FromCanceledException(ExceptionDispatchInfo.Capture(ex));
+            }
             catch (Exception ex)
             {
                 // Surface the exception through the returned task, as the async path does.
-                return FromException(ExceptionDispatchInfo.Capture(ex));
+                return Task.FromException<AuthorizationResult>(ex);
             }
 
             return task;
@@ -46,7 +52,7 @@ internal sealed class DefaultAuthorizationServiceImpl(
     }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators: used so the exception is propagated exactly as an async method would.
-    private static async Task<AuthorizationResult> FromException(ExceptionDispatchInfo exception)
+    private static async Task<AuthorizationResult> FromCanceledException(ExceptionDispatchInfo exception)
 #pragma warning restore CS1998
     {
         exception.Throw();
