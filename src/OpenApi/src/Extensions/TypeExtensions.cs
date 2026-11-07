@@ -45,13 +45,30 @@ internal static class TypeExtensions
             return true;
         }
 
+        var nullabilityInfo = GetResponseNullabilityInfo(apiDescription);
+        return nullabilityInfo?.WriteState == NullabilityState.Nullable;
+    }
+
+    public static bool ShouldApplyNullableResponseArrayElementSchema(this ApiResponseType apiResponseType, ApiDescription apiDescription)
+    {
+        if (apiResponseType.Type is not { IsArray: true })
+        {
+            return false;
+        }
+
+        var nullabilityInfo = GetResponseNullabilityInfo(apiDescription);
+        return nullabilityInfo?.ElementType?.WriteState == NullabilityState.Nullable;
+    }
+
+    private static NullabilityInfo? GetResponseNullabilityInfo(ApiDescription apiDescription)
+    {
         var methodInfo = apiDescription.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor
             ? controllerActionDescriptor.MethodInfo
             : apiDescription.ActionDescriptor.EndpointMetadata.OfType<MethodInfo>().SingleOrDefault();
 
         if (methodInfo is null)
         {
-            return false;
+            return null;
         }
 
         var nullabilityInfoContext = new NullabilityInfoContext();
@@ -64,7 +81,7 @@ internal static class TypeExtensions
             nullabilityInfo = nullabilityInfo.GenericTypeArguments[0];
         }
 
-        return nullabilityInfo.WriteState == NullabilityState.Nullable;
+        return nullabilityInfo;
     }
 
     public static bool ShouldApplyNullableRequestSchema(this ApiParameterDescription apiParameterDescription)
