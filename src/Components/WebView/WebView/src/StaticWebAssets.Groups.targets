@@ -7,7 +7,8 @@
        Purpose: WebView apps fetch _framework/blazor.modules.json at runtime. When the app
        contributes its own JS library modules, the SDK generates that manifest. When it does
        not, nothing would be served, so this package ships an empty ([]) fallback and
-       materializes it as the consumer's own static web asset ONLY in that case. The decision is
+       materializes it as the consumer's own current-project-only static web asset ONLY in that
+       case. The fallback does not flow from libraries to referencing projects. The decision is
        made here, during ResolveStaticWebAssetsInputs (before the build manifest is generated and
        its conflict check runs), so exactly one asset ever lands on the route and no group /
        conflict-resolution machinery is required. -->
@@ -53,7 +54,7 @@
       ContentRoot="$(_BlazorWebViewModulesFallbackRoot)"
       BasePath="/"
       AssetKind="All"
-      AssetMode="All"
+      AssetMode="CurrentProject"
       AssetRole="Primary"
       FingerprintCandidates="true">
       <Output TaskParameter="Assets" ItemName="_BlazorWebViewModulesFallbackAsset" />
