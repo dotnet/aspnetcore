@@ -1388,4 +1388,107 @@ public class DefaultAuthorizationServiceTests
 
         // Assert
     }
+
+    public static TheoryData<string> RequirementCollectionKinds => new() { "ReadOnlyCollection", "List", "Array", "Enumerable" };
+
+    private static IEnumerable<IAuthorizationRequirement> CreateRequirements(string kind, params IAuthorizationRequirement[] requirements)
+        => kind switch
+        {
+            "ReadOnlyCollection" => new AuthorizationPolicy(requirements, Array.Empty<string>()).Requirements,
+            "List" => new List<IAuthorizationRequirement>(requirements),
+            "Array" => requirements,
+            "Enumerable" => requirements.Select(r => r),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+
+    [Theory]
+    [MemberData(nameof(RequirementCollectionKinds))]
+    public async Task Authorize_InvokesTypedHandlersForEachMatchingRequirement(string kind)
+    {
+        var counter = new CountingRequirementHandler();
+        var authorizationService = BuildAuthorizationService(services =>
+        {
+            services.AddSingleton<IAuthorizationHandler>(counter);
+            services.AddSingleton<IAuthorizationHandler, StringResourceRequirementHandler>();
+        });
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "Name") }, "AuthType"));
+        var counted = new CountedRequirement();
+        var requirements = CreateRequirements(
+            kind,
+            counted,
+            new StringResourceRequirement(),
+            new DenyAnonymousAuthorizationRequirement(),
+            counted);
+
+        var allowed = await authorizationService.AuthorizeAsync(user, "resource", requirements);
+        var deniedForWrongResource = await authorizationService.AuthorizeAsync(user, 42, requirements);
+
+        Assert.True(allowed.Succeeded);
+        Assert.False(deniedForWrongResource.Succeeded);
+        Assert.Equal(4, counter.Invocations);
+    }
+
+    [Theory]
+    [MemberData(nameof(RequirementCollectionKinds))]
+    public async Task Authorize_PassThroughHandlerStopsAfterFailure(string kind)
+    {
+        var authorizationService = BuildAuthorizationService(services =>
+            services.Configure<AuthorizationOptions>(options => options.InvokeHandlersAfterFailure = false));
+        var user = new ClaimsPrincipal(new ClaimsIdentity());
+        var after = new SelfHandlingRecordingRequirement(fail: false);
+        var requirements = CreateRequirements(kind, new SelfHandlingRecordingRequirement(fail: true), after);
+
+        var result = await authorizationService.AuthorizeAsync(user, null, requirements);
+
+        Assert.False(result.Succeeded);
+        Assert.False(after.Invoked);
+    }
+
+    private sealed class CountedRequirement : IAuthorizationRequirement
+    {
+    }
+
+    private sealed class CountingRequirementHandler : AuthorizationHandler<CountedRequirement>
+    {
+        public int Invocations { get; private set; }
+
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CountedRequirement requirement)
+        {
+            Invocations++;
+            context.Succeed(requirement);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class StringResourceRequirement : IAuthorizationRequirement
+    {
+    }
+
+    private sealed class StringResourceRequirementHandler : AuthorizationHandler<StringResourceRequirement, string>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, StringResourceRequirement requirement, string resource)
+        {
+            context.Succeed(requirement);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class SelfHandlingRecordingRequirement(bool fail) : IAuthorizationRequirement, IAuthorizationHandler
+    {
+        public bool Invoked { get; private set; }
+
+        public Task HandleAsync(AuthorizationHandlerContext context)
+        {
+            Invoked = true;
+            if (fail)
+            {
+                context.Fail();
+            }
+            else
+            {
+                context.Succeed(this);
+            }
+            return Task.CompletedTask;
+        }
+    }
 }
