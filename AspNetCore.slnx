@@ -1267,6 +1267,7 @@
   <Project Path="src/Middleware/OutputCaching/samples/OutputCachingSample/OutputCachingSample.csproj" />
   <Project Path="src/Middleware/OutputCaching/src/Microsoft.AspNetCore.OutputCaching.csproj" />
   <Project Path="src/Middleware/OutputCaching/test/Microsoft.AspNetCore.OutputCaching.Tests.csproj" />
+  <Project Path="src/Middleware/RateLimiting/perf/Microbenchmarks/Microsoft.AspNetCore.RateLimiting.Microbenchmarks.csproj" />
   <Project Path="src/Middleware/RateLimiting/samples/RateLimitingSample/RateLimitingSample.csproj" />
   <Project Path="src/Middleware/RateLimiting/src/Microsoft.AspNetCore.RateLimiting.csproj" />
   <Project Path="src/Middleware/RateLimiting/test/Microsoft.AspNetCore.RateLimiting.Tests.csproj" />
