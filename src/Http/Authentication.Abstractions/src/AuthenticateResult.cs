@@ -115,7 +115,7 @@ public class AuthenticateResult
     /// <summary>
     /// Indicates that there was a failure during authentication.
     /// </summary>
-    /// <param name="failureMessage">The failure message.</param>
+    /// <param name="failureMessage">The message that describes the authentication failure. This message is used to create an <see cref="AuthenticationFailureException"/> that is assigned to the <see cref="AuthenticateResult.Failure"/> property.</param>
     /// <returns>The result.</returns>
     public static AuthenticateResult Fail(string failureMessage)
         => Fail(new AuthenticationFailureException(failureMessage));
@@ -123,7 +123,7 @@ public class AuthenticateResult
     /// <summary>
     /// Indicates that there was a failure during authentication.
     /// </summary>
-    /// <param name="failureMessage">The failure message.</param>
+    /// <param name="failureMessage">The message that describes the authentication failure. This message is used to create an <see cref="AuthenticationFailureException"/> that is assigned to the <see cref="AuthenticateResult.Failure"/> property.</param>
     /// <param name="properties">Additional state values for the authentication session.</param>
     /// <returns>The result.</returns>
     public static AuthenticateResult Fail(string failureMessage, AuthenticationProperties? properties)
