@@ -973,7 +973,7 @@ public class ActionSelectorTest
     private ControllerActionDescriptor InvokeActionSelector(RouteContext context)
     {
         var actionDescriptorProvider = GetActionDescriptorProvider();
-        var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
+        using var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionDescriptorProvider },
             Enumerable.Empty<IActionDescriptorChangeProvider>(),
             NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
@@ -1133,7 +1133,9 @@ public class ActionSelectorTest
 
     private static ActionConstraintCache GetActionConstraintCache(IActionConstraintProvider[] actionConstraintProviders = null)
     {
-        var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
+        // it is safe to dispose descriptorProvider here while returning a dependent object
+        // because only change tracking is disabled by dispose
+        using var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
             Enumerable.Empty<IActionDescriptorProvider>(),
             Enumerable.Empty<IActionDescriptorChangeProvider>(),
             NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
