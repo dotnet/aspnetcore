@@ -3329,6 +3329,182 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task CustomHubActivatorIsUsedForEveryInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var hubActivator = serviceProvider.GetService<IHubActivator<MethodHub>>() as CustomHubActivator<MethodHub>;
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                for (var i = 0; i < 3; i++)
+                {
+                    var completion = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                    Assert.Null(completion.Error);
+                }
+
+                // OnConnectedAsync and the three invocations
+                Assert.Equal(4, hubActivator.ReleaseCount);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+
+            // OnDisconnectedAsync
+            Assert.Equal(5, hubActivator.ReleaseCount);
+        }
+    }
+
+    [Fact]
+    public async Task HubActivatorFactoryIsUsedForEveryScopeEvenIfItFirstReturnsDefaultActivator()
+    {
+        using (StartVerifiableLog())
+        {
+            var resolveCount = 0;
+            var customActivators = new System.Collections.Concurrent.ConcurrentQueue<CustomHubActivator<MethodHub>>();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddScoped<IHubActivator<MethodHub>>(sp =>
+                {
+                    // The first scope (OnConnectedAsync) gets the built-in activator, later scopes get a custom one.
+                    if (Interlocked.Increment(ref resolveCount) == 1)
+                    {
+                        return new DefaultHubActivator<MethodHub>(sp);
+                    }
+                    var activator = new CustomHubActivator<MethodHub>(sp);
+                    customActivators.Enqueue(activator);
+                    return activator;
+                });
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                for (var i = 0; i < 3; i++)
+                {
+                    var completion = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                    Assert.Null(completion.Error);
+                }
+
+                // OnConnectedAsync and the three invocations each resolved the activator from DI
+                Assert.Equal(4, Volatile.Read(ref resolveCount));
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+
+            // OnDisconnectedAsync
+            Assert.Equal(5, Volatile.Read(ref resolveCount));
+            Assert.Equal(4, customActivators.Count);
+            Assert.All(customActivators, a => Assert.Equal(1, a.ReleaseCount));
+        }
+    }
+
+    [Fact]
+    public async Task HubActivatorSuppliedOutsideServiceCollectionIsUsedForEveryScope()
+    {
+        using (StartVerifiableLog())
+        {
+            // Simulates a third-party container that keeps SignalR's IServiceCollection registrations but supplies
+            // IHubActivator<THub> itself: the first scope gets the built-in activator, later scopes get a custom one.
+            var resolveCount = 0;
+            var customActivators = new System.Collections.Concurrent.ConcurrentQueue<CustomHubActivator<MethodHub>>();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+            var scopeFactory = new OutOfCollectionHubActivatorScopeFactory<MethodHub>(serviceProvider.GetRequiredService<IServiceScopeFactory>(), sp =>
+            {
+                if (Interlocked.Increment(ref resolveCount) == 1)
+                {
+                    return new DefaultHubActivator<MethodHub>(sp);
+                }
+                var activator = new CustomHubActivator<MethodHub>(sp);
+                customActivators.Enqueue(activator);
+                return activator;
+            });
+            var connectionHandler = ActivatorUtilities.CreateInstance<HubConnectionHandler<MethodHub>>(serviceProvider, scopeFactory);
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                for (var i = 0; i < 3; i++)
+                {
+                    var completion = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                    Assert.Null(completion.Error);
+                }
+
+                // OnConnectedAsync and the three invocations each resolved the activator from the scope
+                Assert.Equal(4, Volatile.Read(ref resolveCount));
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+
+            // OnDisconnectedAsync
+            Assert.Equal(5, Volatile.Read(ref resolveCount));
+            Assert.Equal(4, customActivators.Count);
+            Assert.All(customActivators, a => Assert.Equal(1, a.ReleaseCount));
+        }
+    }
+
+    private sealed class OutOfCollectionHubActivatorScopeFactory<THub> : IServiceScopeFactory where THub : Hub
+    {
+        private readonly IServiceScopeFactory _inner;
+        private readonly Func<IServiceProvider, IHubActivator<THub>> _activatorFactory;
+
+        public OutOfCollectionHubActivatorScopeFactory(IServiceScopeFactory inner, Func<IServiceProvider, IHubActivator<THub>> activatorFactory)
+        {
+            _inner = inner;
+            _activatorFactory = activatorFactory;
+        }
+
+        public IServiceScope CreateScope() => new Scope(_inner.CreateScope(), _activatorFactory);
+
+        private sealed class Scope : IServiceScope, IServiceProvider
+        {
+            private readonly IServiceScope _inner;
+            private readonly Func<IServiceProvider, IHubActivator<THub>> _activatorFactory;
+            private IHubActivator<THub> _activator;
+
+            public Scope(IServiceScope inner, Func<IServiceProvider, IHubActivator<THub>> activatorFactory)
+            {
+                _inner = inner;
+                _activatorFactory = activatorFactory;
+            }
+
+            public IServiceProvider ServiceProvider => this;
+
+            public object GetService(Type serviceType)
+            {
+                if (serviceType == typeof(IHubActivator<THub>))
+                {
+                    return _activator ??= _activatorFactory(this);
+                }
+                return _inner.ServiceProvider.GetService(serviceType);
+            }
+
+            public void Dispose() => _inner.Dispose();
+        }
+    }
+
+    [Fact]
     public async Task StreamMethodThatReturnsNullWillCleanup()
     {
         using (StartVerifiableLog())
