@@ -163,6 +163,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [(TaskStatus status = TaskStatus.Canceled) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
         // Default value for enums is serialized as string when a converter is registered.
         [(Status status = Status.Pending) => { }, (JsonNode defaultValue) => Assert.Equal("Pending", defaultValue.GetValue<string>())],
+        [(Status? status = Status.Pending) => { }, (JsonNode defaultValue) => Assert.Equal("Pending", defaultValue.GetValue<string>())],
+        [(TaskStatus? status = TaskStatus.Canceled) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
+        [(Status? status = null) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
         [([DefaultValue(2)] int id) => { }, (JsonNode defaultValue) => Assert.Equal(2, defaultValue.GetValue<int>())],
         [([DefaultValue(3f)] float id) => { }, (JsonNode defaultValue) => Assert.Equal(3, defaultValue.GetValue<int>())],
         [([DefaultValue("test")] string id) => { }, (JsonNode defaultValue) => Assert.Equal("test", defaultValue.GetValue<string>())],
@@ -197,6 +200,19 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 #nullable restore
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesNullableEnumBodyParameterWithDefaultValue()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api/body", ([FromBody] Status? status = Status.Pending) => status);
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var op = document.Paths["/api/body"].Operations[HttpMethod.Post];
+            Assert.NotNull(op.RequestBody);
+        });
+    }
 
     [Fact]
     public async Task GetOpenApiParameters_HandlesEnumParameterWithoutConverter()
