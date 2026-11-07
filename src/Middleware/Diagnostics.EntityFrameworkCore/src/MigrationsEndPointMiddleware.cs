@@ -52,7 +52,9 @@ public class MigrationsEndPointMiddleware
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        if (context.Request.Path.Equals(_options.Path))
+        if (context.Request.Path.Equals(_options.Path)
+            && HttpMethods.IsPost(context.Request.Method)
+            && context.Request.HasFormContentType)
         {
             return InvokeCore(context);
         }
