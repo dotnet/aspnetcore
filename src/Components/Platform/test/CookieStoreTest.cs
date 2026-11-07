@@ -4,6 +4,7 @@
 #nullable enable
 #pragma warning disable ASP0040 // Partitioned is experimental.
 
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -256,19 +257,56 @@ public class CookieStoreTest
             jsRuntime.ArgumentsSentTo("set"));
     }
 
-    [Theory]
-    [InlineData(CookieSameSite.Strict, "strict")]
-    [InlineData(CookieSameSite.Lax, "lax")]
-    [InlineData(CookieSameSite.None, "none")]
-    public async Task SetAsync_SendsSameSiteAsTheWebIdlString(CookieSameSite sameSite, string expected)
+    [Fact]
+    public async Task SetAsync_SendsSameSiteAsTheWebIdlString()
     {
         var jsRuntime = new SerializingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
         var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
 
-        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = sameSite });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.Strict });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.Lax });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.None });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = new CookieSameSite("future-value") });
 
-        Assert.Contains($"\"sameSite\":\"{expected}\"", Assert.Single(jsRuntime.ArgumentsSentTo("set")));
+        Assert.Equal(
+            ["strict", "lax", "none", "future-value"],
+            jsRuntime.ArgumentsSentTo("set").Select(json => JsonDocument.Parse(json).RootElement[0].GetProperty("sameSite").GetString()));
+    }
+
+    [Fact]
+    public async Task SetAsync_RejectsDefaultSameSiteBeforeSending()
+    {
+        var jsRuntime = new SerializingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        await Assert.ThrowsAsync<JsonException>(() => cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = default }).AsTask());
+
+        Assert.Empty(jsRuntime.ArgumentsSentTo("set"));
+    }
+
+    [Fact]
+    public async Task CookieSameSite_ReadsAnyStringFromTheBrowser()
+    {
+        var jsRuntime = new SerializingJSRuntime { ReadResult = "\"future-value\"" };
+
+        var sameSite = await jsRuntime.InvokeAsync<CookieSameSite>("read");
+
+        Assert.Equal(new CookieSameSite("future-value"), sameSite);
+        Assert.Equal("future-value", sameSite.Value);
+    }
+
+    [Fact]
+    public void CookieSameSite_ComparesByOrdinalString()
+    {
+        Assert.Equal(CookieSameSite.Lax, new CookieSameSite("lax"));
+        Assert.True(CookieSameSite.Lax == new CookieSameSite("lax"));
+        Assert.True(CookieSameSite.Lax != new CookieSameSite("Lax"));
+        Assert.Equal(CookieSameSite.Lax.GetHashCode(), new CookieSameSite("lax").GetHashCode());
+        Assert.Equal("none", CookieSameSite.None.ToString());
+        Assert.Equal(string.Empty, default(CookieSameSite).ToString());
+        Assert.Throws<ArgumentNullException>("value", () => new CookieSameSite(null!));
     }
 
     [Fact]
@@ -465,6 +503,8 @@ public class CookieStoreTest
 
         public string GetResult { get; set; } = "null";
 
+        public string ReadResult { get; init; } = "null";
+
         public string[] ArgumentsSentTo(string identifier)
             => [.. _calls.Where(call => call.Identifier == identifier).Select(call => call.ArgsJson ?? string.Empty)];
 
@@ -477,6 +517,7 @@ public class CookieStoreTest
                 "cookieStore" => """{"__jsObjectId":1}""",
                 "get" => GetResult,
                 "getAll" => GetAllResult,
+                "read" => ReadResult,
                 _ => "null",
             };
 
