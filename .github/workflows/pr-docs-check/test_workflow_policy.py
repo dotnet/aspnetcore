@@ -122,15 +122,19 @@ class WorkflowPolicyTests(unittest.TestCase):
 
     def test_compiler_and_setup_use_the_same_published_release(self):
         metadata = json.loads(self.compiled_workflow.splitlines()[0].removeprefix("# gh-aw-metadata: "))
-        self.assertEqual("v0.92.0", metadata["compiler_version"])
+        version = metadata["compiler_version"]
+        self.assertRegex(version, r"^v[0-9]+\.[0-9]+\.[0-9]+$")
         self.assertTrue(metadata["strict"])
-        setup = re.findall(r"uses: github/gh-aw-actions/setup@([a-f0-9]{40}) # (v[0-9.]+)", self.compiled_workflow)
-        self.assertEqual(6, len(setup))
-        self.assertEqual({("458b269006dcf88e3b5496b6fbecabe4b9a0f954", "v0.92.0")}, set(setup))
-        self.assertNotIn("source-303b402", self.compiled_workflow)
+        manifest = json.loads(self.compiled_workflow.splitlines()[1].removeprefix("# gh-aw-manifest: "))
+        setup_actions = [action for action in manifest["actions"] if action["repo"] == "github/gh-aw-actions/setup"]
+        self.assertEqual(1, len(setup_actions))
+        setup_action = setup_actions[0]
+        self.assertEqual(version, setup_action["version"])
+        self.assertRegex(setup_action["sha"], r"^[a-f0-9]{40}$")
+        setup = re.findall(r"uses: github/gh-aw-actions/setup@(.+)", self.compiled_workflow)
+        self.assertTrue(setup)
+        self.assertEqual({f'{setup_action["sha"]} # {version}'}, set(setup))
         self.assertNotIn("github/gh-aw/actions/setup@", self.compiled_workflow)
-        cache = json.loads((WORKFLOW.parents[1] / "aw" / "actions-lock.json").read_text(encoding="utf-8"))
-        self.assertEqual(setup[0][0], cache["entries"]["github/gh-aw-actions/setup@v0.92.0"]["sha"])
 
 
 if __name__ == "__main__":

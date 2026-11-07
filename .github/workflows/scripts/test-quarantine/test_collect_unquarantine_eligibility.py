@@ -105,6 +105,18 @@ class UnquarantineTests(unittest.TestCase):
         self.assertEqual(set(receipt["pipelines"]), {"84", "87"})
         self.assertEqual(receipt["targets"], [])
 
+    def test_project_move_preserves_first_quarantine_and_passing_evidence(self):
+        project = self.path.parent
+        moved = self.root / "src/Moved.Tests"
+        FIXTURES.run(self.root, "git", "mv", project, moved)
+        self.path = moved / self.path.name
+        FIXTURES.commit(self.root, "Move test project", "2026-07-02T00:00:00Z")
+        self.history = MODULE.SOURCE.collect_requarantine_history(self.root, "HEAD")
+        self.assertEqual(self.history["targets"][0]["status"], "first-quarantine", self.history)
+        receipt = self.collect()
+        self.assertEqual(len(receipt["targets"]), 1, receipt)
+        self.assertEqual(receipt["targets"][0]["introduced_utc"], "2026-07-01T00:00:00Z")
+
     def test_unresolved_consumer_blocks_even_a_first_quarantine_receipt(self):
         (self.path.parent / "Sample.Tests.csproj").write_text(
             "<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>"

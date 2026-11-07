@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public sealed class Window : IInternalAsyncDisposal
 {
-    private readonly IJSRuntime _jsRuntime;
+    private readonly FeatureContext _context;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
     private bool _disposed;
 
     internal Window(IJSRuntime jsRuntime)
     {
-        _jsRuntime = jsRuntime;
+        _context = new FeatureContext(jsRuntime);
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ public sealed class Window : IInternalAsyncDisposal
     /// <typeparam name="T">The projection type.</typeparam>
     /// <param name="factory">The callback that creates the projection.</param>
     /// <returns>The projection keyed by <typeparamref name="T"/>.</returns>
-    internal T GetOrAddFeature<T>(Func<IJSRuntime, T> factory) where T : class
+    internal T GetOrAddFeature<T>(Func<FeatureContext, T> factory) where T : class
         => GetOrAddFeatureCore(subkey: null, factory);
 
     /// <summary>
@@ -41,14 +41,14 @@ public sealed class Window : IInternalAsyncDisposal
     /// <param name="subkey">The key that distinguishes this projection from others of the same type.</param>
     /// <param name="factory">The callback that creates the projection.</param>
     /// <returns>The projection keyed by <typeparamref name="T"/> and <paramref name="subkey"/>.</returns>
-    internal T GetOrAddFeature<T>(string subkey, Func<IJSRuntime, T> factory) where T : class
+    internal T GetOrAddFeature<T>(string subkey, Func<FeatureContext, T> factory) where T : class
     {
         ArgumentNullException.ThrowIfNull(subkey);
 
         return GetOrAddFeatureCore(subkey, factory);
     }
 
-    private T GetOrAddFeatureCore<T>(string? subkey, Func<IJSRuntime, T> factory) where T : class
+    private T GetOrAddFeatureCore<T>(string? subkey, Func<FeatureContext, T> factory) where T : class
     {
         ArgumentNullException.ThrowIfNull(factory);
 
@@ -61,7 +61,7 @@ public sealed class Window : IInternalAsyncDisposal
             return (T)existing;
         }
 
-        var created = factory(_jsRuntime);
+        var created = factory(_context);
         _features[key] = created;
 
         return created;
