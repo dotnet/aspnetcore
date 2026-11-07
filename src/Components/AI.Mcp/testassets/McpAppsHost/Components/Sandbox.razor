@@ -1,0 +1,14 @@
+@inherits McpSandboxBase
+
+<iframe id="mcp-app"
+        title="@FrameTitle"
+        sandbox="allow-scripts"
+        allow="clipboard-write 'none'"
+        referrerpolicy="no-referrer"
+        style="background:transparent">
+</iframe>
+
+@code {
+    [Parameter]
+    public string FrameTitle { get; set; } = "Application content";
+}

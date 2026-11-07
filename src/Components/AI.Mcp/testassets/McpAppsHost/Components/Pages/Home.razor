@@ -1,0 +1,130 @@
+@page "/"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@using System.Linq
+@using ModelContextProtocol.Client
+@inject IConfiguration Configuration
+@inject HostState State
+
+<PageTitle>Standard MCP Apps host</PageTitle>
+
+<h1>Standard MCP Apps host</h1>
+<p id="interactive-status">@(_interactive ? "ready" : "loading")</p>
+@if (_agent is not null)
+{
+    <button id="rerender" @onclick="Rerender">Rerender host</button>
+    <button id="release" @onclick="Release">Release model response</button>
+    <span id="render-count">@_renderCount</span>
+    <ChatPage Agent="_agent">
+        <InputLeadingActions>
+            <StopResponse />
+        </InputLeadingActions>
+        <MessageListContent>
+            <BlockRenderer TBlock="FunctionInvocationContentBlock" When="IsMcpApp" Context="block">
+                <McpBlock THost="Host" @key="block.Id" Client="_client!" Tools="_tools" Block="block" />
+            </BlockRenderer>
+            @if (_otherClient is not null)
+            {
+                <BlockRenderer TBlock="FunctionInvocationContentBlock" When="IsOtherMcpApp" Context="block">
+                    <McpBlock THost="Host" @key="block.Id" Client="_otherClient" Tools="_otherTools" Block="block" />
+                </BlockRenderer>
+            }
+        </MessageListContent>
+    </ChatPage>
+}
+else
+{
+    <p role="status">Connecting to the MCP server.</p>
+}
+
+@code {
+    private readonly CancellationTokenSource _lifetime = new();
+    private McpClient? _client;
+    private McpClient? _otherClient;
+    private IReadOnlyList<McpClientTool> _tools = [];
+    private IReadOnlyList<McpClientTool> _otherTools = [];
+    private UIAgent? _agent;
+    private bool _interactive;
+    private int _renderCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var cancellationToken = _lifetime.Token;
+        var endpoint = new Uri(Configuration["MCP_SERVER_URL"]
+            ?? throw new InvalidOperationException("MCP_SERVER_URL must be configured."));
+        _client = await ConnectAsync(endpoint, cancellationToken);
+        _tools = (await _client.ListToolsAsync(cancellationToken: cancellationToken)).ToArray();
+        var functions = _tools.Where(IsModelVisible).Cast<AITool>().ToList();
+        if (Configuration["OTHER_MCP_SERVER_URL"] is { } otherEndpoint)
+        {
+            _otherClient = await ConnectAsync(new Uri(otherEndpoint), cancellationToken);
+            _otherTools = (await _otherClient.ListToolsAsync(cancellationToken: cancellationToken))
+                .Select(tool => tool.WithName("other_" + tool.Name)).ToArray();
+            functions.AddRange(_otherTools.Where(IsModelVisible));
+        }
+
+        _agent = new UIAgent(new FunctionInvokingChatClient(new ScriptedChatClient(State)), options =>
+        {
+            options.ChatOptions = new ChatOptions { Tools = functions };
+        });
+    }
+
+    private bool IsMcpApp(FunctionInvocationContentBlock block) => IsMcpApp(_tools, block);
+
+    private static bool IsModelVisible(McpClientTool tool)
+    {
+        var visibility = tool.ProtocolTool.Meta?["ui"]?["visibility"];
+        return visibility is null || visibility.AsArray().Any(value => value?.GetValue<string>() == "model");
+    }
+
+    private bool IsOtherMcpApp(FunctionInvocationContentBlock block) => IsMcpApp(_otherTools, block);
+
+    private static bool IsMcpApp(IReadOnlyList<McpClientTool> tools, FunctionInvocationContentBlock block)
+    {
+        var metadata = tools.SingleOrDefault(tool => tool.Name == block.ToolName)?.ProtocolTool.Meta;
+        return metadata?["ui"]?["resourceUri"] is not null || metadata?["ui/resourceUri"] is not null;
+    }
+
+    private static Task<McpClient> ConnectAsync(Uri endpoint, CancellationToken cancellationToken)
+    {
+        var options = new McpClientOptions();
+        options.EnableMcpApps();
+
+        return McpClient.CreateAsync(new HttpClientTransport(new() { Endpoint = endpoint }), options,
+            cancellationToken: cancellationToken);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
+
+    private void Rerender()
+    {
+        _renderCount++;
+    }
+
+    private void Release()
+    {
+        State.Release.TrySetResult();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _lifetime.Cancel();
+        _agent?.Dispose();
+        if (_client is not null)
+        {
+            await _client.DisposeAsync();
+        }
+        if (_otherClient is not null)
+        {
+            await _otherClient.DisposeAsync();
+        }
+        _lifetime.Dispose();
+    }
+}
