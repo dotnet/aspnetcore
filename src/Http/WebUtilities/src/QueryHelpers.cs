@@ -146,7 +146,7 @@ public static class QueryHelpers
 
         foreach (var pair in enumerable)
         {
-            accumulator.Append(pair.DecodeName().ToString(), pair.DecodeValue().ToString());
+            accumulator.Append(pair.DecodeNameToString(), pair.DecodeValueToString());
         }
 
         if (!accumulator.HasValues)
