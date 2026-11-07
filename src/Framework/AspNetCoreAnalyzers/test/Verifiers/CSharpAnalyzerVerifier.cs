@@ -33,17 +33,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
     /// <inheritdoc cref="AnalyzerVerifier{TAnalyzer, TTest, TVerifier}.VerifyAnalyzerAsync(string, DiagnosticResult[])"/>
     public static async Task VerifyAnalyzerAsync([StringSyntax("C#-test")] string source, params DiagnosticResult[] expected)
     {
-        var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
-        {
-            TestCode = source.ReplaceLineEndings(),
-            // We need to set the output type to an exe to properly
-            // support top-level programs in the tests. Otherwise,
-            // the test infra will assume we are trying to build a library.
-            TestState = { OutputKind = OutputKind.ConsoleApplication },
-            ReferenceAssemblies = GetReferenceAssemblies(),
-        };
-
-        test.ExpectedDiagnostics.AddRange(expected);
+        var test = CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>.Create(source, expected);
         await test.RunAsync(CancellationToken.None);
     }
 
