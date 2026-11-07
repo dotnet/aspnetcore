@@ -147,7 +147,7 @@ public class IISMiddleware
             var header = httpContext.Request.Headers[MSAspNetCoreClientCert];
             if (!StringValues.IsNullOrEmpty(header))
             {
-                httpContext.Features.Set<ITlsConnectionFeature>(new ForwardedTlsConnectionFeature(_logger, header));
+                httpContext.Features.Set<ITlsConnectionFeature>(new ForwardedTlsConnectionFeature(_logger, header, httpContext.Features.Get<ITlsConnectionFeature>()));
             }
         }
 

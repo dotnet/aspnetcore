@@ -45,6 +45,11 @@ public interface ITlsConnectionFeature
     /// specification and Microsoft's "Extended Protection for Authentication"
     /// documentation for the Windows usage model.
     /// </para>
+    /// <para>
+    /// Implementations that wrap or replace another <see cref="ITlsConnectionFeature"/> (for example,
+    /// to change where the client certificate comes from) must delegate this method to the original
+    /// feature. Otherwise the default implementation applies and channel binding is silently lost.
+    /// </para>
     /// </remarks>
     bool TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
     {

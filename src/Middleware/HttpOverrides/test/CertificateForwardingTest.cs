@@ -1,13 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpOverrides;
@@ -223,5 +227,49 @@ public class CertificateForwardingTests
         {
             c.Request.Headers["X-Client-Cert"] = "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
         });
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ForwardedFeaturePreservesOriginalChannelBinding(bool hasOriginalFeature)
+    {
+        var expectedToken = new byte[] { 0x01, 0x23, 0x45, 0x67 };
+        var originalFeature = hasOriginalFeature ? new FakeTlsConnectionFeature { ChannelBindingToken = expectedToken } : null;
+        var context = new DefaultHttpContext();
+        context.Features.Set<ITlsConnectionFeature>(originalFeature);
+        context.Request.Headers["X-Client-Cert"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
+
+        ITlsConnectionFeature forwardedFeature = null;
+        var middleware = new CertificateForwardingMiddleware(
+            ctx =>
+            {
+                forwardedFeature = ctx.Features.Get<ITlsConnectionFeature>();
+                return Task.CompletedTask;
+            },
+            NullLoggerFactory.Instance,
+            Options.Create(new CertificateForwardingOptions()));
+
+        await middleware.Invoke(context);
+
+        Assert.NotNull(forwardedFeature);
+        Assert.NotSame(originalFeature, forwardedFeature);
+        Assert.Equal(hasOriginalFeature, forwardedFeature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var token));
+        Assert.Equal(hasOriginalFeature ? expectedToken : Array.Empty<byte>(), token.ToArray());
+    }
+
+    private sealed class FakeTlsConnectionFeature : ITlsConnectionFeature
+    {
+        public byte[] ChannelBindingToken { get; init; }
+
+        public X509Certificate2 ClientCertificate { get; set; }
+
+        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken) => Task.FromResult(ClientCertificate);
+
+        public bool TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+        {
+            channelBindingToken = ChannelBindingToken;
+            return true;
+        }
     }
 }
