@@ -1336,8 +1336,10 @@ public class DefaultHtmlGenerator : IHtmlGenerator
             _metadataProvider);
 
         int? maxLengthValue = null;
-        foreach (var attribute in modelExplorer.Metadata.ValidatorMetadata)
+        var validatorMetadata = modelExplorer.Metadata.ValidatorMetadata;
+        for (var i = 0; i < validatorMetadata.Count; i++)
         {
+            var attribute = validatorMetadata[i];
             if (attribute is MaxLengthAttribute maxLengthAttribute && (!maxLengthValue.HasValue || maxLengthValue.Value > maxLengthAttribute.Length))
             {
                 maxLengthValue = maxLengthAttribute.Length;
