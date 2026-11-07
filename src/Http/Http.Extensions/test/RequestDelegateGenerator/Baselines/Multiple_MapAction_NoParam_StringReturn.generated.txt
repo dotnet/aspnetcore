@@ -582,5 +582,22 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Action<ILogger, string, string, Exception?> _invalidFormRequestBody =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "InvalidFormRequestBody"), "Failed to read parameter \"{ParameterType} {ParameterName}\" from the request body as form.");
+
+        public void UnexpectedRequestWithoutBody(string parameterTypeName, string parameterName)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, "Unexpected request without body, failed to bind parameter \"{0} {1}\" from the request body as form.", parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, StatusCodes.Status400BadRequest);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _unexpectedRequestWithoutBody(_rdgLogger, parameterTypeName, parameterName, null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, Exception?> _unexpectedRequestWithoutBody =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(11, "UnexpectedRequestWithoutBody"), "Unexpected request without body, failed to bind parameter \"{ParameterType} {ParameterName}\" from the request body as form.");
     }
 }
