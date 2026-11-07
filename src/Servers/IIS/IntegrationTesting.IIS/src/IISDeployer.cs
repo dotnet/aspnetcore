@@ -88,10 +88,9 @@ public class IISDeployer : IISDeployerBase
             // For now, only support using published output
             DeploymentParameters.PublishApplicationBeforeDeployment = true;
             // Move ASPNETCORE_DETAILEDERRORS to web config env variables
-            if (IISDeploymentParameters.EnvironmentVariables.ContainsKey(DetailedErrorsEnvironmentVariable))
+            if (IISDeploymentParameters.EnvironmentVariables.TryGetValue(DetailedErrorsEnvironmentVariable, out var value))
             {
-                IISDeploymentParameters.WebConfigBasedEnvironmentVariables[DetailedErrorsEnvironmentVariable] =
-                    IISDeploymentParameters.EnvironmentVariables[DetailedErrorsEnvironmentVariable];
+                IISDeploymentParameters.WebConfigBasedEnvironmentVariables[DetailedErrorsEnvironmentVariable] = value;
 
                 IISDeploymentParameters.EnvironmentVariables.Remove(DetailedErrorsEnvironmentVariable);
             }
