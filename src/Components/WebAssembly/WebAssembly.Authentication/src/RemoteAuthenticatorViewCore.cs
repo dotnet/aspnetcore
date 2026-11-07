@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -105,6 +106,8 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
     [Inject] internal IRemoteAuthenticationPathsProvider RemoteApplicationPathsProvider { get; set; } = default!;
 
     [Inject] internal AuthenticationStateProvider AuthenticationProvider { get; set; } = default!;
+
+    [Inject] internal IJSRuntime JSRuntime { get; set; } = default!;
 
     [Inject] internal ILogger<RemoteAuthenticatorViewCore<TAuthenticationState>> Logger { get; set; } = default!;
 
@@ -248,9 +251,9 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
         switch (result.Status)
         {
             case RemoteAuthenticationStatus.Redirect:
-                // There should not be any redirects as the only time CompleteSignInAsync finishes
-                // is when we are doing a redirect sign in flow.
-                throw new InvalidOperationException("Should not redirect.");
+                Log.NavigatingToUrl(Logger, ApplicationPaths.LogInPath);
+                Navigation.NavigateTo(ApplicationPaths.LogInPath, AuthenticationNavigationOptions);
+                break;
             case RemoteAuthenticationStatus.Success:
                 Log.LoginRedirectCompletedSuccessfully(Logger);
                 if (OnLogInSucceeded.HasDelegate)

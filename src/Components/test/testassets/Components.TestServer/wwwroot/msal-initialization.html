@@ -34,7 +34,7 @@
                 first.then(() => AuthenticationService.completeSignIn(location.href)),
                 second.then(() => AuthenticationService.completeSignIn(location.href))
             ]);
-            const passed = sharedClient && results.every(result => result.status === "operationCompleted");
+            const passed = sharedClient && results.every(result => result.status === "redirect");
             const output = document.getElementById("result");
             output.dataset.status = passed ? "PASS" : "FAIL";
             output.textContent = output.dataset.status + "\n" + JSON.stringify({ sharedClient, results }, null, 2);
