@@ -126,6 +126,10 @@ The steps you follow next depend on your preferred development environment:
     Run restore before building Blazor's JavaScript directly with npm, and again after
     updating runtime dependencies. The MSBuild npm workspace build performs this step
     automatically, even when npm packages are already restored.
+    Builds within the VMR instead copy the runtime's checked-in declaration from
+    `src/runtime/src/native/libs/Common/JavaScript/loader/dotnet.d.ts` under
+    `SourceBuiltArtifactsBasePath`, without requiring a browser runtime pack.
+    Changes to that source declaration also invalidate the npm build.
 
 1. After you've activated the locally installed .NET, open the project you want to modify by running the `code` command in the project's directory. For example, if you want to modify the`src/Http` project:
 

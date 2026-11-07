@@ -9,17 +9,36 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(DotNetBuildFromVMR)' != 'true'">
     <PackageDownload Include="Microsoft.NETCore.App.Runtime.browser-wasm" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <_RuntimeJavaScriptDefinitionsSource Condition="'$(DotNetBuildFromVMR)' == 'true'">$([MSBuild]::NormalizePath('$(SourceBuiltArtifactsBasePath)', 'src/runtime/src/native/libs/Common/JavaScript/loader/dotnet.d.ts'))</_RuntimeJavaScriptDefinitionsSource>
+    <_RuntimeJavaScriptDefinitionsSource Condition="'$(DotNetBuildFromVMR)' != 'true'">$(NuGetPackageRoot)microsoft.netcore.app.runtime.browser-wasm/$(MicrosoftNETCoreAppRefVersion)/runtimes/browser-wasm/native/dotnet.d.ts</_RuntimeJavaScriptDefinitionsSource>
+    <_RuntimeJavaScriptDefinitionsSourceFile>$(RepoRoot)artifacts/obj/GenerateFiles/runtime-js-definitions.source</_RuntimeJavaScriptDefinitionsSourceFile>
+  </PropertyGroup>
+
+  <!-- Track source selection across build modes, which share the same npm input. -->
+  <Target Name="PrepareRuntimeJavaScriptDefinitions"
+      Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(DotNetBuildFromVMR)' == 'true' AND '$(SourceBuiltArtifactsBasePath)' == ''"
+      Text="SourceBuiltArtifactsBasePath must be set when copying runtime JavaScript declarations from the VMR." />
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_RuntimeJavaScriptDefinitionsSourceFile)'))" />
+    <WriteLinesToFile File="$(_RuntimeJavaScriptDefinitionsSourceFile)"
+      Lines="$(_RuntimeJavaScriptDefinitionsSource)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
+
   <Target Name="CopyRuntimeJavaScriptDefinitions"
       AfterTargets="Restore"
+      DependsOnTargets="PrepareRuntimeJavaScriptDefinitions"
       Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(DesignTimeBuild)' != 'true'"
-      Inputs="$(MSBuildProjectFullPath);$(ProjectAssetsFile)"
+      Inputs="$(MSBuildProjectFullPath);$(ProjectAssetsFile);$(_RuntimeJavaScriptDefinitionsSource);$(_RuntimeJavaScriptDefinitionsSourceFile)"
       Outputs="$(RepoRoot)src/Components/dotnet-runtime-js/dotnet.d.ts">
     <Copy
-      SourceFiles="$(NuGetPackageRoot)microsoft.netcore.app.runtime.browser-wasm/$(MicrosoftNETCoreAppRefVersion)/runtimes/browser-wasm/native/dotnet.d.ts"
+      SourceFiles="$(_RuntimeJavaScriptDefinitionsSource)"
       DestinationFiles="$(RepoRoot)src/Components/dotnet-runtime-js/dotnet.d.ts"
       SkipUnchangedFiles="true" />
     <!-- A different runtime pack can contain an older file; still invalidate the npm build. -->
