@@ -233,10 +233,21 @@ async function configureRuntimeInstance(): Promise<PlatformApi> {
   };
 }
 
-function setProgress(resourcesLoaded, totalResources) {
-  const percentage = resourcesLoaded / totalResources * 100;
-  document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
-  document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
+let highestDisplayedPercentage = 0;
+
+export function setProgress(resourcesLoaded, totalResources) {
+  if (totalResources <= 0) {
+    return;
+  }
+
+  // The total can grow while loading, as the runtime discovers further resources, so the raw
+  // percentage can fall, or reach 100, before loading has finished. The displayed value never
+  // goes down, and it stays below 100 until startup completes and the loading UI is removed.
+  const percentage = Math.min(resourcesLoaded / totalResources * 100, 99);
+  highestDisplayedPercentage = Math.max(highestDisplayedPercentage, percentage);
+
+  document.documentElement.style.setProperty('--blazor-load-percentage', `${highestDisplayedPercentage}%`);
+  document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(highestDisplayedPercentage)}%"`);
 }
 
 const suppressMessages = ['DEBUGGING ENABLED'];
