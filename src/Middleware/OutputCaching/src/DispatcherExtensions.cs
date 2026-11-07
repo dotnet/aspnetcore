@@ -9,7 +9,7 @@ internal sealed class WorkDispatcher<TKey, TValue> where TKey : notnull
 {
     private readonly ConcurrentDictionary<TKey, Task<TValue?>> _workers = new();
 
-    public async Task<TValue?> ScheduleAsync(TKey key, Func<TKey, Task<TValue?>> valueFactory)
+    public async Task<TValue?> ScheduleAsync(TKey key, Func<TKey, Task<TValue?>> valueFactory, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(key);
 
@@ -33,8 +33,16 @@ internal sealed class WorkDispatcher<TKey, TValue> where TKey : notnull
                 }
                 catch (Exception ex)
                 {
-                    // Make sure all waiters see the exception
-                    tcs.SetException(ex);
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        // An aborted request has no reusable response. Let waiters execute their own requests.
+                        tcs.TrySetResult(default);
+                    }
+                    else
+                    {
+                        // Make sure all waiters see the exception
+                        tcs.SetException(ex);
+                    }
 
                     throw;
                 }
