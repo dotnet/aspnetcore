@@ -42,7 +42,9 @@ internal static class CookieHeaderParserShared
                     }
 
                     // The entry may not contain an actual value, like " , "
-                    store[parsedName.Value.Value!] = Uri.UnescapeDataString(parsedValue.Value.Value!);
+                    var cookieValue = parsedValue.Value.AsSpan();
+                    // Avoid allocating an intermediate substring when the value needs unescaping.
+                    store[parsedName.Value.Value!] = cookieValue.Contains('%') ? Uri.UnescapeDataString(cookieValue) : cookieValue.ToString();
                     hasFoundValue = true;
                 }
                 else
