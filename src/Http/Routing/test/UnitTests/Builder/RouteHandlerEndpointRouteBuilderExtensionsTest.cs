@@ -215,7 +215,55 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: GET /", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
+    }
+
+    [Fact]
+    public void MapGet_ThrowsWithImplicitFromBody_IncludesRoutePatternAndMethodName()
+    {
+        static void GetTodo(int id, Todo todo) { }
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapGet("/todos/{id}", GetTodo);
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains($"Endpoint: HTTP: GET /todos/{{id}} => GetTodo{Environment.NewLine}{Environment.NewLine}Below is the list of parameters that we found:", ex.Message);
+    }
+
+    [Fact]
+    public void MapGetOnGroup_ThrowsWithImplicitFromBody_IncludesGroupPrefixInRoutePattern()
+    {
+        static void GetTodo(int id, Todo todo) { }
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        var group = builder.MapGroup("/api");
+        _ = group.MapGet("/todos/{id}", GetTodo);
+        var dataSource = Assert.Single(builder.DataSources);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: GET /api/todos/{id} => GetTodo", ex.Message);
+    }
+
+    [Fact]
+    public void MapPost_ThrowsWithMultipleInferredBodies_IncludesEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapPost("/todos", (Todo todo1, Todo todo2) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Contains("Failure to infer one or more parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: POST /todos", ex.Message);
+    }
+
+    [Fact]
+    public void MapPost_ThrowsWithFormAndJsonBodies_IncludesEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapPost("/todos", (IFormFile file, [TestFromBody] Todo todo) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Contains("An action cannot use both form and JSON body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: POST /todos", ex.Message);
     }
 
     [Fact]
@@ -226,6 +274,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: DELETE /", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
@@ -254,6 +303,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains($"Endpoint: HTTP: {method} /", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
@@ -594,7 +644,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         _ = builder.MapGet("/", ([FromRoute] int id) => { });
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
-        Assert.Equal("'id' is not a route parameter.", ex.Message);
+        Assert.Equal($"'id' is not a route parameter.{Environment.NewLine}Endpoint: HTTP: GET /", ex.Message);
     }
 
     [Fact]
@@ -652,7 +702,57 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         _ = builder.MapGet("/{id}", ([FromRoute(Name = "value")] int id, HttpContext httpContext) => { });
         var dataSource = GetBuilderEndpointDataSource(builder);
         var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
-        Assert.Equal("'value' is not a route parameter.", ex.Message);
+        Assert.Equal($"'value' is not a route parameter.{Environment.NewLine}Endpoint: HTTP: GET /{{id}}", ex.Message);
+    }
+
+    [Fact]
+    public void MapGetWithNestedAsParameters_ThrowsWithEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapGet("/todos", ([AsParameters] NestedAsParameters args) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
+        Assert.Equal($"Nested AsParametersAttribute is not supported and should be used only for handler parameters.{Environment.NewLine}Endpoint: HTTP: GET /todos", ex.Message);
+    }
+
+    [Fact]
+    public void MapGetWithNullableAsParameters_ThrowsWithEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapGet("/todos", ([AsParameters] AsParametersRecord? args) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Equal($"The nullable type 'AsParametersRecord' is not supported, mark the parameter as non-nullable.{Environment.NewLine}Endpoint: HTTP: GET /todos", ex.Message);
+    }
+
+    [Fact]
+    public void MapPostWithNamedFromFormFileCollection_ThrowsWithEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapPost("/upload", ([TestFromForm(Name = "files")] IFormFileCollection files) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
+        Assert.Equal($"Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.{Environment.NewLine}Endpoint: HTTP: POST /upload", ex.Message);
+    }
+
+    [Fact]
+    public void MapPostWithNamedFromFormCollection_ThrowsWithEndpointDisplayName()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapPost("/upload", ([TestFromForm(Name = "form")] IFormCollection form) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
+        Assert.Equal($"Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormCollection.{Environment.NewLine}Endpoint: HTTP: POST /upload", ex.Message);
+    }
+
+    private record AsParametersRecord(int Id);
+
+    private record NestedAsParameters([AsParameters] AsParametersRecord Inner);
+
+    [AttributeUsage(AttributeTargets.Parameter)]
+    private class TestFromFormAttribute : Attribute, IFromFormMetadata
+    {
+        public string? Name { get; set; }
     }
 
     [Fact]

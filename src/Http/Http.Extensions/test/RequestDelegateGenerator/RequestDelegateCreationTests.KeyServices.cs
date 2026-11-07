@@ -48,7 +48,7 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] [FromServi
 
         // Throw during endpoint construction
         var exception = Assert.Throws<NotSupportedException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
-        Assert.Equal($"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.", exception.Message);
+        Assert.Equal($"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.{Environment.NewLine}Endpoint: HTTP: GET /", exception.Message);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
         if (!IsGeneratorEnabled)
         {
             var runtimeException = Assert.Throws<InvalidOperationException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
-            Assert.Equal("Unable to resolve service referenced by FromKeyedServicesAttribute. The service provider doesn't support keyed services.", runtimeException.Message);
+            Assert.Equal($"Unable to resolve service referenced by FromKeyedServicesAttribute. The service provider doesn't support keyed services.{Environment.NewLine}Endpoint: HTTP: GET /", runtimeException.Message);
             return;
         }
         var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
