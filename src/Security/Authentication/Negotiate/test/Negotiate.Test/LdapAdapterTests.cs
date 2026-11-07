@@ -2,13 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers.Binary;
+using System.DirectoryServices.Protocols;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.Versioning;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Text;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate.Test;
 
@@ -336,5 +341,159 @@ public class LdapAdapterTests
     public void ShouldEmitRoleClaim_HonoursGroupTypeAndOptOutSwitch(string groupTypeValue, bool allowNonSecurityEnabledGroupClaims, bool expected)
     {
         Assert.Equal(expected, LdapAdapter.ShouldEmitRoleClaim(groupTypeValue, allowNonSecurityEnabledGroupClaims));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(LdapAdapter.MaxNestedGroupDepth - 1)]
+    [InlineData(LdapAdapter.MaxNestedGroupDepth)]
+    public void GetGroupClaims_NestingUpToLimit_ResolvesWholeChain(int nestedLevels)
+    {
+        var sink = new TestSink();
+        var directory = CreateGroupChain("G", nestedLevels);
+
+        var claims = ResolveGroupClaims(new[] { "CN=G0,DC=x" }, directory, sink, out var reads);
+
+        Assert.Equal(Enumerable.Range(0, nestedLevels + 1).Select(i => $"G{i}"), claims);
+        Assert.Equal(nestedLevels + 1, reads.Count);
+        Assert.DoesNotContain(sink.Writes, w => w.LogLevel == LogLevel.Warning);
+    }
+
+    [Fact]
+    public void GetGroupClaims_NestingAboveLimit_StopsAtLimitAndKeepsCollectedClaims()
+    {
+        var sink = new TestSink();
+        var directory = CreateGroupChain("G", LdapAdapter.MaxNestedGroupDepth + 10);
+
+        var claims = ResolveGroupClaims(new[] { "CN=G0,DC=x" }, directory, sink, out var reads);
+
+        Assert.Equal(Enumerable.Range(0, LdapAdapter.MaxNestedGroupDepth + 1).Select(i => $"G{i}"), claims);
+        Assert.DoesNotContain($"CN=G{LdapAdapter.MaxNestedGroupDepth + 1},DC=x", reads);
+        var warning = Assert.Single(sink.Writes, w => w.LogLevel == LogLevel.Warning);
+        Assert.Contains("maximum nesting depth", warning.Message);
+    }
+
+    [Fact]
+    public void GetGroupClaims_SeveralDirectGroupsAboveLimit_LogsOncePerResolution()
+    {
+        var sink = new TestSink();
+        var directory = CreateGroupChain("A", LdapAdapter.MaxNestedGroupDepth + 1);
+        foreach (var group in CreateGroupChain("B", LdapAdapter.MaxNestedGroupDepth + 1))
+        {
+            directory.Add(group.Key, group.Value);
+        }
+
+        var claims = ResolveGroupClaims(new[] { "CN=A0,DC=x", "CN=B0,DC=x" }, directory, sink, out _);
+
+        Assert.Equal(2 * (LdapAdapter.MaxNestedGroupDepth + 1), claims.Count);
+        Assert.Single(sink.Writes, w => w.LogLevel == LogLevel.Warning);
+    }
+
+    [Fact]
+    public void GetGroupClaims_CircularReference_TerminatesWithoutHittingLimit()
+    {
+        var sink = new TestSink();
+        var directory = new Dictionary<string, string>
+        {
+            ["CN=A,DC=x"] = "CN=B,DC=x",
+            ["CN=B,DC=x"] = "CN=A,DC=x",
+        };
+
+        var claims = ResolveGroupClaims(new[] { "CN=A,DC=x" }, directory, sink, out var reads);
+
+        Assert.Equal(new[] { "A", "B" }, claims);
+        Assert.Equal(new[] { "CN=A,DC=x", "CN=B,DC=x" }, reads);
+        Assert.DoesNotContain(sink.Writes, w => w.LogLevel == LogLevel.Warning);
+    }
+
+    // Builds {prefix}0 -> {prefix}1 -> ... -> {prefix}{nestedLevels}, where each group is a member of the next one.
+    private static Dictionary<string, string> CreateGroupChain(string prefix, int nestedLevels)
+    {
+        var directory = new Dictionary<string, string>();
+        for (var i = 0; i <= nestedLevels; i++)
+        {
+            directory[$"CN={prefix}{i},DC=x"] = i < nestedLevels ? $"CN={prefix}{i + 1},DC=x" : null;
+        }
+
+        return directory;
+    }
+
+    private static List<string> ResolveGroupClaims(string[] directGroupDNs, Dictionary<string, string> directory, TestSink sink, out List<string> reads)
+    {
+        var claims = new List<string>();
+        var readDNs = new List<string>();
+        using var connection = new FakeLdapConnection(dn =>
+        {
+            Assert.True(directory.ContainsKey(dn), $"Unexpected LDAP read for '{dn}'.");
+            readDNs.Add(dn);
+            return CreateGroupResponse(dn, groupType: null, directory[dn]);
+        });
+
+        LdapAdapter.GetGroupClaims(
+            connection,
+            new ClaimsIdentity([new Claim(ClaimTypes.Name, "user@x")], "Negotiate"),
+            "DC=x",
+            new DirectoryAttribute("memberof", directGroupDNs.Select(dn => (object)Encoding.UTF8.GetBytes(dn)).ToArray()),
+            new TestLogger("LdapAdapter", sink, enabled: true),
+            claims,
+            resolveNestedGroups: true);
+
+        reads = readDNs;
+        return claims;
+    }
+
+    private sealed class FakeLdapConnection : LdapConnection
+    {
+        private readonly Func<string, SearchResponse> _read;
+
+        public FakeLdapConnection(Func<string, SearchResponse> read)
+            : base(new LdapDirectoryIdentifier("unused.invalid"))
+        {
+            _read = read;
+        }
+
+        public override DirectoryResponse SendRequest(DirectoryRequest request)
+            => _read(((SearchRequest)request).DistinguishedName);
+    }
+
+    // The LDAP response types only have internal constructors, so responses are built reflectively.
+    // This helper is the single place that depends on those internals.
+    private static SearchResponse CreateGroupResponse(string distinguishedName, string groupType, string memberOf)
+    {
+        const BindingFlags NonPublicInstance = BindingFlags.NonPublic | BindingFlags.Instance;
+
+        var attributes = (SearchResultAttributeCollection)Activator.CreateInstance(
+            typeof(SearchResultAttributeCollection), NonPublicInstance, null, null, null);
+        var addAttribute = typeof(SearchResultAttributeCollection).GetMethod("Add", NonPublicInstance);
+
+        if (groupType != null)
+        {
+            addAttribute.Invoke(attributes, new object[] { "groupType", new DirectoryAttribute("groupType", groupType) });
+        }
+
+        if (memberOf != null)
+        {
+            addAttribute.Invoke(attributes, new object[] { "memberof", new DirectoryAttribute("memberof", Encoding.UTF8.GetBytes(memberOf)) });
+        }
+
+        var entry = (SearchResultEntry)Activator.CreateInstance(
+            typeof(SearchResultEntry), NonPublicInstance, null, new object[] { distinguishedName, attributes }, null);
+
+        var entries = (SearchResultEntryCollection)Activator.CreateInstance(
+            typeof(SearchResultEntryCollection), NonPublicInstance, null, null, null);
+        typeof(SearchResultEntryCollection).GetMethod("Add", NonPublicInstance).Invoke(entries, new object[] { entry });
+
+        var constructor = typeof(SearchResponse).GetConstructors(NonPublicInstance)[0];
+        var arguments = constructor.GetParameters()
+            .Select(p => p.ParameterType == typeof(ResultCode) ? (object)ResultCode.Success : null)
+            .ToArray();
+        var response = (SearchResponse)constructor.Invoke(arguments);
+
+        typeof(SearchResponse)
+            .GetProperty("Entries", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetSetMethod(nonPublic: true)
+            .Invoke(response, new object[] { entries });
+
+        return response;
     }
 }
