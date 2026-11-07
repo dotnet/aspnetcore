@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization;
@@ -19,7 +18,7 @@ public abstract class AuthorizationHandler<TRequirement> : IAuthorizationHandler
     /// <param name="context">The authorization context.</param>
     public virtual async Task HandleAsync(AuthorizationHandlerContext context)
     {
-        foreach (var req in context.Requirements.OfType<TRequirement>())
+        foreach (var req in new RequirementsOfType<TRequirement>(context.Requirements))
         {
             await HandleRequirementAsync(context, req).ConfigureAwait(false);
         }
@@ -50,7 +49,7 @@ public abstract class AuthorizationHandler<TRequirement, TResource> : IAuthoriza
     {
         if (context.Resource is TResource resource)
         {
-            foreach (var req in context.Requirements.OfType<TRequirement>())
+            foreach (var req in new RequirementsOfType<TRequirement>(context.Requirements))
             {
                 await HandleRequirementAsync(context, req, resource).ConfigureAwait(false);
             }
