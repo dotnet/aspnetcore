@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch;
@@ -46,6 +47,69 @@ public class JsonPatchDocumentGetPathTest
 
         // Assert
         Assert.Equal("/key/3", path);
+    }
+
+    [Theory]
+    [InlineData("key", "/key/3")]
+    [InlineData("", "//3")]
+    [InlineData("/", "/~1/3")]
+    [InlineData("~", "/~0/3")]
+    [InlineData("~0", "/~00/3")]
+    [InlineData("~1", "/~01/3")]
+    [InlineData("a/~b", "/a~1~0b/3")]
+    public void ExpressionType_Call_EscapesDictionaryKey(string key, string expectedPath)
+    {
+        var patchDocument = new JsonPatchDocument<Dictionary<string, List<int>>>();
+
+        var path = patchDocument.GetPath(p => p[key], "3");
+        var evaluatedPath = patchDocument.GetPath(p => p[string.Concat(key, string.Empty)], "3");
+
+        Assert.Equal(expectedPath, path);
+        Assert.Equal(expectedPath, evaluatedPath);
+    }
+
+    [Fact]
+    public void ExpressionType_Call_EscapesNestedDictionaryKeys()
+    {
+        var patchDocument = new JsonPatchDocument<Dictionary<string, Dictionary<string, SimpleObject>>>();
+
+        var path = patchDocument.GetPath(p => p["outer/~"]["~1"].IntegerList[2], null);
+
+        Assert.Equal("/outer~1~0/~01/IntegerList/2", path);
+    }
+
+    [Fact]
+    public void ExpressionType_MemberAccess_EscapesSerializedPropertyNames()
+    {
+        var patchDocument = new JsonPatchDocument<ObjectWithEscapedPropertyNames>();
+
+        var path = patchDocument.GetPath(p => p.NestedObject.IntegerList[2], null);
+
+        Assert.Equal("/outer~1~01/inner~1~00/2", path);
+    }
+
+    [Fact]
+    public void Replace_EscapedDictionaryKey_UpdatesOnlyExactKey()
+    {
+        var nested = new Dictionary<string, int> { ["/"] = 20 };
+        var model = new Dictionary<string, object>
+        {
+            ["a/~1"] = 10,
+            ["a"] = nested,
+            ["sibling"] = 30
+        };
+        var patchDocument = new JsonPatchDocument<Dictionary<string, object>>();
+
+        patchDocument.Replace(p => p["a/~1"], 42);
+
+        Assert.Equal("/a~1~01", Assert.Single(patchDocument.Operations).path);
+
+        patchDocument.ApplyTo(model);
+
+        Assert.Equal(42, model["a/~1"]);
+        Assert.Equal(20, Assert.IsType<Dictionary<string, int>>(model["a"])["/"]);
+        Assert.Equal(30, model["sibling"]);
+        Assert.Equal(3, model.Count);
     }
 
     [Fact]
@@ -101,6 +165,15 @@ public class JsonPatchDocumentGetPathTest
 
         // Assert
         Assert.Equal("The expression '(p.IntegerValue >= 4)' is not supported. Supported expressions include member access and indexer expressions.", exception.Message);
+    }
+
+    private class ObjectWithEscapedPropertyNames
+    {
+        [JsonProperty("outer/~1")]
+        public ObjectWithEscapedPropertyNames NestedObject { get; set; }
+
+        [JsonProperty("inner/~0")]
+        public List<int> IntegerList { get; set; }
     }
 }
 
