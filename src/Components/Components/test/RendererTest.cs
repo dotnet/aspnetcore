@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Test;
@@ -1429,6 +1430,108 @@ public class RendererTest
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.RanToCompletion, task.Status);
         await task; // Does not throw
+    }
+
+    [Fact]
+    public async Task DispatchEventAsync_EventCallbackOfT_WithReceiverAndNullDelegate_DoesNotThrow()
+    {
+        // Arrange
+        // This mimics markup like <div @onclick="@(condition ? handler : null!)"/> where the compiler
+        // produces an EventCallback with a non-null Receiver but a null Delegate. RequiresExplicitReceiver
+        // is true in that case, so RenderTreeBuilder keeps the attribute (unlike default(EventCallback)).
+        // A ComponentsActivitySource is registered because tracing is enabled by default in real apps
+        // (AddRazorComponents calls AddComponentsTracing), and the tracing code path must tolerate a
+        // null Delegate too.
+        var services = new TestServiceProvider();
+        services.AddService(new ComponentsActivitySource());
+        var renderer = new TestRenderer(services);
+        var eventHandlerId = await RenderNullDelegateEventCallbackAsync(renderer, new OuterEventComponent());
+
+        // Act
+        var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
+
+        // Assert
+        Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+        await task; // Does not throw
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task DispatchEventAsync_EventCallbackOfT_WithReceiverAndNullDelegate_MetricsEnabled_DoesNotThrow()
+    {
+        // Arrange
+        // Same as above, but with metrics enabled so the post-invoke metrics code path also runs.
+        var meterFactory = new TestMeterFactory();
+        using var eventDurationHistogram = new MetricCollector<double>(
+            meterFactory, ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
+        var services = new TestServiceProvider();
+        services.AddService(new ComponentsActivitySource());
+        services.AddService(new ComponentsMetrics(meterFactory));
+        var renderer = new TestRenderer(services);
+        var eventHandlerId = await RenderNullDelegateEventCallbackAsync(renderer, new OuterEventComponent());
+
+        // Act
+        var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
+
+        // Assert
+        Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+        await task; // Does not throw
+        Assert.Empty(renderer.HandledExceptions);
+        Assert.NotNull(renderer.ComponentMetrics);
+        Assert.True(renderer.ComponentMetrics.IsEventEnabled);
+        var measurement = Assert.Single(eventDurationHistogram.GetMeasurementSnapshot());
+        Assert.Equal(typeof(OuterEventComponent).FullName, measurement.Tags["aspnetcore.components.type"]);
+        Assert.DoesNotContain("code.function.name", measurement.Tags.Keys);
+    }
+
+    [Fact]
+    public async Task DispatchEventAsync_EventCallbackOfT_WithReceiverAndNullDelegate_MetricsEnabled_SynchronousException_IsHandled()
+    {
+        // Arrange
+        // The receiver throws synchronously from HandleEventAsync, so the catch block in
+        // DispatchEventAsync (which also reads the callback delegate for metrics) runs with a null Delegate.
+        var meterFactory = new TestMeterFactory();
+        using var eventDurationHistogram = new MetricCollector<double>(
+            meterFactory, ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
+        var services = new TestServiceProvider();
+        services.AddService(new ComponentsActivitySource());
+        services.AddService(new ComponentsMetrics(meterFactory));
+        var renderer = new TestRenderer(services) { ShouldHandleExceptions = true };
+        var parentComponent = new OuterEventComponent
+        {
+            OnEvent = () => throw new InvalidTimeZoneException("Test exception")
+        };
+        var eventHandlerId = await RenderNullDelegateEventCallbackAsync(renderer, parentComponent);
+
+        // Act
+        var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
+
+        // Assert
+        Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+        await task; // Does not throw
+        Assert.IsType<InvalidTimeZoneException>(Assert.Single(renderer.HandledExceptions));
+        var measurement = Assert.Single(eventDurationHistogram.GetMeasurementSnapshot());
+        Assert.Equal(typeof(OuterEventComponent).FullName, measurement.Tags["aspnetcore.components.type"]);
+        Assert.DoesNotContain("code.function.name", measurement.Tags.Keys);
+        Assert.Equal(typeof(InvalidTimeZoneException).FullName, measurement.Tags["error.type"]);
+    }
+
+    private static async Task<ulong> RenderNullDelegateEventCallbackAsync(TestRenderer renderer, OuterEventComponent parentComponent)
+    {
+        parentComponent.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, (Action<DerivedEventArgs>)null));
+            builder.CloseElement();
+        };
+
+        renderer.AssignRootComponentId(parentComponent);
+        await parentComponent.TriggerRenderAsync();
+
+        return renderer.Batches[0]
+            .ReferenceFrames
+            .First(frame => frame.AttributeName == "onclick")
+            .AttributeEventHandlerId;
     }
 
     [Fact]
