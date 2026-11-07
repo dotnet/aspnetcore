@@ -55,6 +55,8 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     results['requestDotNetStreamReference'] = await validateDotNetStreamReference(streamRef);
     var streamWrapper = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamWrapperReference');
     results['requestDotNetStreamWrapperReference'] = await validateDotNetStreamWrapperReference(streamWrapper);
+    var blobStreamRef = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamReference');
+    results['requestDotNetStreamReferenceBlob'] = await validateDotNetStreamReferenceBlob(blobStreamRef);
 
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
@@ -123,6 +125,8 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
   results['requestDotNetStreamReferenceAsync'] = await validateDotNetStreamReference(streamRef);
   var wrapper = await DotNet.invokeMethodAsync(assemblyName, 'GetDotNetStreamWrapperReferenceAsync');
   results['requestDotNetStreamWrapperReferenceAsync'] = await validateDotNetStreamWrapperReference(wrapper);
+  var blobStreamRef = await DotNet.invokeMethodAsync(assemblyName, 'GetDotNetStreamReferenceAsync');
+  results['requestDotNetStreamReferenceBlobAsync'] = await validateDotNetStreamReferenceBlob(blobStreamRef);
 
   const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
     stringValue: 'My string',
@@ -451,6 +455,19 @@ async function validateDotNetStreamReference(streamRef) {
   const data = new Uint8Array(await streamRef.arrayBuffer());
   const isValid = data.length == 100000 && data.every((value, index) => value == index % 256);
   return isValid ? "Success" : `Failure, got length ${data.length} with data ${data}`;
+}
+
+async function validateDotNetStreamReferenceBlob(streamRef) {
+  const blob = await streamRef.blob('application/x-blazor-test');
+  if (!(blob instanceof Blob)) {
+    return `Failure, expected a Blob but got ${Object.prototype.toString.call(blob)}`;
+  }
+  if (blob.type !== 'application/x-blazor-test') {
+    return `Failure, expected type 'application/x-blazor-test' but got '${blob.type}'`;
+  }
+  const data = new Uint8Array(await blob.arrayBuffer());
+  const isValid = data.length == 100000 && data.every((value, index) => value == index % 256);
+  return isValid ? "Success" : `Failure, got blob of size ${blob.size} with data length ${data.length}`;
 }
 
 async function validateDotNetStreamWrapperReference(wrapper) {
