@@ -45,6 +45,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private ResourceAssetCollection? _resourceCollection;
     private bool _rendererIsStopped;
     private readonly ILogger _logger;
+    private HashSet<int>? _interactiveComponentIds;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -64,6 +65,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     internal HttpContext? HttpContext => _httpContext;
     internal NotFoundEventArgs? NotFoundEventArgs { get; private set; }
+    internal bool HasInteractiveComponents => _interactiveComponentIds is { Count: > 0 };
 
     internal ArrayRange<RenderTreeFrame> GetRenderTreeFrames(int componentId)
         => GetCurrentRenderTreeFrames(componentId);
@@ -171,7 +173,15 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
-        => new EndpointComponentState(this, componentId, component, parentComponentState);
+    {
+        var state = new EndpointComponentState(this, componentId, component, parentComponentState);
+        if (component is SSRRenderModeBoundary)
+        {
+            (_interactiveComponentIds ??= new()).Add(componentId);
+        }
+
+        return state;
+    }
 
     /// <inheritdoc/>
     protected override ResourceAssetCollection Assets =>
@@ -216,6 +226,14 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         UpdateNamedSubmitEvents(in renderBatch);
+
+        if (_interactiveComponentIds is not null)
+        {
+            for (var i = 0; i < renderBatch.DisposedComponentIDs.Count; i++)
+            {
+                _interactiveComponentIds.Remove(renderBatch.DisposedComponentIDs.Array[i]);
+            }
+        }
 
         if (_streamingUpdatesWriter is { } writer && !_rendererIsStopped)
         {
