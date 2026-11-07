@@ -163,6 +163,13 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 configuration(builder);
             });
 
+        if (_useKestrel)
+        {
+            factory._useKestrel = true;
+            factory._kestrelPort = _kestrelPort;
+            factory._configureKestrelOptions = _configureKestrelOptions;
+        }
+
         _derivedFactories.Add(factory);
 
         return factory;
@@ -225,7 +232,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private void TryConfigureServerPort(Func<IServerAddressesFeature?> serverAddressFeatureAccessor)
     {
-        if (_kestrelPort.HasValue)
+        if (_useKestrel && _kestrelPort.HasValue)
         {
             var saf = serverAddressFeatureAccessor();
             if (saf is not null)
@@ -385,6 +392,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private void ConfigureHostBuilder(IHostBuilder hostBuilder)
     {
+        hostBuilder.Properties[typeof(WebApplicationFactory<TEntryPoint>)] = this;
+
         hostBuilder.ConfigureWebHost(webHostBuilder =>
         {
             SetContentRoot(webHostBuilder);
@@ -655,7 +664,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     protected virtual IHost CreateHost(IHostBuilder builder)
     {
         var host = builder.Build();
-        TryConfigureServerPort(() => GetServerAddressFeature(host));
+        var factory = builder?.Properties is not null && builder.Properties.TryGetValue(typeof(WebApplicationFactory<TEntryPoint>), out var value) && value is WebApplicationFactory<TEntryPoint> activeFactory
+            ? activeFactory
+            : this;
+        factory.TryConfigureServerPort(() => GetServerAddressFeature(host));
         host.Start();
         return host;
     }
@@ -786,17 +798,37 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         if (_useKestrel)
         {
-            if (_webHost is null && _host is null)
+            var hostAddress = GetActiveHostAddress();
+            if (hostAddress is null)
             {
                 throw new InvalidOperationException(Resources.ServerNotInitialized);
             }
 
-            client.BaseAddress = _webHostAddress;
+            client.BaseAddress = hostAddress;
         }
         else
         {
             client.BaseAddress = new Uri("http://localhost");
         }
+    }
+
+    private Uri? GetActiveHostAddress()
+    {
+        if (_webHostAddress is not null)
+        {
+            return _webHostAddress;
+        }
+
+        foreach (var factory in _derivedFactories)
+        {
+            var address = factory.GetActiveHostAddress();
+            if (address is not null)
+            {
+                return address;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -936,11 +968,19 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         protected override void ConfigureWebHost(IWebHostBuilder builder) => _configuration(builder);
 
-        protected override void ConfigureClient(HttpClient client) => _configureClient(client);
+        protected override void ConfigureClient(HttpClient client)
+        {
+            _configureClient(client);
+
+            if (_useKestrel && _webHostAddress is not null)
+            {
+                client.BaseAddress = _webHostAddress;
+            }
+        }
 
         internal override WebApplicationFactory<TEntryPoint> WithWebHostBuilderCore(Action<IWebHostBuilder> configuration)
         {
-            return new DelegatedWebApplicationFactory(
+            var factory = new DelegatedWebApplicationFactory(
                 ClientOptions,
                 _createServer,
                 _createServerFromServiceProvider,
@@ -954,6 +994,17 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                     _configuration(builder);
                     configuration(builder);
                 });
+
+            if (_useKestrel)
+            {
+                factory._useKestrel = true;
+                factory._kestrelPort = _kestrelPort;
+                factory._configureKestrelOptions = _configureKestrelOptions;
+            }
+
+            _derivedFactories.Add(factory);
+
+            return factory;
         }
     }
 }
