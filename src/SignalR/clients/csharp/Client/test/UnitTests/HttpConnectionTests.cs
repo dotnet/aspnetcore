@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -91,7 +92,9 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
             return testHttpHandler;
         };
         httpOptions.Cookies.Add(new Cookie("Name", "Value", string.Empty, "fakeuri.org"));
-        var clientCertificate = new X509Certificate(Array.Empty<byte>());
+        using var rsa = RSA.Create();
+        var request = new CertificateRequest("CN=Test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var clientCertificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
         httpOptions.ClientCertificates.Add(clientCertificate);
         httpOptions.UseDefaultCredentials = false;
         httpOptions.Credentials = Mock.Of<ICredentials>();
