@@ -6139,6 +6139,13 @@ public class Http2ConnectionTests : Http2TestBase
 
         await SendRstStreamAsync(1);
 
+        // Confirm the server has processed the reset and removed the stream.
+        await SendPingAsync(Http2PingFrameFlags.NONE);
+        await ExpectAsync(Http2FrameType.PING,
+            withLength: 8,
+            withFlags: (byte)Http2PingFrameFlags.ACK,
+            withStreamId: 0);
+
         // Send an extra frame to make it fail
         switch (finalFrameType)
         {
@@ -6154,15 +6161,11 @@ public class Http2ConnectionTests : Http2TestBase
                 throw new NotImplementedException(finalFrameType.ToString());
         }
 
-        // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
             ignoreNonGoAwayFrames: false,
             expectedLastStreamId: 1,
             expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
-            expectedErrorMessage: new[] {
-                    CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, streamId: 1),
-                    CoreStrings.FormatHttp2ErrorStreamAborted(finalFrameType, streamId: 1)
-            });
+            expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, streamId: 1));
 
         switch (finalFrameType)
         {
