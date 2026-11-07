@@ -305,6 +305,63 @@ public class W3CLoggingMiddlewareTests
         Assert.True(Double.TryParse(lines[3], NumberStyles.Number, CultureInfo.InvariantCulture, out num));
     }
 
+    [Fact]
+    public async Task LogsFormattedValuesAcrossRequests()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.ServerPort | W3CLoggingFields.UserAgent;
+        options.CurrentValue.AdditionalRequestHeaders.Add("x-b");
+        options.CurrentValue.AdditionalRequestHeaders.Add("x-a");
+        var logger = Helpers.CreateTestW3CLogger(options);
+
+        var middleware = new W3CLoggingMiddleware(
+            c =>
+            {
+                c.Response.StatusCode = 200;
+                return Task.CompletedTask;
+            },
+            options,
+            logger);
+
+        var requests = new (int Port, string UserAgent, string XA, string XB)[]
+        {
+            (5000, "Mozilla/5.0 (X11; Linux x86_64)", "a\tb", null),
+            (6000, " agent\u0001x ", "plain", "b c"),
+            (5000, "NoSpaces", null, "\u0000"),
+        };
+
+        var now = DateTime.UtcNow;
+        foreach (var request in requests)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalPort = request.Port;
+            httpContext.Request.Headers.UserAgent = request.UserAgent;
+            if (request.XA is not null)
+            {
+                httpContext.Request.Headers["x-a"] = request.XA;
+            }
+            if (request.XB is not null)
+            {
+                httpContext.Request.Headers["x-b"] = request.XB;
+            }
+            await middleware.Invoke(httpContext);
+        }
+        await logger.Processor.WaitForWrites(6).DefaultTimeout();
+
+        var lines = logger.Processor.Lines;
+        Assert.Equal("#Fields: date time s-port cs(User-Agent) cs(x-a) cs(x-b)", lines[2]);
+
+        foreach (var line in lines.Skip(3))
+        {
+            var timestamp = DateTime.ParseExact(line.Substring(0, 19), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            Assert.InRange(timestamp.Subtract(now).TotalSeconds, -1, 10);
+        }
+
+        Assert.Equal("5000 Mozilla/5.0+(X11;+Linux+x86_64) a+b -", lines[3].Substring(20));
+        Assert.Equal("6000 agent+x plain b+c", lines[4].Substring(20));
+        Assert.Equal("5000 NoSpaces - +", lines[5].Substring(20));
+    }
+
     private IOptionsMonitor<W3CLoggerOptions> CreateOptionsAccessor()
     {
         var options = new W3CLoggerOptions();

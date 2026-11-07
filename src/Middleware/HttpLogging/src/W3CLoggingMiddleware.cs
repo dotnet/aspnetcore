@@ -39,7 +39,10 @@ internal sealed class W3CLoggingMiddleware
     internal static readonly int _userAgentIndex = BitOperations.Log2((int)W3CLoggingFields.UserAgent);
     internal static readonly int _cookieIndex = BitOperations.Log2((int)W3CLoggingFields.Cookie);
     internal static readonly int _refererIndex = BitOperations.Log2((int)W3CLoggingFields.Referer);
-    private readonly ISet<string> _additionalRequestHeaders;
+    // Snapshot of the additional request headers in the same order the W3CLogger writes them.
+    private readonly string[] _additionalRequestHeaderNames;
+    private DateTimeStrings? _dateTimeStrings;
+    private PortString? _portString;
 
     // Number of fields in W3CLoggingFields - equal to the number of _*Index variables above
     internal const int _fieldsLength = 17;
@@ -59,8 +62,40 @@ internal sealed class W3CLoggingMiddleware
         _next = next;
         _options = options;
         _w3cLogger = w3cLogger;
-        _additionalRequestHeaders = W3CLoggerOptions.FilterRequestHeaders(options.CurrentValue);
+        _additionalRequestHeaderNames = W3CLoggerOptions.FilterRequestHeaders(options.CurrentValue).ToArray();
     }
+
+    // The date and time fields only change once per second, so share the formatted strings between requests.
+    private DateTimeStrings GetDateTimeStrings(DateTime now)
+    {
+        var second = now.Ticks / TimeSpan.TicksPerSecond;
+        var cached = _dateTimeStrings;
+        if (cached is null || cached.Second != second)
+        {
+            cached = new DateTimeStrings(
+                second,
+                now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+            _dateTimeStrings = cached;
+        }
+        return cached;
+    }
+
+    // The local port is almost always the same for every request, so cache the last formatted value.
+    private string GetPortString(int port)
+    {
+        var cached = _portString;
+        if (cached is null || cached.Port != port)
+        {
+            cached = new PortString(port, port.ToString(CultureInfo.InvariantCulture));
+            _portString = cached;
+        }
+        return cached.Text;
+    }
+
+    private sealed record DateTimeStrings(long Second, string Date, string Time);
+
+    private sealed record PortString(int Port, string Text);
 
     /// <summary>
     /// Invokes the <see cref="HttpLoggingMiddleware" />.
@@ -72,7 +107,7 @@ internal sealed class W3CLoggingMiddleware
         var options = _options.CurrentValue;
 
         var elements = new string[_fieldsLength];
-        var additionalHeaderElements = new string[_additionalRequestHeaders.Count];
+        var additionalHeaderElements = _additionalRequestHeaderNames.Length == 0 ? [] : new string[_additionalRequestHeaderNames.Length];
 
         // Whether any of the requested fields actually had content
         bool shouldLog = false;
@@ -81,12 +116,12 @@ internal sealed class W3CLoggingMiddleware
         var stopWatch = ValueStopwatch.StartNew();
         if (options.LoggingFields.HasFlag(W3CLoggingFields.Date))
         {
-            shouldLog |= AddToList(elements, _dateIndex, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            shouldLog |= AddToList(elements, _dateIndex, GetDateTimeStrings(now).Date);
         }
 
         if (options.LoggingFields.HasFlag(W3CLoggingFields.Time))
         {
-            shouldLog |= AddToList(elements, _timeIndex, now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+            shouldLog |= AddToList(elements, _timeIndex, GetDateTimeStrings(now).Time);
         }
 
         if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerName))
@@ -111,7 +146,7 @@ internal sealed class W3CLoggingMiddleware
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerPort))
             {
-                shouldLog |= AddToList(elements, _serverPortIndex, connectionInfo.LocalPort.ToString(CultureInfo.InvariantCulture));
+                shouldLog |= AddToList(elements, _serverPortIndex, GetPortString(connectionInfo.LocalPort));
             }
         }
 
@@ -175,11 +210,11 @@ internal sealed class W3CLoggingMiddleware
             }
         }
 
-        if (_additionalRequestHeaders.Count != 0)
+        if (_additionalRequestHeaderNames.Length != 0)
         {
-            var additionalRequestHeaders = _additionalRequestHeaders.ToList();
+            var additionalRequestHeaders = _additionalRequestHeaderNames;
 
-            for (var i = 0; i < additionalRequestHeaders.Count; i++)
+            for (var i = 0; i < additionalRequestHeaders.Length; i++)
             {
                 if (request.Headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
                 {
@@ -236,29 +271,23 @@ internal sealed class W3CLoggingMiddleware
     // We replace whitespace with the '+' character
     private static string ReplaceWhitespace(string entry)
     {
-        var len = entry.Length;
-        if (len == 0)
-        {
-            return entry;
-        }
-        var src = Array.Empty<char>();
-        for (var i = 0; i < len; i++)
-        {
-            var ch = entry[i];
-            if (ch <= '\u0020')
-            {
-                if (src.Length == 0)
-                {
-                    src = entry.ToCharArray();
-                }
-                src[i] = '+';
-            }
-        }
+        var firstIndex = entry.AsSpan().IndexOfAnyInRange('\u0000', '\u0020');
         // Return original string if we didn't need to modify it
-        if (src.Length == 0)
+        if (firstIndex < 0)
         {
             return entry;
         }
-        return new string(src, 0, len);
+
+        return string.Create(entry.Length, (entry, firstIndex), static (destination, state) =>
+        {
+            state.entry.AsSpan().CopyTo(destination);
+            for (var i = state.firstIndex; i < destination.Length; i++)
+            {
+                if (destination[i] <= '\u0020')
+                {
+                    destination[i] = '+';
+                }
+            }
+        });
     }
 }
