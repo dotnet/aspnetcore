@@ -130,6 +130,14 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         }
     }
 
+    private void CancelRefresh()
+    {
+        _shouldRefresh = false;
+        _refreshIssuedUtc = null;
+        _refreshExpiresUtc = null;
+        _refreshTicket = null;
+    }
+
     private static AuthenticationTicket CloneTicket(AuthenticationTicket ticket, ClaimsPrincipal? replacedPrincipal)
     {
         var principal = replacedPrincipal ?? ticket.Principal;
@@ -212,15 +220,21 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
         Debug.Assert(result.Ticket != null);
         var context = new CookieValidatePrincipalContext(Context, Scheme, Options, result.Ticket);
-        await Events.ValidatePrincipal(context);
+        try
+        {
+            await Events.ValidatePrincipal(context);
+        }
+        catch
+        {
+            // Validation didn't complete, so don't let an error response renew the ticket.
+            CancelRefresh();
+            throw;
+        }
 
         if (context.Principal == null)
         {
             // Discard any refresh requested by CheckForRefreshAsync so a rejected principal isn't renewed.
-            _shouldRefresh = false;
-            _refreshIssuedUtc = null;
-            _refreshExpiresUtc = null;
-            _refreshTicket = null;
+            CancelRefresh();
             return AuthenticateResults.NoPrincipal;
         }
 
