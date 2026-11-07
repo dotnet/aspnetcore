@@ -90,6 +90,10 @@ internal static class ServerVariables
             case "SERVER_NAME":
                 managedVariableThunk = () => new ServerNameSegment();
                 break;
+            case "URL":
+                // The IIS URL variable contains the request path, not the full absolute URI.
+                managedVariableThunk = () => new UrlSegment(UriMatchPart.Path);
+                break;
             default:
                 throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(serverVariable, context.Index));
         }
