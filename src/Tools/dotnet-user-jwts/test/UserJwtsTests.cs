@@ -1036,6 +1036,45 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(app.UserJwtsFilePath));
     }
 
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void Create_CreatesSigningKeySecretsFileWithUserOnlyUnixFileMode()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
+        Assert.True(File.Exists(secretsFilePath));
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(secretsFilePath));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void Key_Reset_RewritesSigningKeySecretsFileWithUserOnlyUnixFileMode()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
+        File.WriteAllText(secretsFilePath, @"{ ""Foo"": { ""Bar"": ""baz"" } }");
+        File.SetUnixFileMode(secretsFilePath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        var app = new Program(_console);
+        app.Run(new[] { "key", "--reset", "--force", "--project", project });
+
+        Assert.Contains("New signing key created:", _console.GetOutput());
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(secretsFilePath));
+
+        using var openStream = File.OpenRead(secretsFilePath);
+        var secretsJson = JsonSerializer.Deserialize<JsonObject>(openStream, JwtSerializerContext.Default.JsonObject);
+        Assert.NotNull(secretsJson);
+        Assert.True(secretsJson.ContainsKey(SigningKeysHandler.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme)));
+        Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
+        Assert.Equal("baz", fooField["Bar"].GetValue<string>());
+    }
+
     private static void DeleteUserJwtsDirectory(Program app)
     {
         if (app.UserJwtsFilePath is { } userJwtsFilePath)

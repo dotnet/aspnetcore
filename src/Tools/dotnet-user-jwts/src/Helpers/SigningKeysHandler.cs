@@ -92,7 +92,22 @@ internal static class SigningKeysHandler
             secrets.Add(signkingKeysPropertyName, JsonSerializer.SerializeToNode(new[] { key }, JwtSerializerContext.Default.SigningKeyArray));
         }
 
-        using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
+        var writeStreamOptions = new FileStreamOptions { Access = FileAccess.Write, Mode = FileMode.OpenOrCreate };
+        if (!OperatingSystem.IsWindows())
+        {
+            // Applies only when the file is newly created; existing files are normalized below.
+            writeStreamOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        }
+
+        using var secretsWriteStream = new FileStream(secretsFilePath, writeStreamOptions);
+        if (!OperatingSystem.IsWindows())
+        {
+            // Apply the user-only mode to existing (possibly too open) files too, before truncating and
+            // serializing, through the opened stream's handle to avoid a path-based mode-change race.
+            File.SetUnixFileMode(secretsWriteStream.SafeFileHandle, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+        // OpenOrCreate does not truncate; retain FileMode.Create's overwrite semantics.
+        secretsWriteStream.SetLength(0);
         JsonSerializer.Serialize(secretsWriteStream, secrets, JwtSerializerContext.Default.JsonObject);
 
         return newKeyMaterial;
