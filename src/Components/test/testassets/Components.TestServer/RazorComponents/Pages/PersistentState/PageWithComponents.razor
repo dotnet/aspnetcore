@@ -18,6 +18,10 @@
         {
             <StreamingComponentWithPersistentState @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
         }
+        else if (AsyncChild)
+        {
+            <AsyncChildComponentWithPersistentStateWrapper @rendermode="@_renderMode" ServerState="@ServerState" />
+        }
         else
         {
             <NonStreamingComponentWithPersistentState @rendermode="@_renderMode" ServerState="@ServerState" />
@@ -41,6 +45,8 @@
     [SupplyParameterFromQuery(Name = "streaming-id")] public string StreamingId { get; set; }
 
     [SupplyParameterFromQuery(Name = "server-state")] public string ServerState { get; set; }
+
+    [SupplyParameterFromQuery(Name = "async-child")] public bool AsyncChild { get; set; }
 
     protected override void OnInitialized()
     {
