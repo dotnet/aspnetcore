@@ -8,6 +8,7 @@
 </ul>
 
 <div id="environment">@HostEnvironment.Environment</div>
+<div id="appsettings-in-vfs">@System.IO.File.Exists("appsettings.json")</div>
 
 <p>
     <input id="key1-input" @bind-value=newKey1 @bind-value:event="oninput" />
