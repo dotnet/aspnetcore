@@ -105,9 +105,9 @@ internal sealed class OutputCacheMiddleware
         bool hasException = false;
         try
         {
-            foreach (var policy in policies)
+            for (var i = 0; i < policies.Count; i++)
             {
-                await policy.CacheRequestAsync(context, httpContext.RequestAborted);
+                await policies[i].CacheRequestAsync(context, httpContext.RequestAborted);
             }
 
             // Should we attempt any caching logic?
@@ -174,9 +174,9 @@ internal sealed class OutputCacheMiddleware
                             await _next(httpContext);
 
                             // The next middleware might change the policy
-                            foreach (var policy in policies)
+                            for (var i = 0; i < policies.Count; i++)
                             {
-                                await policy.ServeResponseAsync(context, httpContext.RequestAborted);
+                                await policies[i].ServeResponseAsync(context, httpContext.RequestAborted);
                             }
 
                             // If there was no response body, check the response headers now. We can cache things like redirects.
@@ -223,40 +223,42 @@ internal sealed class OutputCacheMiddleware
     internal bool TryGetRequestPolicies(HttpContext httpContext, out IReadOnlyList<IOutputCachePolicy> policies)
     {
         policies = Array.Empty<IOutputCachePolicy>();
-        List<IOutputCachePolicy>? result = null;
 
         var basePolicies = _policyProvider.GetBasePolicies();
-        if (basePolicies.Count > 0)
-        {
-            result = new();
-            result.AddRange(basePolicies);
-        }
+        var basePoliciesCount = basePolicies.Count;
 
         var metadata = httpContext.GetEndpoint()?.Metadata;
 
         var policy = metadata?.GetMetadata<IOutputCachePolicy>();
 
-        if (policy != null)
-        {
-            result ??= new();
-            result.Add(policy);
-        }
-
         var attribute = metadata?.GetMetadata<OutputCacheAttribute>();
 
-        if (attribute != null)
+        var count = basePoliciesCount + (policy is not null ? 1 : 0) + (attribute is not null ? 1 : 0);
+        if (count == 0)
         {
-            result ??= new();
-            result.Add(attribute.BuildPolicy());
+            return false;
         }
 
-        if (result != null)
+        // Allocate the exact number of policies
+        var result = new IOutputCachePolicy[count];
+        var index = 0;
+        for (var i = 0; i < basePoliciesCount; i++)
         {
-            policies = result;
-            return true;
+            result[index++] = basePolicies[i];
         }
 
-        return false;
+        if (policy is not null)
+        {
+            result[index++] = policy;
+        }
+
+        if (attribute is not null)
+        {
+            result[index++] = attribute.BuildPolicy();
+        }
+
+        policies = result;
+        return true;
     }
 
     internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry, IReadOnlyList<IOutputCachePolicy> policies)
@@ -271,9 +273,9 @@ internal sealed class OutputCacheMiddleware
         var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
-        foreach (var policy in policies)
+        for (var i = 0; i < policies.Count; i++)
         {
-            await policy.ServeFromCacheAsync(context, context.HttpContext.RequestAborted);
+            await policies[i].ServeFromCacheAsync(context, context.HttpContext.RequestAborted);
         }
 
         context.IsCacheEntryFresh = true;
@@ -444,7 +446,7 @@ internal sealed class OutputCacheMiddleware
                 {
                     _logger.ResponseCached();
 
-                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.Tags, context.CachedResponseValidFor,
+                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.TagsOrNull, context.CachedResponseValidFor,
                         _store, _logger, context.HttpContext.RequestAborted);
 
                     return true;
