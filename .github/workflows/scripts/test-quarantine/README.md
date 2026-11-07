@@ -44,8 +44,8 @@ issue. These correspond to Case A and Case B in
    either direct or inherited method matching. That logical type-history check
    remains separate from the exact
    method freshness cutoff and Source B pull-request file checks, which still
-   key off the resolved declaring method and inherited runner files rather than
-   every partial sibling declaration.
+   include the resolved declaring method, setup and state in same-project base
+   types, and every partial declaration of those types.
 3. `collect_requarantine_history.py` enumerates every current data-row-,
    method-, type-, and assembly-level quarantine target from trusted source. It
    classifies the exact first-parent history from project-wide commit/parent
@@ -138,9 +138,16 @@ heavily rewritten E2E project move; other weak rename matches remain unproven.
 Method identity checks ignore namespace and
 type changes that predate the method, but still reject possible renames of an
 existing target. Freshness follows changes to the exact method and its declaring
-type header and attributes, constructor/setup helpers, and explicitly delegated
-base implementations, plus inherited runner setup. Unrelated sibling edits and
-pure file moves do not discard otherwise fresh failures.
+type header and attributes, constructor/setup helpers, lifecycle entry points,
+and explicitly delegated base implementations. Fields, initializers, properties,
+and unsupported members are conservatively retained, including in partial and
+same-project base types. Referenced helpers and method groups are followed across
+that type chain; ambiguous member extraction falls back to the whole file.
+Supplemental setup/state freshness locations remain separate from the target's
+identity history, so pre-introduction renames do not poison new methods.
+Proven inherited test attributes keep unreferenced sibling overrides out of
+setup dependencies. Unreferenced sibling test methods and pure file moves do not
+discard otherwise fresh failures.
 Historical runner absence is proven from type declarations, not missing method
 names. Existing runners with unresolved bases or source ownership remain
 unproven, including during type-only history scans.

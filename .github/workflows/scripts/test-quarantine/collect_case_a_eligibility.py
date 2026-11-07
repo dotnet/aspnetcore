@@ -1417,9 +1417,91 @@ def resolve_source(root, test_name, source_index=None):
             "project_root": project_root,
         })
     result["history_locations"] = list({
-        (entry["path"], entry["type"], entry["method"]): entry
+        (entry["path"], entry["type"], entry["method"]): dict(entry)
         for entry in locations
     }.values())
+    setup_types = [(owner, set()) for owner in [declaring_type, *runner_types]]
+    visited = set()
+    while setup_types:
+        owner, ancestors = setup_types.pop()
+        if owner["type"] in ancestors:
+            return {"status": "ambiguous", "matches": matches[:5]}
+        if owner["type"] in visited:
+            continue
+        visited.add(owner["type"])
+        locations.extend({
+            "path": declaration["path"],
+            "type": owner["type"],
+            "method": None,
+            "project_root": owner["project_root"],
+            "setup_only": True,
+        } for declaration in owner["declarations"])
+        if owner["base"]:
+            base = resolve_base_type(
+                source_index, owner["type"], owner["base"], owner["project_root"],
+            )
+            if base["status"] == "ambiguous":
+                return {"status": "ambiguous", "matches": matches[:5]}
+            if base["status"] == "exact":
+                base_owner = logical_type(source_index, base["type"], owner["project_root"])
+                if base_owner["status"] != "exact":
+                    return {"status": "ambiguous", "matches": matches[:5]}
+                setup_types.append((base_owner, ancestors | {owner["type"]}))
+    history_locations = {}
+    for location in locations:
+        key = (location["path"], location["type"])
+        if key not in history_locations or location["method"] is not None:
+            history_locations[key] = location
+    result["freshness_locations"] = list(history_locations.values())
+    texts = {
+        entry["path"]: contextual_source(
+            root, entry["path"],
+            pathlib.Path(root, entry["path"]).read_text(encoding="utf-8-sig"),
+            str(pathlib.Path(entry["project_root"]).relative_to(root)),
+        )
+        for entry in result["freshness_locations"]
+    }
+    if any(text is None for text in texts.values()):
+        return {"status": "ambiguous", "matches": matches[:5]}
+    method_names = {
+        name for name, declarations in source_index["methods"].items()
+        if any(
+            declaration["type"] in visited and declaration["project_root"] == project_root
+            for declaration in declarations
+        )
+    }
+    test_methods = {
+        name for name, declarations in source_index["methods"].items()
+        if any(
+            declaration["is_test"]
+            and declaration["type"] in visited
+            and declaration["project_root"] == project_root
+            for declaration in declarations
+        )
+    }
+    dependencies = set()
+    while True:
+        references = set()
+        for location in result["freshness_locations"]:
+            text = texts[location["path"]]
+            snapshot = target_snapshot(
+                text, location["type"], location["method"], dependencies, test_methods,
+            )
+            if snapshot is None:
+                location["whole_file"] = True
+                fragments = [text]
+            else:
+                fragments = [
+                    value for section in snapshot[:2] for member in section for value in member
+                ] + list(snapshot[2])
+            references.update(re.findall(r"\b[A-Za-z_]\w*\b", "\n".join(fragments)))
+        expanded = dependencies | (references & method_names)
+        if expanded == dependencies:
+            break
+        dependencies = expanded
+    for location in result["freshness_locations"]:
+        location["dependencies"] = sorted(dependencies)
+        location["test_methods"] = sorted(test_methods)
     assembly_locations = [locations[0]]
     if runner_types:
         assembly_locations.append(locations[1])
@@ -3472,19 +3554,22 @@ def member_snapshot(text, clean, match):
     return attributes, text[match.start():index + 1]
 
 
-def target_snapshot(text, type_name, method):
+def target_snapshot(text, type_name, method, dependencies=(), test_methods=()):
     clean = sanitize_csharp(text)
     namespace = re.search(r"(?m)^\s*namespace\s+([A-Za-z_][A-Za-z0-9_.]*)\s*;", clean)
     namespace = namespace[1] if namespace else None
     ranges = declaration_ranges(clean)
+    type_ranges = [
+        entry for entry in ranges
+        if entry[2] == "type"
+        and full_type_name(ranges, entry[4], namespace, declared_type=entry[3]) == type_name
+    ]
     headers = tuple(
         (
             attribute_block(text.splitlines(), clean.count("\n", 0, entry[4])),
             text[entry[4]:entry[0] + 1],
         )
-        for entry in ranges
-        if entry[2] == "type"
-        and full_type_name(ranges, entry[4], namespace, declared_type=entry[3]) == type_name
+        for entry in type_ranges
     )
     if not headers:
         return None
@@ -3503,7 +3588,58 @@ def target_snapshot(text, type_name, method):
         match for match in constructor.finditer(clean)
         if full_type_name(ranges, match.start(), namespace) == type_name
     ]
-    pending = [*selected, *constructors]
+    members = {}
+    spans = []
+    line_offsets = [0, *(match.end() for match in re.finditer("\n", text))]
+    for match in [*methods, *constructors]:
+        fragment = member_snapshot(text, clean, match)
+        if fragment is None:
+            return None
+        members[match.start()] = fragment
+        line = clean.count("\n", 0, match.start())
+        _, attributes = attribute_block(text.splitlines(), line, include_locations=True)
+        start_line = min(
+            (number for numbers in attributes.values() for number in numbers),
+            default=line + 1,
+        )
+        spans.append((line_offsets[start_line - 1], match.start() + len(fragment[1])))
+    state = []
+    for opening, closing, *_ in type_ranges:
+        cursor = opening + 1
+        for start, end in sorted(spans):
+            if opening < start < closing:
+                if start < cursor or end > closing:
+                    return None
+                if (fragment := text[cursor:start].strip()) and sanitize_csharp(fragment).strip():
+                    state.append(fragment)
+                cursor = end
+        if (fragment := text[cursor:closing].strip()) and sanitize_csharp(fragment).strip():
+            state.append(fragment)
+    setup = []
+    for match in methods:
+        attributes, fragment = members[match.start()]
+        test = match["method"] in test_methods or re.search(
+            r"\[\s*(?:global::)?(?:\w+\.)*"
+            r"(?:Fact|Theory|ConditionalFact|ConditionalTheory)(?:Attribute)?\b",
+            attributes,
+        )
+        if (
+            match["method"] in ("InitializeAsync", "Dispose", "DisposeAsync")
+            or (
+                not test
+                and (
+                    attributes
+                    or re.search(r"\b(?:virtual|override)\b", clean[match.start():match.end()])
+                )
+            )
+        ):
+            setup.append(match)
+    references = set(dependencies)
+    references.update(re.findall(r"\b[A-Za-z_]\w*\b", "\n".join(state)))
+    pending = [
+        *selected, *constructors, *setup,
+        *(match for match in methods if match["method"] in references),
+    ]
     fragments = []
     seen = set()
     while pending:
@@ -3511,32 +3647,44 @@ def target_snapshot(text, type_name, method):
         if match.start() in seen:
             continue
         seen.add(match.start())
-        fragment = member_snapshot(text, clean, match)
-        if fragment is None:
-            return None
+        fragment = members[match.start()]
         fragments.append(fragment)
-        calls = set(re.findall(
-            r"\b([A-Za-z_]\w*)\s*(?:<[^>{}]*>)?\s*\(",
-            sanitize_csharp(fragment[1]),
-        ))
-        pending.extend(candidate for candidate in methods if candidate["method"] in calls)
-    return headers, tuple(fragments)
+        references = set(re.findall(r"\b[A-Za-z_]\w*\b", "\n".join(fragment)))
+        pending.extend(candidate for candidate in methods if candidate["method"] in references)
+    return headers, tuple(fragments), tuple(state)
 
 
 def latest_target_change(root, location, history_ref):
     newer = None
     snapshot = None
+    meaningful = False
     for commit, path in file_lineage(root, location["path"], history_ref):
         text = git(root, "show", f"{commit}:{path}")
         project_root = str(pathlib.Path(location["project_root"]).relative_to(root))
         text = contextual_source(root, path, text, project_root, commit)
-        older_snapshot = target_snapshot(text, location["type"], location["method"]) if text else None
+        older_snapshot = (
+            target_snapshot(
+                text, location["type"], location["method"], location.get("dependencies", ()),
+                location.get("test_methods", ()),
+            )
+            if text and not location.get("whole_file") else None
+        )
+        if text and older_snapshot is None:
+            older_snapshot = ("whole-file", text)
+        elif older_snapshot and location.get("setup_only") and all(
+            not attributes.strip() and re.fullmatch(r"\s*class\s+\w+\s*\{\s*", header)
+            for attributes, header in older_snapshot[0]
+        ):
+            older_snapshot = ((), *older_snapshot[1:])
+        meaningful |= bool(older_snapshot and any(older_snapshot))
         if newer is not None and older_snapshot != snapshot:
             break
         newer = commit
         snapshot = older_snapshot
     if newer is None:
         raise ValueError(f"No source history for {location['path']}")
+    if location.get("setup_only") and not meaningful:
+        return None
     return {
         "utc": git(root, "show", "-s", "--format=%cI", newer),
         "reason": "latest-test-file-change",
@@ -3913,7 +4061,7 @@ def collect(
         if not project_history_is_complete(
             root,
             source["project_root"],
-            [location["path"] for location in source["history_locations"]],
+            [location["path"] for location in source["freshness_locations"]],
             history_ref,
             project_history_cache,
         ):
@@ -4048,19 +4196,6 @@ def collect(
                 receipt["status"] = "ineligible"
                 reasons.append("original-quarantine-issue-unproven")
                 continue
-            transition_cutoff = {
-                "utc": transition["utc"],
-                "reason": "latest-quarantine-transition",
-                "commit": transition["commit"],
-            }
-            file_cutoffs = [
-                latest_target_change(root, location, history_ref)
-                for location in source["history_locations"]
-            ]
-            history_cutoff = newest_history_item(
-                [transition_cutoff, *file_cutoffs],
-                history_order,
-            )
             receipt["originating_case"] = "case-b"
             reasons.append("latest-quarantine-transition-removed")
         elif transition["status"] != "none":
@@ -4068,14 +4203,21 @@ def collect(
             continue
         else:
             receipt["originating_case"] = "case-a"
-            history_cutoffs = [
-                latest_target_change(root, location, history_ref)
-                for location in source["history_locations"]
-            ]
-            history_cutoff = newest_history_item(
-                history_cutoffs,
-                history_order,
-            )
+        history_cutoffs = []
+        freshness_locations = []
+        for location in source["freshness_locations"]:
+            cutoff = latest_target_change(root, location, history_ref)
+            if cutoff is not None:
+                history_cutoffs.append(cutoff)
+                freshness_locations.append(location)
+        source["freshness_locations"] = freshness_locations
+        if case_b:
+            history_cutoffs.insert(0, {
+                "utc": transition["utc"],
+                "reason": "latest-quarantine-transition",
+                "commit": transition["commit"],
+            })
+        history_cutoff = newest_history_item(history_cutoffs, history_order)
 
         cutoffs = [history_cutoff]
         prior_attempt = latest_closed_attempt(closed_prs, test_name)
@@ -4157,7 +4299,7 @@ def collect(
                     continue
                 if any(
                     location["path"] in changed_files
-                    for location in source["history_locations"]
+                    for location in source["freshness_locations"]
                 ):
                     receipt["excluded_builds"].append({
                         "build": build_id,

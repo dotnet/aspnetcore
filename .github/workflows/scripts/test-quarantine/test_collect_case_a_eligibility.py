@@ -4438,6 +4438,223 @@ def test_delegating_override_tracks_base_fix(module=None):
         assert len(result["source_resolution"]["history_locations"]) == 2, result
 
 
+def test_lifecycle_and_state_fixes_advance_cutoff(module=None):
+    module = module or MODULE
+    changes = [
+        ("lifecycle hook", "Configure(1)", "Configure(2)"),
+        ("lifecycle helper", "Configure(int value) { }", "Configure(int value) { value++; }"),
+        ("field initializer", "LongDelay = 10", "LongDelay = 20"),
+        ("property accessor", "get { return ReadDelay(); }", "get { return ReadDelay() + 1; }"),
+        ("accessor helper", "ReadDelay() => ShortDelay", "ReadDelay() => ShortDelay + 1"),
+        ("explicit lifecycle", "Configure(3)", "Configure(4)"),
+        ("method group", "OnReady() { }", "OnReady() { Wait(1); }"),
+    ]
+    for label, old, new in changes:
+        for case_b in (False, True) if label == "field initializer" else (False,):
+            with tempfile.TemporaryDirectory() as directory:
+                root = pathlib.Path(directory)
+                _, path = initialize_repository(root)
+                text = class_source(
+                    "Microsoft.AspNetCore.Tests", "SampleTests",
+                    members=[
+                        "private const int LongDelay = 10;",
+                        "private static readonly int ShortDelay = LongDelay / 10;",
+                        "private int Delay { get { return ReadDelay(); } }",
+                        "private int ReadDelay() => ShortDelay;",
+                        "private Action Callback => OnReady;",
+                        "private void OnReady() { }",
+                        "public Task InitializeAsync() { Configure(1); return Task.CompletedTask; }",
+                        "Task IAsyncLifetime.InitializeAsync() { Configure(3); return Task.CompletedTask; }",
+                        "private void Configure(int value) { }",
+                        "[Fact]\npublic void ReturnsExpectedResponse() { Wait(Delay); Callback(); }",
+                    ],
+                )
+                path.write_text(text, encoding="utf-8")
+                commit(root, "Add test dependencies", "2026-08-01T00:00:00Z")
+                if case_b:
+                    path.write_text(text.replace("[Fact]", QUARANTINE_ATTRIBUTE + "\n[Fact]"), encoding="utf-8")
+                    commit(root, "Quarantine test", "2026-08-02T00:00:00Z")
+                    path.write_text(text, encoding="utf-8")
+                    commit(root, "Unquarantine test", "2026-08-03T00:00:00Z")
+                original = run_output(root, "git", "rev-parse", "HEAD")
+                path.write_text(text.replace(old, new), encoding="utf-8")
+                commit(root, f"Fix {label}", "2026-08-17T00:00:00Z")
+                fix = run_output(root, "git", "rev-parse", "HEAD")
+                result = collect_result(root, evidence(), module=module)
+                assert result["cutoff"]["commit"] == fix, result
+                assert result["eligible_failure_builds"] == [], result
+                data = source_b_evidence()
+                for build in data["builds"].values():
+                    build.update(startedUtc="2026-08-20T00:00:00Z", sourceVersion=original)
+                ancestry = lambda ancestor, descendant: module.commit_contains(
+                    root, "dotnet/aspnetcore", ancestor, descendant, "",
+                )
+                result = collect_result(
+                    root, data, module=module, commit_contains_provider=ancestry,
+                )
+                assert result["required_ancestor"] == fix, result
+                assert result["eligible_failure_builds"] == [], result
+                assert {item["reason"] for item in result["excluded_builds"]} == {
+                    "source-version-before-cutoff",
+                }, result
+                for build in data["builds"].values():
+                    build["sourceVersion"] = fix
+                result = collect_result(
+                    root, data, module=module, commit_contains_provider=ancestry,
+                )
+                assert result["eligible_failure_builds"] == [101, 102], result
+                assert result["case_b_eligible"] if case_b else result["status"] == "eligible", result
+
+
+def test_inherited_and_partial_setup_dependencies_advance_cutoff(module=None):
+    module = module or MODULE
+    changes = [
+        ("base hook", "Base.cs", "InitializeAsyncCore();", "InitializeAsyncCore(); Configure();"),
+        ("inherited helper", "Base.cs", "ReadDelay() => Delay", "ReadDelay() => Delay + 1"),
+        ("partial state", "Base.State.cs", "Delay = 1", "Delay = 2"),
+        ("override helper", "SampleTests.cs", "Configure() { }", "Configure() { Count++; }"),
+    ]
+    for label, file_name, old, new in changes:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            project, path = initialize_repository(root)
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests", base="TestBase",
+                members=[
+                    "[Fact]\npublic void ReturnsExpectedResponse() { Wait(ReadDelay()); }",
+                    "protected override void InitializeAsyncCore() { Configure(); }",
+                    "private void Configure() { }",
+                    "private int Count;",
+                ],
+            ), encoding="utf-8")
+            (project / "Base.cs").write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "TestBase", partial=True,
+                members=[
+                    "public Task InitializeAsync() { InitializeAsyncCore(); return Task.CompletedTask; }",
+                    "protected virtual void InitializeAsyncCore() { }",
+                    "protected int ReadDelay() => Delay;",
+                    "private void Configure() { }",
+                ],
+            ), encoding="utf-8")
+            (project / "Base.State.cs").write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "TestBase", partial=True,
+                members="protected int Delay = 1;",
+            ), encoding="utf-8")
+            commit(root, "Add inherited setup and state", "2026-08-01T00:00:00Z")
+            original = run_output(root, "git", "rev-parse", "HEAD")
+            changed_path = project / file_name
+            changed_path.write_text(changed_path.read_text().replace(old, new), encoding="utf-8")
+            commit(root, f"Fix {label}", "2026-08-17T00:00:00Z")
+            fix = run_output(root, "git", "rev-parse", "HEAD")
+            data = source_b_evidence()
+            for build in data["builds"].values():
+                build.update(startedUtc="2026-08-20T00:00:00Z", sourceVersion=original)
+            result = collect_result(
+                root, data, module=module,
+                commit_contains_provider=lambda ancestor, descendant: module.commit_contains(
+                    root, "dotnet/aspnetcore", ancestor, descendant, "",
+                ),
+            )
+            assert result["required_ancestor"] == fix, result
+            assert result["eligible_failure_builds"] == [], result
+            result = collect_result(
+                root, data, module=module,
+                pr_files_provider=lambda _: {str(changed_path.relative_to(root))},
+            )
+            assert {item["reason"] for item in result["excluded_builds"]} == {
+                "source-b-pr-changed-test-file",
+            }, result
+
+
+def test_partial_setup_rename_before_method_birth_is_not_identity_ambiguity(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.OldTests", "SampleTests", partial=True,
+        ), encoding="utf-8")
+        state = project / "SampleTests.State.cs"
+        state.write_text(class_source(
+            "Microsoft.AspNetCore.OldTests", "SampleTests", partial=True,
+            members="private int Delay = 1;",
+        ), encoding="utf-8")
+        commit(root, "Add partial setup before the test", "2026-08-01T00:00:00Z")
+        for file in (path, state):
+            file.write_text(file.read_text().replace(".OldTests", ".Tests"), encoding="utf-8")
+        commit(root, "Rename namespace before test introduction", "2026-08-02T00:00:00Z")
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", partial=True,
+            members="[Fact]\npublic void ReturnsExpectedResponse() { Wait(Delay); }",
+        ), encoding="utf-8")
+        commit(root, "Add test using partial setup", "2026-08-03T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "eligible", result
+        assert "target-identity-rename-ambiguous" not in result["reasons"], result
+
+
+def test_removed_partial_setup_still_advances_cutoff(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", partial=True,
+            members=method_member(),
+        ), encoding="utf-8")
+        setup = project / "SampleTests.Setup.cs"
+        setup.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", partial=True,
+            members="static SampleTests() { ConfigureGlobal(); }",
+        ), encoding="utf-8")
+        commit(root, "Add partial constructor setup", "2026-08-01T00:00:00Z")
+        setup.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", partial=True,
+        ), encoding="utf-8")
+        commit(root, "Remove partial setup", "2026-08-17T00:00:00Z")
+        fix = run_output(root, "git", "rev-parse", "HEAD")
+        result = collect_result(root, evidence(), module=module)
+        assert result["required_ancestor"] == fix, result
+        assert result["eligible_failure_builds"] == [], result
+
+
+def test_inherited_sibling_override_is_not_setup_unless_referenced(module=None):
+    module = module or MODULE
+    for callback in (False, True):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            project, path = initialize_repository(root)
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests",
+                members=[
+                    "[Fact]\npublic virtual void ReturnsExpectedResponse() { }",
+                    "[Fact]\npublic virtual void Sibling() { }",
+                ],
+            ), encoding="utf-8")
+            runner = project / "DerivedTests.cs"
+            runner.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "DerivedTests", base="SampleTests",
+                members=[
+                    "public override void Sibling() => base.Sibling();",
+                    "public Task InitializeAsync() { Sibling(); return Task.CompletedTask; }"
+                    if callback else "",
+                ],
+            ), encoding="utf-8")
+            commit(root, "Add inherited sibling test override", "2026-08-01T00:00:00Z")
+            original = run_output(root, "git", "rev-parse", "HEAD")
+            runner.write_text(runner.read_text().replace(
+                "=> base.Sibling();", "{ base.Sibling(); Wait(1); }",
+            ), encoding="utf-8")
+            commit(root, "Change sibling override", "2026-08-17T00:00:00Z")
+            fix = run_output(root, "git", "rev-parse", "HEAD")
+            name = TEST_NAME.replace("SampleTests", "DerivedTests")
+            result = collect_result(
+                root, evidence(test_name=name), test_name=name, module=module,
+            )
+            assert result["cutoff"]["commit"] == (fix if callback else original), result
+            assert result["status"] == ("ineligible" if callback else "eligible"), result
+
+
 def test_pre_runner_unrelated_source_ambiguity_does_not_hide_candidate(module=None):
     module = module or MODULE
     with tempfile.TemporaryDirectory() as directory:
@@ -4605,6 +4822,11 @@ def test_type_history_preserves_unrelated_membership_ambiguity(module=None):
 
 
 def main():
+    test_lifecycle_and_state_fixes_advance_cutoff()
+    test_inherited_and_partial_setup_dependencies_advance_cutoff()
+    test_partial_setup_rename_before_method_birth_is_not_identity_ambiguity()
+    test_removed_partial_setup_still_advances_cutoff()
+    test_inherited_sibling_override_is_not_setup_unless_referenced()
     test_pre_runner_unrelated_source_ambiguity_does_not_hide_candidate()
     test_external_historical_base_remains_ambiguous()
     test_sibling_quarantine_with_unresolved_base_is_unrelated()
