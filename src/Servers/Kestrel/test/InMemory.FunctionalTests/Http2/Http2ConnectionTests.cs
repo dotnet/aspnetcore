@@ -722,6 +722,172 @@ public class Http2ConnectionTests : Http2TestBase
         AssertConnectionNoError();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StreamPool_ScheduledAfterResponseCompleted_PooledStreamReusedAndResponseSent(bool largeResponse)
+    {
+        var responseBody = new byte[largeResponse ? Http2PeerSettings.MinAllowedMaxFrameSize * 2 : 11];
+        var appCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await InitializeConnectionAsync(async context =>
+        {
+            if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 1)
+            {
+                return;
+            }
+
+            if (largeResponse)
+            {
+                await context.Response.Body.WriteAsync(responseBody);
+            }
+            else
+            {
+                // Buffer the small response so the app completes without waiting for it to be written.
+                context.Response.BodyWriter.Write(responseBody);
+            }
+
+            context.Response.AppendTrailer("CustomName", "Custom Value");
+            appCompletedTcs.SetResult();
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
+        var stream = _connection._streams[1];
+        var output = (Http2OutputProducer)stream.Output;
+        Assert.True(output.CompletedResponse);
+
+        // Simulate a late schedule, such as one from a stream WINDOW_UPDATE that raced the end of the response.
+        output.Schedule();
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
+        Assert.Same(stream, pooledStream);
+
+        // The pooled stream is reused for this request.
+        await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 2,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 3);
+
+        for (var remaining = responseBody.Length; remaining > 0; remaining -= Http2PeerSettings.MinAllowedMaxFrameSize)
+        {
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: Math.Min(remaining, Http2PeerSettings.MinAllowedMaxFrameSize),
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
+        }
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 25,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        await appCompletedTcs.Task.DefaultTimeout();
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
+        TriggerTick();
+
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out pooledStream));
+        Assert.Same(stream, pooledStream);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
+    }
+
+    [Fact]
+    public async Task StreamPool_ScheduledDuringFinalWrite_PooledStreamReusedAndResponseSent()
+    {
+        // The final write of the first response fills the output buffer, so its flush can't complete until the client reads it.
+        _serviceContext.ServerOptions.Limits.MaxResponseBufferSize = 1024;
+
+        await InitializeConnectionAsync(async context =>
+        {
+            if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 1)
+            {
+                // Buffer the response so it's written by the same write that completes the response.
+                context.Response.BodyWriter.Write(new byte[4096]);
+                return;
+            }
+
+            await context.Response.WriteAsync("Hello World");
+            context.Response.AppendTrailer("CustomName", "Custom Value");
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        // Wait for the final write to be flushed, but don't read it yet.
+        var readResult = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+        _pair.Application.Input.AdvanceTo(readResult.Buffer.Start);
+
+        var stream = _connection._streams[1];
+        var output = (Http2OutputProducer)stream.Output;
+        Assert.False(output.CompletedResponse);
+
+        // TryUpdateStreamWindow() calls ScheduleResumeFromWindowUpdate() after releasing the producer's lock, so a stream
+        // WINDOW_UPDATE can schedule the producer after its final write was observed but before the response is completed.
+        output.ScheduleResumeFromWindowUpdate();
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 4096,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
+        Assert.True(output.CompletedResponse);
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
+        Assert.Same(stream, pooledStream);
+
+        // The pooled stream is reused for this request.
+        await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 2,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 3);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 11,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 3);
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 25,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
+        TriggerTick();
+
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out pooledStream));
+        Assert.Same(stream, pooledStream);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
+    }
+
     [Fact]
     public async Task Frame_Received_OverMaxSize_FrameError()
     {
