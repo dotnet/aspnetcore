@@ -1992,7 +1992,7 @@ public class EndpointHtmlRendererTest
         public async Task SetNotFoundResponseAsync(HttpContext httpContext, NotFoundEventArgs args)
         {
             SetHttpContext(httpContext);
-            await SetNotFoundWhenResponseHasStarted();
+            await SetNotFoundWhenResponseHasStarted(TextWriter.Null);
         }
     }
 
