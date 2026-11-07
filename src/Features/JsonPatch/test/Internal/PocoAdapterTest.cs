@@ -266,4 +266,42 @@ public class PocoAdapterTest
 
         public int Age { get; set; }
     }
+
+    [Fact]
+    public void TryTest_DoesNotThrowException_IfValueIsNullAndTestValueIsNull()
+    {
+        // Arrange
+        var adapter = new PocoAdapter();
+        var contractResolver = new DefaultContractResolver();
+        var model = new ModelWithNullableProperty();
+
+        // Act
+        var testStatus = adapter.TryTest(model, "Age", contractResolver, null, out var errorMessage);
+
+        // Assert
+        Assert.True(testStatus);
+        Assert.True(string.IsNullOrEmpty(errorMessage), "Expected no error message");
+    }
+
+    [Fact]
+    public void TryTest_ThrowsJsonPatchException_IfValueIsNullAndTestValueIsEmptyString()
+    {
+        // Arrange
+        var adapter = new PocoAdapter();
+        var contractResolver = new DefaultContractResolver();
+        var model = new ModelWithNullableProperty();
+        var expectedErrorMessage = "The current value '' at path 'Age' is not equal to the test value ''.";
+
+        // Act
+        var testStatus = adapter.TryTest(model, "Age", contractResolver, "", out var errorMessage);
+
+        // Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
+
+    private class ModelWithNullableProperty
+    {
+        public int? Age { get; set; }
+    }
 }
