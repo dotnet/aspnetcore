@@ -47,7 +47,7 @@ internal sealed class IISUrlRewriteRule : IRule
         }
         else
         {
-            initMatchResults = InitialMatch.Evaluate(path.ToString().Substring(1), context);
+            initMatchResults = InitialMatch.Evaluate(path.ToString(), startIndex: 1, context);
         }
 
         if (!initMatchResults.Success)
