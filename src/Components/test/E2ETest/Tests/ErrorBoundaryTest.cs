@@ -169,6 +169,27 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         AssertGlobalErrorState(false);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void RetainsErrorContentWhenRecoveryFails(int nestingDepth)
+    {
+        var container = Browser.Exists(By.Id($"error-boundary-recovery-{nestingDepth}"));
+        Browser.Equal("Recover (attempt 1)", () => container.FindElement(By.ClassName("recover")).Text);
+        Browser.Equal("1", () => container.FindElement(By.ClassName("error-content-initializations")).Text);
+        Browser.Equal("0", () => container.FindElement(By.ClassName("error-content-disposals")).Text);
+
+        for (var attempt = 2; attempt <= 4; attempt++)
+        {
+            container.FindElement(By.ClassName("recover")).Click();
+            Browser.Equal($"Recover (attempt {attempt})", () => container.FindElement(By.ClassName("recover")).Text);
+            Browser.Equal($"{attempt}", () => container.FindElement(By.ClassName("error-content-initializations")).Text);
+            Browser.Equal($"{attempt - 1}", () => container.FindElement(By.ClassName("error-content-disposals")).Text);
+            AssertGlobalErrorState(false);
+        }
+    }
+
     void AssertGlobalErrorState(bool hasGlobalError)
     {
         var globalErrorUi = Browser.Exists(By.Id("blazor-error-ui"));

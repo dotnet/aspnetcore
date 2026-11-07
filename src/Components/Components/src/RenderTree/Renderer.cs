@@ -1210,7 +1210,43 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // Don't just trust the error boundary to dispose its subtree - force it to do so by
                 // making it render an empty fragment. Ensures that failed components don't continue to
                 // operate, which would be a whole new kind of edge case to support forever.
-                AddToRenderQueue(candidate.ComponentId, builder => { });
+                if (GetOptionalComponentState(candidate.ComponentId) is not null)
+                {
+                    var renderQueue = _batchBuilder.ComponentRenderQueue;
+                    List<RenderQueueEntry> pendingBoundaryRenders = null;
+                    var pendingRenderCount = renderQueue.Count;
+                    for (var i = 0; i < pendingRenderCount; i++)
+                    {
+                        var entry = renderQueue.Dequeue();
+                        if (entry.ComponentState == candidate)
+                        {
+                            pendingBoundaryRenders ??= new();
+                            pendingBoundaryRenders.Add(entry);
+                        }
+                        else
+                        {
+                            renderQueue.Enqueue(entry);
+                        }
+                    }
+
+                    // Pending boundary renders must run after the clear, without initializing
+                    // error content that would immediately be discarded by the clear.
+                    renderQueue.Enqueue(new RenderQueueEntry(candidate, builder => { }));
+                    if (pendingBoundaryRenders is not null)
+                    {
+                        foreach (var entry in pendingBoundaryRenders)
+                        {
+                            renderQueue.Enqueue(entry);
+                        }
+                    }
+
+                    // When there is no pending boundary render to defer, preserve clearing
+                    // the failed subtree before notifying user code outside a render batch.
+                    if (!_isBatchInProgress && pendingBoundaryRenders is null)
+                    {
+                        ProcessPendingRender();
+                    }
+                }
 
                 try
                 {
@@ -1220,6 +1256,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 {
                     // If *notifying* about an exception fails, it's OK for that to be fatal
                     HandleException(errorBoundaryException);
+                }
+
+                if (!_isBatchInProgress)
+                {
+                    ProcessPendingRender();
                 }
 
                 return; // Handled successfully
