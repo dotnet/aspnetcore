@@ -81,37 +81,49 @@ internal static class Base32
         }
 
         var output = new byte[trimmedInput.Length * 5 / 8];
-        var bitIndex = 0;
+        var buffer = 0;
+        var bufferBits = 0;
         var inputIndex = 0;
-        var outputBits = 0;
         var outputIndex = 0;
         while (outputIndex < output.Length)
         {
-            var byteIndex = _base32Chars.IndexOf(char.ToUpperInvariant(trimmedInput[inputIndex]));
-            if (byteIndex < 0)
+            var value = GetBase32Value(trimmedInput[inputIndex++]);
+            if (value < 0)
             {
                 throw new FormatException();
             }
 
-            var bits = Math.Min(5 - bitIndex, 8 - outputBits);
-            output[outputIndex] <<= bits;
-            output[outputIndex] |= (byte)(byteIndex >> (5 - (bitIndex + bits)));
-
-            bitIndex += bits;
-            if (bitIndex >= 5)
+            // Accumulate 5 bits per character and emit a byte whenever at least 8 bits are available.
+            buffer = (buffer << 5) | value;
+            bufferBits += 5;
+            if (bufferBits >= 8)
             {
-                inputIndex++;
-                bitIndex = 0;
-            }
-
-            outputBits += bits;
-            if (outputBits >= 8)
-            {
-                outputIndex++;
-                outputBits = 0;
+                bufferBits -= 8;
+                output[outputIndex++] = (byte)(buffer >> bufferBits);
             }
         }
         return output;
+    }
+
+    private static int GetBase32Value(char c)
+    {
+        if ((uint)(c - 'A') <= 'Z' - 'A')
+        {
+            return c - 'A';
+        }
+
+        if ((uint)(c - 'a') <= 'z' - 'a')
+        {
+            return c - 'a';
+        }
+
+        if ((uint)(c - '2') <= '7' - '2')
+        {
+            return c - '2' + 26;
+        }
+
+        // Non-ASCII characters keep the original culture-invariant upper-casing lookup.
+        return c < 128 ? -1 : _base32Chars.IndexOf(char.ToUpperInvariant(c));
     }
 
     // returns the number of bytes that were output
