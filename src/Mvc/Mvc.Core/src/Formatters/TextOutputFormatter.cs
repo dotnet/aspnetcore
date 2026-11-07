@@ -170,8 +170,13 @@ public abstract class TextOutputFormatter : OutputFormatter
 
     internal static IList<StringWithQualityHeaderValue> GetAcceptCharsetHeaderValues(OutputFormatterWriteContext context)
     {
-        var request = context.HttpContext.Request;
-        if (StringWithQualityHeaderValue.TryParseList(request.Headers.AcceptCharset, out var result))
+        var acceptCharset = context.HttpContext.Request.Headers.AcceptCharset;
+        if (acceptCharset.Count == 0)
+        {
+            return Array.Empty<StringWithQualityHeaderValue>();
+        }
+
+        if (StringWithQualityHeaderValue.TryParseList(acceptCharset, out var result))
         {
             return result;
         }

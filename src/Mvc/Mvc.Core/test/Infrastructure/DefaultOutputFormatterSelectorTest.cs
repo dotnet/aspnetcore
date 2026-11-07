@@ -296,6 +296,61 @@ public class DefaultObjectResultExecutorTest
     }
 
     [Fact]
+    public void SelectFormatter_WithMultipleAcceptHeaderValues_SelectsHighestQualityAcrossValues()
+    {
+        var formatters = new List<IOutputFormatter>
+            {
+                new TestXmlOutputFormatter(),
+                new TestJsonOutputFormatter(),
+            };
+        var selector = CreateSelector(formatters);
+
+        var context = new OutputFormatterWriteContext(
+            new DefaultHttpContext(),
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            objectType: null,
+            @object: null);
+
+        context.HttpContext.Request.Headers.Accept = new StringValues(new[] { "application/xml;q=0.5", "", "text/plain, application/json" });
+
+        var formatter = selector.SelectFormatter(
+            context,
+            Array.Empty<IOutputFormatter>(),
+            new MediaTypeCollection());
+
+        Assert.Same(formatters[1], formatter);
+        Assert.Equal(new StringSegment("application/json"), context.ContentType);
+    }
+
+    [Fact]
+    public void SelectFormatter_WithEmptyAcceptHeaderValue_ChoosesFirstFormatterThatCanWrite()
+    {
+        var formatters = new List<IOutputFormatter>
+            {
+                new CannotWriteFormatter(),
+                new TestJsonOutputFormatter(),
+                new TestXmlOutputFormatter(),
+            };
+        var selector = CreateSelector(formatters);
+
+        var context = new OutputFormatterWriteContext(
+            new DefaultHttpContext(),
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            objectType: null,
+            @object: null);
+
+        context.HttpContext.Request.Headers.Accept = "";
+
+        var formatter = selector.SelectFormatter(
+            context,
+            Array.Empty<IOutputFormatter>(),
+            new MediaTypeCollection());
+
+        Assert.Same(formatters[1], formatter);
+        Assert.Equal(new StringSegment("application/json"), context.ContentType);
+    }
+
+    [Fact]
     public void SelectFormatter_WithAcceptHeaderAndContentTypes_SetsContentTypeIsServerDefinedWhenExpected()
     {
         // Arrange
