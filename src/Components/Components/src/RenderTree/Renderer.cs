@@ -513,7 +513,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // receives the callback" (i.e., callback.Receiver) is that if parent A passes a RenderFragment with events to child B,
         // and then child B is disposed, we don't want to dispatch the events (because the developer considers them removed
         // from the UI) even though the receiver A is still alive.
-        if (!_componentStateById.ContainsKey(renderedByComponentId))
+        if (!_componentStateById.TryGetValue(renderedByComponentId, out var renderingComponentState))
         {
             // This is not an error since it can happen legitimately (in Blazor Server, the user might click a button at the same
             // moment that the component is disposed remotely, and then the click event will arrive after disposal).
@@ -532,6 +532,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // We can only route errors to error boundaries if the receiver is known and not yet disposed at this stage
             _componentStateByComponent.TryGetValue(receiverComponent, out receiverComponentState);
         }
+
+        // Non-component receivers have no component ancestry, so use the rendering component for error routing.
+        // Keep receiverComponentState separate because it also determines pending-task ownership.
+        var errorHandlingComponentState = callback.Receiver is IComponent ? receiverComponentState : renderingComponentState;
 
         if (fieldInfo != null)
         {
@@ -576,7 +580,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 ComponentActivitySource.StopHandleEventActivity(activityHandle, e);
             }
 
-            HandleExceptionViaErrorBoundary(e, receiverComponentState);
+            HandleExceptionViaErrorBoundary(e, errorHandlingComponentState);
             return Task.CompletedTask;
         }
         finally
@@ -590,7 +594,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         // Task completed synchronously or is still running. We already processed all of the rendering
         // work that was queued so let our error handler deal with it.
-        var errorHandledTask = GetErrorHandledTask(task, receiverComponentState);
+        var errorHandledTask = GetErrorHandledTask(task, errorHandlingComponentState);
 
         if (waitForQuiescence)
         {
