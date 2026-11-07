@@ -632,7 +632,8 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             attestationObject: [5, 6, 7],
             clientDataJson: [8, 9])
         {
-            Name = "InitialName"
+            Name = "InitialName",
+            Aaguid = Guid.NewGuid().ToByteArray(),
         };
 
         IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, passkey));
@@ -763,7 +764,8 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             attestationObject: [5],
             clientDataJson: [6])
         {
-            Name = "ImmutableTest"
+            Name = "ImmutableTest",
+            Aaguid = Guid.NewGuid().ToByteArray(),
         };
         IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, original));
 
@@ -780,7 +782,8 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             attestationObject: [7],
             clientDataJson: [8])
         {
-            Name = "Changed"
+            Name = "Changed",
+            Aaguid = Guid.NewGuid().ToByteArray(),
         };
 
         var expected = new UserPasskeyInfo(
@@ -796,6 +799,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             clientDataJson: original.ClientDataJson)
         {
             Name = updated.Name,
+            Aaguid = original.Aaguid,
         };
 
         IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, updated));
