@@ -1,4 +1,4 @@
-# ProjectName
+# Azure
 
 These projects enable diagnostics integration for apps deployed in Azure App Service. For additional detail see the [App Service docs](https://learn.microsoft.com/aspnet/core/host-and-deploy/azure-apps/).
 
