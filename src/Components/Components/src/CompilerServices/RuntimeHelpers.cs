@@ -33,7 +33,7 @@ public static class RuntimeHelpers
     // so that method-group-to-delegate conversion works.
     public static EventCallback<T> CreateInferredEventCallback<T>(object receiver, Action<T> callback, T value)
     {
-        return EventCallback.Factory.Create<T>(receiver, callback);
+        return EventCallback.Factory.Create<T>(receiver, callback).AsBinding();
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public static class RuntimeHelpers
     // so that method-group-to-delegate conversion works.
     public static EventCallback<T> CreateInferredEventCallback<T>(object receiver, Func<T, Task> callback, T value)
     {
-        return EventCallback.Factory.Create<T>(receiver, callback);
+        return EventCallback.Factory.Create<T>(receiver, callback).AsBinding();
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public static class RuntimeHelpers
     // so that method-group-to-delegate conversion works.
     public static EventCallback<T> CreateInferredEventCallback<T>(object receiver, EventCallback<T> callback, T value)
     {
-        return EventCallback.Factory.Create<T>(receiver, callback);
+        return EventCallback.Factory.Create<T>(receiver, callback).AsBinding();
     }
 
     /// <summary>
