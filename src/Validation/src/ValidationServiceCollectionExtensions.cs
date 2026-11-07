@@ -16,6 +16,14 @@ public static class ValidationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
     /// <param name="configureOptions">An optional action to configure the <see cref="ValidationOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection" /> for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// This feature depends on a compile-time source generator, which might not generate validatable type info for all types that you might expect to be validated. It is the application developer's responsibility to ensure that a type or a member can be validated.
+    /// </para>
+    /// <para>
+    /// Data validation is not a security feature. Applications should never make security sensitive decisions directly based on results of data validation.
+    /// </para>
+    /// </remarks>
     public static IServiceCollection AddValidation(this IServiceCollection services, Action<ValidationOptions>? configureOptions = null)
     {
         services.Configure<ValidationOptions>(options =>
