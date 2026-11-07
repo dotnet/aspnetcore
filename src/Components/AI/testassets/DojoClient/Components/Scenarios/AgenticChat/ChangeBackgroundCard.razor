@@ -1,0 +1,15 @@
+<div class="change-background-card" role="status">
+    @if (Block.HasResult)
+    {
+        <span class="change-background-card__message">The background was changed to @Block.Value</span>
+    }
+    else
+    {
+        <span class="change-background-card__message">Changing the background...</span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ChangeBackgroundToolBlock Block { get; set; } = default!;
+}
