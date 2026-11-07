@@ -2,12 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Net.Http;
 using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
+using System.Web;
 using Components.TestServer.Services;
+using Components.WasmMinimal;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -45,7 +51,21 @@ builder.Services.AddAuthenticationStateDeserialization(options =>
     };
 });
 
-await builder.Build().RunAsync();
+await using var host = builder.Build();
+var navigationManager = host.Services.GetRequiredService<NavigationManager>();
+var activityLinksTestId = HttpUtility.ParseQueryString(new Uri(navigationManager.Uri).Query)["activity-links-test-id"];
+using var activityLinksClient = activityLinksTestId is { Length: > 0 }
+    ? new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) }
+    : null;
+using var activityLinksTracer = activityLinksClient is not null && activityLinksTestId is { Length: > 0 }
+    ? Sdk.CreateTracerProviderBuilder()
+        .AddSource("Microsoft.AspNetCore.Components")
+        .AddProcessor(new SimpleActivityExportProcessor(
+            new ActivityLinksWebAssemblyExporter(activityLinksClient, activityLinksTestId)))
+        .Build()
+    : null;
+
+await host.RunAsync();
 
 internal static partial class JSImports
 {

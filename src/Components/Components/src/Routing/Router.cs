@@ -115,6 +115,11 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             HotReloadManager.Default.OnDeltaApplied += ClearRouteCaches;
         }
+
+        if (ComponentsActivitySource.IsSupported)
+        {
+            _renderHandle.ComponentActivitySource?.RegisterRouter(this);
+        }
     }
 
     /// <inheritdoc />
@@ -182,6 +187,11 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
+        }
+
+        if (ComponentsActivitySource.IsSupported)
+        {
+            _renderHandle.ComponentActivitySource?.UnregisterRouter(this);
         }
     }
 

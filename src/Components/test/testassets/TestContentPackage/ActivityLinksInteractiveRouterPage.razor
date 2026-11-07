@@ -1,0 +1,15 @@
+@page "/activity-links/{Mode}/interactive-router"
+
+<ActivityLinksInteractiveRouter @rendermode="InteractiveMode" />
+
+@code {
+    [Parameter]
+    public string Mode { get; set; } = "";
+
+    private IComponentRenderMode InteractiveMode => Mode switch
+    {
+        "server" => RenderMode.InteractiveServer,
+        "webassembly" => RenderMode.InteractiveWebAssembly,
+        _ => throw new InvalidOperationException($"Unsupported test render mode '{Mode}'."),
+    };
+}
