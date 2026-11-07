@@ -247,10 +247,10 @@ internal abstract class MessagePackHubProtocolWorker
 
             for (var i = 0; i < headerCount; i++)
             {
-                var key = ReadString(ref reader, $"headers[{i}].Key");
+                var key = ReadHeaderString(ref reader, i, isKey: true);
                 ThrowIfNullOrEmpty(key, "key in header");
 
-                var value = ReadString(ref reader, $"headers[{i}].Value");
+                var value = ReadHeaderString(ref reader, i, isKey: false);
                 ThrowIfNullOrEmpty(value, "value in header");
 
                 headers.Add(key, value);
@@ -266,21 +266,21 @@ internal abstract class MessagePackHubProtocolWorker
     private static string[]? ReadStreamIds(ref MessagePackReader reader)
     {
         var streamIdCount = ReadArrayLength(ref reader, "streamIds");
-        List<string>? streams = null;
+        string[]? streams = null;
 
         if (streamIdCount > 0)
         {
-            streams = new List<string>();
+            streams = new string[streamIdCount];
             for (var i = 0; i < streamIdCount; i++)
             {
                 var id = reader.ReadString();
                 ThrowIfNullOrEmpty(id, "value in streamIds received");
 
-                streams.Add(id);
+                streams[i] = id;
             }
         }
 
-        return streams?.ToArray();
+        return streams;
     }
 
     private static AckMessage CreateAckMessage(ref MessagePackReader reader)
@@ -301,6 +301,11 @@ internal abstract class MessagePackHubProtocolWorker
         {
             throw new InvalidDataException(
                 $"Invocation provides {argumentCount} argument(s) but target expects {parameterTypes.Count}.");
+        }
+
+        if (argumentCount == 0)
+        {
+            return Array.Empty<object?>();
         }
 
         try
@@ -676,6 +681,20 @@ internal abstract class MessagePackHubProtocolWorker
         }
         catch (Exception ex)
         {
+            throw new InvalidDataException($"Reading '{field}' as String failed.", ex);
+        }
+    }
+
+    private static string? ReadHeaderString(ref MessagePackReader reader, int index, bool isKey)
+    {
+        try
+        {
+            return reader.ReadString();
+        }
+        catch (Exception ex)
+        {
+            // Only build the field name when reporting an error to avoid allocating it for every header.
+            var field = isKey ? $"headers[{index}].Key" : $"headers[{index}].Value";
             throw new InvalidDataException($"Reading '{field}' as String failed.", ex);
         }
     }
