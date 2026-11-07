@@ -16,6 +16,8 @@ internal static class RerouteHelper
         if (app.Properties.TryGetValue(UseRoutingKey, out var useRouting) && useRouting is Func<IApplicationBuilder, IApplicationBuilder> useRoutingFunc)
         {
             var builder = app.New();
+            // A reroute reuses the same HttpContext. This branch selects a new endpoint, but it does not rewind
+            // arbitrary middleware or clear features, items, callbacks, or other state owned by that middleware.
             // use the old routing pipeline if it exists so we preserve all the routes and matching logic
             // ((IApplicationBuilder)WebApplication).New() does not copy GlobalRouteBuilderKey automatically like it does for all other properties.
             builder.Properties[GlobalRouteBuilderKey] = routeBuilder;
