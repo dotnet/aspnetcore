@@ -85,6 +85,43 @@ public class RequestHeadersTimeoutTests : LoggedTest
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
+    [Fact]
+    public async Task ConnectionNotAbortedWhenRequestHeadersTimeoutIsInfinite()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using (var server = CreateServer(testContext, requestHeadersTimeout: Timeout.InfiniteTimeSpan))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.TransportConnection.WaitForReadTask;
+
+                await connection.Send(
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Content-Length: 1",
+                    "");
+
+                for (var totalDelay = TimeSpan.Zero; totalDelay < LongDelay; totalDelay += ShortDelay)
+                {
+                    testContext.FakeTimeProvider.Advance(ShortDelay);
+                    testContext.ConnectionManager.OnHeartbeat();
+                }
+
+                await connection.Send(
+                    "",
+                    "a");
+
+                await ReceiveResponse(connection, testContext);
+            }
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
+    }
+
     [Theory]
     [InlineData("P")]
     [InlineData("POST / HTTP/1.1\r")]
@@ -148,11 +185,11 @@ public class RequestHeadersTimeoutTests : LoggedTest
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
     }
 
-    private TestServer CreateServer(TestServiceContext context)
+    private TestServer CreateServer(TestServiceContext context, TimeSpan? requestHeadersTimeout = null)
     {
         // Ensure request headers timeout is started as soon as the tests send requests.
         context.Scheduler = PipeScheduler.Inline;
-        context.ServerOptions.Limits.RequestHeadersTimeout = RequestHeadersTimeout;
+        context.ServerOptions.Limits.RequestHeadersTimeout = requestHeadersTimeout ?? RequestHeadersTimeout;
         context.ServerOptions.Limits.MinRequestBodyDataRate = null;
 
         return new TestServer(async httpContext =>
