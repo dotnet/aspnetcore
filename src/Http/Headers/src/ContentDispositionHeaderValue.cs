@@ -492,7 +492,7 @@ public class ContentDispositionHeaderValue
                 result = result.ToString().Replace(@"\", @"\\").Replace(@"""", @"\""");
             }
             // Re-add quotes "value"
-            result = string.Format(CultureInfo.InvariantCulture, "\"{0}\"", result);
+            result = string.Concat("\"", result.AsSpan(), "\"");
         }
         return result;
     }
@@ -611,90 +611,106 @@ public class ContentDispositionHeaderValue
         return false;
     }
 
+    private const string Rfc5987Prefix = "UTF-8\'\'";
+
     // Encode a string using RFC 5987 encoding
     // encoding'lang'PercentEncodedSpecials
-    [SkipLocalsInit]
     private static string Encode5987(StringSegment input)
     {
-        var builder = new StringBuilder("UTF-8\'\'");
-        var remaining = input.AsSpan();
-        while (remaining.Length > 0)
+        var value = input.AsSpan();
+        var length = Rfc5987Prefix.Length;
+        var remaining = value;
+        while (true)
         {
-            var length = remaining.IndexOfAnyExcept(Rfc5987AttrChar);
-            if (length < 0)
+            var index = remaining.IndexOfAnyExcept(Rfc5987AttrChar);
+            if (index < 0)
             {
-                length = remaining.Length;
-            }
-            builder.Append(remaining[..length]);
-
-            remaining = remaining.Slice(length);
-            if (remaining.Length == 0)
-            {
+                length += remaining.Length;
                 break;
             }
 
-            length = remaining.IndexOfAny(Rfc5987AttrChar);
-            if (length < 0)
-            {
-                length = remaining.Length;
-            }
-
-            for (var i = 0; i < length;)
-            {
-                Rune.DecodeFromUtf16(remaining.Slice(i), out Rune rune, out var runeLength);
-                EncodeToUtf8Hex(rune, builder);
-                i += runeLength;
-            }
-
-            remaining = remaining.Slice(length);
+            length += index;
+            Rune.DecodeFromUtf16(remaining.Slice(index), out var rune, out var runeLength);
+            length += rune.Utf8SequenceLength * 3;
+            remaining = remaining.Slice(index + runeLength);
         }
 
-        return builder.ToString();
+        if (length == Rfc5987Prefix.Length + value.Length)
+        {
+            // Nothing to encode
+            return string.Concat(Rfc5987Prefix, value);
+        }
+
+        return string.Create(length, input, static (destination, input) =>
+        {
+            Rfc5987Prefix.CopyTo(destination);
+            destination = destination.Slice(Rfc5987Prefix.Length);
+
+            var remaining = input.AsSpan();
+            while (true)
+            {
+                var index = remaining.IndexOfAnyExcept(Rfc5987AttrChar);
+                if (index < 0)
+                {
+                    remaining.CopyTo(destination);
+                    break;
+                }
+
+                remaining.Slice(0, index).CopyTo(destination);
+                destination = destination.Slice(index);
+
+                Rune.DecodeFromUtf16(remaining.Slice(index), out var rune, out var runeLength);
+                destination = destination.Slice(EncodeToUtf8Hex(rune, destination));
+                remaining = remaining.Slice(index + runeLength);
+            }
+        });
     }
 
     private static readonly char[] HexUpperChars = {
                                    '0', '1', '2', '3', '4', '5', '6', '7',
                                    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-    private static void EncodeToUtf8Hex(Rune rune, StringBuilder builder)
+    // Writes the percent-encoded UTF-8 bytes of the rune and returns the number of chars written.
+    private static int EncodeToUtf8Hex(Rune rune, Span<char> destination)
     {
         // Inspired by https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Text/Rune.cs TryEncodeToUtf8
         var value = (uint)rune.Value;
         if (rune.IsAscii)
         {
-            var byteValue = (byte)value;
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            WritePercentEncodedByte((byte)value, destination);
+            return 3;
         }
         else if (rune.Value <= 0x7FFu)
         {
             // Scalar 00000yyy yyxxxxxx -> bytes [ 110yyyyy 10xxxxxx ]
-            var byteValue = (byte)((value + (0b110u << 11)) >> 6);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
-            byteValue = (byte)((value & 0x3Fu) + 0x80u);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            WritePercentEncodedByte((byte)((value + (0b110u << 11)) >> 6), destination);
+            WritePercentEncodedByte((byte)((value & 0x3Fu) + 0x80u), destination.Slice(3));
+            return 6;
         }
         else if (rune.Value <= 0xFFFFu)
         {
             // Scalar zzzzyyyy yyxxxxxx -> bytes [ 1110zzzz 10yyyyyy 10xxxxxx ]
-            var byteValue = (byte)((value + (0b1110 << 16)) >> 12);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
-            byteValue = (byte)(((value & (0x3Fu << 6)) >> 6) + 0x80u);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
-            byteValue = (byte)((value & 0x3Fu) + 0x80u);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            WritePercentEncodedByte((byte)((value + (0b1110 << 16)) >> 12), destination);
+            WritePercentEncodedByte((byte)(((value & (0x3Fu << 6)) >> 6) + 0x80u), destination.Slice(3));
+            WritePercentEncodedByte((byte)((value & 0x3Fu) + 0x80u), destination.Slice(6));
+            return 9;
         }
         else
         {
             // Scalar 000uuuuu zzzzyyyy yyxxxxxx -> bytes [ 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx ]
-            var byteValue = (byte)((value + (0b11110 << 21)) >> 18);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
-            byteValue = (byte)(((value & (0x3Fu << 12)) >> 12) + 0x80u);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
-            byteValue = (byte)(((value & (0x3Fu << 6)) >> 6) + 0x80u);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
-            byteValue = (byte)((value & 0x3Fu) + 0x80u);
-            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            WritePercentEncodedByte((byte)((value + (0b11110 << 21)) >> 18), destination);
+            WritePercentEncodedByte((byte)(((value & (0x3Fu << 12)) >> 12) + 0x80u), destination.Slice(3));
+            WritePercentEncodedByte((byte)(((value & (0x3Fu << 6)) >> 6) + 0x80u), destination.Slice(6));
+            WritePercentEncodedByte((byte)((value & 0x3Fu) + 0x80u), destination.Slice(9));
+            return 12;
         }
+    }
+
+    private static void WritePercentEncodedByte(byte byteValue, Span<char> destination)
+    {
+        destination[0] = '%';
+        destination[1] = HexUpperChars[(byteValue & 0xf0) >> 4];
+        destination[2] = HexUpperChars[byteValue & 0xf];
     }
 
     // Attempt to decode using RFC 5987 encoding.
