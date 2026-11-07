@@ -21,6 +21,8 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     [InlineData(BrowserKind.Chromium, "Auto")]
     [InlineData(BrowserKind.Chromium, "None", "Individual")]
     [InlineData(BrowserKind.Chromium, "Server", "None", true)]
+    [InlineData(BrowserKind.Chromium, "WebAssembly", "None", true)]
+    [InlineData(BrowserKind.Chromium, "Auto", "None", true)]
     public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None", bool allInteractive = false)
     {
         string[] args = allInteractive
@@ -56,6 +58,170 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
             // In other cases, just use the root project
             return rootProject;
+        }
+    }
+
+    [Theory]
+    [InlineData("WebAssembly", "None", false)]
+    [InlineData("WebAssembly", "None", true)]
+    [InlineData("WebAssembly", "Individual", false)]
+    [InlineData("Auto", "None", false)]
+    [InlineData("Auto", "Individual", false)]
+    public async Task BlazorWebTemplate_ErrorPageSurvivesInteractiveActivation(
+        string interactivityOption, string authOption, bool suppressActivity)
+    {
+        var browserKind = BrowserKind.Chromium;
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync(
+            args: ["-int", interactivityOption, "-au", authOption, ArgConstants.GlobalInteractivity],
+            getTargetProject: rootProject => GetSubProject(rootProject, rootProject.ProjectName, rootProject.ProjectName),
+            onlyCreate: true);
+
+        var layoutPath = Path.Combine(
+            Directory.GetParent(project.TemplateOutputDir).FullName,
+            $"{project.ProjectName}.Client", "Layout", "MainLayout.razor");
+        await File.AppendAllTextAsync(layoutPath, """
+
+            <button id="layout-interactivity" data-renderer="@RendererInfo.Name" @onclick="() => clickCount++">Layout count: @clickCount</button>
+            <a id="error-link" href="Error">Error</a>
+            <a id="missing-link" href="missing-page">Missing</a>
+
+            @code {
+                private int clickCount;
+            }
+            """);
+
+        var programPath = Path.Combine(project.TemplateOutputDir, "Program.cs");
+        var program = await File.ReadAllTextAsync(programPath);
+        const string configurePipeline = "// Configure the HTTP request pipeline.";
+        Assert.Contains(configurePipeline, program);
+        program = program.Replace(configurePipeline, $$"""
+            {{configurePipeline}}
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/Error")
+                {
+                    {{(suppressActivity ? "System.Diagnostics.Activity.Current = null;" : "")}}
+
+                    context.Response.Headers["X-Expected-Request-Id"] =
+                        System.Diagnostics.Activity.Current?.Id ?? context.TraceIdentifier;
+                }
+
+                await next(context);
+            });
+            """, StringComparison.Ordinal);
+        await File.WriteAllTextAsync(programPath, program);
+
+        if (interactivityOption is "Auto")
+        {
+            var counterPath = Path.Combine(
+                Directory.GetParent(project.TemplateOutputDir).FullName,
+                $"{project.ProjectName}.Client", "Pages", "Counter.razor");
+            await File.AppendAllTextAsync(counterPath, """
+
+                <span class="counter-renderer" data-renderer="@RendererInfo.Name"></span>
+                """);
+
+            var appPath = Path.Combine(project.TemplateOutputDir, "Components", "App.razor");
+            var app = await File.ReadAllTextAsync(appPath);
+            Assert.Contains("</body>", app);
+            app = app.Replace("</body>", $$"""
+                @if (WarmupHttpContext.Request.Query.ContainsKey("warmup"))
+                {
+                    <{{project.ProjectName}}.Client.Pages.Counter @rendermode="InteractiveWebAssembly" />
+                }
+
+                @code {
+                    [CascadingParameter]
+                    private HttpContext WarmupHttpContext { get; set; } = default!;
+                }
+
+                </body>
+                """, StringComparison.Ordinal);
+            await File.WriteAllTextAsync(appPath, app);
+        }
+
+        await project.RunDotNetPublishAsync(noRestore: false);
+        await project.RunDotNetBuildAsync();
+
+        using (var aspNetProcess = project.StartBuiltProjectAsync())
+        {
+            await VerifyErrorPageAsync(aspNetProcess.ListeningUri);
+        }
+
+        using (var aspNetProcess = project.StartPublishedProjectAsync())
+        {
+            await VerifyErrorPageAsync(aspNetProcess.ListeningUri);
+        }
+
+        async Task VerifyErrorPageAsync(Uri listeningUri)
+        {
+            await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+            var page = await browser.NewPageAsync();
+            await page.SetViewportSizeAsync(1280, 720);
+            var startInteractivity = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            await page.RouteAsync("**/_framework/blazor.web*.js", async route =>
+            {
+                await startInteractivity.Task;
+                await route.ContinueAsync();
+            });
+
+            string requestId;
+            try
+            {
+                var response = await page.GotoAsync(
+                    new Uri(listeningUri, "/Error").AbsoluteUri,
+                    new() { WaitUntil = WaitUntilState.Commit });
+                Assert.Equal((int)HttpStatusCode.OK, response.Status);
+                requestId = response.Headers["x-expected-request-id"];
+                Assert.False(string.IsNullOrEmpty(requestId));
+                await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Error.");
+                await Assertions.Expect(page.Locator("article code")).ToHaveTextAsync(requestId);
+            }
+            finally
+            {
+                startInteractivity.TrySetResult();
+            }
+
+            await page.WaitForSelectorAsync("#layout-interactivity:not([data-renderer=Static])");
+            await page.ClickAsync("#layout-interactivity");
+            await Assertions.Expect(page.Locator("#layout-interactivity")).ToHaveTextAsync("Layout count: 1");
+            await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Error.");
+            await Assertions.Expect(page.Locator("article code")).ToHaveTextAsync(requestId);
+            Assert.Equal("Error", (await page.TitleAsync()).Trim());
+
+            if (interactivityOption is "Auto")
+            {
+                await page.GotoAsync(new Uri(listeningUri, "/counter?warmup=true").AbsoluteUri);
+                await page.WaitForSelectorAsync(".counter-renderer[data-renderer=WebAssembly]", new() { State = WaitForSelectorState.Attached });
+                var response = await page.GotoAsync(new Uri(listeningUri, "/Error").AbsoluteUri);
+                requestId = response.Headers["x-expected-request-id"];
+                await page.WaitForSelectorAsync("#layout-interactivity[data-renderer=WebAssembly]");
+                await page.ClickAsync("#layout-interactivity");
+                await Assertions.Expect(page.Locator("#layout-interactivity")).ToHaveTextAsync("Layout count: 1");
+                await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Error.");
+                await Assertions.Expect(page.Locator("article code")).ToHaveTextAsync(requestId);
+            }
+
+            await page.ClickAsync("a[href=counter]");
+            await page.WaitForSelectorAsync("h1 >> text=Counter");
+            await page.ClickAsync("button >> text=Click me");
+            await Assertions.Expect(page.Locator("p >> text=Current count: 1")).ToBeVisibleAsync();
+            await page.ClickAsync("#error-link");
+            await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Error.");
+            await Assertions.Expect(page.Locator("article code")).ToHaveCountAsync(0);
+
+            await page.ClickAsync("#missing-link");
+            await page.WaitForSelectorAsync("h3 >> text=Not Found");
+            await page.WaitForSelectorAsync("#layout-interactivity:not([data-renderer=Static])");
+            var previousLayoutCount = await page.Locator("#layout-interactivity").InnerTextAsync();
+            await page.ClickAsync("#layout-interactivity");
+            await Assertions.Expect(page.Locator("#layout-interactivity")).Not.ToHaveTextAsync(previousLayoutCount);
         }
     }
 

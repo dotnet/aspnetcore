@@ -31,14 +31,16 @@
 <body>
     @*#if (!InteractiveAtRoot)
     <Routes />
+    ##elseif (IndividualLocalAuth && UseWebAssembly)
+    <Routes @rendermode="PageRenderMode" HttpRequestId="@HttpContext.TraceIdentifier" />
     ##elseif (IndividualLocalAuth)
     <Routes @rendermode="PageRenderMode" />
     ##elseif (UseServer && UseWebAssembly)
-    <Routes @rendermode="InteractiveAuto" />
+    <Routes @rendermode="InteractiveAuto" HttpRequestId="@HttpContext.TraceIdentifier" />
     ##elseif (UseServer)
     <Routes @rendermode="InteractiveServer" />
     ##else
-    <Routes @rendermode="InteractiveWebAssembly" />
+    <Routes @rendermode="InteractiveWebAssembly" HttpRequestId="@HttpContext.TraceIdentifier" />
     ##endif*@
     @*#if (UseServer)  -->
     <ReconnectModal />
@@ -52,6 +54,13 @@
 </body>
 
 </html>
+@*#if (UseWebAssembly && InteractiveAtRoot && !IndividualLocalAuth)
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+}
+##endif*@
 @*#if (!InteractiveAtRoot || !IndividualLocalAuth)
 #elseif (UseServer && UseWebAssembly)
 

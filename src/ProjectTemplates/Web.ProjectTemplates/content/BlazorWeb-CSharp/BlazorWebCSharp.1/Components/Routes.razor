@@ -1,6 +1,9 @@
 ﻿@*#if (IndividualLocalAuth && !UseWebAssembly)
 @using BlazorWebCSharp._1.Components.Account.Shared
 ##endif*@
+@*#if (UseWebAssembly && InteractiveAtRoot)
+<CascadingValue Name="HttpRequestId" Value="@(RendererInfo.IsInteractive ? null : HttpRequestId)">
+##endif*@
 @*#if (UseWebAssembly && !InteractiveAtRoot)
 <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }" NotFoundPage="typeof(Pages.NotFound)">
 ##else
@@ -19,3 +22,14 @@
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
+@*#if (UseWebAssembly && InteractiveAtRoot)
+</CascadingValue>
+##endif*@
+@*#if (!UseWebAssembly || !InteractiveAtRoot)
+#else
+
+@code {
+    [Parameter]
+    public string? HttpRequestId { get; set; }
+}
+#endif*@
