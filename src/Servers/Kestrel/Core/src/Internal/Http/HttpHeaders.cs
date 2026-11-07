@@ -116,7 +116,9 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
     bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => _isReadOnly;
 
-    ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    ICollection<string> IDictionary<string, StringValues>.Keys => GetKeysFast();
+
+    protected virtual ICollection<string> GetKeysFast() => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     ICollection<StringValues> IDictionary<string, StringValues>.Values => ((IDictionary<string, StringValues>)this).Select(pair => pair.Value).ToList();
 
@@ -152,10 +154,12 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    protected bool TryGetUnknown(string key, ref StringValues value) => MaybeUnknown?.TryGetValue(key, out value) ?? false;
+    protected virtual bool TryGetUnknown(string key, ref StringValues value) => MaybeUnknown?.TryGetValue(key, out value) ?? false;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    protected bool RemoveUnknown(string key) => MaybeUnknown?.Remove(key) ?? false;
+    protected virtual bool RemoveUnknown(string key) => MaybeUnknown?.Remove(key) ?? false;
+
+    protected virtual bool ContainsKeyFast(string key) => TryGetValueFast(key, out _);
 
     protected virtual int GetCountFast()
     { throw new NotImplementedException(); }
@@ -221,7 +225,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
     bool IDictionary<string, StringValues>.ContainsKey(string key)
     {
-        return TryGetValueFast(key, out _);
+        return ContainsKeyFast(key);
     }
 
     void ICollection<KeyValuePair<string, StringValues>>.CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)

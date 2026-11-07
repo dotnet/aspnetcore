@@ -2583,8 +2583,468 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override int GetCountFast()
         {
-            return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (MaybeUnknown?.Count ?? 0);
+            return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (_unknown?.Count ?? 0);
         }
+
+        protected override ICollection<string> GetKeysFast()
+        {
+            var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if ((_bits & 0x1L) != 0)
+            {
+                keys.Add(HeaderNames.Accept);
+            }
+            if ((_bits & 0x2L) != 0)
+            {
+                keys.Add(HeaderNames.Connection);
+            }
+            if ((_bits & 0x4L) != 0)
+            {
+                keys.Add(HeaderNames.Host);
+            }
+            if ((_bits & 0x8L) != 0)
+            {
+                keys.Add(HeaderNames.UserAgent);
+            }
+            if ((_bits & 0x10L) != 0)
+            {
+                keys.Add(InternalHeaderNames.Authority);
+            }
+            if ((_bits & 0x20L) != 0)
+            {
+                keys.Add(InternalHeaderNames.Method);
+            }
+            if ((_bits & 0x40L) != 0)
+            {
+                keys.Add(InternalHeaderNames.Path);
+            }
+            if ((_bits & 0x80L) != 0)
+            {
+                keys.Add(InternalHeaderNames.Protocol);
+            }
+            if ((_bits & 0x100L) != 0)
+            {
+                keys.Add(InternalHeaderNames.Scheme);
+            }
+            if ((_bits & 0x200L) != 0)
+            {
+                keys.Add(HeaderNames.AcceptCharset);
+            }
+            if ((_bits & 0x400L) != 0)
+            {
+                keys.Add(HeaderNames.AcceptEncoding);
+            }
+            if ((_bits & 0x800L) != 0)
+            {
+                keys.Add(HeaderNames.AcceptLanguage);
+            }
+            if ((_bits & 0x1000L) != 0)
+            {
+                keys.Add(HeaderNames.AccessControlRequestHeaders);
+            }
+            if ((_bits & 0x2000L) != 0)
+            {
+                keys.Add(HeaderNames.AccessControlRequestMethod);
+            }
+            if ((_bits & 0x4000L) != 0)
+            {
+                keys.Add(InternalHeaderNames.AltUsed);
+            }
+            if ((_bits & 0x8000L) != 0)
+            {
+                keys.Add(HeaderNames.Authorization);
+            }
+            if ((_bits & 0x10000L) != 0)
+            {
+                keys.Add(HeaderNames.Baggage);
+            }
+            if ((_bits & 0x20000L) != 0)
+            {
+                keys.Add(HeaderNames.CacheControl);
+            }
+            if ((_bits & 0x40000L) != 0)
+            {
+                keys.Add(HeaderNames.ContentType);
+            }
+            if ((_bits & 0x80000L) != 0)
+            {
+                keys.Add(HeaderNames.Cookie);
+            }
+            if ((_bits & 0x100000L) != 0)
+            {
+                keys.Add(HeaderNames.CorrelationContext);
+            }
+            if ((_bits & 0x200000L) != 0)
+            {
+                keys.Add(HeaderNames.Date);
+            }
+            if ((_bits & 0x400000L) != 0)
+            {
+                keys.Add(HeaderNames.Expect);
+            }
+            if ((_bits & 0x800000L) != 0)
+            {
+                keys.Add(HeaderNames.From);
+            }
+            if ((_bits & 0x1000000L) != 0)
+            {
+                keys.Add(HeaderNames.GrpcAcceptEncoding);
+            }
+            if ((_bits & 0x2000000L) != 0)
+            {
+                keys.Add(HeaderNames.GrpcEncoding);
+            }
+            if ((_bits & 0x4000000L) != 0)
+            {
+                keys.Add(HeaderNames.GrpcTimeout);
+            }
+            if ((_bits & 0x8000000L) != 0)
+            {
+                keys.Add(HeaderNames.IfMatch);
+            }
+            if ((_bits & 0x10000000L) != 0)
+            {
+                keys.Add(HeaderNames.IfModifiedSince);
+            }
+            if ((_bits & 0x20000000L) != 0)
+            {
+                keys.Add(HeaderNames.IfNoneMatch);
+            }
+            if ((_bits & 0x40000000L) != 0)
+            {
+                keys.Add(HeaderNames.IfRange);
+            }
+            if ((_bits & 0x80000000L) != 0)
+            {
+                keys.Add(HeaderNames.IfUnmodifiedSince);
+            }
+            if ((_bits & 0x100000000L) != 0)
+            {
+                keys.Add(HeaderNames.KeepAlive);
+            }
+            if ((_bits & 0x200000000L) != 0)
+            {
+                keys.Add(HeaderNames.MaxForwards);
+            }
+            if ((_bits & 0x400000000L) != 0)
+            {
+                keys.Add(HeaderNames.Origin);
+            }
+            if ((_bits & 0x800000000L) != 0)
+            {
+                keys.Add(HeaderNames.Pragma);
+            }
+            if ((_bits & 0x1000000000L) != 0)
+            {
+                keys.Add(HeaderNames.ProxyAuthorization);
+            }
+            if ((_bits & 0x2000000000L) != 0)
+            {
+                keys.Add(HeaderNames.Range);
+            }
+            if ((_bits & 0x4000000000L) != 0)
+            {
+                keys.Add(HeaderNames.Referer);
+            }
+            if ((_bits & 0x8000000000L) != 0)
+            {
+                keys.Add(HeaderNames.RequestId);
+            }
+            if ((_bits & 0x10000000000L) != 0)
+            {
+                keys.Add(HeaderNames.TE);
+            }
+            if ((_bits & 0x20000000000L) != 0)
+            {
+                keys.Add(HeaderNames.TraceParent);
+            }
+            if ((_bits & 0x40000000000L) != 0)
+            {
+                keys.Add(HeaderNames.TraceState);
+            }
+            if ((_bits & 0x80000000000L) != 0)
+            {
+                keys.Add(HeaderNames.TransferEncoding);
+            }
+            if ((_bits & 0x100000000000L) != 0)
+            {
+                keys.Add(HeaderNames.Translate);
+            }
+            if ((_bits & 0x200000000000L) != 0)
+            {
+                keys.Add(HeaderNames.Upgrade);
+            }
+            if ((_bits & 0x400000000000L) != 0)
+            {
+                keys.Add(HeaderNames.UpgradeInsecureRequests);
+            }
+            if ((_bits & 0x800000000000L) != 0)
+            {
+                keys.Add(HeaderNames.Via);
+            }
+            if ((_bits & 0x1000000000000L) != 0)
+            {
+                keys.Add(HeaderNames.Warning);
+            }
+            if (_contentLength.HasValue)
+            {
+                keys.Add(HeaderNames.ContentLength);
+            }
+            if (_unknown is not null)
+            {
+                keys.UnionWith(_unknown.Keys);
+            }
+            return keys;
+        }
+
+        protected override bool ContainsKeyFast(string key)
+        {
+            switch (key.Length)
+            {
+                case 2:
+                    if (ReferenceEquals(HeaderNames.TE, key) || HeaderNames.TE.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x10000000000L) != 0;
+                    }
+                    break;
+                case 3:
+                    if (ReferenceEquals(HeaderNames.Via, key) || HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x800000000000L) != 0;
+                    }
+                    break;
+                case 4:
+                    if (ReferenceEquals(HeaderNames.Host, key) || HeaderNames.Host.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x4L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Date, key) || HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x200000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.From, key) || HeaderNames.From.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x800000L) != 0;
+                    }
+                    break;
+                case 5:
+                    if (ReferenceEquals(InternalHeaderNames.Path, key) || InternalHeaderNames.Path.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x40L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Range, key) || HeaderNames.Range.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x2000000000L) != 0;
+                    }
+                    break;
+                case 6:
+                    if (ReferenceEquals(HeaderNames.Accept, key) || HeaderNames.Accept.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x1L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Cookie, key) || HeaderNames.Cookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x80000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expect, key) || HeaderNames.Expect.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x400000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Origin, key) || HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x400000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key) || HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x800000000L) != 0;
+                    }
+                    break;
+                case 7:
+                    if (ReferenceEquals(InternalHeaderNames.Method, key) || InternalHeaderNames.Method.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x20L) != 0;
+                    }
+                    if (ReferenceEquals(InternalHeaderNames.Scheme, key) || InternalHeaderNames.Scheme.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x100L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Baggage, key) || HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x10000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Referer, key) || HeaderNames.Referer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x4000000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key) || HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x200000000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key) || HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x1000000000000L) != 0;
+                    }
+                    break;
+                case 8:
+                    if (ReferenceEquals(InternalHeaderNames.AltUsed, key) || InternalHeaderNames.AltUsed.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x4000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfMatch, key) || HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x8000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfRange, key) || HeaderNames.IfRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x40000000L) != 0;
+                    }
+                    break;
+                case 9:
+                    if (ReferenceEquals(InternalHeaderNames.Protocol, key) || InternalHeaderNames.Protocol.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x80L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.Translate, key) || HeaderNames.Translate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x100000000000L) != 0;
+                    }
+                    break;
+                case 10:
+                    if (ReferenceEquals(HeaderNames.Connection, key) || HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x2L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.UserAgent, key) || HeaderNames.UserAgent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x8L) != 0;
+                    }
+                    if (ReferenceEquals(InternalHeaderNames.Authority, key) || InternalHeaderNames.Authority.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x10L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key) || HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x100000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.RequestId, key) || HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x8000000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceState, key) || HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x40000000000L) != 0;
+                    }
+                    break;
+                case 11:
+                    if (ReferenceEquals(HeaderNames.TraceParent, key) || HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x20000000000L) != 0;
+                    }
+                    break;
+                case 12:
+                    if (ReferenceEquals(HeaderNames.ContentType, key) || HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x40000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.GrpcTimeout, key) || HeaderNames.GrpcTimeout.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x4000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.MaxForwards, key) || HeaderNames.MaxForwards.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x200000000L) != 0;
+                    }
+                    break;
+                case 13:
+                    if (ReferenceEquals(HeaderNames.Authorization, key) || HeaderNames.Authorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x8000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.CacheControl, key) || HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x20000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.GrpcEncoding, key) || HeaderNames.GrpcEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x2000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfNoneMatch, key) || HeaderNames.IfNoneMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x20000000L) != 0;
+                    }
+                    break;
+                case 14:
+                    if (ReferenceEquals(HeaderNames.AcceptCharset, key) || HeaderNames.AcceptCharset.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x200L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLength, key) || HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return _contentLength.HasValue;
+                    }
+                    break;
+                case 15:
+                    if (ReferenceEquals(HeaderNames.AcceptEncoding, key) || HeaderNames.AcceptEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x400L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptLanguage, key) || HeaderNames.AcceptLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x800L) != 0;
+                    }
+                    break;
+                case 17:
+                    if (ReferenceEquals(HeaderNames.IfModifiedSince, key) || HeaderNames.IfModifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x10000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key) || HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x80000000000L) != 0;
+                    }
+                    break;
+                case 19:
+                    if (ReferenceEquals(HeaderNames.CorrelationContext, key) || HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x100000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfUnmodifiedSince, key) || HeaderNames.IfUnmodifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x80000000L) != 0;
+                    }
+                    if (ReferenceEquals(HeaderNames.ProxyAuthorization, key) || HeaderNames.ProxyAuthorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x1000000000L) != 0;
+                    }
+                    break;
+                case 20:
+                    if (ReferenceEquals(HeaderNames.GrpcAcceptEncoding, key) || HeaderNames.GrpcAcceptEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x1000000L) != 0;
+                    }
+                    break;
+                case 25:
+                    if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key) || HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x400000000000L) != 0;
+                    }
+                    break;
+                case 29:
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key) || HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x2000L) != 0;
+                    }
+                    break;
+                case 30:
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key) || HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (_bits & 0x1000L) != 0;
+                    }
+                    break;
+            }
+            return _unknown?.ContainsKey(key) ?? false;
+        }
+
 
         protected override bool TryGetValueFast(string key, out StringValues value)
         {
@@ -7469,7 +7929,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }
-            ((ICollection<KeyValuePair<string, StringValues>>?)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            CopyUnknownTo(array, arrayIndex);
 
             return true;
         }
@@ -7511,7 +7971,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars, bool allowLazyValues = false)
         {
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
@@ -7525,7 +7985,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ushort(ref nameStart) & 0xdfdfu) == 0x4554u))
                     {
                         flag = 0x10000000000L;
-                        values = ref _headers._TE;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueTE, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetTE();
                         nameStr = HeaderNames.TE;
                     }
                     break;
@@ -7533,7 +7997,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ushort(ref nameStart) & 0xdfdfu) == 0x4956u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x41u))
                     {
                         flag = 0x800000000000L;
-                        values = ref _headers._Via;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueVia, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetVia();
                         nameStr = HeaderNames.Via;
                     }
                     break;
@@ -7542,19 +8010,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((firstTerm4 == 0x54534f48u))
                     {
                         flag = 0x4L;
-                        values = ref _headers._Host;
+                        values = ref _headers.GetHost();
                         nameStr = HeaderNames.Host;
                     }
                     else if ((firstTerm4 == 0x45544144u))
                     {
                         flag = 0x200000L;
-                        values = ref _headers._Date;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueDate, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetDate();
                         nameStr = HeaderNames.Date;
                     }
                     else if ((firstTerm4 == 0x4d4f5246u))
                     {
                         flag = 0x800000L;
-                        values = ref _headers._From;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueFrom, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetFrom();
                         nameStr = HeaderNames.From;
                     }
                     break;
@@ -7562,13 +8038,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfffu) == 0x5441503au) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x48u))
                     {
                         flag = 0x40L;
-                        values = ref _headers._Path;
+                        values = ref _headers.GetPath();
                         nameStr = InternalHeaderNames.Path;
                     }
                     else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x474e4152u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x45u))
                     {
                         flag = 0x2000000000L;
-                        values = ref _headers._Range;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueRange, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetRange();
                         nameStr = HeaderNames.Range;
                     }
                     break;
@@ -7577,31 +8057,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((firstTerm6 == 0x45434341u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5450u))
                     {
                         flag = 0x1L;
-                        values = ref _headers._Accept;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueAccept, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetAccept();
                         nameStr = HeaderNames.Accept;
                     }
                     else if ((firstTerm6 == 0x4b4f4f43u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4549u))
                     {
                         flag = 0x80000L;
-                        values = ref _headers._Cookie;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueCookie, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetCookie();
                         nameStr = HeaderNames.Cookie;
                     }
                     else if ((firstTerm6 == 0x45505845u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5443u))
                     {
                         flag = 0x400000L;
-                        values = ref _headers._Expect;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueExpect, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetExpect();
                         nameStr = HeaderNames.Expect;
                     }
                     else if ((firstTerm6 == 0x4749524fu) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u))
                     {
                         flag = 0x400000000L;
-                        values = ref _headers._Origin;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueOrigin, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetOrigin();
                         nameStr = HeaderNames.Origin;
                     }
                     else if ((firstTerm6 == 0x47415250u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x414du))
                     {
                         flag = 0x800000000L;
-                        values = ref _headers._Pragma;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valuePragma, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetPragma();
                         nameStr = HeaderNames.Pragma;
                     }
                     break;
@@ -7609,37 +8109,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfffu) == 0x54454d3au) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4f48u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x44u))
                     {
                         flag = 0x20L;
-                        values = ref _headers._Method;
+                        values = ref _headers.GetMethod();
                         nameStr = InternalHeaderNames.Method;
                     }
                     else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfffu) == 0x4843533au) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4d45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x100L;
-                        values = ref _headers._Scheme;
+                        values = ref _headers.GetScheme();
                         nameStr = InternalHeaderNames.Scheme;
                     }
                     else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x47474142u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x10000L;
-                        values = ref _headers._Baggage;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueBaggage, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetBaggage();
                         nameStr = HeaderNames.Baggage;
                     }
                     else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x45464552u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4552u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x52u))
                     {
                         flag = 0x4000000000L;
-                        values = ref _headers._Referer;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueReferer, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetReferer();
                         nameStr = HeaderNames.Referer;
                     }
                     else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x52475055u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x200000000000L;
-                        values = ref _headers._Upgrade;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueUpgrade, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetUpgrade();
                         nameStr = HeaderNames.Upgrade;
                     }
                     else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x4e524157u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x47u))
                     {
                         flag = 0x1000000000000L;
-                        values = ref _headers._Warning;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueWarning, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetWarning();
                         nameStr = HeaderNames.Warning;
                     }
                     break;
@@ -7647,19 +8163,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfffdfdfdfuL) == 0x444553552d544c41uL))
                     {
                         flag = 0x4000L;
-                        values = ref _headers._AltUsed;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueAltUsed, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetAltUsed();
                         nameStr = InternalHeaderNames.AltUsed;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x484354414d2d4649uL))
                     {
                         flag = 0x8000000L;
-                        values = ref _headers._IfMatch;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueIfMatch, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetIfMatch();
                         nameStr = HeaderNames.IfMatch;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x45474e41522d4649uL))
                     {
                         flag = 0x40000000L;
-                        values = ref _headers._IfRange;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueIfRange, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetIfRange();
                         nameStr = HeaderNames.IfRange;
                     }
                     break;
@@ -7667,13 +8195,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfffuL) == 0x4f434f544f52503auL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)8) & 0xdfu) == 0x4cu))
                     {
                         flag = 0x80L;
-                        values = ref _headers._Protocol;
+                        values = ref _headers.GetProtocol();
                         nameStr = InternalHeaderNames.Protocol;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c534e415254uL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)8) & 0xdfu) == 0x45u))
                     {
                         flag = 0x100000000000L;
-                        values = ref _headers._Translate;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueTranslate, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetTranslate();
                         nameStr = HeaderNames.Translate;
                     }
                     break;
@@ -7681,37 +8213,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x495443454e4e4f43uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e4fu))
                     {
                         flag = 0x2L;
-                        values = ref _headers._Connection;
+                        values = ref _headers.GetConnection();
                         nameStr = HeaderNames.Connection;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4547412d52455355uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x544eu))
                     {
                         flag = 0x8L;
-                        values = ref _headers._UserAgent;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueUserAgent, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetUserAgent();
                         nameStr = HeaderNames.UserAgent;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfffuL) == 0x49524f485455413auL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x5954u))
                     {
                         flag = 0x10L;
-                        values = ref _headers._Authority;
+                        values = ref _headers.GetAuthority();
                         nameStr = InternalHeaderNames.Authority;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x494c412d5045454buL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4556u))
                     {
                         flag = 0x100000000L;
-                        values = ref _headers._KeepAlive;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueKeepAlive, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetKeepAlive();
                         nameStr = HeaderNames.KeepAlive;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d54534555514552uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4449u))
                     {
                         flag = 0x8000000000L;
-                        values = ref _headers._RequestId;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueRequestId, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetRequestId();
                         nameStr = HeaderNames.RequestId;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x4154534543415254uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4554u))
                     {
                         flag = 0x40000000000L;
-                        values = ref _headers._TraceState;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueTraceState, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetTraceState();
                         nameStr = HeaderNames.TraceState;
                     }
                     break;
@@ -7719,7 +8267,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5241504543415254uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)10) & 0xdfu) == 0x54u))
                     {
                         flag = 0x20000000000L;
-                        values = ref _headers._TraceParent;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueTraceParent, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetTraceParent();
                         nameStr = HeaderNames.TraceParent;
                     }
                     break;
@@ -7727,19 +8279,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45505954u))
                     {
                         flag = 0x40000L;
-                        values = ref _headers._ContentType;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueContentType, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetContentType();
                         nameStr = HeaderNames.ContentType;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4d49542d43505247uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x54554f45u))
                     {
                         flag = 0x4000000L;
-                        values = ref _headers._GrpcTimeout;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueGrpcTimeout, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetGrpcTimeout();
                         nameStr = HeaderNames.GrpcTimeout;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfffdfdfdfuL) == 0x57524f462d58414duL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53445241u))
                     {
                         flag = 0x200000000L;
-                        values = ref _headers._MaxForwards;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueMaxForwards, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetMaxForwards();
                         nameStr = HeaderNames.MaxForwards;
                     }
                     break;
@@ -7747,25 +8311,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5a49524f48545541uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f495441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4eu))
                     {
                         flag = 0x8000L;
-                        values = ref _headers._Authorization;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueAuthorization, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetAuthorization();
                         nameStr = HeaderNames.Authorization;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x4f432d4548434143uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f52544eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4cu))
                     {
                         flag = 0x20000L;
-                        values = ref _headers._CacheControl;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueCacheControl, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetCacheControl();
                         nameStr = HeaderNames.CacheControl;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x434e452d43505247uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4e49444fu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x47u))
                     {
                         flag = 0x2000000L;
-                        values = ref _headers._GrpcEncoding;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueGrpcEncoding, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetGrpcEncoding();
                         nameStr = HeaderNames.GrpcEncoding;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfffdfdfuL) == 0x2d454e4f4e2d4649uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4354414du) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x48u))
                     {
                         flag = 0x20000000L;
-                        values = ref _headers._IfNoneMatch;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueIfNoneMatch, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetIfNoneMatch();
                         nameStr = HeaderNames.IfNoneMatch;
                     }
                     break;
@@ -7773,7 +8353,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d545045434341uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53524148u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x5445u))
                     {
                         flag = 0x200L;
-                        values = ref _headers._AcceptCharset;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueAcceptCharset, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetAcceptCharset();
                         nameStr = HeaderNames.AcceptCharset;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e454cu) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4854u))
@@ -7796,13 +8380,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((firstTerm15 == 0x452d545045434341uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x444f434eu) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x47u))
                     {
                         flag = 0x400L;
-                        values = ref _headers._AcceptEncoding;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueAcceptEncoding, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetAcceptEncoding();
                         nameStr = HeaderNames.AcceptEncoding;
                     }
                     else if ((firstTerm15 == 0x4c2d545045434341uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x55474e41u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x45u))
                     {
                         flag = 0x800L;
-                        values = ref _headers._AcceptLanguage;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueAcceptLanguage, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetAcceptLanguage();
                         nameStr = HeaderNames.AcceptLanguage;
                     }
                     break;
@@ -7810,13 +8402,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x4649444f4d2d4649uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x434e49532d444549uL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x45u))
                     {
                         flag = 0x10000000L;
-                        values = ref _headers._IfModifiedSince;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueIfModifiedSince, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetIfModifiedSince();
                         nameStr = HeaderNames.IfModifiedSince;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x524546534e415254uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfffuL) == 0x4e49444f434e452duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x47u))
                     {
                         flag = 0x80000000000L;
-                        values = ref _headers._TransferEncoding;
+                        values = ref _headers.GetTransferEncoding();
                         nameStr = HeaderNames.TransferEncoding;
                     }
                     break;
@@ -7824,19 +8420,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c4552524f43uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x544e4f432d4e4f49uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x5845u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x54u))
                     {
                         flag = 0x100000L;
-                        values = ref _headers._CorrelationContext;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueCorrelationContext, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetCorrelationContext();
                         nameStr = HeaderNames.CorrelationContext;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x444f4d4e552d4649uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfffdfdfdfdfdfuL) == 0x49532d4445494649uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x434eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x45u))
                     {
                         flag = 0x80000000L;
-                        values = ref _headers._IfUnmodifiedSince;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueIfUnmodifiedSince, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetIfUnmodifiedSince();
                         nameStr = HeaderNames.IfUnmodifiedSince;
                     }
                     else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x55412d59584f5250uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x54415a49524f4854uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x4f49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x4eu))
                     {
                         flag = 0x1000000000L;
-                        values = ref _headers._ProxyAuthorization;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueProxyAuthorization, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetProxyAuthorization();
                         nameStr = HeaderNames.ProxyAuthorization;
                     }
                     break;
@@ -7844,7 +8452,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4343412d43505247uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x4f434e452d545045uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e4944u))
                     {
                         flag = 0x1000000L;
-                        values = ref _headers._GrpcAcceptEncoding;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueGrpcAcceptEncoding, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetGrpcAcceptEncoding();
                         nameStr = HeaderNames.GrpcAcceptEncoding;
                     }
                     break;
@@ -7852,7 +8464,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d45444152475055uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x4552554345534e49uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfdfdfdfdfdfdfffuL) == 0x545345555145522duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)24) & 0xdfu) == 0x53u))
                     {
                         flag = 0x400000000000L;
-                        values = ref _headers._UpgradeInsecureRequests;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueUpgradeInsecureRequests, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetUpgradeInsecureRequests();
                         nameStr = HeaderNames.UpgradeInsecureRequests;
                     }
                     break;
@@ -7860,7 +8476,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x4d2d545345555145uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f485445u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)28) & 0xdfu) == 0x44u))
                     {
                         flag = 0x2000L;
-                        values = ref _headers._AccessControlRequestMethod;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueAccessControlRequestMethod, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetAccessControlRequestMethod();
                         nameStr = HeaderNames.AccessControlRequestMethod;
                     }
                     break;
@@ -7868,7 +8488,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x482d545345555145uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45444145u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(14 * sizeof(ushort)))) & 0xdfdfu) == 0x5352u))
                     {
                         flag = 0x1000L;
-                        values = ref _headers._AccessControlRequestHeaders;
+                        if (allowLazyValues && TryAppendLazy(value, ref _headers._valueAccessControlRequestHeaders, flag, checkForNewlineChars))
+                        {
+                            return;
+                        }
+                        values = ref _headers.GetAccessControlRequestHeaders();
                         nameStr = HeaderNames.AccessControlRequestHeaders;
                     }
                     break;
@@ -7915,11 +8539,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else
             {
                 // The header was not one of the "known" headers.
-                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
-                // this method with rep stosd, which is slower than necessary.
-                nameStr = name.GetHeaderName();
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
-                AppendUnknownHeaders(nameStr, valueStr);
+                AppendUnknown(name, value, checkForNewlineChars, allowLazyValues);
             }
         }
 
@@ -7935,55 +8555,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 case 1:
                     flag = 0x10L;
-                    values = ref _headers._Authority;
+                    values = ref _headers.GetAuthority();
                     nameStr = InternalHeaderNames.Authority;
                     break;
                 case 2:
                 case 3:
                     flag = 0x20L;
-                    values = ref _headers._Method;
+                    values = ref _headers.GetMethod();
                     nameStr = InternalHeaderNames.Method;
                     break;
                 case 4:
                 case 5:
                     flag = 0x40L;
-                    values = ref _headers._Path;
+                    values = ref _headers.GetPath();
                     nameStr = InternalHeaderNames.Path;
                     break;
                 case 6:
                 case 7:
                     flag = 0x100L;
-                    values = ref _headers._Scheme;
+                    values = ref _headers.GetScheme();
                     nameStr = InternalHeaderNames.Scheme;
                     break;
                 case 15:
                     flag = 0x200L;
-                    values = ref _headers._AcceptCharset;
+                    values = ref _headers.GetAcceptCharset();
                     nameStr = HeaderNames.AcceptCharset;
                     break;
                 case 16:
                     flag = 0x400L;
-                    values = ref _headers._AcceptEncoding;
+                    values = ref _headers.GetAcceptEncoding();
                     nameStr = HeaderNames.AcceptEncoding;
                     break;
                 case 17:
                     flag = 0x800L;
-                    values = ref _headers._AcceptLanguage;
+                    values = ref _headers.GetAcceptLanguage();
                     nameStr = HeaderNames.AcceptLanguage;
                     break;
                 case 19:
                     flag = 0x1L;
-                    values = ref _headers._Accept;
+                    values = ref _headers.GetAccept();
                     nameStr = HeaderNames.Accept;
                     break;
                 case 23:
                     flag = 0x8000L;
-                    values = ref _headers._Authorization;
+                    values = ref _headers.GetAuthorization();
                     nameStr = HeaderNames.Authorization;
                     break;
                 case 24:
                     flag = 0x20000L;
-                    values = ref _headers._CacheControl;
+                    values = ref _headers.GetCacheControl();
                     nameStr = HeaderNames.CacheControl;
                     break;
                 case 28:
@@ -8000,92 +8620,92 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return true;
                 case 31:
                     flag = 0x40000L;
-                    values = ref _headers._ContentType;
+                    values = ref _headers.GetContentType();
                     nameStr = HeaderNames.ContentType;
                     break;
                 case 32:
                     flag = 0x80000L;
-                    values = ref _headers._Cookie;
+                    values = ref _headers.GetCookie();
                     nameStr = HeaderNames.Cookie;
                     break;
                 case 33:
                     flag = 0x200000L;
-                    values = ref _headers._Date;
+                    values = ref _headers.GetDate();
                     nameStr = HeaderNames.Date;
                     break;
                 case 35:
                     flag = 0x400000L;
-                    values = ref _headers._Expect;
+                    values = ref _headers.GetExpect();
                     nameStr = HeaderNames.Expect;
                     break;
                 case 37:
                     flag = 0x800000L;
-                    values = ref _headers._From;
+                    values = ref _headers.GetFrom();
                     nameStr = HeaderNames.From;
                     break;
                 case 38:
                     flag = 0x4L;
-                    values = ref _headers._Host;
+                    values = ref _headers.GetHost();
                     nameStr = HeaderNames.Host;
                     break;
                 case 39:
                     flag = 0x8000000L;
-                    values = ref _headers._IfMatch;
+                    values = ref _headers.GetIfMatch();
                     nameStr = HeaderNames.IfMatch;
                     break;
                 case 40:
                     flag = 0x10000000L;
-                    values = ref _headers._IfModifiedSince;
+                    values = ref _headers.GetIfModifiedSince();
                     nameStr = HeaderNames.IfModifiedSince;
                     break;
                 case 41:
                     flag = 0x20000000L;
-                    values = ref _headers._IfNoneMatch;
+                    values = ref _headers.GetIfNoneMatch();
                     nameStr = HeaderNames.IfNoneMatch;
                     break;
                 case 42:
                     flag = 0x40000000L;
-                    values = ref _headers._IfRange;
+                    values = ref _headers.GetIfRange();
                     nameStr = HeaderNames.IfRange;
                     break;
                 case 43:
                     flag = 0x80000000L;
-                    values = ref _headers._IfUnmodifiedSince;
+                    values = ref _headers.GetIfUnmodifiedSince();
                     nameStr = HeaderNames.IfUnmodifiedSince;
                     break;
                 case 47:
                     flag = 0x200000000L;
-                    values = ref _headers._MaxForwards;
+                    values = ref _headers.GetMaxForwards();
                     nameStr = HeaderNames.MaxForwards;
                     break;
                 case 49:
                     flag = 0x1000000000L;
-                    values = ref _headers._ProxyAuthorization;
+                    values = ref _headers.GetProxyAuthorization();
                     nameStr = HeaderNames.ProxyAuthorization;
                     break;
                 case 50:
                     flag = 0x2000000000L;
-                    values = ref _headers._Range;
+                    values = ref _headers.GetRange();
                     nameStr = HeaderNames.Range;
                     break;
                 case 51:
                     flag = 0x4000000000L;
-                    values = ref _headers._Referer;
+                    values = ref _headers.GetReferer();
                     nameStr = HeaderNames.Referer;
                     break;
                 case 57:
                     flag = 0x80000000000L;
-                    values = ref _headers._TransferEncoding;
+                    values = ref _headers.GetTransferEncoding();
                     nameStr = HeaderNames.TransferEncoding;
                     break;
                 case 58:
                     flag = 0x8L;
-                    values = ref _headers._UserAgent;
+                    values = ref _headers.GetUserAgent();
                     nameStr = HeaderNames.UserAgent;
                     break;
                 case 60:
                     flag = 0x800000000000L;
-                    values = ref _headers._Via;
+                    values = ref _headers.GetVia();
                     nameStr = HeaderNames.Via;
                     break;
             }
@@ -8147,12 +8767,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 case 0:
                     flag = 0x10L;
-                    values = ref _headers._Authority;
+                    values = ref _headers.GetAuthority();
                     nameStr = InternalHeaderNames.Authority;
                     break;
                 case 1:
                     flag = 0x40L;
-                    values = ref _headers._Path;
+                    values = ref _headers.GetPath();
                     nameStr = InternalHeaderNames.Path;
                     break;
                 case 4:
@@ -8169,27 +8789,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return true;
                 case 5:
                     flag = 0x80000L;
-                    values = ref _headers._Cookie;
+                    values = ref _headers.GetCookie();
                     nameStr = HeaderNames.Cookie;
                     break;
                 case 6:
                     flag = 0x200000L;
-                    values = ref _headers._Date;
+                    values = ref _headers.GetDate();
                     nameStr = HeaderNames.Date;
                     break;
                 case 8:
                     flag = 0x10000000L;
-                    values = ref _headers._IfModifiedSince;
+                    values = ref _headers.GetIfModifiedSince();
                     nameStr = HeaderNames.IfModifiedSince;
                     break;
                 case 9:
                     flag = 0x20000000L;
-                    values = ref _headers._IfNoneMatch;
+                    values = ref _headers.GetIfNoneMatch();
                     nameStr = HeaderNames.IfNoneMatch;
                     break;
                 case 13:
                     flag = 0x4000000000L;
-                    values = ref _headers._Referer;
+                    values = ref _headers.GetReferer();
                     nameStr = HeaderNames.Referer;
                     break;
                 case 15:
@@ -8200,24 +8820,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 20:
                 case 21:
                     flag = 0x20L;
-                    values = ref _headers._Method;
+                    values = ref _headers.GetMethod();
                     nameStr = InternalHeaderNames.Method;
                     break;
                 case 22:
                 case 23:
                     flag = 0x100L;
-                    values = ref _headers._Scheme;
+                    values = ref _headers.GetScheme();
                     nameStr = InternalHeaderNames.Scheme;
                     break;
                 case 29:
                 case 30:
                     flag = 0x1L;
-                    values = ref _headers._Accept;
+                    values = ref _headers.GetAccept();
                     nameStr = HeaderNames.Accept;
                     break;
                 case 31:
                     flag = 0x400L;
-                    values = ref _headers._AcceptEncoding;
+                    values = ref _headers.GetAcceptEncoding();
                     nameStr = HeaderNames.AcceptEncoding;
                     break;
                 case 36:
@@ -8227,7 +8847,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 40:
                 case 41:
                     flag = 0x20000L;
-                    values = ref _headers._CacheControl;
+                    values = ref _headers.GetCacheControl();
                     nameStr = HeaderNames.CacheControl;
                     break;
                 case 44:
@@ -8242,53 +8862,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 53:
                 case 54:
                     flag = 0x40000L;
-                    values = ref _headers._ContentType;
+                    values = ref _headers.GetContentType();
                     nameStr = HeaderNames.ContentType;
                     break;
                 case 55:
                     flag = 0x2000000000L;
-                    values = ref _headers._Range;
+                    values = ref _headers.GetRange();
                     nameStr = HeaderNames.Range;
                     break;
                 case 72:
                     flag = 0x800L;
-                    values = ref _headers._AcceptLanguage;
+                    values = ref _headers.GetAcceptLanguage();
                     nameStr = HeaderNames.AcceptLanguage;
                     break;
                 case 80:
                     flag = 0x1000L;
-                    values = ref _headers._AccessControlRequestHeaders;
+                    values = ref _headers.GetAccessControlRequestHeaders();
                     nameStr = HeaderNames.AccessControlRequestHeaders;
                     break;
                 case 81:
                 case 82:
                     flag = 0x2000L;
-                    values = ref _headers._AccessControlRequestMethod;
+                    values = ref _headers.GetAccessControlRequestMethod();
                     nameStr = HeaderNames.AccessControlRequestMethod;
                     break;
                 case 84:
                     flag = 0x8000L;
-                    values = ref _headers._Authorization;
+                    values = ref _headers.GetAuthorization();
                     nameStr = HeaderNames.Authorization;
                     break;
                 case 89:
                     flag = 0x40000000L;
-                    values = ref _headers._IfRange;
+                    values = ref _headers.GetIfRange();
                     nameStr = HeaderNames.IfRange;
                     break;
                 case 90:
                     flag = 0x400000000L;
-                    values = ref _headers._Origin;
+                    values = ref _headers.GetOrigin();
                     nameStr = HeaderNames.Origin;
                     break;
                 case 94:
                     flag = 0x400000000000L;
-                    values = ref _headers._UpgradeInsecureRequests;
+                    values = ref _headers.GetUpgradeInsecureRequests();
                     nameStr = HeaderNames.UpgradeInsecureRequests;
                     break;
                 case 95:
                     flag = 0x8L;
-                    values = ref _headers._UserAgent;
+                    values = ref _headers.GetUserAgent();
                     nameStr = HeaderNames.UserAgent;
                     break;
             }
@@ -8338,58 +8958,404 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private struct HeaderReferences
+        private partial struct HeaderReferences
         {
-            public StringValues _Accept;
+            public HeaderValue _valueAccept;
+            public StringValues _Accept
+            {
+                get => Get(ref _valueAccept, 0x1L);
+                set => Set(ref _valueAccept, value, 0x1L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAccept() => ref Get(ref _valueAccept, 0x1L);
+
             public StringValues _Connection;
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetConnection() => ref _Connection;
             public StringValues _Host;
-            public StringValues _UserAgent;
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetHost() => ref _Host;
+            public HeaderValue _valueUserAgent;
+            public StringValues _UserAgent
+            {
+                get => Get(ref _valueUserAgent, 0x8L);
+                set => Set(ref _valueUserAgent, value, 0x8L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetUserAgent() => ref Get(ref _valueUserAgent, 0x8L);
+
             public StringValues _Authority;
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAuthority() => ref _Authority;
             public StringValues _Method;
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetMethod() => ref _Method;
             public StringValues _Path;
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetPath() => ref _Path;
             public StringValues _Protocol;
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetProtocol() => ref _Protocol;
             public StringValues _Scheme;
-            public StringValues _AcceptCharset;
-            public StringValues _AcceptEncoding;
-            public StringValues _AcceptLanguage;
-            public StringValues _AccessControlRequestHeaders;
-            public StringValues _AccessControlRequestMethod;
-            public StringValues _AltUsed;
-            public StringValues _Authorization;
-            public StringValues _Baggage;
-            public StringValues _CacheControl;
-            public StringValues _ContentType;
-            public StringValues _Cookie;
-            public StringValues _CorrelationContext;
-            public StringValues _Date;
-            public StringValues _Expect;
-            public StringValues _From;
-            public StringValues _GrpcAcceptEncoding;
-            public StringValues _GrpcEncoding;
-            public StringValues _GrpcTimeout;
-            public StringValues _IfMatch;
-            public StringValues _IfModifiedSince;
-            public StringValues _IfNoneMatch;
-            public StringValues _IfRange;
-            public StringValues _IfUnmodifiedSince;
-            public StringValues _KeepAlive;
-            public StringValues _MaxForwards;
-            public StringValues _Origin;
-            public StringValues _Pragma;
-            public StringValues _ProxyAuthorization;
-            public StringValues _Range;
-            public StringValues _Referer;
-            public StringValues _RequestId;
-            public StringValues _TE;
-            public StringValues _TraceParent;
-            public StringValues _TraceState;
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetScheme() => ref _Scheme;
+            public HeaderValue _valueAcceptCharset;
+            public StringValues _AcceptCharset
+            {
+                get => Get(ref _valueAcceptCharset, 0x200L);
+                set => Set(ref _valueAcceptCharset, value, 0x200L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAcceptCharset() => ref Get(ref _valueAcceptCharset, 0x200L);
+
+            public HeaderValue _valueAcceptEncoding;
+            public StringValues _AcceptEncoding
+            {
+                get => Get(ref _valueAcceptEncoding, 0x400L);
+                set => Set(ref _valueAcceptEncoding, value, 0x400L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAcceptEncoding() => ref Get(ref _valueAcceptEncoding, 0x400L);
+
+            public HeaderValue _valueAcceptLanguage;
+            public StringValues _AcceptLanguage
+            {
+                get => Get(ref _valueAcceptLanguage, 0x800L);
+                set => Set(ref _valueAcceptLanguage, value, 0x800L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAcceptLanguage() => ref Get(ref _valueAcceptLanguage, 0x800L);
+
+            public HeaderValue _valueAccessControlRequestHeaders;
+            public StringValues _AccessControlRequestHeaders
+            {
+                get => Get(ref _valueAccessControlRequestHeaders, 0x1000L);
+                set => Set(ref _valueAccessControlRequestHeaders, value, 0x1000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAccessControlRequestHeaders() => ref Get(ref _valueAccessControlRequestHeaders, 0x1000L);
+
+            public HeaderValue _valueAccessControlRequestMethod;
+            public StringValues _AccessControlRequestMethod
+            {
+                get => Get(ref _valueAccessControlRequestMethod, 0x2000L);
+                set => Set(ref _valueAccessControlRequestMethod, value, 0x2000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAccessControlRequestMethod() => ref Get(ref _valueAccessControlRequestMethod, 0x2000L);
+
+            public HeaderValue _valueAltUsed;
+            public StringValues _AltUsed
+            {
+                get => Get(ref _valueAltUsed, 0x4000L);
+                set => Set(ref _valueAltUsed, value, 0x4000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAltUsed() => ref Get(ref _valueAltUsed, 0x4000L);
+
+            public HeaderValue _valueAuthorization;
+            public StringValues _Authorization
+            {
+                get => Get(ref _valueAuthorization, 0x8000L);
+                set => Set(ref _valueAuthorization, value, 0x8000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetAuthorization() => ref Get(ref _valueAuthorization, 0x8000L);
+
+            public HeaderValue _valueBaggage;
+            public StringValues _Baggage
+            {
+                get => Get(ref _valueBaggage, 0x10000L);
+                set => Set(ref _valueBaggage, value, 0x10000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetBaggage() => ref Get(ref _valueBaggage, 0x10000L);
+
+            public HeaderValue _valueCacheControl;
+            public StringValues _CacheControl
+            {
+                get => Get(ref _valueCacheControl, 0x20000L);
+                set => Set(ref _valueCacheControl, value, 0x20000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetCacheControl() => ref Get(ref _valueCacheControl, 0x20000L);
+
+            public HeaderValue _valueContentType;
+            public StringValues _ContentType
+            {
+                get => Get(ref _valueContentType, 0x40000L);
+                set => Set(ref _valueContentType, value, 0x40000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetContentType() => ref Get(ref _valueContentType, 0x40000L);
+
+            public HeaderValue _valueCookie;
+            public StringValues _Cookie
+            {
+                get => Get(ref _valueCookie, 0x80000L);
+                set => Set(ref _valueCookie, value, 0x80000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetCookie() => ref Get(ref _valueCookie, 0x80000L);
+
+            public HeaderValue _valueCorrelationContext;
+            public StringValues _CorrelationContext
+            {
+                get => Get(ref _valueCorrelationContext, 0x100000L);
+                set => Set(ref _valueCorrelationContext, value, 0x100000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetCorrelationContext() => ref Get(ref _valueCorrelationContext, 0x100000L);
+
+            public HeaderValue _valueDate;
+            public StringValues _Date
+            {
+                get => Get(ref _valueDate, 0x200000L);
+                set => Set(ref _valueDate, value, 0x200000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetDate() => ref Get(ref _valueDate, 0x200000L);
+
+            public HeaderValue _valueExpect;
+            public StringValues _Expect
+            {
+                get => Get(ref _valueExpect, 0x400000L);
+                set => Set(ref _valueExpect, value, 0x400000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetExpect() => ref Get(ref _valueExpect, 0x400000L);
+
+            public HeaderValue _valueFrom;
+            public StringValues _From
+            {
+                get => Get(ref _valueFrom, 0x800000L);
+                set => Set(ref _valueFrom, value, 0x800000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetFrom() => ref Get(ref _valueFrom, 0x800000L);
+
+            public HeaderValue _valueGrpcAcceptEncoding;
+            public StringValues _GrpcAcceptEncoding
+            {
+                get => Get(ref _valueGrpcAcceptEncoding, 0x1000000L);
+                set => Set(ref _valueGrpcAcceptEncoding, value, 0x1000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetGrpcAcceptEncoding() => ref Get(ref _valueGrpcAcceptEncoding, 0x1000000L);
+
+            public HeaderValue _valueGrpcEncoding;
+            public StringValues _GrpcEncoding
+            {
+                get => Get(ref _valueGrpcEncoding, 0x2000000L);
+                set => Set(ref _valueGrpcEncoding, value, 0x2000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetGrpcEncoding() => ref Get(ref _valueGrpcEncoding, 0x2000000L);
+
+            public HeaderValue _valueGrpcTimeout;
+            public StringValues _GrpcTimeout
+            {
+                get => Get(ref _valueGrpcTimeout, 0x4000000L);
+                set => Set(ref _valueGrpcTimeout, value, 0x4000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetGrpcTimeout() => ref Get(ref _valueGrpcTimeout, 0x4000000L);
+
+            public HeaderValue _valueIfMatch;
+            public StringValues _IfMatch
+            {
+                get => Get(ref _valueIfMatch, 0x8000000L);
+                set => Set(ref _valueIfMatch, value, 0x8000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetIfMatch() => ref Get(ref _valueIfMatch, 0x8000000L);
+
+            public HeaderValue _valueIfModifiedSince;
+            public StringValues _IfModifiedSince
+            {
+                get => Get(ref _valueIfModifiedSince, 0x10000000L);
+                set => Set(ref _valueIfModifiedSince, value, 0x10000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetIfModifiedSince() => ref Get(ref _valueIfModifiedSince, 0x10000000L);
+
+            public HeaderValue _valueIfNoneMatch;
+            public StringValues _IfNoneMatch
+            {
+                get => Get(ref _valueIfNoneMatch, 0x20000000L);
+                set => Set(ref _valueIfNoneMatch, value, 0x20000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetIfNoneMatch() => ref Get(ref _valueIfNoneMatch, 0x20000000L);
+
+            public HeaderValue _valueIfRange;
+            public StringValues _IfRange
+            {
+                get => Get(ref _valueIfRange, 0x40000000L);
+                set => Set(ref _valueIfRange, value, 0x40000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetIfRange() => ref Get(ref _valueIfRange, 0x40000000L);
+
+            public HeaderValue _valueIfUnmodifiedSince;
+            public StringValues _IfUnmodifiedSince
+            {
+                get => Get(ref _valueIfUnmodifiedSince, 0x80000000L);
+                set => Set(ref _valueIfUnmodifiedSince, value, 0x80000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetIfUnmodifiedSince() => ref Get(ref _valueIfUnmodifiedSince, 0x80000000L);
+
+            public HeaderValue _valueKeepAlive;
+            public StringValues _KeepAlive
+            {
+                get => Get(ref _valueKeepAlive, 0x100000000L);
+                set => Set(ref _valueKeepAlive, value, 0x100000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetKeepAlive() => ref Get(ref _valueKeepAlive, 0x100000000L);
+
+            public HeaderValue _valueMaxForwards;
+            public StringValues _MaxForwards
+            {
+                get => Get(ref _valueMaxForwards, 0x200000000L);
+                set => Set(ref _valueMaxForwards, value, 0x200000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetMaxForwards() => ref Get(ref _valueMaxForwards, 0x200000000L);
+
+            public HeaderValue _valueOrigin;
+            public StringValues _Origin
+            {
+                get => Get(ref _valueOrigin, 0x400000000L);
+                set => Set(ref _valueOrigin, value, 0x400000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetOrigin() => ref Get(ref _valueOrigin, 0x400000000L);
+
+            public HeaderValue _valuePragma;
+            public StringValues _Pragma
+            {
+                get => Get(ref _valuePragma, 0x800000000L);
+                set => Set(ref _valuePragma, value, 0x800000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetPragma() => ref Get(ref _valuePragma, 0x800000000L);
+
+            public HeaderValue _valueProxyAuthorization;
+            public StringValues _ProxyAuthorization
+            {
+                get => Get(ref _valueProxyAuthorization, 0x1000000000L);
+                set => Set(ref _valueProxyAuthorization, value, 0x1000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetProxyAuthorization() => ref Get(ref _valueProxyAuthorization, 0x1000000000L);
+
+            public HeaderValue _valueRange;
+            public StringValues _Range
+            {
+                get => Get(ref _valueRange, 0x2000000000L);
+                set => Set(ref _valueRange, value, 0x2000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetRange() => ref Get(ref _valueRange, 0x2000000000L);
+
+            public HeaderValue _valueReferer;
+            public StringValues _Referer
+            {
+                get => Get(ref _valueReferer, 0x4000000000L);
+                set => Set(ref _valueReferer, value, 0x4000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetReferer() => ref Get(ref _valueReferer, 0x4000000000L);
+
+            public HeaderValue _valueRequestId;
+            public StringValues _RequestId
+            {
+                get => Get(ref _valueRequestId, 0x8000000000L);
+                set => Set(ref _valueRequestId, value, 0x8000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetRequestId() => ref Get(ref _valueRequestId, 0x8000000000L);
+
+            public HeaderValue _valueTE;
+            public StringValues _TE
+            {
+                get => Get(ref _valueTE, 0x10000000000L);
+                set => Set(ref _valueTE, value, 0x10000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetTE() => ref Get(ref _valueTE, 0x10000000000L);
+
+            public HeaderValue _valueTraceParent;
+            public StringValues _TraceParent
+            {
+                get => Get(ref _valueTraceParent, 0x20000000000L);
+                set => Set(ref _valueTraceParent, value, 0x20000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetTraceParent() => ref Get(ref _valueTraceParent, 0x20000000000L);
+
+            public HeaderValue _valueTraceState;
+            public StringValues _TraceState
+            {
+                get => Get(ref _valueTraceState, 0x40000000000L);
+                set => Set(ref _valueTraceState, value, 0x40000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetTraceState() => ref Get(ref _valueTraceState, 0x40000000000L);
+
             public StringValues _TransferEncoding;
-            public StringValues _Translate;
-            public StringValues _Upgrade;
-            public StringValues _UpgradeInsecureRequests;
-            public StringValues _Via;
-            public StringValues _Warning;
-            
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetTransferEncoding() => ref _TransferEncoding;
+            public HeaderValue _valueTranslate;
+            public StringValues _Translate
+            {
+                get => Get(ref _valueTranslate, 0x100000000000L);
+                set => Set(ref _valueTranslate, value, 0x100000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetTranslate() => ref Get(ref _valueTranslate, 0x100000000000L);
+
+            public HeaderValue _valueUpgrade;
+            public StringValues _Upgrade
+            {
+                get => Get(ref _valueUpgrade, 0x200000000000L);
+                set => Set(ref _valueUpgrade, value, 0x200000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetUpgrade() => ref Get(ref _valueUpgrade, 0x200000000000L);
+
+            public HeaderValue _valueUpgradeInsecureRequests;
+            public StringValues _UpgradeInsecureRequests
+            {
+                get => Get(ref _valueUpgradeInsecureRequests, 0x400000000000L);
+                set => Set(ref _valueUpgradeInsecureRequests, value, 0x400000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetUpgradeInsecureRequests() => ref Get(ref _valueUpgradeInsecureRequests, 0x400000000000L);
+
+            public HeaderValue _valueVia;
+            public StringValues _Via
+            {
+                get => Get(ref _valueVia, 0x800000000000L);
+                set => Set(ref _valueVia, value, 0x800000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetVia() => ref Get(ref _valueVia, 0x800000000000L);
+
+            public HeaderValue _valueWarning;
+            public StringValues _Warning
+            {
+                get => Get(ref _valueWarning, 0x1000000000000L);
+                set => Set(ref _valueWarning, value, 0x1000000000000L);
+            }
+            [System.Diagnostics.CodeAnalysis.UnscopedRef]
+            public ref StringValues GetWarning() => ref Get(ref _valueWarning, 0x1000000000000L);
+
+            private byte[]? _bytes;
+            private int _used;
+            public long RawBits;
         }
 
         public partial struct Enumerator
@@ -8655,7 +9621,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             _current = default(KeyValuePair<string, StringValues>);
                             return false;
                         }
-                        _current = _unknownEnumerator.Current;
+                        var key = _unknownEnumerator.Current.Key;
+                        StringValues value = default;
+                        _collection.TryGetUnknown(key, ref value);
+                        _current = new KeyValuePair<string, StringValues>(key, value);
                         return true;
                 }
 
@@ -10871,6 +11840,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (MaybeUnknown?.Count ?? 0);
         }
+
 
         protected override bool TryGetValueFast(string key, out StringValues value)
         {
@@ -15234,7 +16204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _Via;
             public StringValues _Warning;
             public StringValues _WWWAuthenticate;
-            
+
             public byte[]? _rawConnection;
             public byte[]? _rawDate;
             public byte[]? _rawServer;
@@ -17169,6 +18139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (MaybeUnknown?.Count ?? 0);
         }
 
+
         protected override bool TryGetValueFast(string key, out StringValues value)
         {
             value = default;
@@ -17575,7 +18546,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _ETag;
             public StringValues _GrpcMessage;
             public StringValues _GrpcStatus;
-            
+
         }
 
         public partial struct Enumerator

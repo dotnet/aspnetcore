@@ -1,0 +1,20 @@
+{
+  "crankCommit": "0d35cad5102892b091d9a88a52ea1f7a91bb1381",
+  "wrkCommit": "a211dd5a7050b1f9e8a9870b95513060e72ac4a0",
+  "shippingHead": "651a4e198ff654bcb19d3a81af23055f9503c97b",
+  "shippingBase": "2d105dd1fd119edff9a797a1b1aeca6d771c6134",
+  "sha256": {
+    "wrk": "d689dd6384794d71132d6f33b7377a6da6e9e73455d1c66d02d1583d0b73d446",
+    "controller": "d920e893fc7f295d36509166b8fe41e0212b4380eb6b1a1ebef639e91735ad88",
+    "agent": "50ece87ac8f20303a0160375a140fab6ab76a33953d33b58cdb08d9267b61da8",
+    "wrapper": "40b8f503a8c10b826bfa73b2d6272d32a59d3ecd84b7157b73d34524a12e6df7",
+    "head_core": "12673a338e7c884ddf126ca292e5e61be70df750c6ae23d44cc85751aeba9d31",
+    "base_core": "7175498ad5d77f11fa7672fe89bf4a51ad7a8b8410ed1cbc4c85906ee1fe27f5",
+    "lua": "22741e5a9d198971df450fe14f865257b5cd03394625c84ec61d488296d154aa"
+  },
+  "wrappingRuntime": "net10.0 SDK10.0.402/runtime10.0.13",
+  "serverRuntime": "net12.0 12.0.0-alpha.1.26473.114",
+  "environment": "Shared two-core container; server, agent and wrk on loopback",
+  "pilot": "178344 measured requests,35653.49 RPS (see exact raw result),zero bad/socket errors; feasibility only",
+  "failedAttempts": "Preserved clone-SHA failure, stale source-key cache/project-path failures, runner-envelope parser failure after actual successful pilot, and initial primary matrix stopped on16 off-path timeouts. Subsequent fixed-settings primary matrix completed60runs with10s timeout and zero bad/socket errors; no failed results omitted."
+}
