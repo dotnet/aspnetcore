@@ -113,17 +113,21 @@ public class CorsService : ICorsService
         result.PreflightMaxAge = policy.PreflightMaxAge;
 
         // https://fetch.spec.whatwg.org/#http-new-header-syntax
-        AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
+        result.AddAllowedExposedHeaders(policy.ExposedHeaders);
 
-        var allowedMethods = policy.AllowAnyMethod ?
-            new[] { result.IsPreflightRequest ? headers.AccessControlRequestMethod.ToString() : context.Request.Method } :
-            policy.Methods;
-        AddHeaderValues(result.AllowedMethods, allowedMethods);
+        if (policy.AllowAnyMethod)
+        {
+            result.AddAllowedMethod(result.IsPreflightRequest ? headers.AccessControlRequestMethod.ToString() : context.Request.Method);
+        }
+        else
+        {
+            result.AddAllowedMethods(policy.Methods);
+        }
 
         var allowedHeaders = policy.AllowAnyHeader ?
             headers.GetCommaSeparatedValues(CorsConstants.AccessControlRequestHeaders) :
             policy.Headers;
-        AddHeaderValues(result.AllowedHeaders, allowedHeaders);
+        result.AddAllowedHeaders(allowedHeaders);
     }
 
     /// <summary>
@@ -175,14 +179,14 @@ public class CorsService : ICorsService
 
             // An HTTP response to a CORS-preflight request can include the following headers:
             // `Access-Control-Allow-Methods`, `Access-Control-Allow-Headers`, `Access-Control-Max-Age`
-            if (result.AllowedHeaders.Count > 0)
+            if (result.AllowedHeadersOrNull is { Count: > 0 } allowedHeaders)
             {
-                headers.SetCommaSeparatedValues(CorsConstants.AccessControlAllowHeaders, result.AllowedHeaders.ToArray());
+                headers.SetCommaSeparatedValues(CorsConstants.AccessControlAllowHeaders, allowedHeaders.ToArray());
             }
 
-            if (result.AllowedMethods.Count > 0)
+            if (result.AllowedMethodsOrNull is { Count: > 0 } allowedMethods)
             {
-                headers.SetCommaSeparatedValues(CorsConstants.AccessControlAllowMethods, result.AllowedMethods.ToArray());
+                headers.SetCommaSeparatedValues(CorsConstants.AccessControlAllowMethods, allowedMethods.ToArray());
             }
 
             if (result.PreflightMaxAge.HasValue)
@@ -194,28 +198,15 @@ public class CorsService : ICorsService
         {
             // An HTTP response to a CORS request that is not a CORS-preflight request can also include the following header:
             // `Access-Control-Expose-Headers`
-            if (result.AllowedExposedHeaders.Count > 0)
+            if (result.AllowedExposedHeadersOrNull is { Count: > 0 } allowedExposedHeaders)
             {
-                headers.SetCommaSeparatedValues(CorsConstants.AccessControlExposeHeaders, result.AllowedExposedHeaders.ToArray());
+                headers.SetCommaSeparatedValues(CorsConstants.AccessControlExposeHeaders, allowedExposedHeaders.ToArray());
             }
         }
 
         if (result.VaryByOrigin)
         {
             headers.Append(HeaderNames.Vary, "Origin");
-        }
-    }
-
-    private static void AddHeaderValues(IList<string> target, IList<string> headerValues)
-    {
-        if (headerValues == null)
-        {
-            return;
-        }
-
-        for (var i = 0; i < headerValues.Count; i++)
-        {
-            target.Add(headerValues[i]);
         }
     }
 
