@@ -511,7 +511,7 @@ if (typeof jQuery === 'undefined') {
     var $this   = $(this)
     var href    = $this.attr('href')
     if (href) {
-      href = href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+      href = href && href.indexOf('#') !== -1 ? href.slice(href.lastIndexOf('#')) : href 
     }
 
     var target  = $this.attr('data-target') || href
@@ -705,7 +705,7 @@ if (typeof jQuery === 'undefined') {
   function getTargetFromTrigger($trigger) {
     var href
     var target = $trigger.attr('data-target')
-      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+      || ((href = $trigger.attr('href')) && (href.indexOf('#') !== -1 ? href.slice(href.lastIndexOf('#')) : href)) // strip for ie7 (safe)
 
     return $(document).find(target)
   }
@@ -1265,7 +1265,8 @@ if (typeof jQuery === 'undefined') {
     var $this = $(this)
     var href = $this.attr('href')
     var target = $this.attr('data-target') ||
-      (href && href.replace(/.*(?=#[^\s]+$)/, '')) // strip for ie7
+      //(href && href.replace(/.*(?=#[^\s]+$)/, '')) // strip for ie7
+      (href && href.replace(/^[^#]*(?=#\S+$)/, '')) // strip for ie7 - safe
 
     var $target = $(document).find(target)
     var option = $target.data('bs.modal') ? 'toggle' : $.extend({ remote: !/#/.test(href) && href }, $target.data(), $this.data())
