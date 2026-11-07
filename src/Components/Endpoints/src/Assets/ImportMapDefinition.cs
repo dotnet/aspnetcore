@@ -205,7 +205,7 @@ public sealed class ImportMapDefinition
 
     internal string ToJson()
     {
-        _json ??= JsonSerializer.Serialize(this, ImportMapSerializerContext.CustomEncoder.Options);
+        _json ??= JsonSerializer.Serialize(this, ImportMapSerializerContext.CustomEncoder.ImportMapDefinition);
         return _json;
     }
 
