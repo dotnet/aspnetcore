@@ -405,6 +405,88 @@ public class HttpRequestHeadersTests
     }
 
     [Theory]
+    [InlineData("custom\0name")]
+    [InlineData("\0")]
+    public void AppendThrowsWhenUnknownHeaderNameContainsNullCharacter(string key)
+    {
+        var headers = new HttpRequestHeaders();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(
+#pragma warning restore CS0618 // Type or member is obsolete
+                () => headers.Append(Encoding.ASCII.GetBytes(key), Encoding.ASCII.GetBytes("value"), checkForNewlineChars: false));
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("DNT")]
+    [InlineData("dnt")]
+    [InlineData("Dnt")]
+    public void AppendUnknownInternedHeaderUsesInternedName(string headerName)
+    {
+        var headers = new HttpRequestHeaders();
+        headers.Append(Encoding.ASCII.GetBytes(headerName), Encoding.ASCII.GetBytes("1"), checkForNewlineChars: false);
+        headers.Append(Encoding.ASCII.GetBytes(headerName.ToUpperInvariant()), Encoding.ASCII.GetBytes("0"), checkForNewlineChars: false);
+        headers.OnHeadersComplete();
+
+        var header = Assert.Single(headers);
+        Assert.Same(HeaderNames.DNT, header.Key);
+        Assert.Equal(new[] { "1", "0" }, header.Value.ToArray());
+    }
+
+    [Theory]
+    [InlineData("X-Custom-Header")]
+    [InlineData("x-custom-header")]
+    public void AppendUnknownHeaderPreservesFirstReceivedName(string headerName)
+    {
+        var headers = new HttpRequestHeaders();
+        headers.Append(Encoding.ASCII.GetBytes(headerName), Encoding.ASCII.GetBytes("a"), checkForNewlineChars: false);
+        headers.Append(Encoding.ASCII.GetBytes(headerName.ToUpperInvariant()), Encoding.ASCII.GetBytes("b"), checkForNewlineChars: false);
+        headers.OnHeadersComplete();
+
+        var header = Assert.Single(headers);
+        Assert.Equal(headerName, header.Key);
+        Assert.Equal(new[] { "a", "b" }, header.Value.ToArray());
+    }
+
+    [Theory]
+    [InlineData(63)]
+    [InlineData(64)]
+    [InlineData(65)]
+    [InlineData(1000)]
+    public void AppendUnknownHeaderWithLongName(int nameLength)
+    {
+        var headerName = "X-" + new string('a', nameLength - 2);
+        var headers = new HttpRequestHeaders();
+        headers.Append(Encoding.ASCII.GetBytes(headerName), Encoding.ASCII.GetBytes("value"), checkForNewlineChars: false);
+        headers.OnHeadersComplete();
+
+        var header = Assert.Single(headers);
+        Assert.Equal(headerName, header.Key);
+        Assert.Equal("value", header.Value.ToString());
+    }
+
+    [Theory]
+    [InlineData("DNT")]
+    [InlineData("dnt")]
+    [InlineData("X-Custom-Header")]
+    public void EncodingSelectorReceivesReceivedNameForUnknownHeaders(string headerName)
+    {
+        var selectorNames = new List<string>();
+        var headers = new HttpRequestHeaders(encodingSelector: name =>
+        {
+            selectorNames.Add(name);
+            return Encoding.UTF8;
+        });
+
+        headers.Append(Encoding.ASCII.GetBytes(headerName), Encoding.UTF8.GetBytes("\u03a0"), checkForNewlineChars: false);
+        headers.OnHeadersComplete();
+
+        Assert.Equal(headerName, Assert.Single(selectorNames));
+        Assert.Equal("\u03a0", Assert.Single(headers).Value.ToString());
+    }
+
+    [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
     public void ValueReuseOnlyWhenAllowed(bool reuseValue, string headerName)
     {

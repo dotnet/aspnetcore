@@ -1330,11 +1330,7 @@ $@"        private void Clear(long bitsToClear)
             else
             {{
                 // The header was not one of the ""known"" headers.
-                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
-                // this method with rep stosd, which is slower than necessary.
-                nameStr = name.GetHeaderName();
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
-                AppendUnknownHeaders(nameStr, valueStr);
+                AppendUnknownHeader(name, value, checkForNewlineChars);
             }}
         }}
 
