@@ -85,6 +85,8 @@ public class MessagePackHubProtocol implements HubProtocol {
             } catch (IOException ex) {
                 throw new RuntimeException("Error reading length header.", ex);
             }
+            ByteBuffer messagePayload = payload.duplicate();
+            ((Buffer) messagePayload).limit(payload.position() + length);
             // Instantiate MessageUnpacker
             try(MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payload)) {
 
@@ -93,16 +95,16 @@ public class MessagePackHubProtocol implements HubProtocol {
 
                 switch (messageType) {
                     case INVOCATION:
-                        hubMessages.add(createInvocationMessage(unpacker, binder, itemCount, payload));
+                        hubMessages.add(createInvocationMessage(unpacker, binder, itemCount, messagePayload));
                         break;
                     case STREAM_ITEM:
-                        hubMessages.add(createStreamItemMessage(unpacker, binder, payload));
+                        hubMessages.add(createStreamItemMessage(unpacker, binder, messagePayload));
                         break;
                     case COMPLETION:
-                        hubMessages.add(createCompletionMessage(unpacker, binder, payload));
+                        hubMessages.add(createCompletionMessage(unpacker, binder, messagePayload));
                         break;
                     case STREAM_INVOCATION:
-                        hubMessages.add(createStreamInvocationMessage(unpacker, binder, itemCount, payload));
+                        hubMessages.add(createStreamInvocationMessage(unpacker, binder, itemCount, messagePayload));
                         break;
                     case CANCEL_INVOCATION:
                         hubMessages.add(createCancelInvocationMessage(unpacker));
@@ -575,6 +577,9 @@ public class MessagePackHubProtocol implements HubProtocol {
                 break;
             case BINARY:
                 length = unpacker.unpackBinaryHeader();
+                if (length > payload.remaining() - unpacker.getTotalReadBytes()) {
+                    throw new IOException("Binary value length exceeds the remaining message length.");
+                }
                 byte[] binaryValue = new byte[length];
                 unpacker.readPayload(binaryValue);
                 item = binaryValue;

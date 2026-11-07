@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -18,6 +19,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.microsoft.signalr.messagepack.MessagePackHubProtocol;
 
@@ -526,6 +529,83 @@ class MessagePackHubProtocolTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> messagePackHubProtocol.parseMessages(message, binder));
         assertEquals("MessagePack message was length 12 but claimed to be length 13.", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 256, 65536, Integer.MAX_VALUE})
+    public void invocationBindingFailureWhenBinaryLengthExceedsRemainingBytes(int length) {
+        byte[] messageBytes = {0x10, (byte) 0x95, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74,
+            (byte) 0x91, (byte) 0xC6, 0x00, 0x00, 0x00, 0x00, 0x2A};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        message.putInt(12, length);
+        TestBinder binder = new TestBinder(new Type[] { byte[].class }, null);
+
+        List<HubMessage> messages;
+        try {
+            messages = messagePackHubProtocol.parseMessages(message, binder);
+        } catch (OutOfMemoryError ex) {
+            throw new AssertionError("Binary length must be validated before allocation.", ex);
+        }
+
+        assertEquals(1, messages.size());
+        assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
+        InvocationBindingFailureMessage failure = (InvocationBindingFailureMessage) messages.get(0);
+        assertEquals("Binary value length exceeds the remaining message length.", failure.getException().getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void binaryLengthCannotIncludeNextMessage(boolean readOnly) {
+        byte[] messageBytes = {0x0D, (byte) 0x95, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74,
+            (byte) 0x91, (byte) 0xC4, 0x04, 0x2A, 0x02, (byte) 0x91, 0x06};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        TestBinder binder = new TestBinder(new Type[] { byte[].class }, null);
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(readOnly ? message.asReadOnlyBuffer() : message, binder);
+
+        assertEquals(2, messages.size());
+        assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
+        InvocationBindingFailureMessage failure = (InvocationBindingFailureMessage) messages.get(0);
+        assertEquals("Binary value length exceeds the remaining message length.", failure.getException().getMessage());
+        assertEquals(HubMessageType.PING, messages.get(1).getMessageType());
+    }
+
+    @Test
+    public void invocationBindingFailureWhenNestedBinaryLengthExceedsRemainingBytes() {
+        byte[] messageBytes = {0x0E, (byte) 0x95, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74,
+            (byte) 0x91, (byte) 0x91, (byte) 0xC5, 0x01, 0x00};
+        TestBinder binder = new TestBinder(new Type[] { byte[][].class }, null);
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(ByteBuffer.wrap(messageBytes), binder);
+
+        assertEquals(1, messages.size());
+        assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
+        InvocationBindingFailureMessage failure = (InvocationBindingFailureMessage) messages.get(0);
+        assertEquals("Binary value length exceeds the remaining message length.", failure.getException().getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 3})
+    public void parseBinaryValueAtMessageBoundary(int length) {
+        ByteBuffer message = ByteBuffer.allocate(16 + length);
+        message.put(new byte[] {(byte) (12 + length), (byte) 0x95, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4,
+            0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0xC4, (byte) length});
+        byte[] expected = new byte[length];
+        for (int i = 0; i < length; i++) {
+            expected[i] = (byte) (i + 1);
+        }
+        message.put(expected);
+        message.put(new byte[] {0x02, (byte) 0x91, 0x06});
+        message.flip();
+        TestBinder binder = new TestBinder(new Type[] { byte[].class }, null);
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
+
+        assertEquals(2, messages.size());
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+        InvocationMessage invocation = (InvocationMessage) messages.get(0);
+        assertArrayEquals(expected, (byte[]) invocation.getArguments()[0]);
+        assertEquals(HubMessageType.PING, messages.get(1).getMessageType());
     }
 
     @Test
