@@ -1,4 +1,4 @@
-﻿customElements.define('current-user-details-signal', class extends HTMLElement {
+customElements.define('current-user-details-signal', class extends HTMLElement {
     static observedAttributes = ['options'];
 
     connectedCallback() {
