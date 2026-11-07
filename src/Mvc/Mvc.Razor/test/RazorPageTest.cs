@@ -1402,6 +1402,40 @@ public class RazorPageTest
         return view.Object;
     }
 
+    [Fact]
+    public void EndWriteAttribute_ClearsAttributeInfo_PreventingTagHelperPrefixPollution()
+    {
+        // Arrange
+        var page = CreatePage(p => { });
+        page.HtmlEncoder = new HtmlTestEncoder();
+        var writer = new StringWriter();
+
+        // Act
+        page.PushWriter(writer);
+
+        // 1. Simulate writing a normal dynamic HTML attribute (e.g. dir="@Model.Dir")
+        page.BeginWriteAttribute("dir", " dir=\"", 0, "\"", 0, 1);
+        page.WriteAttributeValue("", 0, "ltr", 0, 3, isLiteral: true);
+        page.EndWriteAttribute(); // <--- This clears _attributeInfo
+
+        // 2. Simulate Razor engine emitting a TagHelper attribute containing the @@ escape sequence
+        page.BeginWriteTagHelperAttribute();
+        
+        // If _attributeInfo was not cleared in EndWriteAttribute(), a state pollution occurs here.
+        // WriteAttributeValue would incorrectly inject the previous prefix (" dir=\"") into this buffer.
+        page.WriteAttributeValue("", 0, "~/node_modules/", 0, 15, isLiteral: true);
+        page.WriteLiteral("@");
+        page.WriteAttributeValue("", 0, "aiursoft", 0, 8, isLiteral: true);
+        
+        var tagHelperContent = page.EndWriteTagHelperAttribute();
+
+        page.PopWriter();
+
+        // Assert
+        Assert.Equal(" dir=\"ltr\"", writer.ToString());
+        Assert.Equal("~/node_modules/@aiursoft", tagHelperContent);
+    }
+
     private static ViewContext CreateViewContext(
         TextWriter writer = null,
         IViewBufferScope bufferScope = null,
