@@ -24,7 +24,8 @@ public class DefaultModelBindingContext : ModelBindingContext
     private int? _maxModelBindingRecursionDepth;
 
     private State _state;
-    private readonly Stack<State> _stack = new Stack<State>();
+    // Perf: Lazily allocated. Most models are bound with a single level of nesting so start with a small capacity.
+    private Stack<State>? _stack;
 
     /// <inheritdoc />
     public override ActionContext ActionContext
@@ -277,14 +278,15 @@ public class DefaultModelBindingContext : ModelBindingContext
     /// <inheritdoc />
     public override NestedScope EnterNestedScope()
     {
-        _stack.Push(_state);
+        var stack = _stack ??= new Stack<State>(1);
+        stack.Push(_state);
 
         // Would this new scope (which isn't in _stack) exceed the allowed recursion depth? That is, has the model
         // binding system already nested MaxModelBindingRecursionDepth binders?
-        if (_stack.Count >= MaxModelBindingRecursionDepth)
+        if (stack.Count >= MaxModelBindingRecursionDepth)
         {
             // Find the root of this deeply-nested model.
-            var states = _stack.ToArray();
+            var states = stack.ToArray();
             var rootModelType = states[states.Length - 1].ModelMetadata.ModelType;
 
             throw new InvalidOperationException(Resources.FormatModelBinding_ExceededMaxModelBindingRecursionDepth(
@@ -302,7 +304,9 @@ public class DefaultModelBindingContext : ModelBindingContext
     /// <inheritdoc />
     protected override void ExitNestedScope()
     {
-        _state = _stack.Pop();
+        // NestedScope can be constructed and disposed without EnterNestedScope having been called. Popping an
+        // empty stack preserves the InvalidOperationException thrown in that case.
+        _state = (_stack ??= new Stack<State>(1)).Pop();
     }
 
     private static IValueProvider FilterValueProvider(IValueProvider valueProvider, BindingSource? bindingSource)
