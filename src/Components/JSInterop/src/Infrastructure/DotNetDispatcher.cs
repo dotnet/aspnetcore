@@ -284,7 +284,8 @@ public static class DotNetDispatcher
                     jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
                 {
                     // The JSON payload has the shape we expect from a DotNetObjectRef instance.
-                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
+                    return parameterType != typeof(CancellationToken)
+                        && (!parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>));
                 }
 
                 return false;

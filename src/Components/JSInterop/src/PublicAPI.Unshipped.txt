@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.JSInterop.JSCancellationTokenReference
+Microsoft.JSInterop.JSCancellationTokenReference.CancelAsync() -> System.Threading.Tasks.Task!
+Microsoft.JSInterop.JSCancellationTokenReference.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.JSCancellationTokenReference.Token.get -> System.Threading.CancellationToken
+static Microsoft.JSInterop.JSCancellationTokenReference.Create(Microsoft.JSInterop.IJSObjectReference! signal, bool isAborted) -> Microsoft.JSInterop.DotNetObjectReference<Microsoft.JSInterop.JSCancellationTokenReference!>!
