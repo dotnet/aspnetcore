@@ -271,7 +271,30 @@ public class CacheViewKeyResolverTest
     }
 
     [Fact]
-    public void ComputeKey_VaryByUser_DistinguishesByAuthenticationType()
+    public void ComputeKey_VaryByUser_PrefersSubOverNameIdentifier()
+    {
+        var component = CreateComponent(varyByUser: true);
+        var firstContext = CreateHttpContext(user: new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "shared-name-identifier"),
+                new Claim("sub", "subject-1"),
+            ],
+            "Test")));
+        var secondContext = CreateHttpContext(user: new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "shared-name-identifier"),
+                new Claim("sub", "subject-2"),
+            ],
+            "Test")));
+
+        var firstKey = CacheViewKeyResolver.ComputeKey(component, firstContext);
+        var secondKey = CacheViewKeyResolver.ComputeKey(component, secondContext);
+
+        Assert.NotEqual(firstKey, secondKey);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByUser_DoesNotVaryByAuthenticationType()
     {
         var component = CreateComponent(varyByUser: true);
         var ctxCookie = CreateHttpContext(nameIdentifier: "shared-id", authType: "Cookies");
@@ -280,7 +303,7 @@ public class CacheViewKeyResolverTest
         var keyCookie = CacheViewKeyResolver.ComputeKey(component, ctxCookie);
         var keyBearer = CacheViewKeyResolver.ComputeKey(component, ctxBearer);
 
-        Assert.NotEqual(keyCookie, keyBearer);
+        Assert.Equal(keyCookie, keyBearer);
     }
 
     [Fact]
@@ -431,6 +454,43 @@ public class CacheViewKeyResolverTest
         Assert.NotEqual(keyAlice, keyBob);
     }
 
+    [Fact]
+    public void ComputeKey_VaryByUser_FallbackIgnoresUnauthenticatedClaimsAndClaimOrder()
+    {
+        var component = CreateComponent(varyByUser: true);
+        var firstContext = CreateHttpContext(user: new ClaimsPrincipal(
+        [
+            new ClaimsIdentity([new Claim("type-b", "value-b")], "Test"),
+            new ClaimsIdentity([new Claim("type-a", "value-a")], "Test"),
+            new ClaimsIdentity([new Claim("type-c", "ignored")]),
+        ]));
+        var secondContext = CreateHttpContext(user: new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("type-a", "value-a"),
+            new Claim("type-b", "value-b"),
+        ],
+        "Test")));
+
+        var firstKey = CacheViewKeyResolver.ComputeKey(component, firstContext);
+        var secondKey = CacheViewKeyResolver.ComputeKey(component, secondContext);
+
+        Assert.Equal(firstKey, secondKey);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByUser_DistinguishesAnonymousFromAuthenticatedWithoutClaims()
+    {
+        var component = CreateComponent(varyByUser: true);
+        var anonymousContext = CreateHttpContext();
+        var authenticatedWithoutClaims = CreateHttpContext(user: new ClaimsPrincipal(
+            new ClaimsIdentity(authenticationType: "Test")));
+
+        var anonymousKey = CacheViewKeyResolver.ComputeKey(component, anonymousContext);
+        var authenticatedWithoutClaimsKey = CacheViewKeyResolver.ComputeKey(component, authenticatedWithoutClaims);
+
+        Assert.NotEqual(anonymousKey, authenticatedWithoutClaimsKey);
+    }
+
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
 
     private static CacheView CreateComponent(
@@ -469,9 +529,11 @@ public class CacheViewKeyResolverTest
         string userName = null,
         string nameIdentifier = null,
         string nameIdentifierIssuer = null,
-        string authType = "test")
+        string authType = "test",
+        ClaimsPrincipal user = null)
     {
         var httpContext = new DefaultHttpContext();
+        httpContext.User = user ?? httpContext.User;
 
         if (queryString is not null)
         {
