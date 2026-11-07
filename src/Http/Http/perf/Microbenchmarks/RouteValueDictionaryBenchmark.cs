@@ -11,8 +11,7 @@ public class RouteValueDictionaryBenchmark
     private RouteValueDictionary _propertyValues;
     private RouteValueDictionary _arrayValuesEmpty;
 
-    // We modify the route value dictionaries in many of these benchmarks.
-    [IterationSetup]
+    [GlobalSetup]
     public void Setup()
     {
         _arrayValues = new RouteValueDictionary()
@@ -94,7 +93,7 @@ public class RouteValueDictionaryBenchmark
     public void TryAdd_Properties_AtCapacity_KeyDoesNotExist()
     {
         var propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17", area = "root" });
-        _propertyValues.TryAdd("name", "Service");
+        propertyValues.TryAdd("name", "Service");
     }
 
     [Benchmark]
@@ -108,7 +107,7 @@ public class RouteValueDictionaryBenchmark
     public void TryAdd_Properties_NotAtCapacity_KeyDoesNotExist()
     {
         var propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17" });
-        _propertyValues.TryAdd("name", "Service");
+        propertyValues.TryAdd("name", "Service");
     }
 
     [Benchmark]
@@ -191,7 +190,12 @@ public class RouteValueDictionaryBenchmark
     [Benchmark]
     public RouteValueDictionary ConditionalAdd_ContainsKey_Array()
     {
-        var dictionary = _arrayValues;
+        var dictionary = new RouteValueDictionary()
+            {
+                { "action", "Index" },
+                { "controller", "Home" },
+                { "id", "17" },
+            };
 
         if (!dictionary.ContainsKey("action"))
         {
@@ -214,7 +218,12 @@ public class RouteValueDictionaryBenchmark
     [Benchmark]
     public RouteValueDictionary ConditionalAdd_TryAdd()
     {
-        var dictionary = _arrayValues;
+        var dictionary = new RouteValueDictionary()
+            {
+                { "action", "Index" },
+                { "controller", "Home" },
+                { "id", "17" },
+            };
 
         dictionary.TryAdd("action", "Index");
         dictionary.TryAdd("controller", "Home");
