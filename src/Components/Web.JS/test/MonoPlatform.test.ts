@@ -15,8 +15,8 @@ describe('MonoPlatform setProgress', () => {
   beforeEach(async () => {
     jest.resetModules();
     setPropertyCalls = [];
-    jest.spyOn(document.documentElement.style, 'setProperty').mockImplementation((name: string, value: string) => {
-      setPropertyCalls.push([name, value]);
+    jest.spyOn(document.documentElement.style, 'setProperty').mockImplementation((name: string, value: string | null) => {
+      setPropertyCalls.push([name, value ?? '']);
     });
     ({ setProgress } = await import('../src/Platform/Mono/MonoPlatform'));
   });
