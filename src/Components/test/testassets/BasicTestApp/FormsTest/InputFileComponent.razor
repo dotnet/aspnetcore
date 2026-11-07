@@ -19,6 +19,13 @@ Max allowed files:
 <span id="file-count">@loadedFiles.Count</span>
 <span id="exception-message">@exceptionMessage</span>
 
+<h2>Dynamic input type</h2>
+
+<input id="dynamic-file-input" type="@dynamicFileInputType" value="hello" />
+<input id="dynamic-non-file-input" type="@dynamicNonFileInputType" value="hello" />
+<button id="change-dynamic-input-types" @onclick="ChangeDynamicInputTypes">Change input types</button>
+<span id="dynamic-file-input-type">@dynamicFileInputType</span>
+
 @if (isLoading)
 {
     <p>Loading...</p>
@@ -68,6 +75,16 @@ Max allowed files:
     string imageDataUri;
 
     string exceptionMessage;
+
+    string dynamicFileInputType = "text";
+
+    string dynamicNonFileInputType = "text";
+
+    void ChangeDynamicInputTypes()
+    {
+        dynamicFileInputType = "file";
+        dynamicNonFileInputType = "password";
+    }
 
     async Task LoadFiles(InputFileChangeEventArgs e)
     {
