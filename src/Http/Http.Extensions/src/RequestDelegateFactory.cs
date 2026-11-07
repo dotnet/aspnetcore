@@ -2230,6 +2230,13 @@ public static partial class RequestDelegateFactory
         var setMaxCollectionSizeExpr = Expression.Assign(
             Expression.Property(formReader, nameof(FormDataReader.MaxCollectionSize)),
             Expression.Constant(formDataMapperOptions.MaxCollectionSize));
+        var isFormFileList = parameter.ParameterType == typeof(IReadOnlyList<IFormFile>);
+        Expression pushFormFileListPrefixExpr = isFormFileList
+            ? Expression.Call(formReader, nameof(FormDataReader.PushPrefix), Type.EmptyTypes, Expression.Constant(key))
+            : Expression.Empty();
+        Expression popFormFileListPrefixExpr = isFormFileList
+            ? Expression.Call(formReader, nameof(FormDataReader.PopPrefix), Type.EmptyTypes, Expression.Constant(key))
+            : Expression.Empty();
         // FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         var invokeMapMethodExpr = Expression.Call(
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
@@ -2280,7 +2287,9 @@ public static partial class RequestDelegateFactory
                     initializeReaderExpr,
                     setMaxRecursionDepthExpr,
                     setMaxCollectionSizeExpr,
-                    Expression.Assign(formArgument, invokeMapMethodExpr)),
+                    pushFormFileListPrefixExpr,
+                    Expression.Assign(formArgument, invokeMapMethodExpr),
+                    popFormFileListPrefixExpr),
                 conditionalReturnBufferExpr,
                 Expression.Catch(formDataMappingException, Expression.Block(
                     typeof(void),
