@@ -21,4 +21,9 @@
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Platform.Tests" />
+    <InternalsVisibleTo Include="PlatformTestApp.Client" />
+  </ItemGroup>
+
 </Project>
