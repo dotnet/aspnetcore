@@ -30,6 +30,7 @@
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Middleware\\HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",
       "src\\Middleware\\ResponseCompression\\src\\Microsoft.AspNetCore.ResponseCompression.csproj",
+      "src\\Middleware\\StaticFiles\\perf\\Microbenchmarks\\Microsoft.AspNetCore.StaticFiles.Microbenchmarks.csproj",
       "src\\Middleware\\StaticFiles\\samples\\StaticFileSample\\StaticFileSample.csproj",
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
       "src\\Middleware\\StaticFiles\\test\\FunctionalTests\\Microsoft.AspNetCore.StaticFiles.FunctionalTests.csproj",

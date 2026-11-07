@@ -648,6 +648,9 @@
   <Folder Name="/src/Middleware/StaticFiles/">
     <Project Path="src/Middleware/StaticFiles/src/Microsoft.AspNetCore.StaticFiles.csproj" />
   </Folder>
+  <Folder Name="/src/Middleware/StaticFiles/perf/">
+    <Project Path="src/Middleware/StaticFiles/perf/Microbenchmarks/Microsoft.AspNetCore.StaticFiles.Microbenchmarks.csproj" />
+  </Folder>
   <Folder Name="/src/Middleware/StaticFiles/samples/">
     <Project Path="src/Middleware/StaticFiles/samples/StaticFileSample/StaticFileSample.csproj" />
   </Folder>
