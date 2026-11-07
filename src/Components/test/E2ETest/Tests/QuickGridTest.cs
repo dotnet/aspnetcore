@@ -46,6 +46,57 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
+    public void FooterTemplatesRenderCellsAfterBodyRows()
+    {
+        app = Browser.MountTestComponent<QuickGridFooterComponent>();
+
+        Browser.Equal(2, () => app.FindElements(By.CssSelector("#footer-grid > thead + tbody + tfoot > tr")).Count);
+        var bodyRows = app.FindElements(By.CssSelector("#footer-grid > tbody > tr"));
+        Assert.Equal(2, bodyRows.Count);
+        Assert.Equal("2 Second 20", bodyRows[1].Text);
+
+        var columnFooterCells = app.FindElements(By.CssSelector("#footer-grid > tfoot > tr:first-child > td"));
+        Assert.Equal(new[] { "Totals", "", "30" }, columnFooterCells.Select(cell => cell.Text));
+        Assert.All(columnFooterCells, cell => Assert.Contains("grid-column-footer-cell", cell.GetDomAttribute("class")));
+        Assert.Equal("right", columnFooterCells[2].GetCssValue("text-align"));
+        Assert.True(columnFooterCells[0].Location.Y > bodyRows[1].Location.Y);
+
+        var gridFooterCell = Assert.Single(app.FindElements(By.CssSelector("#footer-grid > tfoot > tr:last-child > td")));
+        Assert.Equal("Grid total: 30", gridFooterCell.Text);
+        Assert.Equal("3", gridFooterCell.GetDomAttribute("colspan"));
+        Assert.Contains("grid-footer-cell", gridFooterCell.GetDomAttribute("class"));
+        Assert.True(gridFooterCell.Location.Y > columnFooterCells[0].Location.Y);
+
+        var bodyCell = bodyRows[0].FindElement(By.CssSelector("td"));
+        Assert.Equal(bodyCell.GetCssValue("padding"), columnFooterCells[0].GetCssValue("padding"));
+        Assert.Equal(bodyCell.GetCssValue("padding"), gridFooterCell.GetCssValue("padding"));
+    }
+
+    [Fact]
+    public void FooterTemplatesCanBeToggledIndependently()
+    {
+        app = Browser.MountTestComponent<QuickGridFooterComponent>();
+        Browser.Equal(2, () => app.FindElements(By.CssSelector("#footer-grid > tfoot > tr")).Count);
+
+        app.FindElement(By.Id("show-column-footers")).Click();
+        Browser.Equal(1, () => app.FindElements(By.CssSelector("#footer-grid > tfoot > tr")).Count);
+        Browser.DoesNotExist(By.CssSelector("#footer-grid .grid-column-footer-cell"));
+        Browser.Equal("Grid total: 30", () => app.FindElement(By.CssSelector("#footer-grid .grid-footer-cell")).Text);
+
+        app.FindElement(By.Id("show-grid-footer")).Click();
+        Browser.DoesNotExist(By.CssSelector("#footer-grid > tfoot"));
+        Assert.Equal(2, app.FindElements(By.CssSelector("#footer-grid > tbody > tr")).Count);
+
+        app.FindElement(By.Id("show-column-footers")).Click();
+        Browser.Equal(1, () => app.FindElements(By.CssSelector("#footer-grid > tfoot > tr")).Count);
+        Browser.DoesNotExist(By.CssSelector("#footer-grid .grid-footer-cell"));
+        Browser.Equal("Totals", () => app.FindElement(By.CssSelector("#footer-grid .grid-column-footer-cell")).Text);
+
+        app.FindElement(By.Id("show-grid-footer")).Click();
+        Browser.Equal(2, () => app.FindElements(By.CssSelector("#footer-grid > tbody + tfoot > tr")).Count);
+    }
+
+    [Fact]
     public void AdditionalAttributesApplied()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
