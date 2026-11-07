@@ -11,11 +11,6 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 
 public partial class StaticHtmlRenderer
 {
-    private static readonly HashSet<string> SelfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"
-    };
-
     private static readonly CascadingParameterInfo _findFormMappingContext = new CascadingParameterInfo(
         new CascadingParameterAttribute(),
         string.Empty,
@@ -104,11 +99,13 @@ public partial class StaticHtmlRenderer
     private int RenderElement(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position)
     {
         ref var frame = ref frames.Array[position];
+        var elementName = frame.ElementName;
         output.Write('<');
-        output.Write(frame.ElementName);
+        output.Write(elementName);
         int afterElement;
-        var isTextArea = string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase);
-        var isForm = string.Equals(frame.ElementName, "form", StringComparison.OrdinalIgnoreCase);
+        var elementKind = GetElementKind(elementName);
+        var isTextArea = elementKind == ElementKind.TextArea;
+        var isForm = elementKind == ElementKind.Form;
         // We don't want to include value attribute of textarea element.
         var afterAttributes = RenderAttributes(output, frames, position + 1, frame.ElementSubtreeLength - 1, !isTextArea, isForm: isForm, out var capturedValueAttribute);
 
@@ -116,7 +113,7 @@ public partial class StaticHtmlRenderer
         // "value" attribute on the <select>, then we auto-add the "selected" attribute to that option. This is
         // a way of converting Blazor's select binding feature to regular static HTML.
         if (_closestSelectValueAsString != null
-            && string.Equals(frame.ElementName, "option", StringComparison.OrdinalIgnoreCase)
+            && elementKind == ElementKind.Option
             && string.Equals(capturedValueAttribute, _closestSelectValueAsString, StringComparison.Ordinal))
         {
             output.Write(" selected");
@@ -127,7 +124,7 @@ public partial class StaticHtmlRenderer
         {
             output.Write('>');
 
-            var isSelect = string.Equals(frame.ElementName, "select", StringComparison.OrdinalIgnoreCase);
+            var isSelect = elementKind == ElementKind.Select;
             if (isSelect)
             {
                 _closestSelectValueAsString = capturedValueAttribute;
@@ -140,7 +137,7 @@ public partial class StaticHtmlRenderer
                 _htmlEncoder.Encode(output, capturedValueAttribute);
                 afterElement = position + frame.ElementSubtreeLength; // Skip descendants
             }
-            else if (string.Equals(frame.ElementNameField, "script", StringComparison.OrdinalIgnoreCase))
+            else if (elementKind == ElementKind.Script)
             {
                 afterElement = RenderScriptElementChildren(componentId, output, frames, afterAttributes, remainingElements);
             }
@@ -157,26 +154,85 @@ public partial class StaticHtmlRenderer
             }
 
             output.Write("</");
-            output.Write(frame.ElementName);
+            output.Write(elementName);
             output.Write('>');
             Debug.Assert(afterElement == position + frame.ElementSubtreeLength);
             return afterElement;
         }
         else
         {
-            if (SelfClosingElements.Contains(frame.ElementName))
+            if (elementKind == ElementKind.SelfClosing)
             {
                 output.Write(" />");
             }
             else
             {
                 output.Write("></");
-                output.Write(frame.ElementName);
+                output.Write(elementName);
                 output.Write('>');
             }
             Debug.Assert(afterAttributes == position + frame.ElementSubtreeLength);
             return afterAttributes;
         }
+    }
+
+    // Classifies element names that need special handling, so that each element only needs
+    // a single length-based dispatch instead of several case-insensitive comparisons.
+    private static ElementKind GetElementKind(string elementName)
+    {
+        switch (elementName.Length)
+        {
+            case 2:
+                return IsElement(elementName, "br") || IsElement(elementName, "hr") ? ElementKind.SelfClosing : ElementKind.Other;
+            case 3:
+                return IsElement(elementName, "col") || IsElement(elementName, "img") || IsElement(elementName, "wbr") ? ElementKind.SelfClosing : ElementKind.Other;
+            case 4:
+                if (IsElement(elementName, "form"))
+                {
+                    return ElementKind.Form;
+                }
+
+                return IsElement(elementName, "area") || IsElement(elementName, "base") || IsElement(elementName, "link") || IsElement(elementName, "meta")
+                    ? ElementKind.SelfClosing
+                    : ElementKind.Other;
+            case 5:
+                return IsElement(elementName, "input") || IsElement(elementName, "embed") || IsElement(elementName, "param") || IsElement(elementName, "track")
+                    ? ElementKind.SelfClosing
+                    : ElementKind.Other;
+            case 6:
+                if (IsElement(elementName, "option"))
+                {
+                    return ElementKind.Option;
+                }
+                else if (IsElement(elementName, "select"))
+                {
+                    return ElementKind.Select;
+                }
+                else if (IsElement(elementName, "script"))
+                {
+                    return ElementKind.Script;
+                }
+
+                return IsElement(elementName, "source") ? ElementKind.SelfClosing : ElementKind.Other;
+            case 8:
+                return IsElement(elementName, "textarea") ? ElementKind.TextArea : ElementKind.Other;
+            default:
+                return ElementKind.Other;
+        }
+
+        static bool IsElement(string elementName, string candidate)
+            => string.Equals(elementName, candidate, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private enum ElementKind : byte
+    {
+        Other,
+        SelfClosing,
+        TextArea,
+        Form,
+        Option,
+        Select,
+        Script,
     }
 
     private int RenderScriptElementChildren(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
@@ -329,8 +385,7 @@ public partial class StaticHtmlRenderer
                 case string value:
                     output.Write(' ');
                     output.Write(frame.AttributeName);
-                    output.Write('=');
-                    output.Write('\"');
+                    output.Write("=\"");
                     _htmlEncoder.Encode(output, value);
                     output.Write('\"');
                     break;
@@ -347,10 +402,7 @@ public partial class StaticHtmlRenderer
         {
             if (isForm && _navigationManager != null && !hasExplicitActionValue)
             {
-                output.Write(' ');
-                output.Write("action");
-                output.Write('=');
-                output.Write('\"');
+                output.Write(" action=\"");
                 _htmlEncoder.Encode(output, GetRootRelativeUrlForFormAction(_navigationManager));
                 output.Write('\"');
             }
