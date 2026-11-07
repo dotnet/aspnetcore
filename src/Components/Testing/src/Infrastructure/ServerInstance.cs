@@ -92,8 +92,7 @@ public class ServerInstance : IAsyncDisposable
             environment,
             appEntry.HarnessMode == E2EAppEntry.CompiledHarnessMode);
 
-        _process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException($"Failed to start process for '{AppName}'.");
+        _process = Process.Start(startInfo)!;
 
         _ = DrainStreamAsync(_process.StandardOutput, $"[{AppName}:{Id}] ", _stdoutBuffer);
         _ = DrainStreamAsync(_process.StandardError, $"[{AppName}:{Id} ERR] ", _stderrBuffer);
@@ -101,7 +100,7 @@ public class ServerInstance : IAsyncDisposable
         // Wait for the app to signal readiness via the callback, with timeout as fallback.
         // Also monitor for early process exit to fail fast with diagnostics.
         var timeoutTask = Task.Delay(options.ReadinessTimeoutMs);
-        var processExitTask = _process.WaitForExitAsync();
+        var processExitTask = _process.WaitForExitStatusAsync();
         var completed = await Task.WhenAny(readySignal, timeoutTask, processExitTask).ConfigureAwait(false);
 
         if (completed == processExitTask)
@@ -134,7 +133,7 @@ public class ServerInstance : IAsyncDisposable
         if (_process is { HasExited: false })
         {
             _process.Kill(entireProcessTree: true);
-            await _process.WaitForExitAsync().ConfigureAwait(false);
+            await _process.WaitForExitStatusAsync().ConfigureAwait(false);
         }
 
         _process?.Dispose();
@@ -284,7 +283,7 @@ public class ServerInstance : IAsyncDisposable
 
         var startInfo = new ProcessStartInfo(executable, args)
         {
-            UseShellExecute = false,
+            InheritedHandles = [],
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,

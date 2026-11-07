@@ -11,6 +11,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNetCore.SignalR.Crankier
 {
@@ -93,15 +94,17 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 arguments = _executable + " " + arguments;
             }
 
+            using SafeFileHandle nullHandle = File.OpenNullHandle();
             var startInfo = new ProcessStartInfo()
             {
                 FileName = fileName,
                 Arguments = arguments,
                 CreateNoWindow = true,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                // AgentWorker never reads stderr; discard it to prevent an unread pipe from filling and blocking the worker.
+                StandardErrorHandle = nullHandle
             };
 
             var worker = new AgentWorker(startInfo, this);

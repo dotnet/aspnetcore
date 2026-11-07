@@ -122,7 +122,7 @@ public class SelfHostDeployer : ApplicationDeployer
             {
                 FileName = executableName,
                 Arguments = executableArgs,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 CreateNoWindow = true,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,

@@ -66,38 +66,23 @@ internal static class DebugProxyLauncher
         {
             FileName = muxerPath,
             Arguments = $"exec \"{executablePath}\" --OwnerPid {ownerPid} --DevToolsUrl {devToolsHost} --IsFirefoxDebugging {isFirefox} --FirefoxProxyPort 6001 {ignoreProxyForLocalAddress}",
-            UseShellExecute = false,
+            InheritedHandles = [],
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
         RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
         using var cts = new CancellationTokenSource(DebugProxyLaunchTimeout);
-        var ctr = default(CancellationTokenRegistration);
-        var debugProxyProcess = Process.Start(processStartInfo);
-        if (debugProxyProcess is null)
-        {
-            tcs.TrySetException(new InvalidOperationException("Unable to start debug proxy process."));
-        }
-        else
-        {
-            PassThroughConsoleOutput(debugProxyProcess);
-            CompleteTaskWhenServerIsReady(debugProxyProcess, isFirefox, tcs);
+        var debugProxyProcess = Process.Start(processStartInfo)!;
+        PassThroughConsoleOutput(debugProxyProcess);
+        CompleteTaskWhenServerIsReady(debugProxyProcess, isFirefox, tcs);
 
-            ctr = cts.Token.Register(() =>
-            {
-                tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
-            });
-        }
+        using var ctr = cts.Token.Register(() =>
+        {
+            tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
+        });
 
-        try
-        {
-            return await tcs.Task;
-        }
-        finally
-        {
-            ctr.Dispose();
-        }
+        return await tcs.Task;
     }
 
     private static void RemoveUnwantedEnvironmentVariables(IDictionary<string, string?> environment)

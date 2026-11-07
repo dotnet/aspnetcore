@@ -105,25 +105,36 @@ internal sealed partial class GatewayToolInstallation : IDisposable
         var psi = CreateStartInfo(GatewayCliTestData.DotNetHost, arguments.ToString(), installation._root);
 
         using var process = new Process { StartInfo = psi };
-        process.OutputDataReceived += (_, e) => { if (e.Data is not null) { lock (installation._installLog) { installation._installLog.AppendLine(e.Data); } } };
-        process.ErrorDataReceived += (_, e) => { if (e.Data is not null) { lock (installation._installLog) { installation._installLog.AppendLine(e.Data); } } };
-
         process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
 
-        if (!process.WaitForExit(milliseconds: 2 * 60 * 1000))
+        TimeSpan timeout = TimeSpan.FromMinutes(2);
+        long startTimestamp = Stopwatch.GetTimestamp();
+        ProcessExitStatus status;
+        try
+        {
+            foreach (ProcessOutputLine line in process.ReadAllLines(timeout))
+            {
+                installation._installLog.AppendLine(line.Content);
+            }
+
+            TimeSpan remaining = timeout - Stopwatch.GetElapsedTime(startTimestamp);
+            if (remaining <= TimeSpan.Zero || !process.TryWaitForExitStatus(remaining, out ProcessExitStatus? exitStatus))
+            {
+                throw new TimeoutException();
+            }
+
+            status = exitStatus!;
+        }
+        catch (TimeoutException)
         {
             try { process.Kill(entireProcessTree: true); } catch { }
             throw new TimeoutException($"'dotnet tool install' timed out.\n{installation._installLog}");
         }
 
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
+        if (status.ExitCode != 0)
         {
             installation.Dispose();
-            throw new InvalidOperationException($"'dotnet tool install' failed with exit code {process.ExitCode}.\n{installation._installLog}");
+            throw new InvalidOperationException($"'dotnet tool install' failed with exit code {status.ExitCode}.\n{installation._installLog}");
         }
 
         return installation;
@@ -192,7 +203,7 @@ internal sealed partial class GatewayToolInstallation : IDisposable
             WorkingDirectory = workingDirectory,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false,
+            InheritedHandles = [],
         };
 
         // The gateway is framework-dependent: point the host at the repo's shared framework so it can
@@ -270,7 +281,7 @@ internal sealed class RunningGatewayTool : IAsyncDisposable
 
         try
         {
-            await _process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(15));
+            await _process.WaitForExitStatusAsync().WaitAsync(TimeSpan.FromSeconds(15));
         }
         catch
         {

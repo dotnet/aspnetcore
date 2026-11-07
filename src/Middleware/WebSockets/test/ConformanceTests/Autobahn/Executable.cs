@@ -32,32 +32,49 @@ public class Executable
 
     public async Task<int> ExecAsync(string args, CancellationToken cancellationToken, ILogger logger)
     {
-        var process = new Process()
+        using var process = new Process()
         {
             StartInfo = new ProcessStartInfo()
             {
                 FileName = Location,
                 Arguments = args,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 RedirectStandardError = true,
                 RedirectStandardOutput = true
-            },
-            EnableRaisingEvents = true
+            }
         };
-        var tcs = new TaskCompletionSource<int>();
 
-        using (cancellationToken.Register(() => Cancel(process, tcs)))
+        process.Start();
+
+        Task<ProcessExitStatus> exitTask = process.SafeHandle.WaitForExitOrKillOnCancellationAsync(cancellationToken);
+        ProcessExitStatus status;
+        try
         {
-            process.Exited += (_, __) => tcs.TrySetResult(process.ExitCode);
-            process.OutputDataReceived += (_, a) => LogIfNotNull(logger.LogInformation, "stdout: {0}", a.Data);
-            process.ErrorDataReceived += (_, a) => LogIfNotNull(logger.LogError, "stderr: {0}", a.Data);
+            await foreach (ProcessOutputLine line in process.ReadAllLinesAsync(cancellationToken))
+            {
+                if (line.StandardError)
+                {
+                    LogIfNotNull(logger.LogError, "stderr: {0}", line.Content);
+                }
+                else
+                {
+                    LogIfNotNull(logger.LogInformation, "stdout: {0}", line.Content);
+                }
+            }
 
-            process.Start();
+            status = await exitTask;
 
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
+            // Cancellation after output reaches EOF must still propagate instead of returning the process exit code.
+            cancellationToken.ThrowIfCancellationRequested();
 
-            return await tcs.Task;
+            return status.ExitCode;
+        }
+        catch
+        {
+            process.Kill();
+            await exitTask;
+
+            throw;
         }
     }
 
@@ -67,14 +84,5 @@ public class Executable
         {
             logger(message, new[] { data });
         }
-    }
-
-    private static void Cancel(Process process, TaskCompletionSource<int> tcs)
-    {
-        if (process != null && !process.HasExited)
-        {
-            process.Kill();
-        }
-        tcs.TrySetCanceled();
     }
 }

@@ -23,7 +23,7 @@ internal static class Exe
         var startInfo = new ProcessStartInfo
         {
             FileName = executable,
-            UseShellExecute = false,
+            InheritedHandles = [],
             RedirectStandardOutput = interceptOutput
         };
         foreach (var argument in args)
@@ -36,7 +36,7 @@ internal static class Exe
             startInfo.WorkingDirectory = workingDirectory;
         }
 
-        using var process = Process.Start(startInfo);
+        using var process = Process.Start(startInfo)!;
         if (interceptOutput)
         {
             string line;
@@ -46,19 +46,14 @@ internal static class Exe
             }
         }
 
-        // Follow precedent set in Razor integration tests and ensure process events and output are complete.
-        // https://github.com/aspnet/Razor/blob/d719920fdcc7d1db3a6f74cd5404d66fa098f057/test/Microsoft.NET.Sdk.Razor.Test/IntegrationTests/MSBuildProcessManager.cs#L91-L102
         // Timeout is double how long the inside man waits for the IDocumentProcessor to wrap up.
-        if (!process.WaitForExit((int)(TimeSpan.FromMinutes(2).TotalMilliseconds)))
+        ProcessExitStatus status = process.SafeHandle.WaitForExitOrKillOnTimeout(TimeSpan.FromMinutes(2));
+        if (status.Canceled)
         {
-            process.Kill();
-
             // Should be unreachable in almost every case.
             throw new TimeoutException($"Process {executable} timed out after 2 minutes.");
         }
 
-        process.WaitForExit();
-
-        return process.ExitCode;
+        return status.ExitCode;
     }
 }

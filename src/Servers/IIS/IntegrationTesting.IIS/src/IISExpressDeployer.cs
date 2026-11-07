@@ -179,7 +179,9 @@ public partial class IISExpressDeployer : IISDeployerBase
                 {
                     FileName = iisExpressPath,
                     Arguments = parameters,
-                    UseShellExecute = false,
+                    InheritedHandles = [],
+                    // Prevent orphaned IIS Express processes even if the test process exits during startup.
+                    KillOnParentExit = true,
                     CreateNoWindow = true,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
@@ -247,16 +249,20 @@ public partial class IISExpressDeployer : IISDeployerBase
                     Logger.LogInformation("iisexpress Process {pid} failed to bind to port {port}, trying again", process.Id, port);
 
                     // Wait for the process to exit and try again
-                    process.WaitForExit(30 * 1000);
+                    using CancellationTokenSource exitTimeout = new(TimeSpan.FromSeconds(30));
+                    try
+                    {
+                        await process.WaitForExitStatusAsync(exitTimeout.Token);
+                    }
+                    catch (OperationCanceledException) when (exitTimeout.IsCancellationRequested)
+                    {
+                        Logger.LogWarning("iisexpress Process {pid} did not exit within 30 seconds", process.Id);
+                    }
                     await Task.Delay(1000); // Wait a second to make sure the socket is completely cleaned up
                 }
                 else
                 {
                     _hostProcess = process;
-
-                    // Ensure iisexpress.exe is killed if test process termination is non-graceful.
-                    // Prevents locked files when stop debugging unit test.
-                    ProcessTracker.Add(_hostProcess);
 
                     // cache the process start time for verifying log file name.
                     var _ = _hostProcess.StartTime;
@@ -558,11 +564,11 @@ public partial class IISExpressDeployer : IISDeployerBase
             // See: https://stackoverflow.com/questions/4772092/starting-and-stopping-iis-express-programmatically
 
             SendStopMessageToProcess(hostProcess.Id);
-            if (!hostProcess.WaitForExit((int)ShutdownTimeSpan.TotalMilliseconds))
+            if (!hostProcess.TryWaitForExitStatus(ShutdownTimeSpan, out ProcessExitStatus status))
             {
                 throw new InvalidOperationException($"iisexpress Process {hostProcess.Id} failed to gracefully shutdown.");
             }
-            if (hostProcess.ExitCode != 0)
+            if (status.ExitCode != 0)
             {
                 Logger.LogWarning($"IISExpress exit code is non-zero after graceful shutdown. Exit code: {hostProcess.ExitCode}");
                 throw new InvalidOperationException($"IISExpress exit code is non-zero after graceful shutdown. Exit code: {hostProcess.ExitCode}.");

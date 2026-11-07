@@ -157,7 +157,8 @@ public static class Helpers
     public static void AssertWorkerProcessStop(this IISDeploymentResult deploymentResult, int? timeout = null)
     {
         var hostProcess = deploymentResult.HostProcess;
-        Assert.True(hostProcess.WaitForExit(timeout ?? (int)TimeoutExtensions.DefaultTimeoutValue.TotalMilliseconds));
+        Assert.True(hostProcess.TryWaitForExitStatus(
+            TimeSpan.FromMilliseconds(timeout ?? (int)TimeoutExtensions.DefaultTimeoutValue.TotalMilliseconds), out _));
 
         if (deploymentResult.DeploymentParameters.ServerType == ServerType.IISExpress)
         {
