@@ -267,6 +267,55 @@ internal class User : IUser
     }
 
     [Fact]
+    public async Task SupportsXmlCommentsOnNullableStructSchemas()
+    {
+        var source = """
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapGet("/nullable-struct", Ok<NullableStruct?> () => TypedResults.Ok<NullableStruct?>(null));
+app.MapGet("/non-nullable-struct", Ok<NonNullableStruct> () => TypedResults.Ok<NonNullableStruct>(default));
+
+app.Run();
+
+/// <summary>
+/// A struct used as a nullable type.
+/// </summary>
+public struct NullableStruct
+{
+    public int Id { get; set; }
+}
+
+/// <summary>
+/// A struct used as a non-nullable type.
+/// </summary>
+public struct NonNullableStruct
+{
+    public int Id { get; set; }
+}
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var nullableStruct = document.Components.Schemas["NullableStruct"];
+            Assert.Equal("A struct used as a nullable type.", nullableStruct.Description);
+
+            var nonNullableStruct = document.Components.Schemas["NonNullableStruct"];
+            Assert.Equal("A struct used as a non-nullable type.", nonNullableStruct.Description);
+        });
+    }
+
+    [Fact]
     public async Task XmlCommentsOnPropertiesShouldApplyToSchemaReferences()
     {
         var source = """
