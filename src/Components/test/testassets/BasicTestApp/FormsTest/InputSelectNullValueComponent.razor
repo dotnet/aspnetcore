@@ -1,0 +1,77 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="model" OnSubmit="Submit">
+    <InputSelect id="null-string" @bind-Value="model.Text">
+        <option value="A">A</option>
+        <option value="B">B</option>
+    </InputSelect>
+
+    <InputSelect id="null-number" @bind-Value="model.Number">
+        <option value="1">1</option>
+        <option value="2">2</option>
+    </InputSelect>
+
+    <InputSelect id="null-placeholder"
+                 @bind-Value="model.TextWithPlaceholder">
+        <option value="A">A</option>
+        <option value="">Please select</option>
+        <option value="B">B</option>
+    </InputSelect>
+
+    <button id="submit-model" type="submit">Submit</button>
+</EditForm>
+
+<button id="reset-null" type="button" @onclick="ResetToNull">
+    Reset to null
+</button>
+
+<p id="current-model">@ModelState</p>
+<p id="submitted-model">@submittedModel</p>
+
+<InputSelect id="null-enum" @bind-Value="enumValue">
+    <option value="First">First</option>
+    <option value="Second">Second</option>
+</InputSelect>
+<p id="enum-value">@(enumValue?.ToString() ?? "<null>")</p>
+<button id="reset-enum" type="button" @onclick="() => enumValue = null">Reset enum</button>
+
+@code {
+#nullable enable
+    private readonly TestModel model = new();
+    private string submittedModel = "Not submitted";
+    private TestEnum? enumValue;
+
+    private string ModelState =>
+        $"Text={Display(model.Text)}; " +
+        $"Number={model.Number?.ToString() ?? "<null>"}; " +
+        $"TextWithPlaceholder={Display(model.TextWithPlaceholder)}";
+
+    private void Submit(EditContext context)
+    {
+        submittedModel = ModelState;
+    }
+
+    private void ResetToNull()
+    {
+        model.Text = null;
+        model.Number = null;
+        model.TextWithPlaceholder = null;
+    }
+
+    private static string Display(string? value)
+        => value is null ? "<null>" : $"\"{value}\"";
+
+    private sealed class TestModel
+    {
+        public string? Text { get; set; }
+        public int? Number { get; set; }
+        public string? TextWithPlaceholder { get; set; }
+    }
+
+    private enum TestEnum
+    {
+        First,
+        Second,
+    }
+#nullable restore
+}
