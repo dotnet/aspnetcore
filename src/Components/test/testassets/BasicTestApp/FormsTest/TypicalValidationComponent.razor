@@ -24,6 +24,10 @@
     <p class="height">
         Height (optional): <InputNumber @bind-Value="person.OptionalHeight" />
     </p>
+    <p class="required-number">
+        Required number: <InputNumber @bind-Value="person.RequiredNumber" />
+        <span class="required-number-value">@person.RequiredNumber</span>
+    </p>
     <p class="description">
         Description: <InputTextArea @bind-Value="person.Description" placeholder="Tell us about yourself" />
     </p>
@@ -146,6 +150,15 @@
     </p>
 </EditForm>
 
+<EditForm Model="@rangedNumberModel">
+    <DataAnnotationsValidator />
+    <p class="ranged-number">
+        Ranged number: <InputNumber @bind-Value="rangedNumberModel.RangedNumber" />
+        <span class="ranged-number-value">@rangedNumberModel.RangedNumber</span>
+        <ValidationMessage For="@(() => rangedNumberModel.RangedNumber)" />
+    </p>
+</EditForm>
+
 <ul>@foreach (var entry in submissionLog) { <li class="submission-log-entry">@entry</li> }</ul>
 
 <button id="toggle-dataannotations" @onclick="ToggleDataAnnotations">Toggle DataAnnotations support</button>
@@ -154,6 +167,7 @@
     protected virtual bool UseExperimentalValidator => false;
 
     Person person = new Person();
+    RangedNumberModel rangedNumberModel = new RangedNumberModel();
     EditContext editContext;
     ValidationMessageStore customValidationMessageStore;
     bool enableDataAnnotationsSupport = true;
@@ -184,6 +198,9 @@
         public int AgeInYears { get; set; }
 
         public float? OptionalHeight { get; set; }
+
+        [Required(ErrorMessage = "Enter a required number")]
+        public int? RequiredNumber { get; set; }
 
         public DateTime RenewalDate { get; set; } = DateTime.Now;
 
@@ -233,6 +250,12 @@
         public string[] HostileStrings { get; set; } = new string[] { "\"", "{" };
 
         public string Username { get; set; }
+    }
+
+    class RangedNumberModel
+    {
+        [Range(10, 20, ErrorMessage = "Enter a number from 10 to 20")]
+        public int RangedNumber { get; set; } = 5;
     }
 
     enum TicketClass { Economy, Premium, First }

@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -326,7 +328,12 @@ public class InputBaseTest
         Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
         Assert.Equal(1, numValidationStateChanges);
 
-        // Act/Assert 2: Transition to valid
+        await inputComponent.SetCurrentValueAsStringAsync("invalid");
+        Assert.Empty(valueChangedArgs);
+        Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
+        Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.Equal(2, numValidationStateChanges);
+
         await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
         var receivedParsedValue = valueChangedArgs.Single();
         Assert.Equal(1991, receivedParsedValue.Year);
@@ -334,7 +341,230 @@ public class InputBaseTest
         Assert.Equal(20, receivedParsedValue.Day);
         Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
         Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
-        Assert.Equal(2, numValidationStateChanges);
+        Assert.Equal(3, numValidationStateChanges);
+    }
+
+    [Fact]
+    public async Task ParsingFailureDoesNotNotifyFieldChanged()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = editContext,
+            ValueChanged = _ => { },
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var fieldChangedCount = 0;
+        editContext.OnFieldChanged += (sender, eventArgs) => fieldChangedCount++;
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+
+        Assert.True(editContext.IsModified(fieldIdentifier));
+        Assert.Equal(0, fieldChangedCount);
+        Assert.Equal(new[] { "Bad date value" }, editContext.GetValidationMessages(fieldIdentifier));
+    }
+
+    [Theory]
+    [InlineData(null, "", 0, "Enter a required number")]
+    [InlineData(null, "5", 1, null)]
+    [InlineData(5, "", 1, "Enter a required number")]
+    public async Task NullableNumberRecoveryAfterParsingFailureValidates(
+        int? initialValue, string recoveryValue, int expectedValueChangedCount, string expectedValidationMessage)
+    {
+        var model = new TestModel { RequiredNumber = initialValue };
+        var editContext = new EditContext(model);
+        using var validation = editContext.EnableDataAnnotationsValidation(new TestServiceProvider());
+        var fieldIdentifier = FieldIdentifier.Create(() => model.RequiredNumber);
+        var fieldChanges = new List<FieldIdentifier>();
+        var valueChangedCount = 0;
+        editContext.OnFieldChanged += (_, args) => fieldChanges.Add(args.FieldIdentifier);
+        var rootComponent = new TestInputHostComponent<int?, InputNumber<int?>>
+        {
+            EditContext = editContext,
+            Value = model.RequiredNumber,
+            ValueExpression = () => model.RequiredNumber
+        };
+        rootComponent.ValueChanged = value =>
+        {
+            rootComponent.Value = model.RequiredNumber = value;
+            valueChangedCount++;
+        };
+        using var renderer = new TestRenderer();
+        var rootId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootId);
+        var inputId = renderer.Batches.Single().GetComponentFrames<InputNumber<int?>>().Single().ComponentId;
+        Assert.Empty(editContext.GetValidationMessages());
+
+        foreach (var invalidValue in new[] { "1e+10", "2e+10" })
+        {
+            await ChangeNumberAsync(renderer, inputId, invalidValue);
+
+            Assert.Empty(fieldChanges);
+            Assert.Equal(0, valueChangedCount);
+            Assert.Equal(initialValue, model.RequiredNumber);
+            Assert.True(editContext.IsModified(fieldIdentifier));
+            Assert.Equal(new[] { "The RequiredNumber field must be a number." }, editContext.GetValidationMessages());
+        }
+
+        await ChangeNumberAsync(renderer, inputId, recoveryValue);
+
+        Assert.Equal(new[] { fieldIdentifier }, fieldChanges);
+        Assert.Equal(expectedValueChangedCount, valueChangedCount);
+        Assert.Equal(recoveryValue.Length == 0 ? null : 5, model.RequiredNumber);
+        Assert.True(editContext.IsModified(fieldIdentifier));
+        var expectedMessages = expectedValidationMessage is null ? Array.Empty<string>() : new[] { expectedValidationMessage };
+        Assert.Equal(expectedMessages, editContext.GetValidationMessages());
+
+        await ChangeNumberAsync(renderer, inputId, recoveryValue);
+
+        Assert.Single(fieldChanges);
+        Assert.Equal(expectedValueChangedCount, valueChangedCount);
+        Assert.Equal(expectedMessages, editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public async Task SameNumberAfterParsingFailureValidatesUnchangedValue()
+    {
+        var model = new TestModel { RangedNumber = 5 };
+        var editContext = new EditContext(model);
+        using var validation = editContext.EnableDataAnnotationsValidation(new TestServiceProvider());
+        var fieldIdentifier = FieldIdentifier.Create(() => model.RangedNumber);
+        var fieldChanges = new List<FieldIdentifier>();
+        var valueChangedCount = 0;
+        editContext.OnFieldChanged += (_, args) => fieldChanges.Add(args.FieldIdentifier);
+        var rootComponent = new TestInputHostComponent<int, InputNumber<int>>
+        {
+            EditContext = editContext,
+            Value = model.RangedNumber,
+            ValueExpression = () => model.RangedNumber
+        };
+        rootComponent.ValueChanged = value =>
+        {
+            rootComponent.Value = model.RangedNumber = value;
+            valueChangedCount++;
+        };
+        using var renderer = new TestRenderer();
+        var rootId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootId);
+        var inputId = renderer.Batches.Single().GetComponentFrames<InputNumber<int>>().Single().ComponentId;
+        Assert.Empty(editContext.GetValidationMessages());
+
+        foreach (var invalidValue in new[] { "1e+10", "2e+10" })
+        {
+            await ChangeNumberAsync(renderer, inputId, invalidValue);
+
+            Assert.Empty(fieldChanges);
+            Assert.Equal(0, valueChangedCount);
+            Assert.Equal(5, model.RangedNumber);
+            Assert.True(editContext.IsModified(fieldIdentifier));
+            Assert.Equal(new[] { "The RangedNumber field must be a number." }, editContext.GetValidationMessages());
+        }
+
+        await ChangeNumberAsync(renderer, inputId, "5");
+
+        Assert.Equal(new[] { fieldIdentifier }, fieldChanges);
+        Assert.Equal(0, valueChangedCount);
+        Assert.Equal(5, model.RangedNumber);
+        Assert.True(editContext.IsModified(fieldIdentifier));
+        Assert.Equal(new[] { "Enter a number from 10 to 20" }, editContext.GetValidationMessages());
+
+        await ChangeNumberAsync(renderer, inputId, "5");
+
+        Assert.Single(fieldChanges);
+        Assert.Equal(0, valueChangedCount);
+        Assert.Equal(new[] { "Enter a number from 10 to 20" }, editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public async Task NullableNumberClearedWithoutParsingFailureValidates()
+    {
+        var model = new TestModel { RequiredNumber = 5 };
+        var editContext = new EditContext(model);
+        using var validation = editContext.EnableDataAnnotationsValidation(new TestServiceProvider());
+        var fieldChangedCount = 0;
+        editContext.OnFieldChanged += (_, _) => fieldChangedCount++;
+        var rootComponent = new TestInputHostComponent<int?, InputNumber<int?>>
+        {
+            EditContext = editContext,
+            Value = model.RequiredNumber,
+            ValueExpression = () => model.RequiredNumber
+        };
+        rootComponent.ValueChanged = value => rootComponent.Value = model.RequiredNumber = value;
+        using var renderer = new TestRenderer();
+        var rootId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootId);
+        var inputId = renderer.Batches.Single().GetComponentFrames<InputNumber<int?>>().Single().ComponentId;
+
+        await ChangeNumberAsync(renderer, inputId, "");
+
+        Assert.Null(model.RequiredNumber);
+        Assert.Equal(1, fieldChangedCount);
+        Assert.True(editContext.IsModified(() => model.RequiredNumber));
+        Assert.Equal(new[] { "Enter a required number" }, editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public async Task ValidValueAfterParsingFailureNotifiesFieldChanged()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = editContext,
+            ValueChanged = value => model.DateProperty = value,
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var fieldChangedCount = 0;
+        editContext.OnFieldChanged += (sender, eventArgs) => fieldChangedCount++;
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+        Assert.Equal(0, fieldChangedCount);
+
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
+
+        Assert.Equal(new DateTime(1991, 11, 20), model.DateProperty);
+        Assert.True(editContext.IsModified(fieldIdentifier));
+        Assert.Equal(1, fieldChangedCount);
+        Assert.Empty(editContext.GetValidationMessages(fieldIdentifier));
+    }
+
+    [Fact]
+    public async Task ParsingFailureAfterValidValueDoesNotNotifyFieldChanged()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = editContext,
+            ValueChanged = value => model.DateProperty = value,
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var unrelatedFieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
+        var unrelatedMessages = new ValidationMessageStore(editContext);
+        var fieldChangedCount = 0;
+        editContext.OnFieldChanged += (sender, eventArgs) =>
+        {
+            fieldChangedCount++;
+            unrelatedMessages.Add(unrelatedFieldIdentifier, "Unrelated validation ran");
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
+        unrelatedMessages.Clear();
+        editContext.MarkAsUnmodified(fieldIdentifier);
+
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+
+        Assert.Equal(new DateTime(1991, 11, 20), model.DateProperty);
+        Assert.True(editContext.IsModified(fieldIdentifier));
+        Assert.Equal(1, fieldChangedCount);
+        Assert.Equal(new[] { "Bad date value" }, editContext.GetValidationMessages(fieldIdentifier));
+        Assert.Empty(editContext.GetValidationMessages(unrelatedFieldIdentifier));
+        Assert.False(editContext.IsModified(unrelatedFieldIdentifier));
     }
 
     [Fact]
@@ -527,11 +757,26 @@ public class InputBaseTest
         Assert.Null(component.AdditionalAttributes);
     }
 
+    private static Task ChangeNumberAsync(TestRenderer renderer, int componentId, string value)
+    {
+        var frames = renderer.GetCurrentRenderTreeFrames(componentId);
+        var handlerId = frames.Array.Single(frame =>
+            frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "onchange").AttributeEventHandlerId;
+
+        return renderer.Dispatcher.InvokeAsync(() => renderer.DispatchEventAsync(handlerId, new ChangeEventArgs { Value = value }));
+    }
+
     class TestModel
     {
         public string StringProperty { get; set; }
 
         public DateTime DateProperty { get; set; }
+
+        [Required(ErrorMessage = "Enter a required number")]
+        public int? RequiredNumber { get; set; }
+
+        [Range(10, 20, ErrorMessage = "Enter a number from 10 to 20")]
+        public int RangedNumber { get; set; }
     }
 
     class TestInputComponent<T> : InputBase<T>
