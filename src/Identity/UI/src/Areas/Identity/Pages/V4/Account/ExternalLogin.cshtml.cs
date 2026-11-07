@@ -138,7 +138,9 @@ internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser
         }
 
         // Sign in the user with this external login provider if the user already has a login.
-        var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+        // bypassTwoFactor is false so that accounts with two-factor authentication enabled are
+        // still challenged for a second factor, consistent with the password sign-in path.
+        var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: false);
         if (result.Succeeded)
         {
             if (_logger.IsEnabled(LogLevel.Information))
@@ -146,6 +148,10 @@ internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser
                 _logger.LogInformation(LoggerEventIds.UserLoggedInByExternalProvider, "User logged in with {LoginProvider} provider.", info.LoginProvider);
             }
             return LocalRedirect(returnUrl);
+        }
+        if (result.RequiresTwoFactor)
+        {
+            return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl });
         }
         if (result.IsLockedOut)
         {
