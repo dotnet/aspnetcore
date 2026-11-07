@@ -7,6 +7,7 @@ import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
 import { getAndRemovePendingRootComponentContainer } from './JSRootComponents';
+import { restoreFocusAfterPrerenderClear } from './FocusOnNavigate';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
@@ -72,11 +73,17 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   const referenceFramesValues = arrayRangeReader.values(referenceFrames);
   const diffReader = batch.diffReader;
 
+  let focusedElementBeforePrerenderClear: Element | null = null;
   for (let i = 0; i < updatedComponentsLength; i++) {
     const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
     const componentId = diffReader.componentId(diff);
     const edits = diffReader.edits(diff);
-    browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
+    const clearedFocusedElement = browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
+    focusedElementBeforePrerenderClear ??= clearedFocusedElement;
+  }
+
+  if (focusedElementBeforePrerenderClear) {
+    restoreFocusAfterPrerenderClear(focusedElementBeforePrerenderClear);
   }
 
   const disposedComponentIdsRange = batch.disposedComponentIds();

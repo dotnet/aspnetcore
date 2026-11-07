@@ -56,14 +56,19 @@ export class BrowserRenderer {
     elementsToClearOnRootComponentRender.add(element);
   }
 
-  public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
+  public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): Element | null {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
     }
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
+    let focusedElementBeforePrerenderClear: Element | null = null;
     if (elementsToClearOnRootComponentRender.delete(element)) {
+      if (document.activeElement instanceof Element) {
+        focusedElementBeforePrerenderClear = document.activeElement;
+      }
+
       this.detachEventHandlersFromElement(element);
       emptyLogicalElement(element);
 
@@ -83,6 +88,8 @@ export class BrowserRenderer {
     if ((activeElementBefore instanceof HTMLElement) && ownerDocument && ownerDocument.activeElement !== activeElementBefore) {
       activeElementBefore.focus();
     }
+
+    return focusedElementBeforePrerenderClear;
   }
 
   public disposeComponent(componentId: number): void {
