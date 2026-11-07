@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server;
 
@@ -47,6 +48,7 @@ internal sealed partial class ComponentHub : Hub
     private readonly CircuitPersistenceManager _circuitPersistenceManager;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
     private readonly ILogger _logger;
+    private readonly HubOptions<ComponentHub> _hubOptions;
 
     public ComponentHub(
         IServerComponentDeserializer serializer,
@@ -56,7 +58,8 @@ internal sealed partial class ComponentHub : Hub
         CircuitRegistry circuitRegistry,
         CircuitPersistenceManager circuitPersistenceProvider,
         ICircuitHandleRegistry circuitHandleRegistry,
-        ILogger<ComponentHub> logger)
+        ILogger<ComponentHub> logger,
+        IOptions<HubOptions<ComponentHub>> hubOptions)
     {
         _serverComponentSerializer = serializer;
         _dataProtectionProvider = dataProtectionProvider;
@@ -66,6 +69,7 @@ internal sealed partial class ComponentHub : Hub
         _circuitPersistenceManager = circuitPersistenceProvider;
         _circuitHandleRegistry = circuitHandleRegistry;
         _logger = logger;
+        _hubOptions = hubOptions.Value;
     }
 
     /// <summary>
@@ -79,7 +83,7 @@ internal sealed partial class ComponentHub : Hub
         // groups or user routing, so it can accept an identity change without rekeying those.
         Context.Features.Get<IConnectionAuthenticationRefreshFeature>()?.OnAuthenticationRefresh = static _ => Task.FromResult(true);
 
-        return Task.CompletedTask;
+        return Clients.Caller.SendAsync("JS.ConfigureInputFile", _hubOptions.MaximumReceiveMessageSize is null or > 1024);
     }
 
     public override Task OnDisconnectedAsync(Exception exception)
