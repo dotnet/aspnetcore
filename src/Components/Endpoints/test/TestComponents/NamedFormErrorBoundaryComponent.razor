@@ -1,0 +1,10 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<ErrorBoundary>
+    <ChildContent>
+        <ThrowBeforeNamedForm />
+    </ChildContent>
+    <ErrorContent>
+        <p id="fallback">The error boundary handled the form rendering error.</p>
+    </ErrorContent>
+</ErrorBoundary>

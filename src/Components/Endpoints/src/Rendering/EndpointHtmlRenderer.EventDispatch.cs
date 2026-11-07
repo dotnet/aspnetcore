@@ -34,6 +34,14 @@ internal partial class EndpointHtmlRenderer
 
         if (!_namedSubmitEventsByScopeQualifiedName.TryGetValue(handlerName, out var locationsForName) || locationsForName.Count == 0)
         {
+            // An unmatched handler remains invalid if rendering discovered any named forms,
+            // even when an unrelated error boundary handled an exception.
+            if (HasHandledError && _namedSubmitEventsByScopeQualifiedName.Count == 0)
+            {
+                isBadRequest = false;
+                return Task.CompletedTask;
+            }
+
             // This may happen if you deploy an app update and someone still on the old page submits a form,
             // or if you're dynamically building the UI and the submitted form doesn't exist the next time
             // the page is rendered
