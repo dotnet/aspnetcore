@@ -89,4 +89,37 @@ public class ValidationMessageStoreTest
         Assert.Empty(messages[field1]);
         Assert.Empty(messages[field2]);
     }
+#nullable enable
+    [Fact]
+    public void CanAddMessagesUsingExpressionWithNullableProperty()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var messages = new ValidationMessageStore(editContext);
+
+        messages.Add(() => model.Text, "This value is not valid");
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Text);
+        Assert.Equal(new[] { "This value is not valid" }, messages[fieldIdentifier]);
+    }
+
+    [Fact]
+    public void CanAddMultipleMessagesUsingExpressionWithNullableProperty()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var messages = new ValidationMessageStore(editContext);
+        var validationMessages = new[] { "First error", "Second error" };
+
+        messages.Add(() => model.Text, validationMessages);
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Text);
+        Assert.Equal(validationMessages, messages[fieldIdentifier]);
+    }
+
+    private class TestModel
+    {
+        public string? Text { get; set; }
+    }
+#nullable disable
 }
