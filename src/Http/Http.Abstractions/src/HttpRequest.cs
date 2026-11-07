@@ -126,7 +126,15 @@ public abstract class HttpRequest
     /// Gets or sets the request body as a form.
     /// </summary>
     /// <exception cref="System.InvalidOperationException">
-    ///     incorrect content-type.
+    ///     incorrect content-type. Thrown when the Content-Type header is missing, or is present but is not a
+    ///     form content type (<c>application/x-www-form-urlencoded</c> or <c>multipart/form-data</c>).
+    ///     Check <see cref="HasFormContentType"/> before reading the form.
+    /// </exception>
+    /// <exception cref="System.IO.InvalidDataException">
+    ///     the request body is malformed, or one of the configured form limits was exceeded.
+    /// </exception>
+    /// <exception cref="System.IO.IOException">
+    ///     an error occurred while reading the request body.
     /// </exception>
     /// <remarks>
     ///     <para>
@@ -141,9 +149,20 @@ public abstract class HttpRequest
     /// Reads the request body if it is a form.
     /// </summary>
     /// <exception cref="System.InvalidOperationException">
-    ///     incorrect content-type.
+    ///     incorrect content-type. Thrown when the Content-Type header is missing, or is present but is not a
+    ///     form content type (<c>application/x-www-form-urlencoded</c> or <c>multipart/form-data</c>).
+    ///     Check <see cref="HasFormContentType"/> before reading the form.
     /// </exception>
-    /// <returns></returns>
+    /// <exception cref="System.IO.InvalidDataException">
+    ///     the request body is malformed, or one of the configured form limits was exceeded.
+    /// </exception>
+    /// <exception cref="System.IO.IOException">
+    ///     an error occurred while reading the request body.
+    /// </exception>
+    /// <exception cref="System.OperationCanceledException">
+    ///     <paramref name="cancellationToken"/> was cancelled.
+    /// </exception>
+    /// <returns>The parsed form as an <see cref="IFormCollection"/>.</returns>
     public abstract Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken());
 
     /// <summary>
