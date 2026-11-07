@@ -1,6 +1,6 @@
 ﻿<div>
     <p>
-        Output: <span id="output">@message</span>
+        Output: <span id="output">@_message</span>
     </p>
 
 
@@ -15,10 +15,12 @@
 </div>
 
 @code {
-    string message { get; set; }
+    private string _message = string.Empty;
 
-    void OnToggle(EventArgs e)
+    private void OnToggle(EventArgs eventArgs)
     {
-        message += "ontoggle,";
+        _message += eventArgs is ToggleEventArgs toggleEventArgs
+            ? $"{nameof(ToggleEventArgs)}:{toggleEventArgs.OldState}->{toggleEventArgs.NewState},"
+            : $"{eventArgs.GetType().Name},";
     }
 }
