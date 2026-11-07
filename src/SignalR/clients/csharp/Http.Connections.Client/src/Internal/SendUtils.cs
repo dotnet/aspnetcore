@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 internal static partial class SendUtils
 {
-    public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken = default)
+    public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken = default, bool logMessageContent = false)
     {
         Log.SendStarted(logger);
 
@@ -43,6 +43,7 @@ internal static partial class SendUtils
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
                         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                         request.Content = new ReadOnlySequenceContent(buffer);
+                        TransportContentLog.Write(logger, logMessageContent, received: false, buffer);
 
                         // ResponseHeadersRead instructs SendAsync to return once headers are read
                         // rather than buffer the entire response. This gives a small perf boost.
