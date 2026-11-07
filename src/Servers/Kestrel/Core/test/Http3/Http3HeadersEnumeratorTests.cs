@@ -159,4 +159,30 @@ public class Http3HeadersEnumeratorTests
     {
         return (hPackStaticTableId, key, value);
     }
+
+    [Fact]
+    public void ContentLength_RepeatedCurrentReads_ReturnCachedValue()
+    {
+        var responseHeaders = new HttpResponseHeaders(_ => null);
+        responseHeaders.ContentLength = 1024;
+
+        var e = new Http3HeadersEnumerator();
+        e.Initialize(responseHeaders);
+
+        Assert.True(e.MoveNext());
+        Assert.True(e.TryGetCurrentContentLength(out var contentLength));
+        Assert.Equal(1024, contentLength);
+
+        var first = e.Current;
+        var second = e.Current;
+        Assert.Equal("Content-Length", first.Key);
+        Assert.Equal("1024", first.Value);
+        Assert.Same(first.Value, second.Value);
+
+        // Still reported as raw after Current has been formatted.
+        Assert.True(e.TryGetCurrentContentLength(out contentLength));
+        Assert.Equal(1024, contentLength);
+
+        Assert.False(e.MoveNext());
+    }
 }

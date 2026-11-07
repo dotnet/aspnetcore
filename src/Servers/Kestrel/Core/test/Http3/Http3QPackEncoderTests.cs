@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+using System.Net.Http.QPack;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -147,5 +150,81 @@ public class Http3QPackEncoderTests
         var result = buffer.Slice(2, length - 2).ToArray();
         var hex = BitConverter.ToString(result);
         Assert.Equal("5F-1D-12-61-70-70-6C-69-63-61-74-69-6F-6E-2F-63-75-73-74-6F-6D", hex);
+    }
+
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(9L)]
+    [InlineData(299L)]
+    [InlineData(300L)]
+    [InlineData(1024L)]
+    [InlineData(long.MaxValue)]
+    public void BeginEncodeHeaders_ContentLength_MatchesStringEncoding(long contentLength)
+    {
+        var value = contentLength.ToString(CultureInfo.InvariantCulture);
+
+        Span<byte> expected = new byte[64];
+        int expectedLength;
+        if (contentLength == 0)
+        {
+            Assert.True(QPackEncoder.EncodeStaticIndexedHeaderField(H3StaticTable.ContentLength0, expected, out expectedLength));
+        }
+        else
+        {
+            Assert.True(QPackEncoder.EncodeLiteralHeaderFieldWithStaticNameReference(H3StaticTable.ContentLength0, value, expected, out expectedLength));
+        }
+
+        foreach (var encodingSelector in new Func<string, Encoding>[] { KestrelServerOptions.DefaultHeaderEncodingSelector, _ => null })
+        {
+            var headers = new HttpResponseHeaders(encodingSelector);
+            headers.ContentLength = contentLength;
+            var enumerator = new Http3HeadersEnumerator();
+            enumerator.Initialize(headers);
+
+            Span<byte> buffer = new byte[64];
+            var totalHeaderSize = 0;
+            Assert.True(QPackHeaderWriter.BeginEncodeHeaders(enumerator, buffer, ref totalHeaderSize, out var length));
+            Assert.Equal(BitConverter.ToString(expected.Slice(0, expectedLength).ToArray()), BitConverter.ToString(buffer.Slice(2, length - 2).ToArray()));
+            Assert.Equal(HeaderField.GetLength("Content-Length".Length, value.Length), totalHeaderSize);
+        }
+    }
+
+    [Theory]
+    [InlineData(9L)]
+    [InlineData(1024L)]
+    [InlineData(long.MaxValue)]
+    public void BeginEncodeHeaders_ContentLength_BufferTooSmall_MatchesStringEncoding(long contentLength)
+    {
+        for (var bufferSize = 2; bufferSize < 32; bufferSize++)
+        {
+            var fast = Encode(KestrelServerOptions.DefaultHeaderEncodingSelector, bufferSize);
+            var slow = Encode(_ => null, bufferSize);
+            Assert.Equal(slow, fast);
+        }
+
+        (bool, string, int, string) Encode(Func<string, Encoding> encodingSelector, int bufferSize)
+        {
+            var headers = new HttpResponseHeaders(encodingSelector);
+            headers.ContentLength = contentLength;
+            ((IHeaderDictionary)headers).ContentType = "text/plain";
+            var enumerator = new Http3HeadersEnumerator();
+            enumerator.Initialize(headers);
+
+            var buffer = new byte[bufferSize];
+            var totalHeaderSize = 0;
+            var done = QPackHeaderWriter.BeginEncodeHeaders(200, enumerator, buffer, ref totalHeaderSize, out var length);
+            var written = BitConverter.ToString(buffer, 0, length);
+
+            var remaining = new List<string>();
+            if (!done)
+            {
+                do
+                {
+                    remaining.Add(enumerator.Current.Key + ": " + enumerator.Current.Value);
+                } while (enumerator.MoveNext());
+            }
+
+            return (done, written, totalHeaderSize, string.Join(";", remaining));
+        }
     }
 }
