@@ -173,6 +173,17 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
+            // Location changes before renderer attachment are not delivered to .NET.
+            // Reconcile synchronously after attachment, before rendering the initial components.
+            var jsMethods = Services.GetRequiredService<IInternalJSImportMethods>();
+            var uri = jsMethods.NavigationManager_GetLocationHref();
+            var state = jsMethods.NavigationManager_GetHistoryEntryState();
+            var navigationManager = WebAssemblyNavigationManager.Instance;
+            if (navigationManager.Uri != uri || navigationManager.HistoryEntryState != state)
+            {
+                navigationManager.SetLocation(uri, state, isInterceptedLink: false);
+            }
+
             RootComponentOperationBatch? initialOperationBatch = null;
             if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
             {

@@ -35,6 +35,7 @@ export const internalFunctions = {
   refresh,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
+  getHistoryEntryState: (): string | undefined => history.state?.userState,
   scrollToElement,
 };
 

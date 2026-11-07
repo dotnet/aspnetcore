@@ -1,0 +1,18 @@
+@page "/globally-interactive/startup/{PageName}"
+@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager Navigation
+
+<h1>@PageName</h1>
+<ShowExecutionMode />
+<p id="navigation-uri">@Navigation.Uri</p>
+<p id="history-entry-state">@Navigation.HistoryEntryState</p>
+<a id="next-page" href="globally-interactive/startup/@(PageName == "Home" ? "Counter" : "Final")">Next page</a>
+<button id="increment" @onclick="() => count++">Increment</button>
+<p id="count">@count</p>
+
+@code {
+    [Parameter]
+    public string PageName { get; set; } = default!;
+
+    private int count = 0;
+}
