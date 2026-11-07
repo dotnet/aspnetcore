@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -16,6 +17,7 @@ public class EditForm : ComponentBase
 
     private EditContext? _editContext;
     private bool _hasSetEditContextExplicitly;
+    private ElementReference _formElement;
 
     /// <summary>
     /// Constructs an instance of <see cref="EditForm"/>.
@@ -94,6 +96,8 @@ public class EditForm : ComponentBase
     /// It is not used during interactive rendering.
     /// </summary>
     [Parameter] public string? FormName { get; set; }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -178,6 +182,8 @@ public class EditForm : ComponentBase
         }));
         builder.CloseComponent();
 
+        builder.AddElementReferenceCapture(10, elementReference => _formElement = elementReference);
+
         builder.CloseElement();
 
         builder.CloseRegion();
@@ -221,5 +227,33 @@ public class EditForm : ComponentBase
                 await OnInvalidSubmit.InvokeAsync(_editContext);
             }
         }
+    }
+
+    /// <summary>
+    /// Submits the form from code, triggering the same validation and submission
+    /// lifecycle as if the user had clicked a submit button.
+    /// </summary>
+    /// <remarks>
+    /// This works by making a JS interop call to instruct the browser to submit the
+    /// form (via <c>HTMLFormElement.requestSubmit()</c>). This ensures that any
+    /// expected client-side behaviors, such as triggering HTML's built-in validation
+    /// prompts, also occur. The resulting <c>submit</c> event is then handled by the
+    /// form's <c>onsubmit</c> handler, which runs the <see cref="EditContext"/>
+    /// validation and invokes the appropriate <see cref="OnSubmit"/>,
+    /// <see cref="OnValidSubmit"/>, or <see cref="OnInvalidSubmit"/> callback.
+    /// <para>
+    /// This method requires an interactive rendering mode, as it relies on JS
+    /// interop. In server-side rendering (SSR) scenarios without interactivity,
+    /// JS interop is not available, so this method cannot be used. Use a regular
+    /// <c>&lt;button type="submit"&gt;</c> instead.
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> that can be used to cancel the operation.
+    /// </param>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous submission operation.</returns>
+    public async Task SubmitAsync(CancellationToken cancellationToken = default)
+    {
+        await JSRuntime.InvokeVoidAsync(EditFormInterop.Submit, cancellationToken, _formElement);
     }
 }
