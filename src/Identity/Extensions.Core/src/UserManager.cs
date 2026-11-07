@@ -45,6 +45,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
     private readonly Dictionary<string, IUserTwoFactorTokenProvider<TUser>> _tokenProviders =
         new Dictionary<string, IUserTwoFactorTokenProvider<TUser>>();
 
+    private readonly List<IUserValidator<TUser>> _userValidators = new List<IUserValidator<TUser>>();
+    private readonly List<IPasswordValidator<TUser>> _passwordValidators = new List<IPasswordValidator<TUser>>();
+
     private bool _disposed;
 #if NETSTANDARD2_0 || NETFRAMEWORK
     private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
@@ -91,24 +94,19 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (userValidators != null)
         {
-            foreach (var v in userValidators)
-            {
-                UserValidators.Add(v);
-            }
+            AddRange(_userValidators, userValidators);
         }
         if (passwordValidators != null)
         {
-            foreach (var v in passwordValidators)
-            {
-                PasswordValidators.Add(v);
-            }
+            AddRange(_passwordValidators, passwordValidators);
         }
 
         if (services != null)
         {
-            foreach (var providerName in Options.Tokens.ProviderMap.Keys)
+            foreach (var entry in Options.Tokens.ProviderMap)
             {
-                var description = Options.Tokens.ProviderMap[providerName];
+                var providerName = entry.Key;
+                var description = entry.Value;
 
                 var provider = description.ProviderInstance as IUserTwoFactorTokenProvider<TUser>;
                 if (provider == null && description.GetProviderType<IUserTwoFactorTokenProvider<TUser>>() is Type providerType)
@@ -136,6 +134,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
     }
 
+    private static void AddRange<T>(List<T> list, IEnumerable<T> items)
+    {
+        // Size the list exactly when the count is known (DI injects arrays) instead of growing it to the default capacity.
+        if (list.Count == 0 && items is ICollection<T> collection)
+        {
+            list.Capacity = collection.Count;
+        }
+        list.AddRange(items);
+    }
+
     /// <summary>
     /// Gets or sets the persistence store the manager operates over.
     /// </summary>
@@ -158,12 +166,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <summary>
     /// The <see cref="IUserValidator{TUser}"/> used to validate users.
     /// </summary>
-    public IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
+    public IList<IUserValidator<TUser>> UserValidators => _userValidators;
 
     /// <summary>
     /// The <see cref="IPasswordValidator{TUser}"/> used to validate passwords.
     /// </summary>
-    public IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
+    public IList<IPasswordValidator<TUser>> PasswordValidators => _passwordValidators;
 
     /// <summary>
     /// The <see cref="ILookupNormalizer"/> used to normalize things like user and role names.
