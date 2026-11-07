@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Moq;
@@ -251,6 +253,9 @@ public class CircuitHostTest
         var handler = new Mock<CircuitHandler>(MockBehavior.Strict);
         var tcs = new TaskCompletionSource();
         var reportedErrors = new List<UnhandledExceptionEventArgs>();
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var logger = loggerFactory.CreateLogger<CircuitHost>();
 
         SetupMockInboundActivityHandler(handler);
 
@@ -259,7 +264,10 @@ public class CircuitHostTest
             .Returns(tcs.Task)
             .Verifiable();
 
-        var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object }, descriptors: [new ComponentDescriptor()]);
+        var circuitHost = TestCircuitHost.Create(
+            handlers: [handler.Object],
+            descriptors: [new ComponentDescriptor()],
+            logger: logger);
         circuitHost.UnhandledException += (sender, errorInfo) =>
         {
             Assert.Same(circuitHost, sender);
@@ -285,6 +293,47 @@ public class CircuitHostTest
         var aex = Assert.IsType<AggregateException>(reportedErrors.Single().ExceptionObject);
         Assert.Same(ex, aex.InnerExceptions.Single());
         Assert.False(reportedErrors.Single().IsTerminating);
+
+        var log = Assert.Single(sink.Writes, write => write.EventId.Name == "InitializationFailed");
+        Assert.Equal(LogLevel.Debug, log.LogLevel);
+        Assert.Same(aex, log.Exception);
+
+        var error = Assert.Single(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        Assert.Equal("CircuitHandlerFailed", error.EventId.Name);
+        Assert.Same(ex, error.Exception);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_LogsInitialComponentActivationFailureAsError()
+    {
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            descriptors:
+            [
+                new ComponentDescriptor
+                {
+                    ComponentType = typeof(MissingServiceInjectedComponent),
+                    Parameters = ParameterView.Empty,
+                    Sequence = 0,
+                },
+            ],
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
+            handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
+            () => circuitHost.InitializeAsync(
+                new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
+                default,
+                CancellationToken.None));
+
+        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        Assert.Contains($"There is no registered service of type '{typeof(MissingService).FullName}'.", exception.Message);
+
+        var error = Assert.Single(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        Assert.Equal("RootComponentInitializationFailed", error.EventId.Name);
+        Assert.Same(exception, error.Exception);
     }
 
     [Fact]
@@ -1088,6 +1137,86 @@ public class CircuitHostTest
     }
 
     [Fact]
+    public async Task UpdateRootComponents_LogsInitialComponentActivationFailureAsError()
+    {
+        // Arrange
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope(),
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        // Act
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
+            handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
+            () => AddComponentAsync<MissingServiceInjectedComponent>(circuitHost, 1));
+
+        // Assert
+        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        Assert.Contains($"There is no registered service of type '{typeof(MissingService).FullName}'.", exception.Message);
+
+        var error = Assert.Single(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        Assert.Equal("RootComponentInitializationFailed", error.EventId.Name);
+        Assert.Same(exception, error.Exception);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_CircuitHandlerFailureLogsSingleError()
+    {
+        var handler = new Mock<CircuitHandler>(MockBehavior.Strict);
+        SetupMockInboundActivityHandler(handler);
+        handler
+            .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidTimeZoneException());
+
+        var services = new ServiceCollection()
+            .AddSingleton(handler.Object)
+            .BuildServiceProvider();
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: services.CreateAsyncScope(),
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            callback => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(callback),
+            callback => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(callback),
+            () => AddComponentAsync<TestComponent>(circuitHost, 1));
+
+        var error = Assert.Single(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        Assert.Equal("CircuitHandlerFailed", error.EventId.Name);
+
+        var wrapper = Assert.Single(sink.Writes, write => write.EventId.Name == "UpdateRootComponentsFailed");
+        Assert.Equal(LogLevel.Debug, wrapper.LogLevel);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_InvalidStateTransitionDoesNotLogError()
+    {
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            descriptors: [new ComponentDescriptor()],
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            callback => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(callback),
+            callback => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(callback),
+            () => circuitHost.UpdateRootComponents(
+                new RootComponentOperationBatch { BatchId = 1, Operations = [] },
+                null,
+                isRestore: false,
+                CancellationToken.None));
+
+        Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
+        var wrapper = Assert.Single(sink.Writes, write => write.EventId.Name == "UpdateRootComponentsFailed");
+        Assert.Equal(LogLevel.Debug, wrapper.LogLevel);
+    }
+
+    [Fact]
     public async Task UpdateRootComponents_CanUpdateExistingRootComponent()
     {
         // Arrange
@@ -1653,6 +1782,14 @@ public class CircuitHostTest
             _disposeTcs.SetResult();
         }
     }
+
+    private sealed class MissingServiceInjectedComponent : ComponentBase
+    {
+        [Inject]
+        public MissingService Service { get; set; } = default!;
+    }
+
+    private sealed class MissingService;
 
     private class TestComponent() : IComponent, IHandleAfterRender
     {
