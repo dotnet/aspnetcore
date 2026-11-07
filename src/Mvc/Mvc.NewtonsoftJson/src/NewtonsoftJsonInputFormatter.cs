@@ -140,6 +140,7 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
         var successful = true;
         Exception? exception = null;
         object? model;
+        var hadJsonContent = false;
 
         using (var streamReader = context.ReaderFactory(readStream, encoding))
         {
@@ -159,6 +160,9 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
             try
             {
                 model = jsonSerializer.Deserialize(jsonReader, type);
+                // Track whether JSON content was actually read. A token type other
+                // than None indicates the reader parsed at least one JSON token.
+                hadJsonContent = jsonReader.TokenType != JsonToken.None;
             }
             finally
             {
@@ -177,10 +181,19 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
         {
             if (model == null && !context.TreatEmptyInputAsDefaultValue)
             {
-                // Some nonempty inputs might deserialize as null, for example whitespace,
-                // or the JSON-encoded value "null". The upstream BodyModelBinder needs to
-                // be notified that we don't regard this as a real input so it can register
-                // a model binding error.
+                if (hadJsonContent)
+                {
+                    // The request body contained a valid JSON value (e.g. the literal "null")
+                    // that deserialized to null, but the parameter is required.
+                    var modelName = context.ModelName;
+                    var modelDisplayName = context.Metadata.DisplayName ?? context.Metadata.Name ?? modelName;
+                    context.ModelState.TryAddModelError(
+                        modelName,
+                        Resources.FormatFormatExceptionMessage_NullJsonIsInvalid(modelDisplayName));
+
+                    return InputFormatterResult.Failure();
+                }
+
                 return InputFormatterResult.NoValue();
             }
             else

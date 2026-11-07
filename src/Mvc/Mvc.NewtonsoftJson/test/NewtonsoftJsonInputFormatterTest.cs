@@ -212,12 +212,44 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         return base.JsonFormatter_EscapedKeys_SingleQuote();
     }
 
-    [Theory]
-    [InlineData(" ", true, true)]
-    [InlineData(" ", false, false)]
-    public Task ReadAsync_WithInputThatDeserializesToNull_SetsModelOnlyIfAllowingEmptyInput_WhenValueIsWhitespaceString(string content, bool treatEmptyInputAsDefaultValue, bool expectedIsModelSet)
+    [Fact]
+    public async Task ReadAsync_WithWhitespaceInput_WhenAllowingEmptyInput_SetsModelToNull()
     {
-        return base.ReadAsync_WithInputThatDeserializesToNull_SetsModelOnlyIfAllowingEmptyInput(content, treatEmptyInputAsDefaultValue, expectedIsModelSet);
+        var formatter = GetInputFormatter();
+
+        var contentBytes = Encoding.UTF8.GetBytes(" ");
+        var httpContext = GetHttpContext(contentBytes);
+
+        var formatterContext = CreateInputFormatterContext(
+            typeof(string),
+            httpContext,
+            treatEmptyInputAsDefaultValue: true);
+
+        var result = await formatter.ReadAsync(formatterContext);
+
+        Assert.False(result.HasError);
+        Assert.True(result.IsModelSet);
+        Assert.Null(result.Model);
+    }
+
+    [Fact]
+    public async Task ReadAsync_WithWhitespaceInput_WhenNotAllowingEmptyInput_ReturnsNoValue()
+    {
+        var formatter = GetInputFormatter();
+
+        var contentBytes = Encoding.UTF8.GetBytes(" ");
+        var httpContext = GetHttpContext(contentBytes);
+
+        var formatterContext = CreateInputFormatterContext(
+            typeof(string),
+            httpContext,
+            treatEmptyInputAsDefaultValue: false);
+
+        var result = await formatter.ReadAsync(formatterContext);
+
+        Assert.False(result.HasError);
+        Assert.False(result.IsModelSet);
+        Assert.Null(result.Model);
     }
 
     [Theory]
