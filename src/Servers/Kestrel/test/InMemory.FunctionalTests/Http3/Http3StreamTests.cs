@@ -313,6 +313,10 @@ public class Http3StreamTests : Http3TestBase
     [InlineData("/\u0161dmin?x=1")]  // U+0161 (353), truncates to 0x61 = 'a' → "/admin?x=1"
     [InlineData("/\u0170ser")]        // U+0170 (368), truncates to 0x70 = 'p' → "/pser"
     [InlineData("/caf\u0165?q=1")]   // U+0165 (357), truncates to 0x65 = 'e' → "/cafe?q=1
+    [InlineData("/a%2F\u00C2\u0080")]
+    [InlineData("/a%2F\u00C2\u00A9")]
+    [InlineData("/a%2F\u00C3\u00A9")]
+    [InlineData("/a%2F\u00E9\u0080\u0080")]
     public async Task NonAsciiPath_Reset(string path)
     {
         var pathBytes = Encoding.UTF8.GetBytes(path);
