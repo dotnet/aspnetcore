@@ -1,0 +1,14 @@
+<div id="boolean_draggable" draggable="@isDraggable">Drag Me</div>
+
+<button id="toggle_draggable" @onclick="ToggleDraggable">Toggle draggable</button>
+
+<input id="ordinary_boolean" type="checkbox" disabled="@isDraggable" />
+
+@code {
+    private bool isDraggable = true;
+
+    private void ToggleDraggable()
+    {
+        isDraggable = !isDraggable;
+    }
+}

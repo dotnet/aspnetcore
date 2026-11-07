@@ -261,6 +261,32 @@ public class HtmlRendererTest
         });
     }
 
+    [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public async Task RenderComponentAsync_RendersDraggableAttributeWithExplicitStringValue(bool value, string expected)
+    {
+        // Arrange
+        var expectedHtml = new[] { "<", "div", " ", "draggable", "=", "\"", expected, "\"", ">", "Drag Me", "</", "div", ">" };
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "div");
+            rtb.AddAttribute(1, "draggable", value);
+            rtb.AddContent(2, "Drag Me");
+            rtb.CloseElement();
+        })));
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            AssertHtmlContentEquals(expectedHtml, result);
+        });
+    }
+
     [Fact]
     public async Task RenderComponentAsync_CanRenderWithChildren()
     {

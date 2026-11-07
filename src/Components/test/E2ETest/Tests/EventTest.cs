@@ -249,6 +249,25 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void DraggableAttribute_BooleanValueUpdatesInDom()
+    {
+        Browser.MountTestComponent<BooleanDraggableComponent>();
+
+        var draggable = Browser.Exists(By.Id("boolean_draggable"));
+        var ordinaryBoolean = Browser.Exists(By.Id("ordinary_boolean"));
+
+        Browser.Equal("true", () => draggable.GetDomAttribute("draggable"));
+        Browser.Equal("True", () => draggable.GetDomProperty("draggable"));
+        Browser.Equal("True", () => ordinaryBoolean.GetDomProperty("disabled"));
+
+        Browser.FindElement(By.Id("toggle_draggable")).Click();
+
+        Browser.Equal("false", () => draggable.GetDomAttribute("draggable"));
+        Browser.Equal("False", () => draggable.GetDomProperty("draggable"));
+        Browser.Equal("False", () => ordinaryBoolean.GetDomProperty("disabled"));
+    }
+
+    [Fact]
     public void TouchEvent_CanTrigger()
     {
         Browser.MountTestComponent<TouchEventComponent>();
