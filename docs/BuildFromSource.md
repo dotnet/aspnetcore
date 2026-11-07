@@ -120,13 +120,6 @@ The steps you follow next depend on your preferred development environment:
 
     If you tried to activate before restoring and the repository SDK was missing, run the platform's `restore` script from the repo root, wait for it to complete, and activate again.
 
-    Restore also copies the runtime's generated TypeScript declarations from the flowed
-    `Microsoft.NETCore.App.Runtime.browser-wasm` package to
-    `src/Components/dotnet-runtime-js/dotnet.d.ts`. This file is not tracked in Git.
-    Run restore before building Blazor's JavaScript directly with npm, and again after
-    updating runtime dependencies. The MSBuild npm workspace build performs this step
-    automatically, even when npm packages are already restored.
-
 1. After you've activated the locally installed .NET, open the project you want to modify by running the `code` command in the project's directory. For example, if you want to modify the`src/Http` project:
 
     ```bash

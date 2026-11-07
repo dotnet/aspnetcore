@@ -9,23 +9,6 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.browser-wasm" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
-  </ItemGroup>
-
-  <Target Name="CopyRuntimeJavaScriptDefinitions"
-      AfterTargets="Restore"
-      Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(DesignTimeBuild)' != 'true'"
-      Inputs="$(MSBuildProjectFullPath);$(ProjectAssetsFile)"
-      Outputs="$(RepoRoot)src/Components/dotnet-runtime-js/dotnet.d.ts">
-    <Copy
-      SourceFiles="$(NuGetPackageRoot)microsoft.netcore.app.runtime.browser-wasm/$(MicrosoftNETCoreAppRefVersion)/runtimes/browser-wasm/native/dotnet.d.ts"
-      DestinationFiles="$(RepoRoot)src/Components/dotnet-runtime-js/dotnet.d.ts"
-      SkipUnchangedFiles="true" />
-    <!-- A different runtime pack can contain an older file; still invalidate the npm build. -->
-    <Touch Files="$(RepoRoot)src/Components/dotnet-runtime-js/dotnet.d.ts" />
-  </Target>
-
   <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
   <Target Name="GenerateDirectoryBuildFiles">
     <PropertyGroup>
