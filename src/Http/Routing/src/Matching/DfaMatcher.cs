@@ -110,6 +110,15 @@ internal sealed partial class DfaMatcher : Matcher
             ? ((Span<CandidateState>)candidateStateStackArray)[..candidateCount]
             : (candidateStateArray = new CandidateState[candidateCount]);
 
+        // Candidates are sorted by score. With the default selector, once a valid candidate has been found,
+        // candidates with a higher (worse) score can never be selected, so we can skip computing their
+        // route values and constraints. Candidates with the same score are still processed so that
+        // ambiguities are reported, and once an ambiguity is found every candidate is processed so that
+        // the exception message is unchanged. When debug logging is enabled, every candidate is processed
+        // so that it gets logged.
+        var canSkipLowerPriority = useFastPath && !log;
+        var foundScore = -1;
+
         for (var i = 0; i < candidateCount; i++)
         {
             // PERF: using ref here to avoid copying around big structs.
@@ -118,6 +127,13 @@ internal sealed partial class DfaMatcher : Matcher
             // candidate: readonly data about the endpoint and how to match
             // state: mutable storarge for our processing
             ref readonly var candidate = ref candidates[i];
+
+            if (canSkipLowerPriority && foundScore >= 0 && candidate.Score > foundScore)
+            {
+                candidateState = candidateState[..i];
+                break;
+            }
+
             ref var state = ref candidateState[i];
             state = new CandidateState(candidate.Endpoint, candidate.Score);
 
@@ -172,6 +188,20 @@ internal sealed partial class DfaMatcher : Matcher
                 {
                     CandidateSet.SetValidity(ref state, false);
                     isMatch = false;
+                }
+            }
+
+            if (isMatch)
+            {
+                if (foundScore < 0)
+                {
+                    foundScore = candidate.Score;
+                }
+                else if (candidate.Score == foundScore)
+                {
+                    // This is an ambiguous match. The exception message lists every valid candidate,
+                    // including lower-priority ones, so process all of them to keep the message unchanged.
+                    canSkipLowerPriority = false;
                 }
             }
 

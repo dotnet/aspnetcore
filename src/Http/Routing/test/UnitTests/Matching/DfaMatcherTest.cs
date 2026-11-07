@@ -637,6 +637,97 @@ public class DfaMatcherTest
     }
 
     [Fact]
+    public async Task MatchAsync_HigherPriorityCandidateMatches_LowerPriorityCandidatesNotProcessed()
+    {
+        var lowerPriorityConstraint = new CapturingConstraint();
+        var higherPriorityEndpoint = CreateEndpoint("/{p:int}", 0);
+        var lowerPriorityEndpoint = CreateEndpoint("/{p}", 1, policies: new { p = lowerPriorityConstraint, });
+
+        var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                lowerPriorityEndpoint,
+                higherPriorityEndpoint,
+            });
+
+        var matcher = CreateDfaMatcher(endpointDataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = "/1";
+
+        await matcher.MatchAsync(httpContext);
+
+        Assert.Same(higherPriorityEndpoint, httpContext.GetEndpoint());
+        Assert.Equal("1", httpContext.Request.RouteValues["p"]);
+        Assert.Null(lowerPriorityConstraint.Values);
+    }
+
+    [Fact]
+    public async Task MatchAsync_HigherPriorityCandidateRejected_LowerPriorityCandidateMatched()
+    {
+        var lowerPriorityConstraint = new CapturingConstraint();
+        var higherPriorityEndpoint = CreateEndpoint("/{p:int}", 0);
+        var lowerPriorityEndpoint = CreateEndpoint("/{p}", 1, policies: new { p = lowerPriorityConstraint, });
+
+        var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                lowerPriorityEndpoint,
+                higherPriorityEndpoint,
+            });
+
+        var matcher = CreateDfaMatcher(endpointDataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = "/One";
+
+        await matcher.MatchAsync(httpContext);
+
+        Assert.Same(lowerPriorityEndpoint, httpContext.GetEndpoint());
+        Assert.Equal("One", httpContext.Request.RouteValues["p"]);
+        Assert.NotNull(lowerPriorityConstraint.Values);
+    }
+
+    [Fact]
+    public async Task MatchAsync_MultipleMatchesWithSameScore_AfterHigherPriorityInvalidCandidate_ThrowsAmbiguousMatch()
+    {
+        var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/{p:int}", 0),
+                CreateEndpoint("/{p}", 1),
+                CreateEndpoint("/{q}", 1),
+            });
+
+        var matcher = CreateDfaMatcher(endpointDataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = "/One";
+
+        await Assert.ThrowsAsync<AmbiguousMatchException>(() => matcher.MatchAsync(httpContext));
+    }
+
+    [Fact]
+    public async Task MatchAsync_MultipleMatchesWithSameScore_LowerPriorityValidCandidate_IncludedInAmbiguousMatchMessage()
+    {
+        var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/{p}", 0),
+                CreateEndpoint("/{q}", 0),
+                CreateEndpoint("/{r}", 1),
+            });
+
+        var matcher = CreateDfaMatcher(endpointDataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = "/One";
+
+        var ex = await Assert.ThrowsAsync<AmbiguousMatchException>(() => matcher.MatchAsync(httpContext));
+
+        Assert.Equal(
+            "The request matched multiple endpoints. Matches: " + Environment.NewLine + Environment.NewLine +
+            "/{p}" + Environment.NewLine + "/{q}" + Environment.NewLine + "/{r}",
+            ex.Message);
+    }
+
+    [Fact]
     public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled()
     {
         // Arrange
