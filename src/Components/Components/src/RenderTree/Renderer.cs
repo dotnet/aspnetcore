@@ -138,7 +138,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private static IComponentPropertyActivator GetComponentPropertyActivatorOrDefault(IServiceProvider serviceProvider)
     {
         return serviceProvider.GetService<IComponentPropertyActivator>()
-            ?? new DefaultComponentPropertyActivator();
+            ?? DefaultComponentPropertyActivatorFactory.Create();
     }
 
     /// <summary>
