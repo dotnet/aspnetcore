@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Net;
 using Microsoft.AspNetCore.Hosting.Server.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -87,6 +88,134 @@ public class HostingApplicationTests
 
         // Act/Assert
         hostingApplication.DisposeContext(context, null);
+    }
+
+    [Fact]
+    public void ActivityCreationTagsAreCorrectWhenContextIsReused()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var samplerTags = new List<Dictionary<string, object>>();
+        var activityTags = new List<Dictionary<string, object>>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+            {
+                samplerTags.Add(options.Tags.ToDictionary(t => t.Key, t => t.Value));
+                return ActivitySamplingResult.AllData;
+            },
+            ActivityStarted = activity => activityTags.Add(activity.TagObjects.ToDictionary(t => t.Key, t => t.Value))
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var hostingApplication = CreateApplication(activitySource: testSource);
+        var connection = new HttpConnectionFeature { RemoteIpAddress = IPAddress.Parse("192.0.2.1"), RemotePort = 50001 };
+        var features = new FeaturesWithContext<Context>(new FeatureCollection());
+        features.Set<IHttpConnectionFeature>(connection);
+        features.Set<IHttpResponseFeature>(new HttpResponseFeature());
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature
+        {
+            Scheme = "http",
+            Method = "GET",
+            Path = "/one",
+            QueryString = "?a=1",
+            Headers = new HeaderDictionary { { "Host", "localhost:8080" }, { "User-Agent", "TestAgent" } }
+        });
+        var context1 = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context1, null);
+
+        // Change the host and the remote port, which are cached by the pooled context.
+        connection.RemotePort = 50002;
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature
+        {
+            Scheme = "http",
+            Method = "POST",
+            Path = "/two",
+            Headers = new HeaderDictionary { { "Host", "example.com" } }
+        });
+        var context2 = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context2, null);
+
+        // Change only the scheme, which determines the default server port.
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature
+        {
+            Scheme = "https",
+            Method = "GET",
+            Path = "/three",
+            Headers = new HeaderDictionary { { "Host", "example.com" } }
+        });
+        var context3 = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context3, null);
+
+        // Nothing cached changes.
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature
+        {
+            Scheme = "https",
+            Method = "GET",
+            Path = "/four",
+            Headers = new HeaderDictionary { { "Host", "example.com" } }
+        });
+        var context4 = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context4, null);
+
+        Assert.Same(context1, context2);
+        Assert.Same(context1, context3);
+        Assert.Same(context1, context4);
+
+        var expectedTags = new List<Dictionary<string, object>>
+        {
+            new()
+            {
+                ["client.address"] = "192.0.2.1",
+                ["network.peer.address"] = "192.0.2.1",
+                ["network.peer.port"] = 50001,
+                ["server.address"] = "localhost",
+                ["server.port"] = 8080,
+                ["http.request.method"] = "GET",
+                ["user_agent.original"] = "TestAgent",
+                ["url.scheme"] = "http",
+                ["url.path"] = "/one",
+                ["url.query"] = "a=1",
+            },
+            new()
+            {
+                ["client.address"] = "192.0.2.1",
+                ["network.peer.address"] = "192.0.2.1",
+                ["network.peer.port"] = 50002,
+                ["server.address"] = "example.com",
+                ["server.port"] = 80,
+                ["http.request.method"] = "POST",
+                ["url.scheme"] = "http",
+                ["url.path"] = "/two",
+            },
+            new()
+            {
+                ["client.address"] = "192.0.2.1",
+                ["network.peer.address"] = "192.0.2.1",
+                ["network.peer.port"] = 50002,
+                ["server.address"] = "example.com",
+                ["server.port"] = 443,
+                ["http.request.method"] = "GET",
+                ["url.scheme"] = "https",
+                ["url.path"] = "/three",
+            },
+            new()
+            {
+                ["client.address"] = "192.0.2.1",
+                ["network.peer.address"] = "192.0.2.1",
+                ["network.peer.port"] = 50002,
+                ["server.address"] = "example.com",
+                ["server.port"] = 443,
+                ["http.request.method"] = "GET",
+                ["url.scheme"] = "https",
+                ["url.path"] = "/four",
+            },
+        };
+
+        Assert.Equal(expectedTags, samplerTags);
+        Assert.Equal(expectedTags, activityTags);
     }
 
     [Fact]
