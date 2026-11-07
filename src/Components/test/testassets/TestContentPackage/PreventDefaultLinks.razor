@@ -1,0 +1,120 @@
+@using Microsoft.JSInterop
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<section>
+    <p id="interactive-@Id">@RendererInfo.IsInteractive</p>
+    <p id="runtime-@Id">@RendererInfo.Name</p>
+    <p id="count-@Id">@_count</p>
+    <button id="increment-@Id" @onclick="Increment">Increment</button>
+    <label>
+        <input id="prevent-@Id" type="checkbox" @bind="_preventDefault" />
+        Prevent navigation
+    </label>
+    <p id="prevention-@Id">@_preventDefault</p>
+    <a id="original-@Id" href="#" @onclick="Increment" @onclick:preventDefault>Original reproduction</a>
+    <a id="route-@Id" href="nav/other" @onclick="Increment" @onclick:preventDefault>Prevent route navigation</a>
+    <a id="fragment-@Id" href="@($"{ReturnUrl}#target-{Id}")" @onclick="Increment" @onclick:preventDefault>Prevent fragment navigation</a>
+    <a id="conditional-@Id" href="nav/other" @onclick="Increment" @onclick:preventDefault="_preventDefault">Conditional prevention</a>
+    <a id="no-enhance-@Id" href="nav/other" data-enhance-nav="false" @onclick="Increment" @onclick:preventDefault="_preventDefault">Without enhanced navigation</a>
+    <a id="ordinary-@Id" href="nav/other">Ordinary navigation</a>
+    <a id="ordinary-fragment-@Id" href="@($"{ReturnUrl}#target-{Id}")">Ordinary fragment</a>
+    <a id="nested-@Id" href="nav/other" @onclick="Increment" @onclick:preventDefault>
+        <span id="nested-target-@Id">Nested click target</span>
+    </a>
+    <div @onclick="Increment" @onclick:preventDefault>
+        <a id="ancestor-@Id" href="nav/other">Prevention on ancestor</a>
+    </div>
+    <div @onclick="Increment">
+        <a id="stop-@Id" href="nav/other" @onclick="Increment" @onclick:preventDefault @onclick:stopPropagation>Stop propagation</a>
+    </div>
+    <a id="async-@Id" href="nav/other" @onclick="IncrementAsync" @onclick:preventDefault>Async handler</a>
+    <p id="target-@Id">Fragment target</p>
+    <button id="reveal-@Id" @onclick="ShowLateLink">Add prevented link</button>
+    <a id="register-and-navigate-@Id" href="nav/other" @onclick="ShowLateLink">Render during navigation</a>
+    <a id="register-and-nested-click-@Id" href="nav/other" @onclick="ShowLateLinkAndClickNestedButton">Render and click during navigation</a>
+    <button id="register-and-nested-prevented-click-@Id" @onclick="ShowLateLinkAndClickNestedLink">Render and click a prevented link</button>
+    <a id="native-register-and-navigate-@Id" href="nav/other">Render from a native document listener and navigate</a>
+    @if (_showLateLink)
+    {
+        <a id="late-@Id" href="nav/other" @onclick="Increment" @onclick:preventDefault>Late prevented link</a>
+    }
+</section>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = default!;
+
+    [Parameter]
+    public string ReturnUrl { get; set; } = default!;
+
+    [Parameter]
+    public bool NativeClick { get; set; }
+
+    private DotNetObjectReference<PreventDefaultLinks> _nativeClickReference;
+    private int _count;
+    private bool _preventDefault = true;
+    private bool _showLateLink;
+    private bool _clickAfterRender;
+    private string _nestedClickTarget = "increment";
+
+    private void ShowLateLink()
+    {
+        _showLateLink = true;
+    }
+
+    private void ShowLateLinkAndClickNestedButton()
+    {
+        ShowLateLink();
+        _clickAfterRender = true;
+    }
+
+    private void ShowLateLinkAndClickNestedLink()
+    {
+        ShowLateLink();
+        _nestedClickTarget = "late";
+        _clickAfterRender = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && NativeClick)
+        {
+            _nativeClickReference = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("nativeDocumentClickProbe.setComponent", _nativeClickReference);
+        }
+
+        if (_clickAfterRender)
+        {
+            _clickAfterRender = false;
+            await JSRuntime.InvokeVoidAsync("documentClickProbe.clickNested", $"{_nestedClickTarget}-{Id}");
+        }
+    }
+
+    [JSInvokable]
+    public void RevealFromNativeClick()
+    {
+        ShowLateLink();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (_nativeClickReference is not null)
+        {
+            ((IJSInProcessRuntime)JSRuntime).InvokeVoid("nativeDocumentClickProbe.dispose");
+            _nativeClickReference.Dispose();
+        }
+    }
+
+    private void Increment()
+    {
+        _count++;
+    }
+
+    private async Task IncrementAsync()
+    {
+        await Task.Yield();
+        _count++;
+    }
+}

@@ -1,0 +1,116 @@
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.RenderTree
+@using Microsoft.AspNetCore.Components.Web.Infrastructure
+@using Microsoft.Extensions.Logging
+@using Microsoft.JSInterop
+@implements IDisposable
+@inject IServiceProvider Services
+@inject ILoggerFactory LoggerFactory
+@inject IJSRuntime JSRuntime
+
+<p id="deferred-runtime">@RendererInfo.Name</p>
+<p id="deferred-count">@_count</p>
+<a id="deferred-register-and-navigate" href="nav/other" @onclick="AttachRendererAndClick">Attach another renderer and navigate</a>
+<a id="native-register-and-navigate-wasm" href="nav/other">Attach another renderer from a native listener and navigate</a>
+<a id="deferred-prevented" href="nav/other" @onclick="Increment" @onclick:preventDefault>Nested prevented link</a>
+<div id="deferred-renderer-root"></div>
+
+@code {
+    [Parameter]
+    public bool NativeClick { get; set; }
+
+    [Parameter]
+    public bool NativeNestedClick { get; set; }
+
+    private RegistrationRenderer _renderer;
+    private DotNetObjectReference<DeferredClickRegistration> _nativeClickReference;
+    private int _count;
+
+    private void AttachRendererAndClick()
+    {
+        _renderer = new RegistrationRenderer(Services, LoggerFactory, (IJSInProcessRuntime)JSRuntime);
+        _renderer.AttachRoot();
+        ((IJSInProcessRuntime)JSRuntime).InvokeVoid("documentClickProbe.clickNested", "deferred-prevented");
+    }
+
+    private void Increment()
+    {
+        _count++;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && NativeClick)
+        {
+            _nativeClickReference = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("nativeDocumentClickProbe.setComponent", _nativeClickReference);
+        }
+    }
+
+    [JSInvokable]
+    public void RevealFromNativeClick()
+    {
+        _renderer = new RegistrationRenderer(Services, LoggerFactory, (IJSInProcessRuntime)JSRuntime);
+        _renderer.AttachRoot();
+        if (NativeNestedClick)
+        {
+            ((IJSInProcessRuntime)JSRuntime).InvokeVoid("documentClickProbe.clickNested", "deferred-prevented");
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_nativeClickReference is not null)
+        {
+            ((IJSInProcessRuntime)JSRuntime).InvokeVoid("nativeDocumentClickProbe.dispose");
+            _nativeClickReference.Dispose();
+        }
+
+        _renderer?.Dispose();
+    }
+
+    private sealed class RegistrationRenderer(
+        IServiceProvider services,
+        ILoggerFactory loggerFactory,
+        IJSInProcessRuntime jsRuntime)
+        : WebRenderer(new RendererServices(services, jsRuntime), loggerFactory, new JsonSerializerOptions(JsonSerializerDefaults.Web), new JSComponentInterop(new JSComponentConfigurationStore()))
+    {
+        private static int _nextRendererId = 10;
+
+        public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
+
+        public void AttachRoot()
+        {
+            // Root attachment creates the real BrowserRenderer and its click delegate, before any render batch.
+            AddRootComponent(typeof(EmptyRoot), "#deferred-renderer-root");
+        }
+
+        protected override int GetWebRendererId() => ++_nextRendererId;
+
+        protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
+            => jsRuntime.InvokeVoid("Blazor._internal.attachRootComponentToElement", domElementSelector, componentId, RendererId);
+
+        protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+            => throw new NotSupportedException("This renderer exercises root attachment only.");
+
+        protected override void HandleException(Exception exception)
+            => throw exception;
+    }
+
+    private sealed class EmptyRoot : ComponentBase
+    {
+    }
+
+    // Use the runtime's own serialization via public IJSRuntime, without its internal renderer fast path.
+    private sealed class RendererServices(IServiceProvider services, IJSRuntime jsRuntime) : IServiceProvider, IJSRuntime
+    {
+        public object GetService(Type serviceType)
+            => serviceType == typeof(IJSRuntime) ? this : services.GetService(serviceType);
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+            => jsRuntime.InvokeAsync<TValue>(identifier, args);
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+            => jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+    }
+}
