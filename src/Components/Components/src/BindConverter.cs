@@ -685,6 +685,10 @@ public static class BindConverter
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static object? FormatValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T value, CultureInfo? culture = null)
     {
+        if (value is null)
+        {
+            return null;
+        }
         var formatter = FormatterDelegateCache.Get<T>();
         return formatter(value, culture);
     }
@@ -1865,9 +1869,9 @@ public static class BindConverter
 
             return FormatArrayValue;
 
-            string? FormatArrayValue(T[] value, CultureInfo? culture)
+            string? FormatArrayValue(T[]? value, CultureInfo? culture)
             {
-                if (value.Length == 0)
+                if (value is null || value.Length == 0)
                 {
                     return "[]";
                 }
