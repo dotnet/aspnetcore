@@ -9,9 +9,27 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Authorization;
 
 /// <summary>
-/// Equivalent to <c>requirements.OfType&lt;T&gt;()</c>, but indexes into the <see cref="ReadOnlyCollection{T}"/>
-/// returned by <see cref="AuthorizationPolicy.Requirements"/> to avoid allocating an iterator.
+/// Equivalent to <c>requirements.OfType&lt;T&gt;()</c>, but avoids allocating on the common path.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Fast path: <see cref="AuthorizationPolicy.Requirements"/> is created with <see cref="List{T}.AsReadOnly"/>, so the
+/// requirements passed to <see cref="AuthorizationHandlerContext"/> are usually a <see cref="ReadOnlyCollection{T}"/>.
+/// In that case the enumerator indexes into the collection directly and creates no enumerator.
+/// </para>
+/// <para>
+/// What's saved: <c>OfType&lt;T&gt;()</c> allocates an iterator plus a boxed enumerator over the source on every
+/// <see cref="IAuthorizationHandler.HandleAsync(AuthorizationHandlerContext)"/> call. This struct enumerable avoids
+/// both, and is safe to use in <c>foreach</c> inside async handlers because it is not a ref struct.
+/// </para>
+/// <para>
+/// Fallback: any other <see cref="IEnumerable{T}"/> goes through <c>OfType&lt;T&gt;()</c> unchanged.
+/// </para>
+/// <para>
+/// <typeparamref name="T"/> is intentionally unconstrained because <see cref="Infrastructure.PassThroughAuthorizationHandler"/>
+/// uses it with <see cref="IAuthorizationHandler"/>, which does not derive from <see cref="IAuthorizationRequirement"/>.
+/// </para>
+/// </remarks>
 internal readonly struct RequirementsOfType<T>
 {
     private readonly IEnumerable<IAuthorizationRequirement> _requirements;
