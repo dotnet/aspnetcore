@@ -1,0 +1,23 @@
+#nullable enable
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.RazorComponentMcpOptions() -> void
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.Name.get -> string!
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.Name.set -> void
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.BaseUri.get -> System.Uri!
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.BaseUri.set -> void
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.InitialPath.get -> string!
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.InitialPath.set -> void
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.PreserveDom.get -> bool
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.PreserveDom.set -> void
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.LogLevel.get -> Microsoft.Extensions.Logging.LogLevel
+Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions.LogLevel.set -> void
+Microsoft.Extensions.DependencyInjection.RazorComponentMcpServerBuilderExtensions
+static Microsoft.Extensions.DependencyInjection.RazorComponentMcpServerBuilderExtensions.WithRazorComponents<TRootComponent>(this Microsoft.Extensions.DependencyInjection.IMcpServerBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IMcpServerBuilder!
+static Microsoft.Extensions.DependencyInjection.RazorComponentMcpServerBuilderExtensions.WithRazorComponents<TRootComponent>(this Microsoft.Extensions.DependencyInjection.IMcpServerBuilder! builder, string! openingToolName, System.Func<ModelContextProtocol.Protocol.CallToolResult!, System.Collections.Generic.IReadOnlyDictionary<string!, object?>!>! initialParametersFactory, System.Action<Microsoft.AspNetCore.Components.Mcp.RazorComponentMcpOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IMcpServerBuilder!
+Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext
+Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext.IsActive.get -> bool
+Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext.IsShellRendering.get -> bool
+Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext.Location.get -> System.Uri!
+Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext.BaseUri.get -> System.Uri!
+Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext.User.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext.CancellationToken.get -> System.Threading.CancellationToken

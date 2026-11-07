@@ -1,0 +1,26 @@
+@page "/mcp-redirect-result"
+@using BlazorMcpProof
+@inject McpFormEffects Effects
+@inject McpScopeProbe Scope
+@implements IDisposable
+
+<p id="redirect-count">@Effects.Read(ActiveCase).Count</p>
+<p id="redirect-form-data">@(FormCase is null ? "none" : "retained")</p>
+
+@code {
+    [SupplyParameterFromQuery(Name = "case")]
+    public string? QueryCase { get; set; }
+
+    [SupplyParameterFromForm(Name = "Case")]
+    private string? FormCase { get; set; }
+
+    private string ActiveCase => QueryCase ?? "redirect";
+
+    protected override void OnInitialized()
+    {
+        Scope.CaseId = ActiveCase;
+        Effects.ComponentCreated(ActiveCase);
+    }
+
+    public void Dispose() => Effects.ComponentDisposed(ActiveCase);
+}

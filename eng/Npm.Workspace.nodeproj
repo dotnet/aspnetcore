@@ -99,6 +99,14 @@
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.webassembly.js.map" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webview.js" />
 
+    <!-- Components MCP hosting flavor outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Mcp\src\JS\dist\Debug\blazor.mcp.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Mcp\src\JS\dist\Debug\blazor.mcp.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Mcp\src\JS\dist\Release\blazor.mcp.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Mcp\src\JS\dist\Release\blazor.mcp.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Mcp\testassets\Components.McpTestApp\JS\dist\Debug\mcp-consumer.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Mcp\testassets\Components.McpTestApp\JS\dist\Release\mcp-consumer.js" />
+
     <!-- WebAssembly Authentication outputs -->
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\WebAssembly.Authentication\src\Interop\dist\Debug\AuthenticationService.js" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\WebAssembly.Authentication\src\Interop\dist\Debug\AuthenticationService.js.map" />

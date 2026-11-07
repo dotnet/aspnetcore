@@ -1,0 +1,41 @@
+@inject NavigationManager Navigation
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="data:," />
+    <base href="@Navigation.BaseUri" />
+    <HeadOutlet />
+</head>
+<body>
+    @if (Context?.IsShellRendering == true)
+    {
+        <p id="authored-shell">Loading the authored application...</p>
+    }
+    else
+    {
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(ProofLayout)" />
+        </Found>
+        <NotFound>
+            <p id="not-found">Not found</p>
+        </NotFound>
+    </Router>
+    }
+    @if (Context?.IsActive == true)
+    {
+        <script id="authored-runtime" src="blazor.mcp.js"></script>
+    }
+    else
+    {
+        <script src="_framework/blazor.web.js"></script>
+    }
+</body>
+</html>
+
+@code {
+    [CascadingParameter]
+    public Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext? Context { get; set; }
+}

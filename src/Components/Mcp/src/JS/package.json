@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "name": "@microsoft/aspnetcore-components-mcp",
+  "scripts": {
+    "clean": "rimraf ./dist/Debug ./dist/Release",
+    "prebuild": "npm run clean",
+    "build": "npm run build:debug && npm run build:production",
+    "build:debug": "rollup -c --environment development --forceExit",
+    "build:production": "rollup -c --environment production --forceExit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "2.0.3",
+    "@modelcontextprotocol/client": "2.3.1",
+    "@modelcontextprotocol/core": "2.3.1",
+    "zod": "4.6.5"
+  }
+}
