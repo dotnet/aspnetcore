@@ -135,14 +135,14 @@ internal static class JsonUtils
     {
         reader.Read();
 
+        if (reader.TokenType == JsonToken.Null)
+        {
+            return null;
+        }
+
         if (reader.TokenType != JsonToken.Integer)
         {
             throw new InvalidDataException($"Expected '{propertyName}' to be of type {JTokenType.Integer}.");
-        }
-
-        if (reader.Value == null)
-        {
-            return null;
         }
 
         return Convert.ToInt64(reader.Value, CultureInfo.InvariantCulture);
