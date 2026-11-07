@@ -38,6 +38,7 @@ public static class RateLimiterServiceCollectionExtensions
 
         services.AddMetrics();
         services.AddSingleton<RateLimitingMetrics>();
+        services.AddSingleton<RateLimitingMiddleware>();
         return services;
     }
 }
