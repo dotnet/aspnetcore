@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.JSInterop.JSException.Name.get -> string?
