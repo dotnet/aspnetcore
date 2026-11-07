@@ -259,6 +259,25 @@ try {
         }
     }
 
+    if ($EvalName -eq 'review-pull-request') {
+        $reviewSupportFiles = @(
+            '.github/agents/review-guide-worker.agent.md'
+            '.github/agents/review-candidate-verifier.agent.md'
+            'docs/CrossCuttingGuidance.md'
+            'docs/BlazorComponentsGuidance.md'
+        )
+        foreach ($relativePath in $reviewSupportFiles) {
+            $sourcePath = Join-Path $candidateRootPath $relativePath
+            if (Test-Path $sourcePath -PathType Leaf) {
+                Assert-TreeIsSafe $sourcePath $candidateRootPath "Candidate support file '$relativePath'"
+                $targetPath = Join-Path $destinationPath $relativePath
+                New-Item -ItemType Directory -Path (Split-Path $targetPath -Parent) -Force |
+                    Out-Null
+                Copy-Item $sourcePath $targetPath -Force
+            }
+        }
+    }
+
     Assert-TreeIsSafe $destinationPath $destinationPath 'Staged evaluation tree'
 } catch {
     Remove-Item $destinationPath -Recurse -Force -ErrorAction SilentlyContinue

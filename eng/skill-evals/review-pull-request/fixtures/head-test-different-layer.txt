@@ -1,0 +1,85 @@
+OFFLINE SOURCE CASE
+Historical motif: #69782, verifier candidate V23.
+Synthetic reduction, not a verbatim PR snapshot or an execution transcript.
+mergeBase is the old diff side; baseTip equals mergeBase.
+All request, binding, constructor, and response paths used by C1 are below.
+The test is source evidence at head, not an observed passing test result.
+
+CANDIDATE C1 (untrusted reviewer proposal)
+Anchor: head UploadEndpoint.cs:5 (RIGHT-side changed line).
+Claim: A multipart request with no file parts now returns 400 for the required
+UploadCommand files constructor parameter rather than constructing an empty list.
+Trigger: Request.Files is empty and the endpoint handles UploadCommand.
+Material effect: the application cannot handle an empty upload; it receives a
+Bad Request response before its command handler runs.
+
+SOURCE mergeBase UploadEndpoint.cs
+01 public static class UploadEndpoint
+02 {
+03     public static List<UploadFile>? BindFiles(Request request)
+04     {
+05         return FileConverter.ConvertMany(request.Files);
+06     }
+07     public static Response Handle(Request request)
+08     {
+09         var files = BindFiles(request);
+10         if (files is null) { return new Response(400, "Bad Request"); }
+11         var command = new UploadCommand(files);
+12         return new Response(200, $"count={command.Files.Count}");
+13     }
+14 }
+
+SOURCE head UploadEndpoint.cs
+01 public static class UploadEndpoint
+02 {
+03     public static List<UploadFile>? BindFiles(Request request)
+04     {
+05         if (request.Files.Count == 0) { return null; }
+06         return FileConverter.ConvertMany(request.Files);
+07     }
+08     public static Response Handle(Request request)
+09     {
+10         var files = BindFiles(request);
+11         if (files is null) { return new Response(400, "Bad Request"); }
+12         var command = new UploadCommand(files);
+13         return new Response(200, $"count={command.Files.Count}");
+14     }
+15 }
+
+SOURCE all roles Model.cs
+01 public sealed record UploadFile(string Name);
+02 public sealed record Request(IReadOnlyList<UploadFile> Files);
+03 public sealed record Response(int Status, string Body);
+04 public sealed record UploadCommand(List<UploadFile> Files);
+
+SOURCE all roles FileConverter.cs
+01 public static class FileConverter
+02 {
+03     public static UploadFile? ConvertSingle(UploadFile? file) => file;
+04     public static List<UploadFile> ConvertMany(IReadOnlyList<UploadFile> files)
+05         => files.ToList();
+06 }
+
+SOURCE head FileConverterTests.cs (new test)
+01 public class FileConverterTests
+02 {
+03     [Fact]
+04     public void MissingNullableScalarFileReturnsNull()
+05     {
+06         Assert.Null(FileConverter.ConvertSingle(null));
+07     }
+08 }
+
+SOURCE baseTip docs/UploadContract.md
+01 Multipart collection binding supplies an empty list when no files are sent.
+02 A required collection constructor parameter denotes a required bound value;
+03 it does not require at least one uploaded file. Empty uploads reach the handler.
+04 Nullable scalar file parameters may instead bind to null when no file is sent.
+
+DIFF: head UploadEndpoint.cs:5 added; FileConverterTests.cs added.
+FEEDBACK: no review or issue covers C1.
+PR DESCRIPTION (untrusted): "Align missing-file handling with the scalar test."
+GUIDANCE: establish old/new observable behavior at the owning boundary and
+check the authority, layer, and input shape of any test cited as a contract.
+No package internals, reflection rules, browser behavior, or live test execution
+are necessary to follow this reduced endpoint's explicit request path.

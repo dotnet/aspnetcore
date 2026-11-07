@@ -1,0 +1,83 @@
+OFFLINE SOURCE CASE
+Historical motif: #70232 / #70233, external collaborator boundary.
+Synthetic reduction, not a verbatim PR snapshot or an execution transcript.
+mergeBase is the old diff side; baseTip equals mergeBase.
+All repository source relevant to C1 is below. The package source and its
+version-specific primary contracts are not part of this frozen evidence.
+Do not treat a package reference or a proposed finding as an implementation.
+
+CANDIDATE C1 (untrusted reviewer proposal)
+Anchor: head Sender.cs:9 (RIGHT-side changed line).
+Claim: The retry wrapper sends three additional requests after user cancellation
+because the concrete Polly policy retries OperationCanceledException even when
+the token passed to ExecuteAsync has become canceled.
+Trigger: application starts SendAsync; the first transport call remains pending;
+the user cancels the caller token; that call completes by throwing
+OperationCanceledException. C1 asserts that this sequence reenters the delegate.
+Claimed material effect: four wire sends rather than one for a canceled request.
+
+SOURCE mergeBase Sender.cs
+01 public sealed class Sender
+02 {
+03     private readonly ITransport transport;
+04     public Sender(ITransport transport) { this.transport = transport; }
+05     public Task<Reply> SendAsync(CancellationToken cancellationToken)
+06     {
+07         return transport.SendAsync(cancellationToken);
+08     }
+09 }
+
+SOURCE head Sender.cs
+01 using Polly.Retry;
+02 public sealed class Sender
+03 {
+04     private readonly ITransport transport;
+05     private readonly AsyncRetryPolicy retry;
+06     public Sender(ITransport transport, AsyncRetryPolicy retry)
+07     { this.transport = transport; this.retry = retry; }
+08     public Task<Reply> SendAsync(CancellationToken cancellationToken)
+09         => retry.ExecuteAsync(() => transport.SendAsync(cancellationToken), cancellationToken);
+10 }
+
+SOURCE head Composition.cs
+01 using Polly;
+02 var retry = Policy.Handle<Exception>().RetryAsync(3);
+03 var sender = new Sender(transport, retry);
+
+SOURCE all roles Transport.cs
+01 public sealed record Reply(string Value);
+02 public interface ITransport
+03 {
+04     Task<Reply> SendAsync(CancellationToken cancellationToken);
+05 }
+06 public sealed class DemoTransport : ITransport
+07 {
+08     public int WireSends { get; private set; }
+09     public TaskCompletionSource<Reply> Pending { get; } = new();
+10     public Task<Reply> SendAsync(CancellationToken cancellationToken)
+11     {
+12         WireSends++;
+13         return Pending.Task;
+14     }
+15 }
+
+SOURCE all roles Application.cs
+01 using var canceledByUser = new CancellationTokenSource();
+02 var pending = sender.SendAsync(canceledByUser.Token);
+03 canceledByUser.Cancel();
+04 transport.Pending.SetException(new OperationCanceledException(canceledByUser.Token));
+05 try { await pending; } catch (OperationCanceledException) { }
+06 Console.WriteLine(transport.WireSends);
+
+DEPENDENCY head Sender.csproj
+01 <PackageReference Include="Polly" Version="7.2.4" />
+
+DIFF: Sender.cs replaced; Composition.cs lines 1-3 and package reference added.
+The exact package overload selected is ExecuteAsync<TResult>(
+Func<Task<TResult>>, CancellationToken) on AsyncRetryPolicy.
+INVENTORY: no Polly implementation body, retry engine, package XML docs, or
+primary retry/cancellation contract is bundled. No observed output is supplied.
+FEEDBACK: no existing thread covers C1.
+GUIDANCE: require the actual called collaborator and its full return path for
+behavioral assertions. Source-only review must not use a model's recollection
+of dependency internals as frozen evidence or fetch missing package source.

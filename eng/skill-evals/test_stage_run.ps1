@@ -290,6 +290,51 @@ stimuli:
         -EvalName allowed-prompt-text `
         -Destination (Join-Path $testRoot 'allowed-prompt-text')
 
+    New-RestrictedCandidate 'review-pull-request' @'
+stimuli:
+  - name: review-case
+    prompt: Review the staged case.
+'@
+    $agentsDir = Join-Path $candidateRoot '.github/agents'
+    $docsDir = Join-Path $candidateRoot 'docs'
+    New-Item -ItemType Directory -Path $agentsDir, $docsDir -Force | Out-Null
+    Set-Content (Join-Path $agentsDir 'review-guide-worker.agent.md') $candidateDataMarker
+    Set-Content (Join-Path $agentsDir 'review-candidate-verifier.agent.md') $candidateDataMarker
+    Set-Content (Join-Path $agentsDir 'unrelated.agent.md') 'UNRELATED_AGENT'
+    Set-Content (Join-Path $docsDir 'CrossCuttingGuidance.md') $candidateDataMarker
+    Set-Content (Join-Path $docsDir 'BlazorComponentsGuidance.md') $candidateDataMarker
+    Set-Content (Join-Path $docsDir 'UnrelatedDoc.md') 'UNRELATED_DOC'
+
+    $reviewDestination = Join-Path $testRoot 'staged-review-pull-request'
+    & $stageRun `
+        -TrustedRoot $trustedRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName review-pull-request `
+        -Destination $reviewDestination
+
+    $stagedReviewFiles = @(
+        Get-ChildItem $reviewDestination -Recurse -File -Force |
+            ForEach-Object {
+                [IO.Path]::GetRelativePath($reviewDestination, $_.FullName).Replace('\', '/')
+            } |
+            Sort-Object
+    )
+    $expectedReviewFiles = @(
+        '.github/agents/review-candidate-verifier.agent.md'
+        '.github/agents/review-guide-worker.agent.md'
+        '.github/skills/review-pull-request/SKILL.md'
+        'docs/BlazorComponentsGuidance.md'
+        'docs/CrossCuttingGuidance.md'
+        'eng/skill-evals/assert_results.ps1'
+        'eng/skill-evals/review-pull-request/eval.vally.yaml'
+        'eng/skill-evals/run.ps1'
+        'eng/skill-evals/skills-smoke.experiment.yaml'
+        'eng/skill-evals/skills-vs-baseline.experiment.yaml'
+    ) | Sort-Object
+    Assert-True (
+        @(Compare-Object $expectedReviewFiles $stagedReviewFiles).Count -eq 0
+    ) "Unexpected staged review-pull-request files: $($stagedReviewFiles -join ', ')."
+
     Write-Host 'Trusted skill-eval staging self-test passed.'
 } finally {
     Remove-Item $testRoot -Recurse -Force

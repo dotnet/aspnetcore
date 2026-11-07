@@ -20,6 +20,15 @@ beside the spec that consumes them, normally under a `fixtures` directory. Do
 not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
+The standard `review-pull-request` suite uses five compact synthetic source cases
+to check candidate adjudication: pre-existing behavior, unavailable collaborator
+evidence, a head-only test at the wrong layer, secondary diagnostic failures, and
+existing-feedback deduplication. These are offline single-reviewer exercises,
+not full bundle preparation or worker/verifier integration tests. Each trial
+stages only its case evidence; skill loading remains owned by the experiment so
+the baseline cannot read a staged copy of `SKILL.md`. Model-free validation checks
+the suite's layout and schema, not its behavioral scores.
+
 The experiment deliberately does not override `runs`. A standard spec owns its
 trial count through `defaults.runs`. The existing specs retain five runs and 25
 trials each. The dotnet/skills quality gate uses five trials as the minimum at

@@ -1,0 +1,197 @@
+name: review-pull-request
+description: Compact source-only candidate adjudication regressions, not full bundle or worker integration coverage.
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 600s
+  model: gpt-5.6-sol
+  judge_model: gpt-5.6-sol
+
+# The central experiment alone selects skills. Never stage SKILL.md as a file:
+# baseline and skilled must receive identical case evidence, not identical skills.
+# Fixtures are synthetic reductions of historical failure motifs, not PR snapshots.
+# Five repeats measure variability on these cases, not breadth over unseen PRs.
+scoring:
+  weights:
+    skill-invocation: 0.1
+    tool-calls: 0.1
+    output-matches: 0.2
+    prompt: 0.6
+  threshold: 1
+
+stimuli:
+  - name: preexisting-collaborator-behavior-discarded
+    prompt: |
+      Read case.txt and adjudicate only candidate C1 from its frozen source evidence.
+      This is a compact offline single-reviewer exercise, not a live PR or a full
+      manifest bundle. If review-pull-request is available, invoke it and apply its
+      candidate adjudication rules at this boundary. Do not bootstrap, request a
+      manifest, delegate, fetch, execute target code, or edit/create files.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
+    agent_environment:
+      files:
+        - src: fixtures/preexisting-collaborator.txt
+          dest: case.txt
+    graders:
+      - type: skill-invocation
+        config:
+          required: [review-pull-request]
+      - type: tool-calls
+        config:
+          disallowed: [edit, create]
+      - type: output-matches
+        config:
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*DISCARDED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[DISCARDED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why discarded[`''"*_\s]*:)'
+      - type: prompt
+        config:
+          scoring: binary
+    rubric:
+      - Records C1 in DISCARDED, or inline with confidence discarded, [DISCARDED], and Why discarded; merely repeating a section heading or mentioning discard hypothetically does not count.
+      - Traces both callbacks writing key cart, the second PendingState.Persist guard throw, and the manager catch that clears state and returns before WriteAsync in BOTH mergeBase and head.
+      - Explains that head's InvokeAsync forwards the same callback and input; the old-versus-new claim that mergeBase wrote the first value is contradicted on this exact sequence.
+      - Does not emit C1 as a verified finding or an intent question, invent an escaping callback exception, or silently omit the candidate.
+
+  - name: external-unbundled-collaborator-unresolved
+    prompt: |
+      Read case.txt and adjudicate only candidate C1 from its frozen source evidence.
+      This is a compact offline single-reviewer exercise, not a live PR or a full
+      manifest bundle. If review-pull-request is available, invoke it and apply its
+      candidate adjudication rules at this boundary. Do not bootstrap, request a
+      manifest, delegate, fetch, execute target code, or edit/create files.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
+    agent_environment:
+      files:
+        - src: fixtures/external-collaborator.txt
+          dest: case.txt
+    graders:
+      - type: skill-invocation
+        config:
+          required: [review-pull-request]
+      - type: tool-calls
+        config:
+          disallowed: [edit, create]
+      - type: output-matches
+        config:
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*UNRESOLVED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[UNRESOLVED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why unresolved[`''"*_\s]*:)'
+      - type: prompt
+        config:
+          scoring: binary
+    rubric:
+      - Records C1 in UNRESOLVED, or inline with confidence unresolved, [UNRESOLVED], and Why unresolved; does not merely list an empty section.
+      - Identifies the missing version-specific Polly AsyncRetryPolicy.ExecuteAsync and retry/cancellation implementation or primary contract needed to establish whether a canceled operation invokes the delegate again.
+      - Distinguishes the proven wrapper change and caller cancellation sequence from the unproven three additional wire sends; does not infer concrete Polly behavior from Handle<Exception>, RetryAsync(3), method names, or model memory.
+      - Does not accept C1 as verified, discard it as disproven without the missing evidence, block the whole exercise, or fetch or execute the external package.
+
+  - name: head-test-different-layer-kept
+    prompt: |
+      Read case.txt and adjudicate only candidate C1 from its frozen source evidence.
+      This is a compact offline single-reviewer exercise, not a live PR or a full
+      manifest bundle. If review-pull-request is available, invoke it and apply its
+      candidate adjudication rules at this boundary. Do not bootstrap, request a
+      manifest, delegate, fetch, execute target code, or edit/create files.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
+    agent_environment:
+      files:
+        - src: fixtures/head-test-different-layer.txt
+          dest: case.txt
+    graders:
+      - type: skill-invocation
+        config:
+          required: [review-pull-request]
+      - type: tool-calls
+        config:
+          disallowed: [edit, create]
+      - type: output-matches
+        config:
+          pattern: '(?is)(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*NEW_FINDINGS_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}confidence[`''"*_\s]*[:=][`''"*_\s]*(?:verified|question)_*\b'
+      - type: prompt
+        config:
+          scoring: binary
+    rubric:
+      - Keeps C1 in NEW_FINDINGS with confidence verified or question, anchored to head UploadEndpoint.cs:5; a question must still describe the concrete behavior change.
+      - Traces a required UploadCommand files constructor parameter with a multipart request containing no uploaded files to mergeBase's empty list and 200 result versus head's null value and 400 Bad Request before constructing the command.
+      - Identifies that the PR-added head test calls ConvertSingle(null) for a nullable scalar UploadFile, not BindFiles and the required collection constructor path.
+      - Uses the frozen baseTip upload contract and old/new source rather than elevating the head-only lower-layer test into a contract that excuses or disproves the regression; does not discard or mark the demonstrated behavior externally unresolved.
+
+  - name: secondary-failure-suppression-unresolved
+    prompt: |
+      Read case.txt and adjudicate only candidate C1 from its frozen source evidence.
+      This is a compact offline single-reviewer exercise, not a live PR or a full
+      manifest bundle. If review-pull-request is available, invoke it and apply its
+      candidate adjudication rules at this boundary. Do not bootstrap, request a
+      manifest, delegate, fetch, execute target code, or edit/create files.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
+    agent_environment:
+      files:
+        - src: fixtures/secondary-failure.txt
+          dest: case.txt
+    graders:
+      - type: skill-invocation
+        config:
+          required: [review-pull-request]
+      - type: tool-calls
+        config:
+          disallowed: [edit, create]
+      - type: output-matches
+        config:
+          pattern: '(?is)(?:(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*UNRESOLVED_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}\bC1\b|\[UNRESOLVED\](?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)|\bC(?!1\b)\d+\b).){0,2000}Why unresolved[`''"*_\s]*:)'
+      - type: prompt
+        config:
+          scoring: binary
+    rubric:
+      - Explicitly records C1 in UNRESOLVED, or inline with confidence unresolved, [UNRESOLVED], and Why unresolved, instead of silently omitting it or returning only no findings.
+      - Traces the source-proven behavior change from an escaping SinkException at mergeBase to preserving the primary WorkException at head when Report itself throws inside the failure handler.
+      - Names the missing binding contract for secondary diagnostic-sink failures; neither baseTip nor the supplied reviewer guidance says a secondary sink exception must escape or replace the primary exception.
+      - Does not claim a proven defect from generic never-swallow-exceptions advice, invent a target contract, treat the absence of a contract as source contradiction warranting discard, or block the whole exercise.
+
+  - name: existing-review-thread-deduplicated
+    prompt: |
+      Read case.txt and adjudicate only candidate C1 from its frozen source evidence.
+      This is a compact offline single-reviewer exercise, not a live PR or a full
+      manifest bundle. If review-pull-request is available, invoke it and apply its
+      candidate adjudication rules at this boundary. Do not bootstrap, request a
+      manifest, delegate, fetch, execute target code, or edit/create files.
+      Return top-level section headings NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE,
+      UNRESOLVED, and DISCARDED, naming C1 and citing source roles and file:line
+      evidence for its disposition. Include confidence for every NEW_FINDINGS entry
+      and explain any missing contract or implementation evidence. Do not invent
+      unavailable behavior.
+    agent_environment:
+      files:
+        - src: fixtures/existing-thread.txt
+          dest: case.txt
+    graders:
+      - type: skill-invocation
+        config:
+          required: [review-pull-request]
+      - type: tool-calls
+        config:
+          disallowed: [edit, create]
+      - type: output-matches
+        config:
+          pattern: '(?s)(?:^|\r?\n)[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*EXISTING_FEEDBACK_COVERAGE_*\b[`''"*_]*[ \t]*(?::|(?=\r?\n|$))(?:(?!\r?\n[ \t]*(?:#+[ \t]*|(?:[-*+]|\d+[.)])[ \t]+)?[`''"*_]*(?:NEW_FINDINGS|EXISTING_FEEDBACK_COVERAGE|UNRESOLVED|DISCARDED)_*\b[`''"*_]*[ \t]*(?:[:\r\n]|$)).){0,4000}PRRT_kwDOExampleThread1'
+      - type: prompt
+        config:
+          scoring: binary
+    rubric:
+      - Records C1 under EXISTING_FEEDBACK_COVERAGE and references exactly PRRT_kwDOExampleThread1; merely echoing the thread elsewhere does not count.
+      - Establishes the same source-backed dropped-final-byte defect as the unresolved thread on head PacketEncoder.cs:6, including the two-byte input and terminal zero byte.
+      - Leaves NEW_FINDINGS empty for this case; does not duplicate the covered defect as verified, question, unresolved, discarded, or a differently worded new finding.
+      - Does not mistake unresolved review-thread status for unresolved technical evidence, or reply to, resolve, publish, or otherwise mutate the thread.
