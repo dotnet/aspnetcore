@@ -33,19 +33,6 @@ internal static class HttpExtensions
             contentType.StartsWith(MultipartFormContentType, StringComparison.OrdinalIgnoreCase);
     }
 
-    internal static Endpoint? GetOriginalEndpoint(HttpContext context)
-    {
-        var endpoint = context.GetEndpoint();
-
-        // Some middleware re-execute the middleware pipeline with the HttpContext. Before they do this, they clear state from context, such as the previously matched endpoint.
-        // The original endpoint is stashed with a known key in HttpContext.Items. Use it as a fallback.
-        if (endpoint == null && context.Items.TryGetValue(OriginalEndpointKey, out var e) && e is Endpoint originalEndpoint)
-        {
-            endpoint = originalEndpoint;
-        }
-        return endpoint;
-    }
-
     internal static void ClearEndpoint(HttpContext context)
     {
         var endpoint = context.GetEndpoint();

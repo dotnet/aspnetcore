@@ -173,6 +173,10 @@ internal sealed class HostingApplicationDiagnostics
         var startTimestamp = context.StartTimestamp;
         long currentTimestamp = 0;
 
+        // The route is used by both metrics and tracing, so it's resolved at most once.
+        string? route = null;
+        var routeResolved = false;
+
         // startTimestamp has a value if:
         // - Information logging was enabled at for this request (and calculated time will be wildly wrong)
         //   Is used as proxy to reduce calls to virtual: _logger.IsEnabled(LogLevel.Information)
@@ -191,7 +195,8 @@ internal sealed class HostingApplicationDiagnostics
 
                 var endpoint = GetOriginalEndpoint(httpContext);
                 var disableHttpRequestDurationMetric = endpoint?.Metadata.GetMetadata<IDisableHttpMetricsMetadata>() != null || context.MetricsTagsFeature.MetricsDisabled;
-                var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+                route = GetRoute(endpoint);
+                routeResolved = true;
 
                 _metrics.RequestEnd(
                     context.MetricsTagsFeature.Protocol!,
@@ -249,7 +254,7 @@ internal sealed class HostingApplicationDiagnostics
         // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
-            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener);
+            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener, routeResolved, route);
         }
 
         if (context.EventLogEnabled)
@@ -563,11 +568,16 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener)
+    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener, bool routeResolved, string? route)
     {
         if (!SuppressActivityOpenTelemetryData && activity.IsAllDataRequested)
         {
-            SetActivityEndTags(httpContext, activity, exception);
+            if (!routeResolved)
+            {
+                route = GetRoute(GetOriginalEndpoint(httpContext));
+            }
+
+            SetActivityEndTags(httpContext, activity, exception, route);
         }
 
         if (hasDiagnosticListener)
@@ -580,7 +590,7 @@ internal sealed class HostingApplicationDiagnostics
         }
     }
 
-    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception)
+    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception, string? route)
     {
         var response = httpContext.Response;
 
@@ -591,8 +601,6 @@ internal sealed class HostingApplicationDiagnostics
             activity.SetTag(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
         }
 
-        var endpoint = GetOriginalEndpoint(httpContext);
-        var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
         if (route is not null)
         {
             var resolvedRoute = RouteDiagnosticsHelpers.ResolveHttpRoute(route);
@@ -620,6 +628,8 @@ internal sealed class HostingApplicationDiagnostics
             activity.SetTag(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
         }
     }
+
+    private static string? GetRoute(Endpoint? endpoint) => endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
 
     // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
     // DynamicDependency matches the properties selected in:
