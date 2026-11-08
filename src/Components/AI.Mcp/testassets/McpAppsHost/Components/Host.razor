@@ -1,0 +1,37 @@
+@inherits McpContentHost
+@using System.Text.Json
+@inject IConfiguration Configuration
+
+@if (!IsClosed)
+{
+    <section class="mcp-host">
+        <button class="mcp-theme" disabled="@(!_ready)" @onclick="ChangeThemeAsync">Toggle theme</button>
+        <button class="mcp-close" @onclick="async () => await CloseAsync()">Close app</button>
+        <iframe @ref="Frame"
+                src="@(Configuration["SANDBOX_ORIGIN"] + Configuration["PATH_BASE"] + "/mcp-sandbox")"
+                title="Application-configured MCP host"
+                sandbox="allow-scripts allow-same-origin"
+                allow="clipboard-write 'none'"
+                referrerpolicy="no-referrer"
+                style="display:block;width:100%;height:600px;border:0">
+        </iframe>
+    </section>
+}
+
+@code {
+    private string _theme = "light";
+    private bool _ready;
+
+    protected override ValueTask OnReadyAsync(CancellationToken cancellationToken)
+    {
+        _ready = true;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    private async Task ChangeThemeAsync()
+    {
+        _theme = _theme == "light" ? "dark" : "light";
+        await UpdateHostContextAsync(JsonSerializer.SerializeToElement(new { theme = _theme }));
+    }
+}

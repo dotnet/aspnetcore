@@ -1,0 +1,6 @@
+<button class="stop-response" @onclick="Context.CancelAsync">Stop response</button>
+
+@code {
+    [CascadingParameter]
+    public AgentContext Context { get; set; } = default!;
+}

@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "@microsoft/components-ai-mcp-test-app",
+  "scripts": {
+    "clean": "rimraf ./dist/Debug ./dist/Release",
+    "build": "npm run build:debug && npm run build:production",
+    "build:debug": "rollup -c --environment development",
+    "build:production": "rollup -c --environment production"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "2.0.3"
+  }
+}

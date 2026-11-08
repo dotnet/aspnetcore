@@ -1,0 +1,41 @@
+#nullable enable
+Microsoft.AspNetCore.Components.AI.Mcp.McpAppClientOptionsExtensions
+Microsoft.AspNetCore.Builder.McpAppSandboxEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Block.get -> Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock!
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Block.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Client.get -> ModelContextProtocol.Client.McpClient!
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Client.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.McpBlock() -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Tools.get -> System.Collections.Generic.IReadOnlyList<ModelContextProtocol.Client.McpClientTool!>!
+Microsoft.AspNetCore.Components.AI.Mcp.McpBlock<THost>.Tools.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.AgentContext.get -> Microsoft.AspNetCore.Components.AI.AgentContext?
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.AgentContext.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Block.get -> Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock!
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Block.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Client.get -> ModelContextProtocol.Client.McpClient!
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Client.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.CloseAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Frame.get -> Microsoft.AspNetCore.Components.ElementReference
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Frame.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.IsClosed.get -> bool
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.JS.get -> Microsoft.JSInterop.IJSRuntime!
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.JS.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.McpContentHost() -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Tools.get -> System.Collections.Generic.IReadOnlyList<ModelContextProtocol.Client.McpClientTool!>!
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.Tools.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.UpdateHostContextAsync(System.Text.Json.JsonElement hostContext, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase
+Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase.HostOrigin.get -> string!
+Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase.HostOrigin.set -> void
+Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase.McpSandboxBase() -> void
+override Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.OnParametersSet() -> void
+static Microsoft.AspNetCore.Builder.McpAppSandboxEndpointRouteBuilderExtensions.MapMcpAppSandbox<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Uri! hostOrigin, System.Uri! sandboxOrigin, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.Components.AI.Mcp.McpAppClientOptionsExtensions.EnableMcpApps(this ModelContextProtocol.Client.McpClientOptions! options) -> void
+virtual Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.OnClosedAsync() -> System.Threading.Tasks.ValueTask
+virtual Microsoft.AspNetCore.Components.AI.Mcp.McpContentHost.OnReadyAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.AspNetCore.Components.AI.Mcp.McpSandboxBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void

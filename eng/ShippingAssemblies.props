@@ -111,6 +111,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.AzureAppServicesIntegration" ProjectPath="$(RepoRoot)src/Azure/AzureAppServicesIntegration/src/Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.SqlServer" ProjectPath="$(RepoRoot)src/Caching/SqlServer/src/Microsoft.Extensions.Caching.SqlServer.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.StackExchangeRedis" ProjectPath="$(RepoRoot)src/Caching/StackExchangeRedis/src/Microsoft.Extensions.Caching.StackExchangeRedis.csproj" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.AI.Mcp" ProjectPath="$(RepoRoot)src/Components/AI.Mcp/src/Microsoft.AspNetCore.Components.AI.Mcp.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.AI" ProjectPath="$(RepoRoot)src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.CustomElements" ProjectPath="$(RepoRoot)src/Components/CustomElements/src/Microsoft.AspNetCore.Components.CustomElements.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src/Components/Media/src/Microsoft.AspNetCore.Components.Media.csproj" />

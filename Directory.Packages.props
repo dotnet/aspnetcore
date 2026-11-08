@@ -224,6 +224,7 @@ are expressed as central `<PackageVersion>` items.
         <PackageVersion Include="Microsoft.Playwright.TestAdapter" Version="$(MicrosoftPlaywrightTestAdapterVersion)" />
         <PackageVersion Include="Microsoft.Windows.CsWin32" Version="$(MicrosoftWindowsCsWin32Version)" />
         <PackageVersion Include="ModelContextProtocol" Version="$(ModelContextProtocolVersion)" />
+        <PackageVersion Include="ModelContextProtocol.Core" Version="$(ModelContextProtocolVersion)" />
         <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="$(ModelContextProtocolAspNetCoreVersion)" />
         <PackageVersion Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
         <PackageVersion Include="Mono.TextTemplating" Version="$(MonoTextTemplatingVersion)" />
