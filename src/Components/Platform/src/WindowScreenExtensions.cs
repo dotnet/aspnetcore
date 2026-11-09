@@ -14,6 +14,6 @@ public static class WindowScreenExtensions
         /// Gets the screen that the browser window is shown on.
         /// </summary>
         public Screen Screen
-            => window.GetOrAddFeature(static jsRuntime => new Screen(jsRuntime));
+            => window.GetOrAddFeature(static context => new Screen(context.JSRuntime));
     }
 }
