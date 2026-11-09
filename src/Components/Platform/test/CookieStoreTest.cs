@@ -275,15 +275,44 @@ public class CookieStoreTest
     }
 
     [Fact]
-    public async Task SetAsync_RejectsDefaultSameSiteBeforeSending()
+    public async Task SetAsync_SendsDefaultSameSiteAsStrict()
     {
         var jsRuntime = new SerializingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
         var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
 
-        await Assert.ThrowsAsync<JsonException>(() => cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = default }).AsTask());
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = default });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = new CookieSameSite() });
 
-        Assert.Empty(jsRuntime.ArgumentsSentTo("set"));
+        Assert.Equal(
+            ["strict", "strict"],
+            jsRuntime.ArgumentsSentTo("set").Select(json => JsonDocument.Parse(json).RootElement[0].GetProperty("sameSite").GetString()));
+    }
+
+    [Fact]
+    public void CookieSameSite_DefaultIsStrict()
+    {
+        var defaultValue = default(CookieSameSite);
+
+        Assert.Equal("strict", defaultValue.Value);
+        Assert.Equal("strict", defaultValue.ToString());
+        Assert.Equal(CookieSameSite.Strict, defaultValue);
+        Assert.True(CookieSameSite.Strict == defaultValue);
+        Assert.True(new CookieSameSite("strict") == defaultValue);
+        Assert.Equal(CookieSameSite.Strict.GetHashCode(), defaultValue.GetHashCode());
+        Assert.NotEqual(CookieSameSite.Lax, defaultValue);
+        Assert.NotEqual(new CookieSameSite("Strict"), defaultValue);
+    }
+
+    [Fact]
+    public async Task CookieSameSite_ReadsStrictFromTheBrowserAsTheDefault()
+    {
+        var jsRuntime = new SerializingJSRuntime { ReadResult = "\"strict\"" };
+
+        var sameSite = await jsRuntime.InvokeAsync<CookieSameSite>("read");
+
+        Assert.Equal(default(CookieSameSite), sameSite);
+        Assert.Equal(CookieSameSite.Strict, sameSite);
     }
 
     [Fact]
@@ -305,7 +334,6 @@ public class CookieStoreTest
         Assert.True(CookieSameSite.Lax != new CookieSameSite("Lax"));
         Assert.Equal(CookieSameSite.Lax.GetHashCode(), new CookieSameSite("lax").GetHashCode());
         Assert.Equal("none", CookieSameSite.None.ToString());
-        Assert.Equal(string.Empty, default(CookieSameSite).ToString());
         Assert.Throws<ArgumentNullException>("value", () => new CookieSameSite(null!));
     }
 
