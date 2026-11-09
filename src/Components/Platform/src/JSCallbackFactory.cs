@@ -25,7 +25,7 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
     /// <summary>
     /// Creates a JavaScript function that calls <paramref name="callback"/>.
     /// </summary>
-    /// <param name="callback">The <see cref="JSCallback{T1}"/> or other arity to call.</param>
+    /// <param name="callback">The <see cref="JSCallback{T1}"/> to call.</param>
     /// <param name="shapesJson">
     /// A JSON array with one <c>ArgumentShape</c> (see <c>js/Platform.ts</c>) per parameter of <paramref name="callback"/>.
     /// </param>
