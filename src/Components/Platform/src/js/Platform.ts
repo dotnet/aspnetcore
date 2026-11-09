@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// What one argument sends to .NET. null sends the whole value. An object sends only the named
+// Specifies which data from one argument is sent to .NET. When null, the whole value is sent. An object sends only the named
 // properties, each with its own shape, so that a browser object such as an event can be copied.
 // { $known: [...] } sends the name of the global that is the value, such as "localStorage".
 export type ArgumentShape = null | KnownObjectShape | { [property: string]: ArgumentShape };
@@ -14,8 +14,9 @@ export interface DotNetObject {
   invokeMethodAsync<T>(methodIdentifier: string, ...args: unknown[]): Promise<T>;
 }
 
-// Creates a function that calls the Invoke method of the callback reference with one argument per shape.
+// Creates a JS function that calls the .NET Invoke method of the callback reference with one argument per shape.
 // Arguments beyond the shapes are dropped. The returned promise settles when the .NET method completes.
+// E.g. [{ key: null }, null] + [{ key: "theme", oldValue: "light" }, "hello", 123] → Invoke({ key: "theme" }, "hello")
 export function createCallback(callbackReference: DotNetObject, shapesJson: string): (...args: unknown[]) => Promise<unknown> {
   const shapes: ArgumentShape[] = JSON.parse(shapesJson);
 
