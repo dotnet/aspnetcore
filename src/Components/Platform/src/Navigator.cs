@@ -12,7 +12,6 @@ public sealed class Navigator : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly Window _window;
-    private readonly FeatureContext _context;
     private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
 
@@ -20,8 +19,6 @@ public sealed class Navigator : IInternalAsyncDisposal
     {
         _jsRuntime = jsRuntime;
         _window = window;
-        // Window will own the context once events need parts shared by the whole scope.
-        _context = new FeatureContext(jsRuntime);
     }
 
     /// <summary>
@@ -115,7 +112,7 @@ public sealed class Navigator : IInternalAsyncDisposal
         ArgumentNullException.ThrowIfNull(factory);
 
         // Window keeps every projection of the scope, so its disposal reaches this one too.
-        return _window.GetOrAddFeature(_ => factory(_context));
+        return _window.GetOrAddFeature(factory);
     }
 
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()

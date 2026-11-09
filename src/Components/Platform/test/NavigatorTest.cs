@@ -127,7 +127,8 @@ public class NavigatorTest
     {
         var jsRuntime = new RecordingJSRuntime();
         var provider = CreateServiceProvider(jsRuntime);
-        var navigator = provider.GetRequiredService<IBrowserPlatform>().Window.Navigator;
+        var window = provider.GetRequiredService<IBrowserPlatform>().Window;
+        var navigator = window.Navigator;
         var created = 0;
 
         var feature = navigator.GetOrAddFeature(context =>
@@ -139,6 +140,7 @@ public class NavigatorTest
         Assert.Same(feature, navigator.GetOrAddFeature(context => new TestFeature(context)));
         Assert.Equal(1, created);
         Assert.Same(jsRuntime, feature.Context.JSRuntime);
+        Assert.Same(window.GetOrAddFeature("window", context => new TestFeature(context)).Context, feature.Context);
 
         await provider.DisposeAsync();
 

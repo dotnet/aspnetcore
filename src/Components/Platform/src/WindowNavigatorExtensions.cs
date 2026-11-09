@@ -14,6 +14,6 @@ public static class WindowNavigatorExtensions
         /// Gets the state and identity of the browser.
         /// </summary>
         public Navigator Navigator
-            => window.GetOrAddFeature(jsRuntime => new Navigator(jsRuntime, window));
+            => window.GetOrAddFeature(context => new Navigator(context.JSRuntime, window));
     }
 }
