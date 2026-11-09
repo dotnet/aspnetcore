@@ -17,36 +17,34 @@ public class JSCallbackTest
         var factory = new JSCallbackFactory(jsRuntime);
 
         await factory.CreateAsync(new JSCallback<string>(), "[null]");
-        await factory.CreateAsync(new JSCallback<string, int>(), "[null,{}]");
+        await factory.CreateAsync(new JSCallback<int>(), "[{}]");
 
         Assert.Equal(
             ["""["./_content/Microsoft.AspNetCore.Components.Platform/Microsoft.AspNetCore.Components.Platform.js"]"""],
             jsRuntime.CallsTo("import").Select(call => call.ArgsJson));
         Assert.Equal(
-            ["""[{"__dotNetObject":1},"[null]"]""", """[{"__dotNetObject":2},"[null,{}]"]"""],
+            ["""[{"__dotNetObject":1},"[null]"]""", """[{"__dotNetObject":2},"[{}]"]"""],
             jsRuntime.CallsTo("createCallback").Select(call => call.ArgsJson));
     }
 
     [Fact]
-    public async Task Invoke_PassesEachArgumentToTheHandler()
+    public async Task Invoke_PassesTheArgumentToTheHandler()
     {
         var jsRuntime = new BrowserJSRuntime();
         var factory = new JSCallbackFactory(jsRuntime);
-        var callback = new JSCallback<string, int, CookieListItem>();
-        (string, int, CookieListItem)? received = null;
-        callback.Handler = (text, number, cookie) =>
+        var callback = new JSCallback<CookieListItem>();
+        CookieListItem? received = null;
+        callback.Handler = cookie =>
         {
-            received = (text, number, cookie);
+            received = cookie;
             return Task.CompletedTask;
         };
-        await factory.CreateAsync(callback, "[null,null,null]");
+        await factory.CreateAsync(callback, "[null]");
 
-        var result = await jsRuntime.InvokeLastCallbackAsync("""["text",42,{"name":"a","value":"1"}]""");
+        var result = await jsRuntime.InvokeLastCallbackAsync("""[{"name":"a","value":"1"}]""");
 
         Assert.True(result.Success, result.Exception?.ToString());
-        Assert.Equal("text", received?.Item1);
-        Assert.Equal(42, received?.Item2);
-        Assert.Equal(("a", "1"), (received?.Item3.Name, received?.Item3.Value));
+        Assert.Equal(("a", "1"), (received?.Name, received?.Value));
     }
 
     [Fact]
