@@ -1066,7 +1066,8 @@ applicable:
   and asserts the claimed consumer-visible effect, or `n/a`. A head test that covers a
   different input, layer, or sibling case is not intent evidence and does not
   contradict `effect` or `contract`. Intent proves the change is deliberate, not that
-  it is compatible or correct.
+  it is compatible or correct, and established `intent` never satisfies, waives, or
+  turns a mandatory `contract` into `n/a`.
 
 Judge the candidate's stated claim, mechanism, consequence, and any prescribed test
 assertion as written; do not salvage a candidate by substituting a narrower or
@@ -1081,8 +1082,9 @@ Return `KEEP` only when every applicable link is established, source does not
 contradict the claim, and either `intent` is `n/a` or an established `contract`
 forbids the head behavior on that exact input. Return `DOWNGRADE` with
 `downgradeKind: "intent"` when every other applicable link is established, `intent`
-is established, and `contract` is `n/a` (no base-tip or primary-repository contract
-requires or forbids the head behavior on that exact input). Return `DOWNGRADE` with
+is established, and `contract` is `n/a` (no binding contract is required by the
+`contract` rule above, and no base-tip or primary-repository contract requires or
+forbids the head behavior on that exact input). Return `DOWNGRADE` with
 `downgradeKind: "external"` only when all in-repository links hold and a required
 external behavior remains undecidable, including an external edge needed to reach the
 changed line or produce the effect. Do not turn missing external evidence alone into

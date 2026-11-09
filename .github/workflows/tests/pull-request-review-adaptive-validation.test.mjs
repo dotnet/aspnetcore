@@ -56,6 +56,17 @@ assert.equal(
       'tools: ["read", "search"]',
       'tools: ["read", "search"]\nstrict-tools-list: true\nuser-invocable: false'),
   'The local review-candidate-verifier profile may differ only by its internal local flags and description.');
+const normalizedVerifierProfile = localVerifierProfile.replace(/\s+/g, ' ');
+assert.ok(
+  normalizedVerifierProfile.includes(
+    'established `intent` never satisfies, waives, or turns a mandatory `contract` into `n/a`'),
+  'Established intent must not satisfy or waive a mandatory contract.');
+assert.ok(
+  normalizedVerifierProfile.includes(
+    '`downgradeKind: "intent"` when every other applicable link is established, `intent` ' +
+    'is established, and `contract` is `n/a` (no binding contract is required by the ' +
+    '`contract` rule above,'),
+  'Intent downgrades must not bypass the mandatory-contract rule.');
 assert.match(workflowSource, /bash:\s*false/);
 assert.match(workflowSource, /edit:\s*false/);
 assert.doesNotMatch(workflowSource, /memory:\s*8g/);
