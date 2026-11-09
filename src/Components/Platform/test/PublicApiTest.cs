@@ -51,6 +51,7 @@ public class PublicApiTest
             typeof(Url),
             typeof(UrlSearchParams),
             typeof(Screen),
+            typeof(Window),
         ];
 
         var synchronousMethods = liveBrowserObjectTypes

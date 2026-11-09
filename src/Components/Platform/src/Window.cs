@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Platform;
@@ -12,12 +13,73 @@ namespace Microsoft.AspNetCore.Components.Platform;
 public sealed class Window : IInternalAsyncDisposal
 {
     private readonly FeatureContext _context;
+    // Typed as the interface, so that disposal does not keep the type in an app that never adds a listener.
+    private IInternalAsyncDisposal? _listeners;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
+    private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
 
-    internal Window(IJSRuntime jsRuntime)
+    internal Window(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
     {
-        _context = new FeatureContext(jsRuntime);
+        _context = new FeatureContext(jsRuntime, loggerFactory);
+    }
+
+    /// <summary>
+    /// Adds a listener that is called each time the specified event fires on the window.
+    /// Other listeners, including those added by JavaScript code of the page, are not affected.
+    /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Each call creates an independent registration, even for the same listener;
+    /// disposing the returned object removes only that registration.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for, such as <c>Window.StorageEvent</c>.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <returns>An object that removes the listener when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    public ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<Window, TEvent> type, Func<TEvent, Task> listener)
+        => AddEventListenerAsync(type, listener, CancellationToken.None);
+
+    /// <summary>
+    /// Adds a listener that is called each time the specified event fires on the window.
+    /// Other listeners, including those added by JavaScript code of the page, are not affected.
+    /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Each call creates an independent registration, even for the same listener;
+    /// disposing the returned object removes only that registration.
+    /// Canceling <paramref name="cancellationToken"/> removes the listener, as disposing the returned object does.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for, such as <c>Window.StorageEvent</c>.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <param name="cancellationToken">The token that removes the listener when canceled.</param>
+    /// <returns>An object that removes the listener when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled before the listener was added.</exception>
+    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<Window, TEvent> type, Func<TEvent, Task> listener, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(listener);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Adding and removing listeners changes unlocked state, so these awaits keep the renderer's synchronization context.
+        var window = await GetReferenceAsync();
+
+        // The collection and the module loader are created here, so an app that adds no listener pays nothing.
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var listeners = (EventListenerCollection)(_listeners ??= _context.CreateEventListenerCollection());
+
+        return await type.AddListenerAsync(listeners, window, this, listener, cancellationToken);
+    }
+
+    private Task<IJSObjectReference> GetReferenceAsync()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (_referenceTask is null || _referenceTask.IsFaulted || _referenceTask.IsCanceled)
+        {
+            _referenceTask = _context.JSRuntime.GetValueAsync<IJSObjectReference>("window").AsTask();
+        }
+
+        return _referenceTask;
     }
 
     /// <summary>
@@ -75,6 +137,19 @@ public sealed class Window : IInternalAsyncDisposal
         }
 
         _disposed = true;
+
+        // Listeners need the window reference to remove themselves, so they go first.
+        if (_listeners is not null)
+        {
+            await _listeners.InternalDisposeAsync();
+        }
+
+        // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
+        if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
+        {
+            await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
+        }
+
         var features = _features.Values.ToArray();
         _features.Clear();
 
@@ -85,5 +160,8 @@ public sealed class Window : IInternalAsyncDisposal
                 await disposable.InternalDisposeAsync().ConfigureAwait(false);
             }
         }
+
+        // Features remove their listeners first, so the module is no longer needed.
+        await ((IInternalAsyncDisposal)_context).InternalDisposeAsync();
     }
 }

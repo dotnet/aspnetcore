@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.Changed.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.Changed.init -> void
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.CookieChangeEvent() -> void
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.Deleted.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!
+Microsoft.AspNetCore.Components.Platform.CookieChangeEvent.Deleted.init -> void
 Microsoft.AspNetCore.Components.Platform.CookieInit
 Microsoft.AspNetCore.Components.Platform.CookieInit.CookieInit() -> void
 Microsoft.AspNetCore.Components.Platform.CookieInit.Domain.get -> string?
@@ -28,6 +34,8 @@ Microsoft.AspNetCore.Components.Platform.CookieSameSite.Lax = 1 -> Microsoft.Asp
 Microsoft.AspNetCore.Components.Platform.CookieSameSite.None = 2 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
 Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict = 0 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
 Microsoft.AspNetCore.Components.Platform.CookieStore
+Microsoft.AspNetCore.Components.Platform.CookieStore.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.CookieStore!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
+Microsoft.AspNetCore.Components.Platform.CookieStore.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.CookieStore!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
 Microsoft.AspNetCore.Components.Platform.CookieStore.DeleteAsync(Microsoft.AspNetCore.Components.Platform.CookieStoreDeleteOptions! options) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.CookieStore.DeleteAsync(string! name) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.CookieStore.GetAllAsync() -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Platform.CookieListItem!>!>
@@ -53,6 +61,8 @@ Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.get -> strin
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.get -> string?
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.set -> void
+Microsoft.AspNetCore.Components.Platform.EventType<TTarget, TEvent>
+Microsoft.AspNetCore.Components.Platform.EventType<TTarget, TEvent>.Name.get -> string!
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Window.get -> Microsoft.AspNetCore.Components.Platform.Window!
 Microsoft.AspNetCore.Components.Platform.Screen
@@ -62,6 +72,18 @@ Microsoft.AspNetCore.Components.Platform.Screen.GetColorDepthAsync() -> System.T
 Microsoft.AspNetCore.Components.Platform.Screen.GetHeightAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Screen.GetPixelDepthAsync() -> System.Threading.Tasks.ValueTask<uint>
 Microsoft.AspNetCore.Components.Platform.Screen.GetWidthAsync() -> System.Threading.Tasks.ValueTask<int>
+Microsoft.AspNetCore.Components.Platform.StorageEvent
+Microsoft.AspNetCore.Components.Platform.StorageEvent.Key.get -> string?
+Microsoft.AspNetCore.Components.Platform.StorageEvent.Key.init -> void
+Microsoft.AspNetCore.Components.Platform.StorageEvent.NewValue.get -> string?
+Microsoft.AspNetCore.Components.Platform.StorageEvent.NewValue.init -> void
+Microsoft.AspNetCore.Components.Platform.StorageEvent.OldValue.get -> string?
+Microsoft.AspNetCore.Components.Platform.StorageEvent.OldValue.init -> void
+Microsoft.AspNetCore.Components.Platform.StorageEvent.StorageArea.get -> Microsoft.AspNetCore.Components.Platform.Storage?
+Microsoft.AspNetCore.Components.Platform.StorageEvent.StorageArea.init -> void
+Microsoft.AspNetCore.Components.Platform.StorageEvent.StorageEvent() -> void
+Microsoft.AspNetCore.Components.Platform.StorageEvent.Url.get -> string!
+Microsoft.AspNetCore.Components.Platform.StorageEvent.Url.init -> void
 Microsoft.AspNetCore.Components.Platform.Storage
 Microsoft.AspNetCore.Components.Platform.Storage.ClearAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.GetItemAsync(string! key) -> System.Threading.Tasks.ValueTask<string?>
@@ -128,6 +150,8 @@ Microsoft.AspNetCore.Components.Platform.WindowUrlExtensions
 Microsoft.AspNetCore.Components.Platform.WindowUrlExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
 Microsoft.AspNetCore.Components.Platform.WindowUrlExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).Url.get -> Microsoft.AspNetCore.Components.Platform.UrlConstructor!
 Microsoft.AspNetCore.Components.Platform.WindowUrlExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).UrlSearchParams.get -> Microsoft.AspNetCore.Components.Platform.UrlSearchParamsConstructor!
+Microsoft.AspNetCore.Components.Platform.Window.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.Window!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
+Microsoft.AspNetCore.Components.Platform.Window.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.Window!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
 Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions
 Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
 Microsoft.AspNetCore.Components.Platform.WindowCookieStoreExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).CookieStore.get -> Microsoft.AspNetCore.Components.Platform.CookieStore!
@@ -140,3 +164,5 @@ Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Mi
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).SessionStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
 Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions
 static Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions.AddBrowserPlatform(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Components.Platform.CookieStore.ChangeEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.CookieStore!, Microsoft.AspNetCore.Components.Platform.CookieChangeEvent!>!
+static Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).StorageEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.Window!, Microsoft.AspNetCore.Components.Platform.StorageEvent!>!
