@@ -12,10 +12,8 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public sealed class Window : IInternalAsyncDisposal
 {
-    private readonly IJSRuntime _jsRuntime;
-    private readonly ILoggerFactory _loggerFactory;
-    // Typed as the interface, so that disposal does not keep these types in an app that never adds a listener.
-    private IInternalAsyncDisposal? _callbackFactory;
+    private readonly FeatureContext _context;
+    // Typed as the interface, so that disposal does not keep the type in an app that never adds a listener.
     private IInternalAsyncDisposal? _listeners;
     private readonly Dictionary<(Type FeatureType, string? Subkey), object> _features = [];
     private Task<IJSObjectReference>? _referenceTask;
@@ -23,8 +21,7 @@ public sealed class Window : IInternalAsyncDisposal
 
     internal Window(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
     {
-        _jsRuntime = jsRuntime;
-        _loggerFactory = loggerFactory;
+        _context = new FeatureContext(jsRuntime, loggerFactory);
     }
 
     /// <summary>
@@ -68,16 +65,10 @@ public sealed class Window : IInternalAsyncDisposal
 
         // The collection and the module loader are created here, so an app that adds no listener pays nothing.
         ObjectDisposedException.ThrowIf(_disposed, this);
-        var listeners = (EventListenerCollection)(_listeners ??= CreateEventListenerCollection());
+        var listeners = (EventListenerCollection)(_listeners ??= _context.CreateEventListenerCollection());
 
         return await type.AddListenerAsync(listeners, window, this, listener, cancellationToken);
     }
-
-    /// <summary>
-    /// Creates the collection that a projection uses to add event listeners to its JavaScript object.
-    /// </summary>
-    internal EventListenerCollection CreateEventListenerCollection()
-        => new((JSCallbackFactory)(_callbackFactory ??= new JSCallbackFactory(_jsRuntime)), _loggerFactory.CreateLogger<EventListenerCollection>());
 
     private Task<IJSObjectReference> GetReferenceAsync()
     {
@@ -85,7 +76,7 @@ public sealed class Window : IInternalAsyncDisposal
 
         if (_referenceTask is null || _referenceTask.IsFaulted || _referenceTask.IsCanceled)
         {
-            _referenceTask = _jsRuntime.GetValueAsync<IJSObjectReference>("window").AsTask();
+            _referenceTask = _context.JSRuntime.GetValueAsync<IJSObjectReference>("window").AsTask();
         }
 
         return _referenceTask;
@@ -97,7 +88,7 @@ public sealed class Window : IInternalAsyncDisposal
     /// <typeparam name="T">The projection type.</typeparam>
     /// <param name="factory">The callback that creates the projection.</param>
     /// <returns>The projection keyed by <typeparamref name="T"/>.</returns>
-    internal T GetOrAddFeature<T>(Func<IJSRuntime, T> factory) where T : class
+    internal T GetOrAddFeature<T>(Func<FeatureContext, T> factory) where T : class
         => GetOrAddFeatureCore(subkey: null, factory);
 
     /// <summary>
@@ -112,14 +103,14 @@ public sealed class Window : IInternalAsyncDisposal
     /// <param name="subkey">The key that distinguishes this projection from others of the same type.</param>
     /// <param name="factory">The callback that creates the projection.</param>
     /// <returns>The projection keyed by <typeparamref name="T"/> and <paramref name="subkey"/>.</returns>
-    internal T GetOrAddFeature<T>(string subkey, Func<IJSRuntime, T> factory) where T : class
+    internal T GetOrAddFeature<T>(string subkey, Func<FeatureContext, T> factory) where T : class
     {
         ArgumentNullException.ThrowIfNull(subkey);
 
         return GetOrAddFeatureCore(subkey, factory);
     }
 
-    private T GetOrAddFeatureCore<T>(string? subkey, Func<IJSRuntime, T> factory) where T : class
+    private T GetOrAddFeatureCore<T>(string? subkey, Func<FeatureContext, T> factory) where T : class
     {
         ArgumentNullException.ThrowIfNull(factory);
 
@@ -132,7 +123,7 @@ public sealed class Window : IInternalAsyncDisposal
             return (T)existing;
         }
 
-        var created = factory(_jsRuntime);
+        var created = factory(_context);
         _features[key] = created;
 
         return created;
@@ -171,9 +162,6 @@ public sealed class Window : IInternalAsyncDisposal
         }
 
         // Features remove their listeners first, so the module is no longer needed.
-        if (_callbackFactory is not null)
-        {
-            await _callbackFactory.InternalDisposeAsync();
-        }
+        await ((IInternalAsyncDisposal)_context).InternalDisposeAsync();
     }
 }

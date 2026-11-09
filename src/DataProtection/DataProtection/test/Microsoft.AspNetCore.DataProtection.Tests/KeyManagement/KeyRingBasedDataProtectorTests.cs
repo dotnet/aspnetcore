@@ -890,6 +890,56 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(expectedPlaintext, destination.WrittenSpan.ToArray());
         mockNonSpanEncryptor.Verify(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()), Times.Once);
     }
+
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(false, 5)]
+    [InlineData(false, 100)]
+    [InlineData(false, 2000)]
+    [InlineData(false, 70000)]
+    [InlineData(true, 0)]
+    [InlineData(true, 100)]
+    [InlineData(true, 2000)]
+    public void StringProtect_SpanProtector_ProducesSamePayloadAsByteArrayPath(bool useGcm, int length)
+    {
+        // Known-answer comparison: the string overloads use ISpanDataProtector when available. With a deterministic
+        // RNG the produced payload must be byte-for-byte identical to Base64Url(Protect(UTF8(plaintext))).
+        var genRandom = new SequentialGenRandom();
+        var kdk = new Secret(Enumerable.Range(0, 64).Select(i => (byte)i).ToArray());
+        IAuthenticatedEncryptor encryptor = useGcm
+            ? new AesGcmAuthenticatedEncryptor(kdk, derivedKeySizeInBytes: 32, genRandom: genRandom)
+            : new ManagedAuthenticatedEncryptor(kdk, Aes.Create, 32, () => new HMACSHA256(), genRandom: genRandom);
+        using var disposableEncryptor = (IDisposable)encryptor;
+
+        var keyId = new Guid("ba73c9ce-d322-4e45-af90-341307e11c38");
+        var mockKeyRing = new Mock<IKeyRing>();
+        mockKeyRing.Setup(o => o.DefaultKeyId).Returns(keyId);
+        mockKeyRing.Setup(o => o.DefaultAuthenticatedEncryptor).Returns(encryptor);
+        bool revoked;
+        mockKeyRing.Setup(o => o.GetAuthenticatedEncryptorByKeyId(keyId, out revoked)).Returns(encryptor);
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(mockKeyRing.Object);
+
+        IDataProtector protector = new KeyRingBasedSpanDataProtector(mockKeyRingProvider.Object, GetLogger(), originalPurposes: null, newPurpose: "purpose")
+            .CreateProtector("sub-purpose");
+        Assert.IsAssignableFrom<ISpanDataProtector>(protector);
+
+        var plaintext = string.Create(length, 0, (span, _) =>
+        {
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = (i % 7) == 0 ? '\u00fc' : (char)('a' + (i % 26));
+            }
+        });
+
+        genRandom.Reset();
+        var expected = Convert.ToBase64String(protector.Protect(Encoding.UTF8.GetBytes(plaintext))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        genRandom.Reset();
+        var actual = protector.Protect(plaintext);
+
+        Assert.Equal(expected, actual);
+        Assert.Equal(plaintext, protector.Unprotect(actual));
+    }
 #endif
 
     [Fact]
