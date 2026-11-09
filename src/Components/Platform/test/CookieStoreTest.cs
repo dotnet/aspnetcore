@@ -333,6 +333,9 @@ public class CookieStoreTest
         Assert.True(CookieSameSite.Lax == new CookieSameSite("lax"));
         Assert.True(CookieSameSite.Lax != new CookieSameSite("Lax"));
         Assert.Equal(CookieSameSite.Lax.GetHashCode(), new CookieSameSite("lax").GetHashCode());
+        Assert.True(CookieSameSite.Lax.Equals((object)new CookieSameSite("lax")));
+        Assert.False(CookieSameSite.Lax.Equals((object)"lax"));
+        Assert.False(CookieSameSite.Lax.Equals(null));
         Assert.Equal("none", CookieSameSite.None.ToString());
         Assert.Throws<ArgumentNullException>("value", () => new CookieSameSite(null!));
     }
