@@ -30,9 +30,10 @@ Microsoft.AspNetCore.Components.Platform.CookieListItem.Name.init -> void
 Microsoft.AspNetCore.Components.Platform.CookieListItem.Value.get -> string?
 Microsoft.AspNetCore.Components.Platform.CookieListItem.Value.init -> void
 Microsoft.AspNetCore.Components.Platform.CookieSameSite
-Microsoft.AspNetCore.Components.Platform.CookieSameSite.Lax = 1 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
-Microsoft.AspNetCore.Components.Platform.CookieSameSite.None = 2 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
-Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict = 0 -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.CookieSameSite() -> void
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.CookieSameSite(string! value) -> void
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.Equals(Microsoft.AspNetCore.Components.Platform.CookieSameSite other) -> bool
+Microsoft.AspNetCore.Components.Platform.CookieSameSite.Value.get -> string!
 Microsoft.AspNetCore.Components.Platform.CookieStore
 Microsoft.AspNetCore.Components.Platform.CookieStore.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.CookieStore!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
 Microsoft.AspNetCore.Components.Platform.CookieStore.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.CookieStore!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
@@ -163,6 +164,14 @@ Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Mi
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).SessionStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
 Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions
+override Microsoft.AspNetCore.Components.Platform.CookieSameSite.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Components.Platform.CookieSameSite.GetHashCode() -> int
+override Microsoft.AspNetCore.Components.Platform.CookieSameSite.ToString() -> string!
+static Microsoft.AspNetCore.Components.Platform.CookieSameSite.Lax.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+static Microsoft.AspNetCore.Components.Platform.CookieSameSite.operator !=(Microsoft.AspNetCore.Components.Platform.CookieSameSite left, Microsoft.AspNetCore.Components.Platform.CookieSameSite right) -> bool
+static Microsoft.AspNetCore.Components.Platform.CookieSameSite.operator ==(Microsoft.AspNetCore.Components.Platform.CookieSameSite left, Microsoft.AspNetCore.Components.Platform.CookieSameSite right) -> bool
+static Microsoft.AspNetCore.Components.Platform.CookieSameSite.None.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+static Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
 static Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions.AddBrowserPlatform(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Platform.CookieStore.ChangeEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.CookieStore!, Microsoft.AspNetCore.Components.Platform.CookieChangeEvent!>!
 static Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).StorageEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.Window!, Microsoft.AspNetCore.Components.Platform.StorageEvent!>!

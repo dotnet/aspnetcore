@@ -358,19 +358,87 @@ public class CookieStoreTest
             jsRuntime.ArgumentsSentTo("set"));
     }
 
-    [Theory]
-    [InlineData(CookieSameSite.Strict, "strict")]
-    [InlineData(CookieSameSite.Lax, "lax")]
-    [InlineData(CookieSameSite.None, "none")]
-    public async Task SetAsync_SendsSameSiteAsTheWebIdlString(CookieSameSite sameSite, string expected)
+    [Fact]
+    public async Task SetAsync_SendsSameSiteAsTheWebIdlString()
     {
         var jsRuntime = new SerializingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
         var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
 
-        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = sameSite });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.Strict });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.Lax });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.None });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = new CookieSameSite("future-value") });
 
-        Assert.Contains($"\"sameSite\":\"{expected}\"", Assert.Single(jsRuntime.ArgumentsSentTo("set")));
+        Assert.Equal(
+            ["strict", "lax", "none", "future-value"],
+            jsRuntime.ArgumentsSentTo("set").Select(json => JsonDocument.Parse(json).RootElement[0].GetProperty("sameSite").GetString()));
+    }
+
+    [Fact]
+    public async Task SetAsync_SendsDefaultSameSiteAsStrict()
+    {
+        var jsRuntime = new SerializingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = default });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = new CookieSameSite() });
+
+        Assert.Equal(
+            ["strict", "strict"],
+            jsRuntime.ArgumentsSentTo("set").Select(json => JsonDocument.Parse(json).RootElement[0].GetProperty("sameSite").GetString()));
+    }
+
+    [Fact]
+    public void CookieSameSite_DefaultIsStrict()
+    {
+        var defaultValue = default(CookieSameSite);
+
+        Assert.Equal("strict", defaultValue.Value);
+        Assert.Equal("strict", defaultValue.ToString());
+        Assert.Equal(CookieSameSite.Strict, defaultValue);
+        Assert.True(CookieSameSite.Strict == defaultValue);
+        Assert.True(new CookieSameSite("strict") == defaultValue);
+        Assert.Equal(CookieSameSite.Strict.GetHashCode(), defaultValue.GetHashCode());
+        Assert.NotEqual(CookieSameSite.Lax, defaultValue);
+        Assert.NotEqual(new CookieSameSite("Strict"), defaultValue);
+    }
+
+    [Fact]
+    public async Task CookieSameSite_ReadsStrictFromTheBrowserAsTheDefault()
+    {
+        var jsRuntime = new SerializingJSRuntime { ReadResult = "\"strict\"" };
+
+        var sameSite = await jsRuntime.InvokeAsync<CookieSameSite>("read");
+
+        Assert.Equal(default(CookieSameSite), sameSite);
+        Assert.Equal(CookieSameSite.Strict, sameSite);
+    }
+
+    [Fact]
+    public async Task CookieSameSite_ReadsAnyStringFromTheBrowser()
+    {
+        var jsRuntime = new SerializingJSRuntime { ReadResult = "\"future-value\"" };
+
+        var sameSite = await jsRuntime.InvokeAsync<CookieSameSite>("read");
+
+        Assert.Equal(new CookieSameSite("future-value"), sameSite);
+        Assert.Equal("future-value", sameSite.Value);
+    }
+
+    [Fact]
+    public void CookieSameSite_ComparesByOrdinalString()
+    {
+        Assert.Equal(CookieSameSite.Lax, new CookieSameSite("lax"));
+        Assert.True(CookieSameSite.Lax == new CookieSameSite("lax"));
+        Assert.True(CookieSameSite.Lax != new CookieSameSite("Lax"));
+        Assert.Equal(CookieSameSite.Lax.GetHashCode(), new CookieSameSite("lax").GetHashCode());
+        Assert.True(CookieSameSite.Lax.Equals((object)new CookieSameSite("lax")));
+        Assert.False(CookieSameSite.Lax.Equals((object)"lax"));
+        Assert.False(CookieSameSite.Lax.Equals(null));
+        Assert.Equal("none", CookieSameSite.None.ToString());
+        Assert.Throws<ArgumentNullException>("value", () => new CookieSameSite(null!));
     }
 
     [Fact]
@@ -574,6 +642,8 @@ public class CookieStoreTest
 
         public string GetResult { get; set; } = "null";
 
+        public string ReadResult { get; init; } = "null";
+
         public string[] ArgumentsSentTo(string identifier)
             => [.. _calls.Where(call => call.Identifier == identifier).Select(call => call.ArgsJson ?? string.Empty)];
 
@@ -586,6 +656,7 @@ public class CookieStoreTest
                 "cookieStore" => """{"__jsObjectId":1}""",
                 "get" => GetResult,
                 "getAll" => GetAllResult,
+                "read" => ReadResult,
                 _ => "null",
             };
 
