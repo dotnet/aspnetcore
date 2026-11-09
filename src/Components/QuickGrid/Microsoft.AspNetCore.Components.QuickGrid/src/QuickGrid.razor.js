@@ -12,7 +12,6 @@ export function init(tableElement) {
             tableElement.dispatchEvent(new CustomEvent('closecolumnoptions', { bubbles: true }));
         }
     };
-    let focusedRowIndex;
     const isClickableRow = target => target.parentElement === tableElement.tBodies[0] && target.classList.contains('row-clickable');
     const tableKeyDownHandler = event => {
         if ((event.key === 'Enter' || event.key === ' ') && isClickableRow(event.target)) {
@@ -22,6 +21,26 @@ export function init(tableElement) {
             }
         }
     };
+    const stopFocusRestoration = setupFocusRestoration(tableElement, isClickableRow);
+
+    document.body.addEventListener('click', bodyClickHandler);
+    document.body.addEventListener('mousedown', bodyClickHandler); // Otherwise it seems strange that it doesn't go away until you release the mouse button
+    document.body.addEventListener('keydown', keyDownHandler);
+    tableElement.addEventListener('keydown', tableKeyDownHandler);
+
+    return {
+        stop: () => {
+            stopFocusRestoration();
+            document.body.removeEventListener('click', bodyClickHandler);
+            document.body.removeEventListener('mousedown', bodyClickHandler);
+            document.body.removeEventListener('keydown', keyDownHandler);
+            tableElement.removeEventListener('keydown', tableKeyDownHandler);
+        }
+    };
+}
+
+function setupFocusRestoration(tableElement, isClickableRow) {
+    let focusedRowIndex;
     const focusInHandler = event => {
         focusedRowIndex = isClickableRow(event.target) ? event.target.getAttribute('aria-rowindex') : null;
     };
@@ -42,23 +61,13 @@ export function init(tableElement) {
     });
     observer.observe(tableElement, { childList: true, subtree: true });
 
-    document.body.addEventListener('click', bodyClickHandler);
-    document.body.addEventListener('mousedown', bodyClickHandler); // Otherwise it seems strange that it doesn't go away until you release the mouse button
-    document.body.addEventListener('keydown', keyDownHandler);
-    tableElement.addEventListener('keydown', tableKeyDownHandler);
     tableElement.addEventListener('focusin', focusInHandler);
     tableElement.addEventListener('focusout', focusOutHandler);
 
-    return {
-        stop: () => {
-            observer.disconnect();
-            document.body.removeEventListener('click', bodyClickHandler);
-            document.body.removeEventListener('mousedown', bodyClickHandler);
-            document.body.removeEventListener('keydown', keyDownHandler);
-            tableElement.removeEventListener('keydown', tableKeyDownHandler);
-            tableElement.removeEventListener('focusin', focusInHandler);
-            tableElement.removeEventListener('focusout', focusOutHandler);
-        }
+    return () => {
+        observer.disconnect();
+        tableElement.removeEventListener('focusin', focusInHandler);
+        tableElement.removeEventListener('focusout', focusOutHandler);
     };
 }
 

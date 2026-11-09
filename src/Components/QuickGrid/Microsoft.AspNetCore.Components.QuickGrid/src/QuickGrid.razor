@@ -76,7 +76,7 @@
         <tr @key="@(ItemKey(item))"
             aria-rowindex="@rowIndex"
             class="@combinedClass"
-            tabindex="@(OnRowClick.HasDelegate ? 0 : (int?)null)"
+            tabindex="@(OnRowClick.HasDelegate ? 0 : null)"
             @onclick="@rowClick">
             @foreach (var col in _columns)
             {
