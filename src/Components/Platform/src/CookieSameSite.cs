@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Components.Platform;
 [JsonConverter(typeof(WebIdlEnumJsonConverter<CookieSameSite>))]
 public readonly record struct CookieSameSite : IWebIdlEnum<CookieSameSite>
 {
+    private const string DefaultValue = "strict";
+
+    // The default value is stored as null so that default(CookieSameSite) equals Strict.
+    private readonly string? _value;
+
     /// <summary>
     /// Initializes a new instance of <see cref="CookieSameSite"/> with the specified string.
     /// </summary>
@@ -23,13 +28,13 @@ public readonly record struct CookieSameSite : IWebIdlEnum<CookieSameSite>
     public CookieSameSite(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        Value = value;
+        _value = value == DefaultValue ? null : value;
     }
 
     /// <summary>
     /// Gets a value that makes the browser send the cookie only with same-site requests.
     /// </summary>
-    public static CookieSameSite Strict { get; } = new("strict");
+    public static CookieSameSite Strict { get; } = new(DefaultValue);
 
     /// <summary>
     /// Gets a value that makes the browser send the cookie with same-site requests and with cross-site top-level navigations.
@@ -44,7 +49,7 @@ public readonly record struct CookieSameSite : IWebIdlEnum<CookieSameSite>
     /// <summary>
     /// Gets the string that the browser uses for the value.
     /// </summary>
-    public string Value { get; }
+    public string Value => _value ?? DefaultValue;
 
     static CookieSameSite IWebIdlEnum<CookieSameSite>.Create(string value) => new(value);
 
@@ -52,5 +57,5 @@ public readonly record struct CookieSameSite : IWebIdlEnum<CookieSameSite>
     /// Returns the string that the browser uses for the value.
     /// </summary>
     /// <returns>The string that the browser uses for the value.</returns>
-    public override string ToString() => Value ?? string.Empty;
+    public override string ToString() => Value;
 }

@@ -18,14 +18,7 @@ internal sealed class WebIdlEnumJsonConverter<T> : JsonConverter<T> where T : st
         return T.Create(reader.GetString()!);
     }
 
+    // A type without a Web IDL default throws InvalidOperationException from Value for default(T).
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
-    {
-        // default(T) has no string. Sending null would reach the browser as the string "null".
-        if (value.Value is null)
-        {
-            throw new JsonException($"The default value of {typeof(T).Name} cannot be sent to the browser.");
-        }
-
-        writer.WriteStringValue(value.Value);
-    }
+        => writer.WriteStringValue(value.Value);
 }
