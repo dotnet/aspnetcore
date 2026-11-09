@@ -29,7 +29,6 @@ public class ContentDispositionHeaderValue
     private const string ReadDateString = "read-date";
     private const string SizeString = "size";
     private const int MaxStackAllocSizeBytes = 256;
-    private static readonly char[] QuestionMark = new char[] { '?' };
     private static readonly char[] SingleQuote = new char[] { '\'' };
     private static ReadOnlySpan<byte> MimePrefix => "\"=?utf-8?B?"u8;
     private static ReadOnlySpan<byte> MimeSuffix => "?=\""u8;
@@ -582,10 +581,32 @@ public class ContentDispositionHeaderValue
             return false;
         }
 
-        var parts = processedInput.Split(QuestionMark).ToArray();
-        // "=, encodingName, encodingType, encodedData, ="
-        if (parts.Length != 5 || parts[0] != "\"=" || parts[4] != "=\""
-            || !parts[2].Equals("b", StringComparison.OrdinalIgnoreCase))
+        // Expected shape: "=?encodingName?encodingType?encodedData?="
+        // i.e. exactly four '?' separating "=, encodingName, encodingType, encodedData, =
+        var span = processedInput.AsSpan();
+        if (!span.StartsWith("\"=?") || !span.EndsWith("?=\""))
+        {
+            // Not encoded.
+            return false;
+        }
+
+        // Length >= 10 guarantees the prefix and suffix do not overlap.
+        var inner = span[3..^3];
+        var firstSeparator = inner.IndexOf('?');
+        if (firstSeparator < 0)
+        {
+            return false;
+        }
+        var encodingName = inner[..firstSeparator];
+        var rest = inner[(firstSeparator + 1)..];
+        var secondSeparator = rest.IndexOf('?');
+        if (secondSeparator < 0)
+        {
+            return false;
+        }
+        var encodingType = rest[..secondSeparator];
+        var encodedData = rest[(secondSeparator + 1)..];
+        if (encodedData.Contains('?') || !encodingType.Equals("b", StringComparison.OrdinalIgnoreCase))
         {
             // Not encoded.
             // This does not support multi-line encoding.
@@ -595,8 +616,8 @@ public class ContentDispositionHeaderValue
 
         try
         {
-            var encoding = Encoding.GetEncoding(parts[1].ToString());
-            var bytes = Convert.FromBase64String(parts[3].ToString());
+            var encoding = Encoding.GetEncoding(encodingName.ToString());
+            var bytes = Convert.FromBase64String(encodedData.ToString());
             output = encoding.GetString(bytes, 0, bytes.Length);
             return true;
         }
