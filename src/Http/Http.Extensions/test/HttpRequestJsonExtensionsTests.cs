@@ -23,6 +23,23 @@ public class HttpRequestJsonExtensionsTests
     [InlineData("APPLICATION/JSON", true)]
     [InlineData("APPLICATION/JSON; CHARSET=UTF-8", true)]
     [InlineData("APPLICATION/LD+JSON", true)]
+    [InlineData("application/json;charset=utf-8", true)]
+    [InlineData("application/json;  charset=utf-16", true)]
+    [InlineData("application/json; charset=\"utf-8\"", true)]
+    [InlineData("application/json; foo=bar", true)]
+    [InlineData("application/json ; charset=utf-8", true)]
+    [InlineData("application/json; charset=", true)]
+    [InlineData("application/json;", true)]
+    [InlineData("application/jsonx", false)]
+    [InlineData("application/json+x", false)]
+    [InlineData("application/+json", true)]
+    [InlineData("application/vnd.api+json; charset=utf-8", true)]
+    [InlineData("application/json, text/plain", false)]
+    [InlineData("application/ld+json ", true)]
+    [InlineData("application/ld json", false)]
+    [InlineData("/json", false)]
+    [InlineData("application/", false)]
+    [InlineData("*/*", false)]
     public void HasJsonContentType(string? contentType, bool hasJsonContentType)
     {
         var request = new DefaultHttpContext().Request;

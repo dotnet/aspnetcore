@@ -75,7 +75,9 @@ post-steps:
 
       const sessionPath = process.env.REVIEW_WORKER_SESSION_PATH || '/tmp/gh-aw/agent-session.jsonl';
       const expectedAgentName = 'review-guide-worker';
+      const verifierAgentName = 'review-candidate-verifier';
       const allowedTools = new Set(['glob', 'grep', 'read_file', 'rg', 'search', 'skill', 'view']);
+      const verifierAllowedTools = new Set(['glob', 'grep', 'read_file', 'rg', 'search', 'view']);
       const expectedWorkerCountValue = process.env.REVIEW_EXPECTED_WORKER_COUNT;
 
       if (!fs.existsSync(sessionPath)) {
@@ -158,8 +160,10 @@ post-steps:
       };
       const validStoppedOutput = hasValidStoppedOutput();
       const workers = new Map();
+      const verifiers = new Map();
       const workerAliases = new Map();
       const taskStartsById = new Map();
+      const verifierTaskStartsById = new Map();
       const taskStartsByName = new Map();
 
       const registerAlias = (worker, alias) => {
@@ -189,9 +193,10 @@ post-steps:
         const input = toolInput(event);
         const toolCallId = event.data?.toolCallId;
         const name = input?.name;
+        const isVerifierTask = input?.agent_type === verifierAgentName;
         if (!input || typeof input !== 'object' ||
             typeof toolCallId !== 'string' || toolCallId.length === 0 ||
-            input.agent_type !== expectedAgentName ||
+            (input.agent_type !== expectedAgentName && !isVerifierTask) ||
             typeof name !== 'string' || name.length === 0 ||
             input.mode !== 'background') {
           violations.push(
@@ -199,9 +204,11 @@ post-steps:
           return;
         }
 
-        const taskStart = { index, name, toolCallId };
-        if (taskStartsById.has(toolCallId)) {
+        const taskStart = { index, isVerifier: isVerifierTask, name, toolCallId };
+        if (taskStartsById.has(toolCallId) || verifierTaskStartsById.has(toolCallId)) {
           violations.push(`Review worker task ID '${toolCallId}' is not unique.`);
+        } else if (isVerifierTask) {
+          verifierTaskStartsById.set(toolCallId, taskStart);
         } else {
           taskStartsById.set(toolCallId, taskStart);
         }
@@ -216,6 +223,10 @@ post-steps:
         violations.push(
           `Expected at most ${expectedWorkerCount} review worker task start(s), but recorded ${taskStartsById.size}.`);
       }
+      if (verifierTaskStartsById.size > 1) {
+        violations.push(
+          `Expected at most 1 '${verifierAgentName}' task start, but recorded ${verifierTaskStartsById.size}.`);
+      }
 
       events.forEach((event, index) => {
         if (event.type !== 'subagent.started') {
@@ -223,7 +234,8 @@ post-steps:
         }
 
         const agentName = event.data?.agentName;
-        if (agentName !== expectedAgentName) {
+        const isVerifier = agentName === verifierAgentName;
+        if (agentName !== expectedAgentName && !isVerifier) {
           violations.push(`Unexpected subagent '${agentName ?? '<unknown>'}' (${event.agentId}).`);
         }
         if (typeof event.agentId !== 'string' || event.agentId.length === 0 ||
@@ -233,8 +245,9 @@ post-steps:
           return;
         }
 
+        const taskStarts = isVerifier ? verifierTaskStartsById : taskStartsById;
         const matchingTasks = new Set(
-          eventAliases(event).map(alias => taskStartsById.get(alias)).filter(Boolean));
+          eventAliases(event).map(alias => taskStarts.get(alias)).filter(Boolean));
         if (matchingTasks.size !== 1) {
           violations.push(
             `Subagent '${event.agentId}' started as an unregistered worker.`);
@@ -242,18 +255,26 @@ post-steps:
         }
 
         const taskStart = [...matchingTasks][0];
-        let worker = workers.get(event.agentId);
+        if (index <= taskStart.index) {
+          violations.push(
+            `Subagent '${event.agentId}' started before its task call.`);
+          return;
+        }
+        const targetMap = isVerifier ? verifiers : workers;
+        let worker = targetMap.get(event.agentId);
         if (!worker) {
           worker = {
             aliases: new Set(),
             collections: [],
+            completedIndices: [],
+            isVerifier,
             latestClarificationIndex: -1,
             name: taskStart.name,
             reads: [],
             startedIndex: index,
             taskStart,
           };
-          workers.set(event.agentId, worker);
+          targetMap.set(event.agentId, worker);
         } else if (worker.taskStart !== taskStart) {
           violations.push(`Worker agent ID '${event.agentId}' identifies more than one task.`);
           return;
@@ -264,13 +285,43 @@ post-steps:
         }
       });
 
+      events.forEach((event, index) => {
+        if (event.type !== 'subagent.completed' || event.data?.cancelled === true) {
+          return;
+        }
+
+        const worker = typeof event.agentId === 'string'
+          ? resolveWorker([event.agentId])
+          : null;
+        if (worker && index > worker.startedIndex) {
+          worker.completedIndices.push(index);
+        }
+      });
+
       const missingWorkersAllowed = validStoppedOutput && workers.size < expectedWorkerCount;
       if (workers.size !== expectedWorkerCount && !missingWorkersAllowed) {
         violations.push(
           `Expected ${expectedWorkerCount} per-guide review worker(s), but recorded ${workers.size}.`);
       }
+      if (verifiers.size > 1) {
+        violations.push(
+          `Expected at most 1 '${verifierAgentName}' subagent, but recorded ${verifiers.size}.`);
+      }
 
       for (const event of events) {
+        if (isTopLevelToolStart(event) && event.data?.toolName === 'write_agent') {
+          const input = toolInput(event);
+          const targetIds = typeof input?.agent_id === 'string'
+            ? [input.agent_id]
+            : Array.isArray(input?.agent_ids)
+              ? input.agent_ids
+              : [];
+          if (targetIds.some(target =>
+              typeof target === 'string' && resolveWorker([target])?.isVerifier)) {
+            violations.push(`write_agent must not target '${verifierAgentName}'.`);
+          }
+          continue;
+        }
         if (event.type !== 'tool.execution_start') {
           continue;
         }
@@ -289,7 +340,9 @@ post-steps:
         const toolName = event.data?.toolName;
         if (!worker) {
           violations.push(`Tool '${toolName ?? '<unknown>'}' was used by an unregistered subagent (${event.agentId}).`);
-        } else if (!allowedTools.has(toolName)) {
+        } else if (worker.isVerifier && !verifierAllowedTools.has(toolName)) {
+          violations.push(`Subagent '${verifierAgentName}' used disallowed tool '${toolName ?? '<unknown>'}'.`);
+        } else if (!worker.isVerifier && !allowedTools.has(toolName)) {
           violations.push(`Subagent '${expectedAgentName}' used disallowed tool '${toolName ?? '<unknown>'}'.`);
         }
       }
@@ -343,6 +396,11 @@ post-steps:
                 'write_agent must use explicit known worker targets (agent_id or agent_ids).');
               return;
             }
+            if (targets.some(worker => worker.isVerifier)) {
+              violations.push(
+                `write_agent must not target '${verifierAgentName}'.`);
+              return;
+            }
 
             const completion = successfulCompletion(event, startIndex);
             if (!completion) {
@@ -378,7 +436,15 @@ post-steps:
               `read_agent targeted unknown worker '${target ?? '<missing>'}'.`);
             return;
           }
-          if (input.wait !== true) {
+          const isRuntimeIdleRead =
+            input.wait === undefined &&
+            input.since_turn === 0 &&
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+              event.data?.toolCallId ?? '') &&
+            worker.completedIndices.some(completedIndex =>
+              completedIndex > Math.max(worker.startedIndex, worker.latestClarificationIndex) &&
+              completedIndex < startIndex);
+          if (input.wait !== true && !isRuntimeIdleRead) {
             violations.push(
               `read_agent for '${worker.name}' must use wait: true.`);
           }
@@ -414,7 +480,9 @@ post-steps:
             isInitialCollection &&
             typeof content === 'string' &&
             content.trim().length > 0 &&
-            /^[ \t]*PATH:[ \t]*per-guide-worker[ \t]*$/m.test(content)) {
+            (worker.isVerifier
+              ? /"?decision"?\s*:\s*"?(?:KEEP|DOWNGRADE|DROP)\b/.test(content)
+              : /^[ \t]*PATH:[ \t]*per-guide-worker[ \t]*$/m.test(content))) {
             worker.collections.push(completion);
           }
         });
@@ -429,6 +497,56 @@ post-steps:
             violations.push(
               `Review worker '${worker.name}' received a write_agent follow-up that was not collected before publication.`);
           }
+        }
+
+        const reviewComments = events.filter(event =>
+          isTopLevelToolStart(event) &&
+          event.data?.toolName === 'safeoutputs-create_pull_request_review_comment');
+        const reviewSubmissions = events.filter(event =>
+          isTopLevelToolStart(event) &&
+          event.data?.toolName === 'safeoutputs-submit_pull_request_review');
+        const hasFindingsPublication =
+          reviewComments.length > 0 || reviewSubmissions.length > 0;
+        const isDiscardedOnlyFindingsPublication =
+          reviewComments.length > 0 &&
+          reviewComments.every(event => {
+            const body = toolInput(event)?.body;
+            return typeof body === 'string' &&
+              /(?:^|\n)\s*(?:[-*]\s+|\d+\.\s+|#+\s+|\*\*)?\[DISCARDED\]\s+\S/.test(body) &&
+              (/\bconfidence\s*:\s*`?discarded`?\b/i.test(body) ||
+                /\bWhy discarded\s*:/i.test(body));
+          });
+        if (hasFindingsPublication && !isDiscardedOnlyFindingsPublication && verifiers.size !== 1) {
+          violations.push(
+            `Findings publication requires 1 '${verifierAgentName}' subagent unless every inline comment is a pre-verification [DISCARDED] candidate, but recorded ${verifiers.size}.`);
+        }
+
+        const latestWorkerPreVerifierIndex = Math.max(
+          -1,
+          ...[...workers.values()].map(worker => {
+            const initialIndex = worker.collections[0]?.index ?? Number.POSITIVE_INFINITY;
+            if (worker.latestClarificationIndex < 0) {
+              return initialIndex;
+            }
+            const followUpIndex = worker.reads.find(
+              read => read.startIndex > worker.latestClarificationIndex)?.completionIndex ??
+              Number.POSITIVE_INFINITY;
+            return Math.max(initialIndex, followUpIndex);
+          }));
+        for (const verifier of verifiers.values()) {
+          if (verifier.taskStart.index <= latestWorkerPreVerifierIndex ||
+              verifier.startedIndex <= latestWorkerPreVerifierIndex) {
+            violations.push(
+              `Candidate verifier '${verifier.name}' started before every review worker was collected.`);
+          }
+          if (verifier.collections.length === 0) {
+            violations.push(
+              `Candidate verifier '${verifier.name}' was not collected before publication with since_turn absent or 0.`);
+          }
+        }
+        if (verifierTaskStartsById.size !== verifiers.size) {
+          violations.push(
+            `Expected ${verifierTaskStartsById.size} started '${verifierAgentName}' subagent(s), but recorded ${verifiers.size}.`);
         }
       }
 
@@ -786,7 +904,9 @@ exact assignments and native reads, independent candidate validation, severity,
 changed-line anchors, feedback disposition, and structured result semantics. Do not
 replace those rules with a second review policy in this adapter. Every guide worker must
 use the native `review-guide-worker` profile, whose explicit tool list exposes only
-reading, searching, and skill loading. Workers are source-only and must not receive
+reading, searching, and skill loading. Any post-gate candidate verification must use
+the native `review-candidate-verifier` profile, whose explicit tool list exposes only
+reading and searching. Workers are source-only and must not receive
 coordinator-only inputs.
 Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.
 After launching workers, stay in your turn and collect each worker's report with `read_agent`
@@ -817,7 +937,7 @@ attempt, and allow the restricted-worker verifier to fail closed.
 
 Map only the skill's exact structured status:
 
-- `FINDINGS`: require one to five validated `NEW_FINDINGS`, then use the review outputs below.
+- `FINDINGS`: require one to five `NEW_FINDINGS` entries, then use the review outputs below.
 - `NO_FINDINGS`: invoke `noop` exactly once, with no review or status-comment output.
   Disclosed existing feedback and unresolved candidates do not change this mapping.
 - `BLOCKED` or `INCOMPLETE`: use the incomplete-publication path below, with no review or `noop`.
@@ -871,3 +991,74 @@ per-guide assignment and the loaded skill's `PATH: per-guide-worker` contract ex
 Read only the assigned frozen bundle paths and source roots. Return candidates to the
 coordinator; do not aggregate guides or publish. Shell execution, file mutation, safe
 outputs, web access, and further agent delegation are unavailable by design.
+
+## agent: `review-candidate-verifier`
+---
+description: Tries to disprove only the coordinator's provisional findings against frozen bundle source
+tools: ["read", "search"]
+---
+You are the coordinator-owned post-gate finding verifier, not a review guide worker.
+Process only the provisional findings in the assignment. Do not perform a fresh review,
+look for other defects, aggregate guides, publish, mutate files, use shell or git, or
+delegate to another agent.
+
+Read only the exact assigned diff, changed-file metadata, cited contract paths, assigned
+frozen bundle `source/<sha>` roots, and any assigned immutable coordinator validation
+artifacts. A statement that a build or test passed is not an artifact. Treat each
+finding, citation, repro, and coordinator conclusion as a hypothesis, not evidence.
+
+Establish these links independently. Each applicable link contains a short statement
+and precise citations qualified by frozen role (`head`, `mergeBase`, or `baseTip`) and
+`path:line`; use `null` when evidence is missing and `"n/a"` only when the link is not
+applicable:
+
+- `changedLine`: the RIGHT-side changed line that causes the problem.
+- `trigger`: an in-repo caller or public/protected entry point that reaches it.
+- `overlap`: for concurrency claims only, the established shared instance plus either
+  a concrete producer of supported concurrent or re-entrant calls or an applicable
+  binding contract that permits those calls. Host/runtime capability, a missing lock,
+  or a plausible interleaving is not overlap evidence.
+- `oldVsNew`: the same input sequence does not produce the effect at the merge base,
+  or `n/a` for a genuinely new path.
+- `effect`: the consumer-visible harm at the head.
+- `contract`: the applicable assigned base-tip or primary-repository contract, or
+  `n/a` when the claim does not depend on one. Head production code is the change
+  under review and is never a contract. A head declaration may serve only when
+  `oldVsNew` is `n/a` and the claim is not an incomplete-fix or new-feature omission.
+  For an incomplete-fix or new-feature omission claim, a binding assigned issue, API,
+  or base-tip/primary-repository contract is mandatory (`contract` cannot be `n/a` or
+  a head declaration; use `null` and return `DROP` with `dropBasis: "unestablished"`
+  when missing).
+- `intent`: a PR-added or PR-changed head test that exercises the claimed exact input
+  and asserts the claimed consumer-visible effect, or `n/a`. A head test that covers a
+  different input, layer, or sibling case is not intent evidence and does not
+  contradict `effect` or `contract`. Intent proves the change is deliberate, not that
+  it is compatible or correct.
+
+Judge the core claim and effect. An inaccurate submitted line anchor or repro is not by
+itself grounds for `DROP` when every link is independently proven. For `KEEP` or an
+`intent` `DOWNGRADE`, return the corrected RIGHT-side changed-line anchor and a faithful
+corrected repro when either submitted value is inaccurate.
+
+Return `KEEP` only when every applicable link is established, `intent` is `n/a`, and
+source does not contradict the claim. Return `DOWNGRADE` with `downgradeKind:
+"intent"` when every other applicable link is established, `intent` is established,
+and no base-tip or primary-repository contract requires the head behavior on that exact
+input. Return `DOWNGRADE` with `downgradeKind: "external"` only when all in-repository
+links hold and a required external behavior remains undecidable. Proven pre-existing
+same behavior on the exact input sequence is `DROP` with `dropBasis: "contradicted"`,
+`contradictedLink: "oldVsNew"`, and the exact old/new source reason. A base-tip or
+primary-repository contract that requires the head behavior on that exact input is
+`DROP` with `dropBasis: "contradicted"` and `contradictedLink: "contract"`. Otherwise
+return `DROP`, with `dropBasis: "contradicted"` and the disproven `contradictedLink`
+when frozen source disproves a link, or `dropBasis: "unestablished"` when required
+evidence cannot be established. Plausibility is never evidence.
+
+Return exactly one result for every assigned candidate and no other candidate:
+`candidateId`, `decision` (`KEEP`, `DOWNGRADE`, or `DROP`), `downgradeKind` (`intent`,
+`external`, or `null`), `dropBasis` (`contradicted`, `unestablished`, or `null`),
+`contradictedLink` (`changedLine`, `trigger`, `overlap`, `oldVsNew`, `effect`,
+`contract`, or `null`), `links` (including `intent`), `missingEvidence` (the exact
+evidence needed for `DOWNGRADE` or unestablished `DROP`, otherwise `null`),
+`correctedChangedLine`, `correctedRepro`, `validationEvidence` (assigned immutable
+artifact paths and hashes actually used, otherwise `null`), and a concise `reason`.
