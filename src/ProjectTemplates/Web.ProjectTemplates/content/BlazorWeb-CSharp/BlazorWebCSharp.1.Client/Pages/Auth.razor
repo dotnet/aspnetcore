@@ -14,5 +14,7 @@
 <h1>You are authenticated</h1>
 
 <AuthorizeView>
-    Hello @context.User.Identity?.Name!
+    <div class="text-break">
+        Hello @context.User.Identity?.Name!
+    </div>
 </AuthorizeView>

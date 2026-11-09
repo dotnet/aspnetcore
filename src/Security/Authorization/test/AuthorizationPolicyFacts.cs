@@ -114,6 +114,40 @@ public class AuthorizationPolicyFacts
     }
 
     [Fact]
+    public async Task CombineTrimsRolesOnceAndPreservesOrder()
+    {
+        var attributes = new AuthorizeAttribute[] {
+                new AuthorizeAttribute() { Roles = " r1 ,r2,, r3 " }
+            };
+        var options = new AuthorizationOptions();
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
+        var combined = await AuthorizationPolicy.CombineAsync(provider, attributes);
+
+        var rolesAuthorizationRequirement = combined.Requirements.OfType<RolesAuthorizationRequirement>().Single();
+        var first = rolesAuthorizationRequirement.AllowedRoles.ToArray();
+        var second = rolesAuthorizationRequirement.AllowedRoles.ToArray();
+        Assert.Equal(new[] { "r1", "r2", "r3" }, first);
+        for (var i = 0; i < first.Length; i++)
+        {
+            // The trimmed role names are computed once rather than on every enumeration.
+            Assert.Same(first[i], second[i]);
+        }
+    }
+
+    [Fact]
+    public async Task CombineThrowsForRolesWithOnlyWhitespaceEntries()
+    {
+        var attributes = new AuthorizeAttribute[] {
+                new AuthorizeAttribute() { Roles = " , ,," }
+            };
+        var options = new AuthorizationOptions();
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => AuthorizationPolicy.CombineAsync(provider, attributes));
+    }
+
+    [Fact]
     public async Task CombineMustTrimAuthenticationScheme()
     {
         // Arrange
