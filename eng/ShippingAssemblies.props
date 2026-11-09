@@ -113,6 +113,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.StackExchangeRedis" ProjectPath="$(RepoRoot)src/Caching/StackExchangeRedis/src/Microsoft.Extensions.Caching.StackExchangeRedis.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.AI" ProjectPath="$(RepoRoot)src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.CustomElements" ProjectPath="$(RepoRoot)src/Components/CustomElements/src/Microsoft.AspNetCore.Components.CustomElements.csproj" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Mcp" ProjectPath="$(RepoRoot)src/Components/Mcp/src/Microsoft.AspNetCore.Components.Mcp.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src/Components/Media/src/Microsoft.AspNetCore.Components.Media.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Platform" ProjectPath="$(RepoRoot)src/Components/Platform/src/Microsoft.AspNetCore.Components.Platform.csproj" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" ProjectPath="$(RepoRoot)src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter/src/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />

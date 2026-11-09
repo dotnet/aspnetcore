@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Update="Microsoft.Extensions.AI.Abstractions" Version="10.8.3" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Mcp\src\Microsoft.AspNetCore.Components.Mcp.csproj" />
+  </ItemGroup>
+  <Target Name="IncludeMcpConsumerBrowserRuntime" BeforeTargets="ResolveProjectStaticWebAssets" Condition="'$(NoBuild)' != 'true'">
+    <ItemGroup>
+      <Content Include="JS\dist\$(Configuration)\mcp-consumer.js"
+               Link="wwwroot\mcp-consumer.js"
+               ContentRoot="$(MSBuildProjectDirectory)\JS\dist\$(Configuration)\" />
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
+    <Content Remove="JS\**\*.ts;JS\package.json;JS\rollup.config.mjs;JS\tsconfig.json" />
+  </ItemGroup>
+</Project>

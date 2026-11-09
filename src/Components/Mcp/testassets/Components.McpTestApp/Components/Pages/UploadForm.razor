@@ -1,0 +1,61 @@
+@page "/mcp-upload"
+@using BlazorMcpProof
+@using Microsoft.AspNetCore.Http
+@inject McpFormEffects Effects
+
+<form method="post" enctype="@Encoding" @formname="upload" @onsubmit="Submit">
+    <AntiforgeryToken />
+    <input type="hidden" name="Case" value="@ActiveCase" />
+    <input id="upload" type="file" name="Upload" />
+    <button id="upload-submit" type="submit">Submit upload</button>
+    <button id="upload-override" type="submit" formenctype="multipart/form-data">Submit multipart override</button>
+</form>
+<p id="upload-result">@result</p>
+<p id="uploaded-kind">@kind</p>
+<p id="uploaded-name">@fileName</p>
+<p id="uploaded-content-type">@contentType</p>
+<p id="uploaded-bytes">@bytes</p>
+<p id="uploaded-field">@(PostedField ?? "(none)")</p>
+
+@code {
+    private string? result;
+    private string kind = "none";
+    private string? fileName;
+    private string? contentType;
+    private string? bytes;
+
+    [SupplyParameterFromQuery(Name = "encoding")]
+    public string? RequestedEncoding { get; set; }
+
+    [SupplyParameterFromQuery(Name = "case")]
+    public string? QueryCase { get; set; }
+
+    [SupplyParameterFromForm(Name = "Case")]
+    private string? FormCase { get; set; }
+
+    [SupplyParameterFromForm(Name = "Upload")]
+    private IFormFile? Upload { get; set; }
+
+    [SupplyParameterFromForm(Name = "Upload")]
+    private string? PostedField { get; set; }
+
+    private string ActiveCase => FormCase ?? QueryCase ?? "upload";
+    private string Encoding => RequestedEncoding == "urlencoded" ? "application/x-www-form-urlencoded" : "multipart/form-data";
+
+    private async Task Submit()
+    {
+        if (Upload is { } file)
+        {
+            kind = "file";
+            fileName = file.FileName;
+            contentType = file.ContentType;
+            await using var stream = file.OpenReadStream();
+            using var output = new MemoryStream();
+            await stream.CopyToAsync(output);
+            bytes = Convert.ToHexString(output.ToArray());
+        }
+
+        result = "submitted";
+        Effects.Record(ActiveCase, kind);
+    }
+}

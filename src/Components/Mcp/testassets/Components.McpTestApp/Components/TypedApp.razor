@@ -1,0 +1,72 @@
+@using global::Components.McpTestApp.Hosting
+@inject NavigationManager Navigation
+@inject InitialFormState State
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="@Navigation.BaseUri" />
+</head>
+<body>
+    @if (Context?.IsShellRendering == true)
+    {
+        <p id="typed-shell">Loading typed application...</p>
+    }
+    else
+    {
+    <p id="initial-label">@InitialData.Label</p>
+    <p id="initial-count">@InitialData.Count</p>
+    <p id="typed-value">@submittedValue</p>
+    <p id="render-id">@renderId</p>
+    <EditForm Model="Input" FormName="typed-form" OnSubmit="Submit">
+        <InputText @bind-Value="Input.Name" />
+        <button type="submit">Submit</button>
+    </EditForm>
+    }
+    <script id="typed-runtime" src="blazor.mcp.js"></script>
+</body>
+</html>
+
+@code {
+    private readonly Guid renderId = Guid.NewGuid();
+    private string? submittedValue;
+
+    [CascadingParameter]
+    public Microsoft.AspNetCore.Components.Mcp.McpComponentRequestContext? Context { get; set; }
+
+    [Parameter]
+    public InitialFormData InitialData { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private TypedInput Input { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        if (Context?.IsShellRendering == true)
+        {
+            return;
+        }
+
+        ArgumentNullException.ThrowIfNull(InitialData);
+        Input ??= new();
+        State.Rendered();
+    }
+
+    private void Submit()
+    {
+        if (Input.Name == "throw-action")
+        {
+            throw new ModelContextProtocol.McpException("The business form action failed.");
+        }
+
+        State.Submitted();
+        submittedValue = Input.Name;
+        InitialData.Label += ":changed";
+    }
+
+    public sealed class TypedInput
+    {
+        public string Name { get; set; } = "";
+    }
+}

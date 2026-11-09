@@ -1,0 +1,100 @@
+@page "/mcp-form"
+@namespace BlazorMcpProof
+@using System.ComponentModel.DataAnnotations
+@inject McpFormEffects Effects
+@inject McpScopeProbe Scope
+@implements IDisposable
+
+<PageTitle>MCP form parity</PageTitle>
+
+<h1>MCP form parity</h1>
+
+<EditForm Model="Input" FormName="mcp-parity" OnValidSubmit="Submit" Enhance>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label>
+        Name
+        <InputText id="name" @bind-Value="Input.Name" />
+    </label>
+    <button type="submit">Submit</button>
+</EditForm>
+
+<p id="submitted-name">@submittedName</p>
+<p id="effect-count">@Effects.Read(CaseId!).Count</p>
+<p id="last-effect">@Effects.Read(CaseId!).Value</p>
+<p id="scope-id">@Scope.Id</p>
+
+<a id="configure-browser-link" href="@($"mcp-form?case={CaseId}&configure-browser=true")">Configure the HTTP browser component</a>
+<a id="relative-form-action" href="@("forms/nested/edit?mode=form-action&case=base-form")">Relative form action</a>
+<a id="relative-submitter-action" href="@("forms/nested/edit?mode=submitter-action&case=base-submitter")">Relative submitter action</a>
+<a id="relative-empty" href="@("forms/nested/edit?mode=empty&case=base-empty")">Empty form action</a>
+<a id="relative-missing" href="@("forms/nested/edit?mode=missing&case=base-missing")">Default form action</a>
+<a id="upload-urlencoded" href="@("mcp-upload?encoding=urlencoded&case=upload-urlencoded")">URL-encoded file control</a>
+<a id="upload-multipart" href="@("mcp-upload?encoding=multipart&case=upload-multipart")">Multipart file control</a>
+<a id="upload-empty" href="@("mcp-upload?encoding=multipart&case=upload-empty")">Empty file control</a>
+<a id="upload-override-link" href="@("mcp-upload?encoding=urlencoded&case=upload-override")">Multipart submitter override</a>
+<a id="gated-close-link" href="mcp-gated?case=gated-close">Gated action for teardown</a>
+<a id="gated-navigation-link" href="mcp-gated?case=gated-navigation">Gated action for navigation</a>
+@if (ConfigureHttpBrowser)
+{
+    <ConfigureBrowser Options="@HttpOnlyOptions" />
+    <p id="http-browser-configuration">HTTP browser options component rendered</p>
+}
+
+<div id="permanent-content" data-permanent>
+    <input id="permanent-input" value="initial" />
+</div>
+
+<form method="get">
+    <input type="hidden" name="case" value="@CaseId" />
+    <label>
+        Native constraint
+        <input id="native-required" name="native" required />
+    </label>
+    <button id="native-submit" type="submit">Submit native form</button>
+</form>
+
+<form method="post">
+    <button id="framework-error" type="submit">Submit without a named handler</button>
+</form>
+
+@code {
+    private string? submittedName;
+
+    [SupplyParameterFromForm]
+    private FormInput Input { get; set; } = default!;
+
+    [SupplyParameterFromQuery(Name = "case")]
+    public string? CaseId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "configure-browser")]
+    public bool ConfigureHttpBrowser { get; set; }
+
+    private BrowserOptions HttpOnlyOptions { get; } = new()
+    {
+        StaticServer = { PreserveDom = false },
+    };
+
+    protected override void OnInitialized()
+    {
+        Input ??= new();
+        CaseId ??= "default";
+        Scope.CaseId = CaseId;
+        Effects.ComponentCreated(CaseId);
+    }
+
+    private void Submit()
+    {
+        submittedName = Input.Name;
+        Effects.Record(CaseId!, Input.Name);
+    }
+
+    public void Dispose() => Effects.ComponentDisposed(CaseId!);
+
+    public sealed class FormInput
+    {
+        [Required]
+        [StringLength(30, MinimumLength = 2)]
+        public string Name { get; set; } = "";
+    }
+}
