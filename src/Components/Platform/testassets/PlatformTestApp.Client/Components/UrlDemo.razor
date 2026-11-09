@@ -1,0 +1,148 @@
+@inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
+
+<h2>URL</h2>
+
+<button id="run-url" @onclick="RunAsync">Run URL API</button>
+<p id="url-result" role="status">@result</p>
+
+@code {
+    private string result = "No operation has run.";
+
+    private async Task RunAsync()
+    {
+        var canParse = await Browser.Window.Url.CanParseAsync("../products", "https://example.test/catalog/");
+        await using var url = await Browser.Window.Url.CreateAsync("../products", "https://example.test/catalog/");
+
+        await url.SetProtocolAsync("https:");
+        await url.SetUsernameAsync("user");
+        await url.SetPasswordAsync("password");
+        await url.SetHostAsync("example.test:8080");
+        await url.SetHostnameAsync("example.test");
+        await url.SetPortAsync("8080");
+        await url.SetPathnameAsync("/products");
+        await url.SetSearchAsync("?tag=one");
+        await url.SetHashAsync("#details");
+        await url.SearchParams.AppendAsync("tag", "two");
+
+        var href = await url.GetHrefAsync();
+        var origin = await url.GetOriginAsync();
+        var protocol = await url.GetProtocolAsync();
+        var username = await url.GetUsernameAsync();
+        var password = await url.GetPasswordAsync();
+        var host = await url.GetHostAsync();
+        var hostname = await url.GetHostnameAsync();
+        var port = await url.GetPortAsync();
+        var pathname = await url.GetPathnameAsync();
+        var search = await url.GetSearchAsync();
+        var hash = await url.GetHashAsync();
+        var serialized = await url.ToStringAsync();
+        var json = await url.ToJsonAsync();
+
+        await using var parsed = await Browser.Window.Url.ParseAsync(href);
+        var parsedHref = await parsed!.GetHrefAsync();
+
+        IReadOnlyDictionary<string, string> record = new Dictionary<string, string>
+        {
+            ["record"] = "value",
+        };
+        await using var recordSearchParams = await Browser.Window.UrlSearchParams.CreateAsync(record);
+
+        IEnumerable<KeyValuePair<string, string>> sequence =
+        [
+            new("item", "first"),
+            new("item", "second"),
+        ];
+        await using var searchParams = await Browser.Window.UrlSearchParams.CreateAsync(sequence);
+        var sequenceEntries = searchParams.EntriesAsync();
+        var entries = new List<KeyValuePair<string, string>>();
+        await foreach (var entry in sequenceEntries)
+        {
+            entries.Add(entry);
+            if (entries.Count == 1)
+            {
+                await searchParams.AppendAsync("item", "third");
+            }
+        }
+
+        var repeatedEntries = new List<KeyValuePair<string, string>>();
+        await foreach (var entry in sequenceEntries)
+        {
+            repeatedEntries.Add(entry);
+        }
+
+        var keys = new List<string>();
+        await foreach (var key in searchParams.KeysAsync())
+        {
+            keys.Add(key);
+        }
+
+        var values = new List<string>();
+        await foreach (var value in searchParams.ValuesAsync())
+        {
+            values.Add(value);
+        }
+
+        var first = string.Empty;
+        await foreach (var value in searchParams.ValuesAsync())
+        {
+            first = value;
+            break;
+        }
+
+        using var cancellation = new CancellationTokenSource();
+        var canceled = false;
+        var valuesBeforeCancellation = new List<string>();
+        try
+        {
+            await foreach (var value in searchParams.ValuesAsync().WithCancellation(cancellation.Token))
+            {
+                valuesBeforeCancellation.Add(value);
+                cancellation.Cancel();
+            }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            canceled = true;
+        }
+
+        var passed =
+            canParse &&
+            href == "https://user:password@example.test:8080/products?tag=one&tag=two#details" &&
+            origin == "https://example.test:8080" &&
+            protocol == "https:" &&
+            username == "user" &&
+            password == "password" &&
+            host == "example.test:8080" &&
+            hostname == "example.test" &&
+            port == "8080" &&
+            pathname == "/products" &&
+            search == "?tag=one&tag=two" &&
+            hash == "#details" &&
+            serialized == href &&
+            json == href &&
+            parsedHref == href &&
+            await recordSearchParams.ToStringAsync() == "record=value" &&
+            await searchParams.GetSizeAsync() == 3 &&
+            await searchParams.GetAsync("item") == "first" &&
+            (await searchParams.GetAllAsync("item")).SequenceEqual(["first", "second", "third"]) &&
+            await searchParams.HasAsync("item") &&
+            await searchParams.HasAsync("item", "second") &&
+            entries.Select(entry => entry.Key).SequenceEqual(["item", "item", "item"]) &&
+            entries.Select(entry => entry.Value).SequenceEqual(["first", "second", "third"]) &&
+            repeatedEntries.SequenceEqual(entries) &&
+            keys.SequenceEqual(["item", "item", "item"]) &&
+            values.SequenceEqual(["first", "second", "third"]) &&
+            first == "first" &&
+            canceled &&
+            valuesBeforeCancellation.SequenceEqual(["first"]);
+
+        await searchParams.DeleteAsync("item", "first");
+        await searchParams.SetAsync("page", "2");
+        await searchParams.DeleteAsync("page");
+        await searchParams.SortAsync();
+
+        result = passed && await searchParams.ToStringAsync() == "item=second&item=third"
+            ? "URL API passed."
+            : "URL API failed.";
+    }
+}

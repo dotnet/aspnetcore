@@ -18,4 +18,7 @@ internal static partial class UIAgentLog
 
     [LoggerMessage(103, LogLevel.Debug, "SendMessageAsync: Added {MessageCount} messages to history")]
     internal static partial void AddedToHistory(ILogger logger, int messageCount);
+
+    [LoggerMessage(104, LogLevel.Error, "SendMessageAsync: An error occurred while processing the response")]
+    internal static partial void ProcessingError(ILogger logger, Exception exception);
 }
